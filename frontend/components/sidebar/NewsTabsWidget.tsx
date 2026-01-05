@@ -82,9 +82,9 @@ export default function NewsTabsWidget() {
                                         <span className="text-[9px] text-white/30">•</span>
                                         <span className="text-[9px] text-white/40 flex items-center gap-1">
                                             {activeTab === "latest" ? (
-                                                <><Clock className="w-2.5 h-2.5" /> {item.time}</>
+                                                <><Clock className="w-2.5 h-2.5" /> {(item as any).time}</>
                                             ) : (
-                                                <><TrendingUp className="w-2.5 h-2.5" /> {item.views}</>
+                                                <><TrendingUp className="w-2.5 h-2.5" /> {(item as any).views}</>
                                             )}
                                         </span>
                                     </div>
