@@ -49,9 +49,6 @@ export default function HardwareCategoryClient({ categorySlug }: HardwareCategor
             <PageHero
                 title={categoryDef.label}
                 description={`Latest ${categoryDef.label} from our labs.`}
-                icon={categoryDef.icon}
-                categories={HARDWARE_CATEGORIES}
-                selectedCategory={categoryDef.id}
                 basePath="/hardware"
             />
 
