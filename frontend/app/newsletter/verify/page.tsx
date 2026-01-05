@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 
-export default function NewsletterVerifyPage() {
+function NewsletterVerifyContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const token = searchParams.get('token');
@@ -84,5 +84,17 @@ export default function NewsletterVerifyPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function NewsletterVerifyPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center p-4">
+                <Loader2 className="w-12 h-12 text-[var(--accent)] animate-spin" />
+            </div>
+        }>
+            <NewsletterVerifyContent />
+        </Suspense>
     );
 }
