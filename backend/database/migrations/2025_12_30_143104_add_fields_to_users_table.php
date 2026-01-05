@@ -4,21 +4,34 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('username')->unique()->nullable()->after('email');
-            $table->string('avatar_url')->nullable();
-            $table->text('bio')->nullable();
-            $table->string('role')->default('user'); // user, editor, moderator, admin
-            $table->integer('rank_id')->default(1); // 1 = Newbie
-            $table->integer('forum_reputation')->default(0);
-            $table->boolean('is_banned')->default(false);
+            if (!Schema::hasColumn('users', 'username')) {
+                $table->string('username')->unique()->nullable()->after('email');
+            }
+            if (!Schema::hasColumn('users', 'avatar_url')) {
+                $table->string('avatar_url')->nullable();
+            }
+            if (!Schema::hasColumn('users', 'bio')) {
+                $table->text('bio')->nullable();
+            }
+            if (!Schema::hasColumn('users', 'role')) {
+                $table->string('role')->default('user');
+            }
+            if (!Schema::hasColumn('users', 'rank_id')) {
+                $table->integer('rank_id')->default(1);
+            }
+            if (!Schema::hasColumn('users', 'forum_reputation')) {
+                $table->integer('forum_reputation')->default(0);
+            }
+            if (!Schema::hasColumn('users', 'is_banned')) {
+                $table->boolean('is_banned')->default(false);
+            }
         });
     }
 
