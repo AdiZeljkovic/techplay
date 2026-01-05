@@ -3,12 +3,12 @@
 import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { SupportTier } from "@/types/support";
 import { PayPalScriptProvider, PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
 import { Loader2, CheckCircle2, Shield, Calendar, AlertCircle, ChevronRight, ArrowLeft, Star, Coins, CreditCard } from "lucide-react";
 
-export default function SupportCheckoutPage() {
+function SupportCheckoutContent() {
     const searchParams = useSearchParams();
     const tierId = searchParams.get('tier');
 
@@ -112,7 +112,7 @@ export default function SupportCheckoutPage() {
                                                 <span className="bg-[var(--accent)] text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Selected</span>
                                             </div>
                                             <p className="text-[#94A3B8] text-lg leading-relaxed max-w-lg">
-                                                Excellent choice! You're unlocking exclusive badges, ad-free access, and supporting the community.
+                                                Excellent choice! You unlocking exclusive badges, ad-free access, and supporting the community.
                                             </p>
                                         </div>
                                     </div>
@@ -228,6 +228,14 @@ export default function SupportCheckoutPage() {
     );
 }
 
+export default function SupportCheckoutPage() {
+    return (
+        <Suspense fallback={<LoadingView />}>
+            <SupportCheckoutContent />
+        </Suspense>
+    );
+}
+
 // ----------------------------------------------------------------------------
 // Sub-Components
 // ----------------------------------------------------------------------------
@@ -324,8 +332,8 @@ function Step({ active, completed, number, label }: any) {
     return (
         <div className={`flex items-center gap-2 ${active || completed ? 'text-white' : 'text-white/30'}`}>
             <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${completed ? 'bg-[var(--accent)] text-white' :
-                    active ? 'bg-white text-[var(--bg-primary)]' :
-                        'bg-white/10'
+                active ? 'bg-white text-[var(--bg-primary)]' :
+                    'bg-white/10'
                 }`}>
                 {completed ? <CheckCircle2 className="w-3.5 h-3.5" /> : number}
             </div>
@@ -339,8 +347,8 @@ function OptionCard({ selected, onClick, title, price, period, description }: an
         <div
             onClick={onClick}
             className={`cursor-pointer p-6 rounded-2xl border-2 transition-all duration-200 relative ${selected
-                    ? 'bg-[var(--accent)]/5 border-[var(--accent)] shadow-[inset_0_0_20px_rgba(var(--accent-rgb),0.2)]'
-                    : 'bg-[var(--bg-secondary)] border-transparent hover:border-white/10'
+                ? 'bg-[var(--accent)]/5 border-[var(--accent)] shadow-[inset_0_0_20px_rgba(var(--accent-rgb),0.2)]'
+                : 'bg-[var(--bg-secondary)] border-transparent hover:border-white/10'
                 }`}
         >
             <div className="flex justify-between items-start mb-4">
@@ -372,7 +380,7 @@ function SuccessView({ user, router }: any) {
 
                 <h2 className="text-3xl font-bold text-white mb-2">Welcome Aboard!</h2>
                 <p className="text-[#E0E7FF] mb-8">
-                    You're now a supporter. All benefits have been activated for <strong>{user?.display_name || user?.username}</strong>.
+                    You now a supporter. All benefits have been activated for <strong>{user?.display_name || user?.username}</strong>.
                 </p>
 
                 <button
