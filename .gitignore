@@ -1,0 +1,25 @@
+
+# IDEs
+.vscode
+.idea
+*.suo
+*.ntvs
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Deployment
+# deployment/database_backup.sql (User requested to include in git)
+
+# Dependency directories
+node_modules/
+vendor/
+
+# Environment variables
+.env
+.env.*
+!.env.example

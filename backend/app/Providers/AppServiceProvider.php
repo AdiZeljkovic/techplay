@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+        //
+    }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        \App\Models\Post::observe(\App\Observers\PostObserver::class);
+        \App\Models\Article::observe(\App\Observers\ContentObserver::class);
+
+        // Prevent N+1 queries in non-production environments
+        \Illuminate\Database\Eloquent\Model::preventLazyLoading(!app()->isProduction());
+
+        // Pulse Authorization
+        \Illuminate\Support\Facades\Gate::define('viewPulse', function ($user = null) {
+            // For now, allow local dev or logged in admins. 
+            // Since user might be null, we need to check.
+            // Actually, Pulse auth usually handles user resolution. 
+            // Let's allow if user has 'admin' role.
+            $user = $user ?? auth()->user();
+            return $user && in_array($user->role, ['admin', 'super_admin']);
+        });
+    }
+}
