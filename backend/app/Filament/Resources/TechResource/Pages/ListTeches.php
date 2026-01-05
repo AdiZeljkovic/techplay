@@ -1,0 +1,11 @@
+<?php
+
+namespace App\Filament\Resources\TechResource\Pages;
+
+use App\Filament\Resources\TechResource;
+use Filament\Resources\Pages\ListRecords;
+
+class ListTeches extends ListRecords
+{
+    protected static string $resource = TechResource::class;
+}
