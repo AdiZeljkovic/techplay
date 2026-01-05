@@ -111,7 +111,7 @@ export default function FeaturedCarousel() {
                                         {formatDistanceToNow(new Date(currentSlide.published_at), { addSuffix: true })}
                                     </span>
                                     <span className="text-sm text-neon-purple">
-                                        By {currentSlide.author.username}
+                                        By {currentSlide.author?.username || 'TechPlay'}
                                     </span>
                                 </div>
 
