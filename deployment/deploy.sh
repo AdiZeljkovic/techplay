@@ -16,6 +16,7 @@ git pull origin main
 echo "🛠️ Building Backend..."
 cd $BACKEND_DIR
 composer install --no-dev --optimize-autoloader
+# Migrations are now idempotent (safe to run even if tables exist)
 php artisan migrate --force
 php artisan config:cache
 php artisan event:cache
