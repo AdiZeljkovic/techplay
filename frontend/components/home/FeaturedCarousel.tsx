@@ -92,7 +92,7 @@ export default function FeaturedCarousel() {
                             >
                                 <div className="flex gap-2 mb-4">
                                     <span className="inline-block px-3 py-1 bg-neon-teal/20 text-neon-teal rounded-full text-sm font-bold border border-neon-teal/30 capitalize">
-                                        {currentSlide.category}
+                                        {currentSlide.category.name}
                                     </span>
                                     {currentSlide.status === 'published' && (
                                         <span className="inline-block px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-bold border border-green-500/30">
