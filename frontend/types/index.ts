@@ -24,6 +24,14 @@ export interface User {
         expires_at: string;
     } | null;
     articles?: Article[];
+    xp?: number;
+    display_name?: string;
+    cookie_preferences?: {
+        necessary: boolean;
+        analytics: boolean;
+        marketing: boolean;
+    };
+    [key: string]: any;
 }
 
 export interface Category {
@@ -76,7 +84,6 @@ export interface Article {
         pros?: string[];
         cons?: string[];
         conclusion?: string;
-        cta?: 'none' | 'recommended' | 'must_play' | 'skip' | 'wait_sale';
         cta?: 'none' | 'recommended' | 'must_play' | 'skip' | 'wait_sale';
     };
     comments?: Comment[];
