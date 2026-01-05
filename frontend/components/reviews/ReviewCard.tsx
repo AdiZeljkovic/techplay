@@ -71,7 +71,7 @@ export default function ReviewCard({ review, index }: ReviewCardProps) {
                                 className={`w-4 h-4 ${i < Math.round(review.rating / 2) ? "text-yellow-400 fill-yellow-400" : "text-[var(--text-muted)]"}`}
                             />
                         ))}
-                        <span className="text-sm text-[var(--text-muted)] ml-2">{review.rating}/10</span>
+                        <span className="text-sm text-[var(--text-muted)] ml-2">{review.rating || 0}</span>
                     </div>
                 </div>
             </motion.article>
