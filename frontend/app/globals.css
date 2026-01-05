@@ -1,0 +1,165 @@
+@import "tailwindcss";
+
+@theme {
+  /* Fonts */
+  --font-display: "Be Vietnam Pro", sans-serif;
+  --font-body: "Be Vietnam Pro", sans-serif;
+
+  /* Colors */
+  --color-border: var(--border);
+  --color-input: var(--bg-elevated);
+  --color-ring: var(--accent);
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+
+  --color-primary: var(--accent);
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: var(--bg-elevated);
+  --color-secondary-foreground: var(--text-primary);
+
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: #ffffff;
+
+  --color-muted: var(--bg-secondary);
+  --color-muted-foreground: var(--text-muted);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: #ffffff;
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-light: var(--accent-light);
+
+  --color-card: var(--bg-card);
+  --color-card-foreground: var(--text-primary);
+
+  --color-neon-cyan: #06b6d4;
+  --color-neon-purple: #8b5cf6;
+}
+
+/* ========================================
+   TECHPLAY DESIGN SYSTEM
+   ======================================== */
+
+:root {
+  /* DEFAULT THEME (Dark Blue - User Request) */
+
+  /* Backgrounds */
+  --bg-primary: #001540;
+  /* Deep Navy Background */
+  --bg-secondary: #000B25;
+  /* Darker areas */
+  --bg-card: #00215E;
+  /* Slightly lighter for cards */
+  --bg-elevated: #002B7A;
+  /* Hovers / Elevated states */
+
+  /* Text */
+  --text-primary: #FFFFFF;
+  --text-secondary: #E0E7FF;
+  --text-muted: #94A3B8;
+
+  /* Accent - User Specified Orange/Red */
+  --accent: #FC4100;
+  --accent-hover: #FF5722;
+  --accent-light: rgba(252, 65, 0, 0.15);
+
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.1);
+  --border-light: rgba(255, 255, 255, 0.2);
+
+  /* Status */
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #3B82F6;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] {
+  /* FORCED DARK MODE FOR BRAND CONSISTENCY */
+  /* User requested global colors. We map "Light" to "Dark Blue" for now. */
+  --bg-primary: #001540;
+  --bg-secondary: #000B25;
+  --bg-card: #00215E;
+  --bg-elevated: #002B7A;
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #E0E7FF;
+  --text-muted: #94A3B8;
+
+  --accent: #FC4100;
+  --border: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] {
+  /* Same as Root/Default */
+  --bg-primary: #001540;
+  --bg-secondary: #000B25;
+  --bg-card: #00215E;
+  --bg-elevated: #002B7A;
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #E0E7FF;
+  --text-muted: #94A3B8;
+
+  --accent: #FC4100;
+  --border: rgba(255, 255, 255, 0.1);
+}
+
+/* ========================================
+   BASE STYLES
+   ======================================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  background: rgba(0, 21, 64, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-card {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(0, 33, 94, 0.4) 100%);
+  border: 1px solid var(--border);
+}
+
+/* Text Gradients */
+.text-gradient {
+  background: linear-gradient(135deg, #FFFFFF 0%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
