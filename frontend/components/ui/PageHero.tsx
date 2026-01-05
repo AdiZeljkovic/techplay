@@ -14,7 +14,7 @@ interface CategoryItem {
 
 interface PageHeroProps {
     title: string;
-    description: string;
+    description?: string;
     icon?: LucideIcon;
     backgroundImage?: string;
     categories?: CategoryItem[];
@@ -25,7 +25,7 @@ interface PageHeroProps {
 
 export default function PageHero({
     title,
-    description,
+    description = "",
     icon: MainIcon,
     backgroundImage = "/hero-bg-default.jpg",
     categories,
