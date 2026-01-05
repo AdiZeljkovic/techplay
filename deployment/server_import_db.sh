@@ -3,7 +3,7 @@ set -e
 
 DB_NAME="techplay"
 DB_USER="techplay"
-DUMP_FILE="deployment/database_backup.sql"
+DUMP_FILE="/var/www/techplay/deployment/database_backup.sql"
 
 echo "🐘 Importing Database from $DUMP_FILE..."
 
