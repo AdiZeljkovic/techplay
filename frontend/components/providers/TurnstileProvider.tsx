@@ -73,12 +73,23 @@ export default function TurnstileProvider({ children }: TurnstileProviderProps) 
 
     const executeTurnstile = useCallback(async (action: string): Promise<string | null> => {
         if (!isLoaded || !window.turnstile || !widgetIdRef.current) {
-            console.warn("Turnstile not ready");
+            console.warn("Turnstile not ready, proceeding without token");
             return null;
         }
 
         return new Promise((resolve) => {
-            currentResolverRef.current = resolve;
+            // Set a timeout to prevent infinite waiting
+            const timeoutId = setTimeout(() => {
+                console.warn("Turnstile timeout, proceeding without token");
+                currentResolverRef.current = null;
+                resolve(null);
+            }, 5000);
+
+            currentResolverRef.current = (token) => {
+                clearTimeout(timeoutId);
+                resolve(token);
+            };
+
             try {
                 // Reset the widget to ensure a fresh challenge
                 window.turnstile!.reset(widgetIdRef.current!);
@@ -86,6 +97,7 @@ export default function TurnstileProvider({ children }: TurnstileProviderProps) 
                 window.turnstile!.execute(containerRef.current!, { action });
             } catch (e) {
                 console.error("Turnstile execute error:", e);
+                clearTimeout(timeoutId);
                 resolve(null);
             }
         });
