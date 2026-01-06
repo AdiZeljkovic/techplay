@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Article>
@@ -17,17 +18,17 @@ class ArticleFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => $this->faker->sentence,
-            'slug' => $this->faker->unique()->slug,
-            'excerpt' => $this->faker->paragraph,
-            'content' => $this->faker->paragraphs(3, true),
+            'title' => 'Article ' . Str::random(10),
+            'slug' => 'slug-' . Str::random(10),
+            'excerpt' => 'This is a test excerpt ' . Str::random(20),
+            'content' => 'This is test content ' . Str::random(100),
             'featured_image_url' => 'https://via.placeholder.com/800x400',
-            'is_featured_in_hero' => $this->faker->boolean(20),
+            'is_featured_in_hero' => (bool) rand(0, 1),
             'status' => 'published',
             'published_at' => now(),
             'author_id' => 1,
-            'meta_title' => $this->faker->sentence,
-            'meta_description' => $this->faker->sentence,
+            'meta_title' => 'Meta Title ' . Str::random(10),
+            'meta_description' => 'Meta Description ' . Str::random(20),
         ];
     }
 }
