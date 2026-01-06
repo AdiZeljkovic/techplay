@@ -48,7 +48,7 @@ class AuthController extends Controller
 
         return $this->created([
             'user' => $user,
-            'token' => $token,
+            'access_token' => $token,
         ], 'User registered successfully');
     }
 
