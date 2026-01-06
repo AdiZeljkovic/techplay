@@ -37,7 +37,7 @@ class AuthController extends Controller
             'name' => $validated['username'],
             'username' => $validated['username'],
             'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'password' => $validated['password'], // Model's 'hashed' cast handles hashing
         ]);
 
         // Set role directly (not mass assignable for security)
