@@ -31,40 +31,28 @@ class ReCaptchaService
         }
 
         try {
-            $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            $response = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
                 'secret' => $this->secretKey,
                 'response' => $token,
             ]);
 
             $data = $response->json();
 
-            if (!$data['success']) {
-                Log::warning('reCAPTCHA verification failed', ['errors' => $data['error-codes'] ?? []]);
+            if (!($data['success'] ?? false)) {
+                Log::warning('Turnstile verification failed', ['errors' => $data['error-codes'] ?? []]);
                 return [
                     'success' => false,
-                    'score' => null,
-                    'error' => 'reCAPTCHA verification failed'
+                    'error' => 'Security verification failed'
                 ];
             }
 
-            // Check action matches
-            if (isset($data['action']) && $data['action'] !== $action) {
-                Log::warning('reCAPTCHA action mismatch', [
-                    'expected' => $action,
-                    'received' => $data['action']
-                ]);
-            }
+            // Cloudflare Turnstile is primarily Boolean success/fail
 
-            // Check score threshold
-            $score = $data['score'] ?? 0;
-            if ($score < $this->minScore) {
-                Log::warning('reCAPTCHA score too low', ['score' => $score]);
-                return [
-                    'success' => false,
-                    'score' => $score,
-                    'error' => 'Suspicious activity detected'
-                ];
-            }
+            return [
+                'success' => true,
+                'score' => 1.0, // Default to 1.0 as Turnstile is pass/fail
+                'error' => null
+            ];
 
             return [
                 'success' => true,
