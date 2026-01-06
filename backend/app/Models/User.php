@@ -31,6 +31,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
      * @var list<string>
      */
     protected $fillable = [
+        'name',
         'username',
         'display_name',
         'email',
