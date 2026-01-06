@@ -74,14 +74,15 @@ export default function TurnstileProvider({ children }: TurnstileProviderProps) 
     const executeTurnstile = useCallback(async (action: string): Promise<string | null> => {
         if (!isLoaded || !window.turnstile || !widgetIdRef.current) {
             console.warn("Turnstile not ready");
-            // If checking localhost, maybe skip? But User wants it.
-            // On localhost, Turnstile usually works in test mode if allowed.
             return null;
         }
 
         return new Promise((resolve) => {
             currentResolverRef.current = resolve;
             try {
+                // Reset the widget to ensure a fresh challenge
+                window.turnstile!.reset(widgetIdRef.current!);
+                // Execute with the new action
                 window.turnstile!.execute(containerRef.current!, { action });
             } catch (e) {
                 console.error("Turnstile execute error:", e);
