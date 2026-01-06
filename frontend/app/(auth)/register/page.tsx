@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { UserPlus, Shield, Check, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useRecaptcha } from "@/components/providers/RecaptchaProvider";
+import { useTurnstile } from "@/components/providers/TurnstileProvider";
 
 interface PasswordRequirement {
     label: string;
@@ -25,7 +25,7 @@ const PASSWORD_REQUIREMENTS: PasswordRequirement[] = [
 export default function RegisterPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState<string[]>([]);
-    const { executeRecaptcha } = useRecaptcha();
+    const { executeTurnstile } = useTurnstile();
 
     const { register: registerAuth } = useAuth({
         middleware: 'guest',
@@ -52,8 +52,8 @@ export default function RegisterPage() {
         setIsLoading(true);
         setErrors([]);
 
-        // Execute reCAPTCHA
-        const recaptchaToken = await executeRecaptcha("register");
+        // Execute Turnstile
+        const recaptchaToken = await executeTurnstile("register");
 
         await registerAuth({
             setErrors,
@@ -174,10 +174,9 @@ export default function RegisterPage() {
                         </Button>
                     </form>
 
-                    {/* reCAPTCHA Notice */}
                     <div className="mt-4 flex items-center justify-center gap-2 text-xs text-[var(--text-muted)]">
                         <Shield className="w-3 h-3" />
-                        Protected by reCAPTCHA
+                        Protected by Cloudflare Turnstile
                     </div>
 
                     {/* Footer */}

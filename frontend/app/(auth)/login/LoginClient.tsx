@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { LogIn, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useRecaptcha } from "@/components/providers/RecaptchaProvider";
+import { useTurnstile } from "@/components/providers/TurnstileProvider";
 
 export default function LoginClient() {
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState<string[]>([]);
     const [status, setStatus] = useState<string | null>(null);
-    const { executeRecaptcha } = useRecaptcha();
+    const { executeTurnstile } = useTurnstile();
 
     const { login } = useAuth({
         middleware: 'guest',
@@ -35,8 +35,8 @@ export default function LoginClient() {
         setIsLoading(true);
         setErrors([]);
 
-        // Execute reCAPTCHA
-        const recaptchaToken = await executeRecaptcha("login");
+        // Execute Turnstile
+        const recaptchaToken = await executeTurnstile("login");
 
         await login({
             setErrors,
@@ -118,10 +118,9 @@ export default function LoginClient() {
                         </Button>
                     </form>
 
-                    {/* reCAPTCHA Notice */}
                     <div className="mt-4 flex items-center justify-center gap-2 text-xs text-[var(--text-muted)]">
                         <Shield className="w-3 h-3" />
-                        Protected by reCAPTCHA
+                        Protected by Cloudflare Turnstile
                     </div>
 
                     {/* Footer */}

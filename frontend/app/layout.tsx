@@ -9,7 +9,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
 import CookieConsentBanner from "@/components/ui/CookieConsentBanner";
 import GlobalSeo from "@/components/seo/GlobalSeo";
-import RecaptchaProvider from "@/components/providers/RecaptchaProvider";
+import TurnstileProvider from "@/components/providers/TurnstileProvider";
 import { Toaster } from "react-hot-toast";
 
 
@@ -84,7 +84,7 @@ export default function RootLayout({
           <SiteSettingsProvider>
             <CartProvider>
               <AuthProvider>
-                <RecaptchaProvider>
+                <TurnstileProvider>
                   <Header />
                   <main className="flex-grow">
                     {children}
@@ -93,7 +93,7 @@ export default function RootLayout({
                   <CookieConsentBanner />
                   <GlobalSeo />
                   <Toaster position="bottom-right" />
-                </RecaptchaProvider>
+                </TurnstileProvider>
               </AuthProvider>
             </CartProvider>
           </SiteSettingsProvider>
