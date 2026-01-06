@@ -44,12 +44,16 @@ class AuthController extends Controller
         $user->role = 'user';
         $user->save();
 
+        // Send email verification notification
+        $user->sendEmailVerificationNotification();
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return $this->created([
             'user' => $user,
             'access_token' => $token,
-        ], 'User registered successfully');
+            'requires_verification' => true,
+        ], 'User registered successfully. Please verify your email.');
     }
 
 
