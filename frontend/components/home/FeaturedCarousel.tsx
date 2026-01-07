@@ -70,7 +70,9 @@ export default function FeaturedCarousel() {
                     >
                         {currentSlide.featured_image_url ? (
                             <Image
-                                src={`${process.env.NEXT_PUBLIC_STORAGE_URL}/${currentSlide.featured_image_url}`}
+                                src={currentSlide.featured_image_url.startsWith('http')
+                                    ? currentSlide.featured_image_url
+                                    : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${currentSlide.featured_image_url}`}
                                 alt={currentSlide.title}
                                 fill
                                 className="object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-500"

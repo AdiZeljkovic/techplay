@@ -22,6 +22,8 @@ class NewsController extends Controller
             $query = Article::query()
                 ->where('status', 'published')
                 ->where('published_at', '<=', now())
+                // IMPORTANT: Only show articles with category type 'news'
+                ->whereHas('category', fn($q) => $q->where('type', 'news'))
                 ->with(['author:id,username,avatar_url', 'category']);
 
             if ($request->has('category') && $request->category !== 'all') {
