@@ -89,8 +89,8 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                         <div className="w-full h-full bg-gradient-to-br from-indigo-900 to-black" />
                     )}
                     {/* Cinematic Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)]/80 to-transparent" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)]/60 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-transparent" />
                 </div>
 
                 {/* Hero Content */}
