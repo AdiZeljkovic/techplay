@@ -46,7 +46,8 @@ export default function ReviewCategoryClient({ categorySlug }: ReviewCategoryCli
                 description={`Latest ${categoryDef.label} reviews and analysis.`}
                 categories={REVIEW_CATEGORIES}
                 selectedCategory={categoryDef.id}
-                basePath="/reviews/category"
+                basePath="/reviews"
+                categoryBase="/reviews/category"
             />
 
             <div className="container mx-auto px-4 py-8">

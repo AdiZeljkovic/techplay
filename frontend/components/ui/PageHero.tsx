@@ -21,6 +21,7 @@ interface PageHeroProps {
     selectedCategory?: string; // The ID currently selected
     onSelectCategory?: (id: string) => void;
     basePath?: string; // If provided, uses Links instead of buttons
+    categoryBase?: string; // Optional override for category links (e.g. /news/category)
 }
 
 export default function PageHero({
@@ -31,7 +32,8 @@ export default function PageHero({
     categories,
     selectedCategory,
     onSelectCategory,
-    basePath
+    basePath,
+    categoryBase
 }: PageHeroProps) {
     return (
         <div className="relative w-full h-[400px] mb-8 bg-[#000B25] overflow-hidden flex flex-col items-center justify-center text-center">
@@ -95,7 +97,7 @@ export default function PageHero({
                                 return (
                                     <Link
                                         key={cat.id}
-                                        href={cat.slug === 'all' ? basePath : `${basePath}/${cat.slug}`}
+                                        href={cat.slug === 'all' ? basePath : `${categoryBase || basePath}/${cat.slug}`}
                                         className={buttonClass}
                                     >
                                         <cat.icon className={cn("w-4 h-4", isSelected ? "text-white" : "text-[var(--accent)]")} />

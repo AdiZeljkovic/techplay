@@ -36,6 +36,7 @@ export default function NewsPage() {
                 categories={NEWS_CATEGORIES}
                 selectedCategory={selectedCategory}
                 basePath="/news"
+                categoryBase="/news/category"
             />
 
             <div className="container mx-auto px-4 py-8">
