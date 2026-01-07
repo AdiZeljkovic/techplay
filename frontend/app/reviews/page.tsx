@@ -36,6 +36,7 @@ export default function ReviewsPage() {
                 categories={REVIEW_CATEGORIES}
                 selectedCategory={selectedCategory}
                 basePath="/reviews"
+                categoryBase="/reviews/category"
             />
 
             <div className="container mx-auto px-4 py-8">

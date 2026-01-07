@@ -46,7 +46,8 @@ export default function NewsCategoryClient({ categorySlug }: NewsCategoryClientP
                 description={`Latest ${categoryDef.label} news and updates.`}
                 categories={NEWS_CATEGORIES}
                 selectedCategory={categoryDef.id}
-                basePath="/news/category"
+                basePath="/news"
+                categoryBase="/news/category"
             />
 
             <div className="container mx-auto px-4 py-8">
