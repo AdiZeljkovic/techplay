@@ -55,7 +55,7 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                         priority
                     />
                     {/* Gradient Overlay for Readability - Using Brand Blue */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#00215E] via-[#00215E]/60 to-transparent opacity-90" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#00215E] via-[#00215E]/60 to-transparent opacity-70" />
                     <div className="absolute inset-0 bg-gradient-to-r from-[#00215E]/90 via-transparent to-transparent" />
                 </motion.div>
             </AnimatePresence>
