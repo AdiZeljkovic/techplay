@@ -28,8 +28,10 @@ class ReviewController extends Controller
             if ($request->has('category') && $request->category !== 'all') {
                 $categorySlug = $request->category;
                 $query->whereHas('category', function ($q) use ($categorySlug) {
-                    $q->where('slug', $categorySlug)
-                        ->orWhere('id', $categorySlug);
+                    $q->where('slug', $categorySlug);
+                    if (is_numeric($categorySlug)) {
+                        $q->orWhere('id', $categorySlug);
+                    }
                 });
             }
 
