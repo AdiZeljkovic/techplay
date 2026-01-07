@@ -20,18 +20,24 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 
             revalidateOnFocus: false
         });
 
-    const register = async ({ setErrors, ...props }: any) => {
+    const register = async ({ setErrors, setSuccess, ...props }: any) => {
         setErrors([]);
+        if (setSuccess) setSuccess(false);
 
         try {
             const response = await axios.post('/auth/register', props);
-            if (response.data.access_token) {
-                localStorage.setItem('token', response.data.access_token);
+            // ApiResponse wraps in {success, message, data}
+            const payload = response.data.data || response.data;
+            if (payload.access_token) {
+                localStorage.setItem('token', payload.access_token);
             }
             await mutate();
 
+            // Call success callback if provided
+            if (setSuccess) setSuccess(true);
+
             // Redirect to verify email if required
-            if (response.data.requires_verification) {
+            if (payload.requires_verification) {
                 router.push('/verify-email');
                 return;
             }
