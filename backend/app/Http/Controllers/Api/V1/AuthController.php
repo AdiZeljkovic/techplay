@@ -44,8 +44,12 @@ class AuthController extends Controller
         $user->role = 'user';
         $user->save();
 
-        // Send email verification notification
-        $user->sendEmailVerificationNotification();
+        // Send email verification notification (don't block registration if this fails)
+        try {
+            $user->sendEmailVerificationNotification();
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send verification email: ' . $e->getMessage());
+        }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
