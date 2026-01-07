@@ -185,6 +185,7 @@ class ArticleForm
                             ->schema([
                                 FileUpload::make('featured_image_url')
                                     ->image()
+                                    ->disk('public')
                                     ->directory('articles'),
                             ]),
                     ])

@@ -71,6 +71,7 @@ class GuideResource extends Resource
                 Forms\Components\FileUpload::make('featured_image_url')
                     ->label('Featured Image')
                     ->image()
+                    ->disk('public')
                     ->directory('guides')
                     ->columnSpanFull(),
             ]);
