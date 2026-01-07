@@ -7,7 +7,7 @@ use App\Models\ForumCategory;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
-use Filament\Forms\Set;
+use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Support\Str;
 use Filament\Schemas\Schema;
 use Filament\Actions\EditAction;
