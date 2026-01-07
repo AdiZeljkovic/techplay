@@ -25,6 +25,7 @@ const PASSWORD_REQUIREMENTS: PasswordRequirement[] = [
 export default function RegisterPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState<string[]>([]);
+    const [success, setSuccess] = useState(false);
     const { executeTurnstile } = useTurnstile();
 
     const { register: registerAuth } = useAuth({
@@ -51,12 +52,14 @@ export default function RegisterPage() {
     const onSubmit = async (data: any) => {
         setIsLoading(true);
         setErrors([]);
+        setSuccess(false);
 
         // Execute Turnstile
         const recaptchaToken = await executeTurnstile("register");
 
         await registerAuth({
             setErrors,
+            setSuccess,
             ...data,
             recaptcha_token: recaptchaToken
         });
@@ -81,6 +84,15 @@ export default function RegisterPage() {
                             Create your account to get started
                         </p>
                     </div>
+
+                    {/* Success Message */}
+                    {success && (
+                        <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                            <p className="text-sm text-green-500">
+                                🎉 Registration successful! Please check your email to verify your account.
+                            </p>
+                        </div>
+                    )}
 
                     {/* Errors */}
                     {errors.length > 0 && (
