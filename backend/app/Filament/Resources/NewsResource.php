@@ -6,7 +6,7 @@ use App\Filament\Resources\NewsResource\Pages;
 use App\Models\Article;
 use App\Models\Category;
 use Filament\Forms;
-use Filament\Forms\Set;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
