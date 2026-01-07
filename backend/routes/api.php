@@ -88,6 +88,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/guides', [App\Http\Controllers\Api\V1\GuideController::class, 'index']);
         Route::get('/guides/{slug}', [App\Http\Controllers\Api\V1\GuideController::class, 'show']);
 
+        // Tech / Hardware
+        Route::get('/tech', [App\Http\Controllers\Api\V1\TechController::class, 'index']);
+        Route::get('/tech/{slug}', [App\Http\Controllers\Api\V1\TechController::class, 'show']);
+
         Route::get('/tech-specs', [App\Http\Controllers\Api\V1\TechResourceController::class, 'index']);
 
         // Games (RAWG)

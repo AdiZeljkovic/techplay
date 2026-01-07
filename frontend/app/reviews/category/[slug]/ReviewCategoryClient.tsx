@@ -6,38 +6,33 @@ import axios from "@/lib/axios";
 import { Review, PaginatedResponse } from "@/types";
 import ReviewCard from "@/components/reviews/ReviewCard";
 import { Button } from "@/components/ui/Button";
-import { Cpu, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import PageHero from "@/components/ui/PageHero";
-import { HARDWARE_CATEGORIES } from "@/lib/categories";
-import { notFound } from "next/navigation";
+import { REVIEW_CATEGORIES } from "@/lib/categories";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
-interface HardwareCategoryClientProps {
+interface ReviewCategoryClientProps {
     categorySlug: string;
 }
 
-export default function HardwareCategoryClient({ categorySlug }: HardwareCategoryClientProps) {
+export default function ReviewCategoryClient({ categorySlug }: ReviewCategoryClientProps) {
     const [page, setPage] = useState(1);
 
-    // Find the category definition to get its ID (which is used for API filtering)
-    // The slug in URL (e.g. 'reviews') -> maps to definition with slug 'reviews' -> ID 'tech-reviews'
-    const categoryDef = HARDWARE_CATEGORIES.find(c => c.slug === categorySlug);
+    // Find the category definition
+    const categoryDef = REVIEW_CATEGORIES.find(c => c.slug === categorySlug);
 
     if (!categoryDef) {
-        // If category doesn't exist in our definitions, show 404
-        // Note: In Client Component, notFound() works but might be better handled by parent.
-        // For now we return null or redirect. parent server component handles 404 better.
         return <div>Category not found</div>;
     }
 
     const queryParams = new URLSearchParams({
         page: page.toString(),
-        category: categoryDef.id // use the ID for API filtering
+        category: categoryDef.id // e.g. 'reviews-latest', 'reviews-rpg'
     });
 
     const { data, isLoading, isValidating } = useSWR<PaginatedResponse<Review>>(
-        `/tech?${queryParams.toString()}`,
+        `/reviews?${queryParams.toString()}`,
         fetcher
     );
 
@@ -48,8 +43,10 @@ export default function HardwareCategoryClient({ categorySlug }: HardwareCategor
 
             <PageHero
                 title={categoryDef.label}
-                description={`Latest ${categoryDef.label} from our labs.`}
-                basePath="/hardware"
+                description={`Latest ${categoryDef.label} reviews and analysis.`}
+                categories={REVIEW_CATEGORIES}
+                selectedCategory={categoryDef.id}
+                basePath="/reviews/category"
             />
 
             <div className="container mx-auto px-4 py-8">
@@ -59,13 +56,13 @@ export default function HardwareCategoryClient({ categorySlug }: HardwareCategor
                         {categoryDef.label}
                     </h2>
                     <span className="text-sm text-[var(--text-muted)] font-mono">
-                        {data?.total || 0} ITEMS
+                        {data?.total || 0} REVIEWS FOUND
                     </span>
                 </div>
 
                 {isLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[1, 2, 3].map((i) => (
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
                             <div key={i} className="h-80 bg-[var(--bg-card)] rounded-xl animate-pulse" />
                         ))}
                     </div>
@@ -105,9 +102,9 @@ export default function HardwareCategoryClient({ categorySlug }: HardwareCategor
                     </>
                 ) : (
                     <div className="text-center py-24 bg-[var(--bg-card)]/50 border border-[var(--border)] rounded-3xl">
-                        <Cpu className="w-16 h-16 text-[var(--text-muted)] mx-auto mb-6 opacity-50" />
-                        <h3 className="text-xl font-bold text-white mb-2">No content found</h3>
-                        <p className="text-[var(--text-secondary)]">There are no items in this category yet.</p>
+                        <Star className="w-16 h-16 text-[var(--text-muted)] mx-auto mb-6 opacity-50" />
+                        <h3 className="text-xl font-bold text-white mb-2">No reviews found</h3>
+                        <p className="text-[var(--text-secondary)]">Check back later.</p>
                     </div>
                 )}
             </div>

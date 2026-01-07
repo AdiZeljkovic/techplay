@@ -15,15 +15,13 @@ const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 export default function HardwareClient() {
     const [page, setPage] = useState(1);
 
-    // Default to 'all' logic (which maps to 'tech' ID in HARDWARE_CATEGORIES[0])
-    const selectedCategory = "tech"; // The ID for "All Hardware" in our constants
+    // Fetch tech articles from dedicated endpoint
     const queryParams = new URLSearchParams({
-        page: page.toString(),
-        category: selectedCategory
+        page: page.toString()
     });
 
     const { data, isLoading, isValidating } = useSWR<PaginatedResponse<Review>>(
-        `/reviews?${queryParams.toString()}`,
+        `/tech?${queryParams.toString()}`,
         fetcher
     );
 

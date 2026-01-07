@@ -3,53 +3,50 @@
 import { useState } from "react";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import { Review, PaginatedResponse } from "@/types";
-import ReviewCard from "@/components/reviews/ReviewCard";
+import { Article, PaginatedResponse } from "@/types";
+import NewsCard from "@/components/news/NewsCard";
 import { Button } from "@/components/ui/Button";
-import { Cpu, ChevronLeft, ChevronRight } from "lucide-react";
+import { Newspaper, ChevronLeft, ChevronRight } from "lucide-react";
 import PageHero from "@/components/ui/PageHero";
-import { HARDWARE_CATEGORIES } from "@/lib/categories";
-import { notFound } from "next/navigation";
+import { NEWS_CATEGORIES } from "@/lib/categories";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
-interface HardwareCategoryClientProps {
+interface NewsCategoryClientProps {
     categorySlug: string;
 }
 
-export default function HardwareCategoryClient({ categorySlug }: HardwareCategoryClientProps) {
+export default function NewsCategoryClient({ categorySlug }: NewsCategoryClientProps) {
     const [page, setPage] = useState(1);
 
-    // Find the category definition to get its ID (which is used for API filtering)
-    // The slug in URL (e.g. 'reviews') -> maps to definition with slug 'reviews' -> ID 'tech-reviews'
-    const categoryDef = HARDWARE_CATEGORIES.find(c => c.slug === categorySlug);
+    // Find the category definition
+    const categoryDef = NEWS_CATEGORIES.find(c => c.slug === categorySlug);
 
     if (!categoryDef) {
-        // If category doesn't exist in our definitions, show 404
-        // Note: In Client Component, notFound() works but might be better handled by parent.
-        // For now we return null or redirect. parent server component handles 404 better.
         return <div>Category not found</div>;
     }
 
     const queryParams = new URLSearchParams({
         page: page.toString(),
-        category: categoryDef.id // use the ID for API filtering
+        category: categoryDef.id // use the ID (e.g., 'news-gaming') for API filtering
     });
 
-    const { data, isLoading, isValidating } = useSWR<PaginatedResponse<Review>>(
-        `/tech?${queryParams.toString()}`,
+    const { data, isLoading, isValidating } = useSWR<PaginatedResponse<Article>>(
+        `/news?${queryParams.toString()}`,
         fetcher
     );
 
-    const reviews = data?.data || [];
+    const articles = data?.data || [];
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
 
             <PageHero
                 title={categoryDef.label}
-                description={`Latest ${categoryDef.label} from our labs.`}
-                basePath="/hardware"
+                description={`Latest ${categoryDef.label} news and updates.`}
+                categories={NEWS_CATEGORIES}
+                selectedCategory={categoryDef.id}
+                basePath="/news/category"
             />
 
             <div className="container mx-auto px-4 py-8">
@@ -59,21 +56,21 @@ export default function HardwareCategoryClient({ categorySlug }: HardwareCategor
                         {categoryDef.label}
                     </h2>
                     <span className="text-sm text-[var(--text-muted)] font-mono">
-                        {data?.total || 0} ITEMS
+                        {data?.total || 0} ARTICLES FOUND
                     </span>
                 </div>
 
                 {isLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[1, 2, 3].map((i) => (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                             <div key={i} className="h-80 bg-[var(--bg-card)] rounded-xl animate-pulse" />
                         ))}
                     </div>
-                ) : reviews.length > 0 ? (
+                ) : articles.length > 0 ? (
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                            {reviews.map((review, idx) => (
-                                <ReviewCard key={review.id} review={review} index={idx} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+                            {articles.map((article, idx) => (
+                                <NewsCard key={article.id} article={article} index={idx} />
                             ))}
                         </div>
 
@@ -105,9 +102,9 @@ export default function HardwareCategoryClient({ categorySlug }: HardwareCategor
                     </>
                 ) : (
                     <div className="text-center py-24 bg-[var(--bg-card)]/50 border border-[var(--border)] rounded-3xl">
-                        <Cpu className="w-16 h-16 text-[var(--text-muted)] mx-auto mb-6 opacity-50" />
-                        <h3 className="text-xl font-bold text-white mb-2">No content found</h3>
-                        <p className="text-[var(--text-secondary)]">There are no items in this category yet.</p>
+                        <Newspaper className="w-16 h-16 text-[var(--text-muted)] mx-auto mb-6 opacity-50" />
+                        <h3 className="text-xl font-bold text-white mb-2">No articles found</h3>
+                        <p className="text-[var(--text-secondary)]">Check back later.</p>
                     </div>
                 )}
             </div>
