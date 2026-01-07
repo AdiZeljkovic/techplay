@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Routes that require authentication
+// Note: Only include routes that need TRUE server-side protection
+// Most auth is handled client-side with Bearer tokens in localStorage
 const protectedRoutes = [
-    '/profile',
     '/support/checkout',
     '/settings',
 ];
