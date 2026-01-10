@@ -326,7 +326,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-xl font-bold text-[var(--text-primary)]">
-                                            {review.author?.username?.charAt(0).toUpperCase()}
+                                            {review.author?.username?.charAt(0)?.toUpperCase() || '?'}
                                         </div>
                                     )}
                                 </div>
