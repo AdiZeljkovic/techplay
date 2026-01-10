@@ -116,17 +116,11 @@ export default function CategoryThreadsPage() {
                             </div>
                         </div>
 
-                        {user ? (
+                        {user && (
                             <Link href={`/forum/create?category=${category.slug}`}>
                                 <Button>
                                     <Plus className="w-4 h-4" />
                                     New Thread
-                                </Button>
-                            </Link>
-                        ) : (
-                            <Link href="/login">
-                                <Button variant="outline">
-                                    Log in to Post
                                 </Button>
                             </Link>
                         )}
