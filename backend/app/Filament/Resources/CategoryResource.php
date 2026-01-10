@@ -50,6 +50,7 @@ class CategoryResource extends Resource
                                         'news' => 'News',
                                         'reviews' => 'Reviews',
                                         'tech' => 'Tech/Hardware',
+                                        'forum' => 'Forum',
                                     ])
                                     ->required(),
                                 Forms\Components\Select::make('parent_id')
@@ -82,6 +83,7 @@ class CategoryResource extends Resource
                         'news' => 'info',
                         'reviews' => 'success',
                         'tech' => 'warning',
+                        'forum' => 'danger',
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('parent.name')
@@ -96,7 +98,8 @@ class CategoryResource extends Resource
                     ->options([
                         'news' => 'News',
                         'reviews' => 'Reviews',
-                        'tech' => 'Tech',
+                        'tech' => 'Tech/Hardware',
+                        'forum' => 'Forum',
                     ]),
             ])
             ->actions([

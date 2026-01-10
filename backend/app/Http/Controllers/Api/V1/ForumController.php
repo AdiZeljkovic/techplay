@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\ForumCategory;
+use App\Models\Category;
 use App\Models\Thread;
 use App\Models\Post;
 use Illuminate\Http\Request;
@@ -16,10 +16,26 @@ class ForumController extends Controller
         // Cache for short duration to allow immediate updates during dev
         return \Illuminate\Support\Facades\Cache::remember('forum.categories', 5, function () {
             // Include latest thread logic inside cache
-            $categories = ForumCategory::orderBy('order')->withCount('threads')->get();
+            $categories = Category::where('type', 'forum')
+                ->whereNull('parent_id') // Get root categories (Lounge, Platforms, etc.)
+                ->with([
+                    'children' => function ($query) {
+                        $query->withCount('threads'); // Count threads in subcategories
+                    }
+                ])
+                ->orderBy('id') // Or order column if added, for now ID or Name
+                ->get();
 
-            $categories->each(function ($category) {
-                $category->latest_thread = $category->threads()->with('author')->latest()->first();
+            // We need to attach latest thread to subcategories usually, but let's stick to requested structure.
+            // The previous code did ForumCategory::orderBy('order').
+            // Let's iterate children to get stats.
+
+            $categories->each(function ($parent) {
+                if ($parent->children) {
+                    $parent->children->each(function ($child) {
+                        $child->latest_thread = $child->threads()->with('author')->latest()->first();
+                    });
+                }
             });
 
             return $categories;
@@ -32,7 +48,7 @@ class ForumController extends Controller
         $cacheKey = "forum.category.{$slug}.page_{$page}";
 
         $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($slug) {
-            $category = ForumCategory::where('slug', $slug)->firstOrFail();
+            $category = Category::where('slug', $slug)->where('type', 'forum')->firstOrFail();
 
             $threads = $category->threads()
                 ->with(['author', 'latestPost.author']) // Changed 'user' to 'author' to match existing relations
@@ -99,7 +115,7 @@ class ForumController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'category_id' => 'required|exists:forum_categories,id'
+            'category_id' => 'required|exists:categories,id'
         ]);
 
         $slug = \Illuminate\Support\Str::slug($request->title) . '-' . uniqid();
