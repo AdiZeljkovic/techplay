@@ -14,28 +14,43 @@ class ForumController extends Controller
 {
     public function categories()
     {
-        // Short cache to allow quick updates
-        return Cache::remember('forum.categories', 30, function () {
-            $categories = Category::where('type', 'forum')
-                ->whereNull('parent_id')
-                ->with([
-                    'children' => function ($query) {
-                        $query->withCount('threads');
-                    }
-                ])
-                ->orderBy('id')
-                ->get();
+        // No cache during debugging - will add back after fixes
+        // Get ALL forum categories
+        $allForumCategories = Category::where('type', 'forum')
+            ->withCount('threads')
+            ->orderBy('id')
+            ->get();
 
-            $categories->each(function ($parent) {
-                if ($parent->children) {
-                    $parent->children->each(function ($child) {
-                        $child->latest_thread = $child->threads()->with('author')->latest()->first();
-                    });
-                }
+        // Separate into parents and children
+        $parents = $allForumCategories->whereNull('parent_id');
+        $children = $allForumCategories->whereNotNull('parent_id');
+
+        // If there are no parent categories but there ARE forum categories,
+        // return them directly (flat structure)
+        if ($parents->isEmpty() && $allForumCategories->isNotEmpty()) {
+            // Flat structure - return all as-is
+            $allForumCategories->each(function ($cat) {
+                $cat->latest_thread = $cat->threads()->with('author')->latest()->first();
             });
+            return $allForumCategories->values();
+        }
 
-            return $categories;
+        // Hierarchical structure - attach children to parents
+        $parents->each(function ($parent) use ($children) {
+            $parent->children = $children->where('parent_id', $parent->id)->values();
+
+            // Add latest thread to each child
+            if ($parent->children) {
+                $parent->children->each(function ($child) {
+                    $child->latest_thread = $child->threads()->with('author')->latest()->first();
+                });
+            }
+
+            // Also add latest thread to parent if it has threads directly
+            $parent->latest_thread = $parent->threads()->with('author')->latest()->first();
         });
+
+        return $parents->values();
     }
 
     public function showCategory($slug)
