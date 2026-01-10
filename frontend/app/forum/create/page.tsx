@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import axios from "@/lib/axios";
@@ -18,7 +18,7 @@ interface Category {
     children?: Category[];
 }
 
-export default function CreateThreadPage() {
+function CreateThreadForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const preselectedCategory = searchParams.get("category");
@@ -216,5 +216,23 @@ export default function CreateThreadPage() {
                 </form>
             </div>
         </div>
+    );
+}
+
+// Loading fallback for Suspense
+function LoadingFallback() {
+    return (
+        <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+            <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+        </div>
+    );
+}
+
+// Main page component wrapped in Suspense
+export default function CreateThreadPage() {
+    return (
+        <Suspense fallback={<LoadingFallback />}>
+            <CreateThreadForm />
+        </Suspense>
     );
 }
