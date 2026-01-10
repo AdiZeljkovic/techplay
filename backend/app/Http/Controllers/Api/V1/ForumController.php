@@ -8,27 +8,23 @@ use App\Models\Thread;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class ForumController extends Controller
 {
     public function categories()
     {
-        // Cache for short duration to allow immediate updates during dev
-        return \Illuminate\Support\Facades\Cache::remember('forum.categories', 5, function () {
-            // Include latest thread logic inside cache
+        // Short cache to allow quick updates
+        return Cache::remember('forum.categories', 30, function () {
             $categories = Category::where('type', 'forum')
-                ->whereNull('parent_id') // Get root categories (Lounge, Platforms, etc.)
+                ->whereNull('parent_id')
                 ->with([
                     'children' => function ($query) {
-                        $query->withCount('threads'); // Count threads in subcategories
+                        $query->withCount('threads');
                     }
                 ])
-                ->orderBy('id') // Or order column if added, for now ID or Name
+                ->orderBy('id')
                 ->get();
-
-            // We need to attach latest thread to subcategories usually, but let's stick to requested structure.
-            // The previous code did ForumCategory::orderBy('order').
-            // Let's iterate children to get stats.
 
             $categories->each(function ($parent) {
                 if ($parent->children) {
@@ -47,14 +43,15 @@ class ForumController extends Controller
         $page = request()->get('page', 1);
         $cacheKey = "forum.category.{$slug}.page_{$page}";
 
-        $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($slug) {
+        // Reduced cache time to 30 seconds for faster updates
+        $data = Cache::remember($cacheKey, 30, function () use ($slug) {
             $category = Category::where('slug', $slug)->where('type', 'forum')->firstOrFail();
 
             $threads = $category->threads()
-                ->with(['author', 'latestPost.author']) // Changed 'user' to 'author' to match existing relations
+                ->with(['author', 'latestPost.author'])
                 ->withCount('posts')
-                ->orderBy('is_pinned', 'desc') // Kept original order by pinned
-                ->latest('updated_at') // Sort by latest activity
+                ->orderBy('is_pinned', 'desc')
+                ->latest('updated_at')
                 ->paginate(20);
 
             return [
@@ -103,9 +100,10 @@ class ForumController extends Controller
             'thread_id' => $thread->id
         ]);
 
-        $thread->touch(); // Update updated_at of thread
+        $thread->touch();
 
-        // TODO: Award reputation
+        // Clear thread cache
+        Cache::forget("forum.thread.{$slug}");
 
         return response()->json($post, 201);
     }
@@ -128,9 +126,19 @@ class ForumController extends Controller
             'author_id' => Auth::id()
         ]);
 
-        // Also create the first post if desired, or treat thread content as OP.
-        // For this implementation, thread has content.
+        // Clear all forum caches to show new thread immediately
+        Cache::forget('forum.categories');
+
+        // Get category slug to clear specific cache
+        $category = Category::find($request->category_id);
+        if ($category) {
+            // Clear first few pages of category cache
+            for ($i = 1; $i <= 5; $i++) {
+                Cache::forget("forum.category.{$category->slug}.page_{$i}");
+            }
+        }
 
         return response()->json($thread, 201);
     }
 }
+
