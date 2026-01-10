@@ -106,7 +106,7 @@ export default function CategoryThreadsPage() {
                                 className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xl"
                                 style={{ backgroundColor: `${color}20`, color: color }}
                             >
-                                {category.name.charAt(0)}
+                                {category.name?.charAt(0) || '#'}
                             </div>
                             <div>
                                 <h1 className="text-2xl font-bold text-[var(--text-primary)]">{category.name}</h1>
@@ -176,15 +176,15 @@ export default function CategoryThreadsPage() {
                                                 <div className="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
                                                     <div className="flex items-center gap-1.5">
                                                         <div className="w-5 h-5 rounded-full bg-[var(--bg-secondary)] overflow-hidden border border-[var(--border)]">
-                                                            {thread.author.avatar_url ? (
-                                                                <img src={thread.author.avatar_url} alt={thread.author.username} className="w-full h-full object-cover" />
+                                                            {thread.author?.avatar_url ? (
+                                                                <img src={thread.author.avatar_url} alt={thread.author?.username || 'User'} className="w-full h-full object-cover" />
                                                             ) : (
                                                                 <div className="w-full h-full flex items-center justify-center bg-[var(--accent)] text-[8px] font-bold text-white">
-                                                                    {thread.author.username.charAt(0)}
+                                                                    {thread.author?.username?.charAt(0) || '?'}
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        <span className="font-medium hover:text-[var(--text-primary)] transition-colors">{thread.author.username}</span>
+                                                        <span className="font-medium hover:text-[var(--text-primary)] transition-colors">{thread.author?.username || 'Unknown'}</span>
                                                     </div>
                                                     <span className="text-[var(--text-muted)]">•</span>
                                                     <span className="text-[var(--text-muted)]">
