@@ -21,7 +21,7 @@ export default function ForumSidebar() {
                                     <img src={user.avatar_url} alt={user.username} className="w-full h-full object-cover" />
                                 ) : (
                                     <span className="text-3xl font-bold text-[var(--accent)] uppercase">
-                                        {user.username.charAt(0)}
+                                        {user.username?.charAt(0) || '?'}
                                     </span>
                                 )}
                             </div>
@@ -34,7 +34,7 @@ export default function ForumSidebar() {
 
                         <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">{user.username}</h3>
                         <p className="text-sm text-[var(--text-secondary)] mb-4">
-                            Joined {format(new Date(user.created_at), "MMM yyyy")}
+                            Joined {user.created_at ? format(new Date(user.created_at), "MMM yyyy") : 'Unknown'}
                         </p>
 
                         <div className="grid grid-cols-2 gap-2 text-center text-sm py-3 border-t border-[var(--border)]">
