@@ -30,10 +30,10 @@ interface Thread {
 interface CategoryData {
     category: {
         id: number;
-        title: string;
+        name: string;
         slug: string;
         description?: string;
-        color: string;
+        // color: string; // Not in DB
     };
     threads: {
         data: Thread[];
@@ -41,10 +41,22 @@ interface CategoryData {
     };
 }
 
+const getCategoryColor = (slug: string) => {
+    switch (slug) {
+        case 'news-announcements': return '#3b82f6';
+        case 'general-gaming': return '#8b5cf6';
+        case 'hardware-tech': return '#10b981';
+        case 'game-reviews': return '#f59e0b';
+        case 'off-topic': return '#64748b';
+        default: return '#3b82f6';
+    }
+};
+
 export default function CategoryThreadsPage() {
     const params = useParams();
     const categorySlug = params.category as string;
     const { user } = useAuth();
+    const color = getCategoryColor(categorySlug);
 
     const { data, isLoading } = useSWR<CategoryData>(
         categorySlug ? `/forum/categories/${categorySlug}` : null,
@@ -92,12 +104,12 @@ export default function CategoryThreadsPage() {
                         <div className="flex items-center gap-4">
                             <div
                                 className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xl"
-                                style={{ backgroundColor: `${category.color}20`, color: category.color }}
+                                style={{ backgroundColor: `${color}20`, color: color }}
                             >
-                                {category.title.charAt(0)}
+                                {category.name.charAt(0)}
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-[var(--text-primary)]">{category.title}</h1>
+                                <h1 className="text-2xl font-bold text-[var(--text-primary)]">{category.name}</h1>
                                 {category.description && (
                                     <p className="text-sm text-[var(--text-secondary)]">{category.description}</p>
                                 )}
