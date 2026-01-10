@@ -264,7 +264,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-xl font-bold text-[var(--text-primary)]">
-                                            {article.author?.username?.charAt(0).toUpperCase()}
+                                            {article.author?.username?.charAt(0)?.toUpperCase() || '?'}
                                         </div>
                                     )}
                                 </div>
