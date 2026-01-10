@@ -34,4 +34,9 @@ class Category extends Model
     {
         return $this->hasMany(Article::class);
     }
+
+    public function threads()
+    {
+        return $this->hasMany(Thread::class);
+    }
 }
