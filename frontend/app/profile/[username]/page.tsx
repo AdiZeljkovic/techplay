@@ -142,7 +142,7 @@ export default function ProfilePage() {
                                     <img src={userData.avatar_url} alt={userData.username} className="w-full h-full object-cover" />
                                 ) : (
                                     <span className="text-5xl font-bold text-[var(--accent)]">
-                                        {userData.username.charAt(0).toUpperCase()}
+                                        {userData.username?.charAt(0)?.toUpperCase() || '?'}
                                     </span>
                                 )}
                             </div>

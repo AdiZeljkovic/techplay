@@ -171,7 +171,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                                     <Image src={user.avatar_url} alt={user.username} width={40} height={40} className="object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center font-bold text-[var(--accent)]">
-                                        {user?.username ? user.username.charAt(0).toUpperCase() : '?'}
+                                        {user?.username?.charAt(0)?.toUpperCase() || '?'}
                                     </div>
                                 )}
                             </div>
@@ -290,7 +290,7 @@ const CommentItem = ({
                             <Image src={comment.user.avatar_url} alt={comment.user.username} width={40} height={40} className="object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center font-bold text-[var(--accent)] text-lg">
-                                {comment.user?.username ? comment.user.username.charAt(0).toUpperCase() : '?'}
+                                {comment.user?.username?.charAt(0)?.toUpperCase() || '?'}
                             </div>
                         )}
                     </div>
