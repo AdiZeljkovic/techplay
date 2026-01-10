@@ -141,14 +141,14 @@ export default function ForumPage() {
                                                                     <div className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-2">Latest Activity</div>
                                                                     <div className="flex gap-3">
                                                                         <div className="w-8 h-8 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-muted)] text-xs border border-[var(--border)]">
-                                                                            {category.latest_thread.author.username.charAt(0)}
+                                                                            {category.latest_thread.author?.username?.charAt(0) || '?'}
                                                                         </div>
                                                                         <div className="flex-1 min-w-0">
                                                                             <div className="text-sm font-medium text-[var(--text-primary)] truncate group-hover:text-[var(--accent)] transition-colors">
                                                                                 {category.latest_thread.title}
                                                                             </div>
                                                                             <div className="text-xs text-[var(--text-secondary)] truncate">
-                                                                                by {category.latest_thread.author.username} • {formatDistanceToNow(new Date(category.latest_thread.created_at), { addSuffix: true })}
+                                                                                by {category.latest_thread.author?.username || 'Unknown'} • {formatDistanceToNow(new Date(category.latest_thread.created_at), { addSuffix: true })}
                                                                             </div>
                                                                         </div>
                                                                     </div>
