@@ -12,11 +12,11 @@ const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
 interface ForumCategory {
     id: number;
-    title: string;
+    name: string;
     slug: string;
     description?: string;
     icon?: string;
-    color: string;
+    // color: string; // Not in DB
     threads_count: number;
     latest_thread?: {
         title: string;
@@ -27,6 +27,17 @@ interface ForumCategory {
         };
     };
 }
+
+const getCategoryColor = (slug: string) => {
+    switch (slug) {
+        case 'news-announcements': return '#3b82f6'; // blue
+        case 'general-gaming': return '#8b5cf6'; // violet
+        case 'hardware-tech': return '#10b981'; // emerald
+        case 'game-reviews': return '#f59e0b'; // amber
+        case 'off-topic': return '#64748b'; // slate
+        default: return '#3b82f6';
+    }
+};
 
 const getCategoryIcon = (slug: string) => {
     switch (slug) {
@@ -66,19 +77,21 @@ export default function ForumPage() {
                             <div className="grid grid-cols-1 gap-4">
                                 {categories.map((category) => {
                                     const Icon = getCategoryIcon(category.slug);
+                                    const color = getCategoryColor(category.slug);
+
                                     return (
                                         <Link key={category.id} href={`/forum/${category.slug}`}>
                                             <div
                                                 className="group relative bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                                                 style={{
-                                                    borderLeft: `4px solid ${category.color}`,
+                                                    borderLeft: `4px solid ${color}`,
                                                 }}
                                             >
                                                 {/* Dynamic Hover Glow */}
                                                 <div
                                                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                                                     style={{
-                                                        background: `linear-gradient(90deg, ${category.color}10 0%, transparent 100%)`,
+                                                        background: `linear-gradient(90deg, ${color}10 0%, transparent 100%)`,
                                                     }}
                                                 />
 
@@ -87,16 +100,16 @@ export default function ForumPage() {
                                                         <div
                                                             className="w-16 h-16 rounded-2xl flex-shrink-0 flex items-center justify-center text-3xl shadow-lg transition-transform duration-300 group-hover:scale-110"
                                                             style={{
-                                                                backgroundColor: `${category.color}`,
+                                                                backgroundColor: `${color}`,
                                                                 color: '#ffffff',
-                                                                boxShadow: `0 8px 16px -4px ${category.color}60`
+                                                                boxShadow: `0 8px 16px -4px ${color}60`
                                                             }}
                                                         >
                                                             <Icon className="w-8 h-8" />
                                                         </div>
                                                         <div>
                                                             <h3 className="text-xl font-bold text-[var(--text-primary)] mb-1 group-hover:text-[var(--accent)] transition-colors">
-                                                                {category.title}
+                                                                {category.name}
                                                             </h3>
                                                             {category.description && (
                                                                 <p className="text-[var(--text-secondary)] text-sm mb-0 line-clamp-1 max-w-xl">
