@@ -47,6 +47,11 @@ Route::prefix('v1')->group(function () {
         // I will remove logic for Plans.
 
         // Support Plans
+        // Forum (Authenticated)
+        Route::post('/forum/threads', [App\Http\Controllers\Api\V1\ForumController::class, 'createThread']);
+        Route::post('/forum/threads/{slug}/posts', [App\Http\Controllers\Api\V1\ForumController::class, 'createPost']);
+
+        // Support Plans
         Route::post('/support/create-plan', [App\Http\Controllers\Api\V1\SupportController::class, 'createPlan']);
         Route::post('/support/pledge', [App\Http\Controllers\Api\V1\SupportController::class, 'pledge']);
     });
