@@ -31,7 +31,8 @@ class UserResource extends JsonResource
             }),
             'is_staff' => $this->hasRole(['admin', 'editor']),
             'next_rank' => $this->when(isset($this->next_rank), $this->next_rank),
-            // 'created_at' => $this->created_at, // Optional, maybe human readable?
+            'forum_reputation' => $this->forum_reputation ?? 0,
+            'created_at' => $this->created_at,
         ];
     }
 }

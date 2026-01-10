@@ -44,7 +44,7 @@ interface CategoryData {
 export default function CategoryThreadsPage() {
     const params = useParams();
     const categorySlug = params.category as string;
-    const { user } = useAuth({ middleware: 'guest' });
+    const { user } = useAuth();
 
     const { data, isLoading } = useSWR<CategoryData>(
         categorySlug ? `/forum/categories/${categorySlug}` : null,
