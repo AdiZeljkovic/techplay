@@ -125,35 +125,50 @@ class ForumController extends Controller
 
     public function createThread(Request $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'category_id' => 'required|exists:categories,id'
+        \Illuminate\Support\Facades\Log::info('createThread called', [
+            'data' => $request->all(),
+            'user_id' => Auth::id()
         ]);
 
-        $slug = \Illuminate\Support\Str::slug($request->title) . '-' . uniqid();
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'content' => 'required|string',
+                'category_id' => 'required|exists:categories,id'
+            ]);
 
-        $thread = Thread::create([
-            'title' => $request->title,
-            'slug' => $slug,
-            'content' => $request->content,
-            'category_id' => $request->category_id,
-            'author_id' => Auth::id()
-        ]);
+            $slug = \Illuminate\Support\Str::slug($request->title) . '-' . uniqid();
 
-        // Clear all forum caches to show new thread immediately
-        Cache::forget('forum.categories');
+            $thread = Thread::create([
+                'title' => $request->title,
+                'slug' => $slug,
+                'content' => $request->content,
+                'category_id' => $request->category_id,
+                'author_id' => Auth::id()
+            ]);
 
-        // Get category slug to clear specific cache
-        $category = Category::find($request->category_id);
-        if ($category) {
-            // Clear first few pages of category cache
-            for ($i = 1; $i <= 5; $i++) {
-                Cache::forget("forum.category.{$category->slug}.page_{$i}");
+            \Illuminate\Support\Facades\Log::info('Thread created successfully', ['id' => $thread->id]);
+
+            // Clear all forum caches to show new thread immediately
+            Cache::forget('forum.categories');
+
+            // Get category slug to clear specific cache
+            $category = Category::find($request->category_id);
+            if ($category) {
+                // Clear first few pages of category cache
+                for ($i = 1; $i <= 5; $i++) {
+                    Cache::forget("forum.category.{$category->slug}.page_{$i}");
+                }
             }
-        }
 
-        return response()->json($thread, 201);
+            return response()->json($thread, 201);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to create thread: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            return response()->json(['message' => 'Failed to create thread. ' . $e->getMessage()], 500);
+        }
     }
 }
-
