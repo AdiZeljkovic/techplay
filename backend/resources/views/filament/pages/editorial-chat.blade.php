@@ -89,7 +89,7 @@
 
         <!-- Main Chat Area -->
         <div style="flex: 1; display: flex; flex-direction: column; background-color: #f8fafc; min-width: 0;"
-            wire:poll.3s>
+            wire:poll.5s data-last-message-id="{{ $this->messages->first()?->id }}">
 
             <!-- Context Header -->
             <div
@@ -137,6 +137,27 @@
                 </div>
             </div>
 
+            <!-- Pinned Messages Section -->
+            @if($this->activeChannel && $this->pinnedMessages->count() > 0)
+                <div
+                    style="background-color: #fffbeb; border-bottom: 1px solid #fcd34d; padding: 10px 24px; display: flex; align-items: flex-start; gap: 10px; font-size: 0.85rem; color: #92400e;">
+                    <span style="font-size: 1rem;">📌</span>
+                    <div style="flex: 1;">
+                        <div
+                            style="font-weight: bold; margin-bottom: 4px; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em;">
+                            Pinned Messages</div>
+                        @foreach($this->pinnedMessages as $pinned)
+                            <div
+                                style="margin-bottom: 4px; display: flex; justify-content: space-between; align-items: flex-start; group">
+                                <span><b>{{ $pinned->user->name }}:</b> {{ Str::limit($pinned->content, 60) }}</span>
+                                <button wire:click="unpinMessage({{ $pinned->id }})"
+                                    style="color: #b45309; font-size: 0.7rem; cursor: pointer; border: none; background: none; text-decoration: underline;">Unpin</button>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             <!-- Messages Stream -->
             <div
                 style="flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column-reverse; gap: 20px;">
@@ -145,8 +166,8 @@
                         $isMe = $msg->user_id === auth()->id();
                         $roleBadge = $this->getUserRoleBadge($msg->user);
                     @endphp
-                    <div
-                        style="display: flex; gap: 16px; align-items: flex-start; {{ $isMe ? 'flex-direction: row-reverse;' : '' }}">
+                    <div style="display: flex; gap: 16px; align-items: flex-start; {{ $isMe ? 'flex-direction: row-reverse;' : '' }} group"
+                        x-data="{ showActions: false }" @mouseenter="showActions = true" @mouseleave="showActions = false">
                         <!-- Avatar -->
                         <div
                             style="width: 40px; height: 40px; border-radius: 8px; background-color: {{ $msg->user_id % 2 == 0 ? '#3b82f6' : '#8b5cf6' }}; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -169,7 +190,9 @@
                                     {{ $msg->created_at->format('H:i') }}
                                 </span>
                             </div>
-                            <div style="
+
+                            <div style="position: relative;">
+                                <div style="
                                         padding: 12px 16px; 
                                         border-radius: 12px; 
                                         background-color: {{ $isMe ? '#3b82f6' : 'white' }}; 
@@ -180,28 +203,43 @@
                                         line-height: 1.5;
                                         overflow-wrap: break-word;
                                     ">
-                                @if($msg->attachment_url)
-                                    <div style="margin-bottom: 8px;">
-                                        @if(Str::endsWith($msg->attachment_url, ['.jpg', '.jpeg', '.png', '.gif', '.webp']))
-                                            <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank">
-                                                <img src="{{ asset('storage/' . $msg->attachment_url) }}"
-                                                    style="max-width: 100%; border-radius: 8px; max-height: 200px; object-fit: cover;" />
-                                            </a>
-                                        @else
-                                            <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank"
-                                                style="display: flex; align-items: center; gap: 8px; padding: 8px; background-color: rgba(0,0,0,0.1); border-radius: 6px; color: inherit; text-decoration: none;">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                                                </svg>
-                                                <span style="font-size: 0.85rem; text-decoration: underline;">Available
-                                                    Attachment</span>
-                                            </a>
-                                        @endif
-                                    </div>
-                                @endif
-                                {!! $this->formatMessageContent($msg->content) !!}
+                                    @if($msg->attachment_url)
+                                        <div style="margin-bottom: 8px;">
+                                            @if(Str::endsWith($msg->attachment_url, ['.jpg', '.jpeg', '.png', '.gif', '.webp']))
+                                                <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank">
+                                                    <img src="{{ asset('storage/' . $msg->attachment_url) }}"
+                                                        style="max-width: 100%; border-radius: 8px; max-height: 200px; object-fit: cover;" />
+                                                </a>
+                                            @else
+                                                <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank"
+                                                    style="display: flex; align-items: center; gap: 8px; padding: 8px; background-color: rgba(0,0,0,0.1); border-radius: 6px; color: inherit; text-decoration: none;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                                    </svg>
+                                                    <span style="font-size: 0.85rem; text-decoration: underline;">Attachment</span>
+                                                </a>
+                                            @endif
+                                        </div>
+                                    @endif
+
+                                    {!! $this->formatMessageContent($msg->content) !!}
+                                </div>
+
+                                <!-- Message Actions (Hover) -->
+                                <div x-show="showActions"
+                                    style="position: absolute; top: -10px; {{ $isMe ? 'left: -30px;' : 'right: -30px;' }} background: white; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 4px; display: flex; flex-direction: column; z-index: 10;"
+                                    x-transition>
+                                    @if(!$msg->is_pinned && $this->activeChannel)
+                                        <button wire:click="pinMessage({{ $msg->id }})" title="Pin Message"
+                                            style="padding: 4px; border: none; background: transparent; cursor: pointer; color: #64748b;">📌</button>
+                                    @endif
+                                    @can('update', \App\Models\Task::class)
+                                        <button wire:click="createTaskFromMessage({{ $msg->id }})" title="Create Task"
+                                            style="padding: 4px; border: none; background: transparent; cursor: pointer; color: #64748b;">✅</button>
+                                    @endcan
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -230,11 +268,29 @@
                     </div>
                 @endif
 
-                <form wire:submit="sendMessage" style="position: relative;">
+                <form wire:submit="sendMessage" style="position: relative;" x-data="{ 
+                    showEmojis: false,
+                    insertEmoji(emoji) {
+                        $wire.set('message', $wire.message + emoji);
+                        this.showEmojis = false;
+                        $refs.messageInput.focus();
+                    }
+                }">
+                    <!-- Emoji Picker (Dropdown) -->
+                    <div x-show="showEmojis" @click.away="showEmojis = false"
+                        style="position: absolute; bottom: 100%; left: 0; margin-bottom: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); padding: 10px; width: 300px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; z-index: 50;"
+                        x-transition>
+                        @foreach(['😀', '😂', '😍', '😎', '🤔', '😅', '😭', '👍', '👎', '🔥', '❤️', '🎉', '🚀', '👀', '✅', '❌', '🛑', '⚠️', '📢', '🎮', '⚽', '🎲', '🎵', '🍔'] as $emoji)
+                            <button type="button" @click="insertEmoji('{{ $emoji }}')"
+                                style="font-size: 1.25rem; padding: 4px; cursor: pointer; border: none; background: transparent; border-radius: 4px;"
+                                class="hover:bg-slate-100">{{ $emoji }}</button>
+                        @endforeach
+                    </div>
+
                     <div
                         style="border: 1px solid #cbd5e1; border-radius: 12px; overflow: hidden; background-color: white; transition: box-shadow 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
 
-                        <input type="text" wire:model="message"
+                        <input type="text" wire:model="message" x-ref="messageInput"
                             style="width: 100%; border: none; padding: 16px; font-size: 0.95rem; outline: none; background: white; color: #0f172a;"
                             placeholder="Type a message... Use @ to mention" autofocus autocomplete="off" />
 
@@ -244,7 +300,7 @@
                                 <!-- File Upload Button -->
                                 <label for="file-upload"
                                     style="cursor: pointer; color: #64748b; display: flex; align-items: center; padding: 4px; border-radius: 4px; transition: background 0.2s;"
-                                    class="hover:bg-slate-200">
+                                    class="hover:bg-slate-200" title="Attach File">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -253,11 +309,16 @@
                                 </label>
                                 <input type="file" id="file-upload" wire:model="attachment" style="display: none;" />
 
-                                <!-- Formatting Hints -->
-                                <div
-                                    style="display: flex; gap: 10px; font-size: 0.75rem; color: #64748b; border-left: 1px solid #cbd5e1; padding-left: 12px;">
-                                    <span><b>Markdown</b> supported</span>
-                                </div>
+                                <!-- Emoji Button -->
+                                <button type="button" @click="showEmojis = !showEmojis"
+                                    style="cursor: pointer; color: #64748b; border: none; background: transparent; display: flex; align-items: center; padding: 4px; border-radius: 4px; transition: background 0.2s;"
+                                    class="hover:bg-slate-200" title="Insert Emoji">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </button>
                             </div>
 
                             <button type="submit"
@@ -276,3 +337,35 @@
         </div>
     </div>
 </x-filament-panels::page>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+            Notification.requestPermission();
+        }
+
+        let lastMessageId = "{{ $this->messages->first()?->id }}";
+
+        setInterval(() => {
+            const el = document.querySelector('[data-last-message-id]');
+            if (!el) return;
+            
+            const newMessageId = el.getAttribute('data-last-message-id');
+            if (newMessageId && newMessageId != lastMessageId) {
+                lastMessageId = newMessageId;
+                
+                // Play sound
+                const audio = new Audio('https://inv.tux.Pizza/preview/1029/30ss.mp3'); // Simple notification sound placeholder or local asset
+                // audio.play().catch(e => console.log('Audio play failed', e));
+
+                // Show notification
+                if (Notification.permission === "granted" && document.hidden) {
+                    new Notification("TechPlay Redakcija", {
+                        body: "Nova poruka u chatu!",
+                        icon: "/images/logo.png" 
+                    });
+                }
+            }
+        }, 2000);
+    });
+</script>

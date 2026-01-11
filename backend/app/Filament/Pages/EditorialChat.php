@@ -3,7 +3,10 @@
 namespace App\Filament\Pages;
 
 use App\Models\EditorialMessage;
+use App\Models\Task;
 use App\Models\User;
+use App\Filament\Resources\Tasks\TaskResource;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Str;
 use Livewire\WithFileUploads;
@@ -220,6 +223,60 @@ class EditorialChat extends Page
         return ['color' => '#6b7280', 'short' => '?'];
     }
 
+    public function getPinnedMessagesProperty()
+    {
+        if (!$this->activeChannel)
+            return collect();
+
+        return EditorialMessage::with('user')
+            ->where('channel', $this->activeChannel)
+            ->where('is_pinned', true)
+            ->latest()
+            ->get();
+    }
+
+    public function pinMessage($messageId)
+    {
+        $message = EditorialMessage::find($messageId);
+        if ($message && ($message->channel === $this->activeChannel)) {
+            $message->update(['is_pinned' => true]);
+            Notification::make()->title('Message pinned')->success()->send();
+        }
+    }
+
+    public function unpinMessage($messageId)
+    {
+        $message = EditorialMessage::find($messageId);
+        if ($message) {
+            $message->update(['is_pinned' => false]);
+            Notification::make()->title('Message unpinned')->success()->send();
+        }
+    }
+
+    public function createTaskFromMessage($messageId)
+    {
+        $message = EditorialMessage::find($messageId);
+        if (!$message)
+            return;
+
+        $task = Task::create([
+            'title' => 'Task from Chat: ' . Str::limit($message->content, 30),
+            'description' => "Source: Editorial Chat\nFrom: {$message->user->name}\n\n" . $message->content,
+            'status' => 'pending',
+            'priority' => 'medium',
+            'created_by' => auth()->id(),
+            'assigned_to' => $this->activeRecipient ?? null, // Assign to DM recipient if in DM
+        ]);
+
+        Notification::make()
+            ->title('Task Created')
+            ->body('Redirecting to task details...')
+            ->success()
+            ->send();
+
+        return redirect()->to(TaskResource::getUrl('edit', ['record' => $task->id]));
+    }
+
     public function formatMessageContent(string $content): string
     {
         // Highlight @mentions
@@ -229,20 +286,39 @@ class EditorialChat extends Page
             e($content)
         );
 
-        // Parse article links: /link:ID
+        // Parse article links: /link:ID or techplay.gg/news/slug
+        // 1. /link:123 syntax
         $content = preg_replace_callback(
             '/\/link:(\d+)/',
             function ($matches) {
-                $articleId = $matches[1];
-                $article = \App\Models\Article::find($articleId);
-                if ($article) {
-                    return '<a href="/admin/articles/' . $articleId . '/edit" style="color: #8b5cf6; text-decoration: underline;" target="_blank">📄 ' . e(Str::limit($article->title, 30)) . '</a>';
-                }
-                return $matches[0];
+                return $this->renderArticlePreview($matches[1]);
             },
             $content
         );
 
         return $content;
+    }
+
+    protected function renderArticlePreview($articleId)
+    {
+        $article = \App\Models\Article::find($articleId);
+        if (!$article)
+            return '';
+
+        $editUrl = "/admin/articles/{$article->id}/edit";
+        $statusColor = $article->status === 'published' ? '#22c55e' : '#eab308';
+
+        return '
+            <div style="margin-top: 8px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background-color: #f8fafc; display: flex; max-width: 400px;">
+                ' . ($article->featured_image_url ? '<div style="width: 80px; background-image: url(' . asset('storage/' . $article->featured_image_url) . '); background-size: cover; background-position: center;"></div>' : '') . '
+                <div style="padding: 10px; flex: 1;">
+                    <div style="font-weight: bold; font-size: 0.9rem; color: #0f172a; margin-bottom: 4px;">' . e($article->title) . '</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background-color: ' . $statusColor . '20; color: ' . $statusColor . '; border: 1px solid ' . $statusColor . '40; text-transform: uppercase;">' . e($article->status) . '</span>
+                        <a href="' . $editUrl . '" target="_blank" style="font-size: 0.8rem; color: #3b82f6; font-weight: bold; text-decoration: none;">Ediit -></a>
+                    </div>
+                </div>
+            </div>
+        ';
     }
 }
