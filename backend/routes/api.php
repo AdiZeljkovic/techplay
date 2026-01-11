@@ -134,5 +134,4 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->post('/comments/{id}/like', [App\Http\Controllers\Api\V1\CommentController::class, 'like']);
 });
 
-// DEBUG ROUTE - REMOVE AFTER TESTING
-Route::get('/debug/threads', [App\Http\Controllers\Api\Debug\DebugThreadsController::class, 'index']);
+
