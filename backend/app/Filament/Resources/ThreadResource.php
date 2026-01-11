@@ -6,7 +6,7 @@ use App\Filament\Resources\ThreadResource\Pages\CreateThread;
 use App\Filament\Resources\ThreadResource\Pages\EditThread;
 use App\Filament\Resources\ThreadResource\Pages\ListThreads;
 use App\Filament\Resources\ThreadResource\Schemas\ThreadForm;
-use App\Filament\Resources\ThreadResource\Tables\ThreadsTable;
+
 use App\Models\Thread;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -35,7 +35,39 @@ class ThreadResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return ThreadsTable::configure($table);
+        return $table
+            ->columns([
+                \Filament\Tables\Columns\TextColumn::make('title')
+                    ->searchable()
+                    ->sortable(),
+                \Filament\Tables\Columns\TextColumn::make('category.name')
+                    ->label('Category')
+                    ->sortable(),
+                \Filament\Tables\Columns\TextColumn::make('author.username')
+                    ->label('Author')
+                    ->sortable(),
+                \Filament\Tables\Columns\IconColumn::make('is_pinned')
+                    ->boolean(),
+                \Filament\Tables\Columns\IconColumn::make('is_locked')
+                    ->boolean(),
+                \Filament\Tables\Columns\TextColumn::make('view_count')
+                    ->sortable(),
+                \Filament\Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                //
+            ])
+            ->actions([
+                \Filament\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
     }
 
     public static function getRelations(): array
