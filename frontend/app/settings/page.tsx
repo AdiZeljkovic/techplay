@@ -23,6 +23,8 @@ export default function SettingsPage() {
     const [displayName, setDisplayName] = useState(user?.display_name || "");
     const [gamertags, setGamertags] = useState(user?.gamertags || {});
     const [specs, setSpecs] = useState(user?.pc_specs || {});
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar_url || null);
 
     // Sync state when user loads
     if (user) {
@@ -30,26 +32,56 @@ export default function SettingsPage() {
         if (displayName === "" && user.display_name) setDisplayName(user.display_name);
         if (Object.keys(gamertags).length === 0 && user.gamertags) setGamertags(user.gamertags);
         if (Object.keys(specs).length === 0 && user.pc_specs) setSpecs(user.pc_specs);
+        // Only set preview if not already set by file selection
+        if (!avatarPreview && user.avatar_url) setAvatarPreview(user.avatar_url);
     }
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setAvatarFile(file);
+            setAvatarPreview(URL.createObjectURL(file));
+        }
+    };
 
     const handleSave = async () => {
         setSaving(true);
         try {
-            await axios.put('/user/profile', {
-                bio,
-                display_name: displayName,
-                gamertags,
-                pc_specs: specs
+            const formData = new FormData();
+            formData.append('_method', 'PUT'); // Trick for Laravel to handle PUT with files
+            formData.append('bio', bio);
+            formData.append('display_name', displayName);
+
+            // Append Gamertags
+            Object.keys(gamertags).forEach(key => {
+                if (gamertags[key]) formData.append(`gamertags[${key}]`, gamertags[key]);
             });
+
+            // Append Specs
+            Object.keys(specs).forEach(key => {
+                if (specs[key]) formData.append(`pc_specs[${key}]`, specs[key]);
+            });
+
+            if (avatarFile) {
+                formData.append('avatar', avatarFile);
+            }
+
+            // Using POST to /user/profile with _method: PUT
+            await axios.post('/user/profile', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
             // Revalidate SWR cache for profile page if needed
             if (user?.username) {
                 mutate(`/users/${user.username}`);
             }
             alert('Settings saved successfully!');
             router.refresh();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to save settings", error);
-            alert("Failed to save settings.");
+            // Show specific error if available
+            const msg = error.response?.data?.message || "Failed to save settings.";
+            alert(msg);
         } finally {
             setSaving(false);
         }
@@ -139,6 +171,41 @@ export default function SettingsPage() {
                                     <p className="text-xs text-[var(--text-muted)] mt-1 text-right">
                                         {bio.length}/500 characters
                                     </p>
+                                </div>
+
+                                {/* Avatar Upload */}
+                                <div className="pt-4 border-t border-[var(--border)]">
+                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-4">
+                                        Profile Picture via Upload
+                                    </label>
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-[var(--border)] bg-[var(--bg-elevated)]">
+                                            {avatarPreview ? (
+                                                <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)]">
+                                                    <User className="w-8 h-8" />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleFileChange}
+                                                className="block w-full text-sm text-[var(--text-muted)]
+                                                  file:mr-4 file:py-2 file:px-4
+                                                  file:rounded-full file:border-0
+                                                  file:text-sm file:font-semibold
+                                                  file:bg-[var(--accent)] file:text-black
+                                                  hover:file:bg-[var(--accent)]/90
+                                                  cursor-pointer"
+                                            />
+                                            <p className="text-xs text-[var(--text-muted)] mt-2">
+                                                JPG, PNG or WEBP. Max 2MB.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}

@@ -194,7 +194,7 @@ class AuthController extends Controller
 
         $validated = $request->validate([
             'bio' => 'nullable|string|max:500',
-            'display_name' => 'nullable|string|max:50|alpha_dash',
+            'display_name' => 'nullable|string|max:50', // Removed alpha_dash to allow spaces
             'gamertags' => 'nullable|array',
             'gamertags.steam' => 'nullable|string|max:255',
             'gamertags.epic' => 'nullable|string|max:255',
