@@ -18,6 +18,11 @@ class ThreadResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'title';
 
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()->withoutGlobalScopes();
+    }
+
     public static function getNavigationGroup(): ?string
     {
         return 'Community';
