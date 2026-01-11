@@ -60,7 +60,13 @@ class ForumController extends Controller
 
         // Reduced cache time to 30 seconds for faster updates
         $data = Cache::remember($cacheKey, 30, function () use ($slug) {
-            $category = Category::where('slug', $slug)->where('type', 'forum')->firstOrFail();
+            \Illuminate\Support\Facades\Log::info("Fetching category with slug: " . $slug);
+            $category = Category::where('slug', $slug)->where('type', 'forum')->first();
+
+            if (!$category) {
+                \Illuminate\Support\Facades\Log::error("Category not found for slug: " . $slug);
+                abort(404, 'Category not found');
+            }
 
             $threads = $category->threads()
                 ->with(['author', 'latestPost.author'])
