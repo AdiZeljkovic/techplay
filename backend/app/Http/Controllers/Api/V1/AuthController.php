@@ -51,11 +51,12 @@ class AuthController extends Controller
             \Log::warning('Failed to send verification email: ' . $e->getMessage());
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // Do NOT create token yet - force login after verification
+        // $token = $user->createToken('auth_token')->plainTextToken;
 
         return $this->created([
             'user' => $user,
-            'access_token' => $token,
+            'access_token' => null, // No token until verified
             'requires_verification' => true,
         ], 'User registered successfully. Please verify your email.');
     }
@@ -89,13 +90,20 @@ class AuthController extends Controller
         // Check email verification
         $requiresVerification = !$user->hasVerifiedEmail();
 
+        if ($requiresVerification) {
+            return $this->success([
+                'access_token' => null, // No token
+                'requires_verification' => true,
+            ], 'Please verify your email address.');
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return $this->success([
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => new \App\Http\Resources\V1\UserResource($user),
-            'requires_verification' => $requiresVerification,
+            'requires_verification' => false,
         ], 'Login successful');
     }
 
