@@ -187,6 +187,10 @@ class GuideResource extends Resource
                         'advanced' => 'danger',
                         default => 'gray',
                     }),
+                TextColumn::make('views')
+                    ->numeric()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),

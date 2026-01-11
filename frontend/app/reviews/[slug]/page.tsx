@@ -102,6 +102,10 @@ export async function generateMetadata(
     };
 }
 
+import ArticleViewTracker from "@/components/tracking/ArticleViewTracker";
+
+// ... existing imports
+
 export default async function ReviewSlugPage({ params }: Props) {
     const { slug } = await params;
 
@@ -113,20 +117,16 @@ export default async function ReviewSlugPage({ params }: Props) {
         return <ReviewsCategoryView categorySlug={category.slug} />;
     }
 
-    // Fetch review data server side for initial render (optional, but good for SEO HTML)
-    // Note: ReviewDetailView might fetch again or use passed prop.
-    // I refactored ReviewDetailView to accept `review` prop and it does NOT fetch internally anymore.
-    // Wait, let's verify ReviewDetailView.tsx Content...
-    // I copied ReviewDetailView logic... but the original `ReviewDetailView` in page.tsx fetched data!
-    // My new `ReviewDetailView` (and ArticleDetailView) accepts `review`/`article` as PROP.
-    // But does it FETCH? 
-    // Let's check the code I wrote for them.
-
     const review = await getReview(slug);
 
     if (!review) {
         notFound();
     }
 
-    return <ReviewDetailView review={review} />;
+    return (
+        <>
+            <ArticleViewTracker slug={slug} />
+            <ReviewDetailView review={review} />
+        </>
+    );
 }

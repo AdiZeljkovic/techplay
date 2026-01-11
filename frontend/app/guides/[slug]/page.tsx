@@ -51,6 +51,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
 }
 
+import ArticleViewTracker from "@/components/tracking/ArticleViewTracker";
+
+// ... existing imports
+
 export default async function GuidePage({ params }: Props) {
     const { slug } = await params;
     const data = await getGuide(slug);
@@ -59,5 +63,10 @@ export default async function GuidePage({ params }: Props) {
         return notFound();
     }
 
-    return <GuideDetailView guide={data.guide} userVote={data.user_vote} />;
+    return (
+        <>
+            <ArticleViewTracker slug={slug} />
+            <GuideDetailView guide={data.guide} userVote={data.user_vote} />
+        </>
+    );
 }
