@@ -14,26 +14,35 @@ class RankSeeder extends Seeder
     public function run(): void
     {
         $ranks = [
-            ['name' => 'AFK', 'min_reputation' => 0, 'color' => '#808080'],
-            ['name' => 'Respawning', 'min_reputation' => 50, 'color' => '#9e9e9e'],
-            ['name' => 'NPC', 'min_reputation' => 150, 'color' => '#b0bec5'],
-            ['name' => 'Loot Goblin', 'min_reputation' => 300, 'color' => '#81c784'],
-            ['name' => 'Side Kick', 'min_reputation' => 500, 'color' => '#66bb6a'],
-            ['name' => 'Main Character', 'min_reputation' => 800, 'color' => '#4caf50'],
-            ['name' => 'Level 10 Crook', 'min_reputation' => 1200, 'color' => '#4db6ac'],
-            ['name' => 'Speedrunner', 'min_reputation' => 2000, 'color' => '#26a69a'],
-            ['name' => 'Achievement Hunter', 'min_reputation' => 3000, 'color' => '#009688'],
-            ['name' => 'Miniboss', 'min_reputation' => 4500, 'color' => '#00bcd4'],
-            ['name' => 'Dungeon Master', 'min_reputation' => 6000, 'color' => '#00acc1'],
-            ['name' => 'Boss', 'min_reputation' => 8000, 'color' => '#039be5'],
-            ['name' => 'Final Boss', 'min_reputation' => 12000, 'color' => '#0288d1'],
-            ['name' => 'Radiant', 'min_reputation' => 16000, 'color' => '#1e88e5'],
-            ['name' => 'Global Elite', 'min_reputation' => 22000, 'color' => '#1565c0'],
-            ['name' => 'Grandmaster', 'min_reputation' => 30000, 'color' => '#d32f2f'],
-            ['name' => 'Challenger', 'min_reputation' => 40000, 'color' => '#c62828'],
-            ['name' => 'Legend', 'min_reputation' => 55000, 'color' => '#b71c1c'],
-            ['name' => 'Immortal', 'min_reputation' => 75000, 'color' => '#ffeb3b'], // Gold/Yellow
-            ['name' => 'God Mode', 'min_reputation' => 100000, 'color' => '#ffd700'], // Gold
+            // Tier 1: Casual / Starter (0 - 900 XP)
+            ['name' => 'Noob', 'min_xp' => 0, 'color' => '#808080'],
+            ['name' => 'Newbie', 'min_xp' => 100, 'color' => '#909090'],
+            ['name' => 'Rookie', 'min_xp' => 300, 'color' => '#a0a0a0'],
+            ['name' => 'Bronze', 'min_xp' => 600, 'color' => '#cd7f32'],
+
+            // Tier 2: Learner (1000 - 4000 XP)
+            ['name' => 'Silver', 'min_xp' => 1000, 'color' => '#c0c0c0'],
+            ['name' => 'Gold', 'min_xp' => 2000, 'color' => '#ffd700'],
+            ['name' => 'Platinum', 'min_xp' => 3500, 'color' => '#e5e4e2'],
+            ['name' => 'Diamond', 'min_xp' => 5000, 'color' => '#b9f2ff'],
+
+            // Tier 3: Skilled (7000 - 15000 XP)
+            ['name' => 'Master', 'min_xp' => 7500, 'color' => '#9c27b0'],
+            ['name' => 'Grandmaster', 'min_xp' => 10000, 'color' => '#d500f9'],
+            ['name' => 'Challenger', 'min_xp' => 15000, 'color' => '#ff1744'],
+            ['name' => 'Elite', 'min_xp' => 20000, 'color' => '#ff5252'],
+
+            // Tier 4: Pro (25000 - 60000 XP)
+            ['name' => 'Veteran', 'min_xp' => 30000, 'color' => '#ff6d00'],
+            ['name' => 'Legendary', 'min_xp' => 45000, 'color' => '#ff9100'],
+            ['name' => 'Mythic', 'min_xp' => 60000, 'color' => '#ffcc00'],
+            ['name' => 'Immortal', 'min_xp' => 80000, 'color' => '#ffe57f'],
+
+            // Tier 5: God Tier (100k+ XP)
+            ['name' => 'Radiant', 'min_xp' => 100000, 'color' => '#00e5ff'],
+            ['name' => 'Global Elite', 'min_xp' => 150000, 'color' => '#2979ff'],
+            ['name' => 'Ascendant', 'min_xp' => 250000, 'color' => '#3d5afe'],
+            ['name' => 'God of Gaming', 'min_xp' => 500000, 'color' => '#651fff'], // Ultimate Rank
         ];
 
         foreach ($ranks as $rank) {
