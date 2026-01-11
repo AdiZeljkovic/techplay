@@ -12,6 +12,7 @@ import TableOfContents from "@/components/ui/TableOfContents";
 import AdUnit from "@/components/ads/AdUnit";
 import CommentsSection from "@/components/comments/CommentsSection";
 import DOMPurify from "isomorphic-dompurify";
+import LiveViewCount from "@/components/tracking/LiveViewCount";
 
 interface ArticleDetailViewProps {
     article: Article;
@@ -172,7 +173,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 <span className="text-xs text-white/60">Read Time</span>
                             </div>
 
-                            import LiveViewCount from "@/components/tracking/LiveViewCount";
+
 
                             // ... inside component
 
