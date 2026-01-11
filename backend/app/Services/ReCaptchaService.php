@@ -12,7 +12,7 @@ class ReCaptchaService
 
     public function __construct()
     {
-        $this->secretKey = config('services.recaptcha.secret_key', env('RECAPTCHA_SECRET_KEY'));
+        $this->secretKey = config('services.recaptcha.secret_key') ?? env('RECAPTCHA_SECRET_KEY') ?? '';
         $this->minScore = 0.5; // Threshold score (0.0 - 1.0)
     }
 
