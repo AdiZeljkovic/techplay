@@ -44,7 +44,9 @@ class VerificationController extends Controller
             event(new Verified($user));
         }
 
-        return response()->json(['message' => 'Email verified successfully']);
+        // Redirect to frontend verification page with query param
+        $frontendUrl = config('app.frontend_url', 'https://beta.techplay.gg');
+        return redirect()->away($frontendUrl . '/verify-email?verified=1');
     }
 
     /**
