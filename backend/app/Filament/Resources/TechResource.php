@@ -63,93 +63,89 @@ class TechResource extends Resource
     {
         return $schema
             ->components([
-                \Filament\Schemas\Components\Grid::make(3)
-                    ->schema([
-                        // Main Content (Left)
-                        \Filament\Schemas\Components\Group::make()
-                            ->columnSpan(['lg' => 2])
-                            ->schema([
-                                \Filament\Schemas\Components\Section::make('Article Content')
-                                    ->icon('heroicon-m-cpu-chip')
-                                    ->schema([
-                                        TextInput::make('title')
-                                            ->required()
-                                            ->maxLength(255)
-                                            ->live(onBlur: true)
-                                            ->afterStateUpdated(fn($state, Set $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                \Filament\Schemas\Components\Flex::make([
+                    // Main Content
+                    \Filament\Schemas\Components\Section::make('Tech Article')
+                        ->icon('heroicon-m-cpu-chip')
+                        ->description('Write your tech article content.')
+                        ->schema([
+                            TextInput::make('title')
+                                ->required()
+                                ->maxLength(255)
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(fn($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state)))
+                                ->columnSpanFull(),
 
-                                        TextInput::make('slug')
-                                            ->required()
-                                            ->maxLength(255)
-                                            ->unique(ignoreRecord: true),
+                            TextInput::make('slug')
+                                ->required()
+                                ->maxLength(255)
+                                ->unique(ignoreRecord: true)
+                                ->columnSpanFull(),
 
-                                        Textarea::make('excerpt')
-                                            ->rows(3)
-                                            ->columnSpanFull(),
+                            Textarea::make('excerpt')
+                                ->label('Summary')
+                                ->rows(3)
+                                ->columnSpanFull(),
 
-                                        RichEditor::make('content')
-                                            ->required()
-                                            ->fileAttachmentsDisk('public')
-                                            ->fileAttachmentsDirectory('articles')
-                                            ->columnSpanFull(),
-                                    ]),
+                            RichEditor::make('content')
+                                ->required()
+                                ->fileAttachmentsDisk('public')
+                                ->fileAttachmentsDirectory('articles')
+                                ->columnSpanFull(),
+                        ])
+                        ->columns(1)
+                        ->grow(),
 
-                                SeoForm::make(),
-                            ]),
+                    // Settings Sidebar
+                    \Filament\Schemas\Components\Section::make('Settings')
+                        ->icon('heroicon-m-cog-6-tooth')
+                        ->schema([
+                            Select::make('status')
+                                ->options([
+                                    'draft' => 'Draft',
+                                    'ready_for_review' => 'Ready for Review',
+                                    'published' => 'Published',
+                                ])
+                                ->default('draft')
+                                ->required()
+                                ->native(false),
 
-                        // Sidebar (Right)
-                        \Filament\Schemas\Components\Group::make()
-                            ->columnSpan(['lg' => 1])
-                            ->schema([
-                                \Filament\Schemas\Components\Section::make('Publishing')
-                                    ->icon('heroicon-m-rocket-launch')
-                                    ->schema([
-                                        Select::make('status')
-                                            ->options([
-                                                'draft' => 'Draft',
-                                                'ready_for_review' => 'Ready for Review',
-                                                'published' => 'Published',
-                                            ])
-                                            ->default('draft')
-                                            ->required()
-                                            ->selectablePlaceholder(false),
+                            DateTimePicker::make('published_at')
+                                ->default(now())
+                                ->native(false),
 
-                                        DateTimePicker::make('published_at')
-                                            ->default(now()),
+                            Select::make('author_id')
+                                ->relationship('author', 'name')
+                                ->default(fn() => auth()->id())
+                                ->required()
+                                ->searchable()
+                                ->native(false),
 
-                                        Select::make('author_id')
-                                            ->relationship('author', 'name')
-                                            ->default(fn() => auth()->id())
-                                            ->required()
-                                            ->searchable(),
+                            Toggle::make('is_featured_in_hero')
+                                ->label('Feature in Hero')
+                                ->default(false),
 
-                                        Toggle::make('is_featured_in_hero')
-                                            ->label('Show in Hero Section')
-                                            ->default(false),
-                                    ]),
+                            Select::make('category_id')
+                                ->label('Category')
+                                ->options(Category::where('type', 'tech')->whereNotNull('parent_id')->pluck('name', 'id'))
+                                ->searchable()
+                                ->required()
+                                ->native(false),
 
-                                \Filament\Schemas\Components\Section::make('Taxonomy')
-                                    ->icon('heroicon-m-tag')
-                                    ->schema([
-                                        Select::make('category_id')
-                                            ->label('Category')
-                                            ->options(Category::where('type', 'tech')->whereNotNull('parent_id')->pluck('name', 'id'))
-                                            ->searchable()
-                                            ->required(),
-                                    ]),
+                            FileUpload::make('featured_image_url')
+                                ->label('Featured Image')
+                                ->image()
+                                ->disk('public')
+                                ->directory('articles')
+                                ->imageEditor()
+                                ->imagePreviewHeight('150'),
+                        ])
+                        ->collapsible()
+                        ->grow(false),
+                ])
+                    ->from('md'),
 
-                                \Filament\Schemas\Components\Section::make('Media')
-                                    ->icon('heroicon-m-photo')
-                                    ->schema([
-                                        FileUpload::make('featured_image_url')
-                                            ->label('Featured Image')
-                                            ->image()
-                                            ->disk('public')
-                                            ->directory('articles')
-                                            ->imageEditor(),
-                                    ]),
-                            ]),
-                    ]),
+                SeoForm::make(),
             ]);
     }
 

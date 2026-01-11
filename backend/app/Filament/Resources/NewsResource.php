@@ -58,88 +58,106 @@ class NewsResource extends Resource
     {
         return $schema
             ->components([
-                \Filament\Schemas\Components\Grid::make(3)
-                    ->schema([
-                        // Main Content (Left)
-                        \Filament\Schemas\Components\Group::make()
-                            ->columnSpan(['lg' => 2])
-                            ->schema([
-                                \Filament\Schemas\Components\Section::make('Article Content')
-                                    ->icon('heroicon-m-document-text')
-                                    ->schema([
-                                        Forms\Components\TextInput::make('title')
-                                            ->required()
-                                            ->maxLength(255)
-                                            ->live(onBlur: true)
-                                            ->afterStateUpdated(fn($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                // Use Flex for a responsive layout that fills the width
+                \Filament\Schemas\Components\Flex::make([
+                    // Main Content (Left - grows to fill)
+                    \Filament\Schemas\Components\Section::make('Article Content')
+                        ->icon('heroicon-m-document-text')
+                        ->description('Write your article content here.')
+                        ->schema([
+                            Forms\Components\TextInput::make('title')
+                                ->required()
+                                ->maxLength(255)
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(fn($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state)))
+                                ->columnSpanFull(),
 
-                                        Forms\Components\TextInput::make('slug')
-                                            ->required()
-                                            ->maxLength(255)
-                                            ->unique(ignoreRecord: true),
+                            Forms\Components\TextInput::make('slug')
+                                ->required()
+                                ->maxLength(255)
+                                ->unique(ignoreRecord: true)
+                                ->columnSpanFull(),
 
-                                        Forms\Components\Textarea::make('excerpt')
-                                            ->rows(3)
-                                            ->columnSpanFull(),
+                            Forms\Components\Textarea::make('excerpt')
+                                ->label('Summary / Excerpt')
+                                ->helperText('A brief summary for previews and SEO.')
+                                ->rows(3)
+                                ->columnSpanFull(),
 
-                                        Forms\Components\RichEditor::make('content')
-                                            ->required()
-                                            ->columnSpanFull(),
-                                    ]),
+                            Forms\Components\RichEditor::make('content')
+                                ->required()
+                                ->toolbarButtons([
+                                    'attachFiles',
+                                    'blockquote',
+                                    'bold',
+                                    'bulletList',
+                                    'codeBlock',
+                                    'h2',
+                                    'h3',
+                                    'italic',
+                                    'link',
+                                    'orderedList',
+                                    'redo',
+                                    'strike',
+                                    'underline',
+                                    'undo',
+                                ])
+                                ->columnSpanFull(),
+                        ])
+                        ->columns(1)
+                        ->grow(),
 
-                                \App\Filament\Components\SeoForm::make(),
-                            ]),
+                    // Sidebar (Right - fixed width)
+                    \Filament\Schemas\Components\Section::make('Settings')
+                        ->icon('heroicon-m-cog-6-tooth')
+                        ->schema([
+                            Forms\Components\Select::make('status')
+                                ->label('Status')
+                                ->options([
+                                    'draft' => 'Draft',
+                                    'ready_for_review' => 'Ready for Review',
+                                    'published' => 'Published',
+                                ])
+                                ->default('draft')
+                                ->required()
+                                ->selectablePlaceholder(false)
+                                ->native(false),
 
-                        // Sidebar (Right)
-                        \Filament\Schemas\Components\Group::make()
-                            ->columnSpan(['lg' => 1])
-                            ->schema([
-                                \Filament\Schemas\Components\Section::make('Publishing')
-                                    ->icon('heroicon-m-rocket-launch')
-                                    ->schema([
-                                        Forms\Components\Select::make('status')
-                                            ->options([
-                                                'draft' => 'Draft',
-                                                'ready_for_review' => 'Ready for Review',
-                                                'published' => 'Published',
-                                            ])
-                                            ->default('draft')
-                                            ->required()
-                                            ->selectablePlaceholder(false),
+                            Forms\Components\DateTimePicker::make('published_at')
+                                ->label('Publish Date')
+                                ->default(now())
+                                ->native(false),
 
-                                        Forms\Components\DateTimePicker::make('published_at')
-                                            ->default(now()),
+                            Forms\Components\Hidden::make('author_id')
+                                ->default(fn() => auth()->id()),
 
-                                        Forms\Components\Hidden::make('author_id')
-                                            ->default(fn() => auth()->id()),
+                            Forms\Components\Toggle::make('is_featured_in_hero')
+                                ->label('Feature in Hero')
+                                ->helperText('Show prominently on homepage.')
+                                ->default(false),
 
-                                        Forms\Components\Toggle::make('is_featured_in_hero')
-                                            ->label('Show in Hero Section')
-                                            ->default(false),
-                                    ]),
+                            Forms\Components\Select::make('category_id')
+                                ->label('Category')
+                                ->options(Category::where('type', 'news')->whereNotNull('parent_id')->pluck('name', 'id'))
+                                ->searchable()
+                                ->required()
+                                ->native(false),
 
-                                \Filament\Schemas\Components\Section::make('Taxonomy')
-                                    ->icon('heroicon-m-tag')
-                                    ->schema([
-                                        Forms\Components\Select::make('category_id')
-                                            ->label('Category')
-                                            ->options(Category::where('type', 'news')->whereNotNull('parent_id')->pluck('name', 'id'))
-                                            ->searchable()
-                                            ->required(),
-                                    ]),
+                            Forms\Components\FileUpload::make('featured_image_url')
+                                ->label('Featured Image')
+                                ->image()
+                                ->disk('public')
+                                ->directory('articles')
+                                ->imageEditor()
+                                ->imagePreviewHeight('150'),
+                        ])
+                        ->collapsible()
+                        ->grow(false),
+                ])
+                    ->from('md'),
 
-                                \Filament\Schemas\Components\Section::make('Media')
-                                    ->icon('heroicon-m-photo')
-                                    ->schema([
-                                        Forms\Components\FileUpload::make('featured_image_url')
-                                            ->label('Featured Image')
-                                            ->image()
-                                            ->disk('public')
-                                            ->directory('articles')
-                                            ->imageEditor(),
-                                    ]),
-                            ]),
-                    ]),
+                // SEO Section (Full Width Below)
+                \App\Filament\Components\SeoForm::make(),
             ]);
     }
 
