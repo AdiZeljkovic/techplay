@@ -44,7 +44,9 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ReviewResource extends Resource
 {
-    protected static ?string $model = Article::class;
+    protected static ?string $model = Review::class;
+
+    protected static ?string $modelPolicy = \App\Policies\ReviewPolicy::class;
 
     protected static ?string $slug = 'review-articles';
 
