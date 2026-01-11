@@ -97,6 +97,7 @@ class ReviewResource extends Resource
                             ->columnSpan(['lg' => 2])
                             ->schema([
                                 \Filament\Schemas\Components\Section::make('Game / Product Details')
+                                    ->icon('heroicon-m-puzzle-piece')
                                     ->description('Fetch data from RAWG or enter manually.')
                                     ->schema([
                                         \Filament\Schemas\Components\Grid::make(2)
@@ -181,6 +182,7 @@ class ReviewResource extends Resource
                                     ]),
 
                                 \Filament\Schemas\Components\Section::make('Review Content')
+                                    ->icon('heroicon-m-document-text')
                                     ->schema([
                                         TextInput::make('title')
                                             ->required()
@@ -203,6 +205,7 @@ class ReviewResource extends Resource
                                     ]),
 
                                 \Filament\Schemas\Components\Section::make('Verdict & Analysis')
+                                    ->icon('heroicon-m-scale')
                                     ->schema([
                                         \Filament\Schemas\Components\Grid::make(2)
                                             ->schema([
@@ -225,6 +228,7 @@ class ReviewResource extends Resource
                             ->columnSpan(['lg' => 1])
                             ->schema([
                                 \Filament\Schemas\Components\Section::make('Publishing')
+                                    ->icon('heroicon-m-rocket-launch')
                                     ->schema([
                                         Select::make('status')
                                             ->options([
@@ -248,6 +252,7 @@ class ReviewResource extends Resource
                                     ]),
 
                                 \Filament\Schemas\Components\Section::make('Score Board')
+                                    ->icon('heroicon-m-star')
                                     ->schema([
                                         TextInput::make('review_score')
                                             ->label('Final Score')
@@ -275,6 +280,7 @@ class ReviewResource extends Resource
                                     ]),
 
                                 \Filament\Schemas\Components\Section::make('Taxonomy')
+                                    ->icon('heroicon-m-tag')
                                     ->schema([
                                         Select::make('category_id')
                                             ->label('Category')
@@ -287,6 +293,7 @@ class ReviewResource extends Resource
                                     ]),
 
                                 \Filament\Schemas\Components\Section::make('Media')
+                                    ->icon('heroicon-m-photo')
                                     ->schema([
                                         FileUpload::make('featured_image_url')
                                             ->label('Featured Image')

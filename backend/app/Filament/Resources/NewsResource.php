@@ -65,6 +65,7 @@ class NewsResource extends Resource
                             ->columnSpan(['lg' => 2])
                             ->schema([
                                 \Filament\Schemas\Components\Section::make('Article Content')
+                                    ->icon('heroicon-m-document-text')
                                     ->schema([
                                         Forms\Components\TextInput::make('title')
                                             ->required()
@@ -94,6 +95,7 @@ class NewsResource extends Resource
                             ->columnSpan(['lg' => 1])
                             ->schema([
                                 \Filament\Schemas\Components\Section::make('Publishing')
+                                    ->icon('heroicon-m-rocket-launch')
                                     ->schema([
                                         Forms\Components\Select::make('status')
                                             ->options([
@@ -117,6 +119,7 @@ class NewsResource extends Resource
                                     ]),
 
                                 \Filament\Schemas\Components\Section::make('Taxonomy')
+                                    ->icon('heroicon-m-tag')
                                     ->schema([
                                         Forms\Components\Select::make('category_id')
                                             ->label('Category')
@@ -126,6 +129,7 @@ class NewsResource extends Resource
                                     ]),
 
                                 \Filament\Schemas\Components\Section::make('Media')
+                                    ->icon('heroicon-m-photo')
                                     ->schema([
                                         Forms\Components\FileUpload::make('featured_image_url')
                                             ->label('Featured Image')

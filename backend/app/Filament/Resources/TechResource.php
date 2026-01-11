@@ -70,6 +70,7 @@ class TechResource extends Resource
                             ->columnSpan(['lg' => 2])
                             ->schema([
                                 \Filament\Schemas\Components\Section::make('Article Content')
+                                    ->icon('heroicon-m-cpu-chip')
                                     ->schema([
                                         TextInput::make('title')
                                             ->required()
@@ -101,6 +102,7 @@ class TechResource extends Resource
                             ->columnSpan(['lg' => 1])
                             ->schema([
                                 \Filament\Schemas\Components\Section::make('Publishing')
+                                    ->icon('heroicon-m-rocket-launch')
                                     ->schema([
                                         Select::make('status')
                                             ->options([
@@ -127,6 +129,7 @@ class TechResource extends Resource
                                     ]),
 
                                 \Filament\Schemas\Components\Section::make('Taxonomy')
+                                    ->icon('heroicon-m-tag')
                                     ->schema([
                                         Select::make('category_id')
                                             ->label('Category')
@@ -136,6 +139,7 @@ class TechResource extends Resource
                                     ]),
 
                                 \Filament\Schemas\Components\Section::make('Media')
+                                    ->icon('heroicon-m-photo')
                                     ->schema([
                                         FileUpload::make('featured_image_url')
                                             ->label('Featured Image')
