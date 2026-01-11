@@ -51,22 +51,26 @@ class ThreadResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')
+                TextColumn::make('title')
                     ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('category.name')
                     ->sortable()
-                    ->label('Category'),
-                Tables\Columns\TextColumn::make('author.username')
+                    ->default('No Title'),
+                TextColumn::make('category.name')
                     ->sortable()
-                    ->label('Author'),
-                Tables\Columns\IconColumn::make('is_pinned')
+                    ->label('Category')
+                    ->default('No Category'),
+                TextColumn::make('author.username')
+                    ->sortable()
+                    ->label('Author')
+                    ->default('No Author'),
+                IconColumn::make('is_pinned')
                     ->boolean(),
-                Tables\Columns\IconColumn::make('is_locked')
+                IconColumn::make('is_locked')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('view_count')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('view_count')
+                    ->sortable()
+                    ->default(0),
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
             ])
