@@ -7,6 +7,8 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use App\Models\Task;
+use Filament\Tables\Actions\Action;
 
 class TasksTable
 {
@@ -48,6 +50,28 @@ class TasksTable
             ])
             ->recordActions([
                 EditAction::make(),
+                \Filament\Tables\Actions\Action::make('start_article')
+                    ->label('Start Article')
+                    ->icon('heroicon-o-document-plus')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Start Article from Task')
+                    ->modalDescription('This will create a new Article draft based on this task and redirect you to the editor.')
+                    ->action(function (Task $record) {
+                        $article = \App\Models\Article::create([
+                            'title' => $record->title,
+                            'content' => $record->description, // Seed content with task description
+                            'status' => 'draft',
+                            'author_id' => $record->assigned_to ?? auth()->id(),
+                            'slug' => \Illuminate\Support\Str::slug($record->title . '-' . uniqid()),
+                            'published_at' => null,
+                        ]);
+
+                        // Update task status to In Progress
+                        $record->update(['status' => 'in_progress']);
+
+                        return redirect()->to("/admin/articles/{$article->id}/edit");
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
