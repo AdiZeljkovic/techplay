@@ -11,8 +11,7 @@ use Filament\Tables\Table;
 use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Support\Str;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\IconColumn;
+
 
 class ThreadResource extends Resource
 {
@@ -57,26 +56,24 @@ class ThreadResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('title')
+                Tables\Columns\TextColumn::make('title')
                     ->searchable()
-                    ->sortable()
-                    ->default('No Title'),
-                TextColumn::make('category.name')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('category.name')
                     ->sortable()
                     ->label('Category')
-                    ->default('No Category'),
-                TextColumn::make('author.username')
+                    ->placeholder('-'),
+                Tables\Columns\TextColumn::make('author.username')
                     ->sortable()
                     ->label('Author')
-                    ->default('No Author'),
-                IconColumn::make('is_pinned')
+                    ->placeholder('-'),
+                Tables\Columns\IconColumn::make('is_pinned')
                     ->boolean(),
-                IconColumn::make('is_locked')
+                Tables\Columns\IconColumn::make('is_locked')
                     ->boolean(),
-                TextColumn::make('view_count')
-                    ->sortable()
-                    ->default(0),
-                TextColumn::make('created_at')
+                Tables\Columns\TextColumn::make('view_count')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
             ])

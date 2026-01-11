@@ -9,8 +9,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\IconColumn;
+
 
 class PostResource extends Resource
 {
@@ -52,22 +51,22 @@ class PostResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')
+                Tables\Columns\TextColumn::make('id')
                     ->sortable(),
-                TextColumn::make('thread.title')
+                Tables\Columns\TextColumn::make('thread.title')
                     ->limit(30)
                     ->searchable()
-                    ->default('No Thread'),
-                TextColumn::make('author.username')
+                    ->placeholder('-'),
+                Tables\Columns\TextColumn::make('author.username')
                     ->searchable()
-                    ->default('No Author'),
-                TextColumn::make('content')
+                    ->placeholder('-'),
+                Tables\Columns\TextColumn::make('content')
                     ->html()
                     ->limit(50)
-                    ->default('No Content'),
-                IconColumn::make('is_solution')
+                    ->placeholder('-'),
+                Tables\Columns\IconColumn::make('is_solution')
                     ->boolean(),
-                TextColumn::make('created_at')
+                Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
             ])
