@@ -2,7 +2,7 @@
 
 import { Article } from "@/types";
 import Link from "next/link";
-import { ArrowLeft, Clock, Facebook, Linkedin, Twitter, Share2, Calendar, User } from "lucide-react";
+import { ArrowLeft, Clock, Facebook, Linkedin, Twitter, Share2, Calendar, User, Eye } from "lucide-react";
 import Image from "next/image";
 import { format, formatDistanceToNow } from "date-fns";
 import Script from "next/script";
@@ -170,6 +170,26 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                     {readingTime}
                                 </span>
                                 <span className="text-xs text-white/60">Read Time</span>
+                            </div>
+
+                            <div className="hidden md:block w-px h-10 bg-white/20" />
+
+                            <div className="flex flex-col">
+                                <span className="flex items-center gap-2 text-sm font-medium">
+                                    <Eye className="w-4 h-4 text-[var(--accent)]" />
+                                    {article.views || 0}
+                                </span>
+                                <span className="text-xs text-white/60">Views</span>
+                            </div>
+
+                            <div className="hidden md:block w-px h-10 bg-white/20" />
+
+                            <div className="flex flex-col">
+                                <span className="flex items-center gap-2 text-sm font-medium">
+                                    <Eye className="w-4 h-4 text-[var(--accent)]" />
+                                    {article.views || 0}
+                                </span>
+                                <span className="text-xs text-white/60">Views</span>
                             </div>
                         </div>
                     </div>
