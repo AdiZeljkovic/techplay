@@ -30,7 +30,7 @@ class ThreadResource extends Resource
     {
         return $schema
             ->components([
-                Forms\Components\Section::make()
+                \Filament\Schemas\Components\Section::make()
                     ->schema([
                         Forms\Components\Select::make('category_id')
                             ->relationship('category', 'name')

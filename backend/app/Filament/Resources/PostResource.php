@@ -29,7 +29,7 @@ class PostResource extends Resource
     {
         return $schema
             ->components([
-                Forms\Components\Section::make()
+                \Filament\Schemas\Components\Section::make()
                     ->schema([
                         Forms\Components\Select::make('thread_id')
                             ->relationship('thread', 'title')
