@@ -14,6 +14,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Illuminate\Support\Str;
+use Filament\Forms\Get;
 use Closure;
 
 class CategoryResource extends Resource
@@ -52,14 +53,21 @@ class CategoryResource extends Resource
                                         'tech' => 'Tech/Hardware',
                                         'forum' => 'Forum',
                                     ])
-                                    ->required(),
+                                    ->required()
+                                    ->live(),
                                 Forms\Components\Select::make('parent_id')
                                     ->label('Parent Category')
-                                    ->relationship('parent', 'name')
+                                    ->relationship('parent', 'name', function ($query) {
+                                        // Only show categories that are NOT children themselves (max depth 1 for now)
+                                        return $query->whereNull('parent_id');
+                                    })
                                     ->searchable()
-                                    ->nullable(),
+                                    ->preload()
+                                    ->nullable()
+                                    // If type is forum, we might want to restrict parents to forum type too, but let's keep it flexible for now or filter in query
+                                    ->visible(fn(Forms\Get $get) => $get('type') === 'forum'),
                                 Forms\Components\TextInput::make('icon')
-                                    ->placeholder('heroicon-o-newspaper')
+                                    ->placeholder('heroicon-o-chat-bubble-left')
                                     ->maxLength(255),
                                 Forms\Components\Textarea::make('description')
                                     ->rows(3),
