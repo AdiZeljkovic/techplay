@@ -15,6 +15,13 @@ export default function VerifyEmailPage() {
     const { user } = useAuth({ middleware: "auth" });
 
     useEffect(() => {
+        // Check if redirected from email link
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('verified')) {
+            setIsVerified(true);
+            return;
+        }
+
         // Check verification status periodically
         const checkStatus = async () => {
             try {
