@@ -14,12 +14,21 @@ class ArticleResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // Handle Filament FileUpload array format and construct full URL
+        $imagePath = $this->featured_image_url;
+        if (is_array($imagePath)) {
+            $imagePath = $imagePath[0] ?? null; // Filament stores as array
+        }
+        $featuredImageUrl = $imagePath
+            ? (str_starts_with($imagePath, 'http') ? $imagePath : asset('storage/' . $imagePath))
+            : null;
+
         return [
             'id' => $this->id,
             'title' => $this->title,
             'slug' => $this->slug,
             'excerpt' => $this->excerpt,
-            'featured_image_url' => $this->featured_image_url,
+            'featured_image_url' => $featuredImageUrl,
             'published_at' => $this->published_at,
             'published_at_human' => $this->published_at ? $this->published_at->diffForHumans() : null,
 
