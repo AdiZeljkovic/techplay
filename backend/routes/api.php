@@ -29,6 +29,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/messages', [App\Http\Controllers\Api\V1\MessageController::class, 'index']);
         Route::post('/messages', [App\Http\Controllers\Api\V1\MessageController::class, 'store']);
         Route::patch('/messages/{id}/read', [App\Http\Controllers\Api\V1\MessageController::class, 'markRead']);
+        Route::delete('/messages/{id}', [App\Http\Controllers\Api\V1\MessageController::class, 'destroy']);
 
         // Email Verification
         Route::post('/email/resend', [App\Http\Controllers\Api\V1\VerificationController::class, 'resend']);
