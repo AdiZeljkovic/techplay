@@ -49,19 +49,22 @@ class PostResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
+                TextColumn::make('id')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('thread.title')
+                TextColumn::make('thread.title')
                     ->limit(30)
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('author.username')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('content')
+                    ->searchable()
+                    ->default('No Thread'),
+                TextColumn::make('author.username')
+                    ->searchable()
+                    ->default('No Author'),
+                TextColumn::make('content')
                     ->html()
-                    ->limit(50),
-                Tables\Columns\IconColumn::make('is_solution')
+                    ->limit(50)
+                    ->default('No Content'),
+                IconColumn::make('is_solution')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
             ])
