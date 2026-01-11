@@ -11,7 +11,7 @@ class Analytics extends Page
 
     protected static string $view = 'filament.pages.analytics';
 
-    protected static ?string $navigationGroup = 'System';
+    protected static string|\UnitEnum|null $navigationGroup = 'System';
 
     protected static ?int $navigationSort = 100;
 
