@@ -4,7 +4,19 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\GuideResource\Pages;
 use App\Models\Guide;
-use Filament\Forms;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
+use App\Filament\Components\SeoForm;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
@@ -43,37 +55,109 @@ class GuideResource extends Resource
     {
         return $schema
             ->components([
-                Forms\Components\TextInput::make('title')
-                    ->required()
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state))),
-                Forms\Components\TextInput::make('slug')
-                    ->required()
-                    ->unique(ignoreRecord: true),
-                Forms\Components\Select::make('author_id')
-                    ->relationship('author', 'username')
-                    ->default(fn() => auth()->id())
-                    ->required(),
-                Forms\Components\Select::make('difficulty')
-                    ->options([
-                        'beginner' => 'Beginner',
-                        'intermediate' => 'Intermediate',
-                        'advanced' => 'Advanced',
-                    ])
-                    ->required(),
-                Forms\Components\Textarea::make('excerpt')
-                    ->label('Short Description')
-                    ->rows(3)
-                    ->columnSpanFull(),
-                Forms\Components\RichEditor::make('content')
-                    ->required()
-                    ->columnSpanFull(),
-                Forms\Components\FileUpload::make('featured_image_url')
-                    ->label('Featured Image')
-                    ->image()
-                    ->disk('public')
-                    ->directory('guides')
-                    ->columnSpanFull(),
+                Grid::make(3)
+                    ->schema([
+                        // Main Content (Left/Center)
+                        Group::make()
+                            ->columnSpan(['lg' => 2])
+                            ->schema([
+                                Section::make('Guide Content')
+                                    ->schema([
+                                        TextInput::make('title')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->live(onBlur: true)
+                                            ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state))),
+
+                                        TextInput::make('slug')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->unique(ignoreRecord: true),
+
+                                        Textarea::make('excerpt')
+                                            ->label('Short Description')
+                                            ->rows(3)
+                                            ->helperText('Used for card previews and SEO meta description fallback.')
+                                            ->columnSpanFull(),
+
+                                        RichEditor::make('content')
+                                            ->label('Introduction / Main Content')
+                                            ->required()
+                                            ->fileAttachmentsDisk('public')
+                                            ->fileAttachmentsDirectory('guides/content')
+                                            ->columnSpanFull(),
+                                    ]),
+
+                                Section::make('Step-by-Step Instructions')
+                                    ->description('Add structured steps for this guide (optional).')
+                                    ->schema([
+                                        Repeater::make('steps')
+                                            ->schema([
+                                                TextInput::make('title')->required(),
+                                                RichEditor::make('description')->toolbarButtons(['bold', 'italic', 'link', 'bulletList']),
+                                                FileUpload::make('image')
+                                                    ->image()
+                                                    ->directory('guides/steps')
+                                                    ->disk('public'),
+                                            ])
+                                            ->itemLabel(fn(array $state): ?string => $state['title'] ?? null)
+                                            ->collapsible()
+                                            ->cloneable()
+                                            ->defaultItems(0),
+                                    ])
+                                    ->collapsed(),
+
+                                SeoForm::make(),
+                            ]),
+
+                        // Sidebar (Right)
+                        Group::make()
+                            ->columnSpan(['lg' => 1])
+                            ->schema([
+                                Section::make('Publishing')
+                                    ->schema([
+                                        Select::make('status')
+                                            ->options([
+                                                'draft' => 'Draft',
+                                                'ready_for_review' => 'Ready for Review',
+                                                'published' => 'Published',
+                                            ])
+                                            ->default('draft')
+                                            ->required()
+                                            ->selectablePlaceholder(false),
+
+                                        DateTimePicker::make('published_at')
+                                            ->default(now()),
+
+                                        Select::make('author_id')
+                                            ->relationship('author', 'username')
+                                            ->searchable()
+                                            ->default(fn() => auth()->id())
+                                            ->required(),
+                                    ]),
+
+                                Section::make('Taxonomy')
+                                    ->schema([
+                                        Select::make('difficulty')
+                                            ->options([
+                                                'beginner' => 'Beginner',
+                                                'intermediate' => 'Intermediate',
+                                                'advanced' => 'Advanced',
+                                            ])
+                                            ->required(),
+                                    ]),
+
+                                Section::make('Media')
+                                    ->schema([
+                                        FileUpload::make('featured_image_url')
+                                            ->label('Featured Image')
+                                            ->image()
+                                            ->disk('public')
+                                            ->directory('guides')
+                                            ->imageEditor(),
+                                    ]),
+                            ]),
+                    ]),
             ]);
     }
 

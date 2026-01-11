@@ -90,198 +90,180 @@ class ReviewResource extends Resource
 
         return $schema
             ->components([
-                Tabs::make('Tabs')
-                    ->tabs([
-                        Tab::make('Content')
-                            ->icon('heroicon-o-document-text')
+                \Filament\Schemas\Components\Grid::make(3)
+                    ->schema([
+                        // Main Content (Left)
+                        \Filament\Schemas\Components\Group::make()
+                            ->columnSpan(['lg' => 2])
                             ->schema([
-                                TextInput::make('title')
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->live(onBlur: true)
-                                    ->afterStateUpdated(fn($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
-                                TextInput::make('slug')
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->unique(ignoreRecord: true),
-
-                                Select::make('category_id')
-                                    ->label('Category')
-                                    ->options(Category::where('type', 'reviews')->whereNotNull('parent_id')->pluck('name', 'id'))
-                                    ->searchable()
-                                    ->searchable()
-                                    ->required(),
-
-                                TagsInput::make('tags')
-                                    ->label('Tags / Keywords')
-                                    ->placeholder('Add tags (e.g. RPG, Open World)...')
-                                    ->columnSpanFull(),
-
-                                Toggle::make('is_featured_in_hero')
-                                    ->label('Show in Hero Section')
-                                    ->default(false),
-
-                                RichEditor::make('content')
-                                    ->required()
-                                    ->columnSpanFull(),
-
-                                Textarea::make('excerpt')
-                                    ->rows(3)
-                                    ->columnSpanFull(),
-
-                                FileUpload::make('featured_image_url')
-                                    ->label('Featured Image')
-                                    ->image()
-                                    ->disk('public')
-                                    ->directory('articles')
-                                    ->columnSpanFull(),
-
-                                Select::make('status')
-                                    ->options([
-                                        'draft' => 'Draft',
-                                        'published' => 'Published',
-                                    ])
-                                    ->default('draft')
-                                    ->required(),
-
-                                DateTimePicker::make('published_at')
-                                    ->default(now()),
-
-                                Hidden::make('author_id')
-                                    ->default(fn() => auth()->id()),
-                            ]),
-                        Tab::make('Review Details')
-                            ->icon('heroicon-o-star')
-                            ->schema([
-                                Group::make()
+                                \Filament\Schemas\Components\Section::make('Game / Product Details')
+                                    ->description('Fetch data from RAWG or enter manually.')
                                     ->schema([
-                                        Section::make('Game / Product Info')
+                                        \Filament\Schemas\Components\Grid::make(2)
                                             ->schema([
-                                                Grid::make(3)
-                                                    ->schema([
-                                                        TextInput::make('review_data.game_title')
-                                                            ->label('Title')
-                                                            ->required()
-                                                            ->suffixAction(
-                                                                Action::make('fill_from_rawg')
-                                                                    ->icon('heroicon-o-cloud-arrow-down')
-                                                                    ->tooltip('Auto-fill from RAWG.io')
-                                                                    ->form([
-                                                                        Select::make('game_slug')
-                                                                            ->label('Search Game')
-                                                                            ->searchable()
-                                                                            ->getSearchResultsUsing(function (string $search) {
-                                                                                $service = new RawgService();
-                                                                                $results = $service->searchGames($search);
-                                                                                if (!$results || !isset($results['results']))
-                                                                                    return [];
-
-                                                                                return collect($results['results'])
-                                                                                    ->mapWithKeys(function ($game) {
-                                                                                        $year = isset($game['released']) ? substr($game['released'], 0, 4) : 'N/A';
-                                                                                        return [$game['slug'] => "{$game['name']} ($year)"];
-                                                                                    })
-                                                                                    ->toArray();
-                                                                            })
-                                                                            ->getOptionLabelUsing(fn($value) => $value)
-                                                                            ->required(),
-                                                                    ])
-                                                                    ->action(function (array $data, $set) {
+                                                TextInput::make('review_data.game_title')
+                                                    ->label('Title')
+                                                    ->required()
+                                                    ->suffixAction(
+                                                        Action::make('fill_from_rawg')
+                                                            ->icon('heroicon-o-cloud-arrow-down')
+                                                            ->tooltip('Auto-fill from RAWG.io')
+                                                            ->form([
+                                                                Select::make('game_slug')
+                                                                    ->label('Search Game')
+                                                                    ->searchable()
+                                                                    ->getSearchResultsUsing(function (string $search) {
                                                                         $service = new RawgService();
-                                                                        $details = $service->getGameDetails($data['game_slug']);
+                                                                        $results = $service->searchGames($search);
+                                                                        if (!$results || !isset($results['results']))
+                                                                            return [];
 
-                                                                        if (!$details) {
-                                                                            Notification::make()
-                                                                                ->title('Failed to fetch data')
-                                                                                ->danger()
-                                                                                ->send();
-                                                                            return;
-                                                                        }
-
-                                                                        // Fill fields
-                                                                        $set('review_data.game_title', $details['name']);
-                                                                        $set('review_data.developer', $details['developers'][0]['name'] ?? null);
-                                                                        $set('review_data.publisher', $details['publishers'][0]['name'] ?? null);
-                                                                        $set('review_data.release_date', $details['released'] ?? null);
-                                                                        $set('review_data.play_time', isset($details['playtime']) ? $details['playtime'] . 'h' : null);
-                                                                        $set('review_data.store_link', $details['website'] ?? null);
-
-                                                                        // Arrays
-                                                                        if (isset($details['parent_platforms'])) {
-                                                                            $platforms = collect($details['parent_platforms'])
-                                                                                ->pluck('platform.name')
-                                                                                ->toArray();
-                                                                            // Map common names if needed (e.g. PlayStation -> PS5/PS4)
-                                                                            // Simple map for now:
-                                                                            $set('review_data.platforms', $platforms);
-                                                                        }
-
-                                                                        if (isset($details['genres'])) {
-                                                                            $genres = collect($details['genres'])
-                                                                                ->pluck('name')
-                                                                                ->map(fn($g) => strtolower($g)) // TagsInput suggestions might be lowercase
-                                                                                ->toArray();
-                                                                            $set('review_data.genres', $genres);
-                                                                        }
-
-                                                                        Notification::make()
-                                                                            ->title('Data filled from RAWG')
-                                                                            ->success()
-                                                                            ->send();
+                                                                        return collect($results['results'])
+                                                                            ->mapWithKeys(function ($game) {
+                                                                                $year = isset($game['released']) ? substr($game['released'], 0, 4) : 'N/A';
+                                                                                return [$game['slug'] => "{$game['name']} ($year)"];
+                                                                            })
+                                                                            ->toArray();
                                                                     })
-                                                            ),
-                                                        TextInput::make('review_data.developer')->label('Developer'),
-                                                        TextInput::make('review_data.publisher')->label('Publisher'),
+                                                                    ->getOptionLabelUsing(fn($value) => $value)
+                                                                    ->required(),
+                                                            ])
+                                                            ->action(function (array $data, $set) {
+                                                                $service = new RawgService();
+                                                                $details = $service->getGameDetails($data['game_slug']);
 
-                                                        DateTimePicker::make('review_data.release_date')->label('Release Date'),
-                                                        TextInput::make('review_data.play_time')->label('Play Time'),
-                                                        TextInput::make('review_data.tested_on')->label('Tested On'),
+                                                                if (!$details) {
+                                                                    Notification::make()
+                                                                        ->title('Failed to fetch data')
+                                                                        ->danger()
+                                                                        ->send();
+                                                                    return;
+                                                                }
 
-                                                        TextInput::make('review_data.price')->label('Price'),
-                                                        TextInput::make('review_data.store_link')->label('Store Link')->url(),
-                                                        TextInput::make('review_data.trailer_url')->label('Trailer URL')->url(),
-                                                    ]),
+                                                                // Fill fields
+                                                                $set('review_data.game_title', $details['name']);
+                                                                $set('review_data.developer', $details['developers'][0]['name'] ?? null);
+                                                                $set('review_data.publisher', $details['publishers'][0]['name'] ?? null);
+                                                                $set('review_data.release_date', $details['released'] ?? null);
+                                                                $set('review_data.play_time', isset($details['playtime']) ? $details['playtime'] . 'h' : null);
+                                                                $set('review_data.store_link', $details['website'] ?? null);
+
+                                                                // Arrays
+                                                                if (isset($details['parent_platforms'])) {
+                                                                    $platforms = collect($details['parent_platforms'])
+                                                                        ->pluck('platform.name')
+                                                                        ->toArray();
+                                                                    $set('review_data.platforms', $platforms);
+                                                                }
+
+                                                                if (isset($details['genres'])) {
+                                                                    $genres = collect($details['genres'])
+                                                                        ->pluck('name')
+                                                                        ->map(fn($g) => strtolower($g))
+                                                                        ->toArray();
+                                                                    $set('review_data.genres', $genres);
+                                                                }
+
+                                                                Notification::make()
+                                                                    ->title('Data filled from RAWG')
+                                                                    ->success()
+                                                                    ->send();
+                                                            })
+                                                    ),
+
+                                                TextInput::make('review_data.developer')->label('Developer'),
+                                                TextInput::make('review_data.publisher')->label('Publisher'),
+                                                DateTimePicker::make('review_data.release_date')->label('Release Date'),
 
                                                 TagsInput::make('review_data.platforms')->label('Platforms')->suggestions(['PC', 'PS5', 'Xbox', 'Switch']),
                                                 TagsInput::make('review_data.genres')->label('Genres')->suggestions(['Action', 'RPG', 'FPS']),
+                                            ]),
+                                    ]),
+
+                                \Filament\Schemas\Components\Section::make('Review Content')
+                                    ->schema([
+                                        TextInput::make('title')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->live(onBlur: true)
+                                            ->afterStateUpdated(fn($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
+
+                                        TextInput::make('slug')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->unique(ignoreRecord: true),
+
+                                        Textarea::make('excerpt')
+                                            ->rows(3)
+                                            ->columnSpanFull(),
+
+                                        RichEditor::make('content')
+                                            ->required()
+                                            ->columnSpanFull(),
+                                    ]),
+
+                                \Filament\Schemas\Components\Section::make('Verdict & Analysis')
+                                    ->schema([
+                                        \Filament\Schemas\Components\Grid::make(2)
+                                            ->schema([
+                                                Repeater::make('review_data.pros')
+                                                    ->label('Positives')
+                                                    ->simple(TextInput::make('item')->required()),
+                                                Repeater::make('review_data.cons')
+                                                    ->label('Negatives')
+                                                    ->simple(TextInput::make('item')->required()),
+                                            ]),
+
+                                        RichEditor::make('review_data.conclusion')->label('Verdict / Conclusion'),
+                                    ]),
+
+                                \App\Filament\Components\SeoForm::make(),
+                            ]),
+
+                        // Sidebar (Right)
+                        \Filament\Schemas\Components\Group::make()
+                            ->columnSpan(['lg' => 1])
+                            ->schema([
+                                \Filament\Schemas\Components\Section::make('Publishing')
+                                    ->schema([
+                                        Select::make('status')
+                                            ->options([
+                                                'draft' => 'Draft',
+                                                'ready_for_review' => 'Ready for Review',
+                                                'published' => 'Published',
                                             ])
-                                            ->collapsed(),
+                                            ->default('draft')
+                                            ->required()
+                                            ->selectablePlaceholder(false),
 
-                                        Section::make('Ratings & Score')
-                                            ->schema([
-                                                Grid::make(2)
-                                                    ->schema([
-                                                        TextInput::make('review_score')
-                                                            ->label('Final Score (Auto-calc)')
-                                                            ->readOnly()
-                                                            ->dehydrated()
-                                                            ->numeric()
-                                                            ->columnSpanFull(),
-                                                        TextInput::make('review_data.ratings.gameplay')->label('Gameplay')->numeric()->maxValue(10)->live()->afterStateUpdated($calculateScore),
-                                                        TextInput::make('review_data.ratings.visuals')->label('Visuals')->numeric()->maxValue(10)->live()->afterStateUpdated($calculateScore),
-                                                        TextInput::make('review_data.ratings.audio')->label('Audio')->numeric()->maxValue(10)->live()->afterStateUpdated($calculateScore),
-                                                        TextInput::make('review_data.ratings.narrative')->label('Narrative')->numeric()->maxValue(10)->live()->afterStateUpdated($calculateScore),
-                                                        TextInput::make('review_data.ratings.replayability')->label('Replayability')->numeric()->maxValue(10)->live()->afterStateUpdated($calculateScore),
-                                                    ]),
-                                            ]),
+                                        DateTimePicker::make('published_at')
+                                            ->default(now()),
 
-                                        Section::make('Pros & Cons')
-                                            ->schema([
-                                                Grid::make(2)
-                                                    ->schema([
-                                                        Repeater::make('review_data.pros')
-                                                            ->label('Positives')
-                                                            ->simple(TextInput::make('item')->required()),
-                                                        Repeater::make('review_data.cons')
-                                                            ->label('Negatives')
-                                                            ->simple(TextInput::make('item')->required()),
-                                                    ]),
-                                            ]),
+                                        Hidden::make('author_id')
+                                            ->default(fn() => auth()->id()),
 
-                                        RichEditor::make('review_data.conclusion')->label('Verdict'),
+                                        Toggle::make('is_featured_in_hero')
+                                            ->label('Show in Hero Section')
+                                            ->default(false),
+                                    ]),
+
+                                \Filament\Schemas\Components\Section::make('Score Board')
+                                    ->schema([
+                                        TextInput::make('review_score')
+                                            ->label('Final Score')
+                                            ->readOnly()
+                                            ->dehydrated()
+                                            ->numeric()
+                                            ->extraInputAttributes(['class' => 'text-3xl font-bold text-center text-primary-600']),
+
+                                        TextInput::make('review_data.ratings.gameplay')->label('Gameplay')->numeric()->maxValue(10)->live()->afterStateUpdated($calculateScore),
+                                        TextInput::make('review_data.ratings.visuals')->label('Visuals')->numeric()->maxValue(10)->live()->afterStateUpdated($calculateScore),
+                                        TextInput::make('review_data.ratings.audio')->label('Audio')->numeric()->maxValue(10)->live()->afterStateUpdated($calculateScore),
+                                        TextInput::make('review_data.ratings.narrative')->label('Narrative')->numeric()->maxValue(10)->live()->afterStateUpdated($calculateScore),
+                                        TextInput::make('review_data.ratings.replayability')->label('Replayability')->numeric()->maxValue(10)->live()->afterStateUpdated($calculateScore),
 
                                         Select::make('review_data.cta')
-                                            ->label('Call To Action')
+                                            ->label('Recommendation')
                                             ->options([
                                                 'none' => 'No CTA',
                                                 'recommended' => 'Recommended',
@@ -290,10 +272,33 @@ class ReviewResource extends Resource
                                                 'wait_sale' => 'Wait for Sale'
                                             ])
                                             ->default('none'),
-                                    ])
+                                    ]),
+
+                                \Filament\Schemas\Components\Section::make('Taxonomy')
+                                    ->schema([
+                                        Select::make('category_id')
+                                            ->label('Category')
+                                            ->options(Category::where('type', 'reviews')->whereNotNull('parent_id')->pluck('name', 'id'))
+                                            ->searchable()
+                                            ->required(),
+
+                                        TagsInput::make('tags')
+                                            ->placeholder('Add tags...'),
+                                    ]),
+
+                                \Filament\Schemas\Components\Section::make('Media')
+                                    ->schema([
+                                        FileUpload::make('featured_image_url')
+                                            ->label('Featured Image')
+                                            ->image()
+                                            ->disk('public')
+                                            ->directory('articles')
+                                            ->imageEditor(),
+
+                                        TextInput::make('review_data.trailer_url')->label('Trailer URL')->url(),
+                                    ]),
                             ]),
-                        \App\Filament\Components\SeoForm::make(),
-                    ])->columnSpanFull(),
+                    ]),
             ]);
     }
 
