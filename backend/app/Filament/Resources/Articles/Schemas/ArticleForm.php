@@ -186,7 +186,11 @@ class ArticleForm
                                 FileUpload::make('featured_image_url')
                                     ->image()
                                     ->disk('public')
-                                    ->directory('articles'),
+                                    ->directory('articles')
+                                    ->visibility('public')
+                                    ->imageEditor()
+                                    ->maxSize(2048)
+                                    ->columnSpanFull(),
                             ]),
                     ])
                     ->columnSpan(['lg' => 1]),

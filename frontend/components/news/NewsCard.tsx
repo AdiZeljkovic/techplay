@@ -58,7 +58,7 @@ export default function NewsCard({ article, index }: NewsCardProps) {
                     <div className="flex items-center justify-between text-xs text-[var(--text-muted)] pt-4 border-t border-[var(--border)]">
                         <div className="flex items-center gap-1.5">
                             <User className="w-3.5 h-3.5" />
-                            <span>{article.author?.username || "Editor"}</span>
+                            <span>{article.author?.display_name || article.author?.username || "Editor"}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                             <Clock className="w-3.5 h-3.5" />
