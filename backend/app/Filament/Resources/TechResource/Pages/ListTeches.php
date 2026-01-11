@@ -8,4 +8,9 @@ use Filament\Resources\Pages\ListRecords;
 class ListTeches extends ListRecords
 {
     protected static string $resource = TechResource::class;
+
+    public function getMaxContentWidth(): \Filament\Support\Enums\Width
+    {
+        return \Filament\Support\Enums\Width::Full;
+    }
 }
