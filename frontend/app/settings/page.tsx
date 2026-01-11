@@ -6,8 +6,7 @@ import axios from "@/lib/axios";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { Card } from "@/components/ui/Card";
-import { Loader2, Save, User, Gamepad2, Cpu, Monitor, Keyboard, Mouse, Headphones, HardDrive } from "lucide-react";
+import { Loader2, Save, User, Gamepad2, Cpu, Monitor, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 
@@ -16,7 +15,7 @@ export default function SettingsPage() {
     const router = useRouter();
 
     const [saving, setSaving] = useState(false);
-    const [activeTab, setActiveTab] = useState<'bio' | 'ids' | 'specs'>('bio');
+    const [activeTab, setActiveTab] = useState<'bio' | 'ids' | 'specs' | 'security'>('bio');
 
     // Form States
     const [bio, setBio] = useState(user?.bio || "");
@@ -25,6 +24,9 @@ export default function SettingsPage() {
     const [specs, setSpecs] = useState(user?.pc_specs || {});
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar_url || null);
+
+    // Password State
+    const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
 
     // Sync state when user loads
     if (user) {
@@ -87,6 +89,26 @@ export default function SettingsPage() {
         }
     };
 
+    const handlePasswordChange = async () => {
+        setSaving(true);
+        try {
+            await axios.put('/user/password', {
+                current_password: passwords.current,
+                new_password: passwords.new,
+                new_password_confirmation: passwords.confirm
+            });
+            alert('Password changed successfully!');
+            setPasswords({ current: '', new: '', confirm: '' });
+        } catch (error: any) {
+            console.error("Failed to change password", error);
+            const msg = error.response?.data?.message || "Failed to change password.";
+            const valErrors = error.response?.data?.errors ? Object.values(error.response.data.errors).flat().join('\n') : '';
+            alert(`${msg}\n${valErrors}`);
+        } finally {
+            setSaving(false);
+        }
+    };
+
     if (isLoading || !user) {
         return (
             <div className="min-h-screen pt-24 flex justify-center bg-[var(--bg-primary)]">
@@ -95,7 +117,7 @@ export default function SettingsPage() {
         );
     }
 
-    const renderTabButton = (id: 'bio' | 'ids' | 'specs', label: string, icon: any) => (
+    const renderTabButton = (id: 'bio' | 'ids' | 'specs' | 'security', label: string, icon: any) => (
         <button
             onClick={() => setActiveTab(id)}
             className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors w-full md:w-auto
@@ -114,10 +136,12 @@ export default function SettingsPage() {
             <div className="container mx-auto px-4 max-w-4xl">
                 <div className="flex items-center justify-between mb-8">
                     <h1 className="text-3xl font-bold text-[var(--text-primary)]">Profile Settings</h1>
-                    <Button onClick={handleSave} disabled={saving}>
-                        {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                        Save Changes
-                    </Button>
+                    {activeTab !== 'security' && (
+                        <Button onClick={handleSave} disabled={saving}>
+                            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                            Save Changes
+                        </Button>
+                    )}
                 </div>
 
                 <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
@@ -126,6 +150,7 @@ export default function SettingsPage() {
                         {renderTabButton('bio', 'Basic Info', <User className="w-4 h-4" />)}
                         {renderTabButton('ids', 'Gamertags', <Gamepad2 className="w-4 h-4" />)}
                         {renderTabButton('specs', 'PC Specs', <Cpu className="w-4 h-4" />)}
+                        {renderTabButton('security', 'Security', <Lock className="w-4 h-4" />)}
                     </div>
 
                     <div className="p-6 md:p-8">
@@ -275,6 +300,52 @@ export default function SettingsPage() {
                                         </div>
                                     );
                                 })}
+                            </div>
+                        )}
+
+                        {activeTab === 'security' && (
+                            <div className="max-w-md mx-auto space-y-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                                        Current Password
+                                    </label>
+                                    <Input
+                                        type="password"
+                                        value={passwords.current}
+                                        onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+                                        placeholder="Enter current password"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                                        New Password
+                                    </label>
+                                    <Input
+                                        type="password"
+                                        value={passwords.new}
+                                        onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
+                                        placeholder="Enter new password"
+                                    />
+                                    <p className="text-xs text-[var(--text-muted)] mt-1">
+                                        Min 8 chars, letters & numbers.
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                                        Confirm New Password
+                                    </label>
+                                    <Input
+                                        type="password"
+                                        value={passwords.confirm}
+                                        onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
+                                        placeholder="Confirm new password"
+                                    />
+                                </div>
+                                <div className="pt-4">
+                                    <Button onClick={handlePasswordChange} disabled={saving} className="w-full bg-red-600 hover:bg-red-700">
+                                        Change Password
+                                    </Button>
+                                </div>
                             </div>
                         )}
                     </div>
