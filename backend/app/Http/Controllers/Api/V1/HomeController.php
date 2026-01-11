@@ -14,8 +14,8 @@ class HomeController extends Controller
 
     public function index(): JsonResponse
     {
-        // Cache home page data for 5 minutes to improve performance
-        $data = Cache::remember('home:data', CacheService::TTL_MEDIUM, function () {
+        // Cache home page data for 1 minute (was 5 mins) to improve responsiveness
+        $data = Cache::remember('home:data', 60, function () {
             // 1. Hero Articles
             $hero = Article::where('is_featured_in_hero', true)
                 ->where('status', 'published')
