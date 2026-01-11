@@ -25,7 +25,9 @@ async function getArticle(slug: string): Promise<Article | null> {
             return null;
         }
 
-        return res.json();
+        const json = await res.json();
+        // API returns { data: {...} } wrapper - extract the actual article
+        return json.data || json;
     } catch (error) {
         return null;
     }
