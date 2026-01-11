@@ -6,6 +6,7 @@ use App\Filament\Resources\ThreadResource\Pages;
 use App\Models\Thread;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Support\Str;
@@ -50,13 +51,24 @@ class ThreadResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('title')->searchable(),
-                TextColumn::make('category.name')->sortable()->label('Category'),
-                TextColumn::make('author.username')->sortable()->label('Author'),
-                IconColumn::make('is_pinned')->boolean(),
-                IconColumn::make('is_locked')->boolean(),
-                TextColumn::make('view_count')->sortable(),
-                TextColumn::make('created_at')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('title')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('category.name')
+                    ->sortable()
+                    ->label('Category'),
+                Tables\Columns\TextColumn::make('author.username')
+                    ->sortable()
+                    ->label('Author'),
+                Tables\Columns\IconColumn::make('is_pinned')
+                    ->boolean(),
+                Tables\Columns\IconColumn::make('is_locked')
+                    ->boolean(),
+                Tables\Columns\TextColumn::make('view_count')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable(),
             ])
             ->filters([
                 //

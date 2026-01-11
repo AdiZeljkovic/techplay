@@ -6,6 +6,7 @@ use App\Filament\Resources\PostResource\Pages;
 use App\Models\Post;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Schemas\Schema;
 use Filament\Actions\EditAction;
@@ -48,12 +49,21 @@ class PostResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')->sortable(),
-                TextColumn::make('thread.title')->limit(30)->searchable(),
-                TextColumn::make('author.username')->searchable(),
-                TextColumn::make('content')->html()->limit(50),
-                IconColumn::make('is_solution')->boolean(),
-                TextColumn::make('created_at')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('id')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('thread.title')
+                    ->limit(30)
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('author.username')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('content')
+                    ->html()
+                    ->limit(50),
+                Tables\Columns\IconColumn::make('is_solution')
+                    ->boolean(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable(),
             ])
             ->filters([
                 //
