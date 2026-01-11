@@ -9,10 +9,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Schemas\Schema;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 
@@ -29,22 +25,26 @@ class PostResource extends Resource
     {
         return $schema
             ->components([
-                \Filament\Schemas\Components\Section::make()
+                Forms\Components\Group::make()
                     ->schema([
-                        Forms\Components\Select::make('thread_id')
-                            ->relationship('thread', 'title')
-                            ->required()
-                            ->searchable(),
-                        Forms\Components\Select::make('author_id')
-                            ->relationship('author', 'username')
-                            ->required()
-                            ->searchable(),
-                        Forms\Components\RichEditor::make('content')
-                            ->required()
-                            ->columnSpanFull(),
-                        Forms\Components\Toggle::make('is_solution')
-                            ->label('Mark as Solution'),
+                        Forms\Components\Section::make()
+                            ->schema([
+                                Forms\Components\Select::make('thread_id')
+                                    ->relationship('thread', 'title')
+                                    ->required()
+                                    ->searchable(),
+                                Forms\Components\Select::make('author_id')
+                                    ->relationship('author', 'username')
+                                    ->required()
+                                    ->searchable(),
+                                Forms\Components\RichEditor::make('content')
+                                    ->required()
+                                    ->columnSpanFull(),
+                                Forms\Components\Toggle::make('is_solution')
+                                    ->label('Mark as Solution'),
+                            ])
                     ])
+                    ->columnSpanFull()
             ]);
     }
 
@@ -75,12 +75,12 @@ class PostResource extends Resource
                 //
             ])
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+                \Filament\Tables\Actions\EditAction::make(),
+                \Filament\Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                \Filament\Tables\Actions\BulkActionGroup::make([
+                    \Filament\Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
