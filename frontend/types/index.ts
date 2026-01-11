@@ -60,6 +60,7 @@ export interface Article {
     published_at: string;
     created_at: string;
     updated_at: string;
+    views?: number;
     review_score?: number;
     review_data?: {
         game_title: string;
