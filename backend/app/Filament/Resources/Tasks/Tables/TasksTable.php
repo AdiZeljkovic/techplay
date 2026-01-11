@@ -8,8 +8,6 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use App\Models\Task;
-use Filament\Tables\Actions\Action;
-
 class TasksTable
 {
     public static function configure(Table $table): Table
@@ -62,7 +60,7 @@ class TasksTable
             ])
             ->recordActions([
                 EditAction::make(),
-                \Filament\Tables\Actions\Action::make('start_article')
+                \Filament\Actions\Action::make('start_article')
                     ->label('Start Article')
                     ->icon('heroicon-o-document-plus')
                     ->color('success')
