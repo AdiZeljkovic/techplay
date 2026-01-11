@@ -30,20 +30,23 @@ class ThreadResource extends Resource
     {
         return $schema
             ->components([
-                Forms\Components\Select::make('category_id')
-                    ->relationship('category', 'name')
-                    ->required(),
-                Forms\Components\TextInput::make('title')
-                    ->required()
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state))),
-                Forms\Components\TextInput::make('slug')
-                    ->required()
-                    ->unique(ignoreRecord: true),
-                Forms\Components\RichEditor::make('content')
-                    ->columnSpanFull(),
-                Forms\Components\Toggle::make('is_pinned'),
-                Forms\Components\Toggle::make('is_locked'),
+                Forms\Components\Section::make()
+                    ->schema([
+                        Forms\Components\Select::make('category_id')
+                            ->relationship('category', 'name')
+                            ->required(),
+                        Forms\Components\TextInput::make('title')
+                            ->required()
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state))),
+                        Forms\Components\TextInput::make('slug')
+                            ->required()
+                            ->unique(ignoreRecord: true),
+                        Forms\Components\RichEditor::make('content')
+                            ->columnSpanFull(),
+                        Forms\Components\Toggle::make('is_pinned'),
+                        Forms\Components\Toggle::make('is_locked'),
+                    ])
             ]);
     }
 

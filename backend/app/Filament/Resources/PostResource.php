@@ -29,19 +29,22 @@ class PostResource extends Resource
     {
         return $schema
             ->components([
-                Forms\Components\Select::make('thread_id')
-                    ->relationship('thread', 'title')
-                    ->required()
-                    ->searchable(),
-                Forms\Components\Select::make('author_id')
-                    ->relationship('author', 'username')
-                    ->required()
-                    ->searchable(),
-                Forms\Components\RichEditor::make('content')
-                    ->required()
-                    ->columnSpanFull(),
-                Forms\Components\Toggle::make('is_solution')
-                    ->label('Mark as Solution'),
+                Forms\Components\Section::make()
+                    ->schema([
+                        Forms\Components\Select::make('thread_id')
+                            ->relationship('thread', 'title')
+                            ->required()
+                            ->searchable(),
+                        Forms\Components\Select::make('author_id')
+                            ->relationship('author', 'username')
+                            ->required()
+                            ->searchable(),
+                        Forms\Components\RichEditor::make('content')
+                            ->required()
+                            ->columnSpanFull(),
+                        Forms\Components\Toggle::make('is_solution')
+                            ->label('Mark as Solution'),
+                    ])
             ]);
     }
 
