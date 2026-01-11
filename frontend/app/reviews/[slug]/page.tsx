@@ -81,7 +81,7 @@ export async function generateMetadata(
             type: 'article',
             publishedTime: review.published_at || review.created_at,
             modifiedTime: review.updated_at,
-            authors: [review.author?.username || 'TechPlay'],
+            authors: [review.author?.display_name || review.author?.username || 'TechPlay'],
             images: images,
             // Custom properties if needed, but 'article' type covers mostly
         },

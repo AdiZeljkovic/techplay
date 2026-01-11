@@ -137,7 +137,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 </div>
                                 <div className="group-hover:text-[var(--accent)] transition-colors">
                                     <p className="text-sm font-bold text-white group-hover:text-[var(--accent)] transition-colors">
-                                        {article.author?.name || article.author?.username || "TechPlay Editor"}
+                                        {article.author?.display_name || article.author?.username || "TechPlay Editor"}
                                     </p>
                                     <p className="text-xs text-white/60">
                                         Author
@@ -272,7 +272,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                             <div className="flex-1">
                                 <Link href={`/profile/${article.author?.username}`} className="inline-block group">
                                     <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--accent)] transition-colors">
-                                        About {article.author?.name || article.author?.username || "The Author"}
+                                        About {article.author?.display_name || article.author?.username || "The Author"}
                                     </h3>
                                 </Link>
                                 <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-4">

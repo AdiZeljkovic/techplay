@@ -70,7 +70,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
         },
         "author": {
             "@type": "Person",
-            "name": review.author?.username || "TechPlay Reviewer",
+            "name": review.author?.display_name || review.author?.username || "TechPlay Reviewer",
             "url": `${process.env.NEXT_PUBLIC_APP_URL}/profile/${review.author?.username}`
         },
         "publisher": {
@@ -166,7 +166,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                 </div>
                                 <div className="group-hover:text-[var(--accent)] transition-colors">
                                     <p className="text-sm font-bold text-white group-hover:text-[var(--accent)] transition-colors">
-                                        {review.author?.name || review.author?.username || "TechPlay Reviewer"}
+                                        {review.author?.display_name || review.author?.username || "TechPlay Reviewer"}
                                     </p>
                                     <p className="text-xs text-white/60">Reviewer</p>
                                 </div>
@@ -334,7 +334,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                             <div className="flex-1">
                                 <Link href={`/profile/${review.author?.username}`} className="inline-block group">
                                     <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--accent)] transition-colors">
-                                        About {review.author?.name || review.author?.username || "The Author"}
+                                        About {review.author?.display_name || review.author?.username || "The Author"}
                                     </h3>
                                 </Link>
                                 <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-4">

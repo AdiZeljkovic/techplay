@@ -81,7 +81,7 @@ export async function generateMetadata(
             type: 'article',
             publishedTime: article.published_at || article.created_at,
             modifiedTime: article.updated_at,
-            authors: [article.author?.username || 'TechPlay'],
+            authors: [article.author?.display_name || article.author?.username || 'TechPlay'],
             images: images,
         },
         twitter: {
@@ -160,7 +160,7 @@ export default async function NewsSlugPage({ params }: Props) {
         "dateModified": article.updated_at,
         "author": [{
             "@type": "Person",
-            "name": article.author?.username || "TechPlay Editor",
+            "name": article.author?.display_name || article.author?.username || "TechPlay Editor",
             "url": `${process.env.NEXT_PUBLIC_APP_URL}/profile/${article.author?.username}`
         }]
     };
