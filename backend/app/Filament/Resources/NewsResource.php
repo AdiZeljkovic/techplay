@@ -143,6 +143,10 @@ class NewsResource extends Resource
                                 ->required()
                                 ->native(false),
 
+                            Forms\Components\TagsInput::make('tags')
+                                ->placeholder('Add tags...')
+                                ->helperText('Press Enter to add a tag.'),
+
                             Forms\Components\FileUpload::make('featured_image_url')
                                 ->label('Featured Image')
                                 ->image()
