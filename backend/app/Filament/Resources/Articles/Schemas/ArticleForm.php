@@ -190,7 +190,8 @@ class ArticleForm
                                     ->visibility('public')
                                     ->imageEditor()
                                     ->maxSize(2048)
-                                    ->columnSpanFull(),
+                                    ->columnSpanFull()
+                                    ->helperText('Upload a featured image for this article'),
                             ]),
                     ])
                     ->columnSpan(['lg' => 1]),
