@@ -172,13 +172,14 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 <span className="text-xs text-white/60">Read Time</span>
                             </div>
 
+                            import LiveViewCount from "@/components/tracking/LiveViewCount";
+
+                            // ... inside component
+
                             <div className="hidden md:block w-px h-10 bg-white/20" />
 
                             <div className="flex flex-col">
-                                <span className="flex items-center gap-2 text-sm font-medium">
-                                    <Eye className="w-4 h-4 text-[var(--accent)]" />
-                                    {article.views || 0}
-                                </span>
+                                <LiveViewCount slug={article.slug} initialViews={article.views || 0} />
                                 <span className="text-xs text-white/60">Views</span>
                             </div>
                         </div>
