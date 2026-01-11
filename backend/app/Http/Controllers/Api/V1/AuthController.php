@@ -136,12 +136,21 @@ class AuthController extends Controller
     {
         $user = User::where('username', $username)
             ->with(['rank', 'activeSupport.tier'])
-            ->with([
-                'articles' => function ($query) {
-                    $query->where('status', 'published')->latest()->take(5);
-                }
-            ])
             ->firstOrFail();
+
+        // Fetch recent threads
+        $recentThreads = $user->threads()
+            ->with('category')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Fetch recent comments (activity)
+        $recentComments = $user->comments()
+            ->with('commentable') // Polymorphic relation
+            ->latest()
+            ->take(5)
+            ->get();
 
         // Fetch all achievements
         $allAchievements = \App\Models\Achievement::all();
@@ -156,19 +165,27 @@ class AuthController extends Controller
             return $achievement;
         });
 
+        // Calculate Stats
+        $stats = [
+            'threads_count' => $user->threads()->count(),
+            'posts_count' => $user->posts()->count(), // Forum posts
+            'comments_count' => $user->comments()->count(),
+            'reputation' => $user->forum_reputation ?? 0, // Assuming column exists from earlier discussions
+            'joined_at' => $user->created_at->format('M d, Y'),
+            'xp' => $user->xp,
+            'achievements_count' => $userUnlockedMap->count(),
+            'level' => floor(($user->xp ?? 0) / 1000) + 1,
+        ];
+
         return response()->json([
             'user' => [
                 ...$user->toArray(),
                 'achievements' => $processedAchievements,
             ],
             'next_rank' => $user->nextRank(),
-            'stats' => [
-                'reviews_count' => $user->articles()->where('status', 'published')->count(),
-                'joined_at' => $user->created_at->format('M d, Y'),
-                'xp' => $user->xp,
-                'achievements_count' => $userUnlockedMap->count(),
-                'level' => floor(($user->xp ?? 0) / 1000) + 1,
-            ]
+            'recent_threads' => $recentThreads,
+            'recent_comments' => $recentComments,
+            'stats' => $stats
         ]);
     }
     public function updateProfile(Request $request)
