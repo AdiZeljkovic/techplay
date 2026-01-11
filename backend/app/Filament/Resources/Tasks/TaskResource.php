@@ -49,7 +49,7 @@ class TaskResource extends Resource
         $query = parent::getEloquentQuery();
         $user = auth()->user();
 
-        if ($user->hasRole(['admin', 'super_admin', 'editor-in-chief'])) {
+        if ($user->hasRole(['Super Admin', 'Admin', 'Editor-in-Chief', 'Editor'])) {
             return $query;
         }
 

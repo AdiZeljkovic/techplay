@@ -39,7 +39,7 @@ class TaskForm
                 \Filament\Forms\Components\Select::make('assigned_to')
                     ->relationship('assignee', 'name', function ($query) {
                         return $query->whereHas('roles', function ($q) {
-                            $q->whereIn('name', ['super_admin', 'editor-in-chief', 'editor', 'journalist', 'moderator']);
+                            $q->whereIn('name', ['Super Admin', 'Editor-in-Chief', 'Editor', 'Journalist', 'Moderator']);
                         });
                     })
                     ->searchable()
