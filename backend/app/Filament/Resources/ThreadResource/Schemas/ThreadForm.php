@@ -1,7 +1,5 @@
 <?php
 
-namespace App\Filament\Resources\ThreadResource\Schemas;
-
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
