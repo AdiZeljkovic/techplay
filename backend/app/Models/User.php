@@ -46,6 +46,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'paypal_subscription_id',
         'paypal_customer_id',
         'subscription_ends_at',
+        'last_seen_at',
     ];
 
     /**
@@ -74,6 +75,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'settings' => 'array',
             'cookie_preferences' => 'array',
             'subscription_ends_at' => 'datetime',
+            'last_seen_at' => 'datetime',
         ];
     }
 
@@ -97,6 +99,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function sentMessages()
     {
         return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function sentEditorialMessages()
+    {
+        return $this->hasMany(EditorialMessage::class, 'user_id');
+    }
+
+    public function receivedEditorialMessages()
+    {
+        return $this->hasMany(EditorialMessage::class, 'recipient_id');
     }
 
     public function nextRank()

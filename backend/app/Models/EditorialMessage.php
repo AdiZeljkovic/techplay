@@ -15,6 +15,15 @@ class EditorialMessage extends Model
         'attachment_url',
         'channel',
         'recipient_id',
+        'mentioned_user_ids',
+        'is_pinned',
+        'read_at',
+    ];
+
+    protected $casts = [
+        'mentioned_user_ids' => 'array',
+        'is_pinned' => 'boolean',
+        'read_at' => 'datetime',
     ];
 
     public function user()

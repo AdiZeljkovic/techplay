@@ -4,11 +4,11 @@
 
         <!-- Sidebar (Dark) -->
         <div
-            style="width: 260px; display: flex; flex-direction: column; background-color: #1a2234; color: #94a3b8; border-right: 1px solid #1e293b; flex-shrink: 0;">
+            style="width: 280px; display: flex; flex-direction: column; background-color: #1a2234; color: #94a3b8; border-right: 1px solid #1e293b; flex-shrink: 0;">
             <!-- Header -->
             <div
                 style="height: 60px; display: flex; align-items: center; padding-left: 20px; font-weight: bold; color: white; border-bottom: 1px solid #1e293b; background-color: #1a2234;">
-                TechPlay Redakcija
+                <span style="color: #3b82f6; margin-right: 8px;">◈</span> TechPlay Redakcija
             </div>
 
             <!-- Scrollable List -->
@@ -17,14 +17,16 @@
                 <!-- Channels -->
                 <div style="margin-bottom: 30px;">
                     <div
-                        style="padding: 0 20px; margin-bottom: 10px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">
-                        Channels
+                        style="padding: 0 20px; margin-bottom: 10px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; display: flex; justify-content: space-between;">
+                        <span>Channels</span>
                     </div>
-                    @foreach(['general', 'news', 'reviews', 'random'] as $channel)
-                        <button wire:click="setChannel('{{ $channel }}')"
-                            style="width: 100%; text-align: left; padding: 8px 20px; display: flex; align-items: center; gap: 10px; cursor: pointer; border: none; background: {{ $this->activeChannel === $channel ? '#1d4ed8' : 'transparent' }}; color: {{ $this->activeChannel === $channel ? 'white' : 'inherit' }};">
-                            <span style="opacity: 0.7;">#</span>
-                            <span>{{ ucfirst($channel) }}</span>
+                    @foreach($this->channels as $id => $channel)
+                        <button wire:click="setChannel('{{ $id }}')"
+                            style="width: 100%; text-align: left; padding: 8px 20px; display: flex; align-items: center; gap: 10px; cursor: pointer; border: none; background: {{ $this->activeChannel === $id ? '#1d4ed8' : 'transparent' }}; color: {{ $this->activeChannel === $id ? 'white' : 'inherit' }}; transition: background 0.2s;">
+                            <span>{{ $channel['icon'] }}</span>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.9rem;">{{ $channel['name'] }}</div>
+                            </div>
                         </button>
                     @endforeach
                 </div>
@@ -36,12 +38,49 @@
                         Direct Messages
                     </div>
                     @foreach($this->users as $user)
+                        @php
+                            $roleBadge = $this->getUserRoleBadge($user);
+                            $isOnline = $this->isUserOnline($user);
+                        @endphp
                         <button wire:click="setRecipient({{ $user->id }})"
-                            style="width: 100%; text-align: left; padding: 8px 20px; display: flex; align-items: center; gap: 10px; cursor: pointer; border: none; background: {{ $this->activeRecipient === $user->id ? '#1d4ed8' : 'transparent' }}; color: {{ $this->activeRecipient === $user->id ? 'white' : 'inherit' }};">
-                            <div
-                                style="width: 10px; height: 10px; border-radius: 50%; background-color: {{ $user->id % 2 == 0 ? '#22c55e' : '#9ca3af' }};">
+                            style="width: 100%; text-align: left; padding: 10px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; border: none; background: {{ $this->activeRecipient === $user->id ? '#1d4ed8' : 'transparent' }}; color: {{ $this->activeRecipient === $user->id ? 'white' : 'inherit' }}; transition: background 0.2s;">
+
+                            <!-- Avatar with Online Status -->
+                            <div style="position: relative;">
+                                @if($user->avatar_url)
+                                    <img src="{{ $user->user_avatar }}"
+                                        style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+                                @else
+                                    <div
+                                        style="width: 32px; height: 32px; border-radius: 50%; background-color: {{ $user->id % 2 == 0 ? '#3b82f6' : '#6366f1' }}; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold;">
+                                        {{ substr($user->name, 0, 1) }}
+                                    </div>
+                                @endif
+                                <div
+                                    style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-radius: 50%; background-color: {{ $isOnline ? '#22c55e' : '#9ca3af' }}; border: 2px solid #1a2234;">
+                                </div>
                             </div>
-                            <span>{{ $user->name }}</span>
+
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <span
+                                        style="font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;">
+                                        {{ $user->name }}
+                                    </span>
+                                    @if($user->unread_count > 0)
+                                        <div
+                                            style="background-color: #ef4444; color: white; font-size: 0.7rem; padding: 1px 6px; border-radius: 10px; font-weight: bold;">
+                                            {{ $user->unread_count }}
+                                        </div>
+                                    @endif
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                                    <span
+                                        style="font-size: 0.65rem; padding: 1px 4px; border-radius: 4px; background-color: {{ $roleBadge['color'] }}20; color: {{ $roleBadge['color'] }}; border: 1px solid {{ $roleBadge['color'] }}40;">
+                                        {{ $roleBadge['short'] }}
+                                    </span>
+                                </div>
+                            </div>
                         </button>
                     @endforeach
                 </div>
@@ -54,56 +93,103 @@
 
             <!-- Context Header -->
             <div
-                style="height: 60px; display: flex; align-items: center; padding: 0 24px; background-color: white; border-bottom: 1px solid #e2e8f0; flex-shrink: 0;">
-                @if($this->activeChannel)
-                    <span style="font-size: 1.5rem; color: #cbd5e1; margin-right: 8px;">#</span>
-                    <h2 style="font-size: 1.125rem; font-weight: bold; color: #0f172a;">{{ ucfirst($this->activeChannel) }}
-                    </h2>
-                @elseif($this->activeRecipient)
-                    <div
-                        style="width: 12px; height: 12px; border-radius: 50%; background-color: #22c55e; margin-right: 12px;">
-                    </div>
-                    <h2 style="font-size: 1.125rem; font-weight: bold; color: #0f172a;">
-                        {{ $this->users->find($this->activeRecipient)?->name }}
-                    </h2>
-                @endif
+                style="height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; background-color: white; border-bottom: 1px solid #e2e8f0; flex-shrink: 0;">
+                <div style="display: flex; align-items: center;">
+                    @if($this->activeChannel)
+                        <span
+                            style="font-size: 1.5rem; margin-right: 12px;">{{ $this->channels[$this->activeChannel]['icon'] }}</span>
+                        <div>
+                            <h2 style="font-size: 1.125rem; font-weight: bold; color: #0f172a;">
+                                {{ $this->channels[$this->activeChannel]['name'] }}
+                            </h2>
+                            <p style="font-size: 0.8rem; color: #64748b;">
+                                {{ $this->channels[$this->activeChannel]['description'] }}
+                            </p>
+                        </div>
+                    @elseif($this->activeRecipient)
+                        @php
+                            $recipient = $this->users->find($this->activeRecipient);
+                            $isOnline = $this->isUserOnline($recipient);
+                        @endphp
+                        <div style="position: relative; margin-right: 12px;">
+                            <div
+                                style="width: 36px; height: 36px; border-radius: 50%; background-color: #3b82f6; display: flex; items-center; justify-content: center; color: white; font-weight: bold; line-height: 36px; text-align: center;">
+                                {{ substr($recipient->name, 0, 1) }}
+                            </div>
+                            <div
+                                style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-radius: 50%; background-color: {{ $isOnline ? '#22c55e' : '#9ca3af' }}; border: 2px solid white;">
+                            </div>
+                        </div>
+                        <div>
+                            <h2 style="font-size: 1.125rem; font-weight: bold; color: #0f172a;">
+                                {{ $recipient->name }}
+                            </h2>
+                            <p style="font-size: 0.8rem; color: #64748b;">
+                                Direct Message
+                            </p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Action Buttons (Placeholder for future) -->
+                <div style="display: flex; gap: 8px;">
+                    <!-- <button style="padding: 6px; color: #94a3b8; hover:text-slate-600;">🔍</button> -->
+                </div>
             </div>
 
             <!-- Messages Stream -->
-            <!-- Order logic: 
-                 We fetch latest messages. [MsgNewest, MsgOldest].
-                 Standard chat should show Oldest at Top, Newest at Bottom.
-                 So we need to reverse the collection in PHP or Iterate in Reverse?
-                 Actually, standard fetch `latest()` gets Newest First.
-                 If we simply iterate Newest First, standard HTML stacking puts Newest at Top.
-            -->
             <div
                 style="flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column-reverse; gap: 20px;">
                 @forelse($this->messages as $msg)
-                    <div style="display: flex; gap: 16px; align-items: flex-start;">
+                    @php
+                        $isMe = $msg->user_id === auth()->id();
+                        $roleBadge = $this->getUserRoleBadge($msg->user);
+                    @endphp
+                    <div
+                        style="display: flex; gap: 16px; align-items: flex-start; {{ $isMe ? 'flex-direction: row-reverse;' : '' }}">
                         <!-- Avatar -->
                         <div
-                            style="width: 40px; height: 40px; border-radius: 6px; background-color: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+                            style="width: 40px; height: 40px; border-radius: 8px; background-color: {{ $msg->user_id % 2 == 0 ? '#3b82f6' : '#8b5cf6' }}; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             {{ substr($msg->user->name, 0, 1) }}
                         </div>
 
                         <!-- Content -->
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px;">
-                                <span style="font-weight: bold; color: #0f172a; font-size: 0.95rem;">
+                        <div
+                            style="max-width: 70%; {{ $isMe ? 'align-items: flex-end; display: flex; flex-direction: column;' : '' }}">
+                            <div
+                                style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; {{ $isMe ? 'flex-direction: row-reverse;' : '' }}">
+                                <span style="font-weight: bold; color: #0f172a; font-size: 0.9rem;">
                                     {{ $msg->user->name }}
                                 </span>
-                                <span style="font-size: 0.75rem; color: #64748b;">
+                                <span
+                                    style="font-size: 0.7rem; padding: 1px 4px; border-radius: 4px; background-color: {{ $roleBadge['color'] }}20; color: {{ $roleBadge['color'] }}; border: 1px solid {{ $roleBadge['color'] }}40;">
+                                    {{ $roleBadge['short'] }}
+                                </span>
+                                <span style="font-size: 0.75rem; color: #94a3b8;">
                                     {{ $msg->created_at->format('H:i') }}
                                 </span>
                             </div>
-                            <div style="color: #334155; line-height: 1.5; font-size: 0.95rem; white-space: pre-wrap;">
-                                {{ $msg->content }}</div>
+                            <div style="
+                                    padding: 12px 16px; 
+                                    border-radius: 12px; 
+                                    background-color: {{ $isMe ? '#3b82f6' : 'white' }}; 
+                                    color: {{ $isMe ? 'white' : '#1e293b' }}; 
+                                    box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
+                                    {{ $isMe ? 'border-bottom-right-radius: 2px;' : 'border-bottom-left-radius: 2px;' }}
+                                    font-size: 0.95rem; 
+                                    line-height: 1.5;
+                                    overflow-wrap: break-word;
+                                ">
+                                {!! $this->formatMessageContent($msg->content) !!}
+                            </div>
                         </div>
                     </div>
                 @empty
-                    <div style="text-align: center; padding: 40px; color: #94a3b8;">
-                        No messages yet.
+                    <div
+                        style="text-align: center; padding: 40px; color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                        <span style="font-size: 2rem;">📭</span>
+                        <span>No messages yet in this channel.</span>
+                        <span style="font-size: 0.85rem;">Be the first to say hello!</span>
                     </div>
                 @endforelse
             </div>
@@ -112,24 +198,25 @@
             <div style="padding: 20px; background-color: white; border-top: 1px solid #e2e8f0;">
                 <form wire:submit="sendMessage" style="position: relative;">
                     <div
-                        style="border: 1px solid #cbd5e1; border-radius: 12px; overflow: hidden; background-color: white; transition: box-shadow 0.2s;">
-                        <!-- Dummy Toolbar -->
-                        <div
-                            style="padding: 8px; background-color: #f8fafc; border-bottom: 1px solid #f1f5f9; display: flex; gap: 8px; color: #64748b;">
-                            <span style="font-size: 12px; font-weight: bold;">B</span>
-                            <span style="font-size: 12px; font-style: italic;">I</span>
-                        </div>
-
+                        style="border: 1px solid #cbd5e1; border-radius: 12px; overflow: hidden; background-color: white; transition: box-shadow 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                         <input type="text" wire:model="message"
-                            style="width: 100%; border: none; padding: 12px 16px; font-size: 0.95rem; outline: none; background: transparent;"
-                            placeholder="Message..." autofocus autocomplete="off" />
+                            style="width: 100%; border: none; padding: 16px; font-size: 0.95rem; outline: none; background: transparent;"
+                            placeholder="Type a message... Use @ to mention" autofocus autocomplete="off" />
 
                         <div
-                            style="display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background-color: white;">
-                            <span style="font-size: 10px; color: #94a3b8;">Return to send</span>
+                            style="display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background-color: #f8fafc; border-top: 1px solid #f1f5f9;">
+                            <div style="display: flex; gap: 10px; font-size: 0.75rem; color: #64748b;">
+                                <!-- Valid Hints -->
+                                <span><b>Markdown</b> supported</span>
+                            </div>
                             <button type="submit"
-                                style="background-color: #15803d; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.85rem;">
-                                Send
+                                style="background-color: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: background 0.2s; display: flex; align-items: center; gap: 6px;">
+                                <span>Send</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                                    class="w-4 h-4">
+                                    <path
+                                        d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 004.426 9H13a.75.75 0 010 1.5H4.426a1.5 1.5 0 00-.733.596l-1.414 4.925a.75.75 0 001.076.923l15-7a.75.75 0 000-1.386l-15-7z" />
+                                </svg>
                             </button>
                         </div>
                     </div>
