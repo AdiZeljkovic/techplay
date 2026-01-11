@@ -23,6 +23,8 @@ class NewsResource extends Resource
 {
     protected static ?string $model = Article::class;
 
+    protected static ?string $modelPolicy = \App\Policies\NewsPolicy::class;
+
     protected static ?string $slug = 'news-articles';
 
     public static function getNavigationGroup(): ?string

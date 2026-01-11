@@ -31,6 +31,12 @@ class UserResource extends Resource
         return 'Users';
     }
 
+    public static function canAccess(): bool
+    {
+        $user = auth()->user();
+        return $user && $user->can('manage users');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema
