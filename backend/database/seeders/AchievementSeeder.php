@@ -44,6 +44,19 @@ class AchievementSeeder extends Seeder
             // Special
             ['name' => 'Early Adopter', 'description' => 'Join during the beta period', 'points' => 200, 'criteria_type' => 'special', 'criteria_value' => 0],
             ['name' => 'Verified Gamer', 'description' => 'Verify your email address', 'points' => 25, 'criteria_type' => 'email_verified', 'criteria_value' => 1],
+
+            // Support & Patronage
+            ['name' => 'TechPlay Patron', 'description' => 'Subscribe to any support tier', 'points' => 500, 'criteria_type' => 'support_tier', 'criteria_value' => 1],
+            ['name' => 'Legacy Supporter', 'description' => 'Maintain a subscription for 12 months', 'points' => 1000, 'criteria_type' => 'support_duration', 'criteria_value' => 12],
+
+            // Shop & Collection
+            ['name' => 'Collector', 'description' => 'Complete your first order', 'points' => 50, 'criteria_type' => 'orders_count', 'criteria_value' => 1],
+            ['name' => 'Big Spender', 'description' => 'Complete 5 orders', 'points' => 250, 'criteria_type' => 'orders_count', 'criteria_value' => 5],
+
+            // Engagement (Comments)
+            ['name' => 'First Opinion', 'description' => 'Post your first comment', 'points' => 10, 'criteria_type' => 'comments_count', 'criteria_value' => 1],
+            ['name' => 'Critic', 'description' => 'Post 50 comments', 'points' => 100, 'criteria_type' => 'comments_count', 'criteria_value' => 50],
+            ['name' => 'Voice of the People', 'description' => 'Receive 50 likes on your comments', 'points' => 200, 'criteria_type' => 'comment_likes_received', 'criteria_value' => 50],
         ];
 
         foreach ($achievements as $achievement) {
