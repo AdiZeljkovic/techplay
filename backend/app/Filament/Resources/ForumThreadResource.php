@@ -16,7 +16,7 @@ class ForumThreadResource extends Resource
     protected static ?string $model = Thread::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-left-right';
-    protected static ?string $navigationGroup = 'Community';
+    protected static string|\UnitEnum|null $navigationGroup = 'Community';
     protected static ?string $navigationLabel = 'Threads';
 
     public static function form(Schema $schema): Schema
