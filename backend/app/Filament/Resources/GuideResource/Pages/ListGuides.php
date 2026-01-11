@@ -16,4 +16,9 @@ class ListGuides extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    public function getMaxContentWidth(): \Filament\Support\Enums\Width
+    {
+        return \Filament\Support\Enums\Width::Full;
+    }
 }

@@ -8,4 +8,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateGuide extends CreateRecord
 {
     protected static string $resource = GuideResource::class;
+
+    public function getMaxContentWidth(): \Filament\Support\Enums\Width
+    {
+        return \Filament\Support\Enums\Width::Full;
+    }
 }

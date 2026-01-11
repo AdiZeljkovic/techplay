@@ -8,4 +8,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateNews extends CreateRecord
 {
     protected static string $resource = NewsResource::class;
+
+    public function getMaxContentWidth(): \Filament\Support\Enums\Width
+    {
+        return \Filament\Support\Enums\Width::Full;
+    }
 }
