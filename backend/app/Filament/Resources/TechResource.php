@@ -5,9 +5,9 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\TechResource\Pages;
 use App\Models\Article;
 use App\Models\Category;
-use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Textarea;
@@ -63,13 +63,13 @@ class TechResource extends Resource
     {
         return $schema
             ->components([
-                Grid::make(3)
+                \Filament\Schemas\Components\Grid::make(3)
                     ->schema([
                         // Main Content (Left)
-                        Group::make()
+                        \Filament\Schemas\Components\Group::make()
                             ->columnSpan(['lg' => 2])
                             ->schema([
-                                Section::make('Article Content')
+                                \Filament\Schemas\Components\Section::make('Article Content')
                                     ->schema([
                                         TextInput::make('title')
                                             ->required()
@@ -97,10 +97,10 @@ class TechResource extends Resource
                             ]),
 
                         // Sidebar (Right)
-                        Group::make()
+                        \Filament\Schemas\Components\Group::make()
                             ->columnSpan(['lg' => 1])
                             ->schema([
-                                Section::make('Publishing')
+                                \Filament\Schemas\Components\Section::make('Publishing')
                                     ->schema([
                                         Select::make('status')
                                             ->options([
@@ -126,7 +126,7 @@ class TechResource extends Resource
                                             ->default(false),
                                     ]),
 
-                                Section::make('Taxonomy')
+                                \Filament\Schemas\Components\Section::make('Taxonomy')
                                     ->schema([
                                         Select::make('category_id')
                                             ->label('Category')
@@ -135,7 +135,7 @@ class TechResource extends Resource
                                             ->required(),
                                     ]),
 
-                                Section::make('Media')
+                                \Filament\Schemas\Components\Section::make('Media')
                                     ->schema([
                                         FileUpload::make('featured_image_url')
                                             ->label('Featured Image')

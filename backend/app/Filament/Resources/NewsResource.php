@@ -6,9 +6,9 @@ use App\Filament\Resources\NewsResource\Pages;
 use App\Models\Article;
 use App\Models\Category;
 use Filament\Forms;
-use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
 use Filament\Forms\Set;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
@@ -58,13 +58,13 @@ class NewsResource extends Resource
     {
         return $schema
             ->components([
-                \Filament\Forms\Components\Grid::make(3)
+                \Filament\Schemas\Components\Grid::make(3)
                     ->schema([
                         // Main Content (Left)
-                        \Filament\Forms\Components\Group::make()
+                        \Filament\Schemas\Components\Group::make()
                             ->columnSpan(['lg' => 2])
                             ->schema([
-                                \Filament\Forms\Components\Section::make('Article Content')
+                                \Filament\Schemas\Components\Section::make('Article Content')
                                     ->schema([
                                         Forms\Components\TextInput::make('title')
                                             ->required()
@@ -90,10 +90,10 @@ class NewsResource extends Resource
                             ]),
 
                         // Sidebar (Right)
-                        \Filament\Forms\Components\Group::make()
+                        \Filament\Schemas\Components\Group::make()
                             ->columnSpan(['lg' => 1])
                             ->schema([
-                                \Filament\Forms\Components\Section::make('Publishing')
+                                \Filament\Schemas\Components\Section::make('Publishing')
                                     ->schema([
                                         Forms\Components\Select::make('status')
                                             ->options([
@@ -116,7 +116,7 @@ class NewsResource extends Resource
                                             ->default(false),
                                     ]),
 
-                                \Filament\Forms\Components\Section::make('Taxonomy')
+                                \Filament\Schemas\Components\Section::make('Taxonomy')
                                     ->schema([
                                         Forms\Components\Select::make('category_id')
                                             ->label('Category')
@@ -125,7 +125,7 @@ class NewsResource extends Resource
                                             ->required(),
                                     ]),
 
-                                \Filament\Forms\Components\Section::make('Media')
+                                \Filament\Schemas\Components\Section::make('Media')
                                     ->schema([
                                         Forms\Components\FileUpload::make('featured_image_url')
                                             ->label('Featured Image')

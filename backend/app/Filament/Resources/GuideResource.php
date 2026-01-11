@@ -4,9 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\GuideResource\Pages;
 use App\Models\Guide;
-use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\RichEditor;
@@ -55,13 +55,13 @@ class GuideResource extends Resource
     {
         return $schema
             ->components([
-                Grid::make(3)
+                \Filament\Schemas\Components\Grid::make(3)
                     ->schema([
                         // Main Content (Left/Center)
-                        Group::make()
+                        \Filament\Schemas\Components\Group::make()
                             ->columnSpan(['lg' => 2])
                             ->schema([
-                                Section::make('Guide Content')
+                                \Filament\Schemas\Components\Section::make('Guide Content')
                                     ->schema([
                                         TextInput::make('title')
                                             ->required()
@@ -88,7 +88,7 @@ class GuideResource extends Resource
                                             ->columnSpanFull(),
                                     ]),
 
-                                Section::make('Step-by-Step Instructions')
+                                \Filament\Schemas\Components\Section::make('Step-by-Step Instructions')
                                     ->description('Add structured steps for this guide (optional).')
                                     ->schema([
                                         Repeater::make('steps')
@@ -111,10 +111,10 @@ class GuideResource extends Resource
                             ]),
 
                         // Sidebar (Right)
-                        Group::make()
+                        \Filament\Schemas\Components\Group::make()
                             ->columnSpan(['lg' => 1])
                             ->schema([
-                                Section::make('Publishing')
+                                \Filament\Schemas\Components\Section::make('Publishing')
                                     ->schema([
                                         Select::make('status')
                                             ->options([
@@ -136,7 +136,7 @@ class GuideResource extends Resource
                                             ->required(),
                                     ]),
 
-                                Section::make('Taxonomy')
+                                \Filament\Schemas\Components\Section::make('Taxonomy')
                                     ->schema([
                                         Select::make('difficulty')
                                             ->options([
@@ -147,13 +147,12 @@ class GuideResource extends Resource
                                             ->required(),
                                     ]),
 
-                                Section::make('Media')
+                                \Filament\Schemas\Components\Section::make('Media')
                                     ->schema([
                                         FileUpload::make('featured_image_url')
                                             ->label('Featured Image')
                                             ->image()
                                             ->disk('public')
-                                            ->directory('guides')
                                             ->imageEditor(),
                                     ]),
                             ]),

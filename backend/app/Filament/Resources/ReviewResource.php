@@ -90,16 +90,16 @@ class ReviewResource extends Resource
 
         return $schema
             ->components([
-                \Filament\Forms\Components\Grid::make(3)
+                \Filament\Schemas\Components\Grid::make(3)
                     ->schema([
                         // Main Content (Left)
-                        \Filament\Forms\Components\Group::make()
+                        \Filament\Schemas\Components\Group::make()
                             ->columnSpan(['lg' => 2])
                             ->schema([
-                                \Filament\Forms\Components\Section::make('Game / Product Details')
+                                \Filament\Schemas\Components\Section::make('Game / Product Details')
                                     ->description('Fetch data from RAWG or enter manually.')
                                     ->schema([
-                                        \Filament\Forms\Components\Grid::make(2)
+                                        \Filament\Schemas\Components\Grid::make(2)
                                             ->schema([
                                                 TextInput::make('review_data.game_title')
                                                     ->label('Title')
@@ -180,7 +180,7 @@ class ReviewResource extends Resource
                                             ]),
                                     ]),
 
-                                \Filament\Forms\Components\Section::make('Review Content')
+                                \Filament\Schemas\Components\Section::make('Review Content')
                                     ->schema([
                                         TextInput::make('title')
                                             ->required()
@@ -202,9 +202,9 @@ class ReviewResource extends Resource
                                             ->columnSpanFull(),
                                     ]),
 
-                                \Filament\Forms\Components\Section::make('Verdict & Analysis')
+                                \Filament\Schemas\Components\Section::make('Verdict & Analysis')
                                     ->schema([
-                                        \Filament\Forms\Components\Grid::make(2)
+                                        \Filament\Schemas\Components\Grid::make(2)
                                             ->schema([
                                                 Repeater::make('review_data.pros')
                                                     ->label('Positives')
@@ -221,10 +221,10 @@ class ReviewResource extends Resource
                             ]),
 
                         // Sidebar (Right)
-                        \Filament\Forms\Components\Group::make()
+                        \Filament\Schemas\Components\Group::make()
                             ->columnSpan(['lg' => 1])
                             ->schema([
-                                \Filament\Forms\Components\Section::make('Publishing')
+                                \Filament\Schemas\Components\Section::make('Publishing')
                                     ->schema([
                                         Select::make('status')
                                             ->options([
@@ -247,7 +247,7 @@ class ReviewResource extends Resource
                                             ->default(false),
                                     ]),
 
-                                \Filament\Forms\Components\Section::make('Score Board')
+                                \Filament\Schemas\Components\Section::make('Score Board')
                                     ->schema([
                                         TextInput::make('review_score')
                                             ->label('Final Score')
@@ -274,7 +274,7 @@ class ReviewResource extends Resource
                                             ->default('none'),
                                     ]),
 
-                                \Filament\Forms\Components\Section::make('Taxonomy')
+                                \Filament\Schemas\Components\Section::make('Taxonomy')
                                     ->schema([
                                         Select::make('category_id')
                                             ->label('Category')
@@ -286,7 +286,7 @@ class ReviewResource extends Resource
                                             ->placeholder('Add tags...'),
                                     ]),
 
-                                \Filament\Forms\Components\Section::make('Media')
+                                \Filament\Schemas\Components\Section::make('Media')
                                     ->schema([
                                         FileUpload::make('featured_image_url')
                                             ->label('Featured Image')
