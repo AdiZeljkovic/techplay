@@ -11,15 +11,14 @@ use Filament\Tables\Table;
 use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Support\Str;
 use Filament\Schemas\Schema;
-use Filament\Actions\EditAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 
 class ThreadResource extends Resource
 {
     protected static ?string $model = Thread::class;
+
+    protected static ?string $recordTitleAttribute = 'title';
 
     public static function getNavigationGroup(): ?string
     {
@@ -30,23 +29,27 @@ class ThreadResource extends Resource
     {
         return $schema
             ->components([
-                \Filament\Schemas\Components\Section::make()
+                Forms\Components\Group::make()
                     ->schema([
-                        Forms\Components\Select::make('category_id')
-                            ->relationship('category', 'name')
-                            ->required(),
-                        Forms\Components\TextInput::make('title')
-                            ->required()
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state))),
-                        Forms\Components\TextInput::make('slug')
-                            ->required()
-                            ->unique(ignoreRecord: true),
-                        Forms\Components\RichEditor::make('content')
-                            ->columnSpanFull(),
-                        Forms\Components\Toggle::make('is_pinned'),
-                        Forms\Components\Toggle::make('is_locked'),
+                        Forms\Components\Section::make()
+                            ->schema([
+                                Forms\Components\Select::make('category_id')
+                                    ->relationship('category', 'name')
+                                    ->required(),
+                                Forms\Components\TextInput::make('title')
+                                    ->required()
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state))),
+                                Forms\Components\TextInput::make('slug')
+                                    ->required()
+                                    ->unique(ignoreRecord: true),
+                                Forms\Components\RichEditor::make('content')
+                                    ->columnSpanFull(),
+                                Forms\Components\Toggle::make('is_pinned'),
+                                Forms\Components\Toggle::make('is_locked'),
+                            ])
                     ])
+                    ->columnSpanFull()
             ]);
     }
 
@@ -81,11 +84,11 @@ class ThreadResource extends Resource
                 //
             ])
             ->actions([
-                EditAction::make(),
+                \Filament\Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                \Filament\Tables\Actions\BulkActionGroup::make([
+                    \Filament\Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
