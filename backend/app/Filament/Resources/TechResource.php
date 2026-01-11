@@ -132,6 +132,10 @@ class TechResource extends Resource
                                 ->required()
                                 ->native(false),
 
+                            \Filament\Forms\Components\TagsInput::make('tags')
+                                ->placeholder('Add tags...')
+                                ->helperText('Press Enter to add a tag.'),
+
                             FileUpload::make('featured_image_url')
                                 ->label('Featured Image')
                                 ->image()
