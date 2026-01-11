@@ -11,6 +11,9 @@ use Filament\Tables\Table;
 use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Support\Str;
 use Filament\Schemas\Schema;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 
 
 class ThreadResource extends Resource
@@ -81,11 +84,11 @@ class ThreadResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
