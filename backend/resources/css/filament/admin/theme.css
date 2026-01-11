@@ -1,0 +1,27 @@
+/* Custom Filament Admin Panel Styles */
+
+/* Override form container max-width to use full available space */
+.fi-fo-component-ctn {
+    max-width: 100% !important;
+}
+
+/* Ensure form sections use full width */
+.fi-section {
+    max-width: 100% !important;
+}
+
+/* Override any grid constraints on create/edit pages */
+.fi-resource-create .fi-fo-component-ctn,
+.fi-resource-edit .fi-fo-component-ctn {
+    max-width: 100% !important;
+}
+
+/* Ensure the main content area uses full width */
+.fi-main-ctn {
+    max-width: 100% !important;
+}
+
+/* Form wrapper should also be full width */
+.fi-fo {
+    max-width: 100% !important;
+}
