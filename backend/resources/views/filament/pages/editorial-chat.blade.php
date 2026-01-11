@@ -170,16 +170,37 @@
                                 </span>
                             </div>
                             <div style="
-                                    padding: 12px 16px; 
-                                    border-radius: 12px; 
-                                    background-color: {{ $isMe ? '#3b82f6' : 'white' }}; 
-                                    color: {{ $isMe ? 'white' : '#1e293b' }}; 
-                                    box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
-                                    {{ $isMe ? 'border-bottom-right-radius: 2px;' : 'border-bottom-left-radius: 2px;' }}
-                                    font-size: 0.95rem; 
-                                    line-height: 1.5;
-                                    overflow-wrap: break-word;
-                                ">
+                                        padding: 12px 16px; 
+                                        border-radius: 12px; 
+                                        background-color: {{ $isMe ? '#3b82f6' : 'white' }}; 
+                                        color: {{ $isMe ? 'white' : '#1e293b' }}; 
+                                        box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
+                                        {{ $isMe ? 'border-bottom-right-radius: 2px;' : 'border-bottom-left-radius: 2px;' }}
+                                        font-size: 0.95rem; 
+                                        line-height: 1.5;
+                                        overflow-wrap: break-word;
+                                    ">
+                                @if($msg->attachment_url)
+                                    <div style="margin-bottom: 8px;">
+                                        @if(Str::endsWith($msg->attachment_url, ['.jpg', '.jpeg', '.png', '.gif', '.webp']))
+                                            <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank">
+                                                <img src="{{ asset('storage/' . $msg->attachment_url) }}"
+                                                    style="max-width: 100%; border-radius: 8px; max-height: 200px; object-fit: cover;" />
+                                            </a>
+                                        @else
+                                            <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank"
+                                                style="display: flex; align-items: center; gap: 8px; padding: 8px; background-color: rgba(0,0,0,0.1); border-radius: 6px; color: inherit; text-decoration: none;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                                </svg>
+                                                <span style="font-size: 0.85rem; text-decoration: underline;">Available
+                                                    Attachment</span>
+                                            </a>
+                                        @endif
+                                    </div>
+                                @endif
                                 {!! $this->formatMessageContent($msg->content) !!}
                             </div>
                         </div>
@@ -196,19 +217,49 @@
 
             <!-- Input Area -->
             <div style="padding: 20px; background-color: white; border-top: 1px solid #e2e8f0;">
+
+                @if($attachment)
+                    <div
+                        style="margin-bottom: 10px; padding: 8px; background-color: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-size: 0.85rem; color: #475569;">
+                            📎 {{ $attachment->getClientOriginalName() }}
+                            <span style="color: #94a3b8; font-size: 0.75rem;">(Ready to send)</span>
+                        </span>
+                        <button wire:click="resetAttachment"
+                            style="background: none; border: none; cursor: pointer; color: #ef4444; font-weight: bold;">✕</button>
+                    </div>
+                @endif
+
                 <form wire:submit="sendMessage" style="position: relative;">
                     <div
                         style="border: 1px solid #cbd5e1; border-radius: 12px; overflow: hidden; background-color: white; transition: box-shadow 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+
                         <input type="text" wire:model="message"
-                            style="width: 100%; border: none; padding: 16px; font-size: 0.95rem; outline: none; background: transparent;"
+                            style="width: 100%; border: none; padding: 16px; font-size: 0.95rem; outline: none; background: white; color: #0f172a;"
                             placeholder="Type a message... Use @ to mention" autofocus autocomplete="off" />
 
                         <div
                             style="display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background-color: #f8fafc; border-top: 1px solid #f1f5f9;">
-                            <div style="display: flex; gap: 10px; font-size: 0.75rem; color: #64748b;">
-                                <!-- Valid Hints -->
-                                <span><b>Markdown</b> supported</span>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <!-- File Upload Button -->
+                                <label for="file-upload"
+                                    style="cursor: pointer; color: #64748b; display: flex; align-items: center; padding: 4px; border-radius: 4px; transition: background 0.2s;"
+                                    class="hover:bg-slate-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                    </svg>
+                                </label>
+                                <input type="file" id="file-upload" wire:model="attachment" style="display: none;" />
+
+                                <!-- Formatting Hints -->
+                                <div
+                                    style="display: flex; gap: 10px; font-size: 0.75rem; color: #64748b; border-left: 1px solid #cbd5e1; padding-left: 12px;">
+                                    <span><b>Markdown</b> supported</span>
+                                </div>
                             </div>
+
                             <button type="submit"
                                 style="background-color: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: background 0.2s; display: flex; align-items: center; gap: 6px;">
                                 <span>Send</span>

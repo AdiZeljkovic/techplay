@@ -6,9 +6,12 @@ use App\Models\EditorialMessage;
 use App\Models\User;
 use Filament\Pages\Page;
 use Illuminate\Support\Str;
+use Livewire\WithFileUploads;
 
 class EditorialChat extends Page
 {
+    use WithFileUploads;
+
     public static function getNavigationIcon(): ?string
     {
         return 'heroicon-o-chat-bubble-left-right';
@@ -39,6 +42,7 @@ class EditorialChat extends Page
     public $message = '';
     public $activeChannel = 'general';
     public $activeRecipient = null;
+    public $attachment = null;
 
     // Meaningful channels for editorial workflow
     public array $channels = [
@@ -64,6 +68,7 @@ class EditorialChat extends Page
         $this->activeChannel = $channel;
         $this->activeRecipient = null;
         $this->updateLastSeen();
+        $this->resetAttachment();
     }
 
     public function setRecipient($userId)
@@ -71,6 +76,7 @@ class EditorialChat extends Page
         $this->activeRecipient = $userId;
         $this->activeChannel = null;
         $this->updateLastSeen();
+        $this->resetAttachment();
     }
 
     protected function updateLastSeen()
@@ -79,14 +85,25 @@ class EditorialChat extends Page
         auth()->user()->update(['last_seen_at' => now()]);
     }
 
+    public function resetAttachment()
+    {
+        $this->attachment = null;
+    }
+
     public function sendMessage()
     {
         $this->validate([
-            'message' => 'required|string|max:2000',
+            'message' => 'required_without:attachment|string|max:2000',
+            'attachment' => 'nullable|file|max:10240', // 10MB max
         ]);
 
         // Parse @mentions
         $mentionedIds = $this->parseMentions($this->message);
+
+        $attachmentUrl = null;
+        if ($this->attachment) {
+            $attachmentUrl = $this->attachment->store('editorial-chat', 'public');
+        }
 
         EditorialMessage::create([
             'user_id' => auth()->id(),
@@ -94,9 +111,11 @@ class EditorialChat extends Page
             'channel' => $this->activeChannel,
             'recipient_id' => $this->activeRecipient,
             'mentioned_user_ids' => $mentionedIds,
+            'attachment_url' => $attachmentUrl,
         ]);
 
         $this->message = '';
+        $this->attachment = null;
         $this->updateLastSeen();
     }
 
