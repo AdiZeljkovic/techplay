@@ -28,9 +28,10 @@ class PostResource extends Resource
     {
         return $schema
             ->components([
-                Forms\Components\Group::make()
-                    ->schema([
-                        Forms\Components\Section::make()
+                \Filament\Schemas\Components\Tabs::make('Tabs')
+                    ->tabs([
+                        \Filament\Schemas\Components\Tabs\Tab::make('Content')
+                            ->icon('heroicon-o-document-text')
                             ->schema([
                                 Forms\Components\Select::make('thread_id')
                                     ->relationship('thread', 'title')
@@ -45,9 +46,8 @@ class PostResource extends Resource
                                     ->columnSpanFull(),
                                 Forms\Components\Toggle::make('is_solution')
                                     ->label('Mark as Solution'),
-                            ])
-                    ])
-                    ->columnSpanFull()
+                            ]),
+                    ])->columnSpanFull(),
             ]);
     }
 
