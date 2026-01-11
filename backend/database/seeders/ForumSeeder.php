@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\ForumCategory;
+use App\Models\Category;
 use App\Models\Thread;
 use App\Models\Post;
 use App\Models\User;
@@ -21,51 +21,51 @@ class ForumSeeder extends Seeder
 
         $categories = [
             [
-                'title' => 'News & Announcements',
-                'icon' => 'megaphone',
-                'color' => '#ef4444', // Red-500
+                'name' => 'News & Announcements',
+                'icon' => 'heroicon-o-megaphone',
+                'description' => 'Official updates and announcements.',
                 'slug' => 'news-announcements',
-                'order' => 1,
+                'type' => 'forum',
             ],
             [
-                'title' => 'General Gaming',
-                'icon' => 'gamepad-2',
-                'color' => '#a855f7', // Purple-500
+                'name' => 'General Gaming',
+                'icon' => 'heroicon-o-puzzle-piece', // changed from gamepad-2 as heroicons are standard in filament usually
+                'description' => 'General discussion about gaming.',
                 'slug' => 'general-gaming',
-                'order' => 2,
+                'type' => 'forum',
             ],
             [
-                'title' => 'Hardware & Tech',
-                'icon' => 'cpu',
-                'color' => '#06b6d4', // Cyan-500 (Neon)
+                'name' => 'Hardware & Tech',
+                'icon' => 'heroicon-o-cpu-chip',
+                'description' => 'Discuss hardware, builds and tech.',
                 'slug' => 'hardware-tech',
-                'order' => 3,
+                'type' => 'forum',
             ],
             [
-                'title' => 'Game Reviews',
-                'icon' => 'star',
-                'color' => '#f59e0b', // Amber-500
+                'name' => 'Game Reviews',
+                'icon' => 'heroicon-o-star',
+                'description' => 'Community reviews and opinions.',
                 'slug' => 'game-reviews',
-                'order' => 4,
+                'type' => 'forum',
             ],
             [
-                'title' => 'Off-Topic',
-                'icon' => 'coffee',
-                'color' => '#64748b', // Slate-500
+                'name' => 'Off-Topic',
+                'icon' => 'heroicon-o-chat-bubble-left-ellipsis',
+                'description' => 'Everything else.',
                 'slug' => 'off-topic',
-                'order' => 5,
+                'type' => 'forum',
             ],
         ];
 
         foreach ($categories as $catData) {
-            $category = ForumCategory::firstOrCreate(
+            $category = Category::firstOrCreate(
                 ['slug' => $catData['slug']],
                 $catData
             );
 
             // Seed a welcome thread if it's News
             if ($catData['slug'] === 'news-announcements' && $category->threads()->count() === 0) {
-                $thread = Thread::create([
+                Thread::create([
                     'category_id' => $category->id,
                     'author_id' => $admin->id,
                     'title' => 'Welcome to TechPlay Forums!',
@@ -96,3 +96,4 @@ class ForumSeeder extends Seeder
         }
     }
 }
+
