@@ -30,7 +30,7 @@ class ThreadResource extends Resource
         return $schema
             ->components([
                 Forms\Components\Select::make('category_id')
-                    ->relationship('category', 'title')
+                    ->relationship('category', 'name')
                     ->required(),
                 Forms\Components\TextInput::make('title')
                     ->required()
@@ -51,8 +51,8 @@ class ThreadResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('title')->searchable(),
-                TextColumn::make('category.title')->sortable(),
-                TextColumn::make('author.username')->sortable(),
+                TextColumn::make('category.name')->sortable()->label('Category'),
+                TextColumn::make('author.username')->sortable()->label('Author'),
                 IconColumn::make('is_pinned')->boolean(),
                 IconColumn::make('is_locked')->boolean(),
                 TextColumn::make('view_count')->sortable(),
