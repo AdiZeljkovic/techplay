@@ -13,9 +13,15 @@ return new class extends Migration {
     {
         // Change 'type' column from enum to string to support 'forum' and future types
         Schema::table('categories', function (Blueprint $table) {
-            // altering enum to string can be tricky with Eloquent/Doctrine
-            // Using raw SQL is safer for this specific change in MySQL
-            DB::statement("ALTER TABLE categories MODIFY COLUMN type VARCHAR(50) NOT NULL DEFAULT 'other'");
+            if (DB::getDriverName() === 'pgsql') {
+                // Postgres creates a check constraint for enums, usually named {table}_{column}_check
+                DB::statement("ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_type_check");
+                DB::statement("ALTER TABLE categories ALTER COLUMN type TYPE VARCHAR(50)");
+                DB::statement("ALTER TABLE categories ALTER COLUMN type SET DEFAULT 'other'");
+            } else {
+                // MySQL/MariaDB
+                DB::statement("ALTER TABLE categories MODIFY COLUMN type VARCHAR(50) NOT NULL DEFAULT 'other'");
+            }
         });
     }
 
