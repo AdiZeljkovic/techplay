@@ -9,7 +9,7 @@ class Analytics extends Page
 {
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
 
-    protected static string $view = 'filament.pages.analytics';
+    protected string $view = 'filament.pages.analytics';
 
     protected static string|\UnitEnum|null $navigationGroup = 'System';
 
