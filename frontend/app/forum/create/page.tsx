@@ -170,19 +170,33 @@ function CreateThreadForm() {
                                     <Hash className="w-4 h-4 text-[var(--accent)]" />
                                     Category <span className="text-red-500">*</span>
                                 </label>
-                                <select
-                                    value={categoryId || ""}
-                                    onChange={(e) => setCategoryId(Number(e.target.value))}
-                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all cursor-pointer appearance-none"
-                                    required
-                                >
-                                    <option value="">Select a category...</option>
-                                    {allCategories.map((cat) => (
-                                        <option key={cat.id} value={cat.id}>
-                                            {cat.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                {preselectedCategory && selectedCategory ? (
+                                    // Locked View
+                                    <div className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] flex items-center justify-between opacity-80 cursor-not-allowed">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-medium">{selectedCategory.name}</span>
+                                            <span className="text-xs bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-0.5 rounded-full border border-[var(--accent)]/20">
+                                                Locked
+                                            </span>
+                                        </div>
+                                        {/* Hidden input to ensure value submits if needed, though state is handled */}
+                                    </div>
+                                ) : (
+                                    // Select View
+                                    <select
+                                        value={categoryId || ""}
+                                        onChange={(e) => setCategoryId(Number(e.target.value))}
+                                        className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all cursor-pointer appearance-none"
+                                        required
+                                    >
+                                        <option value="">Select a category...</option>
+                                        {allCategories.map((cat) => (
+                                            <option key={cat.id} value={cat.id}>
+                                                {cat.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
                                 {selectedCategory?.description && (
                                     <p className="mt-2 text-sm text-[var(--text-muted)]">{selectedCategory.description}</p>
                                 )}
