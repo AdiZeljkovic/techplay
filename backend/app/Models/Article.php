@@ -11,6 +11,7 @@ class Article extends Model
     protected $fillable = [
         'title',
         'slug',
+        'views', // Added views
         'author_id',
         'featured_image_url',
         'excerpt',
@@ -38,7 +39,35 @@ class Article extends Model
         'published_at' => 'datetime',
         'review_data' => 'array',
         'tags' => 'array',
+        'views' => 'integer',
     ];
+
+    public function scopePopular($query)
+    {
+        return $query->orderBy('views', 'desc');
+    }
+
+    /**
+     * Increment views with IP-based throttling.
+     * 
+     * @param string $ip
+     * @return bool True if incremented, False if throttled
+     */
+    public function incrementViews(string $ip): bool
+    {
+        $cacheKey = 'article_view_' . $this->id . '_' . $ip;
+
+        // Check if viewed in last 24 hours (1440 minutes)
+        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            return false;
+        }
+
+        // Increment and cache
+        $this->increment('views');
+        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 60 * 24); // 24 hours
+
+        return true;
+    }
 
     public function author()
     {

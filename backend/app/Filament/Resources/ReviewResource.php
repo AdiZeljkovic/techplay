@@ -321,6 +321,10 @@ class ReviewResource extends Resource
                     'published' => 'success',
                     default => 'gray',
                 }),
+                TextColumn::make('views')
+                    ->numeric()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('published_at')->dateTime()->sortable(),
             ])
             ->filters([

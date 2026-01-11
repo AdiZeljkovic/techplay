@@ -48,11 +48,27 @@ class HomeController extends Controller
                 ->take(5)
                 ->get();
 
+            // 5. Global Latest (Mixed types)
+            $latestGlobal = Article::where('status', 'published')
+                ->with(['author', 'category'])
+                ->latest('published_at')
+                ->take(5)
+                ->get();
+
+            // 6. Global Popular (Mixed types, sorted by views)
+            $popularGlobal = Article::where('status', 'published')
+                ->with(['author', 'category'])
+                ->popular()
+                ->take(5)
+                ->get();
+
             return [
                 'hero' => $hero,
                 'news' => $news,
                 'reviews' => $reviews,
-                'tech' => $tech
+                'tech' => $tech,
+                'latest_global' => $latestGlobal,
+                'popular_global' => $popularGlobal,
             ];
         });
 

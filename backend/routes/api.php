@@ -131,6 +131,9 @@ Route::prefix('v1')->group(function () {
 
         // Comments
         Route::get('/comments/{type}/{id}', [App\Http\Controllers\Api\V1\CommentController::class, 'index']);
+
+        // Tracking
+        Route::post('/articles/{slug}/view', [App\Http\Controllers\Api\V1\TrackingController::class, 'recordView']);
     });
     Route::middleware(['auth:sanctum', 'throttle:6,1'])->post('/comments', [App\Http\Controllers\Api\V1\CommentController::class, 'store']);
     Route::middleware('auth:sanctum')->post('/comments/{id}/like', [App\Http\Controllers\Api\V1\CommentController::class, 'like']);
