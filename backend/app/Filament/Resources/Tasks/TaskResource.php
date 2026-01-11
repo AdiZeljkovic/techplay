@@ -44,6 +44,22 @@ class TaskResource extends Resource
         ];
     }
 
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user = auth()->user();
+
+        if ($user->hasRole(['admin', 'super_admin', 'editor-in-chief'])) {
+            return $query;
+        }
+
+        // Journalists/Contributors only see their own tasks
+        return $query->where(function ($q) use ($user) {
+            $q->where('assigned_to', $user->id)
+                ->orWhere('created_by', $user->id);
+        });
+    }
+
     public static function getPages(): array
     {
         return [

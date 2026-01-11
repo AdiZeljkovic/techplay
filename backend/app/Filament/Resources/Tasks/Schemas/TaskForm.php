@@ -37,7 +37,11 @@ class TaskForm
                     ->native(false),
                 DatePicker::make('due_date'),
                 \Filament\Forms\Components\Select::make('assigned_to')
-                    ->relationship('assignee', 'name')
+                    ->relationship('assignee', 'name', function ($query) {
+                        return $query->whereHas('roles', function ($q) {
+                            $q->whereIn('name', ['super_admin', 'editor-in-chief', 'editor', 'journalist', 'moderator']);
+                        });
+                    })
                     ->searchable()
                     ->preload(),
                 \Filament\Forms\Components\Hidden::make('created_by')
