@@ -7,7 +7,7 @@ use App\Filament\Widgets\MostViewedArticles;
 
 class Analytics extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
 
     protected static string $view = 'filament.pages.analytics';
 
