@@ -12,7 +12,7 @@ class ReviewPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view admin panel');
+        return $user->can('view admin panel') || in_array($user->role ?? '', ['admin', 'super_admin']);
     }
 
     /**
@@ -20,7 +20,7 @@ class ReviewPolicy
      */
     public function view(User $user, Review $review): bool
     {
-        return $user->can('view admin panel');
+        return $user->can('view admin panel') || in_array($user->role ?? '', ['admin', 'super_admin']);
     }
 
     /**
@@ -28,7 +28,7 @@ class ReviewPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('manage content');
+        return $user->can('manage content') || in_array($user->role ?? '', ['admin', 'super_admin']);
     }
 
     /**
@@ -36,7 +36,7 @@ class ReviewPolicy
      */
     public function update(User $user, Review $review): bool
     {
-        return $user->can('manage content');
+        return $user->can('manage content') || in_array($user->role ?? '', ['admin', 'super_admin']);
     }
 
     /**
@@ -44,7 +44,7 @@ class ReviewPolicy
      */
     public function delete(User $user, Review $review): bool
     {
-        return $user->can('delete articles');
+        return $user->can('delete articles') || in_array($user->role ?? '', ['admin', 'super_admin']);
     }
 
     /**
@@ -52,7 +52,7 @@ class ReviewPolicy
      */
     public function publish(User $user, Review $review): bool
     {
-        return $user->can('publish articles');
+        return $user->can('publish articles') || in_array($user->role ?? '', ['admin', 'super_admin']);
     }
 
     /**
@@ -60,7 +60,7 @@ class ReviewPolicy
      */
     public function restore(User $user, Review $review): bool
     {
-        return $user->can('delete articles');
+        return $user->can('delete articles') || in_array($user->role ?? '', ['admin', 'super_admin']);
     }
 
     /**
@@ -68,6 +68,6 @@ class ReviewPolicy
      */
     public function forceDelete(User $user, Review $review): bool
     {
-        return $user->can('delete articles');
+        return $user->can('delete articles') || in_array($user->role ?? '', ['admin', 'super_admin']);
     }
 }
