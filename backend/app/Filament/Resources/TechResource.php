@@ -5,7 +5,18 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\TechResource\Pages;
 use App\Models\Article;
 use App\Models\Category;
-use Filament\Forms;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
+use App\Filament\Components\SeoForm;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
@@ -52,54 +63,89 @@ class TechResource extends Resource
     {
         return $schema
             ->components([
-                Forms\Components\TextInput::make('title')
-                    ->required()
-                    ->maxLength(255)
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(fn($state, Set $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
-                Forms\Components\TextInput::make('slug')
-                    ->required()
-                    ->maxLength(255)
-                    ->unique(ignoreRecord: true),
+                Grid::make(3)
+                    ->schema([
+                        // Main Content (Left)
+                        Group::make()
+                            ->columnSpan(['lg' => 2])
+                            ->schema([
+                                Section::make('Article Content')
+                                    ->schema([
+                                        TextInput::make('title')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->live(onBlur: true)
+                                            ->afterStateUpdated(fn($state, Set $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
 
-                Forms\Components\Select::make('category_id')
-                    ->label('Category')
-                    ->options(Category::where('type', 'tech')->whereNotNull('parent_id')->pluck('name', 'id'))
-                    ->searchable()
-                    ->required(),
+                                        TextInput::make('slug')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->unique(ignoreRecord: true),
 
-                Forms\Components\Toggle::make('is_featured_in_hero')
-                    ->label('Show in Hero Section')
-                    ->default(false),
+                                        Textarea::make('excerpt')
+                                            ->rows(3)
+                                            ->columnSpanFull(),
 
-                Forms\Components\RichEditor::make('content')
-                    ->required()
-                    ->columnSpanFull(),
+                                        RichEditor::make('content')
+                                            ->required()
+                                            ->fileAttachmentsDisk('public')
+                                            ->fileAttachmentsDirectory('articles')
+                                            ->columnSpanFull(),
+                                    ]),
 
-                Forms\Components\Textarea::make('excerpt')
-                    ->rows(3)
-                    ->columnSpanFull(),
+                                SeoForm::make(),
+                            ]),
 
-                Forms\Components\FileUpload::make('featured_image_url')
-                    ->label('Featured Image')
-                    ->image()
-                    ->disk('public')
-                    ->directory('articles')
-                    ->columnSpanFull(),
+                        // Sidebar (Right)
+                        Group::make()
+                            ->columnSpan(['lg' => 1])
+                            ->schema([
+                                Section::make('Publishing')
+                                    ->schema([
+                                        Select::make('status')
+                                            ->options([
+                                                'draft' => 'Draft',
+                                                'ready_for_review' => 'Ready for Review',
+                                                'published' => 'Published',
+                                            ])
+                                            ->default('draft')
+                                            ->required()
+                                            ->selectablePlaceholder(false),
 
-                Forms\Components\Select::make('status')
-                    ->options([
-                        'draft' => 'Draft',
-                        'published' => 'Published',
-                    ])
-                    ->default('draft')
-                    ->required(),
+                                        DateTimePicker::make('published_at')
+                                            ->default(now()),
 
-                Forms\Components\DateTimePicker::make('published_at')
-                    ->default(now()),
+                                        Select::make('author_id')
+                                            ->relationship('author', 'name')
+                                            ->default(fn() => auth()->id())
+                                            ->required()
+                                            ->searchable(),
 
-                Forms\Components\Hidden::make('author_id')
-                    ->default(fn() => auth()->id()),
+                                        Toggle::make('is_featured_in_hero')
+                                            ->label('Show in Hero Section')
+                                            ->default(false),
+                                    ]),
+
+                                Section::make('Taxonomy')
+                                    ->schema([
+                                        Select::make('category_id')
+                                            ->label('Category')
+                                            ->options(Category::where('type', 'tech')->whereNotNull('parent_id')->pluck('name', 'id'))
+                                            ->searchable()
+                                            ->required(),
+                                    ]),
+
+                                Section::make('Media')
+                                    ->schema([
+                                        FileUpload::make('featured_image_url')
+                                            ->label('Featured Image')
+                                            ->image()
+                                            ->disk('public')
+                                            ->directory('articles')
+                                            ->imageEditor(),
+                                    ]),
+                            ]),
+                    ]),
             ]);
     }
 

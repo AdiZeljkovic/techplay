@@ -19,6 +19,18 @@ class Guide extends Model
         'featured_image_url',
         'difficulty', // beginner, intermediate, advanced
         'author_id',
+        'seo_title',
+        'seo_description',
+        'focus_keyword',
+        'canonical_url',
+        'is_noindex',
+        'status',
+        'published_at',
+    ];
+
+    protected $casts = [
+        'is_noindex' => 'boolean',
+        'published_at' => 'datetime',
     ];
 
     public function author(): BelongsTo
