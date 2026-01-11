@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\SimpleThreadResource\Pages;
 use App\Models\Thread;
+use BackedEnum;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -14,7 +15,7 @@ class SimpleThreadResource extends Resource
 {
     protected static ?string $model = Thread::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-bug-ant';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-bug-ant';
     protected static ?string $navigationLabel = 'Debug Threads';
 
     public static function form(Form $form): Form
