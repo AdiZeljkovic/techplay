@@ -46,7 +46,19 @@ class TasksTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                \Filament\Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'todo' => 'To Do',
+                        'in_progress' => 'In Progress',
+                        'review' => 'Review',
+                        'done' => 'Done',
+                    ]),
+                \Filament\Tables\Filters\SelectFilter::make('priority')
+                    ->options([
+                        'low' => 'Low',
+                        'medium' => 'Medium',
+                        'high' => 'High',
+                    ]),
             ])
             ->recordActions([
                 EditAction::make(),
