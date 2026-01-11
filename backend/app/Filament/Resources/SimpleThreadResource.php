@@ -18,12 +18,6 @@ class SimpleThreadResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-left-right';
     protected static string|\UnitEnum|null $navigationGroup = 'Community';
     protected static ?string $navigationLabel = 'Threads';
-    protected static ?string $slug = 'threads';
-
-    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
-    {
-        return parent::getEloquentQuery()->withoutGlobalScopes();
-    }
 
     public static function form(Schema $schema): Schema
     {
