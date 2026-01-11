@@ -194,7 +194,7 @@ class AuthController extends Controller
 
         $validated = $request->validate([
             'bio' => 'nullable|string|max:500',
-            'display_name' => 'nullable|string|max:50|alpha_dash', // Limit length
+            'display_name' => 'nullable|string|max:50|alpha_dash',
             'gamertags' => 'nullable|array',
             'gamertags.steam' => 'nullable|string|max:255',
             'gamertags.epic' => 'nullable|string|max:255',
@@ -202,11 +202,19 @@ class AuthController extends Controller
             'gamertags.xbox' => 'nullable|string|max:255',
             'gamertags.discord' => 'nullable|string|max:255',
             'pc_specs' => 'nullable|array',
-            // ... keys ...
-        ]); // Validation end, need to keep $validated variable consistent or just patch array logic
+            'pc_specs.cpu' => 'nullable|string|max:255',
+            'pc_specs.gpu' => 'nullable|string|max:255',
+            'pc_specs.ram' => 'nullable|string|max:255',
+            'pc_specs.mobo' => 'nullable|string|max:255',
+            'pc_specs.case' => 'nullable|string|max:255',
+            'avatar' => 'nullable|image|max:2048', // 2MB Max
+        ]);
 
-        // Since I'm replacing block, I'll allow validation to pass.
-        // Re-writing update logic:
+        // Handle Avatar Upload
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar_url = asset('storage/' . $path);
+        }
 
         $user->update([
             'bio' => $validated['bio'] ?? $user->bio,
