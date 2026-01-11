@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\ThreadResource\Tables;
 
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 use Illuminate\Support\Str;
 
 class ThreadsTable
@@ -16,30 +16,33 @@ class ThreadsTable
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->state(fn($record) => $record->id)
-                    ->sortable(),
                 TextColumn::make('title')
-                    ->state(function ($record) {
-                        \Illuminate\Support\Facades\Log::info('Rendering Thread Row ID: ' . $record->id, ['attributes' => $record->toArray()]);
-                        return 'DEBUG: ' . $record->title;
-                    })
-                    ->description(fn($record) => Str::limit($record->slug, 20))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('category.name')
-                    ->state(fn($record) => $record->category?->name ?? 'No Category')
                     ->label('Category')
                     ->sortable(),
                 TextColumn::make('author.username')
-                    ->state(fn($record) => $record->author?->username ?? 'Unknown')
                     ->label('Author')
                     ->sortable(),
+                IconColumn::make('is_pinned')
+                    ->boolean(),
+                IconColumn::make('is_locked')
+                    ->boolean(),
+                TextColumn::make('view_count')
+                    ->sortable(),
+                TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->actions([
+            ->filters([
+                //
+            ])
+            ->recordActions([
                 EditAction::make(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
