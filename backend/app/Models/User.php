@@ -101,8 +101,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 
     public function nextRank()
     {
-        return Rank::where('min_reputation', '>', $this->forum_reputation ?? 0)
-            ->orderBy('min_reputation', 'asc')
+        return Rank::where('min_xp', '>', $this->xp ?? 0)
+            ->orderBy('min_xp', 'asc')
             ->first();
     }
 

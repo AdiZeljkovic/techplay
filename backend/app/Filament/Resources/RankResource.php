@@ -30,8 +30,8 @@ class RankResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('min_reputation')
-                    ->label('Minimum Reputation')
+                Forms\Components\TextInput::make('min_xp')
+                    ->label('Minimum XP')
                     ->required()
                     ->numeric()
                     ->default(0),
@@ -48,7 +48,8 @@ class RankResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('min_reputation')
+                Tables\Columns\TextColumn::make('min_xp')
+                    ->label('XP Required')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('icon'),
                 Tables\Columns\ColorColumn::make('color'),
@@ -56,7 +57,7 @@ class RankResource extends Resource
                     ->counts('users')
                     ->label('Users'),
             ])
-            ->defaultSort('min_reputation', 'asc')
+            ->defaultSort('min_xp', 'asc')
             ->filters([])
             ->actions([
                 EditAction::make(),
