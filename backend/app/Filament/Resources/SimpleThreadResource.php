@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ForumThreadResource\Pages;
+use App\Filament\Resources\SimpleThreadResource\Pages;
 use App\Models\Thread;
 use BackedEnum;
 use Filament\Schemas\Schema;
@@ -11,7 +11,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms;
 
-class ForumThreadResource extends Resource
+class SimpleThreadResource extends Resource
 {
     protected static ?string $model = Thread::class;
 
@@ -85,9 +85,9 @@ class ForumThreadResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListForumThreads::route('/'),
-            'create' => Pages\CreateForumThread::route('/create'),
-            'edit' => Pages\EditForumThread::route('/{record}/edit'),
+            'index' => Pages\ListSimpleThreads::route('/'),
+            'create' => Pages\CreateSimpleThread::route('/create'),
+            'edit' => Pages\EditSimpleThread::route('/{record}/edit'),
         ];
     }
 }
