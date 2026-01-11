@@ -44,8 +44,8 @@
     {{-- Score Display --}}
     <div class="flex items-center gap-6 p-4 bg-gray-800/50 rounded-xl border border-gray-700">
         {{-- Circular Score --}}
-        <div class="relative flex-shrink-0">
-            <svg class="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+        <div class="relative flex-shrink-0" style="width: 80px; height: 80px;">
+            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100" width="80" height="80">
                 <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="8"
                     class="text-gray-700" />
                 <circle cx="50" cy="50" r="45" fill="none" stroke="{{ $gradientStart }}" stroke-width="8"
