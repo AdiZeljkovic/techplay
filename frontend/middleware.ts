@@ -6,7 +6,7 @@ import type { NextRequest } from 'next/server';
 // Most auth is handled client-side with Bearer tokens in localStorage
 const protectedRoutes = [
     '/support/checkout',
-    '/settings',
+    // '/settings', // Handled client-side via useAuth to avoid middleware cookie dependency
 ];
 
 // Routes that should redirect to dashboard if already logged in
