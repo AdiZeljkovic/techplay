@@ -33,7 +33,8 @@ class RoleResource extends Resource
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        return $user && ($user->hasRole('Super Admin') || $user->hasRole('Editor-in-Chief'));
+        // Check Spatie roles OR old role column
+        return $user && ($user->hasRole('Super Admin') || $user->hasRole('Editor-in-Chief') || in_array($user->role ?? '', ['admin', 'super_admin']));
     }
 
     public static function form(Schema $schema): Schema
