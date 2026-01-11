@@ -20,7 +20,10 @@ class ThreadsTable
                     ->state(fn($record) => $record->id)
                     ->sortable(),
                 TextColumn::make('title')
-                    ->state(fn($record) => $record->title)
+                    ->state(function ($record) {
+                        \Illuminate\Support\Facades\Log::info('Rendering Thread Row ID: ' . $record->id, ['attributes' => $record->toArray()]);
+                        return 'DEBUG: ' . $record->title;
+                    })
                     ->description(fn($record) => Str::limit($record->slug, 20))
                     ->searchable()
                     ->sortable(),
