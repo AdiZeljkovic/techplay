@@ -62,6 +62,7 @@ class GuideResource extends Resource
                             ->columnSpan(['lg' => 2])
                             ->schema([
                                 \Filament\Schemas\Components\Section::make('Guide Content')
+                                    ->icon('heroicon-m-book-open')
                                     ->schema([
                                         TextInput::make('title')
                                             ->required()
@@ -89,6 +90,7 @@ class GuideResource extends Resource
                                     ]),
 
                                 \Filament\Schemas\Components\Section::make('Step-by-Step Instructions')
+                                    ->icon('heroicon-m-list-bullet')
                                     ->description('Add structured steps for this guide (optional).')
                                     ->schema([
                                         Repeater::make('steps')
@@ -115,6 +117,7 @@ class GuideResource extends Resource
                             ->columnSpan(['lg' => 1])
                             ->schema([
                                 \Filament\Schemas\Components\Section::make('Publishing')
+                                    ->icon('heroicon-m-rocket-launch')
                                     ->schema([
                                         Select::make('status')
                                             ->options([
@@ -137,6 +140,7 @@ class GuideResource extends Resource
                                     ]),
 
                                 \Filament\Schemas\Components\Section::make('Taxonomy')
+                                    ->icon('heroicon-m-tag')
                                     ->schema([
                                         Select::make('difficulty')
                                             ->options([
@@ -148,6 +152,7 @@ class GuideResource extends Resource
                                     ]),
 
                                 \Filament\Schemas\Components\Section::make('Media')
+                                    ->icon('heroicon-m-photo')
                                     ->schema([
                                         FileUpload::make('featured_image_url')
                                             ->label('Featured Image')
