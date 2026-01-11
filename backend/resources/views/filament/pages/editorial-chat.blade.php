@@ -193,16 +193,16 @@
 
                             <div style="position: relative;">
                                 <div style="
-                                        padding: 12px 16px; 
-                                        border-radius: 12px; 
-                                        background-color: {{ $isMe ? '#3b82f6' : 'white' }}; 
-                                        color: {{ $isMe ? 'white' : '#1e293b' }}; 
-                                        box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
-                                        {{ $isMe ? 'border-bottom-right-radius: 2px;' : 'border-bottom-left-radius: 2px;' }}
-                                        font-size: 0.95rem; 
-                                        line-height: 1.5;
-                                        overflow-wrap: break-word;
-                                    ">
+                                            padding: 12px 16px; 
+                                            border-radius: 12px; 
+                                            background-color: {{ $isMe ? '#3b82f6' : 'white' }}; 
+                                            color: {{ $isMe ? 'white' : '#1e293b' }}; 
+                                            box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
+                                            {{ $isMe ? 'border-bottom-right-radius: 2px;' : 'border-bottom-left-radius: 2px;' }}
+                                            font-size: 0.95rem; 
+                                            line-height: 1.5;
+                                            overflow-wrap: break-word;
+                                        ">
                                     @if($msg->attachment_url)
                                         <div style="margin-bottom: 8px;">
                                             @if(Str::endsWith($msg->attachment_url, ['.jpg', '.jpeg', '.png', '.gif', '.webp']))
@@ -301,8 +301,8 @@
                                 <label for="file-upload"
                                     style="cursor: pointer; color: #64748b; display: flex; align-items: center; padding: 4px; border-radius: 4px; transition: background 0.2s;"
                                     class="hover:bg-slate-200" title="Attach File">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px;"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                                     </svg>
@@ -313,8 +313,8 @@
                                 <button type="button" @click="showEmojis = !showEmojis"
                                     style="cursor: pointer; color: #64748b; border: none; background: transparent; display: flex; align-items: center; padding: 4px; border-radius: 4px; transition: background 0.2s;"
                                     class="hover:bg-slate-200" title="Insert Emoji">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px;"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
@@ -325,7 +325,7 @@
                                 style="background-color: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: background 0.2s; display: flex; align-items: center; gap: 6px;">
                                 <span>Send</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                                    class="w-4 h-4">
+                                    style="width: 16px; height: 16px;">
                                     <path
                                         d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 004.426 9H13a.75.75 0 010 1.5H4.426a1.5 1.5 0 00-.733.596l-1.414 4.925a.75.75 0 001.076.923l15-7a.75.75 0 000-1.386l-15-7z" />
                                 </svg>
@@ -349,11 +349,11 @@
         setInterval(() => {
             const el = document.querySelector('[data-last-message-id]');
             if (!el) return;
-            
+
             const newMessageId = el.getAttribute('data-last-message-id');
             if (newMessageId && newMessageId != lastMessageId) {
                 lastMessageId = newMessageId;
-                
+
                 // Play sound
                 const audio = new Audio('https://inv.tux.Pizza/preview/1029/30ss.mp3'); // Simple notification sound placeholder or local asset
                 // audio.play().catch(e => console.log('Audio play failed', e));
@@ -362,7 +362,7 @@
                 if (Notification.permission === "granted" && document.hidden) {
                     new Notification("TechPlay Redakcija", {
                         body: "Nova poruka u chatu!",
-                        icon: "/images/logo.png" 
+                        icon: "/images/logo.png"
                     });
                 }
             }
