@@ -84,6 +84,7 @@ Route::prefix('v1')->group(function () {
 
         // Forum
         Route::get('/forum/categories', [App\Http\Controllers\Api\V1\ForumController::class, 'categories']);
+        Route::get('/forum/active', [App\Http\Controllers\Api\V1\ForumController::class, 'activeThreads']);
         Route::get('/forum/categories/{slug}', [App\Http\Controllers\Api\V1\ForumController::class, 'showCategory']);
         Route::get('/forum/threads/{slug}', [App\Http\Controllers\Api\V1\ForumController::class, 'showThread']);
 

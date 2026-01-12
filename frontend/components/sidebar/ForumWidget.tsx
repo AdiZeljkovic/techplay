@@ -1,17 +1,64 @@
 "use client";
 
 import Link from "next/link";
-import { MessagesSquare, MessageCircle, User } from "lucide-react";
+import { MessagesSquare, MessageCircle, User as UserIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
-const FORUM_TOPICS = [
-    { title: "PC Build Advice: RTX 5080 or wait?", replies: 42, author: "TechGuru99" },
-    { title: "Best settings for optimizing Windows 11 for gaming", replies: 128, author: "System32" },
-    { title: "Anyone else disappointed with the new CoD?", replies: 256, author: "SniperWolf" },
-    { title: "Official TechPlay Esport Tournament Discussion", replies: 89, author: "Admin" },
-    { title: "Looking for squadmates - Helldivers 2", replies: 15, author: "FreedomFighter" },
-];
+interface ForumThread {
+    id: number;
+    title: string;
+    slug: string;
+    author: {
+        username: string;
+        display_name?: string;
+    };
+    posts_count: number;
+}
 
 export default function ForumWidget() {
+    const [threads, setThreads] = useState<ForumThread[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchThreads() {
+            try {
+                let apiUrl = process.env.NEXT_PUBLIC_API_URL;
+                if (apiUrl && apiUrl.includes('localhost')) {
+                    apiUrl = apiUrl.replace('localhost', '127.0.0.1');
+                }
+
+                const res = await fetch(`${apiUrl}/forum/active`, {
+                    next: { revalidate: 60 }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    setThreads(data);
+                }
+            } catch (error) {
+                console.error("Failed to load forum threads", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        fetchThreads();
+    }, []);
+
+    if (isLoading) {
+        return (
+            <div className="bg-[#00215E] border border-white/10 rounded-2xl overflow-hidden shadow-lg animate-pulse h-64">
+                <div className="p-4 border-b border-white/10">
+                    <div className="h-4 w-32 bg-white/10 rounded" />
+                </div>
+            </div>
+        );
+    }
+
+    if (threads.length === 0) {
+        return null;
+    }
+
     return (
         <div className="bg-[#00215E] border border-white/10 rounded-2xl overflow-hidden shadow-lg">
             <div className="p-4 border-b border-white/10 flex items-center justify-between">
@@ -22,23 +69,23 @@ export default function ForumWidget() {
             </div>
 
             <div className="divide-y divide-white/5">
-                {FORUM_TOPICS.map((topic, idx) => (
+                {threads.map((thread) => (
                     <Link
-                        key={idx}
-                        href="#"
+                        key={thread.id}
+                        href={`/forum/thread/${thread.slug}`}
                         className="block p-4 hover:bg-white/5 transition-colors group"
                     >
                         <h4 className="text-sm font-semibold text-white/90 group-hover:text-[var(--accent)] transition-colors line-clamp-2 mb-2">
-                            {topic.title}
+                            {thread.title}
                         </h4>
                         <div className="flex items-center justify-between text-xs text-white/40">
                             <div className="flex items-center gap-1.5">
-                                <User className="w-3 h-3" />
-                                {topic.author}
+                                <UserIcon className="w-3 h-3" />
+                                {thread.author?.display_name || thread.author?.username || 'User'}
                             </div>
                             <div className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-full">
                                 <MessageCircle className="w-3 h-3 text-[var(--accent)]" />
-                                {topic.replies}
+                                {thread.posts_count || 0}
                             </div>
                         </div>
                     </Link>

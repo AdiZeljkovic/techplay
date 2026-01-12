@@ -177,4 +177,15 @@ class ForumController extends Controller
             return response()->json(['message' => 'Failed to create thread. ' . $e->getMessage()], 500);
         }
     }
+    public function activeThreads()
+    {
+        // Cache for 60 seconds
+        return Cache::remember('forum.active_threads', 60, function () {
+            return Thread::with(['author'])
+                ->withCount('posts')
+                ->orderByDesc('updated_at')
+                ->take(5)
+                ->get();
+        });
+    }
 }
