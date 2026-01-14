@@ -20,7 +20,10 @@ class UserSupportResource extends Resource
 
     // protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    protected static $navigationGroup = 'Shop & Monetization';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Shop & Monetization';
+    }
     protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema

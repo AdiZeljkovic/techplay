@@ -23,7 +23,10 @@ class AdCampaignResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static $navigationGroup = 'System';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'System';
+    }
     protected static ?int $navigationSort = 1;
 
     public static function getNavigationLabel(): string

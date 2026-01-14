@@ -36,7 +36,10 @@ class TechResource extends Resource
 
     protected static ?string $slug = 'tech-articles';
 
-    protected static $navigationGroup = 'Content Studio';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Content Studio';
+    }
     protected static ?int $navigationSort = 5;
 
     public static function getNavigationLabel(): string

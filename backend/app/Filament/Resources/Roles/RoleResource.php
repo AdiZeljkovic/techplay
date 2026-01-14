@@ -25,7 +25,10 @@ class RoleResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static $navigationGroup = 'System';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'System';
+    }
     protected static ?int $navigationSort = 6;
 
     public static function canAccess(): bool

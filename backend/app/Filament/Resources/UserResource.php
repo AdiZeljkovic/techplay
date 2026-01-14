@@ -26,7 +26,10 @@ class UserResource extends Resource
         return parent::getEloquentQuery()->with(['roles']);
     }
 
-    protected static $navigationGroup = 'Community Hub';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Community Hub';
+    }
     protected static ?int $navigationSort = 1;
 
     public static function canAccess(): bool

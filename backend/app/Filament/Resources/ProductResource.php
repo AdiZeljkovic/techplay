@@ -53,7 +53,10 @@ class ProductResource extends Resource
                 ]);
     }
 
-    protected static $navigationGroup = 'Shop & Monetization';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Shop & Monetization';
+    }
     protected static ?int $navigationSort = 1;
 
     public static function table(Table $table): Table

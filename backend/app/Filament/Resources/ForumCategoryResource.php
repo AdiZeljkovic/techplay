@@ -22,7 +22,10 @@ class ForumCategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
 
-    protected static $navigationGroup = 'Community Hub';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Community Hub';
+    }
     protected static ?int $navigationSort = 5;
 
     protected static ?string $navigationLabel = 'Categories'; // Shows as "Categories" under Community

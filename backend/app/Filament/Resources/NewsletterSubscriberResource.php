@@ -21,7 +21,10 @@ class NewsletterSubscriberResource extends Resource
 
     // protected static string $navigationIcon = 'heroicon-o-envelope';
 
-    protected static $navigationGroup = 'System';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'System';
+    }
     protected static ?int $navigationSort = 5;
 
     public static function form(Schema $schema): Schema
