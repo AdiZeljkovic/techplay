@@ -492,11 +492,11 @@
     padding: 8px 0 !important;
 }
 
-/* Create page specific - max width for readability */
+/* Create/Edit pages - full width */
 .fi-page-create .fi-form,
 .fi-page-edit .fi-form {
-    max-width: 900px !important;
-    margin: 0 auto !important;
+    max-width: none !important;
+    width: 100% !important;
 }
 
 /* Breadcrumb styling */
