@@ -1705,7 +1705,3 @@
         });
     </script>
 </x-filament-panels::page>
-
-@push('scripts')
-    @vite(['resources/js/app.js'])
-@endpush
