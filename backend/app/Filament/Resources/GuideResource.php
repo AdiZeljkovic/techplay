@@ -36,10 +36,8 @@ class GuideResource extends Resource
 
     protected static ?string $slug = 'guides';
 
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Content';
-    }
+    protected static ?string $navigationGroup = 'Content Studio';
+    protected static ?int $navigationSort = 3;
 
     public static function getNavigationLabel(): string
     {
@@ -55,166 +53,166 @@ class GuideResource extends Resource
     {
         return $schema
             ->components([
-                \Filament\Schemas\Components\Flex::make([
-                    // Main Content
-                    \Filament\Schemas\Components\Group::make()
-                        ->schema([
-                            \Filament\Schemas\Components\Section::make('Guide Content')
-                                ->icon('heroicon-m-book-open')
-                                ->description('Write your guide content.')
-                                ->schema([
-                                    TextInput::make('title')
-                                        ->required()
-                                        ->maxLength(255)
-                                        ->live(onBlur: true)
-                                        ->afterStateUpdated(fn($set, ?string $state) => $set('slug', Str::slug($state)))
-                                        ->columnSpanFull(),
-
-                                    TextInput::make('slug')
-                                        ->required()
-                                        ->maxLength(255)
-                                        ->unique(ignoreRecord: true)
-                                        ->columnSpanFull(),
-
-                                    Textarea::make('excerpt')
-                                        ->label('Short Description')
-                                        ->rows(3)
-                                        ->helperText('Used for previews and SEO.')
-                                        ->columnSpanFull(),
-
-                                    RichEditor::make('content')
-                                        ->label('Introduction / Main Content')
-                                        ->required()
-                                        ->fileAttachmentsDisk('public')
-                                        ->fileAttachmentsDirectory('guides/content')
-                                        ->columnSpanFull(),
-                                ])
-                                ->columns(1),
-
-                            \Filament\Schemas\Components\Section::make('Step-by-Step Instructions')
-                                ->icon('heroicon-m-list-bullet')
-                                ->description('Add structured steps (optional).')
-                                ->schema([
-                                    Repeater::make('steps')
+                    \Filament\Schemas\Components\Flex::make([
+                        // Main Content
+                        \Filament\Schemas\Components\Group::make()
+                            ->schema([
+                                    \Filament\Schemas\Components\Section::make('Guide Content')
+                                        ->icon('heroicon-m-book-open')
+                                        ->description('Write your guide content.')
                                         ->schema([
-                                            TextInput::make('title')->required(),
-                                            RichEditor::make('description')->toolbarButtons(['bold', 'italic', 'link', 'bulletList']),
-                                            FileUpload::make('image')
-                                                ->image()
-                                                ->directory('guides/steps')
-                                                ->disk('public'),
-                                        ])
-                                        ->itemLabel(fn(array $state): ?string => $state['title'] ?? null)
-                                        ->collapsible()
-                                        ->cloneable()
-                                        ->defaultItems(0),
+                                                TextInput::make('title')
+                                                    ->required()
+                                                    ->maxLength(255)
+                                                    ->live(onBlur: true)
+                                                    ->afterStateUpdated(fn($set, ?string $state) => $set('slug', Str::slug($state)))
+                                                    ->columnSpanFull(),
+
+                                                TextInput::make('slug')
+                                                    ->required()
+                                                    ->maxLength(255)
+                                                    ->unique(ignoreRecord: true)
+                                                    ->columnSpanFull(),
+
+                                                Textarea::make('excerpt')
+                                                    ->label('Short Description')
+                                                    ->rows(3)
+                                                    ->helperText('Used for previews and SEO.')
+                                                    ->columnSpanFull(),
+
+                                                RichEditor::make('content')
+                                                    ->label('Introduction / Main Content')
+                                                    ->required()
+                                                    ->fileAttachmentsDisk('public')
+                                                    ->fileAttachmentsDirectory('guides/content')
+                                                    ->columnSpanFull(),
+                                            ])
+                                        ->columns(1),
+
+                                    \Filament\Schemas\Components\Section::make('Step-by-Step Instructions')
+                                        ->icon('heroicon-m-list-bullet')
+                                        ->description('Add structured steps (optional).')
+                                        ->schema([
+                                                Repeater::make('steps')
+                                                    ->schema([
+                                                            TextInput::make('title')->required(),
+                                                            RichEditor::make('description')->toolbarButtons(['bold', 'italic', 'link', 'bulletList']),
+                                                            FileUpload::make('image')
+                                                                ->image()
+                                                                ->directory('guides/steps')
+                                                                ->disk('public'),
+                                                        ])
+                                                    ->itemLabel(fn(array $state): ?string => $state['title'] ?? null)
+                                                    ->collapsible()
+                                                    ->cloneable()
+                                                    ->defaultItems(0),
+                                            ])
+                                        ->collapsed()
+                                        ->collapsible(),
                                 ])
-                                ->collapsed()
-                                ->collapsible(),
-                        ])
-                        ->grow(),
+                            ->grow(),
 
-                    // Settings Sidebar
-                    \Filament\Schemas\Components\Section::make('Settings')
-                        ->icon('heroicon-m-cog-6-tooth')
-                        ->schema([
-                            Select::make('status')
-                                ->options([
-                                    'draft' => 'Draft',
-                                    'ready_for_review' => 'Ready for Review',
-                                    'published' => 'Published',
+                        // Settings Sidebar
+                        \Filament\Schemas\Components\Section::make('Settings')
+                            ->icon('heroicon-m-cog-6-tooth')
+                            ->schema([
+                                    Select::make('status')
+                                        ->options([
+                                                'draft' => 'Draft',
+                                                'ready_for_review' => 'Ready for Review',
+                                                'published' => 'Published',
+                                            ])
+                                        ->default('draft')
+                                        ->required()
+                                        ->native(false),
+
+                                    DateTimePicker::make('published_at')
+                                        ->default(now())
+                                        ->native(false),
+
+                                    Select::make('author_id')
+                                        ->relationship('author', 'username')
+                                        ->searchable()
+                                        ->default(fn() => auth()->id())
+                                        ->required()
+                                        ->native(false),
+
+                                    Select::make('difficulty')
+                                        ->options([
+                                                'beginner' => 'Beginner',
+                                                'intermediate' => 'Intermediate',
+                                                'advanced' => 'Advanced',
+                                            ])
+                                        ->required()
+                                        ->native(false),
+
+                                    \Filament\Forms\Components\TagsInput::make('tags')
+                                        ->placeholder('Add tags...')
+                                        ->helperText('Press Enter to add a tag.'),
+
+                                    FileUpload::make('featured_image_url')
+                                        ->label('Featured Image')
+                                        ->image()
+                                        ->disk('public')
+                                        ->imageEditor()
+                                        ->imagePreviewHeight('150'),
                                 ])
-                                ->default('draft')
-                                ->required()
-                                ->native(false),
+                            ->collapsible()
+                            ->grow(false),
+                    ])
+                        ->from('md'),
 
-                            DateTimePicker::make('published_at')
-                                ->default(now())
-                                ->native(false),
-
-                            Select::make('author_id')
-                                ->relationship('author', 'username')
-                                ->searchable()
-                                ->default(fn() => auth()->id())
-                                ->required()
-                                ->native(false),
-
-                            Select::make('difficulty')
-                                ->options([
-                                    'beginner' => 'Beginner',
-                                    'intermediate' => 'Intermediate',
-                                    'advanced' => 'Advanced',
-                                ])
-                                ->required()
-                                ->native(false),
-
-                            \Filament\Forms\Components\TagsInput::make('tags')
-                                ->placeholder('Add tags...')
-                                ->helperText('Press Enter to add a tag.'),
-
-                            FileUpload::make('featured_image_url')
-                                ->label('Featured Image')
-                                ->image()
-                                ->disk('public')
-                                ->imageEditor()
-                                ->imagePreviewHeight('150'),
-                        ])
-                        ->collapsible()
-                        ->grow(false),
-                ])
-                    ->from('md'),
-
-                SeoForm::make(),
-            ]);
+                    SeoForm::make(),
+                ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('title')
-                    ->searchable()
-                    ->sortable()
-                    ->limit(50),
-                TextColumn::make('author.username')
-                    ->label('Author')
-                    ->sortable(),
-                TextColumn::make('difficulty')
-                    ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'beginner' => 'success',
-                        'intermediate' => 'warning',
-                        'advanced' => 'danger',
-                        default => 'gray',
-                    }),
-                TextColumn::make('views')
-                    ->numeric()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable(),
-            ])
+                    TextColumn::make('title')
+                        ->searchable()
+                        ->sortable()
+                        ->limit(50),
+                    TextColumn::make('author.username')
+                        ->label('Author')
+                        ->sortable(),
+                    TextColumn::make('difficulty')
+                        ->badge()
+                        ->color(fn(string $state): string => match ($state) {
+                            'beginner' => 'success',
+                            'intermediate' => 'warning',
+                            'advanced' => 'danger',
+                            default => 'gray',
+                        }),
+                    TextColumn::make('views')
+                        ->numeric()
+                        ->sortable()
+                        ->toggleable(isToggledHiddenByDefault: true),
+                    TextColumn::make('created_at')
+                        ->dateTime()
+                        ->sortable(),
+                ])
             ->filters([
-                SelectFilter::make('difficulty')
-                    ->options([
-                        'beginner' => 'Beginner',
-                        'intermediate' => 'Intermediate',
-                        'advanced' => 'Advanced',
-                    ]),
-            ])
+                    SelectFilter::make('difficulty')
+                        ->options([
+                                'beginner' => 'Beginner',
+                                'intermediate' => 'Intermediate',
+                                'advanced' => 'Advanced',
+                            ]),
+                ])
             ->headerActions([
-                CreateAction::make(),
-            ])
+                    CreateAction::make(),
+                ])
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
-            ])
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ])
             ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+                    BulkActionGroup::make([
+                        DeleteBulkAction::make(),
+                    ]),
+                ]);
     }
 
     public static function getRelations(): array
