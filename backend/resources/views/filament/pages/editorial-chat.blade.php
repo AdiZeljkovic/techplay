@@ -598,6 +598,56 @@
             background: #d93800;
         }
 
+        /* Giphy Picker */
+        .giphy-picker {
+            position: absolute;
+            bottom: 50px;
+            left: 0;
+            width: 320px;
+            background: #1e1e1e;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px;
+            z-index: 50;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .giphy-search-input {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 8px;
+            color: #fff;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .giphy-search-input:focus {
+            border-color: #FC4100;
+        }
+        .giphy-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .giphy-item {
+            cursor: pointer;
+            border-radius: 4px;
+            overflow: hidden;
+            height: 100px;
+        }
+        .giphy-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.2s;
+        }
+        .giphy-item:hover img {
+            transform: scale(1.1);
+        }
+
         .edit-cancel-btn {
             background: rgba(255, 255, 255, 0.1);
             color: rgba(255, 255, 255, 0.7);
@@ -1104,12 +1154,16 @@
                             <div class="message-bubble {{ $isMe ? 'from-me' : 'from-other' }}">
                                 @if($msg->attachment_url)
                                     <div class="message-attachment">
-                                        @if(Str::endsWith($msg->attachment_url, ['.jpg', '.jpeg', '.png', '.gif', '.webp']))
-                                            <img src="{{ asset('storage/' . $msg->attachment_url) }}" alt="Attachment"
-                                                class="message-image"
-                                                @click="$dispatch('open-lightbox', { src: '{{ asset('storage/' . $msg->attachment_url) }}' })">
+                                        @php
+                                            $isExternal = Str::startsWith($msg->attachment_url, ['http://', 'https://']);
+                                            $url = $isExternal ? $msg->attachment_url : asset('storage/' . $msg->attachment_url);
+                                        @endphp
+
+                                        @if(Str::endsWith($msg->attachment_url, ['.jpg', '.jpeg', '.png', '.gif', '.webp']) || $isExternal)
+                                            <img src="{{ $url }}" alt="Attachment" class="message-image"
+                                                @click="$dispatch('open-lightbox', { src: '{{ $url }}' })">
                                         @else
-                                            <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank">
+                                            <a href="{{ $url }}" target="_blank">
                                                 📎 Download Attachment
                                             </a>
                                         @endif
@@ -1209,6 +1263,7 @@
                 <form wire:submit="sendMessage" x-data="{
                     showEmojis: false,
                     showMentions: false,
+                    showGiphy: @entangle('showGiphy'),
                     mentionSearch: '',
                     mentionIndex: 0,
                     users: @js($this->users->map(fn($u) => ['id' => $u->id, 'name' => $u->name, 'role' => $this->getUserRoleBadge($u)['short'], 'color' => $this->getUserRoleBadge($u)['color']])->values()),
@@ -1270,6 +1325,36 @@
                         }
                     }
                 }" style="position: relative;">
+                    {{-- Giphy Picker --}}
+                    <div x-show="showGiphy" @click.away="showGiphy = false" x-transition class="giphy-picker">
+                        <div style="margin-bottom: 8px;">
+                            <input type="text" wire:model.live.debounce.500ms="giphySearch" placeholder="Search GIPHY..." 
+                                   autofocus class="giphy-search-input">
+                        </div>
+                        
+                        @if(count($giphyResults) > 0)
+                            <div class="giphy-grid">
+                                @foreach($giphyResults as $gif)
+                                    <div class="giphy-item" wire:click="selectGiphy('{{ $gif['url'] }}')">
+                                        <img src="{{ $gif['url'] }}" alt="{{ $gif['title'] }}">
+                                    </div>
+                                @endforeach
+                            </div>
+                        @elseif(strlen($giphySearch) > 1)
+                            <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5); font-size: 0.8rem;">
+                                No GIFs found.
+                            </div>
+                        @else
+                            <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5); font-size: 0.8rem;">
+                                Type to search GIFs...
+                            </div>
+                        @endif
+                        
+                        <div style="text-align: right; margin-top: 8px;">
+                            <img src="https://developers.giphy.com/static/img/powered_by_giphy.png" alt="Powered by GIPHY" style="height: 12px; opacity: 0.6;">
+                        </div>
+                    </div>
+
                     {{-- Mentions Dropdown --}}
                     <div x-show="showMentions && filteredUsers.length > 0" x-transition class="mentions-dropdown">
                         <template x-for="(user, index) in filteredUsers" :key="user.id">
@@ -1326,6 +1411,10 @@
                                     title="Emoji">
                                     😊
                                 </button>
+                                <button type="button" @click="showGiphy = !showGiphy" class="input-action-btn"
+                                    title="GIF">
+                                    GIF
+                                </button>
                                 <label class="input-action-btn" title="Attach file" style="cursor: pointer;">
                                     <input type="file" wire:model="attachment" style="display: none;">
                                     📎
@@ -1356,7 +1445,8 @@
                     @if($original)
                         <div class="thread-original-message">
                             <strong>{{ $original->user->name }}:</strong>
-                            <div style="margin: 4px 0 0; color: #fff; line-height: 1.4;">{!! $this->formatMessageContent($original->content) !!}</div>
+                            <div style="margin: 4px 0 0; color: #fff; line-height: 1.4;">
+                                {!! $this->formatMessageContent($original->content) !!}</div>
                         </div>
                     @endif
 
@@ -1365,11 +1455,13 @@
                         <div style="padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.06);">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                                 @php $roleBadge = $this->getUserRoleBadge($reply->user); @endphp
-                                <div style="background: {{ $roleBadge['color'] }}; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #fff;">
+                                <div
+                                    style="background: {{ $roleBadge['color'] }}; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #fff;">
                                     {{ substr($reply->user->name, 0, 1) }}
                                 </div>
                                 <span style="font-weight: 600; font-size: 0.85rem; color: #fff;">{{ $reply->user->name }}</span>
-                                <span style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">{{ $reply->created_at->format('H:i') }}</span>
+                                <span
+                                    style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">{{ $reply->created_at->format('H:i') }}</span>
                             </div>
                             <div style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin-left: 32px;">
                                 {!! $this->formatMessageContent($reply->content) !!}
@@ -1381,7 +1473,7 @@
                 {{-- Thread Input --}}
                 <div class="input-area" style="padding: 12px; background: rgba(17,24,39,0.9);">
                     <form wire:submit="sendThreadReply">
-                         <div class="input-box">
+                        <div class="input-box">
                             <textarea wire:model="threadMessage" rows="1" placeholder="Reply in thread..."
                                 style="font-size: 0.85rem; padding: 10px;"
                                 @keydown.enter.prevent="if(!$event.shiftKey) $wire.sendThreadReply()"></textarea>
@@ -1391,7 +1483,7 @@
                                     <span>➤</span>
                                 </button>
                             </div>
-                         </div>
+                        </div>
                     </form>
                 </div>
             </div>
