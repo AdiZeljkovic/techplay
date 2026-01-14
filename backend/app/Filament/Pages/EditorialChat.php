@@ -161,6 +161,8 @@ class EditorialChat extends Page
             EditorialMessage::where('recipient_id', auth()->id())
                 ->where('user_id', $userId)
                 ->update(['read_at' => now()]);
+
+            broadcast(new \App\Events\EditorialMessageRead(auth()->id(), $userId))->toOthers();
         } else {
             $this->previousReadAt = now();
         }
@@ -201,7 +203,7 @@ class EditorialChat extends Page
             $attachmentUrl = $this->attachment->store('editorial-chat', 'public');
         }
 
-        EditorialMessage::create([
+        $message = EditorialMessage::create([
             'user_id' => auth()->id(),
             'content' => $this->message,
             'channel' => $this->activeChannel, // Still storing slug string for simplicity and backward compat
@@ -209,6 +211,8 @@ class EditorialChat extends Page
             'mentioned_user_ids' => $mentionedIds,
             'attachment_url' => $attachmentUrl,
         ]);
+
+        broadcast(new \App\Events\EditorialMessageSent($message))->toOthers();
 
         $this->message = '';
         $this->attachment = null;
@@ -226,13 +230,15 @@ class EditorialChat extends Page
 
         $mentionedIds = $this->parseMentions($this->threadMessage);
 
-        EditorialMessage::create([
+        $message = EditorialMessage::create([
             'user_id' => auth()->id(),
             'content' => $this->threadMessage,
             'channel' => $this->activeChannel,
             'mentioned_user_ids' => $mentionedIds,
             'parent_id' => $this->activeThread,
         ]);
+
+        broadcast(new \App\Events\EditorialMessageSent($message))->toOthers();
 
         $this->threadMessage = '';
         $this->updateLastSeen();
@@ -267,7 +273,7 @@ class EditorialChat extends Page
     {
         $mentionedIds = [];
 
-        EditorialMessage::create([
+        $message = EditorialMessage::create([
             'user_id' => auth()->id(),
             'content' => '',
             'channel' => $this->activeChannel,
@@ -276,6 +282,8 @@ class EditorialChat extends Page
             'attachment_url' => $url,
             'parent_id' => $this->activeThread,
         ]);
+
+        broadcast(new \App\Events\EditorialMessageSent($message))->toOthers();
 
         $this->showGiphy = false;
         $this->giphySearch = '';
