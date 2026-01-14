@@ -312,59 +312,59 @@
             </div>
         </div>
     </div>
-</x-filament-panels::page>
 
-<style>
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-    .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-</style>
-
-<script>
-    document.addEventListener('livewire:initialized', () => {
-        // Scroll to bottom on load and message update
-        const scrollToBottom = () => {
-             const container = document.querySelector('.flex-col-reverse');
-             if(container) container.scrollTop = container.scrollHeight;
-        };
-
-        Livewire.hook('morph.updated', ({ component, el }) => {
-            // Optional: sophisticated scroll handling could go here
-        });
-    });
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-            Notification.requestPermission();
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
 
-        let lastMessageId = "{{ $this->messages->first()?->id }}";
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            // Scroll to bottom on load and message update
+            const scrollToBottom = () => {
+                 const container = document.querySelector('.flex-col-reverse');
+                 if(container) container.scrollTop = container.scrollHeight;
+            };
 
-        setInterval(() => {
-            const el = document.querySelector('[data-last-message-id]');
-            if (!el) return;
-
-            const newMessageId = el.getAttribute('data-last-message-id');
-            if (newMessageId && newMessageId != lastMessageId) {
-                lastMessageId = newMessageId;
-
-                // Play sound
-                const audio = new Audio('https://inv.tux.Pizza/preview/1029/30ss.mp3'); // Simple notification sound placeholder or local asset
-                // audio.play().catch(e => console.log('Audio play failed', e));
-
-                // Show notification
-                if (Notification.permission === "granted" && document.hidden) {
-                    new Notification("TechPlay Redakcija", {
-                        body: "Nova poruka u chatu!",
-                        icon: "/images/logo.png"
-                    });
-                }
+            Livewire.hook('morph.updated', ({ component, el }) => {
+                // Optional: sophisticated scroll handling could go here
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                Notification.requestPermission();
             }
-        }, 2000);
-    });
-</script>
+
+            let lastMessageId = "{{ $this->messages->first()?->id }}";
+
+            setInterval(() => {
+                const el = document.querySelector('[data-last-message-id]');
+                if (!el) return;
+
+                const newMessageId = el.getAttribute('data-last-message-id');
+                if (newMessageId && newMessageId != lastMessageId) {
+                    lastMessageId = newMessageId;
+
+                    // Play sound
+                    const audio = new Audio('https://inv.tux.Pizza/preview/1029/30ss.mp3'); // Simple notification sound placeholder or local asset
+                    // audio.play().catch(e => console.log('Audio play failed', e));
+
+                    // Show notification
+                    if (Notification.permission === "granted" && document.hidden) {
+                        new Notification("TechPlay Redakcija", {
+                            body: "Nova poruka u chatu!",
+                            icon: "/images/logo.png"
+                        });
+                    }
+                }
+            }, 2000);
+        });
+    </script>
+</x-filament-panels::page>
