@@ -39,6 +39,16 @@ class EditorialMessage extends Model
         return $this->hasMany(EditorialMessageReaction::class);
     }
 
+    public function bookmarks()
+    {
+        return $this->belongsToMany(User::class, 'editorial_message_bookmarks')->withTimestamps();
+    }
+
+    public function isBookmarkedBy(User $user): bool
+    {
+        return $this->bookmarks()->where('user_id', $user->id)->exists();
+    }
+
     /**
      * Check if the message can be edited (within 15 minutes)
      */

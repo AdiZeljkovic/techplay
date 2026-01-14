@@ -1037,6 +1037,11 @@
                                     @if($msg->edited_at)
                                         <span class="edited-badge">(edited)</span>
                                     @endif
+                                    @if($msg->isBookmarkedBy(auth()->user()))
+                                        <div style="position: absolute; top: -6px; right: -6px; background: #fbbf24; color: #000; padding: 2px; border-radius: 50%; font-size: 0.6rem; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                                            ★
+                                        </div>
+                                    @endif
                                 @endif
 
                                 {{-- Hover Actions --}}
@@ -1045,17 +1050,19 @@
                                         <button wire:click="toggleReaction({{ $msg->id }}, '{{ $emoji }}')"
                                             title="React">{{ $emoji }}</button>
                                     @endforeach
+                                    <button wire:click="toggleBookmark({{ $msg->id }})" title="Bookmark"
+                                        style="{{ $msg->isBookmarkedBy(auth()->user()) ? 'color: #fbbf24;' : '' }}">
+                                        ★
+                                    </button>
                                     @if(!$msg->is_pinned && $this->activeChannel)
                                         <button wire:click="pinMessage({{ $msg->id }})" title="Pin"
                                             style="border-left: 1px solid rgba(255,255,255,0.1); padding-left: 8px; margin-left: 4px;">📌</button>
                                     @endif
                                     @if($isMe && $msg->canEdit())
-                                        <button wire:click="startEditMessage({{ $msg->id }})"
-                                            title="Edit (within 15 min)">✏️</button>
+                                        <button wire:click="startEditMessage({{ $msg->id }})" title="Edit (within 15 min)">✏️</button>
                                     @endif
                                     @if($isMe)
-                                        <button wire:click="deleteMessage({{ $msg->id }})" class="danger" title="Delete"
-                                            onclick="return confirm('Delete this message?')">🗑️</button>
+                                        <button wire:click="deleteMessage({{ $msg->id }})" class="danger" title="Delete" onclick="return confirm('Delete this message?')">🗑️</button>
                                     @endif
                                 </div>
                             </div>
