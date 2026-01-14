@@ -43,6 +43,36 @@ class EditorialChat extends Page
         );
     }
 
+    public function mount()
+    {
+        if (request()->has('msg')) {
+            $msgId = request()->query('msg');
+            $message = EditorialMessage::find($msgId);
+            if ($message) {
+                if ($message->channel) {
+                    $this->activeChannel = $message->channel;
+                    $this->activeRecipient = null;
+                } elseif ($message->recipient_id) {
+                    $otherId = $message->user_id === auth()->id() ? $message->recipient_id : $message->user_id;
+                    $this->activeRecipient = $otherId;
+                    $this->activeChannel = null;
+                }
+
+                $this->highlightMessageId = $msgId;
+
+                if ($message->parent_id) {
+                    $this->activeThread = $message->parent_id;
+                }
+            }
+        }
+
+        if ($this->activeChannel) {
+            $key = 'user_' . auth()->id() . '_channel_' . $this->activeChannel . '_read_at';
+            $this->previousReadAt = \Illuminate\Support\Facades\Cache::get($key);
+            \Illuminate\Support\Facades\Cache::put($key, now(), now()->addDays(30));
+        }
+    }
+
     protected string $view = 'filament.pages.editorial-chat';
 
     public $message = '';
@@ -61,6 +91,12 @@ class EditorialChat extends Page
     // Threading
     public $activeThread = null; // ID of the parent message
     public $threadMessage = '';
+
+    // Unread Divider
+    public $previousReadAt = null;
+
+    // Permalink
+    public $highlightMessageId = null;
 
     // Giphy
     public $showGiphy = false;
@@ -99,6 +135,12 @@ class EditorialChat extends Page
     {
         $this->activeChannel = $channelSlug;
         $this->activeRecipient = null;
+
+        $key = 'user_' . auth()->id() . '_channel_' . $this->activeChannel . '_read_at';
+        $this->previousReadAt = \Illuminate\Support\Facades\Cache::get($key);
+        \Illuminate\Support\Facades\Cache::put($key, now(), now()->addDays(30));
+
+        $this->activeThread = null;
         $this->updateLastSeen();
         $this->resetAttachment();
     }
@@ -107,6 +149,23 @@ class EditorialChat extends Page
     {
         $this->activeRecipient = $userId;
         $this->activeChannel = null;
+
+        $firstUnread = EditorialMessage::where('recipient_id', auth()->id())
+            ->where('user_id', $userId)
+            ->whereNull('read_at')
+            ->oldest()
+            ->first();
+
+        if ($firstUnread) {
+            $this->previousReadAt = $firstUnread->created_at->subSecond();
+            EditorialMessage::where('recipient_id', auth()->id())
+                ->where('user_id', $userId)
+                ->update(['read_at' => now()]);
+        } else {
+            $this->previousReadAt = now();
+        }
+
+        $this->activeThread = null;
         $this->updateLastSeen();
         $this->resetAttachment();
     }
@@ -289,7 +348,7 @@ class EditorialChat extends Page
             });
         }
 
-        return $query->get();
+        return $query->get()->reverse();
     }
 
     public function getUsersProperty()
