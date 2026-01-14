@@ -668,6 +668,53 @@
             }
         }
 
+        .unread-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            position: relative;
+            opacity: 0.9;
+        }
+
+        .unread-divider::before,
+        .unread-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(252, 65, 0, 0.5), transparent);
+        }
+
+        .unread-divider span {
+            padding: 0 12px;
+            font-size: 0.7rem;
+            color: #FC4100;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(252, 65, 0, 0.1);
+            border-radius: 12px;
+            padding: 4px 12px;
+        }
+
+        .highlight-message {
+            border: 2px solid #FC4100;
+            box-shadow: 0 0 15px rgba(252, 65, 0, 0.3);
+            animation: flash 2s;
+        }
+
+        @keyframes flash {
+
+            0%,
+            100% {
+                background-color: transparent;
+            }
+
+            50% {
+                background-color: rgba(252, 65, 0, 0.2);
+            }
+        }
+
         .edit-cancel-btn {
             background: rgba(255, 255, 255, 0.1);
             color: rgba(255, 255, 255, 0.7);
@@ -1148,9 +1195,16 @@
             @endif
 
             {{-- Messages --}}
+            {{-- Messages --}}
             <div class="messages-container">
+                @php $hasShownDivider = false; @endphp
                 @forelse($this->messages as $msg)
                     @php
+                        if (!$hasShownDivider && $this->previousReadAt && $msg->created_at->gt($this->previousReadAt)) {
+                            $hasShownDivider = true;
+                            echo '<div class="unread-divider"><span>New Messages</span></div>';
+                        }
+
                         $isMe = $msg->user_id === auth()->id();
                         $roleBadge = $this->getUserRoleBadge($msg->user);
                         $avatarColor = $isMe ? '#FC4100' : (['#3b82f6', '#8b5cf6', '#14b8a6', '#f59e0b'][$msg->user_id % 4]);
@@ -1171,7 +1225,10 @@
                                 <span class="message-time">{{ $msg->created_at->format('H:i') }}</span>
                             </div>
 
-                            <div class="message-bubble {{ $isMe ? 'from-me' : 'from-other' }}">
+                            </div>
+                            <!-- {{ $msg->id }} -->
+                            <div class="message-bubble {{ $isMe ? 'from-me' : 'from-other' }} {{ $msg->id == $this->highlightMessageId ? 'highlight-message' : '' }}"
+                                id="message-{{ $msg->id }}">
                                 @if($msg->attachment_url)
                                     <div class="message-attachment">
                                         @php
@@ -1571,6 +1628,14 @@
             if (Notification.permission !== "granted" && Notification.permission !== "denied") {
                 Notification.requestPermission();
             }
+            
+            // Scroll to highlight
+            setTimeout(() => {
+                const highlight = document.querySelector('.highlight-message');
+                if (highlight) {
+                    highlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 500);
         });
     </script>
 </x-filament-panels::page>
