@@ -62,6 +62,11 @@ class EditorialChat extends Page
     public $activeThread = null; // ID of the parent message
     public $threadMessage = '';
 
+    // Giphy
+    public $showGiphy = false;
+    public $giphySearch = '';
+    public $giphyResults = [];
+
 
     // Computed property for channels
     public function getChannelsProperty()
@@ -171,6 +176,51 @@ class EditorialChat extends Page
         ]);
 
         $this->threadMessage = '';
+        $this->updateLastSeen();
+    }
+
+    public function updatedGiphySearch()
+    {
+        if (strlen($this->giphySearch) < 2) {
+            $this->giphyResults = [];
+            return;
+        }
+
+        $response = \Illuminate\Support\Facades\Http::get('https://api.giphy.com/v1/gifs/search', [
+            'api_key' => 'cqlnE9aHcmNPC6lk0cuiXzLStmwU8eBb',
+            'q' => $this->giphySearch,
+            'limit' => 20,
+            'rating' => 'g'
+        ]);
+
+        if ($response->successful()) {
+            $this->giphyResults = collect($response->json('data'))->map(function ($gif) {
+                return [
+                    'id' => $gif['id'],
+                    'url' => $gif['images']['fixed_height']['url'],
+                    'title' => $gif['title'],
+                ];
+            })->toArray();
+        }
+    }
+
+    public function selectGiphy($url)
+    {
+        $mentionedIds = [];
+
+        EditorialMessage::create([
+            'user_id' => auth()->id(),
+            'content' => '',
+            'channel' => $this->activeChannel,
+            'recipient_id' => $this->activeRecipient,
+            'mentioned_user_ids' => $mentionedIds,
+            'attachment_url' => $url,
+            'parent_id' => $this->activeThread,
+        ]);
+
+        $this->showGiphy = false;
+        $this->giphySearch = '';
+        $this->giphyResults = [];
         $this->updateLastSeen();
     }
 
