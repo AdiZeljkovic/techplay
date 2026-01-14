@@ -50,6 +50,10 @@ class EditorialChat extends Page
     public $activeRecipient = null;
     public $attachment = null;
 
+    // Editing state
+    public $editingMessageId = null;
+    public $editingContent = '';
+
     // Computed property for channels
     public function getChannelsProperty()
     {
@@ -313,6 +317,62 @@ class EditorialChat extends Page
             ->send();
 
         return redirect()->to(TaskResource::getUrl('edit', ['record' => $task->id]));
+    }
+
+    // === Edit/Delete Message Methods ===
+
+    public function startEditMessage($messageId)
+    {
+        $message = EditorialMessage::find($messageId);
+        if (!$message || !$message->canEdit()) {
+            Notification::make()
+                ->title('Cannot edit this message')
+                ->body('Messages can only be edited within 15 minutes of sending.')
+                ->warning()
+                ->send();
+            return;
+        }
+
+        $this->editingMessageId = $messageId;
+        $this->editingContent = $message->content;
+    }
+
+    public function cancelEdit()
+    {
+        $this->editingMessageId = null;
+        $this->editingContent = '';
+    }
+
+    public function saveEdit()
+    {
+        $message = EditorialMessage::find($this->editingMessageId);
+        if (!$message || !$message->canEdit()) {
+            $this->cancelEdit();
+            return;
+        }
+
+        $message->update([
+            'content' => $this->editingContent,
+            'edited_at' => now(),
+        ]);
+
+        Notification::make()->title('Message updated')->success()->send();
+        $this->cancelEdit();
+    }
+
+    public function deleteMessage($messageId)
+    {
+        $message = EditorialMessage::find($messageId);
+        if (!$message || !$message->canDelete()) {
+            Notification::make()
+                ->title('Cannot delete this message')
+                ->warning()
+                ->send();
+            return;
+        }
+
+        $message->delete(); // Soft delete
+        Notification::make()->title('Message deleted')->success()->send();
     }
 
     public function formatMessageContent(string $content): string
