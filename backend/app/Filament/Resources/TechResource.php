@@ -64,93 +64,98 @@ class TechResource extends Resource
     {
         return $schema
             ->components([
-                    \Filament\Schemas\Components\Flex::make([
-                        // Main Content
-                        \Filament\Schemas\Components\Section::make('Tech Article')
-                            ->icon('heroicon-m-cpu-chip')
-                            ->description('Write your tech article content.')
-                            ->schema([
-                                    TextInput::make('title')
-                                        ->required()
-                                        ->maxLength(255)
-                                        ->live(onBlur: true)
-                                        ->afterStateUpdated(fn($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state)))
-                                        ->columnSpanFull(),
+                    // Title
+                    TextInput::make('title')
+                        ->label('Title')
+                        ->required()
+                        ->maxLength(255)
+                        ->placeholder('Enter title here')
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(fn($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
 
-                                    TextInput::make('slug')
-                                        ->required()
-                                        ->maxLength(255)
-                                        ->unique(ignoreRecord: true)
-                                        ->columnSpanFull(),
+                    // Slug
+                    TextInput::make('slug')
+                        ->label('Permalink')
+                        ->required()
+                        ->maxLength(255)
+                        ->prefix('techplay.gg/tech/')
+                        ->unique(ignoreRecord: true),
 
-                                    Textarea::make('excerpt')
-                                        ->label('Summary')
-                                        ->rows(3)
-                                        ->columnSpanFull(),
+                    // Content
+                    RichEditor::make('content')
+                        ->label('Content')
+                        ->required()
+                        ->placeholder('Start writing your article...')
+                        ->fileAttachmentsDisk('public')
+                        ->fileAttachmentsDirectory('articles'),
 
-                                    RichEditor::make('content')
-                                        ->required()
-                                        ->fileAttachmentsDisk('public')
-                                        ->fileAttachmentsDirectory('articles')
-                                        ->columnSpanFull(),
-                                ])
-                            ->columns(1)
-                            ->grow(),
+                    // Excerpt
+                    Textarea::make('excerpt')
+                        ->label('Excerpt')
+                        ->placeholder('Brief summary for article previews...')
+                        ->rows(2),
 
-                        // Settings Sidebar
-                        \Filament\Schemas\Components\Section::make('Settings')
-                            ->icon('heroicon-m-cog-6-tooth')
-                            ->schema([
-                                    Select::make('status')
-                                        ->options([
-                                                'draft' => 'Draft',
-                                                'ready_for_review' => 'Ready for Review',
-                                                'published' => 'Published',
-                                            ])
-                                        ->default('draft')
-                                        ->required()
-                                        ->native(false),
+                    // Featured Image
+                    FileUpload::make('featured_image_url')
+                        ->label('Featured Image')
+                        ->image()
+                        ->disk('public')
+                        ->directory('articles')
+                        ->imageEditor()
+                        ->imagePreviewHeight('200'),
 
-                                    DateTimePicker::make('published_at')
-                                        ->default(now())
-                                        ->native(false),
+                    // Status, Date, Category row
+                    Grid::make(3)
+                        ->schema([
+                                Select::make('status')
+                                    ->label('Status')
+                                    ->options([
+                                            'draft' => 'Draft',
+                                            'ready_for_review' => 'Pending Review',
+                                            'published' => 'Published',
+                                        ])
+                                    ->default('draft')
+                                    ->required()
+                                    ->native(false),
 
-                                    Select::make('author_id')
-                                        ->relationship('author', 'name')
-                                        ->default(fn() => auth()->id())
-                                        ->required()
-                                        ->searchable()
-                                        ->native(false),
+                                DateTimePicker::make('published_at')
+                                    ->label('Publish Date')
+                                    ->default(now())
+                                    ->native(false),
 
-                                    Toggle::make('is_featured_in_hero')
-                                        ->label('Feature in Hero')
-                                        ->default(false),
+                                Select::make('category_id')
+                                    ->label('Category')
+                                    ->options(Category::where('type', 'tech')->whereNotNull('parent_id')->pluck('name', 'id'))
+                                    ->searchable()
+                                    ->required()
+                                    ->native(false),
+                            ]),
 
-                                    Select::make('category_id')
-                                        ->label('Category')
-                                        ->options(Category::where('type', 'tech')->whereNotNull('parent_id')->pluck('name', 'id'))
-                                        ->searchable()
-                                        ->required()
-                                        ->native(false),
+                    // Tags
+                    \Filament\Forms\Components\TagsInput::make('tags')
+                        ->label('Tags')
+                        ->placeholder('Add tags...'),
 
-                                    \Filament\Forms\Components\TagsInput::make('tags')
-                                        ->placeholder('Add tags...')
-                                        ->helperText('Press Enter to add a tag.'),
+                    // Feature toggle
+                    Toggle::make('is_featured_in_hero')
+                        ->label('Feature in Homepage Hero'),
 
-                                    FileUpload::make('featured_image_url')
-                                        ->label('Featured Image')
-                                        ->image()
-                                        ->disk('public')
-                                        ->directory('articles')
-                                        ->imageEditor()
-                                        ->imagePreviewHeight('150'),
-                                ])
-                            ->collapsible()
-                            ->grow(false),
-                    ])
-                        ->from('md'),
+                    // SEO - collapsible
+                    Section::make('SEO Settings')
+                        ->schema([
+                                TextInput::make('meta_title')
+                                    ->label('SEO Title')
+                                    ->placeholder('Custom SEO title'),
+                                Textarea::make('meta_description')
+                                    ->label('SEO Description')
+                                    ->placeholder('Meta description...')
+                                    ->rows(2),
+                            ])
+                        ->collapsible()
+                        ->collapsed(),
 
-                    SeoForm::make(),
+                    Hidden::make('author_id')
+                        ->default(fn() => auth()->id()),
                 ]);
     }
 

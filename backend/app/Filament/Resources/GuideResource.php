@@ -56,116 +56,116 @@ class GuideResource extends Resource
     {
         return $schema
             ->components([
-                    \Filament\Schemas\Components\Flex::make([
-                        // Main Content
-                        \Filament\Schemas\Components\Group::make()
-                            ->schema([
-                                    \Filament\Schemas\Components\Section::make('Guide Content')
-                                        ->icon('heroicon-m-book-open')
-                                        ->description('Write your guide content.')
-                                        ->schema([
-                                                TextInput::make('title')
-                                                    ->required()
-                                                    ->maxLength(255)
-                                                    ->live(onBlur: true)
-                                                    ->afterStateUpdated(fn($set, ?string $state) => $set('slug', Str::slug($state)))
-                                                    ->columnSpanFull(),
+                    // Title
+                    TextInput::make('title')
+                        ->label('Title')
+                        ->required()
+                        ->maxLength(255)
+                        ->placeholder('Enter guide title here')
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(fn($set, ?string $state) => $set('slug', Str::slug($state))),
 
-                                                TextInput::make('slug')
-                                                    ->required()
-                                                    ->maxLength(255)
-                                                    ->unique(ignoreRecord: true)
-                                                    ->columnSpanFull(),
+                    // Slug
+                    TextInput::make('slug')
+                        ->label('Permalink')
+                        ->required()
+                        ->maxLength(255)
+                        ->prefix('techplay.gg/guides/')
+                        ->unique(ignoreRecord: true),
 
-                                                Textarea::make('excerpt')
-                                                    ->label('Short Description')
-                                                    ->rows(3)
-                                                    ->helperText('Used for previews and SEO.')
-                                                    ->columnSpanFull(),
+                    // Content
+                    RichEditor::make('content')
+                        ->label('Content')
+                        ->required()
+                        ->placeholder('Start writing your guide...')
+                        ->fileAttachmentsDisk('public')
+                        ->fileAttachmentsDirectory('guides/content'),
 
-                                                RichEditor::make('content')
-                                                    ->label('Introduction / Main Content')
-                                                    ->required()
-                                                    ->fileAttachmentsDisk('public')
-                                                    ->fileAttachmentsDirectory('guides/content')
-                                                    ->columnSpanFull(),
-                                            ])
-                                        ->columns(1),
+                    // Excerpt
+                    Textarea::make('excerpt')
+                        ->label('Excerpt')
+                        ->placeholder('Brief summary for guide previews...')
+                        ->rows(2),
 
-                                    \Filament\Schemas\Components\Section::make('Step-by-Step Instructions')
-                                        ->icon('heroicon-m-list-bullet')
-                                        ->description('Add structured steps (optional).')
-                                        ->schema([
-                                                Repeater::make('steps')
-                                                    ->schema([
-                                                            TextInput::make('title')->required(),
-                                                            RichEditor::make('description')->toolbarButtons(['bold', 'italic', 'link', 'bulletList']),
-                                                            FileUpload::make('image')
-                                                                ->image()
-                                                                ->directory('guides/steps')
-                                                                ->disk('public'),
-                                                        ])
-                                                    ->itemLabel(fn(array $state): ?string => $state['title'] ?? null)
-                                                    ->collapsible()
-                                                    ->cloneable()
-                                                    ->defaultItems(0),
-                                            ])
-                                        ->collapsed()
-                                        ->collapsible(),
-                                ])
-                            ->grow(),
+                    // Featured Image
+                    FileUpload::make('featured_image_url')
+                        ->label('Featured Image')
+                        ->image()
+                        ->disk('public')
+                        ->imageEditor()
+                        ->imagePreviewHeight('200'),
 
-                        // Settings Sidebar
-                        \Filament\Schemas\Components\Section::make('Settings')
-                            ->icon('heroicon-m-cog-6-tooth')
-                            ->schema([
-                                    Select::make('status')
-                                        ->options([
-                                                'draft' => 'Draft',
-                                                'ready_for_review' => 'Ready for Review',
-                                                'published' => 'Published',
-                                            ])
-                                        ->default('draft')
-                                        ->required()
-                                        ->native(false),
+                    // Status, Date, Difficulty row
+                    Grid::make(3)
+                        ->schema([
+                                Select::make('status')
+                                    ->label('Status')
+                                    ->options([
+                                            'draft' => 'Draft',
+                                            'ready_for_review' => 'Pending Review',
+                                            'published' => 'Published',
+                                        ])
+                                    ->default('draft')
+                                    ->required()
+                                    ->native(false),
 
-                                    DateTimePicker::make('published_at')
-                                        ->default(now())
-                                        ->native(false),
+                                DateTimePicker::make('published_at')
+                                    ->label('Publish Date')
+                                    ->default(now())
+                                    ->native(false),
 
-                                    Select::make('author_id')
-                                        ->relationship('author', 'username')
-                                        ->searchable()
-                                        ->default(fn() => auth()->id())
-                                        ->required()
-                                        ->native(false),
+                                Select::make('difficulty')
+                                    ->label('Difficulty')
+                                    ->options([
+                                            'beginner' => 'Beginner',
+                                            'intermediate' => 'Intermediate',
+                                            'advanced' => 'Advanced',
+                                        ])
+                                    ->required()
+                                    ->native(false),
+                            ]),
 
-                                    Select::make('difficulty')
-                                        ->options([
-                                                'beginner' => 'Beginner',
-                                                'intermediate' => 'Intermediate',
-                                                'advanced' => 'Advanced',
-                                            ])
-                                        ->required()
-                                        ->native(false),
+                    // Tags
+                    \Filament\Forms\Components\TagsInput::make('tags')
+                        ->label('Tags')
+                        ->placeholder('Add tags...'),
 
-                                    \Filament\Forms\Components\TagsInput::make('tags')
-                                        ->placeholder('Add tags...')
-                                        ->helperText('Press Enter to add a tag.'),
+                    // Steps Section (collapsible)
+                    Section::make('Step-by-Step Instructions')
+                        ->schema([
+                                Repeater::make('steps')
+                                    ->schema([
+                                            TextInput::make('title')->required(),
+                                            RichEditor::make('description')->toolbarButtons(['bold', 'italic', 'link', 'bulletList']),
+                                            FileUpload::make('image')
+                                                ->image()
+                                                ->directory('guides/steps')
+                                                ->disk('public'),
+                                        ])
+                                    ->itemLabel(fn(array $state): ?string => $state['title'] ?? null)
+                                    ->collapsible()
+                                    ->cloneable()
+                                    ->defaultItems(0),
+                            ])
+                        ->collapsible()
+                        ->collapsed(),
 
-                                    FileUpload::make('featured_image_url')
-                                        ->label('Featured Image')
-                                        ->image()
-                                        ->disk('public')
-                                        ->imageEditor()
-                                        ->imagePreviewHeight('150'),
-                                ])
-                            ->collapsible()
-                            ->grow(false),
-                    ])
-                        ->from('md'),
+                    // SEO - collapsible
+                    Section::make('SEO Settings')
+                        ->schema([
+                                TextInput::make('meta_title')
+                                    ->label('SEO Title')
+                                    ->placeholder('Custom SEO title'),
+                                Textarea::make('meta_description')
+                                    ->label('SEO Description')
+                                    ->placeholder('Meta description...')
+                                    ->rows(2),
+                            ])
+                        ->collapsible()
+                        ->collapsed(),
 
-                    SeoForm::make(),
+                    Hidden::make('author_id')
+                        ->default(fn() => auth()->id()),
                 ]);
     }
 
