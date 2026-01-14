@@ -402,3 +402,142 @@
 .fi-ta-empty-state-heading {
     color: var(--tp-text-secondary) !important;
 }
+
+/* ============================================
+   PROFESSIONAL FORM LAYOUT
+   Compact, cohesive design
+   ============================================ */
+
+/* Reduce gaps between sections */
+.fi-fo-component-ctn {
+    gap: 1rem !important;
+}
+
+/* Tighter section styling */
+.fi-section {
+    margin-bottom: 0 !important;
+    box-shadow: none !important;
+    border-radius: 12px !important;
+}
+
+/* Remove excessive section padding */
+.fi-section-content {
+    padding: 16px !important;
+}
+
+.fi-section-header {
+    padding: 12px 16px !important;
+}
+
+/* Section header text */
+.fi-section-header-heading {
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+}
+
+.fi-section-header-description {
+    font-size: 0.75rem !important;
+    color: var(--tp-text-muted) !important;
+    margin-top: 2px !important;
+}
+
+/* Compact form field spacing */
+.fi-fo-field-wrp {
+    gap: 4px !important;
+}
+
+/* Smaller labels */
+.fi-fo-field-wrp-label {
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    color: var(--tp-text-secondary) !important;
+}
+
+/* Compact inputs */
+.fi-input {
+    padding: 10px 12px !important;
+    font-size: 0.9rem !important;
+}
+
+/* Compact textarea */
+.fi-textarea {
+    padding: 10px 12px !important;
+    font-size: 0.9rem !important;
+}
+
+/* Helper text styling */
+.fi-fo-field-wrp-helper-text {
+    font-size: 0.7rem !important;
+    color: var(--tp-text-muted) !important;
+    margin-top: 4px !important;
+}
+
+/* Grid gaps */
+.fi-grid {
+    gap: 12px !important;
+}
+
+/* Collapsible sections - cleaner toggle */
+.fi-section-collapse-btn {
+    padding: 4px !important;
+}
+
+/* File upload compact */
+.fi-fo-file-upload {
+    padding: 16px !important;
+}
+
+/* Toggle styling */
+.fi-toggle-wrp {
+    padding: 8px 0 !important;
+}
+
+/* Create page specific - max width for readability */
+.fi-page-create .fi-form,
+.fi-page-edit .fi-form {
+    max-width: 900px !important;
+    margin: 0 auto !important;
+}
+
+/* Breadcrumb styling */
+.fi-breadcrumbs {
+    margin-bottom: 8px !important;
+}
+
+/* Page header compact */
+.fi-header-heading {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+}
+
+/* Action buttons at bottom */
+.fi-form-actions {
+    margin-top: 24px !important;
+    padding-top: 16px !important;
+    border-top: 1px solid var(--tp-border-light) !important;
+}
+
+/* Rich editor compact header */
+.fi-fo-rich-editor .tiptap-wrapper {
+    border-radius: 8px !important;
+}
+
+.fi-fo-rich-editor .tiptap-toolbar {
+    padding: 6px 8px !important;
+    gap: 2px !important;
+}
+
+.fi-fo-rich-editor .tiptap-toolbar button {
+    padding: 6px !important;
+}
+
+/* Tags input compact */
+.fi-tags-input {
+    min-height: 38px !important;
+}
+
+/* Select dropdowns */
+.fi-select-option {
+    padding: 8px 12px !important;
+    font-size: 0.85rem !important;
+}
