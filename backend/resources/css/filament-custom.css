@@ -492,10 +492,48 @@
     padding: 8px 0 !important;
 }
 
-/* Create/Edit pages - full width */
+/* ============================================
+   FULL WIDTH FORMS - AGGRESSIVE OVERRIDES
+   ============================================ */
+
+/* Remove ALL max-width constraints */
+.fi-page-create,
+.fi-page-edit,
 .fi-page-create .fi-form,
-.fi-page-edit .fi-form {
+.fi-page-edit .fi-form,
+.fi-page-create .fi-main,
+.fi-page-edit .fi-main,
+.fi-main-ctn,
+.fi-page>div,
+.fi-form {
     max-width: none !important;
+    width: 100% !important;
+}
+
+/* Force main content to use full available width */
+.fi-body {
+    max-width: none !important;
+}
+
+/* Grid should fill container */
+.fi-grid {
+    width: 100% !important;
+}
+
+/* Form component container */
+.fi-fo-component-ctn {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+/* Section should expand */
+.fi-section {
+    width: 100% !important;
+}
+
+/* Groups should fill their column span */
+.fi-fo-component-ctn>.fi-fo-field-wrp,
+.fi-form>div {
     width: 100% !important;
 }
 
