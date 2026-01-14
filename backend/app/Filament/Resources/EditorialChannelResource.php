@@ -23,7 +23,10 @@ class EditorialChannelResource extends Resource
 {
     protected static ?string $model = EditorialChannel::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-hashtag'; // Using generic hashtag icon
+    public static function getNavigationIcon(): ?string
+    {
+        return 'heroicon-o-hashtag';
+    }
 
     public static function getNavigationGroup(): ?string
     {
