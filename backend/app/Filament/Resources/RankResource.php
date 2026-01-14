@@ -18,7 +18,7 @@ class RankResource extends Resource
 {
     protected static ?string $model = Rank::class;
 
-    protected static ?string $navigationGroup = 'System';
+    protected static $navigationGroup = 'System';
     protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema

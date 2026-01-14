@@ -24,7 +24,7 @@ class VideoResource extends Resource
 
     protected static ?string $slug = 'videos';
 
-    protected static ?string $navigationGroup = 'Content Studio';
+    protected static $navigationGroup = 'Content Studio';
     protected static ?int $navigationSort = 4;
 
     public static function getNavigationLabel(): string

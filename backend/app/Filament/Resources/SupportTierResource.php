@@ -20,7 +20,7 @@ class SupportTierResource extends Resource
 
     // protected static ?string $navigationIcon = 'heroicon-o-heart';
 
-    protected static ?string $navigationGroup = 'Shop & Monetization';
+    protected static $navigationGroup = 'Shop & Monetization';
     protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
