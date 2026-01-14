@@ -1,40 +1,45 @@
-<x-filament-panels::page>
+<x-filament-panels::page class="h-[calc(100vh-4rem)] flex flex-col">
     <div
-        style="display: flex; flex-direction: row; height: 75vh; width: 100%; border: 1px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden; background-color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        class="flex flex-1 w-full overflow-hidden bg-white border rounded-xl dark:bg-gray-900 dark:border-gray-800 shadow-xl"
+        style="height: 75vh;">
 
-        <!-- Sidebar (Dark) -->
-        <div
-            style="width: 280px; display: flex; flex-direction: column; background-color: #1a2234; color: #94a3b8; border-right: 1px solid #1e293b; flex-shrink: 0;">
+        <!-- Sidebar -->
+        <div class="flex flex-col w-72 bg-gray-50 dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 flex-shrink-0">
             <!-- Header -->
-            <div
-                style="height: 60px; display: flex; align-items: center; padding-left: 20px; font-weight: bold; color: white; border-bottom: 1px solid #1e293b; background-color: #1a2234;">
-                <span style="color: #3b82f6; margin-right: 8px;">◈</span> TechPlay Redakcija
+            <div class="flex items-center h-16 px-6 font-bold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+                <span class="mr-2 text-[#FC4100]">◈</span> TechPlay Redakcija
             </div>
 
             <!-- Scrollable List -->
-            <div style="flex: 1; overflow-y: auto; padding-top: 20px;">
+            <div class="flex-1 overflow-y-auto py-4 space-y-6">
 
                 <!-- Channels -->
-                <div style="margin-bottom: 30px;">
-                    <div
-                        style="padding: 0 20px; margin-bottom: 10px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; display: flex; justify-content: space-between;">
+                <div>
+                    <div class="flex items-center justify-between px-6 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                         <span>Channels</span>
+                        @if(auth()->user()->hasRole('Super Admin'))
+                         <a href="{{ \App\Filament\Resources\EditorialChannelResource::getUrl() }}" class="text-xs hover:text-[#FC4100] transition-colors" title="Manage Channels">⚙️</a>
+                        @endif
                     </div>
-                    @foreach($this->channels as $id => $channel)
-                        <button wire:click="setChannel('{{ $id }}')"
-                            style="width: 100%; text-align: left; padding: 8px 20px; display: flex; align-items: center; gap: 10px; cursor: pointer; border: none; background: {{ $this->activeChannel === $id ? '#1d4ed8' : 'transparent' }}; color: {{ $this->activeChannel === $id ? 'white' : 'inherit' }}; transition: background 0.2s;">
-                            <span>{{ $channel['icon'] }}</span>
-                            <div style="flex: 1;">
-                                <div style="font-size: 0.9rem;">{{ $channel['name'] }}</div>
-                            </div>
+                    @foreach($this->channels as $channel)
+                        <button wire:click="setChannel('{{ $channel->slug }}')"
+                            class="w-full text-left px-6 py-2 flex items-center gap-3 transition-colors duration-200
+                            {{ $this->activeChannel === $channel->slug 
+                                ? 'bg-[#FC4100]/10 text-[#FC4100] border-r-2 border-[#FC4100]' 
+                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-gray-200' 
+                            }}">
+                            <span class="text-lg">{{ $channel->icon }}</span>
+                            <span class="text-sm font-medium truncate">{{ $channel->name }}</span>
+                            @if($channel->is_private)
+                                <span class="ml-auto text-xs text-gray-400">🔒</span>
+                            @endif
                         </button>
                     @endforeach
                 </div>
 
                 <!-- DMs -->
                 <div>
-                    <div
-                        style="padding: 0 20px; margin-bottom: 10px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">
+                    <div class="px-6 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                         Direct Messages
                     </div>
                     @foreach($this->users as $user)
@@ -43,40 +48,39 @@
                             $isOnline = $this->isUserOnline($user);
                         @endphp
                         <button wire:click="setRecipient({{ $user->id }})"
-                            style="width: 100%; text-align: left; padding: 10px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; border: none; background: {{ $this->activeRecipient === $user->id ? '#1d4ed8' : 'transparent' }}; color: {{ $this->activeRecipient === $user->id ? 'white' : 'inherit' }}; transition: background 0.2s;">
+                            class="w-full text-left px-6 py-2.5 flex items-center gap-3 transition-colors duration-200 group
+                            {{ $this->activeRecipient === $user->id 
+                                ? 'bg-[#FC4100]/10 text-[#FC4100] border-r-2 border-[#FC4100]' 
+                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900' 
+                            }}">
 
-                            <!-- Avatar with Online Status -->
-                            <div style="position: relative;">
+                            <!-- Avatar -->
+                            <div class="relative flex-shrink-0">
                                 @if($user->avatar_url)
-                                    <img src="{{ $user->user_avatar }}"
-                                        style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+                                    <img src="{{ $user->user_avatar }}" class="w-8 h-8 rounded-full object-cover ring-2 ring-white dark:ring-gray-800" />
                                 @else
-                                    <div
-                                        style="width: 32px; height: 32px; border-radius: 50%; background-color: {{ $user->id % 2 == 0 ? '#3b82f6' : '#6366f1' }}; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold;">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ring-2 ring-white dark:ring-gray-800"
+                                        style="background-color: {{ $roleBadge['color'] }};">
                                         {{ substr($user->name, 0, 1) }}
                                     </div>
                                 @endif
-                                <div
-                                    style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-radius: 50%; background-color: {{ $isOnline ? '#22c55e' : '#9ca3af' }}; border: 2px solid #1a2234;">
-                                </div>
+                                <div class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-950 {{ $isOnline ? 'bg-green-500' : 'bg-gray-400' }}"></div>
                             </div>
 
-                            <div style="flex: 1; min-width: 0;">
-                                <div style="display: flex; align-items: center; justify-content: space-between;">
-                                    <span
-                                        style="font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium truncate group-hover:text-gray-900 dark:group-hover:text-white transition-colors {{ $this->activeRecipient === $user->id ? 'text-[#FC4100]' : '' }}">
                                         {{ $user->name }}
                                     </span>
                                     @if($user->unread_count > 0)
-                                        <div
-                                            style="background-color: #ef4444; color: white; font-size: 0.7rem; padding: 1px 6px; border-radius: 10px; font-weight: bold;">
+                                        <span class="px-1.5 py-0.5 text-[0.65rem] font-bold text-white bg-red-500 rounded-full animate-pulse">
                                             {{ $user->unread_count }}
-                                        </div>
+                                        </span>
                                     @endif
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
-                                    <span
-                                        style="font-size: 0.65rem; padding: 1px 4px; border-radius: 4px; background-color: {{ $roleBadge['color'] }}20; color: {{ $roleBadge['color'] }}; border: 1px solid {{ $roleBadge['color'] }}40;">
+                                <div class="flex items-center gap-1.5 mt-0.5">
+                                    <span class="text-[0.6rem] px-1.5 py-px rounded border"
+                                        style="color: {{ $roleBadge['color'] }}; background-color: {{ $roleBadge['color'] }}15; border-color: {{ $roleBadge['color'] }}30;">
                                         {{ $roleBadge['short'] }}
                                     </span>
                                 </div>
@@ -88,70 +92,60 @@
         </div>
 
         <!-- Main Chat Area -->
-        <div style="flex: 1; display: flex; flex-direction: column; background-color: #f8fafc; min-width: 0;"
-            wire:poll.5s data-last-message-id="{{ $this->messages->first()?->id }}">
+        <div class="flex flex-col flex-1 min-w-0 bg-white dark:bg-gray-900"
+            wire:poll.3s data-last-message-id="{{ $this->messages->first()?->id }}">
 
-            <!-- Context Header -->
-            <div
-                style="height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; background-color: white; border-bottom: 1px solid #e2e8f0; flex-shrink: 0;">
-                <div style="display: flex; align-items: center;">
+            <!-- Chat Header -->
+            <div class="flex items-center justify-between h-16 px-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+                <div class="flex items-center gap-4">
                     @if($this->activeChannel)
-                        <span
-                            style="font-size: 1.5rem; margin-right: 12px;">{{ $this->channels[$this->activeChannel]['icon'] }}</span>
-                        <div>
-                            <h2 style="font-size: 1.125rem; font-weight: bold; color: #0f172a;">
-                                {{ $this->channels[$this->activeChannel]['name'] }}
-                            </h2>
-                            <p style="font-size: 0.8rem; color: #64748b;">
-                                {{ $this->channels[$this->activeChannel]['description'] }}
-                            </p>
-                        </div>
+                        @php $channel = $this->channels->firstWhere('slug', $this->activeChannel); @endphp
+                        @if($channel)
+                            <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 text-2xl">
+                                {{ $channel->icon }}
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                                    {{ $channel->name }}
+                                </h2>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    {{ $channel->description }}
+                                </p>
+                            </div>
+                        @endif
                     @elseif($this->activeRecipient)
                         @php
                             $recipient = $this->users->find($this->activeRecipient);
                             $isOnline = $this->isUserOnline($recipient);
                         @endphp
-                        <div style="position: relative; margin-right: 12px;">
-                            <div
-                                style="width: 36px; height: 36px; border-radius: 50%; background-color: #3b82f6; display: flex; items-center; justify-content: center; color: white; font-weight: bold; line-height: 36px; text-align: center;">
+                        <div class="relative">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold bg-[#FC4100]">
                                 {{ substr($recipient->name, 0, 1) }}
                             </div>
-                            <div
-                                style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-radius: 50%; background-color: {{ $isOnline ? '#22c55e' : '#9ca3af' }}; border: 2px solid white;">
-                            </div>
+                            <div class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900 {{ $isOnline ? 'bg-green-500' : 'bg-gray-400' }}"></div>
                         </div>
                         <div>
-                            <h2 style="font-size: 1.125rem; font-weight: bold; color: #0f172a;">
+                            <h2 class="text-lg font-bold text-gray-900 dark:text-white">
                                 {{ $recipient->name }}
                             </h2>
-                            <p style="font-size: 0.8rem; color: #64748b;">
-                                Direct Message
+                            <p class="text-xs text-green-500 font-medium">
+                                {{ $isOnline ? 'Active now' : 'Offline' }}
                             </p>
                         </div>
                     @endif
                 </div>
-
-                <!-- Action Buttons (Placeholder for future) -->
-                <div style="display: flex; gap: 8px;">
-                    <!-- <button style="padding: 6px; color: #94a3b8; hover:text-slate-600;">🔍</button> -->
-                </div>
             </div>
 
-            <!-- Pinned Messages Section -->
+            <!-- Pinned Messages -->
             @if($this->activeChannel && $this->pinnedMessages->count() > 0)
-                <div
-                    style="background-color: #fffbeb; border-bottom: 1px solid #fcd34d; padding: 10px 24px; display: flex; align-items: flex-start; gap: 10px; font-size: 0.85rem; color: #92400e;">
-                    <span style="font-size: 1rem;">📌</span>
-                    <div style="flex: 1;">
-                        <div
-                            style="font-weight: bold; margin-bottom: 4px; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em;">
-                            Pinned Messages</div>
+                <div class="px-6 py-2 bg-amber-50 dark:bg-amber-900/10 border-b border-amber-200 dark:border-amber-800/30 flex items-start gap-3">
+                    <span class="text-amber-500 text-lg">📌</span>
+                    <div class="flex-1 overflow-x-auto flex gap-4 no-scrollbar">
                         @foreach($this->pinnedMessages as $pinned)
-                            <div
-                                style="margin-bottom: 4px; display: flex; justify-content: space-between; align-items: flex-start; group">
-                                <span><b>{{ $pinned->user->name }}:</b> {{ Str::limit($pinned->content, 60) }}</span>
-                                <button wire:click="unpinMessage({{ $pinned->id }})"
-                                    style="color: #b45309; font-size: 0.7rem; cursor: pointer; border: none; background: none; text-decoration: underline;">Unpin</button>
+                            <div class="flex items-center gap-2 text-xs min-w-[200px] p-2 rounded bg-white dark:bg-gray-800 shadow-sm border border-amber-100 dark:border-amber-900/20">
+                                <span class="font-bold text-gray-900 dark:text-white">{{ $pinned->user->name }}:</span>
+                                <span class="text-gray-600 dark:text-gray-400 truncate max-w-[120px]">{{ $pinned->content }}</span>
+                                <button wire:click="unpinMessage({{ $pinned->id }})" class="ml-auto text-amber-600 hover:text-amber-800 dark:hover:text-amber-400">✕</button>
                             </div>
                         @endforeach
                     </div>
@@ -159,66 +153,57 @@
             @endif
 
             <!-- Messages Stream -->
-            <div
-                style="flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column-reverse; gap: 20px;">
+            <div class="flex-1 overflow-y-auto px-6 py-6 flex flex-col-reverse gap-6 bg-slate-50 dark:bg-gray-950/50">
                 @forelse($this->messages as $msg)
                     @php
                         $isMe = $msg->user_id === auth()->id();
                         $roleBadge = $this->getUserRoleBadge($msg->user);
                     @endphp
-                    <div style="display: flex; gap: 16px; align-items: flex-start; {{ $isMe ? 'flex-direction: row-reverse;' : '' }} group"
-                        x-data="{ showActions: false }" @mouseenter="showActions = true" @mouseleave="showActions = false">
+                    <div class="group flex gap-4 {{ $isMe ? 'flex-row-reverse' : '' }}" x-data="{ showActions: false }" @mouseenter="showActions = true" @mouseleave="showActions = false">
+                        
                         <!-- Avatar -->
-                        <div
-                            style="width: 40px; height: 40px; border-radius: 8px; background-color: {{ $msg->user_id % 2 == 0 ? '#3b82f6' : '#8b5cf6' }}; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            {{ substr($msg->user->name, 0, 1) }}
+                        <div class="flex-shrink-0 mt-1">
+                            <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-sm"
+                                style="background-color: {{ $isMe ? '#FC4100' : ($msg->user_id % 2 == 0 ? '#3b82f6' : '#8b5cf6') }};">
+                                {{ substr($msg->user->name, 0, 1) }}
+                            </div>
                         </div>
 
-                        <!-- Content -->
-                        <div
-                            style="max-width: 70%; {{ $isMe ? 'align-items: flex-end; display: flex; flex-direction: column;' : '' }}">
-                            <div
-                                style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; {{ $isMe ? 'flex-direction: row-reverse;' : '' }}">
-                                <span style="font-weight: bold; color: #0f172a; font-size: 0.9rem;">
+                        <!-- Content Body -->
+                        <div class="flex flex-col max-w-[70%] {{ $isMe ? 'items-end' : 'items-start' }}">
+                            
+                            <!-- Metadata -->
+                            <div class="flex items-center gap-2 mb-1 {{ $isMe ? 'flex-row-reverse' : '' }}">
+                                <span class="text-sm font-bold text-gray-900 dark:text-white hover:underline cursor-pointer">
                                     {{ $msg->user->name }}
                                 </span>
-                                <span
-                                    style="font-size: 0.7rem; padding: 1px 4px; border-radius: 4px; background-color: {{ $roleBadge['color'] }}20; color: {{ $roleBadge['color'] }}; border: 1px solid {{ $roleBadge['color'] }}40;">
+                                <span class="text-[0.6rem] px-1.5 py-px rounded border"
+                                    style="color: {{ $roleBadge['color'] }}; background-color: {{ $roleBadge['color'] }}15; border-color: {{ $roleBadge['color'] }}30;">
                                     {{ $roleBadge['short'] }}
                                 </span>
-                                <span style="font-size: 0.75rem; color: #94a3b8;">
+                                <span class="text-xs text-gray-400">
                                     {{ $msg->created_at->format('H:i') }}
                                 </span>
                             </div>
 
-                            <div style="position: relative;">
-                                <div style="
-                                            padding: 12px 16px; 
-                                            border-radius: 12px; 
-                                            background-color: {{ $isMe ? '#3b82f6' : 'white' }}; 
-                                            color: {{ $isMe ? 'white' : '#1e293b' }}; 
-                                            box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
-                                            {{ $isMe ? 'border-bottom-right-radius: 2px;' : 'border-bottom-left-radius: 2px;' }}
-                                            font-size: 0.95rem; 
-                                            line-height: 1.5;
-                                            overflow-wrap: break-word;
-                                        ">
+                            <!-- Bubble -->
+                            <div class="relative group/bubble">
+                                <div class="px-4 py-2.5 rounded-2xl shadow-sm text-sm leading-relaxed whitespace-pre-wrap break-words
+                                    {{ $isMe 
+                                        ? 'bg-[#FC4100] text-white rounded-br-none' 
+                                        : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-none border border-gray-100 dark:border-gray-700' 
+                                    }}">
+                                    
                                     @if($msg->attachment_url)
-                                        <div style="margin-bottom: 8px;">
+                                        <div class="mb-2">
                                             @if(Str::endsWith($msg->attachment_url, ['.jpg', '.jpeg', '.png', '.gif', '.webp']))
-                                                <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank">
-                                                    <img src="{{ asset('storage/' . $msg->attachment_url) }}"
-                                                        style="max-width: 100%; border-radius: 8px; max-height: 200px; object-fit: cover;" />
+                                                <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank" class="block overflow-hidden rounded-lg">
+                                                    <img src="{{ asset('storage/' . $msg->attachment_url) }}" class="max-w-full max-h-60 object-cover hover:scale-105 transition-transform" />
                                                 </a>
                                             @else
-                                                <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank"
-                                                    style="display: flex; align-items: center; gap: 8px; padding: 8px; background-color: rgba(0,0,0,0.1); border-radius: 6px; color: inherit; text-decoration: none;">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                                                    </svg>
-                                                    <span style="font-size: 0.85rem; text-decoration: underline;">Attachment</span>
+                                                <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank" class="flex items-center gap-2 p-3 rounded-lg bg-black/5 dark:bg-white/10 hover:bg-black/10 transition-colors">
+                                                    <x-heroicon-o-paper-clip class="w-5 h-5"/>
+                                                    <span class="underline">Download Attachment</span>
                                                 </a>
                                             @endif
                                         </div>
@@ -227,108 +212,99 @@
                                     {!! $this->formatMessageContent($msg->content) !!}
                                 </div>
 
-                                <!-- Message Actions (Hover) -->
-                                <div x-show="showActions"
-                                    style="position: absolute; top: -10px; {{ $isMe ? 'left: -30px;' : 'right: -30px;' }} background: white; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 4px; display: flex; flex-direction: column; z-index: 10;"
-                                    x-transition>
+                                <!-- Reactions Display -->
+                                @if($msg->reactions->count() > 0)
+                                    <div class="absolute -bottom-6 {{ $isMe ? 'right-0' : 'left-0' }} flex gap-1">
+                                        @foreach($msg->reactions->groupBy('emoji') as $emoji => $reactions)
+                                        <button wire:click="toggleReaction({{ $msg->id }}, '{{ $emoji }}')"
+                                            class="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs border bg-white dark:bg-gray-800 shadow-sm
+                                            {{ $reactions->where('user_id', auth()->id())->count() > 0 ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700' }}">
+                                            <span>{{ $emoji }}</span>
+                                            <span class="font-semibold text-gray-600 dark:text-gray-400">{{ $reactions->count() }}</span>
+                                        </button>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                <!-- Hover Actions -->
+                                <div class="absolute -top-3 {{ $isMe ? 'left-auto right-full mr-2' : 'right-auto left-full ml-2' }} hidden group-hover/bubble:flex items-center gap-1 bg-white dark:bg-gray-800 shadow-md border dark:border-gray-700 rounded-full px-2 py-1 z-10">
+                                    <!-- Reactions -->
+                                    <div class="flex gap-0.5 border-r border-gray-200 dark:border-gray-700 pr-1 mr-1">
+                                        @foreach(['👍', '❤️', '😂', '🔥', '👀'] as $emoji)
+                                            <button wire:click="toggleReaction({{ $msg->id }}, '{{ $emoji }}')" class="hover:scale-125 transition-transform p-0.5">{{ $emoji }}</button>
+                                        @endforeach
+                                    </div>
+                                    
                                     @if(!$msg->is_pinned && $this->activeChannel)
-                                        <button wire:click="pinMessage({{ $msg->id }})" title="Pin Message"
-                                            style="padding: 4px; border: none; background: transparent; cursor: pointer; color: #64748b;">📌</button>
+                                        <button wire:click="pinMessage({{ $msg->id }})" class="p-1 text-gray-400 hover:text-amber-500" title="Pin">
+                                            <x-heroicon-o-bookmark class="w-4 h-4" />
+                                        </button>
                                     @endif
+
                                     @can('update', \App\Models\Task::class)
-                                        <button wire:click="createTaskFromMessage({{ $msg->id }})" title="Create Task"
-                                            style="padding: 4px; border: none; background: transparent; cursor: pointer; color: #64748b;">✅</button>
+                                        <button wire:click="createTaskFromMessage({{ $msg->id }})" class="p-1 text-gray-400 hover:text-green-500" title="Create Task">
+                                            <x-heroicon-o-check-circle class="w-4 h-4" />
+                                        </button>
                                     @endcan
                                 </div>
                             </div>
                         </div>
                     </div>
                 @empty
-                    <div
-                        style="text-align: center; padding: 40px; color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 10px;">
-                        <span style="font-size: 2rem;">📭</span>
-                        <span>No messages yet in this channel.</span>
-                        <span style="font-size: 0.85rem;">Be the first to say hello!</span>
+                    <div class="flex flex-col items-center justify-center flex-1 text-center opacity-50">
+                        <x-heroicon-o-chat-bubble-bottom-center-text class="w-16 h-16 text-gray-300 dark:text-gray-700 mb-4" />
+                        <h3 class="text-xl font-bold text-gray-400 dark:text-gray-600">No messages yet</h3>
+                        <p class="text-gray-400 dark:text-gray-600">Start the conversation!</p>
                     </div>
                 @endforelse
             </div>
 
             <!-- Input Area -->
-            <div style="padding: 20px; background-color: white; border-top: 1px solid #e2e8f0;">
-
+            <div class="p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
+                
                 @if($attachment)
-                    <div
-                        style="margin-bottom: 10px; padding: 8px; background-color: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
-                        <span style="font-size: 0.85rem; color: #475569;">
-                            📎 {{ $attachment->getClientOriginalName() }}
-                            <span style="color: #94a3b8; font-size: 0.75rem;">(Ready to send)</span>
-                        </span>
-                        <button wire:click="resetAttachment"
-                            style="background: none; border: none; cursor: pointer; color: #ef4444; font-weight: bold;">✕</button>
+                    <div class="flex items-center justify-between p-3 mb-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-900/30">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">📎</span>
+                            <span class="text-sm font-medium text-blue-700 dark:text-blue-300">{{ $attachment->getClientOriginalName() }}</span>
+                        </div>
+                        <button wire:click="resetAttachment" class="text-gray-400 hover:text-red-500">✕</button>
                     </div>
                 @endif
 
-                <form wire:submit="sendMessage" style="position: relative;" x-data="{ 
-                    showEmojis: false,
-                    insertEmoji(emoji) {
-                        $wire.set('message', $wire.message + emoji);
-                        this.showEmojis = false;
-                        $refs.messageInput.focus();
-                    }
-                }">
-                    <!-- Emoji Picker (Dropdown) -->
-                    <div x-show="showEmojis" @click.away="showEmojis = false"
-                        style="position: absolute; bottom: 100%; left: 0; margin-bottom: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); padding: 10px; width: 300px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; z-index: 50;"
-                        x-transition>
+                <form wire:submit="sendMessage" class="relative" x-data="{ showEmojis: false }">
+                    <!-- Emoji Picker -->
+                     <div x-show="showEmojis" @click.away="showEmojis = false"
+                        x-transition
+                        class="absolute bottom-full left-0 mb-4 w-72 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl shadow-2xl p-4 grid grid-cols-6 gap-2 z-50">
                         @foreach(['😀', '😂', '😍', '😎', '🤔', '😅', '😭', '👍', '👎', '🔥', '❤️', '🎉', '🚀', '👀', '✅', '❌', '🛑', '⚠️', '📢', '🎮', '⚽', '🎲', '🎵', '🍔'] as $emoji)
-                            <button type="button" @click="insertEmoji('{{ $emoji }}')"
-                                style="font-size: 1.25rem; padding: 4px; cursor: pointer; border: none; background: transparent; border-radius: 4px;"
-                                class="hover:bg-slate-100">{{ $emoji }}</button>
+                            <button type="button" @click="$wire.set('message', $wire.message + '{{ $emoji }}'); showEmojis=false; $refs.messageInput.focus()"
+                                class="text-xl hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded">{{ $emoji }}</button>
                         @endforeach
                     </div>
 
-                    <div
-                        style="border: 1px solid #cbd5e1; border-radius: 12px; overflow: hidden; background-color: white; transition: box-shadow 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-
+                    <div class="relative bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl focus-within:ring-2 focus-within:ring-[#FC4100]/20 focus-within:border-[#FC4100] transition-all shadow-inner">
                         <input type="text" wire:model="message" x-ref="messageInput"
-                            style="width: 100%; border: none; padding: 16px; font-size: 0.95rem; outline: none; background: white; color: #0f172a;"
-                            placeholder="Type a message... Use @ to mention" autofocus autocomplete="off" />
+                            class="w-full bg-transparent border-none py-3 px-4 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-0"
+                            placeholder="Message #{{ $this->activeChannel ? ($this->channels->firstWhere('slug', $this->activeChannel)?->name ?? 'chat') : 'User' }}..."
+                            autofocus autocomplete="off" />
 
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background-color: #f8fafc; border-top: 1px solid #f1f5f9;">
-                            <div style="display: flex; gap: 12px; align-items: center;">
-                                <!-- File Upload Button -->
-                                <label for="file-upload"
-                                    style="cursor: pointer; color: #64748b; display: flex; align-items: center; padding: 4px; border-radius: 4px; transition: background 0.2s;"
-                                    class="hover:bg-slate-200" title="Attach File">
-                                    <svg xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px;"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                                    </svg>
-                                </label>
-                                <input type="file" id="file-upload" wire:model="attachment" style="display: none;" />
-
-                                <!-- Emoji Button -->
-                                <button type="button" @click="showEmojis = !showEmojis"
-                                    style="cursor: pointer; color: #64748b; border: none; background: transparent; display: flex; align-items: center; padding: 4px; border-radius: 4px; transition: background 0.2s;"
-                                    class="hover:bg-slate-200" title="Insert Emoji">
-                                    <svg xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px;"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
+                        <div class="flex items-center justify-between px-2 py-2 border-t border-gray-100 dark:border-gray-800/50">
+                            <div class="flex items-center gap-1">
+                                <button type="button" @click="showEmojis = !showEmojis" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                                    <x-heroicon-o-face-smile class="w-5 h-5" />
                                 </button>
+                                <label class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer">
+                                    <input type="file" wire:model="attachment" class="hidden" />
+                                    <x-heroicon-o-paper-clip class="w-5 h-5" />
+                                </label>
                             </div>
-
-                            <button type="submit"
-                                style="background-color: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: background 0.2s; display: flex; align-items: center; gap: 6px;">
+                            
+                            <button type="submit" 
+                                class="bg-[#FC4100] hover:bg-[#d93800] text-white px-4 py-1.5 rounded-lg text-sm font-semibold shadow-lg shadow-[#FC4100]/20 flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                wire:loading.attr="disabled">
                                 <span>Send</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                                    style="width: 16px; height: 16px;">
-                                    <path
-                                        d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 004.426 9H13a.75.75 0 010 1.5H4.426a1.5 1.5 0 00-.733.596l-1.414 4.925a.75.75 0 001.076.923l15-7a.75.75 0 000-1.386l-15-7z" />
-                                </svg>
+                                <x-heroicon-m-paper-airplane class="w-4 h-4 -rotate-45" />
                             </button>
                         </div>
                     </div>
@@ -338,6 +314,29 @@
     </div>
 </x-filament-panels::page>
 
+<style>
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
+
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        // Scroll to bottom on load and message update
+        const scrollToBottom = () => {
+             const container = document.querySelector('.flex-col-reverse');
+             if(container) container.scrollTop = container.scrollHeight;
+        };
+
+        Livewire.hook('morph.updated', ({ component, el }) => {
+            // Optional: sophisticated scroll handling could go here
+        });
+    });
+</script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         if (Notification.permission !== "granted" && Notification.permission !== "denied") {
