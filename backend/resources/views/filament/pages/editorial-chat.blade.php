@@ -670,9 +670,131 @@
         .chat-sidebar-content::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.2);
         }
+
+        /* GIF Picker */
+        .gif-picker {
+            position: absolute;
+            bottom: 100%;
+            left: 50px;
+            margin-bottom: 12px;
+            background: #1f2937;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            width: 320px;
+            max-height: 400px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .gif-picker-search {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: #fff;
+            font-size: 0.875rem;
+            outline: none;
+        }
+
+        .gif-picker-search::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .gif-picker-results {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+
+        .gif-picker-results img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.15s;
+        }
+
+        .gif-picker-results img:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+        /* Voice Message */
+        .voice-btn {
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 8px;
+            transition: all 0.15s;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .voice-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .voice-btn.recording {
+            color: #ef4444;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .voice-recording-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+
+        .voice-recording-indicator .recording-dot {
+            width: 10px;
+            height: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        .voice-recording-indicator .recording-time {
+            font-size: 0.875rem;
+            color: #ef4444;
+            font-weight: 500;
+        }
+
+        .voice-recording-indicator button {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .voice-recording-indicator button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
     </style>
 
-    <div class="chat-wrapper">
+    <div class="chat-wrapper" wire:poll.3s>
         {{-- Sidebar --}}
         <div class="chat-sidebar">
             <div class="chat-sidebar-header">
@@ -869,7 +991,88 @@
                     </div>
                 @endif
 
-                <form wire:submit="sendMessage" x-data="{ showEmojis: false }" style="position: relative;">
+                <form wire:submit="sendMessage" x-data="{
+                    showEmojis: false,
+                    showGifs: false,
+                    gifSearch: '',
+                    gifs: [],
+                    isRecording: false,
+                    recordingTime: 0,
+                    mediaRecorder: null,
+                    audioChunks: [],
+                    recordingInterval: null,
+
+                    async searchGifs() {
+                        if (this.gifSearch.length < 2) return;
+                        const apiKey = 'GlVGYHkr3WSBnllca54iNt0yFbjz7L65';
+                        const response = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${apiKey}&q=${this.gifSearch}&limit=12&rating=g`);
+                        const data = await response.json();
+                        this.gifs = data.data;
+                    },
+
+                    selectGif(gifUrl) {
+                        $wire.set('message', gifUrl);
+                        $wire.sendMessage();
+                        this.showGifs = false;
+                        this.gifSearch = '';
+                        this.gifs = [];
+                    },
+
+                    async startRecording() {
+                        try {
+                            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                            this.mediaRecorder = new MediaRecorder(stream);
+                            this.audioChunks = [];
+
+                            this.mediaRecorder.ondataavailable = (e) => {
+                                this.audioChunks.push(e.data);
+                            };
+
+                            this.mediaRecorder.onstop = async () => {
+                                const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                                const formData = new FormData();
+                                formData.append('audio', audioBlob, 'voice_message.webm');
+
+                                // Upload via Livewire
+                                $wire.uploadMultiple('voiceMessage', [audioBlob]);
+                            };
+
+                            this.mediaRecorder.start();
+                            this.isRecording = true;
+                            this.recordingTime = 0;
+                            this.recordingInterval = setInterval(() => {
+                                this.recordingTime++;
+                            }, 1000);
+                        } catch (err) {
+                            console.error('Could not start recording:', err);
+                            alert('Could not access microphone. Please check permissions.');
+                        }
+                    },
+
+                    stopRecording() {
+                        if (this.mediaRecorder && this.isRecording) {
+                            this.mediaRecorder.stop();
+                            this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                            this.isRecording = false;
+                            clearInterval(this.recordingInterval);
+                        }
+                    },
+
+                    cancelRecording() {
+                        if (this.mediaRecorder && this.isRecording) {
+                            this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                            this.isRecording = false;
+                            this.audioChunks = [];
+                            clearInterval(this.recordingInterval);
+                        }
+                    },
+
+                    formatTime(seconds) {
+                        const mins = Math.floor(seconds / 60);
+                        const secs = seconds % 60;
+                        return `${mins}:${secs.toString().padStart(2, '0')}`;
+                    }
+                }" style="position: relative;">
                     {{-- Emoji Picker --}}
                     <div x-show="showEmojis" @click.away="showEmojis = false" x-transition class="emoji-picker">
                         @foreach(['😀', '😂', '😍', '😎', '🤔', '😅', '😭', '👍', '👎', '🔥', '❤️', '🎉', '🚀', '👀', '✅', '❌', '🛑', '⚠️', '📢', '🎮', '⚽', '🎲'] as $emoji)
@@ -880,6 +1083,29 @@
                         @endforeach
                     </div>
 
+                    {{-- GIF Picker --}}
+                    <div x-show="showGifs" @click.away="showGifs = false" x-transition class="gif-picker">
+                        <input type="text" x-model="gifSearch" @input.debounce.300ms="searchGifs()"
+                            class="gif-picker-search" placeholder="Search GIFs...">
+                        <div class="gif-picker-results">
+                            <template x-for="gif in gifs" :key="gif.id">
+                                <img :src="gif.images.fixed_height_small.url" @click="selectGif(gif.images.original.url)"
+                                    :alt="gif.title">
+                            </template>
+                        </div>
+                        <div x-show="gifs.length === 0 && gifSearch.length > 1" style="text-align: center; color: rgba(255,255,255,0.4); padding: 20px;">
+                            No GIFs found
+                        </div>
+                    </div>
+
+                    {{-- Voice Recording Indicator --}}
+                    <div x-show="isRecording" class="voice-recording-indicator">
+                        <div class="recording-dot"></div>
+                        <span class="recording-time" x-text="formatTime(recordingTime)"></span>
+                        <button type="button" @click="cancelRecording()" title="Cancel">✕</button>
+                        <button type="button" @click="stopRecording()" title="Send" style="color: #22c55e;">✓</button>
+                    </div>
+
                     <div class="input-box">
                         <input type="text" wire:model="message" x-ref="messageInput"
                             placeholder="Message #{{ $this->activeChannel ? ($this->channels->firstWhere('slug', $this->activeChannel)?->name ?? 'chat') : 'User' }}..."
@@ -887,14 +1113,23 @@
 
                         <div class="input-toolbar">
                             <div class="input-actions">
-                                <button type="button" @click="showEmojis = !showEmojis" class="input-action-btn"
+                                <button type="button" @click="showEmojis = !showEmojis; showGifs = false" class="input-action-btn"
                                     title="Emoji">
                                     😊
+                                </button>
+                                <button type="button" @click="showGifs = !showGifs; showEmojis = false" class="input-action-btn"
+                                    title="GIF">
+                                    GIF
                                 </button>
                                 <label class="input-action-btn" title="Attach file" style="cursor: pointer;">
                                     <input type="file" wire:model="attachment" style="display: none;">
                                     📎
                                 </label>
+                                <button type="button" @click="isRecording ? stopRecording() : startRecording()"
+                                    class="input-action-btn" :class="{ 'recording': isRecording }"
+                                    title="Voice Message">
+                                    🎤
+                                </button>
                             </div>
 
                             <button type="submit" class="send-btn" wire:loading.attr="disabled">
