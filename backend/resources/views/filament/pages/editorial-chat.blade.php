@@ -1,4 +1,4 @@
-<div>
+<x-filament-panels::page>
     <style>
         .chat-wrapper {
             display: flex;
@@ -200,99 +200,9 @@
         }
 
         .chat-header-info p {
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .chat-search {
-            flex: 1;
-            max-width: 300px;
-            margin-left: auto;
-            position: relative;
-        }
-
-        .chat-search input {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 8px 12px 8px 36px;
-            color: #fff;
-            outline: none;
-            font-size: 0.875rem;
-            transition: all 0.2s;
-        }
-
-        .chat-search input:focus {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(252, 65, 0, 0.5);
-            box-shadow: 0 0 0 2px rgba(252, 65, 0, 0.1);
-        }
-
-        .chat-search-icon {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: rgba(255, 255, 255, 0.3);
-            pointer-events: none;
-        }
-
-        .thread-sidebar {
-            width: 340px;
-            background: rgba(17, 24, 39, 0.98);
-            border-left: 1px solid rgba(255, 255, 255, 0.06);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            z-index: 10;
-        }
-
-        .thread-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: #fff;
-            background: rgba(252, 65, 0, 0.05);
-        }
-
-        .thread-close-btn {
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.5);
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 4px;
-        }
-
-        .thread-close-btn:hover {
-            color: #fff;
-        }
-
-        .thread-original-message {
-            padding: 16px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            background: rgba(255, 255, 255, 0.02);
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .reply-count {
             font-size: 0.75rem;
-            color: #60a5fa;
-            cursor: pointer;
-            margin-top: 4px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .reply-count:hover {
-            text-decoration: underline;
+            color: rgba(255, 255, 255, 0.5);
+            margin: 4px 0 0;
         }
 
         .pinned-bar {
@@ -541,189 +451,6 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        .hover-actions button.danger:hover {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-        }
-
-        .edited-badge {
-            display: inline-block;
-            font-size: 0.65rem;
-            color: rgba(255, 255, 255, 0.4);
-            margin-left: 6px;
-            font-style: italic;
-        }
-
-        .edit-message-box {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(252, 65, 0, 0.3);
-            border-radius: 8px;
-            padding: 8px;
-            margin-top: 8px;
-        }
-
-        .edit-message-box textarea {
-            width: 100%;
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-size: 0.875rem;
-            resize: none;
-            outline: none;
-            font-family: inherit;
-        }
-
-        .edit-message-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-            margin-top: 8px;
-        }
-
-        .edit-message-actions button {
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            border: none;
-            transition: all 0.15s;
-        }
-
-        .edit-save-btn {
-            background: #FC4100;
-            color: #fff;
-        }
-
-        .edit-save-btn:hover {
-            background: #d93800;
-        }
-
-        /* Giphy Picker */
-        .giphy-picker {
-            position: absolute;
-            bottom: 50px;
-            left: 0;
-            width: 320px;
-            background: #1e1e1e;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 12px;
-            z-index: 50;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-        }
-
-        .giphy-search-input {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 6px;
-            padding: 8px;
-            color: #fff;
-            font-size: 0.85rem;
-            outline: none;
-        }
-
-        .giphy-search-input:focus {
-            border-color: #FC4100;
-        }
-
-        .giphy-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            max-height: 250px;
-            overflow-y: auto;
-            margin-top: 10px;
-        }
-
-        .giphy-item {
-            cursor: pointer;
-            border-radius: 4px;
-            overflow: hidden;
-            height: 100px;
-        }
-
-        .giphy-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.2s;
-        }
-
-        .giphy-item:hover img {
-            transform: scale(1.1);
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.1);
-            }
-
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        .unread-divider {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 20px 0;
-            position: relative;
-            opacity: 0.9;
-        }
-
-        .unread-divider::before,
-        .unread-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(252, 65, 0, 0.5), transparent);
-        }
-
-        .unread-divider span {
-            padding: 0 12px;
-            font-size: 0.7rem;
-            color: #FC4100;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            background: rgba(252, 65, 0, 0.1);
-            border-radius: 12px;
-            padding: 4px 12px;
-        }
-
-        .highlight-message {
-            border: 2px solid #FC4100;
-            box-shadow: 0 0 15px rgba(252, 65, 0, 0.3);
-            animation: flash 2s;
-        }
-
-        @keyframes flash {
-
-            0%,
-            100% {
-                background-color: transparent;
-            }
-
-            50% {
-                background-color: rgba(252, 65, 0, 0.2);
-            }
-        }
-
-        .edit-cancel-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .edit-cancel-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
         .empty-state {
             flex: 1;
             display: flex;
@@ -822,25 +549,6 @@
             color: rgba(255, 255, 255, 0.35);
         }
 
-        .input-box textarea {
-            width: 100%;
-            background: transparent;
-            border: none;
-            padding: 14px 16px;
-            font-size: 0.9rem;
-            color: #fff;
-            outline: none;
-            resize: none;
-            min-height: 24px;
-            max-height: 120px;
-            line-height: 1.4;
-            font-family: inherit;
-        }
-
-        .input-box textarea::placeholder {
-            color: rgba(255, 255, 255, 0.35);
-        }
-
         .input-toolbar {
             display: flex;
             align-items: center;
@@ -933,129 +641,12 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        /* Mentions Autocomplete */
-        .mentions-dropdown {
-            position: absolute;
-            bottom: 100%;
-            left: 0;
-            margin-bottom: 8px;
-            background: #1f2937;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            max-height: 200px;
-            overflow-y: auto;
-            min-width: 220px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-            z-index: 100;
-        }
-
-        .mentions-dropdown-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 14px;
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-
-        .mentions-dropdown-item:hover,
-        .mentions-dropdown-item.selected {
-            background: rgba(252, 65, 0, 0.15);
-        }
-
-        .mentions-dropdown-item:first-child {
-            border-radius: 10px 10px 0 0;
-        }
-
-        .mentions-dropdown-item:last-child {
-            border-radius: 0 0 10px 10px;
-        }
-
-        .mentions-avatar {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.7rem;
-            color: #fff;
-        }
-
-        .mentions-info {
-            flex: 1;
-        }
-
-        .mentions-name {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #fff;
-        }
-
-        .mentions-role {
-            font-size: 0.65rem;
-            color: rgba(255, 255, 255, 0.5);
-        }
-
         .mention-highlight {
             color: #60a5fa;
             font-weight: 600;
             background: rgba(59, 130, 246, 0.15);
             padding: 1px 4px;
             border-radius: 4px;
-        }
-
-        /* Image Lightbox */
-        .lightbox-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            cursor: zoom-out;
-        }
-
-        .lightbox-content {
-            max-width: 90vw;
-            max-height: 90vh;
-            object-fit: contain;
-            border-radius: 8px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-        }
-
-        .lightbox-close {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: #fff;
-            font-size: 1.5rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-
-        .lightbox-close:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .message-image {
-            cursor: zoom-in;
-            transition: transform 0.2s;
-        }
-
-        .message-image:hover {
-            transform: scale(1.02);
         }
 
         /* Scrollbar styling */
@@ -1171,11 +762,6 @@
                         </p>
                     </div>
                 @endif
-
-                <div class="chat-search">
-                    <span class="chat-search-icon">🔍</span>
-                    <input type="text" wire:model.live.debounce.500ms="search" placeholder="Search messages...">
-                </div>
             </div>
 
             {{-- Pinned Messages --}}
@@ -1195,96 +781,45 @@
             @endif
 
             {{-- Messages --}}
-            {{-- Messages --}}
             <div class="messages-container">
-                @php $hasShownDivider = false; @endphp
                 @forelse($this->messages as $msg)
-                        @php
-                            if (!$hasShownDivider && $this->previousReadAt && $msg->created_at->gt($this->previousReadAt)) {
-                                $hasShownDivider = true;
-                                echo '<div class="unread-divider"><span>New Messages</span></div>';
-                            }
+                    @php
+                        $isMe = $msg->user_id === auth()->id();
+                        $roleBadge = $this->getUserRoleBadge($msg->user);
+                        $avatarColor = $isMe ? '#FC4100' : (['#3b82f6', '#8b5cf6', '#14b8a6', '#f59e0b'][$msg->user_id % 4]);
+                    @endphp
 
-                            $isMe = $msg->user_id === auth()->id();
-                            $roleBadge = $this->getUserRoleBadge($msg->user);
-                            $avatarColor = $isMe ? '#FC4100' : (['#3b82f6', '#8b5cf6', '#14b8a6', '#f59e0b'][$msg->user_id % 4]);
-                        @endphp
+                    <div class="message-row {{ $isMe ? 'from-me' : '' }}">
+                        <div class="message-avatar" style="background: {{ $avatarColor }};">
+                            {{ substr($msg->user->name, 0, 1) }}
+                        </div>
 
-                        <div class="message-row {{ $isMe ? 'from-me' : '' }}">
-                            <div class="message-avatar" style="background: {{ $avatarColor }};">
-                                {{ substr($msg->user->name, 0, 1) }}
+                        <div class="message-content">
+                            <div class="message-meta">
+                                <span class="message-author">{{ $msg->user->name }}</span>
+                                <span class="message-role"
+                                    style="background: {{ $roleBadge['color'] }}20; color: {{ $roleBadge['color'] }};">
+                                    {{ $roleBadge['short'] }}
+                                </span>
+                                <span class="message-time">{{ $msg->created_at->format('H:i') }}</span>
                             </div>
 
-                            <div class="message-content">
-                                <div class="message-meta">
-                                    <span class="message-author">{{ $msg->user->name }}</span>
-                                    <span class="message-role"
-                                        style="background: {{ $roleBadge['color'] }}20; color: {{ $roleBadge['color'] }};">
-                                        {{ $roleBadge['short'] }}
-                                    </span>
-                                    <span class="message-time">{{ $msg->created_at->format('H:i') }}</span>
-                                    @if($isMe && $msg->recipient_id)
-                                        <span class="message-status" style="margin-left: 4px; font-size: 0.8rem;">
-                                            @if($msg->read_at)
-                                                <span style="color: #3b82f6;">✓✓</span>
-                                            @else
-                                                <span style="color: rgba(255,255,255,0.3);">✓</span>
-                                            @endif
-                                        </span>
-                                    @endif
-                                </div>
-
-                            </div>
-                            <!-- {{ $msg->id }} -->
-                            <div class="message-bubble {{ $isMe ? 'from-me' : 'from-other' }} {{ $msg->id == $this->highlightMessageId ? 'highlight-message' : '' }}"
-                                id="message-{{ $msg->id }}">
+                            <div class="message-bubble {{ $isMe ? 'from-me' : 'from-other' }}">
                                 @if($msg->attachment_url)
                                     <div class="message-attachment">
-                                        @php
-                                            $isExternal = Str::startsWith($msg->attachment_url, ['http://', 'https://']);
-                                            $url = $isExternal ? $msg->attachment_url : asset('storage/' . $msg->attachment_url);
-                                        @endphp
-
-                                        @if(Str::endsWith($msg->attachment_url, ['.mp3', '.webm', '.wav', '.ogg']))
-                                            <audio controls src="{{ $url }}" style="max-width: 240px; border-radius: 4px;"></audio>
-                                        @elseif(Str::endsWith($msg->attachment_url, ['.jpg', '.jpeg', '.png', '.gif', '.webp']) || $isExternal)
-                                            <img src="{{ $url }}" alt="Attachment" class="message-image"
-                                                @click="$dispatch('open-lightbox', { src: '{{ $url }}' })">
+                                        @if(Str::endsWith($msg->attachment_url, ['.jpg', '.jpeg', '.png', '.gif', '.webp']))
+                                            <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank">
+                                                <img src="{{ asset('storage/' . $msg->attachment_url) }}" alt="Attachment">
+                                            </a>
                                         @else
-                                            <a href="{{ $url }}" target="_blank">
+                                            <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank">
                                                 📎 Download Attachment
                                             </a>
                                         @endif
                                     </div>
                                 @endif
 
-                                @if($editingMessageId === $msg->id)
-                                    {{-- Edit Mode --}}
-                                    <div class="edit-message-box">
-                                        <textarea wire:model="editingContent" rows="2">{{ $editingContent }}</textarea>
-                                        <div class="edit-message-actions">
-                                            <button type="button" wire:click="cancelEdit" class="edit-cancel-btn">Cancel</button>
-                                            <button type="button" wire:click="saveEdit" class="edit-save-btn">Save</button>
-                                        </div>
-                                    </div>
-                                @else
-                                    {!! $this->formatMessageContent($msg->content) !!}
-                                    @if($msg->edited_at)
-                                        <span class="edited-badge">(edited)</span>
-                                    @endif
-                                    @if($msg->isBookmarkedBy(auth()->user()))
-                                        <div
-                                            style="position: absolute; top: -6px; right: -6px; background: #fbbf24; color: #000; padding: 2px; border-radius: 50%; font-size: 0.6rem; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                                            ★
-                                        </div>
-                                    @endif
-                                @endif
-
-                                @if($msg->replies->count() > 0)
-                                    <div class="reply-count" wire:click="setActiveThread({{ $msg->id }})">
-                                        <span>↪ {{ $msg->replies->count() }} replies</span>
-                                    </div>
-                                @endif
+                                {!! $this->formatMessageContent($msg->content) !!}
 
                                 {{-- Hover Actions --}}
                                 <div class="hover-actions">
@@ -1292,22 +827,9 @@
                                         <button wire:click="toggleReaction({{ $msg->id }}, '{{ $emoji }}')"
                                             title="React">{{ $emoji }}</button>
                                     @endforeach
-                                    <button wire:click="setActiveThread({{ $msg->id }})" title="Reply in Thread">💬</button>
-                                    <button wire:click="toggleBookmark({{ $msg->id }})" title="Bookmark"
-                                        style="{{ $msg->isBookmarkedBy(auth()->user()) ? 'color: #fbbf24;' : '' }}">
-                                        ★
-                                    </button>
                                     @if(!$msg->is_pinned && $this->activeChannel)
                                         <button wire:click="pinMessage({{ $msg->id }})" title="Pin"
                                             style="border-left: 1px solid rgba(255,255,255,0.1); padding-left: 8px; margin-left: 4px;">📌</button>
-                                    @endif
-                                    @if($isMe && $msg->canEdit())
-                                        <button wire:click="startEditMessage({{ $msg->id }})"
-                                            title="Edit (within 15 min)">✏️</button>
-                                    @endif
-                                    @if($isMe)
-                                        <button wire:click="deleteMessage({{ $msg->id }})" class="danger" title="Delete"
-                                            onclick="return confirm('Delete this message?')">🗑️</button>
                                     @endif
                                 </div>
                             </div>
@@ -1327,348 +849,55 @@
                         </div>
                     </div>
                 @empty
-                <div class="empty-state">
-                    <div class="empty-state-icon">💬</div>
-                    <h3>No messages yet</h3>
-                    <p>Start the conversation!</p>
-                </div>
-            @endforelse
-        </div>
-
-        {{-- Input Area --}}
-        <div class="input-area">
-            @if($attachment)
-                <div class="attachment-preview">
-                    <div class="attachment-preview-info">
-                        <span class="attachment-preview-icon">📎</span>
-                        <span class="attachment-preview-name">{{ $attachment->getClientOriginalName() }}</span>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💬</div>
+                        <h3>No messages yet</h3>
+                        <p>Start the conversation!</p>
                     </div>
-                    <button wire:click="resetAttachment">✕</button>
-                </div>
-            @endif
-
-            <form wire:submit="sendMessage" x-data="{
-                    showEmojis: false,
-                    showMentions: false,
-                    showGiphy: @entangle('showGiphy'),
-                    mentionSearch: '',
-                    mentionIndex: 0,
-                    users: @js($this->users->map(fn($u) => ['id' => $u->id, 'name' => $u->name, 'role' => $this->getUserRoleBadge($u)['short'], 'color' => $this->getUserRoleBadge($u)['color']])->values()),
-                    get filteredUsers() {
-                        if (!this.mentionSearch) return this.users.slice(0, 5);
-                        const search = this.mentionSearch.toLowerCase();
-                        return this.users.filter(u => u.name.toLowerCase().includes(search)).slice(0, 5);
-                    },
-                    checkMention(e) {
-                        const textarea = e.target;
-                        const cursorPos = textarea.selectionStart;
-                        const text = textarea.value.substring(0, cursorPos);
-                        const lastAt = text.lastIndexOf('@');
-                        
-                        if (lastAt !== -1) {
-                            const afterAt = text.substring(lastAt + 1);
-                            // Only show if @ is at start or after space, and no space after @
-                            if ((lastAt === 0 || text[lastAt - 1] === ' ' || text[lastAt - 1] === '\n') && !afterAt.includes(' ')) {
-                                this.mentionSearch = afterAt;
-                                this.showMentions = true;
-                                this.mentionIndex = 0;
-                                return;
-                            }
-                        }
-                        this.showMentions = false;
-                    },
-                    selectMention(user) {
-                        const textarea = $refs.messageInput;
-                        const cursorPos = textarea.selectionStart;
-                        const text = textarea.value;
-                        const lastAt = text.substring(0, cursorPos).lastIndexOf('@');
-                        
-                        const before = text.substring(0, lastAt);
-                        const after = text.substring(cursorPos);
-                        const newText = before + '@' + user.name + ' ' + after;
-                        
-                        textarea.value = newText;
-                        $wire.set('message', newText);
-                        this.showMentions = false;
-                        textarea.focus();
-                        textarea.selectionStart = textarea.selectionEnd = lastAt + user.name.length + 2;
-                    },
-                    handleMentionKeys(e) {
-                        if (!this.showMentions) return;
-                        
-                        if (e.key === 'ArrowDown') {
-                            e.preventDefault();
-                            this.mentionIndex = Math.min(this.mentionIndex + 1, this.filteredUsers.length - 1);
-                        } else if (e.key === 'ArrowUp') {
-                            e.preventDefault();
-                            this.mentionIndex = Math.max(this.mentionIndex - 1, 0);
-                        } else if (e.key === 'Enter' || e.key === 'Tab') {
-                            if (this.filteredUsers[this.mentionIndex]) {
-                                e.preventDefault();
-                                this.selectMention(this.filteredUsers[this.mentionIndex]);
-                            }
-                        } else if (e.key === 'Escape') {
-                            this.showMentions = false;
-                        }
-                    },
-                    isRecording: false,
-                    mediaRecorder: null,
-                    audioChunks: [],
-                    startRecording() {
-                        navigator.mediaDevices.getUserMedia({ audio: true })
-                            .then(stream => {
-                                this.mediaRecorder = new MediaRecorder(stream);
-                                this.mediaRecorder.start();
-                                this.isRecording = true;
-                                this.audioChunks = [];
-                                
-                                this.mediaRecorder.addEventListener(" dataavailable", event=> {
-                this.audioChunks.push(event.data);
-                });
-
-                this.mediaRecorder.addEventListener("stop", () => {
-                const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-                const audioFile = new File([audioBlob], "voice_message.webm", { type: 'audio/webm' });
-
-                $wire.upload('attachment', audioFile, (uploadedFilename) => {
-                // Upload success
-                }, () => {
-                alert('Error uploading voice message');
-                });
-                });
-                })
-                .catch(err => console.error("Error accessing microphone:", err));
-                },
-                stopRecording() {
-                if (this.mediaRecorder && this.isRecording) {
-                this.mediaRecorder.stop();
-                this.isRecording = false;
-                this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
-                }
-                }
-                },
-                typingUsers: [],
-                typingTimeout: null,
-                sendTyping() {
-                const channelSlug = '{{ $this->activeChannel }}';
-                const userId = {{ auth()->id() }};
-
-                // Throttle typing events
-                if (this.typingTimeout) clearTimeout(this.typingTimeout);
-
-                this.typingTimeout = setTimeout(() => {
-                if (channelSlug) {
-                window.Echo.private('editorial.channel.' + channelSlug)
-                .whisper('typing', { name: '{{ auth()->user()->name }}' });
-                } else if ({{ $this->activeRecipient ?? 'null' }}) {
-                window.Echo.private('editorial.user.' + {{ $this->activeRecipient ?? 'null' }})
-                .whisper('typing', { name: '{{ auth()->user()->name }}' });
-                }
-                }, 300);
-                },
-                initEcho() {
-                if (!window.Echo) return;
-
-                const channelSlug = '{{ $this->activeChannel }}';
-                const userId = {{ auth()->id() }};
-
-                if (channelSlug) {
-                const channel = window.Echo.private('editorial.channel.' + channelSlug);
-                channel.listen('.message.sent', (e) => {
-                $wire.$refresh();
-                })
-                .listenForWhisper('typing', (e) => {
-                this.showTyping(e.name);
-                });
-                }
-
-                window.Echo.private('editorial.user.' + userId)
-                .listen('.message.sent', (e) => {
-                $wire.$refresh();
-                })
-                .listenForWhisper('typing', (e) => {
-                this.showTyping(e.name);
-                })
-                .listen('.messages.read', (e) => {
-                $wire.$refresh();
-                });
-                },
-                showTyping(name) {
-                if (!this.typingUsers.includes(name)) {
-                this.typingUsers.push(name);
-                setTimeout(() => {
-                this.typingUsers = this.typingUsers.filter(u => u !== name);
-                }, 3000);
-                }
-                }
-                }" x-init="initEcho()" style="position: relative;">
-                {{-- Giphy Picker --}}
-                <div x-show="showGiphy" @click.away="showGiphy = false" x-transition class="giphy-picker">
-                    <div style="margin-bottom: 8px;">
-                        <input type="text" wire:model.live.debounce.500ms="giphySearch" placeholder="Search GIPHY..."
-                            autofocus class="giphy-search-input">
-                    </div>
-
-                    @if(count($giphyResults) > 0)
-                        <div class="giphy-grid">
-                            @foreach($giphyResults as $gif)
-                                <div class="giphy-item" wire:click="selectGiphy('{{ $gif['url'] }}')">
-                                    <img src="{{ $gif['url'] }}" alt="{{ $gif['title'] }}">
-                                </div>
-                            @endforeach
-                        </div>
-                    @elseif(strlen($giphySearch) > 1)
-                        <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5); font-size: 0.8rem;">
-                            No GIFs found.
-                        </div>
-                    @else
-                        <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5); font-size: 0.8rem;">
-                            Type to search GIFs...
-                        </div>
-                    @endif
-
-                    <div style="text-align: right; margin-top: 8px;">
-                        <img src="https://developers.giphy.com/static/img/powered_by_giphy.png" alt="Powered by GIPHY"
-                            style="height: 12px; opacity: 0.6;">
-                    </div>
-                </div>
-
-                {{-- Mentions Dropdown --}}
-                <div x-show="showMentions && filteredUsers.length > 0" x-transition class="mentions-dropdown">
-                    <template x-for="(user, index) in filteredUsers" :key="user.id">
-                        <div @click="selectMention(user)" class="mentions-dropdown-item"
-                            :class="{ 'selected': index === mentionIndex }">
-                            <div class="mentions-avatar" :style="'background:' + user.color">
-                                <span x-text="user.name.charAt(0)"></span>
-                            </div>
-                            <div class="mentions-info">
-                                <div class="mentions-name" x-text="user.name"></div>
-                                <div class="mentions-role" x-text="user.role"></div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-
-                {{-- Emoji Picker --}}
-                <div x-show="showEmojis" @click.away="showEmojis = false" x-transition class="emoji-picker">
-                    @foreach(['😀', '😂', '😍', '😎', '🤔', '😅', '😭', '👍', '👎', '🔥', '❤️', '🎉', '🚀', '👀', '✅', '❌', '🛑', '⚠️', '📢', '🎮', '⚽', '🎲'] as $emoji)
-                        <button type="button"
-                            @click="$wire.set('message', $wire.message + '{{ $emoji }}'); showEmojis = false; $refs.messageInput.focus()">
-                            {{ $emoji }}
-                        </button>
-                    @endforeach
-                </div>
-
-                {{-- Typing Indicator --}}
-                <div x-show="typingUsers.length > 0" x-transition
-                    style="position: absolute; top: -30px; left: 20px; font-size: 0.8rem; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: 12px; pointer-events: none;">
-                    <span
-                        x-text="typingUsers.join(', ') + (typingUsers.length > 1 ? ' are ' : ' is ') + 'typing...'"></span>
-                </div>
-
-                <div class="input-box">
-                    <textarea wire:model="message" x-ref="messageInput" rows="1"
-                        @input="sendTyping; checkMention($event); $el.style.height = 'auto'; $el.style.height = Math.min($el.scrollHeight, 120) + 'px'"
-                        placeholder="Message #{{ $this->activeChannel ? ($this->channels->firstWhere('slug', $this->activeChannel)?->name ?? 'chat') : 'User' }}... (@ to mention)"
-                        autofocus autocomplete="off" @keydown="handleMentionKeys($event)" @keydown.enter.prevent="
-                                if (showMentions && filteredUsers[mentionIndex]) {
-                                    selectMention(filteredUsers[mentionIndex]);
-                                } else if ($event.shiftKey) {
-                                    const start = $el.selectionStart;
-                                    const end = $el.selectionEnd;
-                                    const value = $el.value;
-                                    $el.value = value.substring(0, start) + '\n' + value.substring(end);
-                                    $el.selectionStart = $el.selectionEnd = start + 1;
-                                    $el.style.height = 'auto';
-                                    $el.style.height = Math.min($el.scrollHeight, 120) + 'px';
-                                    $wire.set('message', $el.value);
-                                } else {
-                                    if ($wire.message && $wire.message.trim()) {
-                                        $wire.sendMessage();
-                                    }
-                                }
-                            " @keydown.escape="showEmojis = false; showMentions = false"></textarea>
-
-                    <div class="input-toolbar">
-                        <div class="input-actions">
-                            <button type="button" @click="showEmojis = !showEmojis" class="input-action-btn"
-                                title="Emoji">
-                                😊
-                            </button>
-                            <button type="button" @click="showGiphy = !showGiphy" class="input-action-btn" title="GIF">
-                                GIF
-                            </button>
-                            <button type="button" @click="isRecording ? stopRecording() : startRecording()"
-                                class="input-action-btn"
-                                :style="isRecording ? 'color: #ef4444; animation: pulse 1s infinite;' : ''"
-                                title="Voice Message (Click to Start/Stop)">
-                                🎤
-                            </button>
-                            <label class="input-action-btn" title="Attach file" style="cursor: pointer;">
-                                <input type="file" wire:model="attachment" style="display: none;">
-                                📎
-                            </label>
-                        </div>
-
-                        <button type="submit" class="send-btn" wire:loading.attr="disabled">
-                            <span>Send</span>
-                            <span>➤</span>
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- Thread Sidebar --}}
-    @if($this->activeThread)
-        <div class="thread-sidebar">
-            <div class="thread-header">
-                <span>Thread</span>
-                <button class="thread-close-btn" wire:click="closeThread">✕</button>
+                @endforelse
             </div>
 
-            <div class="chat-sidebar-content">
-                {{-- Original Message --}}
-                @php $original = $this->activeThreadMessage; @endphp
-                @if($original)
-                    <div class="thread-original-message">
-                        <strong>{{ $original->user->name }}:</strong>
-                        <div style="margin: 4px 0 0; color: #fff; line-height: 1.4;">
-                            {!! $this->formatMessageContent($original->content) !!}
+            {{-- Input Area --}}
+            <div class="input-area">
+                @if($attachment)
+                    <div class="attachment-preview">
+                        <div class="attachment-preview-info">
+                            <span class="attachment-preview-icon">📎</span>
+                            <span class="attachment-preview-name">{{ $attachment->getClientOriginalName() }}</span>
                         </div>
+                        <button wire:click="resetAttachment">✕</button>
                     </div>
                 @endif
 
-                {{-- Replies --}}
-                @foreach($this->threadMessages as $reply)
-                    <div style="padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.06);">
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                            @php $roleBadge = $this->getUserRoleBadge($reply->user); @endphp
-                            <div
-                                style="background: {{ $roleBadge['color'] }}; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #fff;">
-                                {{ substr($reply->user->name, 0, 1) }}
-                            </div>
-                            <span style="font-weight: 600; font-size: 0.85rem; color: #fff;">{{ $reply->user->name }}</span>
-                            <span
-                                style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">{{ $reply->created_at->format('H:i') }}</span>
-                        </div>
-                        <div style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin-left: 32px;">
-                            {!! $this->formatMessageContent($reply->content) !!}
-                        </div>
+                <form wire:submit="sendMessage" x-data="{ showEmojis: false }" style="position: relative;">
+                    {{-- Emoji Picker --}}
+                    <div x-show="showEmojis" @click.away="showEmojis = false" x-transition class="emoji-picker">
+                        @foreach(['😀', '😂', '😍', '😎', '🤔', '😅', '😭', '👍', '👎', '🔥', '❤️', '🎉', '🚀', '👀', '✅', '❌', '🛑', '⚠️', '📢', '🎮', '⚽', '🎲'] as $emoji)
+                            <button type="button"
+                                @click="$wire.set('message', $wire.message + '{{ $emoji }}'); showEmojis = false; $refs.messageInput.focus()">
+                                {{ $emoji }}
+                            </button>
+                        @endforeach
                     </div>
-                @endforeach
-            </div>
 
-            {{-- Thread Input --}}
-            <div class="input-area" style="padding: 12px; background: rgba(17,24,39,0.9);">
-                <form wire:submit="sendThreadReply">
                     <div class="input-box">
-                        <textarea wire:model="threadMessage" rows="1" placeholder="Reply in thread..."
-                            style="font-size: 0.85rem; padding: 10px;"
-                            @keydown.enter.prevent="if(!$event.shiftKey) $wire.sendThreadReply()"></textarea>
-                        <div class="input-toolbar" style="padding: 4px 8px; justify-content: flex-end;">
-                            <button type="submit" class="send-btn" style="padding: 4px 12px; font-size: 0.8rem;">
+                        <input type="text" wire:model="message" x-ref="messageInput"
+                            placeholder="Message #{{ $this->activeChannel ? ($this->channels->firstWhere('slug', $this->activeChannel)?->name ?? 'chat') : 'User' }}..."
+                            autofocus autocomplete="off">
+
+                        <div class="input-toolbar">
+                            <div class="input-actions">
+                                <button type="button" @click="showEmojis = !showEmojis" class="input-action-btn"
+                                    title="Emoji">
+                                    😊
+                                </button>
+                                <label class="input-action-btn" title="Attach file" style="cursor: pointer;">
+                                    <input type="file" wire:model="attachment" style="display: none;">
+                                    📎
+                                </label>
+                            </div>
+
+                            <button type="submit" class="send-btn" wire:loading.attr="disabled">
                                 <span>Send</span>
                                 <span>➤</span>
                             </button>
@@ -1677,31 +906,13 @@
                 </form>
             </div>
         </div>
-    @endif
-</div>
+    </div>
 
-{{-- Lightbox Modal --}}
-<div x-data="{ open: false, src: '' }" @open-lightbox.window="open = true; src = $event.detail.src"
-    @keydown.escape.window="open = false" x-show="open" x-transition.opacity class="lightbox-overlay"
-    style="display: none;" x-show.important="open"> <!-- ensure it overrides display:none when open -->
-
-    <button @click="open = false" class="lightbox-close">✕</button>
-    <img :src="src" class="lightbox-content" @click.outside="open = false">
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-            Notification.requestPermission();
-        }
-
-        // Scroll to highlight
-        setTimeout(() => {
-            const highlight = document.querySelector('.highlight-message');
-            if (highlight) {
-                highlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                Notification.requestPermission();
             }
-        }, 500);
-    });
-</script>
-</div>
+        });
+    </script>
+</x-filament-panels::page>
