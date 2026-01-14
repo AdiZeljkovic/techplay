@@ -9,7 +9,7 @@ use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\ColorColumn;
@@ -33,10 +33,10 @@ class EditorialChannelResource extends Resource
         return 'System'; // Or 'Editorial Tools' if preferred
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                     TextInput::make('name')
                         ->required()
                         ->live(onBlur: true)
