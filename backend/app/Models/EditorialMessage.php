@@ -49,6 +49,16 @@ class EditorialMessage extends Model
         return $this->bookmarks()->where('user_id', $user->id)->exists();
     }
 
+    public function parent()
+    {
+        return $this->belongsTo(EditorialMessage::class, 'parent_id');
+    }
+
+    public function replies()
+    {
+        return $this->hasMany(EditorialMessage::class, 'parent_id');
+    }
+
     /**
      * Check if the message can be edited (within 15 minutes)
      */

@@ -58,6 +58,11 @@ class EditorialChat extends Page
     public $search = '';
     public $showSearch = false;
 
+    // Threading
+    public $activeThread = null; // ID of the parent message
+    public $threadMessage = '';
+
+
     // Computed property for channels
     public function getChannelsProperty()
     {
@@ -146,6 +151,55 @@ class EditorialChat extends Page
         $this->updateLastSeen();
     }
 
+    public function sendThreadReply()
+    {
+        $this->validate([
+            'threadMessage' => 'required',
+        ]);
+
+        if (!$this->activeThread)
+            return;
+
+        $mentionedIds = $this->parseMentions($this->threadMessage);
+
+        EditorialMessage::create([
+            'user_id' => auth()->id(),
+            'content' => $this->threadMessage,
+            'channel' => $this->activeChannel,
+            'mentioned_user_ids' => $mentionedIds,
+            'parent_id' => $this->activeThread,
+        ]);
+
+        $this->threadMessage = '';
+        $this->updateLastSeen();
+    }
+
+    public function setActiveThread($messageId)
+    {
+        $this->activeThread = $messageId;
+    }
+
+    public function closeThread()
+    {
+        $this->activeThread = null;
+    }
+
+    public function getThreadMessagesProperty()
+    {
+        if (!$this->activeThread)
+            return collect();
+
+        return EditorialMessage::with(['user.roles', 'reactions.user'])
+            ->where('parent_id', $this->activeThread)
+            ->oldest() // Connection: chronological order for thread
+            ->get();
+    }
+
+    public function getActiveThreadMessageProperty()
+    {
+        return EditorialMessage::with('user')->find($this->activeThread);
+    }
+
     protected function parseMentions(string $content): array
     {
         preg_match_all('/@(\w+)/', $content, $matches);
@@ -161,10 +215,15 @@ class EditorialChat extends Page
 
     public function getMessagesProperty()
     {
-        $query = EditorialMessage::with(['user.roles', 'reactions.user'])->latest()->take(100);
+        $query = EditorialMessage::with(['user.roles', 'reactions.user', 'replies'])->latest()->take(100);
 
         if ($this->search) {
             $query->where('content', 'like', '%' . $this->search . '%');
+        }
+
+        // Exclude replies from main view unless searching
+        if (!$this->search) {
+            $query->whereNull('parent_id');
         }
 
         if ($this->activeChannel) {
