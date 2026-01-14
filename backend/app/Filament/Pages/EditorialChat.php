@@ -356,7 +356,7 @@ class EditorialChat extends Page
             });
         }
 
-        return $query->get()->reverse();
+        return $query->get();
     }
 
     public function getUsersProperty()
