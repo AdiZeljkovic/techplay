@@ -1,0 +1,404 @@
+/*
+ * TechPlay Admin Panel - Custom Filament Theme
+ * Based on Editorial Chat design system
+ */
+
+:root {
+    --tp-bg-primary: rgba(30, 30, 40, 0.95);
+    --tp-bg-secondary: rgba(17, 24, 39, 0.98);
+    --tp-bg-card: rgba(255, 255, 255, 0.03);
+    --tp-accent: #FC4100;
+    --tp-accent-dark: #d93800;
+    --tp-text-primary: #fff;
+    --tp-text-secondary: rgba(255, 255, 255, 0.6);
+    --tp-text-muted: rgba(255, 255, 255, 0.4);
+    --tp-border: rgba(255, 255, 255, 0.08);
+    --tp-border-light: rgba(255, 255, 255, 0.06);
+    --tp-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    --tp-radius-lg: 16px;
+    --tp-radius-md: 12px;
+    --tp-radius-sm: 8px;
+}
+
+/* ============================================
+   GLOBAL OVERRIDES
+   ============================================ */
+
+/* Main content area */
+.fi-main {
+    background: linear-gradient(135deg, #0f0f14 0%, #1a1a24 50%, #0f0f14 100%) !important;
+}
+
+/* Sidebar */
+.fi-sidebar {
+    background: var(--tp-bg-secondary) !important;
+    border-right: 1px solid var(--tp-border) !important;
+}
+
+.fi-sidebar-nav-groups {
+    padding: 12px 8px !important;
+}
+
+/* Sidebar items */
+.fi-sidebar-item-button {
+    border-radius: var(--tp-radius-sm) !important;
+    transition: all 0.15s ease !important;
+    border-left: 3px solid transparent !important;
+    margin: 2px 0 !important;
+}
+
+.fi-sidebar-item-button:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.fi-sidebar-item-button.fi-active {
+    background: rgba(252, 65, 0, 0.1) !important;
+    border-left-color: var(--tp-accent) !important;
+}
+
+.fi-sidebar-item-button.fi-active .fi-sidebar-item-label {
+    color: var(--tp-accent) !important;
+}
+
+/* Sidebar group labels */
+.fi-sidebar-group-label {
+    font-size: 0.65rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    color: var(--tp-text-muted) !important;
+    font-weight: 600 !important;
+    padding: 16px 12px 8px !important;
+}
+
+/* ============================================
+   CARDS & CONTAINERS
+   ============================================ */
+
+/* Section containers */
+.fi-section {
+    background: var(--tp-bg-card) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-lg) !important;
+    box-shadow: var(--tp-shadow) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.fi-section-header {
+    border-bottom: 1px solid var(--tp-border-light) !important;
+    padding: 16px 20px !important;
+}
+
+.fi-section-content {
+    padding: 20px !important;
+}
+
+/* Widget cards */
+.fi-wi-stats-overview-stat {
+    background: var(--tp-bg-card) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-md) !important;
+    transition: all 0.2s ease !important;
+}
+
+.fi-wi-stats-overview-stat:hover {
+    border-color: rgba(252, 65, 0, 0.3) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+
+.fi-ta-table {
+    background: transparent !important;
+}
+
+.fi-ta-header-cell {
+    background: rgba(17, 24, 39, 0.6) !important;
+    border-bottom: 1px solid var(--tp-border) !important;
+    font-size: 0.7rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: var(--tp-text-muted) !important;
+    font-weight: 600 !important;
+}
+
+.fi-ta-row {
+    border-bottom: 1px solid var(--tp-border-light) !important;
+    transition: all 0.15s ease !important;
+}
+
+.fi-ta-row:hover {
+    background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.fi-ta-cell {
+    padding: 12px 16px !important;
+}
+
+/* Table actions */
+.fi-ta-actions {
+    gap: 4px !important;
+}
+
+/* ============================================
+   FORMS
+   ============================================ */
+
+/* Form inputs */
+.fi-input-wrp {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-sm) !important;
+    transition: all 0.2s ease !important;
+}
+
+.fi-input-wrp:focus-within {
+    border-color: rgba(252, 65, 0, 0.5) !important;
+    box-shadow: 0 0 0 3px rgba(252, 65, 0, 0.1) !important;
+}
+
+.fi-input {
+    background: transparent !important;
+    color: var(--tp-text-primary) !important;
+}
+
+.fi-input::placeholder {
+    color: var(--tp-text-muted) !important;
+}
+
+/* Select inputs */
+.fi-select-input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-sm) !important;
+}
+
+/* Textarea */
+.fi-textarea {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-sm) !important;
+}
+
+/* Form labels */
+.fi-fo-field-wrp-label {
+    color: var(--tp-text-secondary) !important;
+    font-weight: 500 !important;
+    font-size: 0.85rem !important;
+    margin-bottom: 6px !important;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+/* Primary buttons */
+.fi-btn-primary {
+    background: linear-gradient(135deg, var(--tp-accent) 0%, var(--tp-accent-dark) 100%) !important;
+    border: none !important;
+    border-radius: var(--tp-radius-sm) !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 15px rgba(252, 65, 0, 0.3) !important;
+}
+
+.fi-btn-primary:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 20px rgba(252, 65, 0, 0.4) !important;
+}
+
+/* Secondary/Gray buttons */
+.fi-btn-gray {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-sm) !important;
+    color: var(--tp-text-secondary) !important;
+    transition: all 0.15s ease !important;
+}
+
+.fi-btn-gray:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: var(--tp-text-primary) !important;
+}
+
+/* Danger buttons */
+.fi-btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    border: none !important;
+    border-radius: var(--tp-radius-sm) !important;
+}
+
+/* ============================================
+   BADGES & TAGS
+   ============================================ */
+
+.fi-badge {
+    border-radius: 6px !important;
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+    padding: 4px 8px !important;
+}
+
+/* ============================================
+   MODALS
+   ============================================ */
+
+.fi-modal-content {
+    background: var(--tp-bg-secondary) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-lg) !important;
+    box-shadow: 0 25px 100px rgba(0, 0, 0, 0.6) !important;
+}
+
+.fi-modal-header {
+    border-bottom: 1px solid var(--tp-border-light) !important;
+    padding: 20px 24px !important;
+}
+
+.fi-modal-footer {
+    border-top: 1px solid var(--tp-border-light) !important;
+    padding: 16px 24px !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ============================================
+   NOTIFICATIONS
+   ============================================ */
+
+.fi-notification {
+    background: var(--tp-bg-secondary) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-md) !important;
+    box-shadow: var(--tp-shadow) !important;
+}
+
+/* ============================================
+   TABS & NAVIGATION
+   ============================================ */
+
+.fi-tabs-tab {
+    border-radius: var(--tp-radius-sm) !important;
+    transition: all 0.15s ease !important;
+}
+
+.fi-tabs-tab:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.fi-tabs-tab[aria-selected="true"] {
+    background: rgba(252, 65, 0, 0.15) !important;
+    color: var(--tp-accent) !important;
+}
+
+/* ============================================
+   PAGINATION
+   ============================================ */
+
+.fi-pagination-item-btn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-sm) !important;
+    transition: all 0.15s ease !important;
+}
+
+.fi-pagination-item-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.fi-pagination-item-btn[aria-current="page"] {
+    background: var(--tp-accent) !important;
+    border-color: var(--tp-accent) !important;
+}
+
+/* ============================================
+   TOPBAR / HEADER
+   ============================================ */
+
+.fi-topbar {
+    background: var(--tp-bg-secondary) !important;
+    border-bottom: 1px solid var(--tp-border) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+/* User menu */
+.fi-dropdown-panel {
+    background: var(--tp-bg-secondary) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-md) !important;
+    box-shadow: var(--tp-shadow) !important;
+}
+
+.fi-dropdown-list-item-button {
+    transition: all 0.15s ease !important;
+}
+
+.fi-dropdown-list-item-button:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ============================================
+   RICH EDITOR / TIPTAP
+   ============================================ */
+
+.tiptap-wrapper {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-md) !important;
+}
+
+.tiptap-toolbar {
+    background: rgba(17, 24, 39, 0.8) !important;
+    border-bottom: 1px solid var(--tp-border-light) !important;
+}
+
+.ProseMirror {
+    color: var(--tp-text-primary) !important;
+    padding: 16px !important;
+}
+
+/* ============================================
+   SCROLLBARS
+   ============================================ */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+.fi-loading-indicator {
+    color: var(--tp-accent) !important;
+}
+
+/* ============================================
+   EMPTY STATES
+   ============================================ */
+
+.fi-ta-empty-state {
+    padding: 48px 24px !important;
+}
+
+.fi-ta-empty-state-icon {
+    color: var(--tp-text-muted) !important;
+}
+
+.fi-ta-empty-state-heading {
+    color: var(--tp-text-secondary) !important;
+}
