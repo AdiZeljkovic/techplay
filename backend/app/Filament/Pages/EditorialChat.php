@@ -377,15 +377,52 @@ class EditorialChat extends Page
 
     public function formatMessageContent(string $content): string
     {
+        // First, escape HTML
+        $content = e($content);
+
+        // Code blocks (```code```) - preserve whitespace
+        $content = preg_replace(
+            '/```([\s\S]*?)```/',
+            '<pre style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 0.8rem; overflow-x: auto; margin: 8px 0;">$1</pre>',
+            $content
+        );
+
+        // Inline code (`code`)
+        $content = preg_replace(
+            '/`([^`]+)`/',
+            '<code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.85em;">$1</code>',
+            $content
+        );
+
+        // Bold (**text** or __text__)
+        $content = preg_replace(
+            '/\*\*(.+?)\*\*|__(.+?)__/',
+            '<strong>$1$2</strong>',
+            $content
+        );
+
+        // Italic (*text* or _text_)
+        $content = preg_replace(
+            '/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)|(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/',
+            '<em>$1$2</em>',
+            $content
+        );
+
+        // Strikethrough (~~text~~)
+        $content = preg_replace(
+            '/~~(.+?)~~/',
+            '<del style="opacity: 0.6;">$1</del>',
+            $content
+        );
+
         // Highlight @mentions
         $content = preg_replace(
             '/@(\w+)/',
-            '<span class="text-primary-500 font-semibold cursor-pointer hover:underline">@$1</span>',
-            e($content)
+            '<span class="mention-highlight">@$1</span>',
+            $content
         );
 
-        // Parse article links: /link:ID or techplay.gg/news/slug
-        // 1. /link:123 syntax
+        // Parse article links: /link:ID
         $content = preg_replace_callback(
             '/\/link:(\d+)/',
             function ($matches) {
@@ -393,6 +430,9 @@ class EditorialChat extends Page
             },
             $content
         );
+
+        // Convert newlines to <br>
+        $content = nl2br($content);
 
         return $content;
     }

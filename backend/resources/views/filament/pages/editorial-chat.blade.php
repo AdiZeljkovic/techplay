@@ -726,12 +726,129 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
+        /* Mentions Autocomplete */
+        .mentions-dropdown {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            margin-bottom: 8px;
+            background: #1f2937;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            min-width: 220px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            z-index: 100;
+        }
+
+        .mentions-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .mentions-dropdown-item:hover,
+        .mentions-dropdown-item.selected {
+            background: rgba(252, 65, 0, 0.15);
+        }
+
+        .mentions-dropdown-item:first-child {
+            border-radius: 10px 10px 0 0;
+        }
+
+        .mentions-dropdown-item:last-child {
+            border-radius: 0 0 10px 10px;
+        }
+
+        .mentions-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.7rem;
+            color: #fff;
+        }
+
+        .mentions-info {
+            flex: 1;
+        }
+
+        .mentions-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .mentions-role {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
         .mention-highlight {
             color: #60a5fa;
             font-weight: 600;
             background: rgba(59, 130, 246, 0.15);
             padding: 1px 4px;
             border-radius: 4px;
+        }
+
+        /* Image Lightbox */
+        .lightbox-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            cursor: zoom-out;
+        }
+
+        .lightbox-content {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .message-image {
+            cursor: zoom-in;
+            transition: transform 0.2s;
+        }
+
+        .message-image:hover {
+            transform: scale(1.02);
         }
 
         /* Scrollbar styling */
@@ -893,9 +1010,10 @@
                                 @if($msg->attachment_url)
                                     <div class="message-attachment">
                                         @if(Str::endsWith($msg->attachment_url, ['.jpg', '.jpeg', '.png', '.gif', '.webp']))
-                                            <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank">
-                                                <img src="{{ asset('storage/' . $msg->attachment_url) }}" alt="Attachment">
-                                            </a>
+                                            <img src="{{ asset('storage/' . $msg->attachment_url) }}"
+                                                 alt="Attachment"
+                                                 class="message-image"
+                                                 @click="$dispatch('open-lightbox', { src: '{{ asset('storage/' . $msg->attachment_url) }}' })">
                                         @else
                                             <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank">
                                                 📎 Download Attachment
@@ -977,7 +1095,86 @@
                     </div>
                 @endif
 
-                <form wire:submit="sendMessage" x-data="{ showEmojis: false }" style="position: relative;">
+                <form wire:submit="sendMessage" x-data="{
+                    showEmojis: false,
+                    showMentions: false,
+                    mentionSearch: '',
+                    mentionIndex: 0,
+                    users: @js($this->users->map(fn($u) => ['id' => $u->id, 'name' => $u->name, 'role' => $this->getUserRoleBadge($u)['short'], 'color' => $this->getUserRoleBadge($u)['color']])->values()),
+                    get filteredUsers() {
+                        if (!this.mentionSearch) return this.users.slice(0, 5);
+                        const search = this.mentionSearch.toLowerCase();
+                        return this.users.filter(u => u.name.toLowerCase().includes(search)).slice(0, 5);
+                    },
+                    checkMention(e) {
+                        const textarea = e.target;
+                        const cursorPos = textarea.selectionStart;
+                        const text = textarea.value.substring(0, cursorPos);
+                        const lastAt = text.lastIndexOf('@');
+                        
+                        if (lastAt !== -1) {
+                            const afterAt = text.substring(lastAt + 1);
+                            // Only show if @ is at start or after space, and no space after @
+                            if ((lastAt === 0 || text[lastAt - 1] === ' ' || text[lastAt - 1] === '\n') && !afterAt.includes(' ')) {
+                                this.mentionSearch = afterAt;
+                                this.showMentions = true;
+                                this.mentionIndex = 0;
+                                return;
+                            }
+                        }
+                        this.showMentions = false;
+                    },
+                    selectMention(user) {
+                        const textarea = $refs.messageInput;
+                        const cursorPos = textarea.selectionStart;
+                        const text = textarea.value;
+                        const lastAt = text.substring(0, cursorPos).lastIndexOf('@');
+                        
+                        const before = text.substring(0, lastAt);
+                        const after = text.substring(cursorPos);
+                        const newText = before + '@' + user.name + ' ' + after;
+                        
+                        textarea.value = newText;
+                        $wire.set('message', newText);
+                        this.showMentions = false;
+                        textarea.focus();
+                        textarea.selectionStart = textarea.selectionEnd = lastAt + user.name.length + 2;
+                    },
+                    handleMentionKeys(e) {
+                        if (!this.showMentions) return;
+                        
+                        if (e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            this.mentionIndex = Math.min(this.mentionIndex + 1, this.filteredUsers.length - 1);
+                        } else if (e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            this.mentionIndex = Math.max(this.mentionIndex - 1, 0);
+                        } else if (e.key === 'Enter' || e.key === 'Tab') {
+                            if (this.filteredUsers[this.mentionIndex]) {
+                                e.preventDefault();
+                                this.selectMention(this.filteredUsers[this.mentionIndex]);
+                            }
+                        } else if (e.key === 'Escape') {
+                            this.showMentions = false;
+                        }
+                    }
+                }" style="position: relative;">
+                    {{-- Mentions Dropdown --}}
+                    <div x-show="showMentions && filteredUsers.length > 0" x-transition class="mentions-dropdown">
+                        <template x-for="(user, index) in filteredUsers" :key="user.id">
+                            <div @click="selectMention(user)" class="mentions-dropdown-item"
+                                :class="{ 'selected': index === mentionIndex }">
+                                <div class="mentions-avatar" :style="'background:' + user.color">
+                                    <span x-text="user.name.charAt(0)"></span>
+                                </div>
+                                <div class="mentions-info">
+                                    <div class="mentions-name" x-text="user.name"></div>
+                                    <div class="mentions-role" x-text="user.role"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
                     {{-- Emoji Picker --}}
                     <div x-show="showEmojis" @click.away="showEmojis = false" x-transition class="emoji-picker">
                         @foreach(['😀', '😂', '😍', '😎', '🤔', '😅', '😭', '👍', '👎', '🔥', '❤️', '🎉', '🚀', '👀', '✅', '❌', '🛑', '⚠️', '📢', '🎮', '⚽', '🎲'] as $emoji)
@@ -990,10 +1187,13 @@
 
                     <div class="input-box">
                         <textarea wire:model="message" x-ref="messageInput" rows="1"
-                            placeholder="Message #{{ $this->activeChannel ? ($this->channels->firstWhere('slug', $this->activeChannel)?->name ?? 'chat') : 'User' }}... (Enter to send, Shift+Enter for new line)"
-                            autofocus autocomplete="off" @keydown.enter.prevent="
-                                if ($event.shiftKey) {
-                                    // Shift+Enter: insert newline
+                            placeholder="Message #{{ $this->activeChannel ? ($this->channels->firstWhere('slug', $this->activeChannel)?->name ?? 'chat') : 'User' }}... (@ to mention)"
+                            autofocus autocomplete="off"
+                            @input="checkMention($event); $el.style.height = 'auto'; $el.style.height = Math.min($el.scrollHeight, 120) + 'px'"
+                            @keydown="handleMentionKeys($event)" @keydown.enter.prevent="
+                                if (showMentions && filteredUsers[mentionIndex]) {
+                                    selectMention(filteredUsers[mentionIndex]);
+                                } else if ($event.shiftKey) {
                                     const start = $el.selectionStart;
                                     const end = $el.selectionEnd;
                                     const value = $el.value;
@@ -1003,13 +1203,11 @@
                                     $el.style.height = Math.min($el.scrollHeight, 120) + 'px';
                                     $wire.set('message', $el.value);
                                 } else {
-                                    // Enter: submit form
                                     if ($wire.message && $wire.message.trim()) {
                                         $wire.sendMessage();
                                     }
                                 }
-                            " @keydown.escape="showEmojis = false"
-                            @input="$el.style.height = 'auto'; $el.style.height = Math.min($el.scrollHeight, 120) + 'px'"></textarea>
+                            " @keydown.escape="showEmojis = false; showMentions = false"></textarea>
 
                         <div class="input-toolbar">
                             <div class="input-actions">
@@ -1032,6 +1230,20 @@
                 </form>
             </div>
         </div>
+    </div>
+
+    {{-- Lightbox Modal --}}
+    <div x-data="{ open: false, src: '' }" 
+         @open-lightbox.window="open = true; src = $event.detail.src"
+         @keydown.escape.window="open = false"
+         x-show="open" 
+         x-transition.opacity
+         class="lightbox-overlay"
+         style="display: none;"
+         x-show.important="open"> <!-- ensure it overrides display:none when open -->
+        
+        <button @click="open = false" class="lightbox-close">✕</button>
+        <img :src="src" class="lightbox-content" @click.outside="open = false">
     </div>
 
     <script>
