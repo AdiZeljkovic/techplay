@@ -605,25 +605,28 @@
             left: 0;
             width: 320px;
             background: #1e1e1e;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             padding: 12px;
             z-index: 50;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
+
         .giphy-search-input {
             width: 100%;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 6px;
             padding: 8px;
             color: #fff;
             font-size: 0.85rem;
             outline: none;
         }
+
         .giphy-search-input:focus {
             border-color: #FC4100;
         }
+
         .giphy-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -632,20 +635,37 @@
             overflow-y: auto;
             margin-top: 10px;
         }
+
         .giphy-item {
             cursor: pointer;
             border-radius: 4px;
             overflow: hidden;
             height: 100px;
         }
+
         .giphy-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             transition: transform 0.2s;
         }
+
         .giphy-item:hover img {
             transform: scale(1.1);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .edit-cancel-btn {
@@ -1159,7 +1179,9 @@
                                             $url = $isExternal ? $msg->attachment_url : asset('storage/' . $msg->attachment_url);
                                         @endphp
 
-                                        @if(Str::endsWith($msg->attachment_url, ['.jpg', '.jpeg', '.png', '.gif', '.webp']) || $isExternal)
+                                        @if(Str::endsWith($msg->attachment_url, ['.mp3', '.webm', '.wav', '.ogg']))
+                                            <audio controls src="{{ $url }}" style="max-width: 240px; border-radius: 4px;"></audio>
+                                        @elseif(Str::endsWith($msg->attachment_url, ['.jpg', '.jpeg', '.png', '.gif', '.webp']) || $isExternal)
                                             <img src="{{ $url }}" alt="Attachment" class="message-image"
                                                 @click="$dispatch('open-lightbox', { src: '{{ $url }}' })">
                                         @else
@@ -1323,15 +1345,50 @@
                         } else if (e.key === 'Escape') {
                             this.showMentions = false;
                         }
+                    },
+                    isRecording: false,
+                    mediaRecorder: null,
+                    audioChunks: [],
+                    startRecording() {
+                        navigator.mediaDevices.getUserMedia({ audio: true })
+                            .then(stream => {
+                                this.mediaRecorder = new MediaRecorder(stream);
+                                this.mediaRecorder.start();
+                                this.isRecording = true;
+                                this.audioChunks = [];
+                                
+                                this.mediaRecorder.addEventListener(" dataavailable", event=> {
+                    this.audioChunks.push(event.data);
+                    });
+
+                    this.mediaRecorder.addEventListener("stop", () => {
+                    const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                    const audioFile = new File([audioBlob], "voice_message.webm", { type: 'audio/webm' });
+
+                    $wire.upload('attachment', audioFile, (uploadedFilename) => {
+                    // Upload success
+                    }, () => {
+                    alert('Error uploading voice message');
+                    });
+                    });
+                    })
+                    .catch(err => console.error("Error accessing microphone:", err));
+                    },
+                    stopRecording() {
+                    if (this.mediaRecorder && this.isRecording) {
+                    this.mediaRecorder.stop();
+                    this.isRecording = false;
+                    this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
                     }
-                }" style="position: relative;">
+                    }
+                    }" style="position: relative;">
                     {{-- Giphy Picker --}}
                     <div x-show="showGiphy" @click.away="showGiphy = false" x-transition class="giphy-picker">
                         <div style="margin-bottom: 8px;">
-                            <input type="text" wire:model.live.debounce.500ms="giphySearch" placeholder="Search GIPHY..." 
-                                   autofocus class="giphy-search-input">
+                            <input type="text" wire:model.live.debounce.500ms="giphySearch"
+                                placeholder="Search GIPHY..." autofocus class="giphy-search-input">
                         </div>
-                        
+
                         @if(count($giphyResults) > 0)
                             <div class="giphy-grid">
                                 @foreach($giphyResults as $gif)
@@ -1341,17 +1398,20 @@
                                 @endforeach
                             </div>
                         @elseif(strlen($giphySearch) > 1)
-                            <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5); font-size: 0.8rem;">
+                            <div
+                                style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5); font-size: 0.8rem;">
                                 No GIFs found.
                             </div>
                         @else
-                            <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5); font-size: 0.8rem;">
+                            <div
+                                style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5); font-size: 0.8rem;">
                                 Type to search GIFs...
                             </div>
                         @endif
-                        
+
                         <div style="text-align: right; margin-top: 8px;">
-                            <img src="https://developers.giphy.com/static/img/powered_by_giphy.png" alt="Powered by GIPHY" style="height: 12px; opacity: 0.6;">
+                            <img src="https://developers.giphy.com/static/img/powered_by_giphy.png"
+                                alt="Powered by GIPHY" style="height: 12px; opacity: 0.6;">
                         </div>
                     </div>
 
@@ -1415,6 +1475,12 @@
                                     title="GIF">
                                     GIF
                                 </button>
+                                <button type="button" @click="isRecording ? stopRecording() : startRecording()"
+                                    class="input-action-btn"
+                                    :style="isRecording ? 'color: #ef4444; animation: pulse 1s infinite;' : ''"
+                                    title="Voice Message (Click to Start/Stop)">
+                                    🎤
+                                </button>
                                 <label class="input-action-btn" title="Attach file" style="cursor: pointer;">
                                     <input type="file" wire:model="attachment" style="display: none;">
                                     📎
@@ -1446,7 +1512,8 @@
                         <div class="thread-original-message">
                             <strong>{{ $original->user->name }}:</strong>
                             <div style="margin: 4px 0 0; color: #fff; line-height: 1.4;">
-                                {!! $this->formatMessageContent($original->content) !!}</div>
+                                {!! $this->formatMessageContent($original->content) !!}
+                            </div>
                         </div>
                     @endif
 
