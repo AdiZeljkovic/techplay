@@ -295,6 +295,23 @@ class EditorialChat extends Page
         }
     }
 
+    public function toggleBookmark($messageId)
+    {
+        $message = EditorialMessage::find($messageId);
+        if (!$message)
+            return;
+
+        $user = auth()->user();
+
+        if ($message->isBookmarkedBy($user)) {
+            $message->bookmarks()->detach($user->id);
+            Notification::make()->title('Bookmark removed')->success()->send();
+        } else {
+            $message->bookmarks()->attach($user->id);
+            Notification::make()->title('Message bookmarked')->success()->send();
+        }
+    }
+
     public function createTaskFromMessage($messageId)
     {
         $message = EditorialMessage::find($messageId);
