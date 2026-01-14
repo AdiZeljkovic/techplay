@@ -11,6 +11,10 @@ use Filament\Pages\Page;
 use Illuminate\Support\Str;
 use Livewire\WithFileUploads;
 
+
+use App\Models\EditorialChannel;
+use App\Models\EditorialMessageReaction;
+
 class EditorialChat extends Page
 {
     use WithFileUploads;
@@ -33,7 +37,6 @@ class EditorialChat extends Page
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        // Only editorial staff can access
         return $user && (
             $user->hasRole(['Super Admin', 'Editor-in-Chief', 'Editor', 'Journalist', 'Moderator']) ||
             in_array($user->role ?? '', ['admin', 'super_admin'])
@@ -47,15 +50,23 @@ class EditorialChat extends Page
     public $activeRecipient = null;
     public $attachment = null;
 
-    // Meaningful channels for editorial workflow
-    public array $channels = [
-        'general' => ['name' => 'Općenito', 'icon' => '💬', 'description' => 'General team discussion'],
-        'news' => ['name' => 'Vijesti', 'icon' => '📰', 'description' => 'News article coordination'],
-        'reviews' => ['name' => 'Recenzije', 'icon' => '🎮', 'description' => 'Review assignments'],
-        'announcements' => ['name' => 'Najave', 'icon' => '📢', 'description' => 'Important announcements'],
-        'tech' => ['name' => 'Tehnika', 'icon' => '🔧', 'description' => 'Technical support'],
-        'urgent' => ['name' => 'Hitno', 'icon' => '🚨', 'description' => 'Urgent matters'],
-    ];
+    // Computed property for channels
+    public function getChannelsProperty()
+    {
+        $user = auth()->user();
+
+        return EditorialChannel::orderBy('sort_order', 'asc')->get()->filter(function ($channel) use ($user) {
+            if (!$channel->is_private) {
+                return true;
+            }
+            // Check roles if private
+            $allowed = $channel->allowed_roles ?? [];
+            if (in_array($user->role ?? '', ['admin', 'super_admin'])) {
+                return true;
+            }
+            return $user->hasRole($allowed);
+        });
+    }
 
     // Editorial roles for filtering
     protected array $editorialRoles = [
@@ -66,9 +77,9 @@ class EditorialChat extends Page
         'Moderator'
     ];
 
-    public function setChannel($channel)
+    public function setChannel($channelSlug)
     {
-        $this->activeChannel = $channel;
+        $this->activeChannel = $channelSlug;
         $this->activeRecipient = null;
         $this->updateLastSeen();
         $this->resetAttachment();
@@ -85,7 +96,12 @@ class EditorialChat extends Page
     protected function updateLastSeen()
     {
         // Update user's last seen timestamp for online status
-        auth()->user()->update(['last_seen_at' => now()]);
+        // Ensure the last_seen_at column exists or wrap in try/catch if migration failed on server potentially
+        try {
+            auth()->user()->update(['last_seen_at' => now()]);
+        } catch (\Exception $e) {
+            // gracefully ignore if column missing
+        }
     }
 
     public function resetAttachment()
@@ -111,7 +127,7 @@ class EditorialChat extends Page
         EditorialMessage::create([
             'user_id' => auth()->id(),
             'content' => $this->message,
-            'channel' => $this->activeChannel,
+            'channel' => $this->activeChannel, // Still storing slug string for simplicity and backward compat
             'recipient_id' => $this->activeRecipient,
             'mentioned_user_ids' => $mentionedIds,
             'attachment_url' => $attachmentUrl,
@@ -137,7 +153,7 @@ class EditorialChat extends Page
 
     public function getMessagesProperty()
     {
-        $query = EditorialMessage::with('user.roles')->latest()->take(100);
+        $query = EditorialMessage::with(['user.roles', 'reactions.user'])->latest()->take(100);
 
         if ($this->activeChannel) {
             $query->where('channel', $this->activeChannel)
@@ -253,6 +269,28 @@ class EditorialChat extends Page
         }
     }
 
+    public function toggleReaction($messageId, $emoji)
+    {
+        $message = EditorialMessage::find($messageId);
+        if (!$message)
+            return;
+
+        $existing = EditorialMessageReaction::where('editorial_message_id', $messageId)
+            ->where('user_id', auth()->id())
+            ->where('emoji', $emoji)
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
+        } else {
+            EditorialMessageReaction::create([
+                'editorial_message_id' => $messageId,
+                'user_id' => auth()->id(),
+                'emoji' => $emoji,
+            ]);
+        }
+    }
+
     public function createTaskFromMessage($messageId)
     {
         $message = EditorialMessage::find($messageId);
@@ -282,7 +320,7 @@ class EditorialChat extends Page
         // Highlight @mentions
         $content = preg_replace(
             '/@(\w+)/',
-            '<span style="color: #3b82f6; font-weight: 600;">@$1</span>',
+            '<span class="text-primary-500 font-semibold cursor-pointer hover:underline">@$1</span>',
             e($content)
         );
 
@@ -306,19 +344,12 @@ class EditorialChat extends Page
             return '';
 
         $editUrl = "/admin/articles/{$article->id}/edit";
-        $statusColor = $article->status === 'published' ? '#22c55e' : '#eab308';
+        $statusColor = $article->status === 'published' ? 'text-green-500 bg-green-500/10 border-green-500/20' : 'text-amber-500 bg-amber-500/10 border-amber-500/20';
 
-        return '
-            <div style="margin-top: 8px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background-color: #f8fafc; display: flex; max-width: 400px;">
-                ' . ($article->featured_image_url ? '<div style="width: 80px; background-image: url(' . asset('storage/' . $article->featured_image_url) . '); background-size: cover; background-position: center;"></div>' : '') . '
-                <div style="padding: 10px; flex: 1;">
-                    <div style="font-weight: bold; font-size: 0.9rem; color: #0f172a; margin-bottom: 4px;">' . e($article->title) . '</div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background-color: ' . $statusColor . '20; color: ' . $statusColor . '; border: 1px solid ' . $statusColor . '40; text-transform: uppercase;">' . e($article->status) . '</span>
-                        <a href="' . $editUrl . '" target="_blank" style="font-size: 0.8rem; color: #3b82f6; font-weight: bold; text-decoration: none;">Ediit -></a>
-                    </div>
-                </div>
-            </div>
-        ';
+        return view('filament.components.editorial-chat-article-preview', [
+            'article' => $article,
+            'editUrl' => $editUrl,
+            'statusColor' => $statusColor
+        ])->render();
     }
 }
