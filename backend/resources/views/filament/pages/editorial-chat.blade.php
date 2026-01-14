@@ -1,5 +1,4 @@
 <x-filament-panels::page>
-    @vite(['resources/js/app.js'])
     <style>
         .chat-wrapper {
             display: flex;
@@ -1488,10 +1487,10 @@
                 $wire.$refresh();
                 })
                 .listenForWhisper('typing', (e) => {
-                    this.showTyping(e.name);
+                this.showTyping(e.name);
                 })
                 .listen('.messages.read', (e) => {
-                    $wire.$refresh();
+                $wire.$refresh();
                 });
                 },
                 showTyping(name) {
@@ -1706,3 +1705,7 @@
         });
     </script>
 </x-filament-panels::page>
+
+@push('scripts')
+    @vite(['resources/js/app.js'])
+@endpush
