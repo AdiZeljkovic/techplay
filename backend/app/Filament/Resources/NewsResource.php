@@ -59,110 +59,139 @@ class NewsResource extends Resource
     {
         return $schema
             ->components([
-                    // Use Flex for a responsive layout that fills the width
-                    \Filament\Schemas\Components\Flex::make([
-                        // Main Content (Left - grows to fill)
-                        \Filament\Schemas\Components\Section::make('Article Content')
-                            ->icon('heroicon-m-document-text')
-                            ->description('Write your article content here.')
-                            ->schema([
-                                    Forms\Components\TextInput::make('title')
-                                        ->required()
-                                        ->maxLength(255)
-                                        ->live(onBlur: true)
-                                        ->afterStateUpdated(fn($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state)))
-                                        ->columnSpanFull(),
+                    // Main Layout: 3-column grid with content spanning 2 columns
+                    Grid::make(3)
+                        ->schema([
+                                // LEFT SIDE - Main Content (spans 2 columns)
+                                Group::make()
+                                    ->schema([
+                                            Section::make('Article Content')
+                                                ->icon('heroicon-o-document-text')
+                                                ->description('Write your article content here.')
+                                                ->schema([
+                                                        Forms\Components\TextInput::make('title')
+                                                            ->required()
+                                                            ->maxLength(255)
+                                                            ->placeholder('Enter article title...')
+                                                            ->live(onBlur: true)
+                                                            ->afterStateUpdated(fn($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
 
-                                    Forms\Components\TextInput::make('slug')
-                                        ->required()
-                                        ->maxLength(255)
-                                        ->unique(ignoreRecord: true)
-                                        ->columnSpanFull(),
+                                                        Forms\Components\TextInput::make('slug')
+                                                            ->required()
+                                                            ->maxLength(255)
+                                                            ->placeholder('auto-generated-from-title')
+                                                            ->unique(ignoreRecord: true)
+                                                            ->helperText('URL-friendly version of the title'),
 
-                                    Forms\Components\Textarea::make('excerpt')
-                                        ->label('Summary / Excerpt')
-                                        ->helperText('A brief summary for previews and SEO.')
-                                        ->rows(3)
-                                        ->columnSpanFull(),
+                                                        Forms\Components\Textarea::make('excerpt')
+                                                            ->label('Summary / Excerpt')
+                                                            ->placeholder('Brief summary for previews and SEO...')
+                                                            ->rows(3)
+                                                            ->helperText('This appears in article cards and search results'),
 
-                                    Forms\Components\RichEditor::make('content')
-                                        ->required()
-                                        ->toolbarButtons([
-                                                'attachFiles',
-                                                'blockquote',
-                                                'bold',
-                                                'bulletList',
-                                                'codeBlock',
-                                                'h2',
-                                                'h3',
-                                                'italic',
-                                                'link',
-                                                'orderedList',
-                                                'redo',
-                                                'strike',
-                                                'underline',
-                                                'undo',
-                                            ])
-                                        ->columnSpanFull(),
-                                ])
-                            ->columns(1)
-                            ->grow(),
+                                                        Forms\Components\RichEditor::make('content')
+                                                            ->required()
+                                                            ->placeholder('Start writing your article...')
+                                                            ->toolbarButtons([
+                                                                    'attachFiles',
+                                                                    'blockquote',
+                                                                    'bold',
+                                                                    'bulletList',
+                                                                    'codeBlock',
+                                                                    'h2',
+                                                                    'h3',
+                                                                    'italic',
+                                                                    'link',
+                                                                    'orderedList',
+                                                                    'redo',
+                                                                    'strike',
+                                                                    'underline',
+                                                                    'undo',
+                                                                ]),
+                                                    ]),
 
-                        // Sidebar (Right - fixed width)
-                        \Filament\Schemas\Components\Section::make('Settings')
-                            ->icon('heroicon-m-cog-6-tooth')
-                            ->schema([
-                                    Forms\Components\Select::make('status')
-                                        ->label('Status')
-                                        ->options([
-                                                'draft' => 'Draft',
-                                                'ready_for_review' => 'Ready for Review',
-                                                'published' => 'Published',
-                                            ])
-                                        ->default('draft')
-                                        ->required()
-                                        ->selectablePlaceholder(false)
-                                        ->native(false),
+                                            // SEO Section
+                                            Section::make('Search Engine Optimization')
+                                                ->icon('heroicon-o-magnifying-glass')
+                                                ->description('Optimize your content for search engines.')
+                                                ->schema([
+                                                        Forms\Components\TextInput::make('meta_title')
+                                                            ->label('Meta Title')
+                                                            ->placeholder('Custom title for search engines...')
+                                                            ->helperText('Leave empty to use article title'),
 
-                                    Forms\Components\DateTimePicker::make('published_at')
-                                        ->label('Publish Date')
-                                        ->default(now())
-                                        ->native(false),
+                                                        Forms\Components\Textarea::make('meta_description')
+                                                            ->label('Meta Description')
+                                                            ->placeholder('Brief description for search results...')
+                                                            ->rows(3)
+                                                            ->helperText('Recommended: 150-160 characters'),
+                                                    ])
+                                                ->collapsed()
+                                                ->collapsible(),
+                                        ])
+                                    ->columnSpan(2),
 
-                                    Forms\Components\Hidden::make('author_id')
-                                        ->default(fn() => auth()->id()),
+                                // RIGHT SIDE - Sidebar (spans 1 column)
+                                Group::make()
+                                    ->schema([
+                                            Section::make('Publish Settings')
+                                                ->icon('heroicon-o-clock')
+                                                ->schema([
+                                                        Forms\Components\Select::make('status')
+                                                            ->options([
+                                                                    'draft' => '📝 Draft',
+                                                                    'ready_for_review' => '👁️ Ready for Review',
+                                                                    'published' => '✅ Published',
+                                                                ])
+                                                            ->default('draft')
+                                                            ->required()
+                                                            ->native(false),
 
-                                    Forms\Components\Toggle::make('is_featured_in_hero')
-                                        ->label('Feature in Hero')
-                                        ->helperText('Show prominently on homepage.')
-                                        ->default(false),
+                                                        Forms\Components\DateTimePicker::make('published_at')
+                                                            ->label('Publish Date')
+                                                            ->default(now())
+                                                            ->native(false)
+                                                            ->helperText('Schedule for later or publish now'),
 
-                                    Forms\Components\Select::make('category_id')
-                                        ->label('Category')
-                                        ->options(Category::where('type', 'news')->whereNotNull('parent_id')->pluck('name', 'id'))
-                                        ->searchable()
-                                        ->required()
-                                        ->native(false),
+                                                        Forms\Components\Hidden::make('author_id')
+                                                            ->default(fn() => auth()->id()),
 
-                                    Forms\Components\TagsInput::make('tags')
-                                        ->placeholder('Add tags...')
-                                        ->helperText('Press Enter to add a tag.'),
+                                                        Forms\Components\Toggle::make('is_featured_in_hero')
+                                                            ->label('Feature in Hero')
+                                                            ->helperText('Show prominently on homepage'),
+                                                    ]),
 
-                                    Forms\Components\FileUpload::make('featured_image_url')
-                                        ->label('Featured Image')
-                                        ->image()
-                                        ->disk('public')
-                                        ->directory('articles')
-                                        ->imageEditor()
-                                        ->imagePreviewHeight('150'),
-                                ])
-                            ->collapsible()
-                            ->grow(false),
-                    ])
-                        ->from('md'),
+                                            Section::make('Category & Tags')
+                                                ->icon('heroicon-o-tag')
+                                                ->schema([
+                                                        Forms\Components\Select::make('category_id')
+                                                            ->label('Category')
+                                                            ->options(Category::where('type', 'news')->whereNotNull('parent_id')->pluck('name', 'id'))
+                                                            ->searchable()
+                                                            ->required()
+                                                            ->native(false)
+                                                            ->placeholder('Select category...'),
 
-                    // SEO Section (Full Width Below)
-                    \App\Filament\Components\SeoForm::make(),
+                                                        Forms\Components\TagsInput::make('tags')
+                                                            ->placeholder('Add tags...')
+                                                            ->helperText('Press Enter to add'),
+                                                    ]),
+
+                                            Section::make('Featured Image')
+                                                ->icon('heroicon-o-photo')
+                                                ->schema([
+                                                        Forms\Components\FileUpload::make('featured_image_url')
+                                                            ->label('')
+                                                            ->image()
+                                                            ->disk('public')
+                                                            ->directory('articles')
+                                                            ->imageEditor()
+                                                            ->imagePreviewHeight('200')
+                                                            ->helperText('Recommended: 1200x630px'),
+                                                    ]),
+                                        ])
+                                    ->columnSpan(1),
+                            ]),
                 ]);
     }
 
