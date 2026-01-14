@@ -18,7 +18,10 @@ class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
 
-    protected static $navigationGroup = 'Shop & Monetization';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Shop & Monetization';
+    }
     protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema

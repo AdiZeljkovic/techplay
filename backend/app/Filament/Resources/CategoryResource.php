@@ -21,7 +21,10 @@ class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
 
-    protected static $navigationGroup = 'System';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'System';
+    }
     protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema

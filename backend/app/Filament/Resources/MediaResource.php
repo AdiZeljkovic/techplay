@@ -22,7 +22,10 @@ class MediaResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'title';
 
-    protected static $navigationGroup = 'Content Studio';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Content Studio';
+    }
     protected static ?int $navigationSort = 6;
 
     public static function getNavigationLabel(): string

@@ -30,7 +30,10 @@ class NewsResource extends Resource
 
     protected static ?string $slug = 'news-articles';
 
-    protected static $navigationGroup = 'Content Studio';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Content Studio';
+    }
     protected static ?int $navigationSort = 1;
 
     public static function getNavigationLabel(): string

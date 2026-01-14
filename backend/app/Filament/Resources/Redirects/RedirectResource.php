@@ -22,7 +22,10 @@ class RedirectResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'source_url';
 
-    protected static $navigationGroup = 'System';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'System';
+    }
     protected static ?int $navigationSort = 7;
 
     public static function form(Schema $schema): Schema

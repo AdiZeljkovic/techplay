@@ -18,7 +18,10 @@ class AchievementResource extends Resource
 {
     protected static ?string $model = Achievement::class;
 
-    protected static $navigationGroup = 'Community Hub';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Community Hub';
+    }
     protected static ?int $navigationSort = 6;
 
     public static function form(Schema $schema): Schema

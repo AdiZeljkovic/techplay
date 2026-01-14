@@ -36,7 +36,10 @@ class GuideResource extends Resource
 
     protected static ?string $slug = 'guides';
 
-    protected static $navigationGroup = 'Content Studio';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Content Studio';
+    }
     protected static ?int $navigationSort = 3;
 
     public static function getNavigationLabel(): string
