@@ -21,7 +21,7 @@ class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
 
-    protected static ?string $navigationGroup = 'System';
+    protected static $navigationGroup = 'System';
     protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
@@ -63,7 +63,7 @@ class CategoryResource extends Resource
                                                 ->preload()
                                                 ->nullable()
                                                 // If type is forum, we might want to restrict parents to forum type too, but let's keep it flexible for now or filter in query
-                                                ->visible(fn(Forms\Get $get) => $get('type') === 'forum'),
+                                                ->visible(fn(Get $get) => $get('type') === 'forum'),
                                             Forms\Components\TextInput::make('icon')
                                                 ->placeholder('heroicon-o-chat-bubble-left')
                                                 ->maxLength(255),

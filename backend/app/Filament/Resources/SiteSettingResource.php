@@ -19,7 +19,7 @@ class SiteSettingResource extends Resource
 
     protected static ?string $navigationLabel = 'Site Settings';
 
-    protected static ?string $navigationGroup = 'System';
+    protected static $navigationGroup = 'System';
     protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema

@@ -19,7 +19,7 @@ class PostResource extends Resource
 {
     protected static ?string $model = Post::class;
 
-    protected static ?string $navigationGroup = 'Community Hub';
+    protected static $navigationGroup = 'Community Hub';
     protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema

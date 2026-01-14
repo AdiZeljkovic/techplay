@@ -50,7 +50,7 @@ class ReviewResource extends Resource
 
     protected static ?string $slug = 'review-articles';
 
-    protected static ?string $navigationGroup = 'Content Studio';
+    protected static $navigationGroup = 'Content Studio';
     protected static ?int $navigationSort = 2;
 
     public static function getNavigationLabel(): string
