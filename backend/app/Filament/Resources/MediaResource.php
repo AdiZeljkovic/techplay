@@ -22,10 +22,8 @@ class MediaResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'title';
 
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Settings';
-    }
+    protected static ?string $navigationGroup = 'Content Studio';
+    protected static ?int $navigationSort = 6;
 
     public static function getNavigationLabel(): string
     {
@@ -36,63 +34,63 @@ class MediaResource extends Resource
     {
         return $schema
             ->components([
-                Forms\Components\FileUpload::make('path')
-                    ->label('File')
-                    ->disk('public')
-                    ->directory('media')
-                    ->image()
-                    ->imageEditor()
-                    ->maxSize(10240)
-                    ->required()
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('title')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('alt_text')
-                    ->label('Alt Text')
-                    ->maxLength(255)
-                    ->helperText('Describe the image for accessibility and SEO'),
-            ]);
+                    Forms\Components\FileUpload::make('path')
+                        ->label('File')
+                        ->disk('public')
+                        ->directory('media')
+                        ->image()
+                        ->imageEditor()
+                        ->maxSize(10240)
+                        ->required()
+                        ->columnSpanFull(),
+                    Forms\Components\TextInput::make('title')
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('alt_text')
+                        ->label('Alt Text')
+                        ->maxLength(255)
+                        ->helperText('Describe the image for accessibility and SEO'),
+                ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                ImageColumn::make('path')
-                    ->label('Preview')
-                    ->disk('public')
-                    ->width(80)
-                    ->height(60),
-                TextColumn::make('title')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('alt_text')
-                    ->label('Alt Text')
-                    ->limit(30),
-                TextColumn::make('mime_type')
-                    ->label('Type')
-                    ->badge(),
-                TextColumn::make('size')
-                    ->label('Size')
-                    ->formatStateUsing(fn($state) => $state ? number_format($state / 1024, 1) . ' KB' : '-'),
-                TextColumn::make('created_at')
-                    ->label('Uploaded')
-                    ->dateTime('M d, Y')
-                    ->sortable(),
-            ])
+                    ImageColumn::make('path')
+                        ->label('Preview')
+                        ->disk('public')
+                        ->width(80)
+                        ->height(60),
+                    TextColumn::make('title')
+                        ->searchable()
+                        ->sortable(),
+                    TextColumn::make('alt_text')
+                        ->label('Alt Text')
+                        ->limit(30),
+                    TextColumn::make('mime_type')
+                        ->label('Type')
+                        ->badge(),
+                    TextColumn::make('size')
+                        ->label('Size')
+                        ->formatStateUsing(fn($state) => $state ? number_format($state / 1024, 1) . ' KB' : '-'),
+                    TextColumn::make('created_at')
+                        ->label('Uploaded')
+                        ->dateTime('M d, Y')
+                        ->sortable(),
+                ])
             ->defaultSort('created_at', 'desc')
             ->headerActions([
-                CreateAction::make(),
-            ])
+                    CreateAction::make(),
+                ])
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
-            ])
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ])
             ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+                    BulkActionGroup::make([
+                        DeleteBulkAction::make(),
+                    ]),
+                ]);
     }
 
     public static function getPages(): array

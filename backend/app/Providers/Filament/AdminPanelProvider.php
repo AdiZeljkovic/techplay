@@ -31,33 +31,41 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->spa()
+            ->darkMode(true, true) // Force dark mode
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => '#FC4100', // TechPlay Accent
+                'gray' => Color::Slate,
             ])
+            ->font('Be Vietnam Pro')
+            ->brandName('TechPlay')
+            ->brandLogoHeight('3rem')
+            ->sidebarCollapsibleOnDesktop()
+            ->collapsedSidebarWidth('9rem')
             ->maxContentWidth(Width::Full)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Dashboard::class,
-            ])
+                    Dashboard::class,
+                ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
-            ])
+                    \App\Filament\Widgets\StatsOverview::class,
+                    AccountWidget::class,
+                    FilamentInfoWidget::class,
+                ])
             ->middleware([
-                EncryptCookies::class,
-                AddQueuedCookiesToResponse::class,
-                StartSession::class,
-                AuthenticateSession::class,
-                ShareErrorsFromSession::class,
-                VerifyCsrfToken::class,
-                SubstituteBindings::class,
-                DisableBladeIconComponents::class,
-                DispatchServingFilamentEvent::class,
-            ])
+                    EncryptCookies::class,
+                    AddQueuedCookiesToResponse::class,
+                    StartSession::class,
+                    AuthenticateSession::class,
+                    ShareErrorsFromSession::class,
+                    VerifyCsrfToken::class,
+                    SubstituteBindings::class,
+                    DisableBladeIconComponents::class,
+                    DispatchServingFilamentEvent::class,
+                ])
             ->authMiddleware([
-                Authenticate::class,
-            ]);
+                    Authenticate::class,
+                ]);
     }
 }

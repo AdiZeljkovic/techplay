@@ -36,10 +36,8 @@ class TechResource extends Resource
 
     protected static ?string $slug = 'tech-articles';
 
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Content';
-    }
+    protected static ?string $navigationGroup = 'Content Studio';
+    protected static ?int $navigationSort = 5;
 
     public static function getNavigationLabel(): string
     {
@@ -63,129 +61,129 @@ class TechResource extends Resource
     {
         return $schema
             ->components([
-                \Filament\Schemas\Components\Flex::make([
-                    // Main Content
-                    \Filament\Schemas\Components\Section::make('Tech Article')
-                        ->icon('heroicon-m-cpu-chip')
-                        ->description('Write your tech article content.')
-                        ->schema([
-                            TextInput::make('title')
-                                ->required()
-                                ->maxLength(255)
-                                ->live(onBlur: true)
-                                ->afterStateUpdated(fn($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state)))
-                                ->columnSpanFull(),
+                    \Filament\Schemas\Components\Flex::make([
+                        // Main Content
+                        \Filament\Schemas\Components\Section::make('Tech Article')
+                            ->icon('heroicon-m-cpu-chip')
+                            ->description('Write your tech article content.')
+                            ->schema([
+                                    TextInput::make('title')
+                                        ->required()
+                                        ->maxLength(255)
+                                        ->live(onBlur: true)
+                                        ->afterStateUpdated(fn($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state)))
+                                        ->columnSpanFull(),
 
-                            TextInput::make('slug')
-                                ->required()
-                                ->maxLength(255)
-                                ->unique(ignoreRecord: true)
-                                ->columnSpanFull(),
+                                    TextInput::make('slug')
+                                        ->required()
+                                        ->maxLength(255)
+                                        ->unique(ignoreRecord: true)
+                                        ->columnSpanFull(),
 
-                            Textarea::make('excerpt')
-                                ->label('Summary')
-                                ->rows(3)
-                                ->columnSpanFull(),
+                                    Textarea::make('excerpt')
+                                        ->label('Summary')
+                                        ->rows(3)
+                                        ->columnSpanFull(),
 
-                            RichEditor::make('content')
-                                ->required()
-                                ->fileAttachmentsDisk('public')
-                                ->fileAttachmentsDirectory('articles')
-                                ->columnSpanFull(),
-                        ])
-                        ->columns(1)
-                        ->grow(),
-
-                    // Settings Sidebar
-                    \Filament\Schemas\Components\Section::make('Settings')
-                        ->icon('heroicon-m-cog-6-tooth')
-                        ->schema([
-                            Select::make('status')
-                                ->options([
-                                    'draft' => 'Draft',
-                                    'ready_for_review' => 'Ready for Review',
-                                    'published' => 'Published',
+                                    RichEditor::make('content')
+                                        ->required()
+                                        ->fileAttachmentsDisk('public')
+                                        ->fileAttachmentsDirectory('articles')
+                                        ->columnSpanFull(),
                                 ])
-                                ->default('draft')
-                                ->required()
-                                ->native(false),
+                            ->columns(1)
+                            ->grow(),
 
-                            DateTimePicker::make('published_at')
-                                ->default(now())
-                                ->native(false),
+                        // Settings Sidebar
+                        \Filament\Schemas\Components\Section::make('Settings')
+                            ->icon('heroicon-m-cog-6-tooth')
+                            ->schema([
+                                    Select::make('status')
+                                        ->options([
+                                                'draft' => 'Draft',
+                                                'ready_for_review' => 'Ready for Review',
+                                                'published' => 'Published',
+                                            ])
+                                        ->default('draft')
+                                        ->required()
+                                        ->native(false),
 
-                            Select::make('author_id')
-                                ->relationship('author', 'name')
-                                ->default(fn() => auth()->id())
-                                ->required()
-                                ->searchable()
-                                ->native(false),
+                                    DateTimePicker::make('published_at')
+                                        ->default(now())
+                                        ->native(false),
 
-                            Toggle::make('is_featured_in_hero')
-                                ->label('Feature in Hero')
-                                ->default(false),
+                                    Select::make('author_id')
+                                        ->relationship('author', 'name')
+                                        ->default(fn() => auth()->id())
+                                        ->required()
+                                        ->searchable()
+                                        ->native(false),
 
-                            Select::make('category_id')
-                                ->label('Category')
-                                ->options(Category::where('type', 'tech')->whereNotNull('parent_id')->pluck('name', 'id'))
-                                ->searchable()
-                                ->required()
-                                ->native(false),
+                                    Toggle::make('is_featured_in_hero')
+                                        ->label('Feature in Hero')
+                                        ->default(false),
 
-                            \Filament\Forms\Components\TagsInput::make('tags')
-                                ->placeholder('Add tags...')
-                                ->helperText('Press Enter to add a tag.'),
+                                    Select::make('category_id')
+                                        ->label('Category')
+                                        ->options(Category::where('type', 'tech')->whereNotNull('parent_id')->pluck('name', 'id'))
+                                        ->searchable()
+                                        ->required()
+                                        ->native(false),
 
-                            FileUpload::make('featured_image_url')
-                                ->label('Featured Image')
-                                ->image()
-                                ->disk('public')
-                                ->directory('articles')
-                                ->imageEditor()
-                                ->imagePreviewHeight('150'),
-                        ])
-                        ->collapsible()
-                        ->grow(false),
-                ])
-                    ->from('md'),
+                                    \Filament\Forms\Components\TagsInput::make('tags')
+                                        ->placeholder('Add tags...')
+                                        ->helperText('Press Enter to add a tag.'),
 
-                SeoForm::make(),
-            ]);
+                                    FileUpload::make('featured_image_url')
+                                        ->label('Featured Image')
+                                        ->image()
+                                        ->disk('public')
+                                        ->directory('articles')
+                                        ->imageEditor()
+                                        ->imagePreviewHeight('150'),
+                                ])
+                            ->collapsible()
+                            ->grow(false),
+                    ])
+                        ->from('md'),
+
+                    SeoForm::make(),
+                ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('title')->searchable()->sortable(),
-                TextColumn::make('category.name')->label('Category')->sortable(),
-                IconColumn::make('is_featured_in_hero')->boolean()->label('Hero'),
-                TextColumn::make('status')->badge()->color(fn(string $state): string => match ($state) {
-                    'draft' => 'gray',
-                    'published' => 'success',
-                    default => 'gray',
-                }),
-                TextColumn::make('views')
-                    ->numeric()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('published_at')->dateTime()->sortable(),
-            ])
+                    TextColumn::make('title')->searchable()->sortable(),
+                    TextColumn::make('category.name')->label('Category')->sortable(),
+                    IconColumn::make('is_featured_in_hero')->boolean()->label('Hero'),
+                    TextColumn::make('status')->badge()->color(fn(string $state): string => match ($state) {
+                        'draft' => 'gray',
+                        'published' => 'success',
+                        default => 'gray',
+                    }),
+                    TextColumn::make('views')
+                        ->numeric()
+                        ->sortable()
+                        ->toggleable(isToggledHiddenByDefault: true),
+                    TextColumn::make('published_at')->dateTime()->sortable(),
+                ])
             ->filters([
-                SelectFilter::make('category')
-                    ->relationship('category', 'name', fn(Builder $query) => $query->where('type', 'tech')),
-            ])
+                    SelectFilter::make('category')
+                        ->relationship('category', 'name', fn(Builder $query) => $query->where('type', 'tech')),
+                ])
             ->headerActions([
-                CreateAction::make(),
-            ])
+                    CreateAction::make(),
+                ])
             ->actions([
-                EditAction::make(),
-            ])
+                    EditAction::make(),
+                ])
             ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+                    BulkActionGroup::make([
+                        DeleteBulkAction::make(),
+                    ]),
+                ]);
     }
 
     public static function getPages(): array
