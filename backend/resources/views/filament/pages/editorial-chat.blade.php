@@ -451,6 +451,72 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
+        .hover-actions button.danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .edited-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-left: 6px;
+            font-style: italic;
+        }
+
+        .edit-message-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(252, 65, 0, 0.3);
+            border-radius: 8px;
+            padding: 8px;
+            margin-top: 8px;
+        }
+
+        .edit-message-box textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 0.875rem;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .edit-message-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 8px;
+        }
+
+        .edit-message-actions button {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s;
+        }
+
+        .edit-save-btn {
+            background: #FC4100;
+            color: #fff;
+        }
+
+        .edit-save-btn:hover {
+            background: #d93800;
+        }
+
+        .edit-cancel-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .edit-cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
         .empty-state {
             flex: 1;
             display: flex;
@@ -546,6 +612,25 @@
         }
 
         .input-box input::placeholder {
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        .input-box textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 14px 16px;
+            font-size: 0.9rem;
+            color: #fff;
+            outline: none;
+            resize: none;
+            min-height: 24px;
+            max-height: 120px;
+            line-height: 1.4;
+            font-family: inherit;
+        }
+
+        .input-box textarea::placeholder {
             color: rgba(255, 255, 255, 0.35);
         }
 
@@ -819,7 +904,22 @@
                                     </div>
                                 @endif
 
-                                {!! $this->formatMessageContent($msg->content) !!}
+                                @if($editingMessageId === $msg->id)
+                                    {{-- Edit Mode --}}
+                                    <div class="edit-message-box">
+                                        <textarea wire:model="editingContent" rows="2">{{ $editingContent }}</textarea>
+                                        <div class="edit-message-actions">
+                                            <button type="button" wire:click="cancelEdit"
+                                                class="edit-cancel-btn">Cancel</button>
+                                            <button type="button" wire:click="saveEdit" class="edit-save-btn">Save</button>
+                                        </div>
+                                    </div>
+                                @else
+                                    {!! $this->formatMessageContent($msg->content) !!}
+                                    @if($msg->edited_at)
+                                        <span class="edited-badge">(edited)</span>
+                                    @endif
+                                @endif
 
                                 {{-- Hover Actions --}}
                                 <div class="hover-actions">
@@ -830,6 +930,14 @@
                                     @if(!$msg->is_pinned && $this->activeChannel)
                                         <button wire:click="pinMessage({{ $msg->id }})" title="Pin"
                                             style="border-left: 1px solid rgba(255,255,255,0.1); padding-left: 8px; margin-left: 4px;">📌</button>
+                                    @endif
+                                    @if($isMe && $msg->canEdit())
+                                        <button wire:click="startEditMessage({{ $msg->id }})"
+                                            title="Edit (within 15 min)">✏️</button>
+                                    @endif
+                                    @if($isMe)
+                                        <button wire:click="deleteMessage({{ $msg->id }})" class="danger" title="Delete"
+                                            onclick="return confirm('Delete this message?')">🗑️</button>
                                     @endif
                                 </div>
                             </div>
@@ -881,9 +989,27 @@
                     </div>
 
                     <div class="input-box">
-                        <input type="text" wire:model="message" x-ref="messageInput"
-                            placeholder="Message #{{ $this->activeChannel ? ($this->channels->firstWhere('slug', $this->activeChannel)?->name ?? 'chat') : 'User' }}..."
-                            autofocus autocomplete="off">
+                        <textarea wire:model="message" x-ref="messageInput" rows="1"
+                            placeholder="Message #{{ $this->activeChannel ? ($this->channels->firstWhere('slug', $this->activeChannel)?->name ?? 'chat') : 'User' }}... (Enter to send, Shift+Enter for new line)"
+                            autofocus autocomplete="off" @keydown.enter.prevent="
+                                if ($event.shiftKey) {
+                                    // Shift+Enter: insert newline
+                                    const start = $el.selectionStart;
+                                    const end = $el.selectionEnd;
+                                    const value = $el.value;
+                                    $el.value = value.substring(0, start) + '\n' + value.substring(end);
+                                    $el.selectionStart = $el.selectionEnd = start + 1;
+                                    $el.style.height = 'auto';
+                                    $el.style.height = Math.min($el.scrollHeight, 120) + 'px';
+                                    $wire.set('message', $el.value);
+                                } else {
+                                    // Enter: submit form
+                                    if ($wire.message && $wire.message.trim()) {
+                                        $wire.sendMessage();
+                                    }
+                                }
+                            " @keydown.escape="showEmojis = false"
+                            @input="$el.style.height = 'auto'; $el.style.height = Math.min($el.scrollHeight, 120) + 'px'"></textarea>
 
                         <div class="input-toolbar">
                             <div class="input-actions">
