@@ -332,7 +332,7 @@ class EditorialChat extends Page
 
     public function getMessagesProperty()
     {
-        $query = EditorialMessage::with(['user.roles', 'reactions.user', 'replies'])->latest()->take(100);
+        $query = EditorialMessage::with(['user.roles', 'reactions.user', 'replies'])->orderBy('created_at', 'desc')->take(100);
 
         if ($this->search) {
             $query->where('content', 'like', '%' . $this->search . '%');

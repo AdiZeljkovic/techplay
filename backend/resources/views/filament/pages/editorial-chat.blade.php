@@ -264,15 +264,15 @@
         .messages-container {
             flex: 1;
             overflow-y: auto;
-            padding: 24px;
+            padding: 16px;
             display: flex;
             flex-direction: column-reverse;
-            gap: 20px;
+            gap: 10px;
         }
 
         .message-row {
             display: flex;
-            gap: 14px;
+            gap: 10px;
             max-width: 100%;
         }
 
@@ -281,14 +281,14 @@
         }
 
         .message-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #fff;
             flex-shrink: 0;
         }
@@ -306,9 +306,9 @@
         .message-meta {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
-            font-size: 0.75rem;
+            gap: 6px;
+            margin-bottom: 3px;
+            font-size: 0.7rem;
         }
 
         .message-row.from-me .message-meta {
@@ -332,10 +332,10 @@
         }
 
         .message-bubble {
-            padding: 12px 16px;
-            border-radius: 16px;
-            font-size: 0.9rem;
-            line-height: 1.5;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 0.82rem;
+            line-height: 1.4;
             word-wrap: break-word;
             position: relative;
         }
@@ -749,8 +749,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
 
         .voice-recording-indicator {
@@ -1089,11 +1096,12 @@
                             class="gif-picker-search" placeholder="Search GIFs...">
                         <div class="gif-picker-results">
                             <template x-for="gif in gifs" :key="gif.id">
-                                <img :src="gif.images.fixed_height_small.url" @click="selectGif(gif.images.original.url)"
-                                    :alt="gif.title">
+                                <img :src="gif.images.fixed_height_small.url"
+                                    @click="selectGif(gif.images.original.url)" :alt="gif.title">
                             </template>
                         </div>
-                        <div x-show="gifs.length === 0 && gifSearch.length > 1" style="text-align: center; color: rgba(255,255,255,0.4); padding: 20px;">
+                        <div x-show="gifs.length === 0 && gifSearch.length > 1"
+                            style="text-align: center; color: rgba(255,255,255,0.4); padding: 20px;">
                             No GIFs found
                         </div>
                     </div>
@@ -1113,12 +1121,12 @@
 
                         <div class="input-toolbar">
                             <div class="input-actions">
-                                <button type="button" @click="showEmojis = !showEmojis; showGifs = false" class="input-action-btn"
-                                    title="Emoji">
+                                <button type="button" @click="showEmojis = !showEmojis; showGifs = false"
+                                    class="input-action-btn" title="Emoji">
                                     😊
                                 </button>
-                                <button type="button" @click="showGifs = !showGifs; showEmojis = false" class="input-action-btn"
-                                    title="GIF">
+                                <button type="button" @click="showGifs = !showGifs; showEmojis = false"
+                                    class="input-action-btn" title="GIF">
                                     GIF
                                 </button>
                                 <label class="input-action-btn" title="Attach file" style="cursor: pointer;">
