@@ -1,4 +1,5 @@
 <x-filament-panels::page>
+    @vite(['resources/js/app.js'])
     <style>
         .chat-wrapper {
             display: flex;
@@ -1199,31 +1200,40 @@
             <div class="messages-container">
                 @php $hasShownDivider = false; @endphp
                 @forelse($this->messages as $msg)
-                    @php
-                        if (!$hasShownDivider && $this->previousReadAt && $msg->created_at->gt($this->previousReadAt)) {
-                            $hasShownDivider = true;
-                            echo '<div class="unread-divider"><span>New Messages</span></div>';
-                        }
+                        @php
+                            if (!$hasShownDivider && $this->previousReadAt && $msg->created_at->gt($this->previousReadAt)) {
+                                $hasShownDivider = true;
+                                echo '<div class="unread-divider"><span>New Messages</span></div>';
+                            }
 
-                        $isMe = $msg->user_id === auth()->id();
-                        $roleBadge = $this->getUserRoleBadge($msg->user);
-                        $avatarColor = $isMe ? '#FC4100' : (['#3b82f6', '#8b5cf6', '#14b8a6', '#f59e0b'][$msg->user_id % 4]);
-                    @endphp
+                            $isMe = $msg->user_id === auth()->id();
+                            $roleBadge = $this->getUserRoleBadge($msg->user);
+                            $avatarColor = $isMe ? '#FC4100' : (['#3b82f6', '#8b5cf6', '#14b8a6', '#f59e0b'][$msg->user_id % 4]);
+                        @endphp
 
-                    <div class="message-row {{ $isMe ? 'from-me' : '' }}">
-                        <div class="message-avatar" style="background: {{ $avatarColor }};">
-                            {{ substr($msg->user->name, 0, 1) }}
-                        </div>
-
-                        <div class="message-content">
-                            <div class="message-meta">
-                                <span class="message-author">{{ $msg->user->name }}</span>
-                                <span class="message-role"
-                                    style="background: {{ $roleBadge['color'] }}20; color: {{ $roleBadge['color'] }};">
-                                    {{ $roleBadge['short'] }}
-                                </span>
-                                <span class="message-time">{{ $msg->created_at->format('H:i') }}</span>
+                        <div class="message-row {{ $isMe ? 'from-me' : '' }}">
+                            <div class="message-avatar" style="background: {{ $avatarColor }};">
+                                {{ substr($msg->user->name, 0, 1) }}
                             </div>
+
+                            <div class="message-content">
+                                <div class="message-meta">
+                                    <span class="message-author">{{ $msg->user->name }}</span>
+                                    <span class="message-role"
+                                        style="background: {{ $roleBadge['color'] }}20; color: {{ $roleBadge['color'] }};">
+                                        {{ $roleBadge['short'] }}
+                                    </span>
+                                    <span class="message-time">{{ $msg->created_at->format('H:i') }}</span>
+                                    @if($isMe && $msg->recipient_id)
+                                        <span class="message-status" style="margin-left: 4px; font-size: 0.8rem;">
+                                            @if($msg->read_at)
+                                                <span style="color: #3b82f6;">✓✓</span>
+                                            @else
+                                                <span style="color: rgba(255,255,255,0.3);">✓</span>
+                                            @endif
+                                        </span>
+                                    @endif
+                                </div>
 
                             </div>
                             <!-- {{ $msg->id }} -->
@@ -1254,8 +1264,7 @@
                                     <div class="edit-message-box">
                                         <textarea wire:model="editingContent" rows="2">{{ $editingContent }}</textarea>
                                         <div class="edit-message-actions">
-                                            <button type="button" wire:click="cancelEdit"
-                                                class="edit-cancel-btn">Cancel</button>
+                                            <button type="button" wire:click="cancelEdit" class="edit-cancel-btn">Cancel</button>
                                             <button type="button" wire:click="saveEdit" class="edit-save-btn">Save</button>
                                         </div>
                                     </div>
@@ -1319,27 +1328,27 @@
                         </div>
                     </div>
                 @empty
-                    <div class="empty-state">
-                        <div class="empty-state-icon">💬</div>
-                        <h3>No messages yet</h3>
-                        <p>Start the conversation!</p>
-                    </div>
-                @endforelse
-            </div>
+                <div class="empty-state">
+                    <div class="empty-state-icon">💬</div>
+                    <h3>No messages yet</h3>
+                    <p>Start the conversation!</p>
+                </div>
+            @endforelse
+        </div>
 
-            {{-- Input Area --}}
-            <div class="input-area">
-                @if($attachment)
-                    <div class="attachment-preview">
-                        <div class="attachment-preview-info">
-                            <span class="attachment-preview-icon">📎</span>
-                            <span class="attachment-preview-name">{{ $attachment->getClientOriginalName() }}</span>
-                        </div>
-                        <button wire:click="resetAttachment">✕</button>
+        {{-- Input Area --}}
+        <div class="input-area">
+            @if($attachment)
+                <div class="attachment-preview">
+                    <div class="attachment-preview-info">
+                        <span class="attachment-preview-icon">📎</span>
+                        <span class="attachment-preview-name">{{ $attachment->getClientOriginalName() }}</span>
                     </div>
-                @endif
+                    <button wire:click="resetAttachment">✕</button>
+                </div>
+            @endif
 
-                <form wire:submit="sendMessage" x-data="{
+            <form wire:submit="sendMessage" x-data="{
                     showEmojis: false,
                     showMentions: false,
                     showGiphy: @entangle('showGiphy'),
@@ -1415,95 +1424,154 @@
                                 this.audioChunks = [];
                                 
                                 this.mediaRecorder.addEventListener(" dataavailable", event=> {
-                    this.audioChunks.push(event.data);
-                    });
+                this.audioChunks.push(event.data);
+                });
 
-                    this.mediaRecorder.addEventListener("stop", () => {
-                    const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-                    const audioFile = new File([audioBlob], "voice_message.webm", { type: 'audio/webm' });
+                this.mediaRecorder.addEventListener("stop", () => {
+                const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                const audioFile = new File([audioBlob], "voice_message.webm", { type: 'audio/webm' });
 
-                    $wire.upload('attachment', audioFile, (uploadedFilename) => {
-                    // Upload success
-                    }, () => {
-                    alert('Error uploading voice message');
-                    });
-                    });
-                    })
-                    .catch(err => console.error("Error accessing microphone:", err));
-                    },
-                    stopRecording() {
-                    if (this.mediaRecorder && this.isRecording) {
-                    this.mediaRecorder.stop();
-                    this.isRecording = false;
-                    this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
-                    }
-                    }
-                    }" style="position: relative;">
-                    {{-- Giphy Picker --}}
-                    <div x-show="showGiphy" @click.away="showGiphy = false" x-transition class="giphy-picker">
-                        <div style="margin-bottom: 8px;">
-                            <input type="text" wire:model.live.debounce.500ms="giphySearch"
-                                placeholder="Search GIPHY..." autofocus class="giphy-search-input">
-                        </div>
+                $wire.upload('attachment', audioFile, (uploadedFilename) => {
+                // Upload success
+                }, () => {
+                alert('Error uploading voice message');
+                });
+                });
+                })
+                .catch(err => console.error("Error accessing microphone:", err));
+                },
+                stopRecording() {
+                if (this.mediaRecorder && this.isRecording) {
+                this.mediaRecorder.stop();
+                this.isRecording = false;
+                this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                }
+                }
+                },
+                typingUsers: [],
+                typingTimeout: null,
+                sendTyping() {
+                const channelSlug = '{{ $this->activeChannel }}';
+                const userId = {{ auth()->id() }};
 
-                        @if(count($giphyResults) > 0)
-                            <div class="giphy-grid">
-                                @foreach($giphyResults as $gif)
-                                    <div class="giphy-item" wire:click="selectGiphy('{{ $gif['url'] }}')">
-                                        <img src="{{ $gif['url'] }}" alt="{{ $gif['title'] }}">
-                                    </div>
-                                @endforeach
-                            </div>
-                        @elseif(strlen($giphySearch) > 1)
-                            <div
-                                style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5); font-size: 0.8rem;">
-                                No GIFs found.
-                            </div>
-                        @else
-                            <div
-                                style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5); font-size: 0.8rem;">
-                                Type to search GIFs...
-                            </div>
-                        @endif
+                // Throttle typing events
+                if (this.typingTimeout) clearTimeout(this.typingTimeout);
 
-                        <div style="text-align: right; margin-top: 8px;">
-                            <img src="https://developers.giphy.com/static/img/powered_by_giphy.png"
-                                alt="Powered by GIPHY" style="height: 12px; opacity: 0.6;">
-                        </div>
+                this.typingTimeout = setTimeout(() => {
+                if (channelSlug) {
+                window.Echo.private('editorial.channel.' + channelSlug)
+                .whisper('typing', { name: '{{ auth()->user()->name }}' });
+                } else if ({{ $this->activeRecipient ?? 'null' }}) {
+                window.Echo.private('editorial.user.' + {{ $this->activeRecipient ?? 'null' }})
+                .whisper('typing', { name: '{{ auth()->user()->name }}' });
+                }
+                }, 300);
+                },
+                initEcho() {
+                if (!window.Echo) return;
+
+                const channelSlug = '{{ $this->activeChannel }}';
+                const userId = {{ auth()->id() }};
+
+                if (channelSlug) {
+                const channel = window.Echo.private('editorial.channel.' + channelSlug);
+                channel.listen('.message.sent', (e) => {
+                $wire.$refresh();
+                })
+                .listenForWhisper('typing', (e) => {
+                this.showTyping(e.name);
+                });
+                }
+
+                window.Echo.private('editorial.user.' + userId)
+                .listen('.message.sent', (e) => {
+                $wire.$refresh();
+                })
+                .listenForWhisper('typing', (e) => {
+                    this.showTyping(e.name);
+                })
+                .listen('.messages.read', (e) => {
+                    $wire.$refresh();
+                });
+                },
+                showTyping(name) {
+                if (!this.typingUsers.includes(name)) {
+                this.typingUsers.push(name);
+                setTimeout(() => {
+                this.typingUsers = this.typingUsers.filter(u => u !== name);
+                }, 3000);
+                }
+                }
+                }" x-init="initEcho()" style="position: relative;">
+                {{-- Giphy Picker --}}
+                <div x-show="showGiphy" @click.away="showGiphy = false" x-transition class="giphy-picker">
+                    <div style="margin-bottom: 8px;">
+                        <input type="text" wire:model.live.debounce.500ms="giphySearch" placeholder="Search GIPHY..."
+                            autofocus class="giphy-search-input">
                     </div>
 
-                    {{-- Mentions Dropdown --}}
-                    <div x-show="showMentions && filteredUsers.length > 0" x-transition class="mentions-dropdown">
-                        <template x-for="(user, index) in filteredUsers" :key="user.id">
-                            <div @click="selectMention(user)" class="mentions-dropdown-item"
-                                :class="{ 'selected': index === mentionIndex }">
-                                <div class="mentions-avatar" :style="'background:' + user.color">
-                                    <span x-text="user.name.charAt(0)"></span>
+                    @if(count($giphyResults) > 0)
+                        <div class="giphy-grid">
+                            @foreach($giphyResults as $gif)
+                                <div class="giphy-item" wire:click="selectGiphy('{{ $gif['url'] }}')">
+                                    <img src="{{ $gif['url'] }}" alt="{{ $gif['title'] }}">
                                 </div>
-                                <div class="mentions-info">
-                                    <div class="mentions-name" x-text="user.name"></div>
-                                    <div class="mentions-role" x-text="user.role"></div>
-                                </div>
+                            @endforeach
+                        </div>
+                    @elseif(strlen($giphySearch) > 1)
+                        <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5); font-size: 0.8rem;">
+                            No GIFs found.
+                        </div>
+                    @else
+                        <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.5); font-size: 0.8rem;">
+                            Type to search GIFs...
+                        </div>
+                    @endif
+
+                    <div style="text-align: right; margin-top: 8px;">
+                        <img src="https://developers.giphy.com/static/img/powered_by_giphy.png" alt="Powered by GIPHY"
+                            style="height: 12px; opacity: 0.6;">
+                    </div>
+                </div>
+
+                {{-- Mentions Dropdown --}}
+                <div x-show="showMentions && filteredUsers.length > 0" x-transition class="mentions-dropdown">
+                    <template x-for="(user, index) in filteredUsers" :key="user.id">
+                        <div @click="selectMention(user)" class="mentions-dropdown-item"
+                            :class="{ 'selected': index === mentionIndex }">
+                            <div class="mentions-avatar" :style="'background:' + user.color">
+                                <span x-text="user.name.charAt(0)"></span>
                             </div>
-                        </template>
-                    </div>
+                            <div class="mentions-info">
+                                <div class="mentions-name" x-text="user.name"></div>
+                                <div class="mentions-role" x-text="user.role"></div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
 
-                    {{-- Emoji Picker --}}
-                    <div x-show="showEmojis" @click.away="showEmojis = false" x-transition class="emoji-picker">
-                        @foreach(['😀', '😂', '😍', '😎', '🤔', '😅', '😭', '👍', '👎', '🔥', '❤️', '🎉', '🚀', '👀', '✅', '❌', '🛑', '⚠️', '📢', '🎮', '⚽', '🎲'] as $emoji)
-                            <button type="button"
-                                @click="$wire.set('message', $wire.message + '{{ $emoji }}'); showEmojis = false; $refs.messageInput.focus()">
-                                {{ $emoji }}
-                            </button>
-                        @endforeach
-                    </div>
+                {{-- Emoji Picker --}}
+                <div x-show="showEmojis" @click.away="showEmojis = false" x-transition class="emoji-picker">
+                    @foreach(['😀', '😂', '😍', '😎', '🤔', '😅', '😭', '👍', '👎', '🔥', '❤️', '🎉', '🚀', '👀', '✅', '❌', '🛑', '⚠️', '📢', '🎮', '⚽', '🎲'] as $emoji)
+                        <button type="button"
+                            @click="$wire.set('message', $wire.message + '{{ $emoji }}'); showEmojis = false; $refs.messageInput.focus()">
+                            {{ $emoji }}
+                        </button>
+                    @endforeach
+                </div>
 
-                    <div class="input-box">
-                        <textarea wire:model="message" x-ref="messageInput" rows="1"
-                            placeholder="Message #{{ $this->activeChannel ? ($this->channels->firstWhere('slug', $this->activeChannel)?->name ?? 'chat') : 'User' }}... (@ to mention)"
-                            autofocus autocomplete="off"
-                            @input="checkMention($event); $el.style.height = 'auto'; $el.style.height = Math.min($el.scrollHeight, 120) + 'px'"
-                            @keydown="handleMentionKeys($event)" @keydown.enter.prevent="
+                {{-- Typing Indicator --}}
+                <div x-show="typingUsers.length > 0" x-transition
+                    style="position: absolute; top: -30px; left: 20px; font-size: 0.8rem; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: 12px; pointer-events: none;">
+                    <span
+                        x-text="typingUsers.join(', ') + (typingUsers.length > 1 ? ' are ' : ' is ') + 'typing...'"></span>
+                </div>
+
+                <div class="input-box">
+                    <textarea wire:model="message" x-ref="messageInput" rows="1"
+                        @input="sendTyping; checkMention($event); $el.style.height = 'auto'; $el.style.height = Math.min($el.scrollHeight, 120) + 'px'"
+                        placeholder="Message #{{ $this->activeChannel ? ($this->channels->firstWhere('slug', $this->activeChannel)?->name ?? 'chat') : 'User' }}... (@ to mention)"
+                        autofocus autocomplete="off" @keydown="handleMentionKeys($event)" @keydown.enter.prevent="
                                 if (showMentions && filteredUsers[mentionIndex]) {
                                     selectMention(filteredUsers[mentionIndex]);
                                 } else if ($event.shiftKey) {
@@ -1522,29 +1590,86 @@
                                 }
                             " @keydown.escape="showEmojis = false; showMentions = false"></textarea>
 
-                        <div class="input-toolbar">
-                            <div class="input-actions">
-                                <button type="button" @click="showEmojis = !showEmojis" class="input-action-btn"
-                                    title="Emoji">
-                                    😊
-                                </button>
-                                <button type="button" @click="showGiphy = !showGiphy" class="input-action-btn"
-                                    title="GIF">
-                                    GIF
-                                </button>
-                                <button type="button" @click="isRecording ? stopRecording() : startRecording()"
-                                    class="input-action-btn"
-                                    :style="isRecording ? 'color: #ef4444; animation: pulse 1s infinite;' : ''"
-                                    title="Voice Message (Click to Start/Stop)">
-                                    🎤
-                                </button>
-                                <label class="input-action-btn" title="Attach file" style="cursor: pointer;">
-                                    <input type="file" wire:model="attachment" style="display: none;">
-                                    📎
-                                </label>
-                            </div>
+                    <div class="input-toolbar">
+                        <div class="input-actions">
+                            <button type="button" @click="showEmojis = !showEmojis" class="input-action-btn"
+                                title="Emoji">
+                                😊
+                            </button>
+                            <button type="button" @click="showGiphy = !showGiphy" class="input-action-btn" title="GIF">
+                                GIF
+                            </button>
+                            <button type="button" @click="isRecording ? stopRecording() : startRecording()"
+                                class="input-action-btn"
+                                :style="isRecording ? 'color: #ef4444; animation: pulse 1s infinite;' : ''"
+                                title="Voice Message (Click to Start/Stop)">
+                                🎤
+                            </button>
+                            <label class="input-action-btn" title="Attach file" style="cursor: pointer;">
+                                <input type="file" wire:model="attachment" style="display: none;">
+                                📎
+                            </label>
+                        </div>
 
-                            <button type="submit" class="send-btn" wire:loading.attr="disabled">
+                        <button type="submit" class="send-btn" wire:loading.attr="disabled">
+                            <span>Send</span>
+                            <span>➤</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Thread Sidebar --}}
+    @if($this->activeThread)
+        <div class="thread-sidebar">
+            <div class="thread-header">
+                <span>Thread</span>
+                <button class="thread-close-btn" wire:click="closeThread">✕</button>
+            </div>
+
+            <div class="chat-sidebar-content">
+                {{-- Original Message --}}
+                @php $original = $this->activeThreadMessage; @endphp
+                @if($original)
+                    <div class="thread-original-message">
+                        <strong>{{ $original->user->name }}:</strong>
+                        <div style="margin: 4px 0 0; color: #fff; line-height: 1.4;">
+                            {!! $this->formatMessageContent($original->content) !!}
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Replies --}}
+                @foreach($this->threadMessages as $reply)
+                    <div style="padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            @php $roleBadge = $this->getUserRoleBadge($reply->user); @endphp
+                            <div
+                                style="background: {{ $roleBadge['color'] }}; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #fff;">
+                                {{ substr($reply->user->name, 0, 1) }}
+                            </div>
+                            <span style="font-weight: 600; font-size: 0.85rem; color: #fff;">{{ $reply->user->name }}</span>
+                            <span
+                                style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">{{ $reply->created_at->format('H:i') }}</span>
+                        </div>
+                        <div style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin-left: 32px;">
+                            {!! $this->formatMessageContent($reply->content) !!}
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            {{-- Thread Input --}}
+            <div class="input-area" style="padding: 12px; background: rgba(17,24,39,0.9);">
+                <form wire:submit="sendThreadReply">
+                    <div class="input-box">
+                        <textarea wire:model="threadMessage" rows="1" placeholder="Reply in thread..."
+                            style="font-size: 0.85rem; padding: 10px;"
+                            @keydown.enter.prevent="if(!$event.shiftKey) $wire.sendThreadReply()"></textarea>
+                        <div class="input-toolbar" style="padding: 4px 8px; justify-content: flex-end;">
+                            <button type="submit" class="send-btn" style="padding: 4px 12px; font-size: 0.8rem;">
                                 <span>Send</span>
                                 <span>➤</span>
                             </button>
@@ -1553,65 +1678,7 @@
                 </form>
             </div>
         </div>
-
-        {{-- Thread Sidebar --}}
-        @if($this->activeThread)
-            <div class="thread-sidebar">
-                <div class="thread-header">
-                    <span>Thread</span>
-                    <button class="thread-close-btn" wire:click="closeThread">✕</button>
-                </div>
-
-                <div class="chat-sidebar-content">
-                    {{-- Original Message --}}
-                    @php $original = $this->activeThreadMessage; @endphp
-                    @if($original)
-                        <div class="thread-original-message">
-                            <strong>{{ $original->user->name }}:</strong>
-                            <div style="margin: 4px 0 0; color: #fff; line-height: 1.4;">
-                                {!! $this->formatMessageContent($original->content) !!}
-                            </div>
-                        </div>
-                    @endif
-
-                    {{-- Replies --}}
-                    @foreach($this->threadMessages as $reply)
-                        <div style="padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.06);">
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                                @php $roleBadge = $this->getUserRoleBadge($reply->user); @endphp
-                                <div
-                                    style="background: {{ $roleBadge['color'] }}; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #fff;">
-                                    {{ substr($reply->user->name, 0, 1) }}
-                                </div>
-                                <span style="font-weight: 600; font-size: 0.85rem; color: #fff;">{{ $reply->user->name }}</span>
-                                <span
-                                    style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">{{ $reply->created_at->format('H:i') }}</span>
-                            </div>
-                            <div style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin-left: 32px;">
-                                {!! $this->formatMessageContent($reply->content) !!}
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-
-                {{-- Thread Input --}}
-                <div class="input-area" style="padding: 12px; background: rgba(17,24,39,0.9);">
-                    <form wire:submit="sendThreadReply">
-                        <div class="input-box">
-                            <textarea wire:model="threadMessage" rows="1" placeholder="Reply in thread..."
-                                style="font-size: 0.85rem; padding: 10px;"
-                                @keydown.enter.prevent="if(!$event.shiftKey) $wire.sendThreadReply()"></textarea>
-                            <div class="input-toolbar" style="padding: 4px 8px; justify-content: flex-end;">
-                                <button type="submit" class="send-btn" style="padding: 4px 12px; font-size: 0.8rem;">
-                                    <span>Send</span>
-                                    <span>➤</span>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        @endif
+    @endif
     </div>
 
     {{-- Lightbox Modal --}}
@@ -1628,7 +1695,7 @@
             if (Notification.permission !== "granted" && Notification.permission !== "denied") {
                 Notification.requestPermission();
             }
-            
+
             // Scroll to highlight
             setTimeout(() => {
                 const highlight = document.querySelector('.highlight-message');
