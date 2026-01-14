@@ -238,6 +238,63 @@
             pointer-events: none;
         }
 
+        .thread-sidebar {
+            width: 340px;
+            background: rgba(17, 24, 39, 0.98);
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .thread-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #fff;
+            background: rgba(252, 65, 0, 0.05);
+        }
+
+        .thread-close-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 4px;
+        }
+
+        .thread-close-btn:hover {
+            color: #fff;
+        }
+
+        .thread-original-message {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.02);
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .reply-count {
+            font-size: 0.75rem;
+            color: #60a5fa;
+            cursor: pointer;
+            margin-top: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .reply-count:hover {
+            text-decoration: underline;
+        }
+
         .pinned-bar {
             padding: 10px 24px;
             background: rgba(251, 191, 36, 0.08);
@@ -1082,12 +1139,19 @@
                                     @endif
                                 @endif
 
+                                @if($msg->replies->count() > 0)
+                                    <div class="reply-count" wire:click="setActiveThread({{ $msg->id }})">
+                                        <span>↪ {{ $msg->replies->count() }} replies</span>
+                                    </div>
+                                @endif
+
                                 {{-- Hover Actions --}}
                                 <div class="hover-actions">
                                     @foreach(['👍', '❤️', '😂', '🔥', '👀'] as $emoji)
                                         <button wire:click="toggleReaction({{ $msg->id }}, '{{ $emoji }}')"
                                             title="React">{{ $emoji }}</button>
                                     @endforeach
+                                    <button wire:click="setActiveThread({{ $msg->id }})" title="Reply in Thread">💬</button>
                                     <button wire:click="toggleBookmark({{ $msg->id }})" title="Bookmark"
                                         style="{{ $msg->isBookmarkedBy(auth()->user()) ? 'color: #fbbf24;' : '' }}">
                                         ★
@@ -1277,6 +1341,61 @@
                 </form>
             </div>
         </div>
+
+        {{-- Thread Sidebar --}}
+        @if($this->activeThread)
+            <div class="thread-sidebar">
+                <div class="thread-header">
+                    <span>Thread</span>
+                    <button class="thread-close-btn" wire:click="closeThread">✕</button>
+                </div>
+
+                <div class="chat-sidebar-content">
+                    {{-- Original Message --}}
+                    @php $original = $this->activeThreadMessage; @endphp
+                    @if($original)
+                        <div class="thread-original-message">
+                            <strong>{{ $original->user->name }}:</strong>
+                            <div style="margin: 4px 0 0; color: #fff; line-height: 1.4;">{!! $this->formatMessageContent($original->content) !!}</div>
+                        </div>
+                    @endif
+
+                    {{-- Replies --}}
+                    @foreach($this->threadMessages as $reply)
+                        <div style="padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                @php $roleBadge = $this->getUserRoleBadge($reply->user); @endphp
+                                <div style="background: {{ $roleBadge['color'] }}; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #fff;">
+                                    {{ substr($reply->user->name, 0, 1) }}
+                                </div>
+                                <span style="font-weight: 600; font-size: 0.85rem; color: #fff;">{{ $reply->user->name }}</span>
+                                <span style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">{{ $reply->created_at->format('H:i') }}</span>
+                            </div>
+                            <div style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin-left: 32px;">
+                                {!! $this->formatMessageContent($reply->content) !!}
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                {{-- Thread Input --}}
+                <div class="input-area" style="padding: 12px; background: rgba(17,24,39,0.9);">
+                    <form wire:submit="sendThreadReply">
+                         <div class="input-box">
+                            <textarea wire:model="threadMessage" rows="1" placeholder="Reply in thread..."
+                                style="font-size: 0.85rem; padding: 10px;"
+                                @keydown.enter.prevent="if(!$event.shiftKey) $wire.sendThreadReply()"></textarea>
+                            <div class="input-toolbar" style="padding: 4px 8px; justify-content: flex-end;">
+                                <button type="submit" class="send-btn" style="padding: 4px 12px; font-size: 0.8rem;">
+                                    <span>Send</span>
+                                    <span>➤</span>
+                                </button>
+                            </div>
+                         </div>
+                    </form>
+                </div>
+            </div>
+        @endif
     </div>
 
     {{-- Lightbox Modal --}}
