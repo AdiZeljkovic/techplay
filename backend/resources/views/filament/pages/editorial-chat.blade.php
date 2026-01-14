@@ -200,9 +200,42 @@
         }
 
         .chat-header-info p {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.5);
-            margin: 4px 0 0;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .chat-search {
+            flex: 1;
+            max-width: 300px;
+            margin-left: auto;
+            position: relative;
+        }
+
+        .chat-search input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px 8px 36px;
+            color: #fff;
+            outline: none;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .chat-search input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(252, 65, 0, 0.5);
+            box-shadow: 0 0 0 2px rgba(252, 65, 0, 0.1);
+        }
+
+        .chat-search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.3);
+            pointer-events: none;
         }
 
         .pinned-bar {
@@ -964,6 +997,11 @@
                         </p>
                     </div>
                 @endif
+
+                <div class="chat-search">
+                    <span class="chat-search-icon">🔍</span>
+                    <input type="text" wire:model.live.debounce.500ms="search" placeholder="Search messages...">
+                </div>
             </div>
 
             {{-- Pinned Messages --}}
@@ -1010,10 +1048,9 @@
                                 @if($msg->attachment_url)
                                     <div class="message-attachment">
                                         @if(Str::endsWith($msg->attachment_url, ['.jpg', '.jpeg', '.png', '.gif', '.webp']))
-                                            <img src="{{ asset('storage/' . $msg->attachment_url) }}"
-                                                 alt="Attachment"
-                                                 class="message-image"
-                                                 @click="$dispatch('open-lightbox', { src: '{{ asset('storage/' . $msg->attachment_url) }}' })">
+                                            <img src="{{ asset('storage/' . $msg->attachment_url) }}" alt="Attachment"
+                                                class="message-image"
+                                                @click="$dispatch('open-lightbox', { src: '{{ asset('storage/' . $msg->attachment_url) }}' })">
                                         @else
                                             <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank">
                                                 📎 Download Attachment
@@ -1038,7 +1075,8 @@
                                         <span class="edited-badge">(edited)</span>
                                     @endif
                                     @if($msg->isBookmarkedBy(auth()->user()))
-                                        <div style="position: absolute; top: -6px; right: -6px; background: #fbbf24; color: #000; padding: 2px; border-radius: 50%; font-size: 0.6rem; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                                        <div
+                                            style="position: absolute; top: -6px; right: -6px; background: #fbbf24; color: #000; padding: 2px; border-radius: 50%; font-size: 0.6rem; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
                                             ★
                                         </div>
                                     @endif
@@ -1059,10 +1097,12 @@
                                             style="border-left: 1px solid rgba(255,255,255,0.1); padding-left: 8px; margin-left: 4px;">📌</button>
                                     @endif
                                     @if($isMe && $msg->canEdit())
-                                        <button wire:click="startEditMessage({{ $msg->id }})" title="Edit (within 15 min)">✏️</button>
+                                        <button wire:click="startEditMessage({{ $msg->id }})"
+                                            title="Edit (within 15 min)">✏️</button>
                                     @endif
                                     @if($isMe)
-                                        <button wire:click="deleteMessage({{ $msg->id }})" class="danger" title="Delete" onclick="return confirm('Delete this message?')">🗑️</button>
+                                        <button wire:click="deleteMessage({{ $msg->id }})" class="danger" title="Delete"
+                                            onclick="return confirm('Delete this message?')">🗑️</button>
                                     @endif
                                 </div>
                             </div>
@@ -1240,15 +1280,10 @@
     </div>
 
     {{-- Lightbox Modal --}}
-    <div x-data="{ open: false, src: '' }" 
-         @open-lightbox.window="open = true; src = $event.detail.src"
-         @keydown.escape.window="open = false"
-         x-show="open" 
-         x-transition.opacity
-         class="lightbox-overlay"
-         style="display: none;"
-         x-show.important="open"> <!-- ensure it overrides display:none when open -->
-        
+    <div x-data="{ open: false, src: '' }" @open-lightbox.window="open = true; src = $event.detail.src"
+        @keydown.escape.window="open = false" x-show="open" x-transition.opacity class="lightbox-overlay"
+        style="display: none;" x-show.important="open"> <!-- ensure it overrides display:none when open -->
+
         <button @click="open = false" class="lightbox-close">✕</button>
         <img :src="src" class="lightbox-content" @click.outside="open = false">
     </div>

@@ -54,6 +54,10 @@ class EditorialChat extends Page
     public $editingMessageId = null;
     public $editingContent = '';
 
+    // Search
+    public $search = '';
+    public $showSearch = false;
+
     // Computed property for channels
     public function getChannelsProperty()
     {
@@ -158,6 +162,10 @@ class EditorialChat extends Page
     public function getMessagesProperty()
     {
         $query = EditorialMessage::with(['user.roles', 'reactions.user'])->latest()->take(100);
+
+        if ($this->search) {
+            $query->where('content', 'like', '%' . $this->search . '%');
+        }
 
         if ($this->activeChannel) {
             $query->where('channel', $this->activeChannel)
