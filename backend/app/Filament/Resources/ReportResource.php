@@ -15,19 +15,28 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn as BadgeColumn; // Filament v3 uses TextColumn with badge() method, aliasing for compatibility or just use TextColumn directly
+use Filament\Schemas\Schema; // Ensure Schema is valid if used? No, Resource::form uses Schema in v4 apparently? MediaResource uses Schema.
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\BulkActionGroup;
 
 class ReportResource extends Resource
 {
     protected static ?string $model = Report::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-flag';
-    protected static ?string $navigationGroup = 'Community';
 
-    public static function form(Form $form): Form
+    public static function getNavigationGroup(): ?string
     {
-        return $form
-            ->schema([
+        return 'Community';
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
                 Select::make('user_id')
                     ->relationship('reporter', 'username')
                     ->disabled()
