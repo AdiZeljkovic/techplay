@@ -154,7 +154,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                     {(() => {
                                         try {
                                             const date = new Date(article.published_at || article.created_at);
-                                            return isNaN(date.getTime()) ? 'Date unavailable' : format(date, 'MMM dd, yyyy');
+                                            return isNaN(date.getTime()) ? 'Date unavailable' : format(date, 'dd/MM/yyyy');
                                         } catch (e) {
                                             return 'Date unavailable';
                                         }

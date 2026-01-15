@@ -78,7 +78,7 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                         {currentArticle.category.name}
                         <span className="text-white/40">|</span>
                         {/* Date formatter or TimeAgo logic needed, using static for now or pass property */}
-                        {new Date(currentArticle.published_at).toLocaleDateString()}
+                        {new Date(currentArticle.published_at).toLocaleDateString('en-GB')}
                     </motion.div>
                 </div>
 
