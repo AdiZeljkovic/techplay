@@ -427,7 +427,11 @@ export default function MessagesPage() {
                                         disabled={!newMessage.trim() || isSending}
                                         className="h-12 w-12 rounded-xl flex items-center justify-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white shadow-lg shadow-[var(--accent)]/20"
                                     >
-                                        {isSending ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send color="white" className="w-5 h-5" />}
+                                        {isSending ? (
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        ) : (
+                                            <Send className="w-5 h-5 text-white" style={{ stroke: 'white' }} />
+                                        )}
                                     </Button>
                                 </form>
                             </div>
@@ -438,19 +442,20 @@ export default function MessagesPage() {
 
             {/* Block Modal */}
             <Dialog open={showBlockModal} onOpenChange={setShowBlockModal}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                            <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader className="flex flex-col items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                            <AlertTriangle className="w-6 h-6 text-yellow-500" />
+                        </div>
+                        <DialogTitle className="text-xl text-center">
                             Block User
                         </DialogTitle>
                     </DialogHeader>
-                    <div className="py-4 text-[var(--text-secondary)]">
-                        Are you sure you want to block <span className="font-bold text-[var(--text-primary)]">{activeConversation?.user.display_name || activeConversation?.user.username}</span>?
-                        <br />
-                        You will no longer receive messages from them.
+                    <div className="py-2 text-center text-[var(--text-secondary)]">
+                        <p>Are you sure you want to block <span className="font-bold text-[var(--text-primary)]">{activeConversation?.user.display_name || activeConversation?.user.username}</span>?</p>
+                        <p className="mt-2 text-sm text-[var(--text-muted)]">You will no longer receive messages from them.</p>
                     </div>
-                    <DialogFooter>
+                    <DialogFooter className="sm:justify-center gap-2">
                         <Button variant="ghost" onClick={() => setShowBlockModal(false)} disabled={isProcessingAction}>Cancel</Button>
                         <Button variant="danger" onClick={confirmBlockUser} isLoading={isProcessingAction}>Block User</Button>
                     </DialogFooter>
@@ -459,19 +464,20 @@ export default function MessagesPage() {
 
             {/* Delete Modal */}
             <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                            <Trash2 className="w-5 h-5 text-red-500" />
+                <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader className="flex flex-col items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                            <Trash2 className="w-6 h-6 text-red-500" />
+                        </div>
+                        <DialogTitle className="text-xl text-center">
                             Delete Conversation
                         </DialogTitle>
                     </DialogHeader>
-                    <div className="py-4 text-[var(--text-secondary)]">
-                        Are you sure you want to delete this conversation?
-                        <br />
-                        <span className="text-sm text-red-400">This action cannot be undone.</span>
+                    <div className="py-2 text-center text-[var(--text-secondary)]">
+                        <p>Are you sure you want to delete this conversation?</p>
+                        <p className="mt-2 text-sm text-red-400">This action cannot be undone.</p>
                     </div>
-                    <DialogFooter>
+                    <DialogFooter className="sm:justify-center gap-2">
                         <Button variant="ghost" onClick={() => setShowDeleteModal(false)} disabled={isProcessingAction}>Cancel</Button>
                         <Button variant="danger" onClick={confirmDeleteConversation} isLoading={isProcessingAction}>Delete</Button>
                     </DialogFooter>
