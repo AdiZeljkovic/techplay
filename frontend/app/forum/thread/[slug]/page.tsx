@@ -177,7 +177,7 @@ export default function ThreadPage() {
         }
     };
 
-    const handleReport = () => {
+    const handleReportClick = () => {
         if (hasReported) {
             toast("You have already reported this thread.", { icon: 'ℹ️' });
             return;
