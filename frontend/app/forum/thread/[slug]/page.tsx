@@ -8,6 +8,8 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 import { MessageSquare, Share2, Flag, Lock, Shield, ArrowLeft, Eye, Clock, ChevronUp, Reply, MoreHorizontal, Pin, Award, Send } from "lucide-react";
+import { toast } from "react-hot-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import ForumSidebar from "@/components/forum/ForumSidebar";
@@ -83,6 +85,7 @@ export default function ThreadPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUpvoting, setIsUpvoting] = useState(false);
     const [isReporting, setIsReporting] = useState(false);
+    const [reportDialogOpen, setReportDialogOpen] = useState(false);
     const [hasReported, setHasReported] = useState(false);
 
     const { data, isLoading, mutate } = useSWR<ThreadData>(slug ? `/forum/threads/${slug}` : null, fetcher);
@@ -93,21 +96,47 @@ export default function ThreadPage() {
         setIsSubmitting(true);
 
         try {
-            await axios.post(`/forum/threads/${slug}/posts`, {
+            const response = await axios.post(`/forum/threads/${slug}/posts`, {
                 content: replyContent
             });
+
+            const newPost = response.data.data || response.data;
+
             setReplyContent("");
-            // Force revalidation of the thread data to show new post
-            await mutate();
+
+            // Manually update cache to show the new post immediately
+            if (data) {
+                const updatedPosts = [...data.posts.data, newPost];
+                mutate({
+                    ...data,
+                    posts: {
+                        ...data.posts,
+                        data: updatedPosts
+                    },
+                    thread: { // Also update reply count
+                        ...data.thread,
+                        posts_count: (data.thread.posts_count || data.posts.data.length) + 1
+                    }
+                }, false); // false = do not revalidate immediately
+            }
+
+            toast.success("Reply posted successfully!");
+            // Trigger a background revalidation just in case
+            mutate();
+
         } catch (error) {
             console.error("Failed to reply", error);
+            toast.error("Failed to post reply.");
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleUpvote = async () => {
-        if (!user) return; // Should prompt login
+        if (!user) {
+            toast.error("You must be logged in to upvote.");
+            return;
+        }
         if (isUpvoting) return;
         setIsUpvoting(true);
 
@@ -123,14 +152,15 @@ export default function ThreadPage() {
                     is_upvoted: newIsUpvoted,
                     upvotes_count: newCount
                 }
-            }, false); // Update local cache without revalidation first
+            }, false);
 
             try {
                 await axios.post(`/forum/threads/${slug}/upvote`);
-                mutate(); // Revalidate to ensure server sync
+                mutate();
             } catch (error) {
                 console.error("Failed to upvote", error);
-                mutate(); // Revert on error
+                mutate();
+                toast.error("Failed to upvote.");
             } finally {
                 setIsUpvoting(false);
             }
@@ -140,23 +170,34 @@ export default function ThreadPage() {
     const handleShare = async () => {
         try {
             await navigator.clipboard.writeText(window.location.href);
-            alert("Link copied to clipboard!");
+            toast.success("Link copied to clipboard!");
         } catch (err) {
             console.error('Failed to copy', err);
+            toast.error("Failed to copy link.");
         }
     };
 
     const handleReport = () => {
-        if (hasReported) return;
-        if (!confirm("Are you sure you want to report this thread to moderators?")) return;
+        if (hasReported) {
+            toast("You have already reported this thread.", { icon: 'ℹ️' });
+            return;
+        }
+        setReportDialogOpen(true);
+    };
 
+    const confirmReport = async () => {
         setIsReporting(true);
-        // Simulate API call
-        setTimeout(() => {
-            setIsReporting(false);
+        try {
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
             setHasReported(true);
-            alert("Thread reported. Thank you for helping keep the community safe.");
-        }, 1000);
+            setReportDialogOpen(false);
+            toast.success("Thread reported. Thank you for helping keep the community safe.");
+        } catch (error) {
+            toast.error("Failed to report thread.");
+        } finally {
+            setIsReporting(false);
+        }
     };
 
     if (isLoading) {
@@ -331,7 +372,7 @@ export default function ThreadPage() {
                                                 Share
                                             </button>
                                             <button
-                                                onClick={handleReport}
+                                                onClick={handleReportClick}
                                                 disabled={hasReported}
                                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${hasReported ? 'text-green-500' : 'text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10'}`}
                                             >
@@ -491,6 +532,27 @@ export default function ThreadPage() {
                     </div>
                 </div>
             </div>
+            <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Report Thread</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <p className="text-[var(--text-secondary)]">
+                            Are you sure you want to report this thread to the moderators?
+                            This action cannot be undone.
+                        </p>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setReportDialogOpen(false)} disabled={isReporting}>
+                            Cancel
+                        </Button>
+                        <Button variant="danger" onClick={confirmReport} disabled={isReporting}>
+                            {isReporting ? 'Reporting...' : 'Report Content'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
