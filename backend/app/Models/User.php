@@ -38,6 +38,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'password',
         'avatar_url',
         'bio',
+        'forum_reputation', // Added for Observer updates
+        'rank_id',          // Added for Observer updates
         // 'role' removed from $fillable for security - set explicitly in controllers
         'xp',
         'gamertags',

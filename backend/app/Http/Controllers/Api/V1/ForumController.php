@@ -135,20 +135,25 @@ class ForumController extends Controller
             return response()->json(['message' => 'Thread is locked.'], 403);
         }
 
-        $post = $thread->posts()->create([
-            'content' => $request->content,
-            'author_id' => Auth::id(),
-            'thread_id' => $thread->id
-        ]);
+        try {
+            $post = $thread->posts()->create([
+                'content' => $request->content,
+                'author_id' => Auth::id(),
+                'thread_id' => $thread->id
+            ]);
 
-        $thread->touch();
+            $thread->touch();
 
-        // Clear thread cache
-        Cache::forget("forum.thread.{$slug}");
+            // Clear thread cache
+            Cache::forget("forum.thread.{$slug}");
 
-        $post->load('author.rank'); // Load relationships for frontend
+            $post->load('author.rank'); // Load relationships for frontend
 
-        return response()->json($post, 201);
+            return response()->json($post, 201);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to create post: ' . $e->getMessage());
+            return response()->json(['message' => 'Failed to create post: ' . $e->getMessage()], 500);
+        }
     }
 
     public function createThread(Request $request)
