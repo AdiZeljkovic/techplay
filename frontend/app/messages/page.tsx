@@ -148,7 +148,7 @@ export default function MessagesPage() {
     }
 
     return (
-        <div className="h-screen bg-[#020617] pt-20 flex flex-col overflow-hidden">
+        <div className="h-screen bg-[#020617] pt-16 flex flex-col overflow-hidden">
             {/* Main Container - Full Height */}
             <div className="flex-1 container mx-auto p-4 max-w-5xl h-full overflow-hidden flex flex-col md:flex-row gap-3">
 
