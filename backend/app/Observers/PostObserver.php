@@ -11,6 +11,8 @@ class PostObserver
      */
     public function created(Post $post): void
     {
+        \Illuminate\Support\Facades\Log::info('PostObserver: created logic passed', ['post_id' => $post->id]);
+
         if (!$post->relationLoaded('author')) {
             $post->load('author');
         }
