@@ -8,6 +8,8 @@ import PageHero from "@/components/ui/PageHero";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import LimitModal from "@/components/ui/LimitModal";
+import { useSearchLimit } from "@/hooks/useSearchLimit";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -36,6 +38,10 @@ export default function CalendarPage() {
     const endDate = format(endOfMonth(currentDate), 'yyyy-MM-dd');
 
     const [selectedDateReleases, setSelectedDateReleases] = useState<{ date: Date; games: GameRelease[] } | null>(null);
+    const [showLimitModal, setShowLimitModal] = useState(false);
+
+    // Shared limit with Games page
+    const { isLimitReached, incrementSearch } = useSearchLimit(2);
 
     const { data, isLoading } = useSWR<ReleasesResponse>(
         `/games/calendar?start_date=${startDate}&end_date=${endDate}`,
@@ -65,8 +71,25 @@ export default function CalendarPage() {
         .sort((a, b) => (b.metacritic || 0) - (a.metacritic || 0))
         .slice(0, 6);
 
+    const handleShowMore = (e: React.MouseEvent, day: Date, dayReleases: GameRelease[]) => {
+        e.preventDefault();
+
+        if (isLimitReached) {
+            setShowLimitModal(true);
+            return;
+        }
+
+        incrementSearch();
+        setSelectedDateReleases({ date: day, games: dayReleases });
+    };
+
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
+            <LimitModal
+                isOpen={showLimitModal}
+                onClose={() => setShowLimitModal(false)}
+            />
+
             {/* Hero Section */}
             <PageHero
                 title="Release Calendar"
@@ -171,15 +194,15 @@ export default function CalendarPage() {
                                     <div
                                         key={day.toString()}
                                         className={`border-b border-r border-[var(--border)] p-2 min-h-[100px] transition-colors ${isToday(day)
-                                                ? 'bg-[var(--accent)]/10 ring-2 ring-inset ring-[var(--accent)]'
-                                                : hasReleases
-                                                    ? 'bg-[var(--bg-elevated)]/30 hover:bg-[var(--bg-elevated)]/50'
-                                                    : ''
+                                            ? 'bg-[var(--accent)]/10 ring-2 ring-inset ring-[var(--accent)]'
+                                            : hasReleases
+                                                ? 'bg-[var(--bg-elevated)]/30 hover:bg-[var(--bg-elevated)]/50'
+                                                : ''
                                             }`}
                                     >
                                         <div className={`text-sm font-bold mb-2 ${isToday(day)
-                                                ? 'text-[var(--accent)]'
-                                                : 'text-[var(--text-secondary)]'
+                                            ? 'text-[var(--accent)]'
+                                            : 'text-[var(--text-secondary)]'
                                             }`}>
                                             {format(day, 'd')}
                                             {isToday(day) && (
@@ -203,10 +226,7 @@ export default function CalendarPage() {
                                             ))}
                                             {dayReleases.length > 3 && (
                                                 <button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        setSelectedDateReleases({ date: day, games: dayReleases });
-                                                    }}
+                                                    onClick={(e) => handleShowMore(e, day, dayReleases)}
                                                     className="text-xs text-[var(--accent)] font-semibold pl-1 hover:underline text-left w-full block transition-colors mt-2"
                                                 >
                                                     +{dayReleases.length - 3} more

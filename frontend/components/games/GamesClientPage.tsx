@@ -4,9 +4,11 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Calendar, Database, Gamepad2 } from "lucide-react";
 import PageHero from "@/components/ui/PageHero";
+import LimitModal from "@/components/ui/LimitModal";
+import { useSearchLimit } from "@/hooks/useSearchLimit";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -25,26 +27,60 @@ interface GamesResponse {
     count: number;
 }
 
+// Helper function for Metacritic color
+const getMetacriticColor = (score: number) => {
+    if (score >= 75) return "bg-green-600";
+    if (score >= 50) return "bg-yellow-600";
+    return "bg-red-600";
+};
+
 export default function GamesClientPage() {
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [showLimitModal, setShowLimitModal] = useState(false);
 
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearch(e.target.value);
-        setTimeout(() => setDebouncedSearch(e.target.value), 500);
-    };
+    // Use limit of 2 searches for guests
+    const { isLimitReached, incrementSearch } = useSearchLimit(2);
 
-    const apiUrl = `/games?search=${debouncedSearch}`;
-    const { data, isLoading } = useSWR<GamesResponse>(apiUrl, fetcher);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (search === debouncedSearch) return;
 
-    const getMetacriticColor = (score: number) => {
-        if (score >= 80) return "bg-green-500 text-white";
-        if (score >= 60) return "bg-yellow-500 text-black";
-        return "bg-red-500 text-white";
-    };
+            // If clearing search, just clear it without counting
+            if (!search) {
+                setDebouncedSearch("");
+                return;
+            }
+
+            // If limit reached, show modal and reset search input to previous valid state (optional) or just don't fetch
+            if (isLimitReached) {
+                setShowLimitModal(true);
+                // Ideally we shouldn't update debouncedSearch so fetch doesn't happen
+                return;
+            }
+
+            // Valid search - increment count
+            incrementSearch();
+            setDebouncedSearch(search);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [search, debouncedSearch, isLimitReached, incrementSearch]);
+
+    const { data, error, isLoading } = useSWR<GamesResponse>(
+        debouncedSearch
+            ? `/api/games?search=${debouncedSearch}`
+            : "/api/games?ordering=-metacritic", // Default to trending if no search
+        fetcher
+    );
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
+            <LimitModal
+                isOpen={showLimitModal}
+                onClose={() => setShowLimitModal(false)}
+            />
+
             {/* Hero Section */}
             <PageHero
                 title="Game Database"
@@ -62,7 +98,7 @@ export default function GamesClientPage() {
                             type="text"
                             placeholder="Search thousands of games..."
                             value={search}
-                            onChange={handleSearchChange}
+                            onChange={(e) => setSearch(e.target.value)}
                             className="w-full bg-[#0f1221] border-2 border-[var(--border)] rounded-full py-5 pl-16 pr-6 text-lg text-white placeholder:text-gray-500 focus:outline-none focus:border-[var(--accent)] focus:ring-0 transition-all placeholder:font-light font-medium"
                         />
                         {search && (
