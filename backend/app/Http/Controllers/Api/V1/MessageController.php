@@ -39,15 +39,21 @@ class MessageController extends Controller
 
     public function index(Request $request)
     {
-        // Fetch threads where I am the receiver and I haven't deleted them
-        $messages = Message::where('receiver_id', $request->user()->id)
-            ->where('deleted_by_receiver', false)
-            ->with(['sender:id,username,avatar_url', 'parent'])
-            // Assuming User model has avatar or avatar_url. Previously saw avatar_url in frontend.
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        // Fetch all messages involving the user (sent or received)
+        $userId = $request->user()->id;
 
-        return response()->json($messages);
+        $messages = Message::where(function ($query) use ($userId) {
+            $query->where('receiver_id', $userId)
+                ->where('deleted_by_receiver', false);
+        })->orWhere(function ($query) use ($userId) {
+            $query->where('sender_id', $userId)
+                ->where('deleted_by_sender', false);
+        })
+            ->with(['sender:id,username,avatar_url', 'receiver:id,username,avatar_url', 'parent'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json(['data' => $messages]);
     }
 
     public function markRead(Request $request, $id)
