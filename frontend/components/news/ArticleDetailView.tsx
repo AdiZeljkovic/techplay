@@ -13,6 +13,7 @@ import AdUnit from "@/components/ads/AdUnit";
 import CommentsSection from "@/components/comments/CommentsSection";
 import DOMPurify from "isomorphic-dompurify";
 import LiveViewCount from "@/components/tracking/LiveViewCount";
+import TrendingSidebar from "@/components/news/TrendingSidebar";
 
 interface ArticleDetailViewProps {
     article: Article;
@@ -316,22 +317,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                             )}
 
                             {/* Trending - Static for now */}
-                            <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6 shadow-lg">
-                                <h4 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider mb-4 flex items-center gap-2">
-                                    <div className="w-1 h-4 bg-[var(--accent)] rounded-full" />
-                                    Trending Now
-                                </h4>
-                                <div className="space-y-4">
-                                    {[1, 2, 3].map((i) => (
-                                        <div key={i} className="group cursor-pointer">
-                                            <div className="text-xs text-[var(--accent)] font-bold mb-1">HARDWARE</div>
-                                            <h5 className="text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors line-clamp-2">
-                                                Top 10 Gaming Mice of 2026: The Ultimate Guide
-                                            </h5>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                            <TrendingSidebar />
 
                             <AdUnit position="sidebar_bottom" />
                         </div>
