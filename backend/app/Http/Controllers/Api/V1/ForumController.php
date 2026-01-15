@@ -150,8 +150,14 @@ class ForumController extends Controller
             $post->load('author.rank'); // Load relationships for frontend
 
             return response()->json($post, 201);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Failed to create post: ' . $e->getMessage());
+            // Fallback logging
+            try {
+                file_put_contents(storage_path('logs/custom_error.log'), $e->getMessage() . PHP_EOL . $e->getTraceAsString() . PHP_EOL, FILE_APPEND);
+            } catch (\Throwable $t) {
+            }
+
             return response()->json(['message' => 'Failed to create post: ' . $e->getMessage()], 500);
         }
     }
