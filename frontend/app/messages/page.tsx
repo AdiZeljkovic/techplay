@@ -141,217 +141,216 @@ export default function MessagesPage() {
 
     if (isAuthLoading || isLoading) {
         return (
-            <div className="h-screen pt-24 bg-[#020617] flex justify-center items-center">
-                <div className="h-screen pt-24 bg-[var(--bg-primary)] flex justify-center items-center">
-                    <div className="w-10 h-10 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
-                </div>
-                );
+            <div className="h-screen pt-24 bg-[var(--bg-primary)] flex justify-center items-center">
+                <div className="w-10 h-10 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
     }
 
-                return (
-                <div className="h-screen bg-[var(--bg-primary)] pt-16 flex flex-col overflow-hidden">
-                    {/* Main Container - Compact Mode */}
-                    <div className="flex-1 container mx-auto p-4 max-w-5xl h-full overflow-hidden flex flex-col md:flex-row gap-3">
+    return (
+        <div className="h-screen bg-[var(--bg-primary)] pt-16 flex flex-col overflow-hidden">
+            {/* Main Container - Compact Mode */}
+            <div className="flex-1 container mx-auto p-4 max-w-5xl h-full overflow-hidden flex flex-col md:flex-row gap-3">
 
-                        {/* 1. SIDEBAR (User List) */}
-                        <div className={`w-full md:w-1/3 lg:w-1/4 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl flex flex-col overflow-hidden
+                {/* 1. SIDEBAR (User List) */}
+                <div className={`w-full md:w-1/3 lg:w-1/4 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl flex flex-col overflow-hidden
                     ${selectedUserId ? 'hidden md:flex' : 'flex'}
                 `}>
-                            {/* Sidebar Header */}
-                            <div className="p-3 border-b border-[var(--border)] bg-[var(--bg-card)]">
-                                <h2 className="text-lg font-bold text-[var(--text-primary)] mb-3">Messages</h2>
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-                                    <input
-                                        type="text"
-                                        placeholder="Search..."
-                                        className="w-full bg-[var(--bg-elevated)] border border-[var(--border)] rounded-lg py-1.5 pl-9 pr-4 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] placeholder-[var(--text-muted)]"
-                                    />
-                                </div>
-                            </div>
+                    {/* Sidebar Header */}
+                    <div className="p-3 border-b border-[var(--border)] bg-[var(--bg-card)]">
+                        <h2 className="text-lg font-bold text-[var(--text-primary)] mb-3">Messages</h2>
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+                            <input
+                                type="text"
+                                placeholder="Search..."
+                                className="w-full bg-[var(--bg-elevated)] border border-[var(--border)] rounded-lg py-1.5 pl-9 pr-4 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] placeholder-[var(--text-muted)]"
+                            />
+                        </div>
+                    </div>
 
-                            {/* Conversation List */}
-                            <div className="flex-1 overflow-y-auto custom-scrollbar">
-                                {conversations.length === 0 ? (
-                                    <div className="p-8 text-center text-[var(--text-muted)]">
-                                        <p>No conversations yet.</p>
-                                    </div>
-                                ) : (
-                                    conversations.map(chat => (
-                                        <div
-                                            key={chat.user.id}
-                                            onClick={() => setSelectedUserId(chat.user.id)}
-                                            className={`p-3 border-b border-[var(--border)] cursor-pointer transition-all hover:bg-[var(--bg-elevated)]/30 flex gap-3
+                    {/* Conversation List */}
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                        {conversations.length === 0 ? (
+                            <div className="p-8 text-center text-[var(--text-muted)]">
+                                <p>No conversations yet.</p>
+                            </div>
+                        ) : (
+                            conversations.map(chat => (
+                                <div
+                                    key={chat.user.id}
+                                    onClick={() => setSelectedUserId(chat.user.id)}
+                                    className={`p-3 border-b border-[var(--border)] cursor-pointer transition-all hover:bg-[var(--bg-elevated)]/30 flex gap-3
                                         ${selectedUserId === chat.user.id ? 'bg-[var(--bg-elevated)]/50 border-l-2 border-l-[var(--accent)]' : 'border-l-2 border-l-transparent'}
                                     `}
-                                        >
-                                            {/* Avatar */}
-                                            <div className="relative flex-shrink-0">
-                                                <div className="w-10 h-10 rounded-full bg-[var(--bg-primary)] overflow-hidden border border-[var(--border)]">
-                                                    {chat.user.avatar_url ? (
-                                                        <img src={chat.user.avatar_url} alt={chat.user.username} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)]">
-                                                            <User className="w-4 h-4" />
-                                                        </div>
-                                                    )}
+                                >
+                                    {/* Avatar */}
+                                    <div className="relative flex-shrink-0">
+                                        <div className="w-10 h-10 rounded-full bg-[var(--bg-primary)] overflow-hidden border border-[var(--border)]">
+                                            {chat.user.avatar_url ? (
+                                                <img src={chat.user.avatar_url} alt={chat.user.username} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)]">
+                                                    <User className="w-4 h-4" />
                                                 </div>
-                                                {chat.unreadCount > 0 && (
-                                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-[var(--bg-card)]">
-                                                        {chat.unreadCount}
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Info */}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex justify-between items-baseline mb-1">
-                                                    <h3 className={`text-sm font-semibold truncate ${chat.unreadCount > 0 ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
-                                                        {chat.user.display_name || chat.user.username}
-                                                    </h3>
-                                                    <span className="text-[10px] text-[var(--text-muted)]">
-                                                        {formatDistanceToNow(new Date(chat.lastMessage.created_at), { addSuffix: false })}
-                                                    </span>
-                                                </div>
-                                                <p className={`text-xs truncate ${chat.unreadCount > 0 ? 'text-[var(--text-primary)] font-medium' : 'text-[var(--text-muted)]'}`}>
-                                                    {chat.lastMessage.sender_id === user?.id ? 'You: ' : ''}
-                                                    {chat.lastMessage.body}
-                                                </p>
-                                            </div>
+                                            )}
                                         </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
+                                        {chat.unreadCount > 0 && (
+                                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-[var(--bg-card)]">
+                                                {chat.unreadCount}
+                                            </div>
+                                        )}
+                                    </div>
 
-                        {/* 2. MAIN CHAT AREA */}
-                        <div className={`flex-1 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl flex flex-col overflow-hidden relative
+                                    {/* Info */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-baseline mb-1">
+                                            <h3 className={`text-sm font-semibold truncate ${chat.unreadCount > 0 ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
+                                                {chat.user.display_name || chat.user.username}
+                                            </h3>
+                                            <span className="text-[10px] text-[var(--text-muted)]">
+                                                {formatDistanceToNow(new Date(chat.lastMessage.created_at), { addSuffix: false })}
+                                            </span>
+                                        </div>
+                                        <p className={`text-xs truncate ${chat.unreadCount > 0 ? 'text-[var(--text-primary)] font-medium' : 'text-[var(--text-muted)]'}`}>
+                                            {chat.lastMessage.sender_id === user?.id ? 'You: ' : ''}
+                                            {chat.lastMessage.body}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                {/* 2. MAIN CHAT AREA */}
+                <div className={`flex-1 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl flex flex-col overflow-hidden relative
                      ${!selectedUserId ? 'hidden md:flex' : 'flex'}
                 `}>
-                            {!selectedUserId ? (
-                                <div className="flex-1 flex flex-col items-center justify-center text-[var(--text-muted)] p-8">
-                                    <div className="w-16 h-16 bg-[var(--bg-elevated)] rounded-full flex items-center justify-center mb-4">
-                                        <Mail className="w-6 h-6 opacity-50" />
-                                    </div>
-                                    <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">Select a conversation</h3>
-                                    <p className="text-sm">Choose a user from the sidebar to start chatting.</p>
-                                </div>
-                            ) : (
-                                <>
-                                    {/* Chat Header */}
-                                    <div className="h-14 px-4 border-b border-[var(--border)] flex items-center justify-between bg-[var(--bg-card)]">
-                                        <div className="flex items-center gap-3">
-                                            <button
-                                                onClick={() => setSelectedUserId(null)}
-                                                className="md:hidden p-2 -ml-2 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-                                            >
-                                                <ArrowLeft className="w-5 h-5" />
-                                            </button>
+                    {!selectedUserId ? (
+                        <div className="flex-1 flex flex-col items-center justify-center text-[var(--text-muted)] p-8">
+                            <div className="w-16 h-16 bg-[var(--bg-elevated)] rounded-full flex items-center justify-center mb-4">
+                                <Mail className="w-6 h-6 opacity-50" />
+                            </div>
+                            <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">Select a conversation</h3>
+                            <p className="text-sm">Choose a user from the sidebar to start chatting.</p>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Chat Header */}
+                            <div className="h-14 px-4 border-b border-[var(--border)] flex items-center justify-between bg-[var(--bg-card)]">
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setSelectedUserId(null)}
+                                        className="md:hidden p-2 -ml-2 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                                    >
+                                        <ArrowLeft className="w-5 h-5" />
+                                    </button>
 
-                                            <Link href={`/profile/${activeConversation?.user.username}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                                                <div className="w-9 h-9 rounded-full bg-[var(--bg-primary)] overflow-hidden border border-[var(--border)]">
-                                                    {activeConversation?.user.avatar_url ? (
-                                                        <img src={activeConversation?.user.avatar_url} alt="" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)]">
-                                                            <User className="w-4 h-4" />
-                                                        </div>
-                                                    )}
+                                    <Link href={`/profile/${activeConversation?.user.username}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                                        <div className="w-9 h-9 rounded-full bg-[var(--bg-primary)] overflow-hidden border border-[var(--border)]">
+                                            {activeConversation?.user.avatar_url ? (
+                                                <img src={activeConversation?.user.avatar_url} alt="" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)]">
+                                                    <User className="w-4 h-4" />
                                                 </div>
-                                                <div>
-                                                    <h3 className="font-bold text-sm text-[var(--text-primary)] leading-none mb-1">
-                                                        {activeConversation?.user.display_name || activeConversation?.user.username}
-                                                    </h3>
-                                                    <span className="text-[10px] text-[var(--accent)] flex items-center gap-1">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]"></span>
-                                                        Online
-                                                    </span>
-                                                </div>
-                                            </Link>
+                                            )}
                                         </div>
+                                        <div>
+                                            <h3 className="font-bold text-sm text-[var(--text-primary)] leading-none mb-1">
+                                                {activeConversation?.user.display_name || activeConversation?.user.username}
+                                            </h3>
+                                            <span className="text-[10px] text-[var(--accent)] flex items-center gap-1">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]"></span>
+                                                Online
+                                            </span>
+                                        </div>
+                                    </Link>
+                                </div>
 
-                                        <button className="p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors rounded-full hover:bg-[var(--bg-elevated)]">
-                                            <MoreVertical className="w-4 h-4" />
-                                        </button>
-                                    </div>
+                                <button className="p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors rounded-full hover:bg-[var(--bg-elevated)]">
+                                    <MoreVertical className="w-4 h-4" />
+                                </button>
+                            </div>
 
-                                    {/* Messages Scroll Area */}
-                                    <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-[var(--bg-primary)]/30">
-                                        {activeMessages.map((msg, i) => {
-                                            const isMe = msg.sender_id === user?.id;
-                                            const showAvatar = !isMe && (i === 0 || activeMessages[i - 1].sender_id !== msg.sender_id);
+                            {/* Messages Scroll Area */}
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-[var(--bg-primary)]/30">
+                                {activeMessages.map((msg, i) => {
+                                    const isMe = msg.sender_id === user?.id;
+                                    const showAvatar = !isMe && (i === 0 || activeMessages[i - 1].sender_id !== msg.sender_id);
 
-                                            return (
-                                                <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                                    <div className={`flex gap-3 max-w-[80%] md:max-w-[70%] ${isMe ? 'flex-row-reverse' : ''}`}>
+                                    return (
+                                        <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`flex gap-3 max-w-[80%] md:max-w-[70%] ${isMe ? 'flex-row-reverse' : ''}`}>
 
-                                                        {/* Avatar (Only for other user) */}
-                                                        {!isMe && (
-                                                            <div className="w-8 h-8 flex-shrink-0">
-                                                                {showAvatar && (
-                                                                    <div className="w-8 h-8 rounded-full bg-[var(--bg-primary)] overflow-hidden border border-[var(--border)]">
-                                                                        {msg.sender.avatar_url ? (
-                                                                            <img src={msg.sender.avatar_url} className="w-full h-full object-cover" />
-                                                                        ) : (
-                                                                            <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)]"><User className="w-3 h-3" /></div>
-                                                                        )}
-                                                                    </div>
+                                                {/* Avatar (Only for other user) */}
+                                                {!isMe && (
+                                                    <div className="w-8 h-8 flex-shrink-0">
+                                                        {showAvatar && (
+                                                            <div className="w-8 h-8 rounded-full bg-[var(--bg-primary)] overflow-hidden border border-[var(--border)]">
+                                                                {msg.sender.avatar_url ? (
+                                                                    <img src={msg.sender.avatar_url} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)]"><User className="w-3 h-3" /></div>
                                                                 )}
                                                             </div>
                                                         )}
+                                                    </div>
+                                                )}
 
-                                                        {/* Bubble */}
-                                                        <div className={`group`}>
-                                                            <div className={`p-3 px-4 rounded-2xl text-sm leading-relaxed shadow-sm
+                                                {/* Bubble */}
+                                                <div className={`group`}>
+                                                    <div className={`p-3 px-4 rounded-2xl text-sm leading-relaxed shadow-sm
                                                         ${isMe
-                                                                    ? 'bg-[var(--accent)] text-white rounded-tr-sm'
-                                                                    : 'bg-[var(--bg-elevated)] text-[var(--text-primary)] rounded-tl-sm border border-[var(--border)]'
-                                                                }
+                                                            ? 'bg-[var(--accent)] text-white rounded-tr-sm'
+                                                            : 'bg-[var(--bg-elevated)] text-[var(--text-primary)] rounded-tl-sm border border-[var(--border)]'
+                                                        }
                                                     `}>
-                                                                {msg.body}
-                                                            </div>
-                                                            <div className={`text-[10px] text-[var(--text-muted)] mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${isMe ? 'text-right' : 'text-left'}`}>
-                                                                {format(new Date(msg.created_at), 'MMM d, HH:mm')}
-                                                            </div>
-                                                        </div>
+                                                        {msg.body}
+                                                    </div>
+                                                    <div className={`text-[10px] text-[var(--text-muted)] mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${isMe ? 'text-right' : 'text-left'}`}>
+                                                        {format(new Date(msg.created_at), 'MMM d, HH:mm')}
                                                     </div>
                                                 </div>
-                                            );
-                                        })}
-                                        <div ref={messagesEndRef} />
-                                    </div>
-
-                                    {/* Input Area */}
-                                    <div className="p-4 bg-[var(--bg-card)] border-t border-[var(--border)]">
-                                        <form onSubmit={handleSendMessage} className="flex gap-3 items-end">
-                                            <div className="flex-1 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl overflow-hidden focus-within:border-[var(--accent)] transition-colors">
-                                                <textarea
-                                                    value={newMessage}
-                                                    onChange={(e) => setNewMessage(e.target.value)}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                                            e.preventDefault();
-                                                            handleSendMessage(e);
-                                                        }
-                                                    }}
-                                                    placeholder="Type a message..."
-                                                    className="w-full bg-transparent text-[var(--text-primary)] p-3 max-h-32 focus:outline-none resize-none custom-scrollbar placeholder-[var(--text-muted)]"
-                                                    rows={1}
-                                                />
                                             </div>
-                                            <Button
-                                                type="submit"
-                                                disabled={!newMessage.trim() || isSending}
-                                                className="h-12 w-12 rounded-xl flex items-center justify-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white shadow-lg shadow-[var(--accent)]/20"
-                                            >
-                                                {isSending ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="w-5 h-5" />}
-                                            </Button>
-                                        </form>
+                                        </div>
+                                    );
+                                })}
+                                <div ref={messagesEndRef} />
+                            </div>
+
+                            {/* Input Area */}
+                            <div className="p-4 bg-[var(--bg-card)] border-t border-[var(--border)]">
+                                <form onSubmit={handleSendMessage} className="flex gap-3 items-end">
+                                    <div className="flex-1 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl overflow-hidden focus-within:border-[var(--accent)] transition-colors">
+                                        <textarea
+                                            value={newMessage}
+                                            onChange={(e) => setNewMessage(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    handleSendMessage(e);
+                                                }
+                                            }}
+                                            placeholder="Type a message..."
+                                            className="w-full bg-transparent text-[var(--text-primary)] p-3 max-h-32 focus:outline-none resize-none custom-scrollbar placeholder-[var(--text-muted)]"
+                                            rows={1}
+                                        />
                                     </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
+                                    <Button
+                                        type="submit"
+                                        disabled={!newMessage.trim() || isSending}
+                                        className="h-12 w-12 rounded-xl flex items-center justify-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white shadow-lg shadow-[var(--accent)]/20"
+                                    >
+                                        {isSending ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="w-5 h-5" />}
+                                    </Button>
+                                </form>
+                            </div>
+                        </>
+                    )}
                 </div>
-                );
+            </div>
+        </div>
+    );
 }
