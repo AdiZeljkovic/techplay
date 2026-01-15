@@ -161,10 +161,25 @@ export interface Comment {
 
 export interface PaginatedResponse<T> {
     data: T[];
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
+    meta?: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from: number;
+        to: number;
+    };
+    links?: {
+        first: string;
+        last: string;
+        prev: string | null;
+        next: string | null;
+    };
+    // Keep flat structure for backward compatibility if some endpoints rely on it
+    current_page?: number;
+    last_page?: number;
+    per_page?: number;
+    total?: number;
     prev_page_url?: string;
     next_page_url?: string;
 }
