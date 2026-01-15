@@ -11,6 +11,10 @@ class PostObserver
      */
     public function created(Post $post): void
     {
+        if (!$post->relationLoaded('author')) {
+            $post->load('author');
+        }
+
         $user = $post->author;
         if (!$user)
             return;
