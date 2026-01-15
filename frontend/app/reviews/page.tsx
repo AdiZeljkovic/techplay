@@ -46,7 +46,7 @@ export default function ReviewsPage() {
                         All Reviews
                     </h2>
                     <span className="text-sm text-[var(--text-muted)] font-mono">
-                        {data?.total || 0} REVIEWS FOUND
+                        {data?.meta?.total || data?.total || 0} REVIEWS FOUND
                     </span>
                 </div>
 
@@ -76,14 +76,14 @@ export default function ReviewsPage() {
                             </Button>
 
                             <div className="px-4 py-2 bg-[var(--bg-card)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-secondary)]">
-                                Page <span className="font-bold text-white">{data?.current_page}</span> of {data?.last_page}
+                                Page <span className="font-bold text-white">{data?.meta?.current_page || data?.current_page}</span> of {data?.meta?.last_page || data?.last_page}
                             </div>
 
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setPage((p) => p + 1)}
-                                disabled={!data?.next_page_url || isValidating}
+                                disabled={(!data?.links?.next && !data?.next_page_url) || isValidating}
                             >
                                 Next
                                 <ChevronRight className="w-4 h-4" />
