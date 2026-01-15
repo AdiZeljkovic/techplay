@@ -42,7 +42,6 @@ class Guide extends Model
     {
         return $this->hasMany(GuideVote::class);
     }
-    }
 
     /**
      * The "booted" method of the model.
