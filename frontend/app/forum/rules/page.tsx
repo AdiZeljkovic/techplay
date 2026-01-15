@@ -131,7 +131,7 @@ export default function ForumRulesPage() {
                                 instead of engaging. Moderators have the final say in rule interpretation and enforcement.
                                 Sanctions may range from warnings to permanent bans depending on the severity of the infraction.
                             </p>
-                            <Link href="/staff">
+                            <Link href="/contact">
                                 <Button size="sm" variant="outline">Contact Staff</Button>
                             </Link>
                         </div>
