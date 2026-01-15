@@ -12,6 +12,18 @@ use Illuminate\Support\Facades\Cache;
 
 class ForumController extends Controller
 {
+    public function stats()
+    {
+        // Cache stats for 5 minutes
+        return Cache::remember('forum.stats', 300, function () {
+            return [
+                'total_threads' => Thread::count(),
+                'total_posts' => Post::count(),
+                'members' => \App\Models\User::count(),
+            ];
+        });
+    }
+
     public function categories()
     {
         // No cache during debugging - will add back after fixes

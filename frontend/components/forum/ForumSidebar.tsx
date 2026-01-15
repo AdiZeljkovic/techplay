@@ -6,9 +6,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Shield, BookOpen, LogIn, UserPlus, TrendingUp, Award, Users, MessageSquare, Clock } from "lucide-react";
 import { format } from "date-fns";
+import useSWR from "swr";
+import axios from "@/lib/axios";
+
+interface ForumStats {
+    total_threads: number;
+    total_posts: number;
+    members: number;
+}
 
 export default function ForumSidebar() {
     const { user } = useAuth();
+    const { data: stats, isLoading } = useSWR<ForumStats>('/forum/stats', () => axios.get('/forum/stats').then(res => res.data));
 
     return (
         <div className="space-y-6 sticky top-24">
@@ -61,7 +70,7 @@ export default function ForumSidebar() {
                                 <div className="flex items-center justify-center gap-1 text-[var(--accent)] mb-1">
                                     <MessageSquare className="w-4 h-4" />
                                 </div>
-                                <div className="text-xl font-bold text-[var(--text-primary)]">0</div>
+                                <div className="text-xl font-bold text-[var(--text-primary)]">{user.posts_count || 0}</div>
                                 <div className="text-[10px] uppercase text-[var(--text-muted)]">Posts</div>
                             </div>
                         </div>
@@ -111,15 +120,21 @@ export default function ForumSidebar() {
                 <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
                         <span className="text-[var(--text-secondary)]">Total Threads</span>
-                        <span className="font-bold text-[var(--text-primary)]">--</span>
+                        <span className="font-bold text-[var(--text-primary)]">
+                            {isLoading ? '...' : stats?.total_threads?.toLocaleString() || '0'}
+                        </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                         <span className="text-[var(--text-secondary)]">Total Posts</span>
-                        <span className="font-bold text-[var(--text-primary)]">--</span>
+                        <span className="font-bold text-[var(--text-primary)]">
+                            {isLoading ? '...' : stats?.total_posts?.toLocaleString() || '0'}
+                        </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                         <span className="text-[var(--text-secondary)]">Members</span>
-                        <span className="font-bold text-[var(--text-primary)]">--</span>
+                        <span className="font-bold text-[var(--text-primary)]">
+                            {isLoading ? '...' : stats?.members?.toLocaleString() || '0'}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -133,23 +148,23 @@ export default function ForumSidebar() {
                 <ul className="space-y-3 text-sm text-[var(--text-secondary)]">
                     <li className="flex gap-3">
                         <span className="text-[var(--accent)] font-bold shrink-0">1.</span>
-                        <span>Be respectful to all members. No toxicity or harassment.</span>
+                        <span>Respect & Civil Discourse: No toxicity, harassment, or hate speech.</span>
                     </li>
                     <li className="flex gap-3">
                         <span className="text-[var(--accent)] font-bold shrink-0">2.</span>
-                        <span>Keep discussions on topic. Use the correct sub-forum.</span>
+                        <span>Relevant Content: Keep discussions on topic in correct sub-forums.</span>
                     </li>
                     <li className="flex gap-3">
                         <span className="text-[var(--accent)] font-bold shrink-0">3.</span>
-                        <span>No spamming or self-promotion without permission.</span>
+                        <span>No Spam: Self-promotion is only allowed in designated areas.</span>
                     </li>
                     <li className="flex gap-3">
                         <span className="text-[var(--accent)] font-bold shrink-0">4.</span>
-                        <span>Use search before posting. Avoid duplicate threads.</span>
+                        <span>Safe Environment: No illegal content, NSFW material, or piracy.</span>
                     </li>
                 </ul>
                 <div className="mt-5 pt-4 border-t border-[var(--border)]">
-                    <Link href="/rules" className="flex items-center justify-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors font-medium">
+                    <Link href="/forum/rules" className="flex items-center justify-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors font-medium">
                         <BookOpen className="w-4 h-4" />
                         Read Full Rules
                     </Link>
