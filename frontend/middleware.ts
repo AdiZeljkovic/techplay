@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server';
 // Note: Only include routes that need TRUE server-side protection
 // Most auth is handled client-side with Bearer tokens in localStorage
 const protectedRoutes = [
-    '/support/checkout',
+    // '/support/checkout', // Handled client-side to depend on Bearer token, not cookies
     // '/settings', // Handled client-side via useAuth to avoid middleware cookie dependency
 ];
 
