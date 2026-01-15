@@ -26,8 +26,8 @@ class PostObserver
         $user->increment('xp', 20);
 
         // 2. Check Rank Upgrade
-        $newRank = \App\Models\Rank::where('min_reputation', '<=', $user->forum_reputation)
-            ->orderBy('min_reputation', 'desc')
+        $newRank = \App\Models\Rank::where('min_xp', '<=', $user->xp)
+            ->orderBy('min_xp', 'desc')
             ->first();
 
         if ($newRank && $user->rank_id !== $newRank->id) {
