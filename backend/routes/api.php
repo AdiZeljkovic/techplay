@@ -128,6 +128,9 @@ Route::prefix('v1')->group(function () {
         // Staff / About Us
         Route::get('/staff', [App\Http\Controllers\Api\V1\AboutController::class, 'index']);
 
+        // Reporting
+        Route::post('/reports', [App\Http\Controllers\Api\V1\ReportController::class, 'store']);
+
         // Ads
         Route::get('/ads/{position}', [App\Http\Controllers\Api\V1\AdController::class, 'show']);
         Route::post('/ads/{id}/click', [App\Http\Controllers\Api\V1\AdController::class, 'click']);

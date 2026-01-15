@@ -87,6 +87,7 @@ export default function ThreadPage() {
     const [isReporting, setIsReporting] = useState(false);
     const [reportDialogOpen, setReportDialogOpen] = useState(false);
     const [hasReported, setHasReported] = useState(false);
+    const [reportReason, setReportReason] = useState("");
 
     const { data, isLoading, mutate } = useSWR<ThreadData>(slug ? `/forum/threads/${slug}` : null, fetcher);
 
@@ -124,9 +125,10 @@ export default function ThreadPage() {
             // Trigger a background revalidation just in case
             mutate();
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to reply", error);
-            toast.error("Failed to post reply.");
+            const errorMessage = error.response?.data?.message || "Failed to post reply.";
+            toast.error(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -537,11 +539,18 @@ export default function ThreadPage() {
                     <DialogHeader>
                         <DialogTitle>Report Thread</DialogTitle>
                     </DialogHeader>
-                    <div className="py-4">
+                    <div className="py-4 space-y-4">
                         <p className="text-[var(--text-secondary)]">
                             Are you sure you want to report this thread to the moderators?
                             This action cannot be undone.
                         </p>
+                        <textarea
+                            className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-md p-3 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-none"
+                            rows={3}
+                            placeholder="Reason for reporting (optional)..."
+                            value={reportReason}
+                            onChange={(e) => setReportReason(e.target.value)}
+                        />
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setReportDialogOpen(false)} disabled={isReporting}>
