@@ -64,7 +64,7 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
     const ScoreIcon = scoreDetails.icon;
 
     const formattedDate = review_data.release_date
-        ? new Date(review_data.release_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+        ? new Date(review_data.release_date).toLocaleDateString('en-GB')
         : 'TBA';
 
     // Helper to ensure valid URL

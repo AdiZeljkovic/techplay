@@ -179,7 +179,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                     <Calendar className="w-4 h-4 text-[var(--accent)]" />
                                     {(() => {
                                         const d = new Date(review.published_at || review.created_at);
-                                        return isNaN(d.getTime()) ? 'N/A' : format(d, 'MMM dd, yyyy');
+                                        return isNaN(d.getTime()) ? 'N/A' : format(d, 'dd/MM/yyyy');
                                     })()}
                                 </span>
                                 <span className="text-xs text-white/60">Published</span>
