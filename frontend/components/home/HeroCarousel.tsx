@@ -94,14 +94,14 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                         {currentArticle.title}
                     </motion.h1>
 
-                    <motion.p
+                    {/* <motion.p
                         key={`desc-${currentIndex}`}
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
                         className="text-gray-200 text-sm md:text-xl line-clamp-2 md:line-clamp-none mb-6 md:mb-8 max-w-2xl font-medium"
                         dangerouslySetInnerHTML={{ __html: currentArticle.excerpt }}
-                    />
+                    /> */}
 
                     <motion.div
                         key={`btn-${currentIndex}`}
