@@ -175,7 +175,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
 
 
 
-                            // ... inside component
+
 
                             <div className="hidden md:block w-px h-10 bg-white/20" />
 
