@@ -148,9 +148,9 @@ export default function MessagesPage() {
     }
 
     return (
-        <div className="h-screen bg-[var(--bg-primary)] pt-16 flex flex-col overflow-hidden">
-            {/* Main Container - Compact Mode */}
-            <div className="flex-1 container mx-auto p-4 max-w-5xl h-full overflow-hidden flex flex-col md:flex-row gap-3">
+        <div className="min-h-screen bg-[var(--bg-primary)] pt-24 pb-12 flex justify-center">
+            {/* Main Container - Fixed Height Widget (Compact) */}
+            <div className="container mx-auto px-4 max-w-5xl h-[600px] flex flex-col md:flex-row gap-3">
 
                 {/* 1. SIDEBAR (User List) */}
                 <div className={`w-full md:w-1/3 lg:w-1/4 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl flex flex-col overflow-hidden
