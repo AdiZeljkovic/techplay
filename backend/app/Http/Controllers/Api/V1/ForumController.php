@@ -8,7 +8,8 @@ use App\Models\Thread;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Cache;  // Placeholder to keep tool happy without changing verification
+
 
 class ForumController extends Controller
 {
@@ -100,10 +101,17 @@ class ForumController extends Controller
     {
         $thread = Thread::where('slug', $slug)
             ->with(['author.rank', 'category'])
-            ->withCount('posts')
+            ->withCount(['posts', 'upvotes']) // Add upvotes count
             ->firstOrFail();
 
         $thread->increment('view_count');
+
+        $thread->is_upvoted = Auth::guard('sanctum')->check()
+            ? \Illuminate\Support\Facades\DB::table('thread_upvotes')
+                ->where('user_id', Auth::guard('sanctum')->id())
+                ->where('thread_id', $thread->id)
+                ->exists()
+            : false;
 
         $posts = $thread->posts()
             ->with('author.rank')
@@ -199,5 +207,39 @@ class ForumController extends Controller
                 ->take(5)
                 ->get();
         });
+    }
+    public function upvote($slug)
+    {
+        $thread = Thread::where('slug', $slug)->firstOrFail();
+
+        // Check if already upvoted
+        $exists = \Illuminate\Support\Facades\DB::table('thread_upvotes')
+            ->where('user_id', Auth::id())
+            ->where('thread_id', $thread->id)
+            ->exists();
+
+        if ($exists) {
+            // Remove upvote
+            \Illuminate\Support\Facades\DB::table('thread_upvotes')
+                ->where('user_id', Auth::id())
+                ->where('thread_id', $thread->id)
+                ->delete();
+            $action = 'removed';
+        } else {
+            // Add upvote
+            \Illuminate\Support\Facades\DB::table('thread_upvotes')->insert([
+                'user_id' => Auth::id(),
+                'thread_id' => $thread->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $action = 'added';
+        }
+
+        return response()->json([
+            'message' => 'Upvote updated',
+            'action' => $action,
+            'count' => \Illuminate\Support\Facades\DB::table('thread_upvotes')->where('thread_id', $thread->id)->count()
+        ]);
     }
 }

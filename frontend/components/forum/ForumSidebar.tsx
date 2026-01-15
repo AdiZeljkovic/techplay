@@ -63,8 +63,8 @@ export default function ForumSidebar() {
                                 <div className="flex items-center justify-center gap-1 text-[var(--accent)] mb-1">
                                     <Award className="w-4 h-4" />
                                 </div>
-                                <div className="text-xl font-bold text-[var(--text-primary)]">{user.forum_reputation || 0}</div>
-                                <div className="text-[10px] uppercase text-[var(--text-muted)]">Reputation</div>
+                                <div className="text-xl font-bold text-[var(--text-primary)]">{user.level || 1}</div>
+                                <div className="text-[10px] uppercase text-[var(--text-muted)]">Level</div>
                             </div>
                             <div className="p-4 text-center">
                                 <div className="flex items-center justify-center gap-1 text-[var(--accent)] mb-1">

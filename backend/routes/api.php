@@ -52,6 +52,7 @@ Route::prefix('v1')->group(function () {
         // Forum (Authenticated)
         Route::post('/forum/threads', [App\Http\Controllers\Api\V1\ForumController::class, 'createThread']);
         Route::post('/forum/threads/{slug}/posts', [App\Http\Controllers\Api\V1\ForumController::class, 'createPost']);
+        Route::post('/forum/threads/{slug}/upvote', [App\Http\Controllers\Api\V1\ForumController::class, 'upvote']);
 
         // Support Plans
         Route::post('/support/create-plan', [App\Http\Controllers\Api\V1\SupportController::class, 'createPlan']);

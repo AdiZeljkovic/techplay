@@ -116,27 +116,9 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        $user = $request->user()->load('rank');
-        // next_rank is not in UserResource by default, maybe we should add it?
-        // Or keep it appended? UserResource doesn't accept 'additional' easily unless using collection?
-        // Actually, JsonResource can accept ->additional().
-        // But simpler: just append key to array in Resource?
-        // UserResource defines toArray. 
-        // Let's modify UserResource later if needed, but for now we might lose next_rank if not careful.
-        // The original code: $user->next_rank = ...; return json($user);
-        // If I do `return new UserResource($user);` creates response from toArray().
-        // Does toArray() include dynamically added properties? $this->next_rank? 
-        // No, $this inside Resource is the model. Dynamic props on model valid.
-        // So I need to ensure UserResource's toArray includes dynamic props or specifically 'next_rank'.
+        $user = $request->user()->load('rank')->loadCount('posts'); // Load stats
 
         $user->next_rank = $user->nextRank();
-        return (new \App\Http\Resources\V1\UserResource($user))->additional([
-            'next_rank' => $user->next_rank // Explicitly pass it? Or just let resource handle it if I update resource
-        ]);
-
-        // Actually, simpler: I will update UserResource to include next_rank if it exists on model.
-        // For now, let's just return resource, risking next_rank loss initially, 
-        // but I will add $this->when($this->next_rank, ...) in UserResource in next step to fix it robustly.
         return new \App\Http\Resources\V1\UserResource($user);
     }
 

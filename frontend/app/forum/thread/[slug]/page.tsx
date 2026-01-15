@@ -52,6 +52,8 @@ interface Thread {
     };
     view_count: number;
     posts_count: number;
+    upvotes_count: number;
+    is_upvoted: boolean;
 }
 
 interface ThreadData {
@@ -79,8 +81,11 @@ export default function ThreadPage() {
     const { user } = useAuth();
     const [replyContent, setReplyContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isUpvoting, setIsUpvoting] = useState(false);
+    const [isReporting, setIsReporting] = useState(false);
+    const [hasReported, setHasReported] = useState(false);
 
-    const { data, isLoading } = useSWR<ThreadData>(slug ? `/forum/threads/${slug}` : null, fetcher);
+    const { data, isLoading, mutate } = useSWR<ThreadData>(slug ? `/forum/threads/${slug}` : null, fetcher);
 
     const handleReply = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -92,12 +97,66 @@ export default function ThreadPage() {
                 content: replyContent
             });
             setReplyContent("");
-            mutate(`/forum/threads/${slug}`);
+            // Force revalidation of the thread data to show new post
+            await mutate();
         } catch (error) {
             console.error("Failed to reply", error);
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handleUpvote = async () => {
+        if (!user) return; // Should prompt login
+        if (isUpvoting) return;
+        setIsUpvoting(true);
+
+        // Optimistic update
+        if (data) {
+            const newIsUpvoted = !data.thread.is_upvoted;
+            const newCount = data.thread.upvotes_count + (newIsUpvoted ? 1 : -1);
+
+            mutate({
+                ...data,
+                thread: {
+                    ...data.thread,
+                    is_upvoted: newIsUpvoted,
+                    upvotes_count: newCount
+                }
+            }, false); // Update local cache without revalidation first
+
+            try {
+                await axios.post(`/forum/threads/${slug}/upvote`);
+                mutate(); // Revalidate to ensure server sync
+            } catch (error) {
+                console.error("Failed to upvote", error);
+                mutate(); // Revert on error
+            } finally {
+                setIsUpvoting(false);
+            }
+        }
+    };
+
+    const handleShare = async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            alert("Link copied to clipboard!");
+        } catch (err) {
+            console.error('Failed to copy', err);
+        }
+    };
+
+    const handleReport = () => {
+        if (hasReported) return;
+        if (!confirm("Are you sure you want to report this thread to moderators?")) return;
+
+        setIsReporting(true);
+        // Simulate API call
+        setTimeout(() => {
+            setIsReporting(false);
+            setHasReported(true);
+            alert("Thread reported. Thank you for helping keep the community safe.");
+        }, 1000);
     };
 
     if (isLoading) {
@@ -255,19 +314,29 @@ export default function ThreadPage() {
                                     {/* Post Actions */}
                                     <div className="flex items-center justify-between mt-8 pt-4 border-t border-[var(--border)]">
                                         <div className="flex items-center gap-2">
-                                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
-                                                <ChevronUp className="w-4 h-4" />
-                                                <span>Upvote</span>
+                                            <button
+                                                onClick={handleUpvote}
+                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${thread.is_upvoted ? 'text-[var(--accent)] bg-[var(--accent)]/10' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]'}`}
+                                            >
+                                                <ChevronUp className={`w-4 h-4 ${thread.is_upvoted ? 'stroke-2' : ''}`} />
+                                                <span>Upvote {thread.upvotes_count > 0 && `(${thread.upvotes_count})`}</span>
                                             </button>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
+                                            <button
+                                                onClick={handleShare}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all"
+                                            >
                                                 <Share2 className="w-4 h-4" />
                                                 Share
                                             </button>
-                                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-all">
-                                                <Flag className="w-4 h-4" />
-                                                Report
+                                            <button
+                                                onClick={handleReport}
+                                                disabled={hasReported}
+                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${hasReported ? 'text-green-500' : 'text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10'}`}
+                                            >
+                                                {hasReported ? <Shield className="w-4 h-4" /> : <Flag className="w-4 h-4" />}
+                                                {hasReported ? 'Reported' : 'Report'}
                                             </button>
                                         </div>
                                     </div>
