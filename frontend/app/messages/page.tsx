@@ -150,14 +150,14 @@ export default function MessagesPage() {
     return (
         <div className="h-screen bg-[#020617] pt-20 flex flex-col overflow-hidden">
             {/* Main Container - Full Height */}
-            <div className="flex-1 container mx-auto p-4 max-w-7xl h-full overflow-hidden flex flex-col md:flex-row gap-4">
+            <div className="flex-1 container mx-auto p-4 max-w-5xl h-full overflow-hidden flex flex-col md:flex-row gap-3">
 
                 {/* 1. SIDEBAR (User List) */}
                 <div className={`w-full md:w-1/3 lg:w-1/4 bg-[#0B1221]/90 backdrop-blur-xl border border-white/5 rounded-2xl flex flex-col overflow-hidden
                     ${selectedUserId ? 'hidden md:flex' : 'flex'}
                 `}>
                     {/* Sidebar Header */}
-                    <div className="p-4 border-b border-white/5 bg-white/5">
+                    <div className="p-3 border-b border-white/5 bg-white/5">
                         <h2 className="text-xl font-bold text-white mb-4">Messages</h2>
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -238,7 +238,7 @@ export default function MessagesPage() {
                     ) : (
                         <>
                             {/* Chat Header */}
-                            <div className="h-16 px-6 border-b border-white/5 flex items-center justify-between bg-white/5">
+                            <div className="h-14 px-4 border-b border-white/5 flex items-center justify-between bg-white/5">
                                 <div className="flex items-center gap-3">
                                     <button
                                         onClick={() => setSelectedUserId(null)}
@@ -275,7 +275,7 @@ export default function MessagesPage() {
                             </div>
 
                             {/* Messages Scroll Area */}
-                            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-[#020617]/50">
+                            <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar bg-[#020617]/50">
                                 {activeMessages.map((msg, i) => {
                                     const isMe = msg.sender_id === user?.id;
                                     const showAvatar = !isMe && (i === 0 || activeMessages[i - 1].sender_id !== msg.sender_id);
