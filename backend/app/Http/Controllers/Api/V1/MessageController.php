@@ -42,7 +42,7 @@ class MessageController extends Controller
         // Fetch threads where I am the receiver and I haven't deleted them
         $messages = Message::where('receiver_id', $request->user()->id)
             ->where('deleted_by_receiver', false)
-            ->with(['sender:id,username,avatar', 'parent']) // Fixed avatar field assumption? User has avatar_url usually, check model.
+            ->with(['sender:id,username,avatar_url', 'parent'])
             // Assuming User model has avatar or avatar_url. Previously saw avatar_url in frontend.
             ->orderBy('created_at', 'desc')
             ->paginate(20);
