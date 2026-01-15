@@ -5,10 +5,12 @@ import axios from "@/lib/axios";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { formatDistanceToNow, format } from "date-fns";
-import { Mail, Search, Send, User, MoreVertical, Trash2, ArrowLeft, UserX, Trash } from "lucide-react";
+import { Mail, Search, Send, User, MoreVertical, Trash2, ArrowLeft, UserX, Trash, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -40,6 +42,12 @@ export default function MessagesPage() {
     const [newMessage, setNewMessage] = useState("");
     const [isSending, setIsSending] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
+
+    // Modal States
+    const [showBlockModal, setShowBlockModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [isProcessingAction, setIsProcessingAction] = useState(false);
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Group messages by conversation (Other User)
@@ -140,36 +148,46 @@ export default function MessagesPage() {
             mutate('/messages');
         } catch (error) {
             console.error("Failed to send", error);
+            toast.error("Failed to send message.");
         } finally {
             setIsSending(false);
         }
     };
 
-    const handleBlockUser = async () => {
-        if (!activeConversation || !confirm(`Are you sure you want to block ${activeConversation.user.display_name || activeConversation.user.username}?`)) return;
+    const confirmBlockUser = async () => {
+        if (!activeConversation) return;
+        setIsProcessingAction(true);
 
         try {
             await axios.post(`/friends/block/${activeConversation.user.id}`);
             mutate('/messages'); // Refresh messages
             mutate('/friends'); // Refresh friends
             setSelectedUserId(null); // Deselect
-            alert("User blocked.");
+            toast.success(`Blocked ${activeConversation.user.display_name || activeConversation.user.username}`);
+            setShowBlockModal(false);
         } catch (error) {
             console.error(error);
-            alert("Failed to block user.");
+            toast.error("Failed to block user.");
+        } finally {
+            setIsProcessingAction(false);
         }
     };
 
-    const handleDeleteConversation = async () => {
-        if (!activeConversation || !confirm("Are you sure you want to delete this conversation? This action cannot be undone.")) return;
+    const confirmDeleteConversation = async () => {
+        if (!activeConversation) return;
+        setIsProcessingAction(true);
 
         try {
             await axios.delete(`/messages/conversation/${activeConversation.user.id}`);
             mutate('/messages');
             setSelectedUserId(null);
+            toast.success("Conversation deleted.");
+            setShowDeleteModal(false);
         } catch (error) {
             console.error(error);
-            alert("Failed to delete conversation.");
+            toast.error("Failed to delete conversation.");
+        } finally {
+            setIsProcessingAction(false);
         }
     };
 
@@ -321,17 +339,17 @@ export default function MessagesPage() {
                                                 className="absolute right-0 top-full mt-2 w-48 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl shadow-xl z-50 overflow-hidden"
                                             >
                                                 <button
-                                                    onClick={handleBlockUser}
+                                                    onClick={() => { setShowBlockModal(true); setShowMenu(false); }}
                                                     className="w-full text-left px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-card)] flex items-center gap-2"
                                                 >
                                                     <UserX className="w-4 h-4 text-red-400" />
                                                     Block User
                                                 </button>
                                                 <button
-                                                    onClick={handleDeleteConversation}
+                                                    onClick={() => { setShowDeleteModal(true); setShowMenu(false); }}
                                                     className="w-full text-left px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-card)] flex items-center gap-2 border-t border-[var(--border)]"
                                                 >
-                                                    <Trash className="w-4 h-4 text-red-400" />
+                                                    <Trash className="w-4 h-4 text-red-500" />
                                                     Delete Chat
                                                 </button>
                                             </motion.div>
@@ -409,7 +427,7 @@ export default function MessagesPage() {
                                         disabled={!newMessage.trim() || isSending}
                                         className="h-12 w-12 rounded-xl flex items-center justify-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white shadow-lg shadow-[var(--accent)]/20"
                                     >
-                                        {isSending ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="w-5 h-5 text-white" />}
+                                        {isSending ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send color="white" className="w-5 h-5" />}
                                     </Button>
                                 </form>
                             </div>
@@ -417,6 +435,48 @@ export default function MessagesPage() {
                     )}
                 </div>
             </div>
+
+            {/* Block Modal */}
+            <Dialog open={showBlockModal} onOpenChange={setShowBlockModal}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                            Block User
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 text-[var(--text-secondary)]">
+                        Are you sure you want to block <span className="font-bold text-[var(--text-primary)]">{activeConversation?.user.display_name || activeConversation?.user.username}</span>?
+                        <br />
+                        You will no longer receive messages from them.
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setShowBlockModal(false)} disabled={isProcessingAction}>Cancel</Button>
+                        <Button variant="danger" onClick={confirmBlockUser} isLoading={isProcessingAction}>Block User</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Modal */}
+            <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Trash2 className="w-5 h-5 text-red-500" />
+                            Delete Conversation
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 text-[var(--text-secondary)]">
+                        Are you sure you want to delete this conversation?
+                        <br />
+                        <span className="text-sm text-red-400">This action cannot be undone.</span>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setShowDeleteModal(false)} disabled={isProcessingAction}>Cancel</Button>
+                        <Button variant="danger" onClick={confirmDeleteConversation} isLoading={isProcessingAction}>Delete</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
