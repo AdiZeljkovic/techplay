@@ -34,6 +34,9 @@ export default function HardwareClient() {
                 title="Hardware Lab"
                 description="Benchmark-driven reviews. Thermals. Raw performance numbers."
                 basePath="/hardware"
+                categories={HARDWARE_CATEGORIES}
+                selectedCategory="tech"
+                categoryBase="/hardware"
             />
 
             <div className="container mx-auto px-4 py-8">

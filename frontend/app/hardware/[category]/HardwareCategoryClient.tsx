@@ -50,6 +50,9 @@ export default function HardwareCategoryClient({ categorySlug }: HardwareCategor
                 title={categoryDef.label}
                 description={`Latest ${categoryDef.label} from our labs.`}
                 basePath="/hardware"
+                categories={HARDWARE_CATEGORIES}
+                selectedCategory={categoryDef.id}
+                categoryBase="/hardware"
             />
 
             <div className="container mx-auto px-4 py-8">
