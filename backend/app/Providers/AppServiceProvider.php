@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\Article::observe(\App\Observers\ContentObserver::class);
 
         // Prevent N+1 queries in non-production environments
-        \Illuminate\Database\Eloquent\Model::preventLazyLoading(!app()->isProduction());
+        // \Illuminate\Database\Eloquent\Model::preventLazyLoading(!app()->isProduction());
 
         // Pulse Authorization
         \Illuminate\Support\Facades\Gate::define('viewPulse', function ($user = null) {
