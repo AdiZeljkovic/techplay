@@ -80,6 +80,7 @@ Route::prefix('v1')->group(function () {
 
         // News
         Route::get('/news', [App\Http\Controllers\Api\V1\NewsController::class, 'index']);
+        Route::get('/news/trending', [App\Http\Controllers\Api\V1\NewsController::class, 'trending']);
         Route::get('/news/{slug}', [App\Http\Controllers\Api\V1\NewsController::class, 'show']);
 
         // Reviews

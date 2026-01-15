@@ -69,4 +69,22 @@ class NewsController extends Controller
             return new \App\Http\Resources\V1\ArticleResource($article);
         });
     }
+
+    /**
+     * Get trending news articles
+     */
+    public function trending()
+    {
+        return \Illuminate\Support\Facades\Cache::remember('news.trending', 3600, function () {
+            $articles = Article::query()
+                ->where('status', 'published')
+                ->where('published_at', '<=', now())
+                ->orderBy('views', 'desc')
+                ->limit(5)
+                ->with(['category', 'author:id,username,avatar_url'])
+                ->get();
+
+            return \App\Http\Resources\V1\ArticleResource::collection($articles);
+        });
+    }
 }
