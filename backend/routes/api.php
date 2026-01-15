@@ -16,6 +16,7 @@ Route::prefix('v1')->group(function () {
         Route::put('/user/profile', [App\Http\Controllers\Api\V1\AuthController::class, 'updateProfile']);
         Route::put('/user/preferences', [App\Http\Controllers\Api\V1\AuthController::class, 'updatePreferences']);
         Route::put('/user/password', [App\Http\Controllers\Api\V1\AuthController::class, 'changePassword']);
+        Route::get('/user/notifications/counts', [App\Http\Controllers\Api\V1\NotificationController::class, 'counts']);
 
         // Friends
         Route::get('/friends', [App\Http\Controllers\Api\V1\FriendController::class, 'index']);

@@ -146,6 +146,7 @@ export default function Header() {
     const { settings } = useSiteSettings();
     const pathname = usePathname();
     const [navItems, setNavItems] = useState<NavItemType[]>(INITIAL_NAV_ITEMS);
+    const [notifications, setNotifications] = useState({ unread_messages: 0, pending_requests: 0 });
 
     // Build dynamic social links from settings
     const socialLinks = Object.keys(SOCIAL_ICON_MAP)
@@ -176,6 +177,25 @@ export default function Header() {
 
         fetchCategories();
     }, []);
+
+    // Fetch Notifications (Poll every 30s)
+    useEffect(() => {
+        if (!user) return;
+
+        const fetchNotifications = async () => {
+            try {
+                const res = await axios.get('/user/notifications/counts');
+                setNotifications(res.data);
+            } catch (error) {
+                console.error("Failed to fetch notifications", error);
+            }
+        };
+
+        fetchNotifications(); // Initial fetch
+        const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
+
+        return () => clearInterval(interval);
+    }, [user]);
 
     // Close mobile menu on route change
     useEffect(() => setIsMobileMenuOpen(false), [pathname]);
@@ -226,10 +246,19 @@ export default function Header() {
                                 <div className="flex items-center gap-1">
                                     <Link href="/messages" className="p-2 text-gray-400 hover:text-[var(--accent)] hover:bg-white/5 rounded-full transition-colors relative" title="Messages">
                                         <Mail className="w-5 h-5" />
-                                        {/* Optional: Badge could go here if we had global count state */}
+                                        {notifications.unread_messages > 0 && (
+                                            <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-[#001540]">
+                                                {notifications.unread_messages}
+                                            </span>
+                                        )}
                                     </Link>
-                                    <Link href="/friends" className="p-2 text-gray-400 hover:text-[var(--accent)] hover:bg-white/5 rounded-full transition-colors" title="Friends">
+                                    <Link href="/friends" className="p-2 text-gray-400 hover:text-[var(--accent)] hover:bg-white/5 rounded-full transition-colors relative" title="Friends">
                                         <Users className="w-5 h-5" />
+                                        {notifications.pending_requests > 0 && (
+                                            <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-[#001540]">
+                                                {notifications.pending_requests}
+                                            </span>
+                                        )}
                                     </Link>
                                 </div>
 
