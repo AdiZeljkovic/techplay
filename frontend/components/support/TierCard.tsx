@@ -53,6 +53,18 @@ export default function TierCard({ tier }: TierCardProps) {
         }
     };
 
+    // Dynamic gradient or border color based on tier name or color prop
+    const getBorderColor = () => {
+        if (tier.color) return tier.color;
+        switch (tier.name.toLowerCase()) {
+            case 'legend': return '#f59e0b'; // Gold
+            case 'super fan': return '#8b5cf6'; // Violet
+            default: return '#14b8a6'; // Teal
+        }
+    };
+
+    const borderColor = getBorderColor();
+
     return (
         <div
             className="relative bg-[#000B25]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 flex flex-col h-full hover:border-[var(--card-border-hover)] transition-all group overflow-hidden"
