@@ -69,8 +69,8 @@ export default function GamesClientPage() {
 
     const { data, error, isLoading } = useSWR<GamesResponse>(
         debouncedSearch
-            ? `/api/games?search=${debouncedSearch}`
-            : "/api/games?ordering=-metacritic", // Default to trending if no search
+            ? `/games?search=${debouncedSearch}`
+            : "/games?ordering=-metacritic", // Default to trending if no search
         fetcher
     );
 
