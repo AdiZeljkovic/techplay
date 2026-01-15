@@ -229,7 +229,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                         <div
                             className="prose prose-lg md:prose-xl max-w-none 
                                 prose-headings:text-[var(--text-primary)] prose-headings:font-bold prose-headings:tracking-tight
-                                prose-p:text-[var(--text-secondary)] prose-p:leading-8 prose-p:mb-6
+                                prose-p:text-gray-200 prose-p:leading-relaxed prose-p:mb-6
                                 prose-a:text-[var(--accent)] prose-a:no-underline hover:prose-a:underline hover:prose-a:text-[var(--accent-hover)] transition-colors
                                 prose-strong:text-[var(--text-primary)] prose-strong:font-bold
                                 prose-img:rounded-2xl prose-img:shadow-xl prose-img:border prose-img:border-[var(--border)] prose-img:my-8
