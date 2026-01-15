@@ -36,7 +36,8 @@ class ArticleResource extends JsonResource
             // But usually Resource is reused. Let's include it for now, optimization later if list is too heavy.
             // Actually, for lists we might want to hide it. 
             // We can use $request->routeIs('*.show') logic if needed, but for now simple.
-            'content' => $this->when($request->routeIs('*.show') || $this->relationLoaded('content'), $this->content),
+            // Only include full content on detail view
+            'content' => $this->when($request->routeIs('*.show') || $request->route()->getActionMethod() === 'show', $this->content),
 
             'author' => new UserResource($this->whenLoaded('author')),
             'category' => $this->whenLoaded('category', function () {
