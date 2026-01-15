@@ -26,7 +26,7 @@ export default function DiscordWidget() {
             </p>
 
             <a
-                href="https://discord.gg/techplay"
+                href="https://discord.gg/wPQG9gUMXH"
                 target="_blank"
                 className="relative z-10 flex items-center justify-center gap-2 w-full py-3 bg-white text-[#5865F2] font-bold rounded-xl hover:bg-gray-100 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-black/20"
             >
