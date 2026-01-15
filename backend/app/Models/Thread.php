@@ -43,4 +43,9 @@ class Thread extends Model
     {
         return $this->hasOne(Post::class)->latestOfMany();
     }
+
+    public function upvotes()
+    {
+        return $this->belongsToMany(User::class, 'thread_upvotes', 'thread_id', 'user_id')->withTimestamps();
+    }
 }
