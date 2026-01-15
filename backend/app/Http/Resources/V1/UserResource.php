@@ -33,6 +33,9 @@ class UserResource extends JsonResource
             'next_rank' => $this->when(isset($this->next_rank), $this->next_rank),
             'forum_reputation' => $this->forum_reputation ?? 0,
             'created_at' => $this->created_at,
+            'posts_count' => $this->posts_count ?? 0,
+            'level' => floor(($this->xp ?? 0) / 1000) + 1,
+            'xp' => $this->xp ?? 0,
         ];
     }
 }
