@@ -82,4 +82,20 @@ class MessageController extends Controller
 
         return response()->json(['message' => 'Message deleted']);
     }
+    public function deleteConversation(Request $request, $otherUserId)
+    {
+        $currentUserId = $request->user()->id;
+
+        // Mark sent messages as deleted
+        Message::where('sender_id', $currentUserId)
+            ->where('receiver_id', $otherUserId)
+            ->update(['deleted_by_sender' => true]);
+
+        // Mark received messages as deleted
+        Message::where('receiver_id', $currentUserId)
+            ->where('sender_id', $otherUserId)
+            ->update(['deleted_by_receiver' => true]);
+
+        return response()->json(['message' => 'Conversation deleted']);
+    }
 }

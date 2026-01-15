@@ -23,6 +23,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/friends/pending', [App\Http\Controllers\Api\V1\FriendController::class, 'penndingRequests']);
         Route::get('/friends/search', [App\Http\Controllers\Api\V1\FriendController::class, 'search']);
         Route::post('/friends/request', [App\Http\Controllers\Api\V1\FriendController::class, 'sendRequest']);
+        Route::post('/friends/block/{id}', [App\Http\Controllers\Api\V1\FriendController::class, 'block']);
         Route::post('/friends/accept/{id}', [App\Http\Controllers\Api\V1\FriendController::class, 'acceptRequest']);
         Route::post('/friends/decline/{id}', [App\Http\Controllers\Api\V1\FriendController::class, 'declineRequest']);
 
@@ -30,6 +31,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/messages', [App\Http\Controllers\Api\V1\MessageController::class, 'index']);
         Route::post('/messages', [App\Http\Controllers\Api\V1\MessageController::class, 'store']);
         Route::patch('/messages/{id}/read', [App\Http\Controllers\Api\V1\MessageController::class, 'markRead']);
+        Route::delete('/messages/conversation/{userId}', [App\Http\Controllers\Api\V1\MessageController::class, 'deleteConversation']);
         Route::delete('/messages/{id}', [App\Http\Controllers\Api\V1\MessageController::class, 'destroy']);
 
         // Email Verification
