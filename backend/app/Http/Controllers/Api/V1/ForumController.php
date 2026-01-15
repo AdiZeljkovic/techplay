@@ -147,7 +147,7 @@ class ForumController extends Controller
             // Clear thread cache
             Cache::forget("forum.thread.{$slug}");
 
-            $post->load('author.rank'); // Load relationships for frontend
+            $post->load('author.rank', 'thread'); // Load relationships for frontend
 
             return response()->json($post, 201);
         } catch (\Throwable $e) {
