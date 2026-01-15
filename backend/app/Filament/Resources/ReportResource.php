@@ -26,7 +26,7 @@ class ReportResource extends Resource
 {
     protected static ?string $model = Report::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-flag';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-flag';
 
     public static function getNavigationGroup(): ?string
     {
