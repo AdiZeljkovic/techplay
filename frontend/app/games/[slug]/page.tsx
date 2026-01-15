@@ -172,7 +172,7 @@ export default function GameDetailPage() {
                                 {game.metacritic ? (
                                     <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-xl backdrop-blur-md border border-white/10">
                                         <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold ${game.metacritic >= 80 ? 'bg-green-500 text-white' :
-                                                game.metacritic >= 60 ? 'bg-yellow-500 text-black' : 'bg-red-500 text-white'
+                                            game.metacritic >= 60 ? 'bg-yellow-500 text-black' : 'bg-red-500 text-white'
                                             }`}>
                                             {game.metacritic}
                                         </div>
@@ -273,20 +273,47 @@ export default function GameDetailPage() {
 
                             {game.stores && game.stores.length > 0 ? (
                                 <div className="space-y-3">
-                                    {game.stores.map((store) => (
-                                        <a
-                                            key={store.id}
-                                            href={store.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-[var(--accent)] hover:text-white border border-white/5 hover:border-[var(--accent)] transition-all group duration-300"
-                                        >
-                                            <span className="font-bold text-gray-300 group-hover:text-white">
-                                                {store.store.name}
-                                            </span>
-                                            <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-white" />
-                                        </a>
-                                    ))}
+                                    {game.stores.map((store) => {
+                                        const getStoreUrl = () => {
+                                            if (store.url && store.url.startsWith('http')) return store.url;
+
+                                            // Fallback search URLs based on store name
+                                            const name = store.store.name.toLowerCase();
+                                            const gameName = encodeURIComponent(game.name);
+
+                                            if (name.includes('steam')) return `https://store.steampowered.com/search/?term=${gameName}`;
+                                            if (name.includes('gog')) return `https://www.gog.com/en/games?query=${gameName}`;
+                                            if (name.includes('epic')) return `https://store.epicgames.com/en-US/browse?q=${gameName}`;
+                                            if (name.includes('playstation')) return `https://store.playstation.com/search/${gameName}`;
+                                            if (name.includes('xbox')) return `https://www.xbox.com/en-US/games/all-games?q=${gameName}`;
+                                            if (name.includes('nintendo')) return `https://www.nintendo.com/search/?q=${gameName}`;
+                                            if (name.includes('app store')) return `https://www.apple.com/us/search/${gameName}?src=globalnav`;
+                                            if (name.includes('google play')) return `https://play.google.com/store/search?q=${gameName}&c=apps`;
+
+                                            // Generic fallback
+                                            if (store.store.domain) return `https://${store.store.domain}`;
+
+                                            return '#';
+                                        };
+
+                                        const url = getStoreUrl();
+                                        if (url === '#') return null; // Skip if no valid URL
+
+                                        return (
+                                            <a
+                                                key={store.id}
+                                                href={url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-[var(--accent)] hover:text-white border border-white/5 hover:border-[var(--accent)] transition-all group duration-300"
+                                            >
+                                                <span className="font-bold text-gray-300 group-hover:text-white">
+                                                    {store.store.name}
+                                                </span>
+                                                <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-white" />
+                                            </a>
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <p className="text-gray-500 text-sm">Store links not available yet.</p>
