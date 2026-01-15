@@ -42,4 +42,36 @@ class Guide extends Model
     {
         return $this->hasMany(GuideVote::class);
     }
+    }
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::saved(function ($guide) {
+            self::clearCache($guide);
+        });
+
+        static::deleted(function ($guide) {
+            self::clearCache($guide);
+        });
+    }
+
+    protected static function clearCache($guide)
+    {
+        // Clear specific guide cache
+        \Illuminate\Support\Facades\Cache::forget("guide.show.{$guide->slug}");
+
+        // Clear pagination cache for common combinations
+        $difficulties = ['all', 'beginner', 'intermediate', 'advanced'];
+        $emptySearchHash = md5('');
+
+        foreach ($difficulties as $diff) {
+            // Clear first 5 pages for each difficulty
+            for ($i = 1; $i <= 5; $i++) {
+                \Illuminate\Support\Facades\Cache::forget("guides.index.page_{$i}.diff_{$diff}.search_{$emptySearchHash}");
+            }
+        }
+    }
 }
