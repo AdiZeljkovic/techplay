@@ -147,9 +147,16 @@ class ForumController extends Controller
             // Clear thread cache
             Cache::forget("forum.thread.{$slug}");
 
-            $post->load('author.rank', 'thread'); // Load relationships for frontend
+            $post->load('author.rank');
 
-            return response()->json($post, 201);
+            // Return simplified response to avoid serialization issues
+            return response()->json([
+                'id' => $post->id,
+                'content' => $post->content,
+                'author' => $post->author,
+                'created_at' => $post->created_at,
+                'is_solution' => $post->is_solution,
+            ], 201);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Failed to create post: ' . $e->getMessage());
             // Fallback logging
