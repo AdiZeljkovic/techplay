@@ -4,45 +4,34 @@ import { Check, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { SupportTier } from "@/types/support";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
+import axios from "@/lib/axios";
 
 interface TierCardProps {
     tier: SupportTier;
 }
 
 export default function TierCard({ tier }: TierCardProps) {
-    const { user, token } = useAuth();
+    const { user } = useAuth({ middleware: 'guest' }); // 'guest' allows viewing, but we check user for action
     const router = useRouter();
     const [loading, setLoading] = useState(false);
 
     const handleSubscribe = async () => {
+        // Redundant check handled by onClick, but safe to keep
         if (!user) {
-            router.push("/login?redirect=/support");
+            router.push(`/login?redirect=/support`);
             return;
         }
 
         setLoading(true);
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/support/pledge`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({ tier_id: tier.id }),
-            });
+            await axios.post('/support/pledge', { tier_id: tier.id });
 
-            if (response.ok) {
-                // Determine redirect based on tier
-                // For now, redirect to profile to see badge
-                router.push(`/profile/${user.username}?success=pledge`);
-            } else {
-                console.error("Pledge failed");
-                alert("Something went wrong with the pledge. Please try again.");
-            }
-        } catch (error) {
+            // On success
+            router.push(`/profile/${user.username}?success=pledge`);
+        } catch (error: any) {
             console.error(error);
-            alert("Network error.");
+            alert("Something went wrong with the pledge. Please try again.");
         } finally {
             setLoading(false);
         }
