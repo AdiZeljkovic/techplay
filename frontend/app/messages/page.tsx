@@ -5,7 +5,7 @@ import axios from "@/lib/axios";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { formatDistanceToNow, format } from "date-fns";
-import { Mail, Search, Send, User, MoreVertical, Trash2, ArrowLeft } from "lucide-react";
+import { Mail, Search, Send, User, MoreVertical, Trash2, ArrowLeft, UserX, Trash } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -39,6 +39,7 @@ export default function MessagesPage() {
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
     const [newMessage, setNewMessage] = useState("");
     const [isSending, setIsSending] = useState(false);
+    const [showMenu, setShowMenu] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Group messages by conversation (Other User)
@@ -118,6 +119,11 @@ export default function MessagesPage() {
         }
     }, [selectedUserId, activeConversation, user]);
 
+    // Close menu when clicking outside or changing conversation
+    useEffect(() => {
+        setShowMenu(false);
+    }, [selectedUserId]);
+
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -136,6 +142,34 @@ export default function MessagesPage() {
             console.error("Failed to send", error);
         } finally {
             setIsSending(false);
+        }
+    };
+
+    const handleBlockUser = async () => {
+        if (!activeConversation || !confirm(`Are you sure you want to block ${activeConversation.user.display_name || activeConversation.user.username}?`)) return;
+
+        try {
+            await axios.post(`/friends/block/${activeConversation.user.id}`);
+            mutate('/messages'); // Refresh messages
+            mutate('/friends'); // Refresh friends
+            setSelectedUserId(null); // Deselect
+            alert("User blocked.");
+        } catch (error) {
+            console.error(error);
+            alert("Failed to block user.");
+        }
+    };
+
+    const handleDeleteConversation = async () => {
+        if (!activeConversation || !confirm("Are you sure you want to delete this conversation? This action cannot be undone.")) return;
+
+        try {
+            await axios.delete(`/messages/conversation/${activeConversation.user.id}`);
+            mutate('/messages');
+            setSelectedUserId(null);
+        } catch (error) {
+            console.error(error);
+            alert("Failed to delete conversation.");
         }
     };
 
@@ -269,9 +303,41 @@ export default function MessagesPage() {
                                     </Link>
                                 </div>
 
-                                <button className="p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors rounded-full hover:bg-[var(--bg-elevated)]">
-                                    <MoreVertical className="w-4 h-4" />
-                                </button>
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowMenu(!showMenu)}
+                                        className="p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors rounded-full hover:bg-[var(--bg-elevated)]"
+                                    >
+                                        <MoreVertical className="w-4 h-4" />
+                                    </button>
+
+                                    {/* Dropdown Menu */}
+                                    <AnimatePresence>
+                                        {showMenu && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 10 }}
+                                                className="absolute right-0 top-full mt-2 w-48 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl shadow-xl z-50 overflow-hidden"
+                                            >
+                                                <button
+                                                    onClick={handleBlockUser}
+                                                    className="w-full text-left px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-card)] flex items-center gap-2"
+                                                >
+                                                    <UserX className="w-4 h-4 text-red-400" />
+                                                    Block User
+                                                </button>
+                                                <button
+                                                    onClick={handleDeleteConversation}
+                                                    className="w-full text-left px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-card)] flex items-center gap-2 border-t border-[var(--border)]"
+                                                >
+                                                    <Trash className="w-4 h-4 text-red-400" />
+                                                    Delete Chat
+                                                </button>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                             </div>
 
                             {/* Messages Scroll Area */}
@@ -343,7 +409,7 @@ export default function MessagesPage() {
                                         disabled={!newMessage.trim() || isSending}
                                         className="h-12 w-12 rounded-xl flex items-center justify-center bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white shadow-lg shadow-[var(--accent)]/20"
                                     >
-                                        {isSending ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="w-5 h-5" />}
+                                        {isSending ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="w-5 h-5 text-white" />}
                                     </Button>
                                 </form>
                             </div>

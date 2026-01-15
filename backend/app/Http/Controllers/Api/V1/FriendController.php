@@ -86,6 +86,31 @@ class FriendController extends Controller
         return response()->json(['message' => 'Friend request accepted']);
     }
 
+    // Block user
+    public function block($userId)
+    {
+        $currentUserId = Auth::id();
+
+        // Check for existing friendship in any direction
+        $friendship = Friendship::where(function ($q) use ($currentUserId, $userId) {
+            $q->where('sender_id', $currentUserId)->where('receiver_id', $userId);
+        })->orWhere(function ($q) use ($currentUserId, $userId) {
+            $q->where('sender_id', $userId)->where('receiver_id', $currentUserId);
+        })->first();
+
+        if ($friendship) {
+            $friendship->update(['status' => 'blocked', 'sender_id' => $currentUserId, 'receiver_id' => $userId]); // Ensure blocker is sender
+        } else {
+            Friendship::create([
+                'sender_id' => $currentUserId,
+                'receiver_id' => $userId,
+                'status' => 'blocked'
+            ]);
+        }
+
+        return response()->json(['message' => 'User blocked']);
+    }
+
     // Decline request
     public function declineRequest($senderId)
     {
