@@ -135,12 +135,16 @@ class ForumController extends Controller
             return response()->json(['message' => 'Thread is locked.'], 403);
         }
 
+        \Illuminate\Support\Facades\Log::info('createPost: Attempting to create', ['user' => Auth::id(), 'thread' => $thread->id]);
+
         try {
             $post = $thread->posts()->create([
                 'content' => $request->content,
                 'author_id' => Auth::id(),
                 'thread_id' => $thread->id
             ]);
+
+            \Illuminate\Support\Facades\Log::info('createPost: Post created', ['id' => $post->id]);
 
             $thread->touch();
 
