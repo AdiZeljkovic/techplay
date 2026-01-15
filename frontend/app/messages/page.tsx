@@ -97,7 +97,7 @@ export default function MessagesPage() {
 
     // Scroll to bottom
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }, [activeMessages, selectedUserId]);
 
     // Mark as read when opening conversation
@@ -108,11 +108,13 @@ export default function MessagesPage() {
                 .filter(m => m.receiver_id === user?.id && !m.is_read)
                 .map(m => m.id);
 
-            unreadIds.forEach(id => {
-                axios.patch(`/messages/${id}/read`).catch(console.error);
-            });
-            // Re-fetch to clear badges
-            mutate('/messages');
+            if (unreadIds.length > 0) {
+                unreadIds.forEach(id => {
+                    axios.patch(`/messages/${id}/read`).catch(console.error);
+                });
+                // Re-fetch to clear badges
+                mutate('/messages');
+            }
         }
     }, [selectedUserId, activeConversation, user]);
 
@@ -124,8 +126,8 @@ export default function MessagesPage() {
         setIsSending(true);
         try {
             await axios.post('/messages', {
-                receiver_username: activeConversation?.user.username, // Corrected field name
-                subject: 'Chat Message', // Default subject for chat mode
+                receiver_username: activeConversation?.user.username,
+                subject: 'Chat Message',
                 body: newMessage,
             });
             setNewMessage("");
@@ -139,14 +141,14 @@ export default function MessagesPage() {
 
     if (isAuthLoading || isLoading) {
         return (
-            <div className="min-h-screen pt-24 bg-[var(--bg-primary)] flex justify-center items-center">
+            <div className="h-screen pt-24 bg-[#020617] flex justify-center items-center">
                 <div className="w-10 h-10 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] pt-20 pb-0 flex flex-col h-screen">
+        <div className="h-screen bg-[#020617] pt-20 flex flex-col overflow-hidden">
             {/* Main Container - Full Height */}
             <div className="flex-1 container mx-auto p-4 max-w-7xl h-full overflow-hidden flex flex-col md:flex-row gap-4">
 
