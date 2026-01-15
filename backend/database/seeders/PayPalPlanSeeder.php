@@ -32,22 +32,37 @@ class PayPalPlanSeeder extends Seeder
 
             $tiers = [
                 [
-                    'name' => 'Supporter',
+                    'name' => 'TechPlay Fan',
                     'price' => 4.99,
-                    'features' => ['Ad-free browsing', 'Supporter Badge'],
-                    'color' => '#cd7f32', // Bronze
-                ],
-                [
-                    'name' => 'Fan',
-                    'price' => 9.99,
-                    'features' => ['All Supporter perks', 'Early access to reviews', 'Discord role'],
-                    'color' => '#c0c0c0', // Silver
+                    'features' => [
+                        'Ad-free browsing',
+                        'Supporter Badge',
+                        'Access to supporter-only forum',
+                    ],
+                    'color' => '#3B82F6', // Blue
                 ],
                 [
                     'name' => 'Super Fan',
-                    'price' => 24.99,
-                    'features' => ['All Fan perks', 'Monthly Q&A', 'Game servers priority'],
-                    'color' => '#ffd700', // Gold
+                    'price' => 9.99,
+                    'features' => [
+                        'Everything in Fan tier',
+                        'Early access to videos',
+                        'Exclusive monthly newsletter',
+                        'Vote on next review topic'
+                    ],
+                    'color' => '#8B5CF6', // Purple
+                ],
+                [
+                    'name' => 'TechPlay Legend',
+                    'price' => 19.99,
+                    'features' => [
+                        'Everything in Super Fan tier',
+                        'Your name in video credits',
+                        'Exclusive merchandise discounts',
+                        'Direct chat access with editors',
+                        'Legendary Badge'
+                    ],
+                    'color' => '#F59E0B', // Gold
                 ],
             ];
 
