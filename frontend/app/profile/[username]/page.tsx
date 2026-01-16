@@ -61,6 +61,7 @@ interface UserProfile {
         xp: number;
         achievements_count: number;
         level: number;
+        reviews_count?: number;
     };
     achievements: {
         id: number;
