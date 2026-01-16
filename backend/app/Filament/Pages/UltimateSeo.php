@@ -21,27 +21,25 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Concerns\InteractsWithTable;
-use Filament\Tables\Contracts\HasTable;
-use Filament\Tables\Table;
 use Illuminate\Support\Facades\Artisan;
 
-class UltimateSeo extends Page implements HasForms, HasTable
+class UltimateSeo extends Page implements HasForms
 {
     use InteractsWithForms;
-    use InteractsWithTable;
 
     public ?array $data = [];
     public string $activeTab = 'global';
 
     protected static ?string $navigationIcon = 'heroicon-o-magnifying-glass-circle';
     protected static ?string $navigationLabel = 'Ultimate SEO';
-    protected static ?string $navigationGroup = 'Settings';
     protected static ?int $navigationSort = 1;
 
     protected static string $view = 'filament.pages.ultimate-seo';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Settings';
+    }
 
     public function mount(): void
     {
@@ -160,24 +158,11 @@ class UltimateSeo extends Page implements HasForms, HasTable
                                     ])->columns(2),
 
                                 Section::make('Sitemap Actions')
+                                    ->description('Use command "php artisan sitemap:generate" to regenerate')
                                     ->schema([
-                                        \Filament\Forms\Components\Actions::make([
-                                            \Filament\Forms\Components\Actions\Action::make('regenerate_sitemap')
-                                                ->label('🔄 Regenerate Sitemap Now')
-                                                ->color('warning')
-                                                ->action(function () {
-                                                    Artisan::call('sitemap:generate');
-                                                    Notification::make()
-                                                        ->title('Sitemap regenerated!')
-                                                        ->success()
-                                                        ->send();
-                                                }),
-                                            \Filament\Forms\Components\Actions\Action::make('view_sitemap')
-                                                ->label('📄 View Sitemap')
-                                                ->color('gray')
-                                                ->url(config('app.url') . '/sitemap.xml')
-                                                ->openUrlInNewTab(),
-                                        ]),
+                                        \Filament\Forms\Components\Placeholder::make('sitemap_info')
+                                            ->label('')
+                                            ->content(fn() => 'Last sitemap: /sitemap.xml — Regenerate via CLI: php artisan sitemap:generate'),
                                     ]),
                             ]),
 
