@@ -163,16 +163,16 @@ class CommentController extends Controller
 
     private function processCommentLikeStatus($comment, $userId)
     {
-        $comment->is_liked_by_user = \Illuminate\Support\Facades\DB::table('comment_likes')
+        $vote = \Illuminate\Support\Facades\DB::table('comment_likes')
             ->where('comment_id', $comment->id)
             ->where('user_id', $userId)
-            ->exists();
+            ->first();
+
+        $comment->user_vote = $vote ? $vote->type : null;
+        // Keep legacy field just in case, though resource handles it
+        $comment->is_liked_by_user = $comment->user_vote === 'up';
 
         if ($comment->relationsToArray()['replies'] ?? false) {
-            // Check if relation is loaded to avoid trigger lazy load if not needed, 
-            // though we eager loaded it. 
-            // Standard access $comment->replies is fine since we eager loaded.
-
             foreach ($comment->replies as $reply) {
                 $this->processCommentLikeStatus($reply, $userId);
             }
