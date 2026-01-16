@@ -224,7 +224,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                 )}
             </div>
 
-// ... (Top of file remains)
+
 
             {/* Comment List */}
             {isLoading ? (
