@@ -14,17 +14,13 @@ class ShopController extends Controller
 {
     public function index()
     {
-        $page = request()->get('page', 1);
-        return \Illuminate\Support\Facades\Cache::remember("shop.products.page_{$page}", 1800, function () {
-            return Product::where('is_active', true)->orderBy('created_at', 'desc')->paginate(12);
-        });
+        // Return fresh data (Caching removed for active development/beta)
+        return Product::where('is_active', true)->orderBy('created_at', 'desc')->paginate(12);
     }
 
     public function show($slug)
     {
-        return \Illuminate\Support\Facades\Cache::remember("shop.product.{$slug}", 1800, function () use ($slug) {
-            return Product::where('slug', $slug)->where('is_active', true)->firstOrFail();
-        });
+        return Product::where('slug', $slug)->where('is_active', true)->firstOrFail();
     }
 
     public function storeOrder(Request $request)
