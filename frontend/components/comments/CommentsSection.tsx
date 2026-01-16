@@ -31,8 +31,16 @@ export default function CommentsSection({ commentableId, commentableType, initia
     const fetchComments = async () => {
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+            const headers: HeadersInit = {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            };
+            if (token) {
+                headers["Authorization"] = `Bearer ${token}`;
+            }
+
             const res = await fetch(`${apiUrl}/comments/${commentableType}/${commentableId}`, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {}
+                headers
             });
             if (res.ok) {
                 const data = await res.json();
