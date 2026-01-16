@@ -8,9 +8,9 @@ if (typeof window !== 'undefined') {
     (window as any).Pusher = Pusher;
 }
 
-let echoInstance: Echo | null = null;
+let echoInstance: Echo<any> | null = null;
 
-export function getEcho(): Echo | null {
+export function getEcho(): Echo<any> | null {
     if (typeof window === 'undefined') {
         return null; // SSR guard
     }
