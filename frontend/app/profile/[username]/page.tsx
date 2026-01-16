@@ -53,12 +53,24 @@ interface UserProfile {
         };
     };
     stats: {
-        reviews_count: number;
+        threads_count: number;
+        posts_count: number;
+        comments_count: number;
+        reputation: number;
         joined_at: string;
         xp: number;
         achievements_count: number;
         level: number;
     };
+    achievements: {
+        id: number;
+        name: string;
+        description: string;
+        points: number;
+        icon_path?: string;
+        is_unlocked: boolean;
+        unlocked_at?: string;
+    }[];
     next_rank: any;
 }
 
@@ -120,7 +132,7 @@ export default function ProfilePage() {
         );
     }
 
-    const { user: userData, stats } = profile;
+    const { user: userData, stats, achievements } = profile;
     const isOwnProfile = currentUser?.username === userData.username;
 
     // XP Logic
@@ -357,7 +369,7 @@ export default function ProfilePage() {
                 )}
 
                 {activeTab === 'achievements' && (
-                    <AchievementGrid achievements={userData.achievements || []} />
+                    <AchievementGrid achievements={achievements || []} />
                 )}
             </div>
 
