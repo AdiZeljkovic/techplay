@@ -24,33 +24,33 @@ class ProductResource extends Resource
     {
         return $schema
             ->components([
-                    Forms\Components\TextInput::make('name')
-                        ->required()
-                        ->live(onBlur: true)
-                        ->afterStateUpdated(function (Closure $set, ?string $state) {
-                            $set('slug', Str::slug($state));
-                        }),
-                    Forms\Components\TextInput::make('slug')
-                        ->required()
-                        ->unique(ignoreRecord: true),
-                    Forms\Components\Textarea::make('description')
-                        ->columnSpanFull(),
-                    Forms\Components\TextInput::make('price')
-                        ->numeric()
-                        ->prefix('KM')
-                        ->required(),
-                    Forms\Components\TextInput::make('stock')
-                        ->numeric()
-                        ->default(0)
-                        ->required(),
-                    Forms\Components\FileUpload::make('image_url')
-                        ->label('Product Image')
-                        ->image()
-                        ->directory('products')
-                        ->visibility('public'),
-                    Forms\Components\Toggle::make('is_active')
-                        ->default(true),
-                ]);
+                Forms\Components\TextInput::make('name')
+                    ->required()
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(function ($set, ?string $state) {
+                        $set('slug', Str::slug($state));
+                    }),
+                Forms\Components\TextInput::make('slug')
+                    ->required()
+                    ->unique(ignoreRecord: true),
+                Forms\Components\Textarea::make('description')
+                    ->columnSpanFull(),
+                Forms\Components\TextInput::make('price')
+                    ->numeric()
+                    ->prefix('KM')
+                    ->required(),
+                Forms\Components\TextInput::make('stock')
+                    ->numeric()
+                    ->default(0)
+                    ->required(),
+                Forms\Components\FileUpload::make('image_url')
+                    ->label('Product Image')
+                    ->image()
+                    ->directory('products')
+                    ->visibility('public'),
+                Forms\Components\Toggle::make('is_active')
+                    ->default(true),
+            ]);
     }
 
     public static function getNavigationGroup(): ?string
@@ -63,31 +63,31 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                    Tables\Columns\ImageColumn::make('image_url')
-                        ->label('Image')
-                        ->circular(),
-                    Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
-                    Tables\Columns\TextColumn::make('price')
-                        ->formatStateUsing(fn($state) => number_format($state, 2) . ' KM')
-                        ->sortable(),
-                    Tables\Columns\TextColumn::make('stock')->sortable(),
-                    Tables\Columns\IconColumn::make('is_active')->boolean(),
-                    Tables\Columns\TextColumn::make('created_at')
-                        ->dateTime()
-                        ->toggleable(isToggledHiddenByDefault: true),
-                ])
+                Tables\Columns\ImageColumn::make('image_url')
+                    ->label('Image')
+                    ->circular(),
+                Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('price')
+                    ->formatStateUsing(fn($state) => number_format($state, 2) . ' KM')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('stock')->sortable(),
+                Tables\Columns\IconColumn::make('is_active')->boolean(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
             ->filters([
-                    //
-                ])
+                //
+            ])
             ->actions([
-                    EditAction::make(),
-                    DeleteAction::make(),
-                ])
+                EditAction::make(),
+                DeleteAction::make(),
+            ])
             ->bulkActions([
-                    BulkActionGroup::make([
-                        DeleteBulkAction::make(),
-                    ]),
-                ]);
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
     }
 
     public static function getRelations(): array
