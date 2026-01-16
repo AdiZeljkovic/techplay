@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import ForumSidebar from "@/components/forum/ForumSidebar";
+import DOMPurify from "isomorphic-dompurify";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -351,7 +352,7 @@ export default function ThreadPage() {
                                 {/* Post Content */}
                                 <div className="flex-1 p-6">
                                     <div className="prose prose-invert max-w-none text-[var(--text-secondary)] leading-relaxed">
-                                        <div dangerouslySetInnerHTML={{ __html: thread.content || '<p>No content</p>' }} />
+                                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(thread.content || '<p>No content</p>') }} />
                                     </div>
 
                                     {/* Post Actions */}

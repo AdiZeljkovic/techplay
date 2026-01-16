@@ -12,6 +12,7 @@ import AdUnit from "@/components/ads/AdUnit";
 import CommentsSection from "@/components/comments/CommentsSection";
 import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
+import DOMPurify from "isomorphic-dompurify";
 
 interface Guide {
     id: number;
@@ -225,7 +226,7 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                                 prose-ol:list-decimal prose-ol:pl-6 prose-ol:text-[var(--text-secondary)]
                                 prose-hr:border-[var(--border)] prose-hr:my-10
                             "
-                            dangerouslySetInnerHTML={{ __html: processedContent }}
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(processedContent) }}
                         />
 
                         {/* Voting Section */}
