@@ -94,15 +94,6 @@ export async function generateMetadata(
         },
         alternates: {
             canonical: article.canonical_url || `${process.env.NEXT_PUBLIC_APP_URL}/news/${slug}`,
-            languages: {
-                'hr': `${process.env.NEXT_PUBLIC_APP_URL}/news/${slug}`,
-                'x-default': `${process.env.NEXT_PUBLIC_APP_URL}/news/${slug}`,
-                // Additional languages added dynamically from API if translations exist
-                ...(article.translations?.reduce((acc: Record<string, string>, t: any) => {
-                    acc[t.language] = `${process.env.NEXT_PUBLIC_APP_URL}/news/${t.slug}`;
-                    return acc;
-                }, {}) || {}),
-            },
         },
         robots: {
             index: !article.is_noindex,
