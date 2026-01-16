@@ -9,9 +9,9 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class BrokenLinksWidget extends BaseWidget
 {
-    protected static ?string $heading = 'Broken Links';
+    protected ?string $heading = 'Broken Links';
     protected int|string|array $columnSpan = 'full';
-    protected static ?int $sort = 2;
+    protected int $sort = 2;
 
     public function table(Table $table): Table
     {
