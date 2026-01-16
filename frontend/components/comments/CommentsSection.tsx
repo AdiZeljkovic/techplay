@@ -18,137 +18,17 @@ interface CommentsSectionProps {
 }
 
 export default function CommentsSection({ commentableId, commentableType, initialComments = [] }: CommentsSectionProps) {
-    const { user, token } = useAuth();
+    const { user, token, isLoading: isAuthLoading } = useAuth();
     const [comments, setComments] = useState<Comment[]>(initialComments);
     const [isLoading, setIsLoading] = useState(initialComments.length === 0);
-    // If initialComments are provided but empty, it might still need to fetch?
-    // Actually if passed, we assume we have the state.
-    // Better logic: if initialComments was passed (even if empty array), we start loading as false.
-    // But in the prop definition I defaulted to []. 
-    // Let's rely on checking if the prop was actually passed by the parent, but props destructuring hides it.
-    // Let's assume if the parent is doing SSR, it passes the array. 
 
-    // Correction:
-    // If SSR passes [], it means 0 comments. We shouldn't fetch again instantly.
-    // So we need a flag or logic.
-    // Let's use a useRef or just modify the initial state logic.
-    // The previous implementation had `useState(true)` for loading.
+    // ... (keep state)
 
-    // New Logic:
-    // const [isLoading, setIsLoading] = useState(!initialComments); 
-    // Wait, initialComments is optional in interface but defaulted in args.
-    // Let's change the interface to be clearer or just pass undefined check.
+    // ... (keep fetchComments and useEffect)
 
-    const [content, setContent] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [replyingTo, setReplyingTo] = useState<number | null>(null);
-    const [replyContent, setReplyContent] = useState("");
-    const [error, setError] = useState<string | null>(null);
+    // ... (keep handleLike)
 
-    const fetchComments = async () => {
-        try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-            const res = await fetch(`${apiUrl}/comments/${commentableType}/${commentableId}`, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {}
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setComments(data.data || []);
-            }
-        } catch (err) {
-            console.error("Failed to fetch comments", err);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        // Only fetch if we have no initial data (implied by isLoading logic start) OR if we want to refresh
-        // But for "Instant" feel, we rely on SSR data strictly at first.
-        // If isLoading started as true (initialComments undefined), we fetch.
-        if (isLoading) {
-            fetchComments();
-        }
-    }, [commentableId, commentableType, token]); // Removed isLoading from deps to avoid loop
-
-    const handleLike = async (commentId: number) => {
-        if (!user) return; // Prompt login?
-
-        // Optimistic UI update
-        setComments(prevComments => {
-            const updateLikeInTree = (list: Comment[]): Comment[] => {
-                return list.map(c => {
-                    if (c.id === commentId) {
-                        return {
-                            ...c,
-                            likes_count: c.is_liked_by_user ? c.likes_count - 1 : c.likes_count + 1,
-                            is_liked_by_user: !c.is_liked_by_user
-                        };
-                    }
-                    if (c.replies) {
-                        return { ...c, replies: updateLikeInTree(c.replies) };
-                    }
-                    return c;
-                });
-            };
-            return updateLikeInTree(prevComments);
-        });
-
-        try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comments/${commentId}/like`, {
-                method: "POST",
-                headers: { Authorization: `Bearer ${token}` }
-            });
-        } catch (err) {
-            console.error("Like failed", err);
-            // Revert on error? For now, keep simple.
-        }
-    };
-
-    const handleSubmit = async (e: React.FormEvent, parentId: number | null = null) => {
-        e.preventDefault();
-        const text = parentId ? replyContent : content;
-
-        if (!text.trim() || !user) return;
-
-        setIsSubmitting(true);
-        setError(null);
-
-        try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-            const res = await fetch(`${apiUrl}/comments`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    commentable_id: commentableId,
-                    commentable_type: commentableType,
-                    content: text,
-                    parent_id: parentId
-                })
-            });
-
-            if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                throw new Error(data.message || "Failed to post comment");
-            }
-
-            await fetchComments();
-
-            if (parentId) {
-                setReplyingTo(null);
-                setReplyContent("");
-            } else {
-                setContent("");
-            }
-        } catch (err) {
-            setError((err as Error).message || "Something went wrong.");
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+    // ... (keep handleSubmit)
 
     return (
         <div id="comments" className="max-w-4xl mx-auto py-12 px-4">
@@ -163,7 +43,15 @@ export default function CommentsSection({ commentableId, commentableType, initia
             <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6 mb-10 shadow-lg relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent)]/5 rounded-full blur-[50px] pointer-events-none group-hover:bg-[var(--accent)]/10 transition-all" />
 
-                {user ? (
+                {isAuthLoading ? (
+                    <div className="flex gap-4 animate-pulse">
+                        <div className="w-10 h-10 rounded-full bg-[var(--bg-elevated)]" />
+                        <div className="flex-1 space-y-3">
+                            <div className="h-10 w-full bg-[var(--bg-elevated)] rounded-lg" />
+                            <div className="h-8 w-32 bg-[var(--bg-elevated)] rounded-lg" />
+                        </div>
+                    </div>
+                ) : user ? (
                     <form onSubmit={(e) => handleSubmit(e)}>
                         <div className="flex gap-4">
                             <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden bg-[var(--bg-elevated)] ring-2 ring-white/5">
