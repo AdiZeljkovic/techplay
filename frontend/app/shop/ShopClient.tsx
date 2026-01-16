@@ -72,7 +72,9 @@ export default function ShopClient() {
                                     {product.image_url ? (
                                         <div className="relative w-full h-full">
                                             <Image
-                                                src={product.image_url.startsWith('http') ? product.image_url : `/storage/${product.image_url}`}
+                                                src={product.image_url.startsWith('http')
+                                                    ? product.image_url
+                                                    : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}/storage/${product.image_url}`}
                                                 alt={product.name}
                                                 fill
                                                 className="object-cover group-hover:scale-110 transition-transform duration-700"
