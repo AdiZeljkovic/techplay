@@ -30,9 +30,10 @@ class CommentController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        // Check for likes if user is logged in
-        if (Auth::check()) {
-            $userId = Auth::id();
+        // Check for likes if user is logged in (explicitly check sanctum guard for optional auth)
+        $user = Auth::guard('sanctum')->user();
+        if ($user) {
+            $userId = $user->id;
             $comments->getCollection()->transform(function ($comment) use ($userId) {
                 return $this->processCommentLikeStatus($comment, $userId);
             });
