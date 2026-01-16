@@ -20,12 +20,27 @@ use Filament\Tables\Table;
 class SeoManagerResource extends Resource
 {
     protected static ?string $model = Article::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-document-magnifying-glass';
-    protected static ?string $navigationLabel = 'Page SEO';
-    protected static ?string $modelLabel = 'Page SEO';
-    protected static ?string $pluralModelLabel = 'All Pages SEO';
     protected static ?string $slug = 'seo-manager';
+
+    public static function getNavigationIcon(): ?string
+    {
+        return 'heroicon-o-document-magnifying-glass';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Page SEO';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'Page SEO';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'All Pages SEO';
+    }
 
     public static function getNavigationGroup(): ?string
     {
