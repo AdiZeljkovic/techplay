@@ -14,6 +14,7 @@ import CommentsSection from "@/components/comments/CommentsSection";
 import DOMPurify from "isomorphic-dompurify";
 import LiveViewCount from "@/components/tracking/LiveViewCount";
 import TrendingSidebar from "@/components/news/TrendingSidebar";
+import Breadcrumbs from "@/components/seo/Breadcrumbs";
 
 interface ArticleDetailViewProps {
     article: Article;
@@ -98,14 +99,15 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                 {/* Hero Content */}
                 <div className="absolute inset-x-0 bottom-0 container mx-auto px-4 pb-12 z-10">
                     <div className="max-w-4xl">
-                        {/* Navigation Breadcrumb */}
-                        <Link
-                            href="/news"
-                            className="inline-flex items-center gap-2 text-sm font-semibold text-white/80 hover:text-[var(--accent)] transition-colors mb-6 backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full border border-white/10 w-fit"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            Back to News
-                        </Link>
+                        {/* Breadcrumbs with Schema.org */}
+                        <Breadcrumbs
+                            items={[
+                                { label: 'News', href: '/news' },
+                                { label: article.category?.name || 'Article', href: `/news/${article.category?.slug || 'gaming'}` },
+                                { label: article.title }
+                            ]}
+                            className="mb-6"
+                        />
 
                         {/* Category Badge */}
                         <div className="mb-4 animate-fade-in-up">
