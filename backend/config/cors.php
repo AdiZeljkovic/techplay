@@ -15,19 +15,26 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'broadcasting/auth'],
 
-    'allowed_methods' => ['*'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
     'allowed_origins' => explode(',', env('FRONTEND_URL', 'http://localhost:3000')),
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => [
+        'Content-Type',
+        'Accept',
+        'Authorization',
+        'X-Requested-With',
+        'X-CSRF-TOKEN',
+        'X-Socket-Id', // For Laravel Echo/Reverb
+    ],
 
     'exposed_headers' => [],
 
-    'max_age' => 0,
+    'max_age' => 86400, // Cache preflight for 24 hours (production optimization)
 
     'supports_credentials' => true,
 

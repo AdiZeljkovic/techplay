@@ -114,6 +114,27 @@ class AuthController extends Controller
         return $this->success(null, 'Logged out successfully');
     }
 
+    /**
+     * Refresh the current token.
+     * Deletes the old token and issues a new one.
+     */
+    public function refresh(Request $request)
+    {
+        $user = $request->user();
+
+        // Delete current token
+        $request->user()->currentAccessToken()->delete();
+
+        // Create new token
+        $newToken = $user->createToken('auth_token')->plainTextToken;
+
+        return $this->success([
+            'token' => $newToken,
+            'token_type' => 'Bearer',
+            'user' => new \App\Http\Resources\V1\UserResource($user),
+        ], 'Token refreshed successfully');
+    }
+
     public function user(Request $request)
     {
         $user = $request->user()->load('rank')->loadCount('posts'); // Load stats
