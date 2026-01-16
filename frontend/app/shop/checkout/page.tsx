@@ -311,11 +311,12 @@ export default function CheckoutPage() {
                                                 createOrder={async (data, actions) => {
                                                     try {
                                                         const res = await axios.post('/shop/orders', {
-                                                            amount: totalPrice, // Note: Backend handles currency conversion if needed, assuming KM ~= EUR or simple 1:1 for demo. Ideally convert.
+                                                            amount: totalPrice,
                                                             items: items.map(item => ({
                                                                 product_id: item.id,
                                                                 quantity: item.quantity
-                                                            }))
+                                                            })),
+                                                            shipping_address: `${shippingDetails.address}, ${shippingDetails.city} ${shippingDetails.zipCode}, ${shippingDetails.country}`
                                                         });
                                                         return res.data.id;
                                                     } catch (err) {
