@@ -27,13 +27,28 @@ interface ProductsResponse {
     links: any[];
 }
 
+import { useState } from "react";
+import AddToCartDialog from "@/components/shop/AddToCartDialog";
+
+// ... (imports remain)
+
 export default function ShopClient() {
     const { addToCart } = useCart();
     const { data, isLoading } = useSWR<ProductsResponse>('/shop/products', fetcher);
 
+    // Dialog State
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+    const handleAddToCart = (product: Product) => {
+        addToCart(product);
+        setSelectedProduct(product);
+        setIsDialogOpen(true);
+    };
+
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
-            {/* Hero Section */}
+            {/* ... Hero ... */}
             <PageHero
                 title="TechShop"
                 description="Official merchandise, premium gaming gear, and exclusive hardware accessories."
@@ -42,7 +57,7 @@ export default function ShopClient() {
 
             {/* Content */}
             <div className="container mx-auto px-4 py-12">
-                {/* Search / Filter Placeholder (Future Op) */}
+                {/* Search ... */}
                 <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                     <div className="relative w-full md:w-96">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-muted)] w-4 h-4" />
@@ -121,7 +136,7 @@ export default function ShopClient() {
                                         </div>
 
                                         <button
-                                            onClick={() => addToCart(product)}
+                                            onClick={() => handleAddToCart(product)}
                                             disabled={product.stock === 0}
                                             className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--text-primary)] text-[var(--bg-primary)] hover:bg-[var(--accent)] hover:text-white hover:scale-110 disabled:opacity-30 disabled:hover:scale-100 disabled:hover:bg-[var(--text-primary)] disabled:hover:text-[var(--bg-primary)] transition-all shadow-lg"
                                             title="Add to Cart"
@@ -145,6 +160,12 @@ export default function ShopClient() {
                     </div>
                 )}
             </div>
+
+            <AddToCartDialog
+                isOpen={isDialogOpen}
+                onClose={() => setIsDialogOpen(false)}
+                product={selectedProduct}
+            />
         </div>
     );
 }
