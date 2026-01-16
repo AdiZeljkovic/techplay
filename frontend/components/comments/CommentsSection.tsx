@@ -202,6 +202,8 @@ export default function CommentsSection({ commentableId, commentableType, initia
                 )}
             </div>
 
+// ... (Top of file remains)
+
             {/* Comment List */}
             {isLoading ? (
                 <div className="text-center py-12">
@@ -209,11 +211,12 @@ export default function CommentsSection({ commentableId, commentableType, initia
                     <p className="text-[var(--text-muted)]">Loading discussion...</p>
                 </div>
             ) : comments.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-6">
                     {comments.map((comment) => (
                         <CommentItem
                             key={comment.id}
                             comment={comment}
+                            depth={0}
                             user={user}
                             replyingTo={replyingTo}
                             setReplyingTo={setReplyingTo}
@@ -236,10 +239,10 @@ export default function CommentsSection({ commentableId, commentableType, initia
     );
 }
 
-// Extracted Component to prevent re-renders losing focus
+// Extracted Component with recursive design
 const CommentItem = ({
     comment,
-    isReply = false,
+    depth = 0,
     user,
     replyingTo,
     setReplyingTo,
@@ -250,7 +253,7 @@ const CommentItem = ({
     isSubmitting
 }: {
     comment: Comment;
-    isReply?: boolean;
+    depth?: number;
     user: User | null;
     replyingTo: number | null;
     setReplyingTo: (id: number | null) => void;
@@ -262,13 +265,10 @@ const CommentItem = ({
 }) => {
     const displayName = comment.user.name || comment.user.username;
     const isStaff = comment.user.role === 'admin' || comment.user.role === 'editor';
+    const isOwner = user?.id === comment.user.id;
 
     return (
-        <div className={`group animate-fade-in-up ${isReply ? 'ml-12 mt-4 relative' : 'mb-6'}`}>
-            {isReply && (
-                <div className="absolute -left-6 top-0 w-4 h-4 border-l-2 border-b-2 border-white/10 rounded-bl-lg" />
-            )}
-
+        <div className={`group animate-fade-in-up ${depth > 0 ? 'mt-4' : ''}`}>
             <div className="flex gap-4">
                 {/* Avatar */}
                 <Link href={`/profile/${comment.user.username}`} className="shrink-0 relative">
@@ -281,17 +281,11 @@ const CommentItem = ({
                             </div>
                         )}
                     </div>
-                    {comment.user.rank && (
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[var(--bg-card)] rounded-full flex items-center justify-center border border-[var(--border)]" title={comment.user.rank.name}>
-                            {/* Simple rank icon mapping or generic trophy */}
-                            <Trophy className="w-2.5 h-2.5 text-yellow-500" />
-                        </div>
-                    )}
                 </Link>
 
                 {/* Content */}
-                <div className="flex-1">
-                    <div className="flex items-center flex-wrap gap-2 mb-1">
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center flex-wrap gap-2 mb-1.5">
                         <Link href={`/profile/${comment.user.username}`} className={`font-bold text-sm hover:underline ${isStaff ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'}`}>
                             {displayName}
                         </Link>
@@ -317,69 +311,95 @@ const CommentItem = ({
                         <span className="text-xs text-[var(--text-muted)]">• {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}</span>
                     </div>
 
-                    <div className="text-[var(--text-secondary)] leading-relaxed text-sm bg-[var(--bg-elevated)]/20 p-3 rounded-xl rounded-tl-none border border-transparent group-hover:border-[var(--border)] transition-colors">
+                    <div className={`text-[var(--text-secondary)] leading-relaxed text-sm ${depth === 0 ? 'text-base' : ''}`}>
                         {comment.content}
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-4 mt-2">
+                    <div className="flex items-center gap-4 mt-3">
                         <button
                             onClick={() => handleLike(comment.id)}
-                            className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${comment.is_liked_by_user ? 'text-red-500' : 'text-[var(--text-muted)] hover:text-red-500'}`}
+                            className={`flex items-center gap-1.5 text-xs font-bold transition-all ${comment.is_liked_by_user ? 'text-red-500' : 'text-[var(--text-muted)] hover:text-red-400'}`}
                         >
-                            <Heart className={`w-3.5 h-3.5 ${comment.is_liked_by_user ? 'fill-current' : ''}`} />
-                            {comment.likes_count > 0 ? comment.likes_count : 'Like'}
+                            <Heart className={`w-4 h-4 ${comment.is_liked_by_user ? 'fill-current' : ''}`} />
+                            {comment.likes_count > 0 && comment.likes_count}
                         </button>
 
                         <button
                             onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                            className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors"
+                            className="flex items-center gap-1.5 text-xs font-bold text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors"
                         >
-                            <MessageSquare className="w-3.5 h-3.5" />
+                            <MessageSquare className="w-4 h-4" />
                             Reply
                         </button>
+
+                        {isOwner && (
+                            <button className="text-xs font-bold text-[var(--text-muted)] hover:text-red-500 transition-colors">
+                                Delete
+                            </button>
+                            // TODO: Implement delete functionality
+                        )}
                     </div>
 
                     {/* Reply Form */}
                     {replyingTo === comment.id && (
-                        <div className="mt-4 animate-fade-in-up pl-4 border-l-2 border-[var(--accent)]/30">
+                        <div className="mt-4 animate-fade-in-up">
                             <form onSubmit={(e) => handleSubmit(e, comment.id)}>
-                                <textarea
-                                    value={replyContent}
-                                    onChange={(e) => setReplyContent(e.target.value)}
-                                    placeholder={`Reply to ${displayName}...`}
-                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg p-3 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] min-h-[80px] resize-y"
-                                    autoFocus
-                                    required
-                                />
-                                <div className="flex justify-end gap-2 mt-2">
-                                    <Button type="button" size="sm" variant="ghost" onClick={() => setReplyingTo(null)}>Cancel</Button>
-                                    <Button type="submit" size="sm" variant="primary" disabled={isSubmitting || !replyContent.trim()}>
-                                        <Send className="w-3 h-3 mr-1" /> Reply
+                                <div className="relative">
+                                    <textarea
+                                        value={replyContent}
+                                        onChange={(e) => setReplyContent(e.target.value)}
+                                        placeholder={`Reply to ${displayName}...`}
+                                        className="w-full bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-3 pr-12 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] min-h-[60px] resize-y shadow-inner"
+                                        autoFocus
+                                        required
+                                    />
+                                    <Button
+                                        type="submit"
+                                        size="sm"
+                                        variant="ghost"
+                                        className="absolute bottom-2 right-2 hover:bg-[var(--accent)] hover:text-white"
+                                        disabled={isSubmitting || !replyContent.trim()}
+                                    >
+                                        <Send className="w-4 h-4" />
                                     </Button>
+                                </div>
+                                <div className="flex justify-end mt-2">
+                                    <button
+                                        type="button"
+                                        className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                                        onClick={() => setReplyingTo(null)}
+                                    >
+                                        Cancel
+                                    </button>
                                 </div>
                             </form>
                         </div>
                     )}
 
-                    {/* Nested Replies */}
+                    {/* Nested Replies Rendering */}
                     {comment.replies && comment.replies.length > 0 && (
-                        <div>
-                            {comment.replies.map(reply => (
-                                <CommentItem
-                                    key={reply.id}
-                                    comment={reply}
-                                    isReply={true}
-                                    user={user}
-                                    replyingTo={replyingTo}
-                                    setReplyingTo={setReplyingTo}
-                                    replyContent={replyContent}
-                                    setReplyContent={setReplyContent}
-                                    handleSubmit={handleSubmit}
-                                    handleLike={handleLike}
-                                    isSubmitting={isSubmitting}
-                                />
-                            ))}
+                        <div className="mt-3 relative">
+                            {/* Connector Line for Thread */}
+                            <div className="absolute top-0 bottom-0 left-[-26px] w-[2px] bg-[var(--border)] hover:bg-[var(--accent)]/50 transition-colors" />
+
+                            <div className="">
+                                {comment.replies.map(reply => (
+                                    <CommentItem
+                                        key={reply.id}
+                                        comment={reply}
+                                        depth={depth + 1}
+                                        user={user}
+                                        replyingTo={replyingTo}
+                                        setReplyingTo={setReplyingTo}
+                                        replyContent={replyContent}
+                                        setReplyContent={setReplyContent}
+                                        handleSubmit={handleSubmit}
+                                        handleLike={handleLike}
+                                        isSubmitting={isSubmitting}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
