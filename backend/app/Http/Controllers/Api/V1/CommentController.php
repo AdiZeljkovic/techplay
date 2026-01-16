@@ -21,7 +21,12 @@ class CommentController extends Controller
             ->where('commentable_id', $id)
             ->where('status', 'approved')
             ->whereNull('parent_id')
-            ->with(['user.rank', 'replies.user.rank'])
+            ->with([
+                'user.rank',
+                'replies.user.rank',
+                'replies.replies.user.rank',
+                'replies.replies.replies.user.rank'
+            ])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -29,24 +34,7 @@ class CommentController extends Controller
         if (Auth::check()) {
             $userId = Auth::id();
             $comments->getCollection()->transform(function ($comment) use ($userId) {
-                // Determine if liked by user
-                $comment->is_liked_by_user = \Illuminate\Support\Facades\DB::table('comment_likes')
-                    ->where('comment_id', $comment->id)
-                    ->where('user_id', $userId)
-                    ->exists();
-
-                // Also for replies (recursive check would be better but only 1 level supported for now in UI?)
-                // The query `with('replies')` was done.
-                if ($comment->replies) {
-                    $comment->replies->transform(function ($reply) use ($userId) {
-                        $reply->is_liked_by_user = \Illuminate\Support\Facades\DB::table('comment_likes')
-                            ->where('comment_id', $reply->id)
-                            ->where('user_id', $userId)
-                            ->exists();
-                        return $reply;
-                    });
-                }
-                return $comment;
+                return $this->processCommentLikeStatus($comment, $userId);
             });
         }
 
@@ -141,5 +129,25 @@ class CommentController extends Controller
             'tech' => Article::class,
             default => null,
         };
+    }
+
+    private function processCommentLikeStatus($comment, $userId)
+    {
+        $comment->is_liked_by_user = \Illuminate\Support\Facades\DB::table('comment_likes')
+            ->where('comment_id', $comment->id)
+            ->where('user_id', $userId)
+            ->exists();
+
+        if ($comment->relationsToArray()['replies'] ?? false) {
+            // Check if relation is loaded to avoid trigger lazy load if not needed, 
+            // though we eager loaded it. 
+            // Standard access $comment->replies is fine since we eager loaded.
+
+            foreach ($comment->replies as $reply) {
+                $this->processCommentLikeStatus($reply, $userId);
+            }
+        }
+
+        return $comment;
     }
 }
