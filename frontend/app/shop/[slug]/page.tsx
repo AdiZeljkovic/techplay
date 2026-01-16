@@ -10,26 +10,27 @@ import Link from "next/link";
 import PageHero from "@/components/ui/PageHero";
 import Image from "next/image";
 
+import AddToCartDialog from "@/components/shop/AddToCartDialog";
+
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
 export default function ProductDetailPage() {
     const params = useParams();
     const slug = params.slug as string;
     const { addToCart } = useCart();
-
-    const [added, setAdded] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const { data: product, isLoading } = useSWR(slug ? `/shop/products/${slug}` : null, fetcher);
 
     const handleAddToCart = () => {
         if (product) {
             addToCart(product);
-            setAdded(true);
-            setTimeout(() => setAdded(false), 2000);
+            setIsDialogOpen(true);
         }
     };
 
     if (isLoading) {
+        // ... (keep loading state)
         return (
             <div className="min-h-screen bg-[var(--bg-primary)]">
                 <PageHero title="Loading..." icon={PackageOpen} />
@@ -41,6 +42,7 @@ export default function ProductDetailPage() {
     }
 
     if (!product) {
+        // ... (keep not found state)
         return (
             <div className="min-h-screen bg-[var(--bg-primary)]">
                 <PageHero title="Product Not Found" icon={PackageOpen} />
@@ -125,21 +127,9 @@ export default function ProductDetailPage() {
                             <button
                                 onClick={handleAddToCart}
                                 disabled={product.stock === 0}
-                                className={`flex-1 py-4 px-8 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg hover:shadow-[0_0_20px_var(--accent-glow)]
-                                ${added
-                                        ? 'bg-green-600 text-white'
-                                        : 'bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:bg-[var(--bg-elevated)] disabled:text-[var(--text-muted)] disabled:cursor-not-allowed'
-                                    }`}
+                                className="flex-1 py-4 px-8 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg hover:shadow-[0_0_20px_var(--accent-glow)] bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:bg-[var(--bg-elevated)] disabled:text-[var(--text-muted)] disabled:cursor-not-allowed"
                             >
-                                {added ? (
-                                    <>
-                                        <Check className="w-6 h-6" /> Added to Cart
-                                    </>
-                                ) : (
-                                    <>
-                                        <ShoppingCart className="w-6 h-6" /> Add to Cart
-                                    </>
-                                )}
+                                <ShoppingCart className="w-6 h-6" /> Add to Cart
                             </button>
 
                             <button className="w-full sm:w-auto py-4 px-6 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-white hover:border-[var(--text-secondary)] transition-all flex items-center justify-center">
@@ -161,6 +151,12 @@ export default function ProductDetailPage() {
                     </div>
                 </div>
             </div>
+
+            <AddToCartDialog
+                isOpen={isDialogOpen}
+                onClose={() => setIsDialogOpen(false)}
+                product={product}
+            />
         </div>
     );
 }
