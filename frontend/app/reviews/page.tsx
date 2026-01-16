@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import { Review, PaginatedResponse } from "@/types";
 import ReviewCard from "@/components/reviews/ReviewCard";
 import { Button } from "@/components/ui/Button";
-import { Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import PageHero from "@/components/ui/PageHero";
 import { REVIEW_CATEGORIES } from "@/lib/categories";
+import { useRealTimeReviews } from "@/hooks";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -24,7 +25,14 @@ export default function ReviewsPage() {
         fetcher
     );
 
-    const reviews = data?.data || [];
+    // Real-time hook
+    const { reviews: realtimeReviews, newCount } = useRealTimeReviews([]);
+
+    // Combine real-time with fetched
+    const fetchedReviews = data?.data || [];
+    const reviews = page === 1
+        ? [...realtimeReviews.filter(rt => !fetchedReviews.some(f => f.id === rt.id)), ...fetchedReviews]
+        : fetchedReviews;
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
@@ -59,7 +67,7 @@ export default function ReviewsPage() {
                 ) : reviews.length > 0 ? (
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                            {reviews.map((review, idx) => (
+                            {reviews.map((review: any, idx: number) => (
                                 <ReviewCard key={review.id} review={review} index={idx} />
                             ))}
                         </div>

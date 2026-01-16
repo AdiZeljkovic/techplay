@@ -5,11 +5,12 @@ import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { MessageSquare, Lock, Pin, Eye, ArrowLeft, Plus, Clock, TrendingUp, Users, MessageCircle } from "lucide-react";
+import { MessageSquare, Lock, Pin, Eye, ArrowLeft, Plus, Clock, TrendingUp, Users, MessageCircle, Sparkles } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import ForumSidebar from "@/components/forum/ForumSidebar";
+import { useRealTimeForum } from "@/hooks";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -64,6 +65,16 @@ export default function CategoryThreadsPage() {
         categorySlug ? `/forum/categories/${categorySlug}` : null,
         fetcher
     );
+
+    // Real-time forum hook
+    const { threads: realtimeThreads, newCount } = useRealTimeForum([]);
+
+    // Combine real-time with fetched (filter by category)
+    const fetchedThreads = data?.threads?.data || [];
+    const categoryRealtimeThreads = realtimeThreads.filter((rt: any) =>
+        rt.category?.slug === categorySlug && !fetchedThreads.some(f => f.id === rt.id)
+    );
+    const allThreads = [...categoryRealtimeThreads, ...fetchedThreads] as Thread[];
 
     if (isLoading) {
         return (
@@ -183,26 +194,26 @@ export default function CategoryThreadsPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Threads List */}
                     <div className="lg:col-span-3">
-                        {threads.data.length > 0 ? (
+                        {allThreads.length > 0 ? (
                             <div className="space-y-3">
                                 {/* Pinned threads first */}
-                                {threads.data
-                                    .sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0))
-                                    .map((thread) => {
+                                {allThreads
+                                    .sort((a: any, b: any) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0))
+                                    .map((thread: any) => {
                                         const isStaff = thread.author?.role === 'admin' || thread.author?.role === 'editor';
                                         return (
                                             <Link key={thread.id} href={`/forum/thread/${thread.slug}`}>
                                                 <div className={`group relative bg-[var(--bg-card)] border rounded-xl p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer ${thread.is_pinned
-                                                        ? 'border-[var(--accent)]/50 bg-[var(--accent)]/5'
-                                                        : 'border-[var(--border)] hover:border-[var(--accent)]/50'
+                                                    ? 'border-[var(--accent)]/50 bg-[var(--accent)]/5'
+                                                    : 'border-[var(--border)] hover:border-[var(--accent)]/50'
                                                     }`}>
                                                     <div className="flex items-center gap-4">
                                                         {/* Status Icon */}
                                                         <div className={`flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all ${thread.is_pinned
-                                                                ? 'bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/30'
-                                                                : thread.is_locked
-                                                                    ? 'bg-red-500/10 text-red-400'
-                                                                    : 'bg-[var(--bg-elevated)] text-[var(--text-muted)] group-hover:bg-[var(--accent)]/10 group-hover:text-[var(--accent)]'
+                                                            ? 'bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/30'
+                                                            : thread.is_locked
+                                                                ? 'bg-red-500/10 text-red-400'
+                                                                : 'bg-[var(--bg-elevated)] text-[var(--text-muted)] group-hover:bg-[var(--accent)]/10 group-hover:text-[var(--accent)]'
                                                             }`}>
                                                             {thread.is_pinned ? (
                                                                 <Pin className="w-5 h-5" />

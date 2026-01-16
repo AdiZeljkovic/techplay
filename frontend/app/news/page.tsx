@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import { Article, PaginatedResponse } from "@/types";
 import NewsCard from "@/components/news/NewsCard";
 import { Button } from "@/components/ui/Button";
-import { Newspaper, ChevronLeft, ChevronRight, Flame } from "lucide-react";
+import { Newspaper, ChevronLeft, ChevronRight, Flame, Sparkles } from "lucide-react";
 import PageHero from "@/components/ui/PageHero";
 import { NEWS_CATEGORIES } from "@/lib/categories";
+import { useRealTimeNews } from "@/hooks";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -24,7 +25,19 @@ export default function NewsPage() {
         fetcher
     );
 
-    const articles = data?.data || [];
+    // Real-time hook - new articles will appear at the top
+    const { articles: realtimeArticles, newArticleCount, clearNewCount } = useRealTimeNews([]);
+
+    // Combine real-time articles with fetched articles (on first page only)
+    const fetchedArticles = data?.data || [];
+    const articles = page === 1
+        ? [...realtimeArticles.filter(rt => !fetchedArticles.some(f => f.id === rt.id)), ...fetchedArticles]
+        : fetchedArticles;
+
+    // Clear new count when page changes
+    useEffect(() => {
+        if (page === 1) clearNewCount();
+    }, [page, clearNewCount]);
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
@@ -59,7 +72,7 @@ export default function NewsPage() {
                 ) : articles.length > 0 ? (
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-                            {articles.map((article, idx) => (
+                            {articles.map((article: any, idx: number) => (
                                 <NewsCard key={article.id} article={article} index={idx} />
                             ))}
                         </div>

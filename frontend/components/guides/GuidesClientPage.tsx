@@ -5,10 +5,11 @@ import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useMemo } from "react";
-import { BookOpen, Search, ChevronLeft, ChevronRight, Zap, Target, Rocket } from "lucide-react";
+import { BookOpen, Search, ChevronLeft, ChevronRight, Zap, Target, Rocket, Sparkles } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import PageHero from "@/components/ui/PageHero";
 import { Button } from "@/components/ui/Button";
+import { useRealTimeGuides } from "@/hooks";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -62,6 +63,15 @@ export default function GuidesClientPage() {
     }, [difficulty, searchQuery, page]);
 
     const { data, isLoading, isValidating } = useSWR<GuidesResponse>(apiUrl, fetcher);
+
+    // Real-time hook
+    const { guides: realtimeGuides, newCount } = useRealTimeGuides([]);
+
+    // Combine real-time with fetched
+    const fetchedGuides = data?.data || [];
+    const displayGuides = page === 1 && difficulty === 'all' && !searchQuery
+        ? [...realtimeGuides.filter((rt: any) => !fetchedGuides.some(f => f.id === rt.id)), ...fetchedGuides]
+        : fetchedGuides;
 
     const handleCategorySelect = (id: string) => {
         setDifficulty(id);
@@ -119,10 +129,10 @@ export default function GuidesClientPage() {
                             <div key={i} className="h-80 bg-[var(--bg-card)] rounded-xl animate-pulse" />
                         ))}
                     </div>
-                ) : data?.data && data.data.length > 0 ? (
+                ) : displayGuides.length > 0 ? (
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                            {data.data.map((guide) => (
+                            {displayGuides.map((guide: any) => (
                                 <Link
                                     key={guide.id}
                                     href={`/guides/${guide.slug}`}
@@ -144,7 +154,7 @@ export default function GuidesClientPage() {
                                             </div>
                                         )}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                                        <div className={`absolute top-3 right-3 px-3 py-1.5 rounded-full text-xs font-bold uppercase border ${difficultyColors[guide.difficulty]}`}>
+                                        <div className={`absolute top-3 right-3 px-3 py-1.5 rounded-full text-xs font-bold uppercase border ${difficultyColors[guide.difficulty as keyof typeof difficultyColors] || 'text-gray-400 bg-gray-500/20 border-gray-500/30'}`}>
                                             {guide.difficulty}
                                         </div>
                                     </div>

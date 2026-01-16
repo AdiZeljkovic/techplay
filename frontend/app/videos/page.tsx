@@ -5,10 +5,11 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import { useState } from "react";
-import { Play, Clock, Video, ChevronLeft, ChevronRight } from "lucide-react";
+import { Play, Clock, Video, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import PageHero from "@/components/ui/PageHero";
 import { Button } from "@/components/ui/Button";
+import { useRealTimeVideos } from "@/hooks";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -36,6 +37,15 @@ export default function VideosPage() {
         `/videos?page=${page}`,
         fetcher
     );
+
+    // Real-time hook
+    const { videos: realtimeVideos, newCount } = useRealTimeVideos([]);
+
+    // Combine real-time with fetched
+    const fetchedVideos = data?.data || [];
+    const displayVideos = page === 1
+        ? [...realtimeVideos.filter(rt => !fetchedVideos.some(f => f.id === rt.id)), ...fetchedVideos]
+        : fetchedVideos;
 
     const getThumbnail = (video: VideoItem) => {
         if (video.thumbnail_url) return video.thumbnail_url;
@@ -68,10 +78,10 @@ export default function VideosPage() {
                             <div key={i} className="aspect-video bg-[var(--bg-card)] rounded-xl animate-pulse" />
                         ))}
                     </div>
-                ) : data?.data && data.data.length > 0 ? (
+                ) : displayVideos.length > 0 ? (
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                            {data.data.map((video) => (
+                            {displayVideos.map((video: any) => (
                                 <Link
                                     key={video.id}
                                     href={`/videos/${video.slug}`}
