@@ -22,13 +22,112 @@ export default function CommentsSection({ commentableId, commentableType, initia
     const [comments, setComments] = useState<Comment[]>(initialComments);
     const [isLoading, setIsLoading] = useState(initialComments.length === 0);
 
-    // ... (keep state)
+    const [content, setContent] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [replyingTo, setReplyingTo] = useState<number | null>(null);
+    const [replyContent, setReplyContent] = useState("");
+    const [error, setError] = useState<string | null>(null);
 
-    // ... (keep fetchComments and useEffect)
+    const fetchComments = async () => {
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+            const res = await fetch(`${apiUrl}/comments/${commentableType}/${commentableId}`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setComments(data.data || []);
+            }
+        } catch (err) {
+            console.error("Failed to fetch comments", err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-    // ... (keep handleLike)
+    useEffect(() => {
+        if (isLoading) {
+            fetchComments();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [commentableId, commentableType, token]);
 
-    // ... (keep handleSubmit)
+    const handleLike = async (commentId: number) => {
+        if (!user) return;
+
+        setComments(prevComments => {
+            const updateLikeInTree = (list: Comment[]): Comment[] => {
+                return list.map(c => {
+                    if (c.id === commentId) {
+                        return {
+                            ...c,
+                            likes_count: c.is_liked_by_user ? c.likes_count - 1 : c.likes_count + 1,
+                            is_liked_by_user: !c.is_liked_by_user
+                        };
+                    }
+                    if (c.replies) {
+                        return { ...c, replies: updateLikeInTree(c.replies) };
+                    }
+                    return c;
+                });
+            };
+            return updateLikeInTree(prevComments);
+        });
+
+        try {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comments/${commentId}/like`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+        } catch (err) {
+            console.error("Like failed", err);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent, parentId: number | null = null) => {
+        e.preventDefault();
+        const text = parentId ? replyContent : content;
+
+        if (!text.trim() || !user) return;
+
+        setIsSubmitting(true);
+        setError(null);
+
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+            const res = await fetch(`${apiUrl}/comments`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    commentable_id: commentableId,
+                    commentable_type: commentableType,
+                    content: text,
+                    parent_id: parentId
+                })
+            });
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.message || "Failed to post comment");
+            }
+
+            await fetchComments();
+
+            if (parentId) {
+                setReplyingTo(null);
+                setReplyContent("");
+            } else {
+                setContent("");
+            }
+        } catch (err) {
+            setError((err as Error).message || "Something went wrong.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <div id="comments" className="max-w-4xl mx-auto py-12 px-4">
