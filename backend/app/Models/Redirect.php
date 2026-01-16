@@ -11,12 +11,15 @@ class Redirect extends Model
         'source_url',
         'target_url',
         'status_code',
+        'hits',
         'is_active',
+        'note',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'status_code' => 'integer',
+        'hits' => 'integer',
     ];
 
     // Auto-format source_url to start with / and remove trailing slash
