@@ -15,6 +15,7 @@ import DOMPurify from "isomorphic-dompurify";
 import LiveViewCount from "@/components/tracking/LiveViewCount";
 import TrendingSidebar from "@/components/news/TrendingSidebar";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
+import RelatedArticles from "@/components/seo/RelatedArticles";
 
 interface ArticleDetailViewProps {
     article: Article;
@@ -310,6 +311,12 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 initialComments={initialComments}
                             />
                         </div>
+
+                        {/* Related Articles Section */}
+                        <RelatedArticles
+                            articles={(article as any).related_articles || []}
+                            title="Slični članci"
+                        />
                     </div>
 
                     {/* Sidebar (Right) */}
