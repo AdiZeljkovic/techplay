@@ -299,6 +299,15 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 </Link>
                             </div>
                         </div>
+
+                        {/* Comments Section */}
+                        <div className="mt-12 pt-12 border-t border-[var(--border)]">
+                            <CommentsSection
+                                commentableId={article.id}
+                                commentableType="article"
+                                initialComments={initialComments}
+                            />
+                        </div>
                     </div>
 
                     {/* Sidebar (Right) */}
@@ -324,14 +333,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                     </aside>
                 </div>
 
-                {/* Comments Section - Full Width */}
-                <div className="mt-20 border-t border-[var(--border)] pt-12">
-                    <CommentsSection
-                        commentableId={article.id}
-                        commentableType="article"
-                        initialComments={initialComments}
-                    />
-                </div>
+
             </div>
         </article>
     );
