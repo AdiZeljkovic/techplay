@@ -167,6 +167,28 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 <span className="text-xs text-white/60">Published</span>
                             </div>
 
+                            {/* Last Updated - show only if significantly updated */}
+                            {article.updated_at && (() => {
+                                const published = new Date(article.published_at || article.created_at);
+                                const updated = new Date(article.updated_at);
+                                const daysDiff = (updated.getTime() - published.getTime()) / (1000 * 60 * 60 * 24);
+                                if (daysDiff > 1) {
+                                    return (
+                                        <>
+                                            <div className="hidden md:block w-px h-10 bg-white/20" />
+                                            <div className="flex flex-col">
+                                                <span className="flex items-center gap-2 text-sm font-medium text-green-400">
+                                                    <Calendar className="w-4 h-4" />
+                                                    {format(updated, 'dd/MM/yyyy')}
+                                                </span>
+                                                <span className="text-xs text-green-400/60">Updated</span>
+                                            </div>
+                                        </>
+                                    );
+                                }
+                                return null;
+                            })()}
+
                             <div className="hidden md:block w-px h-10 bg-white/20" />
 
                             <div className="flex flex-col">

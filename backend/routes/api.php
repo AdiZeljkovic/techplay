@@ -149,6 +149,14 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum', 'throttle:6,1'])->post('/comments', [App\Http\Controllers\Api\V1\CommentController::class, 'store']);
     Route::middleware(['auth:sanctum', 'throttle:30,1'])->post('/comments/{id}/vote', [App\Http\Controllers\Api\V1\CommentController::class, 'vote']);
     Route::middleware(['auth:sanctum', 'throttle:5,1'])->post('/reports', [App\Http\Controllers\Api\V1\ReportController::class, 'store']);
+
+    // SEO Tools (Admin only)
+    Route::middleware(['auth:sanctum'])->prefix('seo')->group(function () {
+        Route::post('/suggest-links', [App\Http\Controllers\Api\V1\SeoController::class, 'suggestLinks']);
+        Route::get('/orphan-pages', [App\Http\Controllers\Api\V1\SeoController::class, 'getOrphanPages']);
+        Route::get('/articles/{article}/inbound-links', [App\Http\Controllers\Api\V1\SeoController::class, 'getInboundLinks']);
+        Route::get('/articles/{article}/schemas', [App\Http\Controllers\Api\V1\SeoController::class, 'getSchemas']);
+    });
 });
 
 
