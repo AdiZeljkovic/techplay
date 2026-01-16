@@ -10,8 +10,10 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class SeoStatsWidget extends BaseWidget
 {
-    protected ?string $pollingInterval = null;
-    protected int $sort = 1;
+    public static function getSort(): int
+    {
+        return 1;
+    }
 
     protected function getStats(): array
     {
