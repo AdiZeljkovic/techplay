@@ -7,7 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { User, Comment } from "@/types";
 import { Button } from "../ui/Button";
-import { Heart, MessageSquare, CornerDownRight, Send, Trophy, ShieldCheck, Gamepad2 } from "lucide-react";
+import { MessageSquare, CornerDownRight, Send, Trophy, ShieldCheck, Gamepad2, ChevronUp, ChevronDown } from "lucide-react";
 
 // Removed local Comment interface in favor of shared type
 
@@ -52,35 +52,57 @@ export default function CommentsSection({ commentableId, commentableType, initia
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [commentableId, commentableType, token]);
 
-    const handleLike = async (commentId: number) => {
+    const handleVote = async (commentId: number, type: 'up' | 'down') => {
         if (!user) return;
 
         setComments(prevComments => {
-            const updateLikeInTree = (list: Comment[]): Comment[] => {
+            const updateVoteInTree = (list: Comment[]): Comment[] => {
                 return list.map(c => {
                     if (c.id === commentId) {
+                        const currentVote = c.user_vote;
+                        let newScore = c.score || 0;
+                        let newVote = currentVote;
+
+                        if (currentVote === type) {
+                            // Toggle off
+                            newVote = null;
+                            newScore = type === 'up' ? newScore - 1 : newScore + 1;
+                        } else if (currentVote) {
+                            // Flip
+                            newVote = type;
+                            newScore = type === 'up' ? newScore + 2 : newScore - 2;
+                        } else {
+                            // New vote
+                            newVote = type;
+                            newScore = type === 'up' ? newScore + 1 : newScore - 1;
+                        }
+
                         return {
                             ...c,
-                            likes_count: c.is_liked_by_user ? c.likes_count - 1 : c.likes_count + 1,
-                            is_liked_by_user: !c.is_liked_by_user
+                            score: newScore,
+                            user_vote: newVote as 'up' | 'down' | null | undefined
                         };
                     }
                     if (c.replies) {
-                        return { ...c, replies: updateLikeInTree(c.replies) };
+                        return { ...c, replies: updateVoteInTree(c.replies) };
                     }
                     return c;
                 });
             };
-            return updateLikeInTree(prevComments);
+            return updateVoteInTree(prevComments);
         });
 
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comments/${commentId}/like`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comments/${commentId}/vote`, {
                 method: "POST",
-                headers: { Authorization: `Bearer ${token}` }
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ type })
             });
         } catch (err) {
-            console.error("Like failed", err);
+            console.error("Vote failed", err);
         }
     };
 
@@ -223,7 +245,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                             replyContent={replyContent}
                             setReplyContent={setReplyContent}
                             handleSubmit={handleSubmit}
-                            handleLike={handleLike}
+                            handleVote={handleVote}
                             isSubmitting={isSubmitting}
                         />
                     ))}
@@ -249,7 +271,7 @@ const CommentItem = ({
     replyContent,
     setReplyContent,
     handleSubmit,
-    handleLike,
+    handleVote,
     isSubmitting
 }: {
     comment: Comment;
@@ -260,7 +282,7 @@ const CommentItem = ({
     replyContent: string;
     setReplyContent: (content: string) => void;
     handleSubmit: (e: React.FormEvent, parentId: number | null) => void;
-    handleLike: (id: number) => void;
+    handleVote: (id: number, type: 'up' | 'down') => void;
     isSubmitting: boolean;
 }) => {
     const displayName = comment.user.name || comment.user.username;
@@ -317,13 +339,26 @@ const CommentItem = ({
 
                     {/* Actions */}
                     <div className="flex items-center gap-4 mt-3">
-                        <button
-                            onClick={() => handleLike(comment.id)}
-                            className={`flex items-center gap-1.5 text-xs font-bold transition-all ${comment.is_liked_by_user ? 'text-red-500' : 'text-[var(--text-muted)] hover:text-red-400'}`}
-                        >
-                            <Heart className={`w-4 h-4 ${comment.is_liked_by_user ? 'fill-current' : ''}`} />
-                            {comment.likes_count > 0 && comment.likes_count}
-                        </button>
+                        {/* Vote Pill */}
+                        <div className="flex items-center gap-1 bg-[var(--bg-elevated)]/50 rounded-lg p-0.5 border border-[var(--border)]">
+                            <button
+                                onClick={() => handleVote(comment.id, 'up')}
+                                className={`p-1 rounded hover:bg-green-500/10 transition-colors ${comment.user_vote === 'up' ? 'text-green-500' : 'text-[var(--text-muted)] hover:text-green-400'}`}
+                                title="Upvote"
+                            >
+                                <ChevronUp className="w-4 h-4" />
+                            </button>
+                            <span className={`text-xs font-bold min-w-[16px] text-center ${comment.user_vote === 'up' ? 'text-green-500' : comment.user_vote === 'down' ? 'text-red-500' : 'text-[var(--text-secondary)]'}`}>
+                                {comment.score || 0}
+                            </span>
+                            <button
+                                onClick={() => handleVote(comment.id, 'down')}
+                                className={`p-1 rounded hover:bg-red-500/10 transition-colors ${comment.user_vote === 'down' ? 'text-red-500' : 'text-[var(--text-muted)] hover:text-red-400'}`}
+                                title="Downvote"
+                            >
+                                <ChevronDown className="w-4 h-4" />
+                            </button>
+                        </div>
 
                         <button
                             onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
@@ -395,7 +430,7 @@ const CommentItem = ({
                                         replyContent={replyContent}
                                         setReplyContent={setReplyContent}
                                         handleSubmit={handleSubmit}
-                                        handleLike={handleLike}
+                                        handleVote={handleVote}
                                         isSubmitting={isSubmitting}
                                     />
                                 ))}
