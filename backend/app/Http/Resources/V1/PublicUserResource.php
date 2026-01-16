@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * Public-facing user resource - only exposes safe, public information.
- * Used when displaying user profiles publicly (not for the authenticated user's own data).
+ * Public-facing user resource - exposes profile information.
+ * Safe for public display - excludes email, password, payment info, etc.
  */
 class PublicUserResource extends JsonResource
 {
@@ -24,6 +24,8 @@ class PublicUserResource extends JsonResource
             'display_name' => $this->display_name,
             'avatar_url' => $this->avatar_url,
             'bio' => $this->bio,
+            'role' => $this->hasRole('admin') ? 'admin' : ($this->hasRole('editor') ? 'editor' : 'member'),
+            'created_at' => $this->created_at,
             'rank' => $this->whenLoaded('rank', function () {
                 return [
                     'name' => $this->rank->name,
@@ -31,18 +33,22 @@ class PublicUserResource extends JsonResource
                     'icon' => $this->rank->icon,
                 ];
             }),
-            'is_staff' => $this->hasRole(['admin', 'editor']),
-            'is_supporter' => $this->whenLoaded('activeSupport', fn() => (bool) $this->activeSupport),
-            'support_tier' => $this->whenLoaded('activeSupport', function () {
-                return $this->activeSupport?->tier ? [
-                    'name' => $this->activeSupport->tier->name,
-                    'badge_color' => $this->activeSupport->tier->badge_color ?? null,
+            'active_support' => $this->whenLoaded('activeSupport', function () {
+                return $this->activeSupport ? [
+                    'tier' => [
+                        'name' => $this->activeSupport->tier->name,
+                        'color' => $this->activeSupport->tier->badge_color ?? $this->activeSupport->tier->color ?? '#F59E0B',
+                    ]
                 ] : null;
             }),
             'forum_reputation' => $this->forum_reputation ?? 0,
-            'level' => floor(($this->xp ?? 0) / 1000) + 1,
             'xp' => $this->xp ?? 0,
-            'joined_at' => $this->created_at?->format('M Y'), // Only month/year, not exact date
+            // Public profile data
+            'gamertags' => $this->gamertags ?? [],
+            'pc_specs' => $this->pc_specs ?? [],
+            // Relations when loaded
+            'threads' => $this->whenLoaded('threads', fn() => $this->threads),
+            'posts' => $this->whenLoaded('posts', fn() => $this->posts),
         ];
     }
 }
