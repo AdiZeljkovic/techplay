@@ -12,7 +12,8 @@ import TableOfContents from "@/components/ui/TableOfContents";
 import AdUnit from "@/components/ads/AdUnit";
 import CommentsSection from "@/components/comments/CommentsSection";
 import ReviewSidebar from "@/components/reviews/ReviewSidebar";
-import { Article } from "@/types"; // Import Article for casting if needed, though Review now has fields.
+import { Article } from "@/types";
+import DOMPurify from "isomorphic-dompurify";
 
 interface ReviewDetailViewProps {
     review: Review;
@@ -252,7 +253,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                     prose-ol:list-decimal prose-ol:pl-6 prose-ol:text-[var(--text-secondary)]
                                     prose-hr:border-[var(--border)] prose-hr:my-10
                                 "
-                                dangerouslySetInnerHTML={{ __html: processedContent }}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(processedContent) }}
                             />
                         ) : (
                             <div className="py-20 text-center text-[var(--text-secondary)]">
