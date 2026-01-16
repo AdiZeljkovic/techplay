@@ -151,7 +151,7 @@ class AuthController extends Controller
 
         // Fetch recent threads (only public data)
         $recentThreads = $user->threads()
-            ->with('category:id,slug,title')
+            ->with('category:id,slug,name')
             ->latest()
             ->take(5)
             ->get(['id', 'title', 'slug', 'category_id', 'created_at', 'view_count']);
