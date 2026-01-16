@@ -163,18 +163,30 @@ class AuthController extends Controller
             ->take(5)
             ->get(['id', 'content', 'created_at', 'commentable_type', 'commentable_id']);
 
-        // Fetch user's unlocked achievements only
-        $unlockedAchievements = $user->achievements()
-            ->get()
-            ->map(function ($achievement) {
-                return [
-                    'id' => $achievement->id,
-                    'name' => $achievement->name,
-                    'description' => $achievement->description,
-                    'icon' => $achievement->icon,
-                    'unlocked_at' => $achievement->pivot->unlocked_at,
-                ];
-            });
+        // Fetch ALL achievements and mark which ones user has unlocked
+        $userUnlockedIds = $user->achievements()->pluck('achievements.id')->toArray();
+
+        $allAchievements = \App\Models\Achievement::all()->map(function ($achievement) use ($userUnlockedIds, $user) {
+            $isUnlocked = in_array($achievement->id, $userUnlockedIds);
+            $unlockedAt = null;
+
+            if ($isUnlocked) {
+                $pivot = $user->achievements()->where('achievements.id', $achievement->id)->first()?->pivot;
+                $unlockedAt = $pivot?->unlocked_at;
+            }
+
+            return [
+                'id' => $achievement->id,
+                'name' => $achievement->name,
+                'description' => $achievement->description,
+                'icon_path' => $achievement->icon_path,
+                'points' => $achievement->points,
+                'is_unlocked' => $isUnlocked,
+                'unlocked_at' => $unlockedAt,
+            ];
+        });
+
+        $unlockedCount = count($userUnlockedIds);
 
         // Calculate Stats (only public counts)
         $stats = [
@@ -183,14 +195,14 @@ class AuthController extends Controller
             'comments_count' => $user->comments()->where('status', 'approved')->count(),
             'reputation' => $user->forum_reputation ?? 0,
             'joined_at' => $user->created_at->format('M Y'), // Only month/year
-            'achievements_count' => $unlockedAchievements->count(),
+            'achievements_count' => $unlockedCount,
             'level' => floor(($user->xp ?? 0) / 1000) + 1,
             'xp' => $user->xp ?? 0,
         ];
 
         return response()->json([
             'user' => new \App\Http\Resources\V1\PublicUserResource($user),
-            'achievements' => $unlockedAchievements,
+            'achievements' => $allAchievements,
             'next_rank' => $user->nextRank() ? [
                 'name' => $user->nextRank()->name,
                 'min_xp' => $user->nextRank()->min_xp,
