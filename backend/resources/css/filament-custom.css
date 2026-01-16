@@ -1,19 +1,30 @@
 /*
  * TechPlay Admin Panel - Custom Filament Theme
- * Based on Editorial Chat design system
+ * Matching Frontend Design System (Deep Navy Theme)
  */
 
 :root {
-    --tp-bg-primary: rgba(30, 30, 40, 0.95);
-    --tp-bg-secondary: rgba(17, 24, 39, 0.98);
-    --tp-bg-card: rgba(255, 255, 255, 0.03);
+    /* TechPlay Design System - Matching Frontend */
+    --tp-bg-primary: #001540;
+    /* Deep Navy Background */
+    --tp-bg-secondary: #000B25;
+    /* Darker areas */
+    --tp-bg-card: #00215E;
+    /* Card background */
+    --tp-bg-elevated: #002B7A;
+    /* Hover/elevated states */
+
     --tp-accent: #FC4100;
     --tp-accent-dark: #d93800;
-    --tp-text-primary: #fff;
-    --tp-text-secondary: rgba(255, 255, 255, 0.6);
-    --tp-text-muted: rgba(255, 255, 255, 0.4);
-    --tp-border: rgba(255, 255, 255, 0.08);
+    --tp-accent-light: rgba(252, 65, 0, 0.15);
+
+    --tp-text-primary: #FFFFFF;
+    --tp-text-secondary: #E0E7FF;
+    --tp-text-muted: #94A3B8;
+
+    --tp-border: rgba(255, 255, 255, 0.1);
     --tp-border-light: rgba(255, 255, 255, 0.06);
+
     --tp-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     --tp-radius-lg: 16px;
     --tp-radius-md: 12px;
@@ -24,9 +35,9 @@
    GLOBAL OVERRIDES
    ============================================ */
 
-/* Main content area */
+/* Main content area - TechPlay Deep Navy */
 .fi-main {
-    background: linear-gradient(135deg, #0f0f14 0%, #1a1a24 50%, #0f0f14 100%) !important;
+    background: linear-gradient(135deg, var(--tp-bg-secondary) 0%, var(--tp-bg-primary) 50%, var(--tp-bg-secondary) 100%) !important;
 }
 
 /* Sidebar */
