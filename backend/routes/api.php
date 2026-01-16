@@ -41,6 +41,7 @@ Route::prefix('v1')->group(function () {
         // Shop & PayPal
         Route::post('/shop/orders', [App\Http\Controllers\Api\V1\PayPalController::class, 'createOrder']);
         Route::post('/shop/orders/capture', [App\Http\Controllers\Api\V1\PayPalController::class, 'captureOrder']);
+        Route::post('/shop/orders/cod', [App\Http\Controllers\Api\V1\ShopController::class, 'storeOrder']);
 
         // Subscriptions
         Route::post('/subscriptions/activate', [App\Http\Controllers\Api\V1\PayPalController::class, 'activateSubscription']); // Still useful if we want generic activation, but Support uses pledge()
