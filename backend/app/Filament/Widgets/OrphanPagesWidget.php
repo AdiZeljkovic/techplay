@@ -10,9 +10,9 @@ use Illuminate\Database\Eloquent\Builder;
 
 class OrphanPagesWidget extends BaseWidget
 {
-    protected static ?string $heading = 'Orphan Pages (No Inbound Links)';
+    protected ?string $heading = 'Orphan Pages (No Inbound Links)';
     protected int|string|array $columnSpan = 'full';
-    protected static ?int $sort = 3;
+    protected int $sort = 3;
 
     public function table(Table $table): Table
     {
