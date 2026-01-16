@@ -77,17 +77,18 @@ export default function PageHero({
 
             {/* Floating Navigation Pill - only show if categories exist */}
             {categories && categories.length > 0 && (
-                <div className="absolute bottom-10 z-20 w-full px-4 flex justify-center">
+                <div className="absolute bottom-6 sm:bottom-10 z-20 w-full px-2 sm:px-4 flex justify-center">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 0.5 }}
-                        className="bg-[#0f1221]/90 backdrop-blur-xl border border-white/10 rounded-full p-1.5 shadow-2xl flex flex-wrap justify-center gap-1 max-w-[90vw] overflow-x-auto scrollbar-hide"
+                        className="bg-[#0f1221]/90 backdrop-blur-xl border border-white/10 rounded-2xl sm:rounded-full p-1.5 shadow-2xl flex overflow-x-auto scrollbar-hide gap-1 max-w-[95vw] sm:max-w-[90vw]"
+                        style={{ WebkitOverflowScrolling: 'touch' }}
                     >
                         {categories.map((cat) => {
                             const isSelected = selectedCategory === cat.id;
                             const buttonClass = cn(
-                                "flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap",
+                                "flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0",
                                 isSelected
                                     ? "bg-[var(--accent)] text-white shadow-[0_0_15px_rgba(var(--accent-rgb),0.5)] scale-105"
                                     : "text-white/50 hover:text-white hover:bg-white/5"
@@ -100,8 +101,8 @@ export default function PageHero({
                                         href={cat.slug === 'all' ? basePath : `${categoryBase || basePath}/${cat.slug}`}
                                         className={buttonClass}
                                     >
-                                        <cat.icon className={cn("w-4 h-4", isSelected ? "text-white" : "text-[var(--accent)]")} />
-                                        {cat.label}
+                                        <cat.icon className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4", isSelected ? "text-white" : "text-[var(--accent)]")} />
+                                        <span className="hidden xs:inline sm:inline">{cat.label}</span>
                                     </Link>
                                 );
                             }
@@ -112,8 +113,8 @@ export default function PageHero({
                                     onClick={() => onSelectCategory && onSelectCategory(cat.id)}
                                     className={buttonClass}
                                 >
-                                    <cat.icon className={cn("w-4 h-4", isSelected ? "text-white" : "text-[var(--accent)]")} />
-                                    {cat.label}
+                                    <cat.icon className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4", isSelected ? "text-white" : "text-[var(--accent)]")} />
+                                    <span className="hidden xs:inline sm:inline">{cat.label}</span>
                                 </button>
                             );
                         })}

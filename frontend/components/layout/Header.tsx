@@ -356,6 +356,68 @@ export default function Header() {
                         className="xl:hidden fixed inset-0 top-[80px] bg-[#00215E] z-50 overflow-y-auto"
                     >
                         <div className="container mx-auto px-4 py-6 space-y-6">
+                            {/* User Section for Mobile */}
+                            {user ? (
+                                <div className="bg-[#001540] rounded-2xl p-4 border border-white/10">
+                                    <Link
+                                        href={`/profile/${user.username || 'me'}`}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="flex items-center gap-4"
+                                    >
+                                        {user.avatar_url ? (
+                                            <img src={user.avatar_url} alt={user.username} className="w-14 h-14 rounded-full object-cover border-2 border-[var(--accent)]" />
+                                        ) : (
+                                            <div className="w-14 h-14 bg-[var(--accent)]/20 rounded-full flex items-center justify-center text-[var(--accent)] text-xl font-bold">
+                                                {user.username?.charAt(0)?.toUpperCase() || '?'}
+                                            </div>
+                                        )}
+                                        <div className="flex-1">
+                                            <p className="text-white font-bold text-lg">{user.display_name || user.username}</p>
+                                            <p className="text-gray-400 text-sm">Level {Math.floor((user.xp || 0) / 1000) + 1}</p>
+                                        </div>
+                                    </Link>
+                                    <div className="flex gap-2 mt-4">
+                                        <Link
+                                            href="/messages"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="flex-1 flex items-center justify-center gap-2 py-3 bg-white/5 rounded-xl text-gray-300 hover:bg-white/10 transition-colors"
+                                        >
+                                            <Mail className="w-5 h-5" />
+                                            <span className="text-sm font-medium">Messages</span>
+                                            {notifications.unread_messages > 0 && (
+                                                <span className="w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{notifications.unread_messages}</span>
+                                            )}
+                                        </Link>
+                                        <Link
+                                            href="/friends"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="flex-1 flex items-center justify-center gap-2 py-3 bg-white/5 rounded-xl text-gray-300 hover:bg-white/10 transition-colors"
+                                        >
+                                            <Users className="w-5 h-5" />
+                                            <span className="text-sm font-medium">Friends</span>
+                                            {notifications.pending_requests > 0 && (
+                                                <span className="w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{notifications.pending_requests}</span>
+                                            )}
+                                        </Link>
+                                    </div>
+                                    <button
+                                        onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                                        className="w-full mt-3 py-3 text-red-400 hover:text-red-300 text-sm font-medium border border-red-400/20 rounded-xl hover:bg-red-400/10 transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <LogOut className="w-4 h-4" /> Sign Out
+                                    </button>
+                                </div>
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="flex items-center justify-center gap-3 w-full py-4 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-xl transition-colors"
+                                >
+                                    <User className="w-5 h-5" />
+                                    Sign In / Register
+                                </Link>
+                            )}
+
                             {/* Search for Mobile */}
                             <div className="relative">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
