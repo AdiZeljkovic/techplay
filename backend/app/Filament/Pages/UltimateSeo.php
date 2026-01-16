@@ -30,7 +30,7 @@ class UltimateSeo extends Page implements HasForms
     public ?array $data = [];
     public string $activeTab = 'global';
 
-    protected static string $view = 'filament.pages.ultimate-seo';
+    protected string $view = 'filament.pages.ultimate-seo';
 
     public static function getNavigationIcon(): ?string
     {
