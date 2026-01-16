@@ -95,60 +95,71 @@ class CommentController extends Controller
             'type' => 'required|in:up,down',
         ]);
 
-        $type = $request->type;
-        $comment = Comment::findOrFail($id);
-        $userId = Auth::id();
+        try {
+            $type = $request->type;
+            $comment = Comment::findOrFail($id);
 
-        // Check for existing vote
-        $existingVote = \Illuminate\Support\Facades\DB::table('comment_likes')
-            ->where('comment_id', $id)
-            ->where('user_id', $userId)
-            ->first();
+            // Explicitly get user from Sanctum guard
+            $user = Auth::guard('sanctum')->user();
+            if (!$user) {
+                return response()->json(['message' => 'Unauthenticated'], 401);
+            }
+            $userId = $user->id;
 
-        $userVote = null;
+            // Check for existing vote
+            $existingVote = \Illuminate\Support\Facades\DB::table('comment_likes')
+                ->where('comment_id', $id)
+                ->where('user_id', $userId)
+                ->first();
 
-        if ($existingVote) {
-            if ($existingVote->type === $type) {
-                // Toggle off (remove vote)
-                \Illuminate\Support\Facades\DB::table('comment_likes')
-                    ->where('id', $existingVote->id)
-                    ->delete();
+            $userVote = null;
 
-                // Update score: removing upvote (-1), removing downvote (+1)
-                $change = ($type === 'up') ? -1 : 1;
-                $comment->increment('score', $change);
-                $userVote = null;
+            if ($existingVote) {
+                if ($existingVote->type === $type) {
+                    // Toggle off (remove vote)
+                    \Illuminate\Support\Facades\DB::table('comment_likes')
+                        ->where('id', $existingVote->id)
+                        ->delete();
+
+                    // Update score: removing upvote (-1), removing downvote (+1)
+                    $change = ($type === 'up') ? -1 : 1;
+                    $comment->increment('score', $change);
+                    $userVote = null;
+                } else {
+                    // Change vote type
+                    \Illuminate\Support\Facades\DB::table('comment_likes')
+                        ->where('id', $existingVote->id)
+                        ->update(['type' => $type, 'updated_at' => now()]);
+
+                    // Update score: up->down (-2), down->up (+2)
+                    $change = ($type === 'up') ? 2 : -2;
+                    $comment->increment('score', $change);
+                    $userVote = $type;
+                }
             } else {
-                // Change vote type
-                \Illuminate\Support\Facades\DB::table('comment_likes')
-                    ->where('id', $existingVote->id)
-                    ->update(['type' => $type, 'updated_at' => now()]);
+                // New vote
+                \Illuminate\Support\Facades\DB::table('comment_likes')->insert([
+                    'comment_id' => $id,
+                    'user_id' => $userId,
+                    'type' => $type,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
 
-                // Update score: up->down (-2), down->up (+2)
-                $change = ($type === 'up') ? 2 : -2;
+                $change = ($type === 'up') ? 1 : -1;
                 $comment->increment('score', $change);
                 $userVote = $type;
             }
-        } else {
-            // New vote
-            \Illuminate\Support\Facades\DB::table('comment_likes')->insert([
-                'comment_id' => $id,
-                'user_id' => $userId,
-                'type' => $type,
-                'created_at' => now(),
-                'updated_at' => now(),
+
+            return response()->json([
+                'message' => 'Vote recorded',
+                'score' => (int) $comment->score,
+                'user_vote' => $userVote
             ]);
-
-            $change = ($type === 'up') ? 1 : -1;
-            $comment->increment('score', $change);
-            $userVote = $type;
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Vote error: " . $e->getMessage());
+            return response()->json(['message' => 'Server Error: ' . $e->getMessage()], 500);
         }
-
-        return response()->json([
-            'message' => 'Vote recorded',
-            'score' => (int) $comment->score,
-            'user_vote' => $userVote
-        ]);
     }
 
     protected function getModelClass($type)
