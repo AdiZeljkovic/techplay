@@ -41,17 +41,22 @@ class XpService
         $user->increment('xp', $actualAmount);
         Cache::increment($dailyKey, $actualAmount);
 
-        // Update level if needed (simple logic provided)
-        $this->checkLevelUp($user);
+        // Update rank if needed
+        $this->checkRankUpdate($user);
     }
 
-    protected function checkLevelUp(User $user): void
+    protected function checkRankUpdate(User $user): void
     {
-        $newLevel = floor($user->xp / 1000) + 1;
-        if ($newLevel > $user->level) {
-            $user->level = $newLevel;
+        // Find the highest rank the user qualifies for based on XP
+        // Assuming 'min_xp' is the column name as per User model usage
+        $newRank = \App\Models\Rank::where('min_xp', '<=', $user->xp)
+            ->orderBy('min_xp', 'desc')
+            ->first();
+
+        if ($newRank && $newRank->id !== $user->rank_id) {
+            $user->rank_id = $newRank->id;
             $user->save();
-            // Could fire LevelUp event here
+            // Could fire RankUp event here
         }
     }
 }
