@@ -27,6 +27,11 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\Article::observe(\App\Observers\ArticleObserver::class);
         \App\Models\Comment::observe(\App\Observers\CommentObserver::class);
         \App\Models\Product::observe(\App\Observers\ProductObserver::class);
+        \App\Models\Review::observe(\App\Observers\ReviewObserver::class);
+        \App\Models\Thread::observe(\App\Observers\ThreadObserver::class);
+        \App\Models\Post::observe(\App\Observers\ForumPostObserver::class);
+        \App\Models\Video::observe(\App\Observers\VideoObserver::class);
+        \App\Models\Guide::observe(\App\Observers\GuideObserver::class);
 
         // Prevent N+1 queries in non-production environments
         \Illuminate\Database\Eloquent\Model::preventLazyLoading(!app()->isProduction());
