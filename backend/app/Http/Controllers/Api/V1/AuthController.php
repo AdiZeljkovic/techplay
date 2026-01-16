@@ -146,7 +146,7 @@ class AuthController extends Controller
     public function show(string $username)
     {
         $user = User::where('username', $username)
-            ->with(['rank', 'activeSupport.tier'])
+            ->with(['rank', 'activeSupport.tier', 'threads', 'posts'])
             ->firstOrFail();
 
         // Fetch recent threads (only public data)
