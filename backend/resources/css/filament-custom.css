@@ -50,10 +50,10 @@
     pointer-events: none;
 }
 
-/* Sidebar */
+/* Sidebar - Deep Navy */
 .fi-sidebar {
-    background: var(--tp-bg-secondary) !important;
-    border-right: 1px solid var(--tp-border) !important;
+    background: #000B25 !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 .fi-sidebar-nav-groups {
@@ -69,12 +69,12 @@
 }
 
 .fi-sidebar-item-button:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
+    background: #00215E !important;
 }
 
 .fi-sidebar-item-button.fi-active {
-    background: rgba(252, 65, 0, 0.1) !important;
-    border-left-color: var(--tp-accent) !important;
+    background: #00215E !important;
+    border-left-color: #FC4100 !important;
 }
 
 .fi-sidebar-item-button.fi-active .fi-sidebar-item-label {
@@ -288,8 +288,8 @@
    ============================================ */
 
 .fi-notification {
-    background: var(--tp-bg-secondary) !important;
-    border: 1px solid var(--tp-border) !important;
+    background: #001540 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: var(--tp-radius-md) !important;
     box-shadow: var(--tp-shadow) !important;
 }
@@ -301,15 +301,18 @@
 .fi-tabs-tab {
     border-radius: var(--tp-radius-sm) !important;
     transition: all 0.15s ease !important;
+    color: #94A3B8 !important;
 }
 
 .fi-tabs-tab:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
+    background: #00215E !important;
+    color: #FFFFFF !important;
 }
 
 .fi-tabs-tab[aria-selected="true"] {
-    background: rgba(252, 65, 0, 0.15) !important;
-    color: var(--tp-accent) !important;
+    background: #00215E !important;
+    color: #FC4100 !important;
+    border-bottom: 2px solid #FC4100 !important;
 }
 
 /* ============================================
@@ -337,15 +340,15 @@
    ============================================ */
 
 .fi-topbar {
-    background: var(--tp-bg-secondary) !important;
-    border-bottom: 1px solid var(--tp-border) !important;
+    background: #000B25 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
     backdrop-filter: blur(10px) !important;
 }
 
 /* User menu */
 .fi-dropdown-panel {
-    background: var(--tp-bg-secondary) !important;
-    border: 1px solid var(--tp-border) !important;
+    background: #001540 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: var(--tp-radius-md) !important;
     box-shadow: var(--tp-shadow) !important;
 }
@@ -355,7 +358,7 @@
 }
 
 .fi-dropdown-list-item-button:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
+    background: #00215E !important;
 }
 
 /* ============================================
