@@ -163,6 +163,39 @@ class SchemaService
     }
 
     /**
+     * Generate Product Schema for hardware articles
+     */
+    public static function getProductSchema(Article $article): ?array
+    {
+        // Only for tech/hardware categories
+        if (!in_array($article->category, ['tech', 'hardware', 'pc'])) {
+            return null;
+        }
+
+        $productName = self::extractProductName($article->title);
+
+        return [
+            '@context' => 'https://schema.org',
+            '@type' => 'Product',
+            'name' => $productName,
+            'description' => $article->excerpt ?? Str::limit(strip_tags($article->content), 200),
+            'image' => $article->featured_image_url,
+            'review' => $article->review_rating ? [
+                '@type' => 'Review',
+                'reviewRating' => [
+                    '@type' => 'Rating',
+                    'ratingValue' => $article->review_rating,
+                    'bestRating' => '10',
+                ],
+                'author' => [
+                    '@type' => 'Person',
+                    'name' => $article->author?->display_name ?? 'TechPlay',
+                ],
+            ] : null,
+        ];
+    }
+
+    /**
      * Get all schemas for an article
      */
     public static function getAllSchemas(Article $article): array
@@ -185,6 +218,13 @@ class SchemaService
             $schemas[] = $howTo;
         }
 
+        // Product schema
+        $product = self::getProductSchema($article);
+        if ($product) {
+            $schemas[] = $product;
+        }
+
         return $schemas;
     }
 }
+
