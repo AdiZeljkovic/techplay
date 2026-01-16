@@ -18,8 +18,8 @@ class SyncUserXP extends Command
     public function handle()
     {
         $userId = $this->option('user');
-        
-        $users = $userId 
+
+        $users = $userId
             ? User::where('id', $userId)->get()
             : User::all();
 
@@ -30,17 +30,18 @@ class SyncUserXP extends Command
             $threadCount = $user->threads()->count();
             $commentCount = $user->comments()->where('status', 'approved')->count();
 
-            $calculatedXP = 
+            $calculatedXP =
                 ($postCount * self::XP_PER_POST) +
                 ($threadCount * self::XP_PER_THREAD) +
                 ($commentCount * self::XP_PER_COMMENT);
 
             $oldXP = $user->xp ?? 0;
-            
+
             // Only update if calculated is higher (don't take away XP)
             if ($calculatedXP > $oldXP) {
                 $user->update(['xp' => $calculatedXP]);
-                $this->line("  - {$user->username}: {$oldXP} -> {$calculatedXP} XP (+{$calculatedXP - $oldXP})");
+                $gained = $calculatedXP - $oldXP;
+                $this->line("  - {$user->username}: {$oldXP} -> {$calculatedXP} XP (+{$gained})");
             }
 
             // Update rank based on new XP
