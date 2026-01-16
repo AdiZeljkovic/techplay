@@ -30,15 +30,26 @@ class UltimateSeo extends Page implements HasForms
     public ?array $data = [];
     public string $activeTab = 'global';
 
-    protected static ?string $navigationIcon = 'heroicon-o-magnifying-glass-circle';
-    protected static ?string $navigationLabel = 'Ultimate SEO';
-    protected static ?int $navigationSort = 1;
-
     protected static string $view = 'filament.pages.ultimate-seo';
+
+    public static function getNavigationIcon(): ?string
+    {
+        return 'heroicon-o-magnifying-glass-circle';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Ultimate SEO';
+    }
 
     public static function getNavigationGroup(): ?string
     {
         return 'Settings';
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return 1;
     }
 
     public function mount(): void
