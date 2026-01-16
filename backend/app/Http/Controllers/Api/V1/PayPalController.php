@@ -96,14 +96,15 @@ class PayPalController extends Controller
                     'user_id' => $user->id,
                     'status' => 'PENDING',
                     'total_price' => $total,
-                    // 'payment_method' => 'paypal',
-                    // 'shipping_address' => $request->shipping_address,
+                    'payment_method' => 'paypal',
+                    'shipping_address' => $request->shipping_address,
                     'paypal_order_id' => $response['id'],
-                    'items' => json_encode($orderItemsData), // Store as JSON for now
                 ]);
 
-                // If Order has items relation and we have data
-                // if (method_exists($order, 'items')) { ... }
+                // Create Order Items
+                foreach ($orderItemsData as $data) {
+                    $order->items()->create($data);
+                }
 
                 return response()->json([
                     'id' => $response['id'],
