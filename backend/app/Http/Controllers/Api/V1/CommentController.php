@@ -88,36 +88,66 @@ class CommentController extends Controller
         return new \App\Http\Resources\V1\CommentResource($comment->load('user.rank'));
     }
 
-    public function like($id)
+    public function vote(Request $request, $id)
     {
+        $request->validate([
+            'type' => 'required|in:up,down',
+        ]);
+
+        $type = $request->type;
         $comment = Comment::findOrFail($id);
         $userId = Auth::id();
 
-        // Check if already liked
-        $existingLike = \Illuminate\Support\Facades\DB::table('comment_likes')
+        // Check for existing vote
+        $existingVote = \Illuminate\Support\Facades\DB::table('comment_likes')
             ->where('comment_id', $id)
             ->where('user_id', $userId)
             ->first();
 
-        if ($existingLike) {
-            // Unlike
-            \Illuminate\Support\Facades\DB::table('comment_likes')
-                ->where('comment_id', $id)
-                ->where('user_id', $userId)
-                ->delete();
-            $comment->decrement('likes_count');
-            return response()->json(['message' => 'Unliked', 'likes_count' => $comment->likes_count]);
+        $userVote = null;
+
+        if ($existingVote) {
+            if ($existingVote->type === $type) {
+                // Toggle off (remove vote)
+                \Illuminate\Support\Facades\DB::table('comment_likes')
+                    ->where('id', $existingVote->id)
+                    ->delete();
+
+                // Update score: removing upvote (-1), removing downvote (+1)
+                $change = ($type === 'up') ? -1 : 1;
+                $comment->increment('score', $change);
+                $userVote = null;
+            } else {
+                // Change vote type
+                \Illuminate\Support\Facades\DB::table('comment_likes')
+                    ->where('id', $existingVote->id)
+                    ->update(['type' => $type, 'updated_at' => now()]);
+
+                // Update score: up->down (-2), down->up (+2)
+                $change = ($type === 'up') ? 2 : -2;
+                $comment->increment('score', $change);
+                $userVote = $type;
+            }
         } else {
-            // Like
+            // New vote
             \Illuminate\Support\Facades\DB::table('comment_likes')->insert([
                 'comment_id' => $id,
                 'user_id' => $userId,
+                'type' => $type,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            $comment->increment('likes_count');
-            return response()->json(['message' => 'Liked', 'likes_count' => $comment->likes_count]);
+
+            $change = ($type === 'up') ? 1 : -1;
+            $comment->increment('score', $change);
+            $userVote = $type;
         }
+
+        return response()->json([
+            'message' => 'Vote recorded',
+            'score' => (int) $comment->score,
+            'user_vote' => $userVote
+        ]);
     }
 
     protected function getModelClass($type)

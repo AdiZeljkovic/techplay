@@ -146,7 +146,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/articles/{slug}/view', [App\Http\Controllers\Api\V1\TrackingController::class, 'recordView']);
     });
     Route::middleware(['auth:sanctum', 'throttle:6,1'])->post('/comments', [App\Http\Controllers\Api\V1\CommentController::class, 'store']);
-    Route::middleware('auth:sanctum')->post('/comments/{id}/like', [App\Http\Controllers\Api\V1\CommentController::class, 'like']);
+    Route::middleware('auth:sanctum')->post('/comments/{id}/vote', [App\Http\Controllers\Api\V1\CommentController::class, 'vote']);
 });
 
 
