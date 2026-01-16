@@ -19,3 +19,10 @@ Broadcast::channel('editorial.channel.{slug}', function ($user, $slug) {
 Broadcast::channel('editorial.user.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
+
+// --- Real-Time Notification Channels ---
+
+// Private user channel for notifications
+Broadcast::channel('user.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+});

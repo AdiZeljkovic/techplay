@@ -19,8 +19,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Existing observers
         \App\Models\Post::observe(\App\Observers\PostObserver::class);
         \App\Models\Article::observe(\App\Observers\ContentObserver::class);
+
+        // Real-time broadcast observers
+        \App\Models\Article::observe(\App\Observers\ArticleObserver::class);
+        \App\Models\Comment::observe(\App\Observers\CommentObserver::class);
+        \App\Models\Product::observe(\App\Observers\ProductObserver::class);
 
         // Prevent N+1 queries in non-production environments
         \Illuminate\Database\Eloquent\Model::preventLazyLoading(!app()->isProduction());
