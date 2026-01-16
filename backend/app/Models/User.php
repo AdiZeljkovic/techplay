@@ -59,6 +59,18 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'email',                    // Don't expose email publicly
+        'email_verified_at',        // Internal
+        'two_factor_secret',        // Security
+        'two_factor_recovery_codes',// Security
+        'paypal_subscription_id',   // Payment sensitive
+        'paypal_customer_id',       // Payment sensitive
+        'subscription_ends_at',     // Internal
+        'is_banned',                // Internal moderation
+        'ban_reason',               // Internal moderation
+        'cookie_preferences',       // Private
+        'settings',                 // Private
+        'updated_at',               // Not needed publicly
     ];
 
     /**

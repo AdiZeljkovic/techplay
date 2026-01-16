@@ -126,8 +126,11 @@ class ForumController extends Controller
     public function createPost(Request $request, $slug)
     {
         $request->validate([
-            'content' => 'required|string|min:5'
+            'content' => 'required|string|min:5|max:10000' // Max 10k chars for post
         ]);
+
+        // Sanitize content
+        $content = strip_tags($request->content, '<p><br><strong><em><ul><ol><li><a><code><pre>');
 
         $thread = Thread::where('slug', $slug)->firstOrFail();
 
@@ -139,7 +142,7 @@ class ForumController extends Controller
 
         try {
             $post = $thread->posts()->create([
-                'content' => $request->content,
+                'content' => $content, // Use sanitized content
                 'author_id' => Auth::id(),
                 'thread_id' => $thread->id
             ]);
@@ -182,17 +185,20 @@ class ForumController extends Controller
 
         try {
             $validated = $request->validate([
-                'title' => 'required|string|max:255',
-                'content' => 'required|string',
+                'title' => 'required|string|max:255|min:5',
+                'content' => 'required|string|min:10|max:20000', // Max 20k chars for thread
                 'category_id' => 'required|exists:categories,id'
             ]);
+
+            // Sanitize content (allow some HTML for formatting)
+            $cleanContent = strip_tags($request->content, '<p><br><strong><em><ul><ol><li><a><code><pre><blockquote>');
 
             $slug = \Illuminate\Support\Str::slug($request->title) . '-' . uniqid();
 
             $thread = Thread::create([
-                'title' => $request->title,
+                'title' => strip_tags($request->title), // Strip HTML from title
                 'slug' => $slug,
-                'content' => $request->content,
+                'content' => $cleanContent, // Use sanitized content
                 'category_id' => $request->category_id,
                 'author_id' => Auth::id()
             ]);
