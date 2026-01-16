@@ -183,7 +183,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                 ) : user ? (
                     <form onSubmit={(e) => handleSubmit(e)}>
                         <div className="flex gap-4">
-                            <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden bg-[var(--bg-elevated)] ring-2 ring-white/5">
+                            <div className="hidden sm:block shrink-0 w-10 h-10 rounded-full overflow-hidden bg-[var(--bg-elevated)] ring-2 ring-white/5">
                                 {user.avatar_url ? (
                                     <Image src={user.avatar_url} alt={user.username} width={40} height={40} className="object-cover" />
                                 ) : (
@@ -192,7 +192,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                                     </div>
                                 )}
                             </div>
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
                                 <textarea
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
@@ -201,13 +201,13 @@ export default function CommentsSection({ commentableId, commentableType, initia
                                     required
                                 />
                                 {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-                                <div className="mt-4 flex justify-between items-center">
+                                <div className="mt-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                                     <p className="text-xs text-[var(--text-muted)] italic">Remember to be respectful and follow our guidelines.</p>
                                     <Button
                                         type="submit"
                                         variant="primary"
                                         disabled={isSubmitting || !content.trim()}
-                                        className="shadow-lg shadow-[var(--accent)]/20"
+                                        className="shadow-lg shadow-[var(--accent)]/20 w-full sm:w-auto"
                                     >
                                         {isSubmitting ? "Posting..." : "Post Comment"}
                                     </Button>
