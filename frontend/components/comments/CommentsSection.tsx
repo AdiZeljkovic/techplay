@@ -46,11 +46,11 @@ export default function CommentsSection({ commentableId, commentableType, initia
     };
 
     useEffect(() => {
-        if (isLoading) {
+        if (!isAuthLoading) {
             fetchComments();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [commentableId, commentableType, token]);
+    }, [commentableId, commentableType, token, isAuthLoading]);
 
     const handleVote = async (commentId: number, type: 'up' | 'down') => {
         if (!user) return;
