@@ -35,9 +35,19 @@
    GLOBAL OVERRIDES
    ============================================ */
 
-/* Main content area - TechPlay Deep Navy */
+/* Main content area - TechPlay HeroCarousel-style gradient */
 .fi-main {
-    background: linear-gradient(135deg, var(--tp-bg-secondary) 0%, var(--tp-bg-primary) 50%, var(--tp-bg-secondary) 100%) !important;
+    background: linear-gradient(180deg, #001540 0%, #00215E 50%, #001540 100%) !important;
+    position: relative;
+}
+
+/* Add subtle gradient overlay effect like HeroCarousel */
+.fi-main::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top right, rgba(0, 43, 122, 0.3) 0%, transparent 60%);
+    pointer-events: none;
 }
 
 /* Sidebar */
