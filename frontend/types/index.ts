@@ -151,6 +151,8 @@ export interface Comment {
     created_at: string;
     user: User;
     likes_count: number;
+    score?: number;
+    user_vote?: 'up' | 'down' | null;
     is_liked_by_user?: boolean;
     replies?: Comment[];
     commentable_type?: string;
