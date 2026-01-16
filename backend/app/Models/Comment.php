@@ -15,7 +15,7 @@ class Comment extends Model
         'content',
         'status',
         'parent_id',
-        'likes_count',
+        'score',
     ];
 
     protected $with = ['user'];

@@ -26,8 +26,10 @@ class CommentResource extends JsonResource
             // 'is_liked_by_user' => $this->is_liked_by_user ?? false, 
 
             // Using logic from controller transformation if attributes exist
-            'likes_count' => $this->likes_count,
-            'is_liked_by_user' => $this->is_liked_by_user,
+            'score' => (int) ($this->score ?? 0),
+            'user_vote' => $this->user_vote,
+            'likes_count' => (int) ($this->score ?? 0),
+            'is_liked_by_user' => $this->user_vote === 'up',
         ];
     }
 }
