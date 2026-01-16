@@ -149,56 +149,57 @@ class AuthController extends Controller
             ->with(['rank', 'activeSupport.tier'])
             ->firstOrFail();
 
-        // Fetch recent threads
+        // Fetch recent threads (only public data)
         $recentThreads = $user->threads()
-            ->with('category')
+            ->with('category:id,slug,title')
             ->latest()
             ->take(5)
-            ->get();
+            ->get(['id', 'title', 'slug', 'category_id', 'created_at', 'view_count']);
 
-        // Fetch recent comments (activity)
+        // Fetch recent comments (only public data - no polymorphic to avoid data leak)
         $recentComments = $user->comments()
-            ->with('commentable') // Polymorphic relation
+            ->where('status', 'approved')
             ->latest()
             ->take(5)
-            ->get();
+            ->get(['id', 'content', 'created_at', 'commentable_type', 'commentable_id']);
 
-        // Fetch all achievements
-        $allAchievements = \App\Models\Achievement::all();
-        // Fetch user's unlocked achievements as a collection keyed by achievement_id
-        $userUnlockedMap = $user->achievements()->get()->keyBy('id');
+        // Fetch user's unlocked achievements only
+        $unlockedAchievements = $user->achievements()
+            ->get()
+            ->map(function ($achievement) {
+                return [
+                    'id' => $achievement->id,
+                    'name' => $achievement->name,
+                    'description' => $achievement->description,
+                    'icon' => $achievement->icon,
+                    'unlocked_at' => $achievement->pivot->unlocked_at,
+                ];
+            });
 
-        // Map to add status
-        $processedAchievements = $allAchievements->map(function ($achievement) use ($userUnlockedMap) {
-            $unlocked = $userUnlockedMap->has($achievement->id);
-            $achievement->is_unlocked = $unlocked;
-            $achievement->unlocked_at = $unlocked ? $userUnlockedMap->get($achievement->id)->pivot->unlocked_at : null;
-            return $achievement;
-        });
-
-        // Calculate Stats
+        // Calculate Stats (only public counts)
         $stats = [
             'threads_count' => $user->threads()->count(),
-            'posts_count' => $user->posts()->count(), // Forum posts
-            'comments_count' => $user->comments()->count(),
-            'reputation' => $user->forum_reputation ?? 0, // Assuming column exists from earlier discussions
-            'joined_at' => $user->created_at->format('M d, Y'),
-            'xp' => $user->xp,
-            'achievements_count' => $userUnlockedMap->count(),
+            'posts_count' => $user->posts()->count(),
+            'comments_count' => $user->comments()->where('status', 'approved')->count(),
+            'reputation' => $user->forum_reputation ?? 0,
+            'joined_at' => $user->created_at->format('M Y'), // Only month/year
+            'achievements_count' => $unlockedAchievements->count(),
             'level' => floor(($user->xp ?? 0) / 1000) + 1,
         ];
 
         return response()->json([
-            'user' => [
-                ...$user->toArray(),
-                'achievements' => $processedAchievements,
-            ],
-            'next_rank' => $user->nextRank(),
+            'user' => new \App\Http\Resources\V1\PublicUserResource($user),
+            'achievements' => $unlockedAchievements,
+            'next_rank' => $user->nextRank() ? [
+                'name' => $user->nextRank()->name,
+                'min_xp' => $user->nextRank()->min_xp,
+            ] : null,
             'recent_threads' => $recentThreads,
             'recent_comments' => $recentComments,
             'stats' => $stats
         ]);
     }
+
     public function updateProfile(Request $request)
     {
         $user = $request->user();

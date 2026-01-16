@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class FriendController extends Controller
 {
-    // List all friends
+    // List all friends - return only safe fields
     public function index()
     {
         $userId = Auth::id();
@@ -20,23 +20,36 @@ class FriendController extends Controller
                 ->orWhere('receiver_id', $userId);
         })
             ->where('status', 'accepted')
-            ->with(['sender', 'receiver'])
+            ->with(['sender:id,username,display_name,avatar_url', 'receiver:id,username,display_name,avatar_url'])
             ->get()
             ->map(function ($friendship) use ($userId) {
-                return $friendship->sender_id === $userId ? $friendship->receiver : $friendship->sender;
+                $friend = $friendship->sender_id === $userId ? $friendship->receiver : $friendship->sender;
+                return [
+                    'id' => $friend->id,
+                    'username' => $friend->username,
+                    'display_name' => $friend->display_name,
+                    'avatar_url' => $friend->avatar_url,
+                ];
             });
 
         return response()->json($friends);
     }
 
-    // List pending requests (received)
+    // List pending requests (received) - return only safe fields
     public function penndingRequests()
     {
         $requests = Friendship::where('receiver_id', Auth::id())
             ->where('status', 'pending')
-            ->with('sender')
+            ->with('sender:id,username,display_name,avatar_url')
             ->get()
-            ->pluck('sender');
+            ->map(function ($friendship) {
+                return [
+                    'id' => $friendship->sender->id,
+                    'username' => $friendship->sender->username,
+                    'display_name' => $friendship->sender->display_name,
+                    'avatar_url' => $friendship->sender->avatar_url,
+                ];
+            });
 
         return response()->json($requests);
     }

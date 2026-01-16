@@ -70,9 +70,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/email/verify/{id}/{hash}', [App\Http\Controllers\Api\V1\VerificationController::class, 'verify'])
             ->name('verification.verify');
 
-        // Newsletter
-        Route::post('/newsletter/subscribe', [App\Http\Controllers\Api\V1\NewsletterController::class, 'subscribe']);
-        Route::post('/newsletter/verify', [App\Http\Controllers\Api\V1\NewsletterController::class, 'verify']);
+        // Newsletter (Strict rate limit to prevent email bombing)
+        Route::middleware('throttle:3,1')->group(function () {
+            Route::post('/newsletter/subscribe', [App\Http\Controllers\Api\V1\NewsletterController::class, 'subscribe']);
+            Route::post('/newsletter/verify', [App\Http\Controllers\Api\V1\NewsletterController::class, 'verify']);
+        });
 
         // Navigation
         Route::get('/navigation/tree', [App\Http\Controllers\Api\V1\NavigationController::class, 'index']);
@@ -134,9 +136,6 @@ Route::prefix('v1')->group(function () {
         // Staff / About Us
         Route::get('/staff', [App\Http\Controllers\Api\V1\AboutController::class, 'index']);
 
-        // Reporting
-        Route::post('/reports', [App\Http\Controllers\Api\V1\ReportController::class, 'store']);
-
         // Ads
         Route::get('/ads/{position}', [App\Http\Controllers\Api\V1\AdController::class, 'show']);
         Route::post('/ads/{id}/click', [App\Http\Controllers\Api\V1\AdController::class, 'click']);
@@ -147,8 +146,11 @@ Route::prefix('v1')->group(function () {
         // Tracking
         Route::post('/articles/{slug}/view', [App\Http\Controllers\Api\V1\TrackingController::class, 'recordView']);
     });
+
+    // Rate-limited authenticated actions
     Route::middleware(['auth:sanctum', 'throttle:6,1'])->post('/comments', [App\Http\Controllers\Api\V1\CommentController::class, 'store']);
-    Route::middleware('auth:sanctum')->post('/comments/{id}/vote', [App\Http\Controllers\Api\V1\CommentController::class, 'vote']);
+    Route::middleware(['auth:sanctum', 'throttle:30,1'])->post('/comments/{id}/vote', [App\Http\Controllers\Api\V1\CommentController::class, 'vote']);
+    Route::middleware(['auth:sanctum', 'throttle:5,1'])->post('/reports', [App\Http\Controllers\Api\V1\ReportController::class, 'store']);
 });
 
 
