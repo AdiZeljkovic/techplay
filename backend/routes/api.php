@@ -110,8 +110,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/tech', [App\Http\Controllers\Api\V1\TechController::class, 'index']);
         Route::get('/tech/{slug}', [App\Http\Controllers\Api\V1\TechController::class, 'show']);
 
-        Route::get('/tech-specs', [App\Http\Controllers\Api\V1\TechResourceController::class, 'index']);
-
         // Games (RAWG)
         Route::get('/games/calendar', [App\Http\Controllers\Api\V1\GameController::class, 'calendar']);
         Route::get('/games', [App\Http\Controllers\Api\V1\GameController::class, 'index']);
