@@ -185,6 +185,7 @@ class AuthController extends Controller
             'joined_at' => $user->created_at->format('M Y'), // Only month/year
             'achievements_count' => $unlockedAchievements->count(),
             'level' => floor(($user->xp ?? 0) / 1000) + 1,
+            'xp' => $user->xp ?? 0,
         ];
 
         return response()->json([
