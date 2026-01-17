@@ -117,8 +117,15 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                             </span>
                         </div>
 
-                        {/* Title */}
-                        <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight drop-shadow-xl animate-fade-in-up delay-100">
+                        {/* Title - dynamic size based on length */}
+                        <h1 className={`
+                            font-bold text-white mb-6 leading-tight drop-shadow-xl animate-fade-in-up delay-100
+                            ${article.title.length > 80
+                                ? 'text-2xl md:text-3xl lg:text-4xl'
+                                : article.title.length > 50
+                                    ? 'text-2xl md:text-4xl lg:text-5xl'
+                                    : 'text-3xl md:text-5xl lg:text-6xl'}
+                        `}>
                             {article.title}
                         </h1>
 
