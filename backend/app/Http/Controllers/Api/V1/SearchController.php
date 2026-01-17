@@ -44,6 +44,14 @@ class SearchController extends Controller
 
             return [
                 'results' => $results->map(function ($article) {
+                    // Build URL based on category type
+                    $type = $article->category?->type ?? 'news';
+                    $url = match ($type) {
+                        'reviews' => "/reviews/{$article->slug}",
+                        'tech' => "/hardware/{$article->slug}",
+                        default => "/news/{$article->slug}",
+                    };
+
                     return [
                         'id' => $article->id,
                         'title' => $article->title,
@@ -52,26 +60,11 @@ class SearchController extends Controller
                         'image' => $article->featured_image,
                         'category' => $article->category?->name,
                         'category_slug' => $article->category?->slug,
-                        'type' => $article->category?->type,
-                        'url' => $this->buildArticleUrl($article),
+                        'type' => $type,
+                        'url' => $url,
                     ];
                 }),
                 'count' => $results->count(),
             ];
         });
-    }
-
-    /**
-     * Build the correct URL based on category type
-     */
-    private function buildArticleUrl($article): string
-    {
-        $type = $article->category?->type ?? 'news';
-
-        return match ($type) {
-            'reviews' => "/reviews/{$article->slug}",
-            'tech' => "/hardware/{$article->slug}",
-            default => "/news/{$article->slug}",
-        };
-    }
 }
