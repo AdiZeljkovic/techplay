@@ -4,19 +4,22 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CommentResource\Pages;
 use App\Models\Comment;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\Action; // For custom actions in table
+use Filament\Forms;
+use Illuminate\Database\Eloquent\Builder;
 
 class CommentResource extends Resource
 {
     protected static ?string $model = Comment::class;
+    protected static ?string $modelPolicy = \App\Policies\CommentPolicy::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
 
@@ -34,15 +37,15 @@ class CommentResource extends Resource
         return 'warning';
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Forms\Components\Select::make('user_id')
                     ->relationship('user', 'username')
                     ->required()
                     ->searchable()
-                    ->disabled(), // Generally shouldn't change author
+                    ->disabled(),
                 Forms\Components\Select::make('status')
                     ->options([
                         'approved' => 'Approved',
@@ -52,7 +55,7 @@ class CommentResource extends Resource
                     ->required(),
                 Forms\Components\Textarea::make('content')
                     ->required()
-                    ->columnSpanFull(),
+                    ->columnSpan('full'),
                 Forms\Components\DateTimePicker::make('created_at')
                     ->disabled(),
             ]);
@@ -85,7 +88,7 @@ class CommentResource extends Resource
                     })
                     ->sortable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->dateTime() // Filament 3 default
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -99,7 +102,7 @@ class CommentResource extends Resource
                     ]),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                EditAction::make(),
                 Action::make('approve')
                     ->action(fn(Comment $record) => $record->update(['status' => 'approved']))
                     ->requiresConfirmation()
@@ -114,8 +117,8 @@ class CommentResource extends Resource
                     ->visible(fn(Comment $record) => $record->status !== 'spam'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
