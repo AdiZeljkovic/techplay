@@ -15,6 +15,7 @@ import {
     Gamepad2, Mail, Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import SearchDropdown from "./SearchDropdown";
 
 // Social Icon Mapping
 const SOCIAL_ICON_MAP: Record<string, any> = {
@@ -318,13 +319,8 @@ export default function Header() {
                     {/* Actions (Right) */}
                     <div className="flex items-center gap-4">
                         {/* Search Bar */}
-                        <div className="hidden 2xl:flex relative group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-[var(--accent)] transition-colors" />
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                className="w-56 bg-[#1e293b] border border-[#334155] rounded-full py-2 pl-10 pr-4 text-sm text-gray-300 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all placeholder:text-gray-600"
-                            />
+                        <div className="hidden 2xl:block">
+                            <SearchDropdown placeholder="Search articles..." />
                         </div>
 
                         {/* Support Us Button */}
@@ -419,14 +415,7 @@ export default function Header() {
                             )}
 
                             {/* Search for Mobile */}
-                            <div className="relative">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                                <input
-                                    type="text"
-                                    placeholder="Search TechPlay..."
-                                    className="w-full bg-[#1e293b] border border-[#334155] rounded-xl py-3 pl-12 pr-4 text-white focus:border-[var(--accent)] outline-none"
-                                />
-                            </div>
+                            <SearchDropdown placeholder="Search TechPlay..." isMobile />
 
                             <nav className="flex flex-col space-y-2">
                                 {navItems.map((item) => (

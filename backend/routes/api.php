@@ -82,6 +82,9 @@ Route::prefix('v1')->group(function () {
         // Home
         Route::get('/home', [App\Http\Controllers\Api\V1\HomeController::class, 'index']);
 
+        // Search
+        Route::get('/search/articles', [App\Http\Controllers\Api\V1\SearchController::class, 'articles']);
+
         // News
         Route::get('/news', [App\Http\Controllers\Api\V1\NewsController::class, 'index']);
         Route::get('/news/trending', [App\Http\Controllers\Api\V1\NewsController::class, 'trending']);
