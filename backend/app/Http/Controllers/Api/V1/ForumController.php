@@ -27,43 +27,47 @@ class ForumController extends Controller
 
     public function categories()
     {
-        // No cache during debugging - will add back after fixes
-        // Get ALL forum categories
-        $allForumCategories = Category::where('type', 'forum')
-            ->withCount('threads')
-            ->orderBy('id')
-            ->get();
+        // PERFORMANCE: Cache for 60 seconds
+        return Cache::remember('forum.categories', 60, function () {
+            // Get all forum categories with thread counts
+            $allForumCategories = Category::where('type', 'forum')
+                ->withCount('threads')
+                ->orderBy('id')
+                ->get();
 
-        // Separate into parents and children
-        $parents = $allForumCategories->whereNull('parent_id');
-        $children = $allForumCategories->whereNotNull('parent_id');
+            // Get category IDs for batch loading latest threads
+            $categoryIds = $allForumCategories->pluck('id');
 
-        // If there are no parent categories but there ARE forum categories,
-        // return them directly (flat structure)
-        if ($parents->isEmpty() && $allForumCategories->isNotEmpty()) {
-            // Flat structure - return all as-is
-            $allForumCategories->each(function ($cat) {
-                $cat->latest_thread = $cat->threads()->with('author')->latest()->first();
+            // PERFORMANCE: Single query to get latest thread per category (no N+1)
+            $latestThreads = \App\Models\Thread::whereIn('category_id', $categoryIds)
+                ->with('author:id,username,avatar_url')
+                ->select('id', 'title', 'slug', 'category_id', 'author_id', 'created_at')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->groupBy('category_id')
+                ->map(fn($threads) => $threads->first());
+
+            // Attach latest_thread to each category
+            $allForumCategories->each(function ($cat) use ($latestThreads) {
+                $cat->latest_thread = $latestThreads->get($cat->id);
             });
-            return $allForumCategories->values();
-        }
 
-        // Hierarchical structure - attach children to parents
-        $parents->each(function ($parent) use ($children) {
-            $parent->children = $children->where('parent_id', $parent->id)->values();
+            // Separate into parents and children
+            $parents = $allForumCategories->whereNull('parent_id');
+            $children = $allForumCategories->whereNotNull('parent_id');
 
-            // Add latest thread to each child
-            if ($parent->children) {
-                $parent->children->each(function ($child) {
-                    $child->latest_thread = $child->threads()->with('author')->latest()->first();
-                });
+            // Flat structure case
+            if ($parents->isEmpty() && $allForumCategories->isNotEmpty()) {
+                return $allForumCategories->values();
             }
 
-            // Also add latest thread to parent if it has threads directly
-            $parent->latest_thread = $parent->threads()->with('author')->latest()->first();
-        });
+            // Hierarchical structure - attach children to parents
+            $parents->each(function ($parent) use ($children) {
+                $parent->children = $children->where('parent_id', $parent->id)->values();
+            });
 
-        return $parents->values();
+            return $parents->values();
+        });
     }
 
     public function showCategory($slug)
