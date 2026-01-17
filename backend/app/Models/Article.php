@@ -4,26 +4,29 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Storage;
 
 class Article extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'title',
         'slug',
-        'views', // Added views
+        'views',
         'author_id',
         'featured_image_url',
+        'featured_image_alt',
         'excerpt',
         'content',
-        'category_id', // Foreign key
+        'category_id',
         'is_featured_in_hero',
         'seo_title',
         'seo_description',
         'focus_keyword',
         'canonical_url',
         'is_noindex',
-        'is_featured', // Keep existing legacy flag if used elsewhere
+        'is_featured',
         'status',
         'published_at',
         'meta_title',
@@ -43,6 +46,24 @@ class Article extends Model
         'views' => 'integer',
     ];
 
+    /**
+     * Get the full URL for the featured image.
+     */
+    public function getFeaturedImageUrlAttribute($value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+
+        // Already a full URL
+        if (str_starts_with($value, 'http')) {
+            return $value;
+        }
+
+        // Convert relative path to full URL
+        return Storage::disk('public')->url($value);
+    }
+
     public function scopePopular($query)
     {
         return $query->orderBy('views', 'desc');
@@ -50,22 +71,17 @@ class Article extends Model
 
     /**
      * Increment views with IP-based throttling.
-     * 
-     * @param string $ip
-     * @return bool True if incremented, False if throttled
      */
     public function incrementViews(string $ip): bool
     {
         $cacheKey = 'article_view_' . $this->id . '_' . $ip;
 
-        // Check if viewed in last 24 hours (1440 minutes)
         if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
             return false;
         }
 
-        // Increment and cache
         $this->increment('views');
-        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 60 * 24); // 24 hours
+        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 60 * 24);
 
         return true;
     }
