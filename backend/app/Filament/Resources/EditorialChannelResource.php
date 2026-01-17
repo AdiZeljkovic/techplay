@@ -96,8 +96,9 @@ class EditorialChannelResource extends Resource
 
                 ColorColumn::make('color'),
 
-                IconColumn::make('icon')
-                    ->icon(fn(string $state): string => $state),
+                // Use TextColumn for icon since it may contain emojis
+                TextColumn::make('icon')
+                    ->label('Icon'),
 
                 ToggleColumn::make('is_private'),
 
