@@ -14,8 +14,8 @@ Route::prefix('v1')->group(function () {
         // ... (routes unchanged)
     });
 
-    // Public Routes (Relaxed Rate Limited - 300 per minute)
-    Route::middleware('throttle:300,1')->group(function () {
+    // Public Routes (High Rate Limit - 3000 per minute for production traffic)
+    Route::middleware('throttle:3000,1')->group(function () {
         // Email Verification (Public - from email link)
         Route::get('/email/verify/{id}/{hash}', [App\Http\Controllers\Api\V1\VerificationController::class, 'verify'])
             ->name('verification.verify');
