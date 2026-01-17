@@ -92,67 +92,63 @@ class MediaPickerFields
                             ];
                         }
 
-                        // Search box + Gallery HTML
-                        $searchHtml = '
+                        // Build visual gallery HTML
+                        $galleryHtml = '
                             <div style="margin-bottom: 16px;">
                                 <input type="text" id="media-search" placeholder="🔍 Search images by name..." 
                                        style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 14px;"
                                        oninput="
                                            const query = this.value.toLowerCase();
-                                           document.querySelectorAll(\'.media-item\').forEach(item => {
+                                           document.querySelectorAll(\'.media-thumb\').forEach(item => {
                                                const name = item.dataset.name.toLowerCase();
                                                item.style.display = name.includes(query) ? \'block\' : \'none\';
                                            });
                                        " />
                             </div>
+                            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-height: 350px; overflow-y: auto; padding: 4px;">
                         ';
-
-                        $galleryHtml = '<div id="media-gallery" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-height: 400px; overflow-y: auto; padding: 8px;">';
 
                         foreach ($mediaItems as $media) {
                             $url = Storage::disk('public')->url($media->path);
                             $title = $media->title ?: basename($media->path);
                             $size = $media->human_size ?? '';
+                            $escapedPath = e($media->path);
 
                             $galleryHtml .= '
-                                <label class="media-item" data-name="' . e($title) . '" style="cursor: pointer; position: relative; display: block;">
-                                    <input type="radio" name="selected_media" value="' . e($media->path) . '" 
-                                           style="position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer;"
-                                           onchange="
-                                               window.selectedMediaPath = this.value; 
-                                               document.getElementById(\'selected-media-path\').value = this.value;
-                                               document.querySelectorAll(\'.media-item > div\').forEach(d => d.style.outline = \'none\');
-                                               this.nextElementSibling.style.outline = \'3px solid #6366f1\';
-                                           " />
-                                    <div style="background: rgba(0,0,0,0.3); border-radius: 8px; overflow: hidden; transition: all 0.2s;">
-                                        <img src="' . e($url) . '" alt="' . e($title) . '" 
-                                             style="width: 100%; height: 120px; object-fit: cover;" loading="lazy" />
-                                        <div style="padding: 8px; font-size: 11px; color: #d1d5db; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                            ' . e($title) . '<br/>
-                                            <span style="color: #6b7280;">' . e($size) . '</span>
-                                        </div>
+                                <div class="media-thumb" data-name="' . e($title) . '" data-path="' . $escapedPath . '"
+                                     style="cursor: pointer; border-radius: 8px; overflow: hidden; background: rgba(0,0,0,0.3); transition: all 0.15s;"
+                                     onclick="
+                                         document.querySelectorAll(\'.media-thumb\').forEach(t => t.style.outline = \'none\');
+                                         this.style.outline = \'3px solid #6366f1\';
+                                         document.querySelector(\'[name=selected_path]\').value = this.dataset.path;
+                                         document.querySelector(\'[name=selected_path]\').dispatchEvent(new Event(\'input\', { bubbles: true }));
+                                     ">
+                                    <img src="' . e($url) . '" alt="' . e($title) . '" 
+                                         style="width: 100%; height: 90px; object-fit: cover;" loading="lazy" />
+                                    <div style="padding: 6px; font-size: 10px; color: #d1d5db; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        ' . e(\Illuminate\Support\Str::limit($title, 15)) . '
                                     </div>
-                                </label>';
+                                </div>
+                            ';
                         }
 
                         $galleryHtml .= '</div>';
-
-                        $countHtml = '<div style="margin-top: 8px; font-size: 12px; color: #6b7280;">' . count($mediaItems) . ' images in library</div>';
+                        $galleryHtml .= '<div style="margin-top: 8px; font-size: 12px; color: #6b7280;">' . count($mediaItems) . ' images</div>';
 
                         return [
                             Placeholder::make('gallery')
-                                ->label('')
-                                ->content(new HtmlString($searchHtml . $galleryHtml . $countHtml)),
+                                ->label('Click an image to select:')
+                                ->content(new HtmlString($galleryHtml)),
 
                             TextInput::make('selected_path')
-                                ->label('Selected path')
-                                ->extraAttributes(['id' => 'selected-media-path'])
-                                ->readOnly()
-                                ->placeholder('Click an image to select'),
+                                ->label('Selected')
+                                ->required()
+                                ->placeholder('← Click an image above')
+                                ->live()
+                                ->helperText('The path of the selected image'),
                         ];
                     })
-                    ->action(function (array $data, $set, $get) use ($pathField, $altField) {
-                        // The selected path from the gallery
+                    ->action(function (array $data, $set) use ($pathField, $altField) {
                         if (!empty($data['selected_path'])) {
                             $set($pathField, $data['selected_path']);
 
@@ -163,10 +159,7 @@ class MediaPickerFields
                             }
                         }
                     })
-                    ->modalSubmitActionLabel('Select Image')
-                    ->extraAttributes([
-                        'x-on:click' => 'setTimeout(() => { window.selectedMediaPath = null; }, 100)',
-                    ]),
+                    ->modalSubmitActionLabel('✓ Use This Image'),
 
                 // Clear image button  
                 Action::make('clear_image')
