@@ -21,14 +21,20 @@ class CommentResource extends Resource
     protected static ?string $model = Comment::class;
     protected static ?string $modelPolicy = \App\Policies\CommentPolicy::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
+    public static function getNavigationIcon(): ?string
+    {
+        return 'heroicon-o-chat-bubble-left-right';
+    }
 
     public static function getNavigationGroup(): ?string
     {
         return 'Community';
     }
 
-    protected static ?int $navigationSort = 3;
+    public static function getNavigationSort(): ?int
+    {
+        return 3;
+    }
 
     public static function getNavigationBadge(): ?string
     {
