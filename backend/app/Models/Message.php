@@ -23,6 +23,9 @@ class Message extends Model
         'deleted_by_receiver' => 'boolean',
     ];
 
+    // SECURITY: Hide soft-delete flags from API responses
+    protected $hidden = ['deleted_by_sender', 'deleted_by_receiver'];
+
     public function sender()
     {
         return $this->belongsTo(User::class, 'sender_id');

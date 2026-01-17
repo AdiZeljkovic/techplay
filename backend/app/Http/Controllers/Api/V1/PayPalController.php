@@ -145,8 +145,12 @@ class PayPalController extends Controller
                         'status' => 'COMPLETED', // Normalized status
                     ]);
                 }
-
-                return response()->json($response);
+                // SECURITY: Return only essential info, not raw PayPal response
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Payment completed successfully',
+                    'order_id' => $orderId,
+                ]);
             }
 
             return response()->json(['error' => 'Payment capture failed or incomplete.', 'details' => $response], 400);

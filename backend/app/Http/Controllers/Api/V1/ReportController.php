@@ -57,7 +57,10 @@ class ReportController extends Controller
             'reason' => $request->reason,
             'status' => 'pending',
         ]);
-
-        return response()->json(['message' => 'Report submitted successfully.', 'data' => $report], 201);
+        // SECURITY: Only return report ID, not full model data
+        return response()->json([
+            'message' => 'Report submitted successfully.',
+            'report_id' => $report->id
+        ], 201);
     }
 }
