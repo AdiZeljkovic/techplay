@@ -4,6 +4,9 @@ import PageHero from "@/components/ui/PageHero";
 import { motion } from "framer-motion";
 import { Target, Zap, Heart, Globe, Shield, Users } from "lucide-react";
 
+// SEO handled by parent layout + generateMetadata pattern
+// For client components, metadata is set via head in parent or layout
+
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
