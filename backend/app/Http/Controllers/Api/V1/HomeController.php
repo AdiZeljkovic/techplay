@@ -62,13 +62,14 @@ class HomeController extends Controller
                 ->take(5)
                 ->get();
 
+            // Wrap in Resource to exclude heavy content and standardise format
             return [
-                'hero' => $hero,
-                'news' => $news,
-                'reviews' => $reviews,
-                'tech' => $tech,
-                'latest_global' => $latestGlobal,
-                'popular_global' => $popularGlobal,
+                'hero' => \App\Http\Resources\V1\ArticleResource::collection($hero),
+                'news' => \App\Http\Resources\V1\ArticleResource::collection($news),
+                'reviews' => \App\Http\Resources\V1\ArticleResource::collection($reviews),
+                'tech' => \App\Http\Resources\V1\ArticleResource::collection($tech),
+                'latest_global' => \App\Http\Resources\V1\ArticleResource::collection($latestGlobal),
+                'popular_global' => \App\Http\Resources\V1\ArticleResource::collection($popularGlobal),
             ];
         });
 
