@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration {
     /**
@@ -10,16 +11,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('articles', function (Blueprint $table) {
-            // Composite index for common "status=published AND published_at <= now" queries
-            $table->index(['status', 'published_at']);
-
-            // Index for sorting by views (trending/popular)
-            $table->index('views');
-
-            // Index for hero section filtering
-            $table->index('is_featured_in_hero');
-        });
+        // Use raw SQL for "IF NOT EXISTS" to handle existing indexes safely (Postgres)
+        DB::statement('CREATE INDEX IF NOT EXISTS articles_status_published_at_index ON articles (status, published_at)');
+        DB::statement('CREATE INDEX IF NOT EXISTS articles_views_index ON articles (views)');
+        // Note: boolean casting to int might be needed for some DBs but Postgres handles bool index fine usually.
+        // Actually, for pure boolean index in Postgres:
+        // CREATE INDEX ... ON articles (is_featured_in_hero) works. 
+        // Let's stick to standard syntax first.
+        DB::statement('CREATE INDEX IF NOT EXISTS articles_is_featured_in_hero_index ON articles (is_featured_in_hero)');
     }
 
     /**
