@@ -125,6 +125,10 @@ Route::prefix('v1')->group(function () {
         // Site Settings (Public)
         Route::get('/settings', [App\Http\Controllers\Api\V1\SettingsController::class, 'index']);
 
+        // Page SEO (Public)
+        Route::get('/page-seo', [App\Http\Controllers\Api\V1\SettingsController::class, 'pageSeo']);
+        Route::get('/page-seo/{path}', [App\Http\Controllers\Api\V1\SettingsController::class, 'pageSeoByPath'])->where('path', '.*');
+
         // Public Profile
         Route::get('/users/{username}', [App\Http\Controllers\Api\V1\AuthController::class, 'show']);
 

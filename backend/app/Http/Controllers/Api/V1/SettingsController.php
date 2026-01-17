@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
+use App\Models\PageSeo;
 use Illuminate\Http\Request;
 
 class SettingsController extends Controller
@@ -21,4 +22,29 @@ class SettingsController extends Controller
         });
         return response()->json($settings);
     }
+
+    /**
+     * Get all page SEO data
+     */
+    public function pageSeo()
+    {
+        $pages = PageSeo::all();
+        return response()->json($pages);
+    }
+
+    /**
+     * Get SEO data for a specific page path
+     */
+    public function pageSeoByPath(string $path)
+    {
+        $path = '/' . ltrim($path, '/');
+        $pageSeo = PageSeo::where('page_path', $path)->first();
+
+        if (!$pageSeo) {
+            return response()->json(['message' => 'Page SEO not found'], 404);
+        }
+
+        return response()->json($pageSeo);
+    }
 }
+
