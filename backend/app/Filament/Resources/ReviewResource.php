@@ -196,6 +196,7 @@ class ReviewResource extends Resource
                                                                 ->mapWithKeys(fn($game) => [$game['slug'] => "{$game['name']} (" . substr($game['released'] ?? 'N/A', 0, 4) . ")"])
                                                                 ->toArray();
                                                         })
+                                                        ->getOptionLabelUsing(fn($value) => $value)
                                                         ->required(),
                                                 ])
                                                 ->action(function (array $data, $set) {
