@@ -4,6 +4,7 @@ namespace App\Http\Resources\V1;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class ReviewResource extends JsonResource
 {
@@ -14,35 +15,49 @@ class ReviewResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // Build featured image URL
+        $imageUrl = $this->featured_image_url;
+        if ($imageUrl && !str_starts_with($imageUrl, 'http')) {
+            $imageUrl = Storage::disk('public')->url($imageUrl);
+        }
+
+        // Extract review_data fields
+        $reviewData = $this->review_data ?? [];
+
         return [
             'id' => $this->id,
             'title' => $this->title,
             'slug' => $this->slug,
-            'item_name' => $this->item_name,
+            'excerpt' => $this->excerpt,
 
-            // Map simple category string to object structure if frontend expects it, or keep string
             'category' => [
-                'name' => ucfirst($this->category->name),
-                'slug' => $this->category->slug,
+                'name' => $this->category?->name ? ucfirst($this->category->name) : 'Reviews',
+                'slug' => $this->category?->slug ?? 'reviews',
                 'type' => 'review'
             ],
 
-            'summary' => $this->summary,
             'content' => $this->content,
-            'cover_image' => $this->cover_image,
-            'featured_image_url' => $this->cover_image, // Alias for frontend compatibility
+            'featured_image_url' => $imageUrl,
+            'featured_image_alt' => $this->featured_image_alt,
 
-            // Legacy scores
-            'scores' => $this->scores,
-            'pros' => $this->pros,
-            'cons' => $this->cons,
-            'specs' => $this->specs,
-            'rating' => $this->rating,
+            // Review specific data
+            'review_score' => $this->review_score ?? 0,
+            'review_data' => [
+                'game_title' => $reviewData['game_title'] ?? null,
+                'developer' => $reviewData['developer'] ?? null,
+                'publisher' => $reviewData['publisher'] ?? null,
+                'release_date' => $reviewData['release_date'] ?? null,
+                'platforms' => $reviewData['platforms'] ?? [],
+                'genres' => $reviewData['genres'] ?? [],
+                'ratings' => $reviewData['ratings'] ?? [],
+                'pros' => $reviewData['pros'] ?? [],
+                'cons' => $reviewData['cons'] ?? [],
+                'conclusion' => $reviewData['conclusion'] ?? null,
+                'cta' => $reviewData['cta'] ?? 'none',
+            ],
 
-            // New System
-            'review_score' => $this->review_score ?? $this->rating, // Fallback
-            'review_data' => $this->review_data,
-            'tags' => $this->tags,
+            'tags' => $this->tags ?? [],
+            'is_featured_in_hero' => $this->is_featured_in_hero ?? false,
 
             'status' => $this->status,
             'published_at' => $this->published_at,
@@ -50,8 +65,8 @@ class ReviewResource extends JsonResource
 
             'author' => new UserResource($this->whenLoaded('author')),
 
-            'seo_title' => $this->seo_title,
-            'seo_description' => $this->seo_description,
+            'meta_title' => $this->meta_title,
+            'meta_description' => $this->meta_description,
         ];
     }
 }
