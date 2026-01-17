@@ -3,13 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PageSeoResource\Pages;
+use App\Filament\Resources\PageSeoResource\Schemas\PageSeoForm;
 use App\Models\PageSeo;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TagsInput;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -42,64 +37,7 @@ class PageSeoResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                Grid::make(2)->schema([
-                    TextInput::make('page_path')
-                        ->label('Page Path')
-                        ->placeholder('/about')
-                        ->helperText('URL path (e.g., /about)')
-                        ->required()
-                        ->unique(ignoreRecord: true),
-                    TextInput::make('page_name')
-                        ->label('Page Name')
-                        ->placeholder('About Us')
-                        ->required(),
-                ]),
-
-                TextInput::make('meta_title')
-                    ->label('Meta Title')
-                    ->placeholder('Page Title - TechPlay')
-                    ->helperText('50-60 characters recommended')
-                    ->maxLength(70),
-
-                Textarea::make('meta_description')
-                    ->label('Meta Description')
-                    ->placeholder('Brief description for search results...')
-                    ->helperText('150-160 characters recommended')
-                    ->rows(3)
-                    ->maxLength(200),
-
-                TagsInput::make('meta_keywords')
-                    ->label('Keywords')
-                    ->placeholder('Add keywords')
-                    ->helperText('Press Enter after each keyword'),
-
-                Grid::make(2)->schema([
-                    TextInput::make('og_title')
-                        ->label('OG Title')
-                        ->placeholder('Leave empty to use Meta Title'),
-                    TextInput::make('canonical_url')
-                        ->label('Canonical URL')
-                        ->placeholder('Leave empty for default')
-                        ->url(),
-                ]),
-
-                Textarea::make('og_description')
-                    ->label('OG Description')
-                    ->placeholder('Leave empty to use Meta Description')
-                    ->rows(2),
-
-                FileUpload::make('og_image')
-                    ->label('OG Image')
-                    ->image()
-                    ->disk('public')
-                    ->directory('seo')
-                    ->helperText('1200x630px recommended'),
-
-                Toggle::make('is_noindex')
-                    ->label('NoIndex (hide from search engines)'),
-            ]);
+        return PageSeoForm::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -152,4 +90,3 @@ class PageSeoResource extends Resource
         ];
     }
 }
-
