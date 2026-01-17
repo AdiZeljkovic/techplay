@@ -120,8 +120,12 @@ class MediaPickerFields
                                      onclick="
                                          document.querySelectorAll(\'.media-thumb\').forEach(t => t.style.outline = \'none\');
                                          this.style.outline = \'3px solid #6366f1\';
-                                         document.querySelector(\'[name=selected_path]\').value = this.dataset.path;
-                                         document.querySelector(\'[name=selected_path]\').dispatchEvent(new Event(\'input\', { bubbles: true }));
+                                         var input = document.querySelector(\'input[id$=selected_path]\') || document.querySelector(\'input[data-id$=selected_path]\') || Array.from(document.querySelectorAll(\'input\')).find(i => i.id.includes(\'selected_path\'));
+                                         if(input) { 
+                                             input.value = this.dataset.path; 
+                                             input.dispatchEvent(new Event(\'input\', {bubbles:true}));
+                                             input.dispatchEvent(new Event(\'change\', {bubbles:true}));
+                                         }
                                      ">
                                     <img src="' . e($url) . '" alt="' . e($title) . '" 
                                          style="width: 100%; height: 90px; object-fit: cover;" loading="lazy" />
