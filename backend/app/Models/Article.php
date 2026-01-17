@@ -51,16 +51,22 @@ class Article extends Model
      */
     public function getFeaturedImageUrlAttribute($value): ?string
     {
-        if (!$value) {
+        // Handle null or empty values
+        if (empty($value)) {
             return null;
         }
 
         // Already a full URL
-        if (str_starts_with($value, 'http')) {
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
             return $value;
         }
 
-        // Convert relative path to full URL
+        // Already has /storage/ prefix (legacy format) - convert to full URL
+        if (str_starts_with($value, '/storage/')) {
+            return config('app.url') . $value;
+        }
+
+        // Relative path - convert using Storage facade
         return Storage::disk('public')->url($value);
     }
 
