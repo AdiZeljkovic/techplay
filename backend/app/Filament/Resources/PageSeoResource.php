@@ -18,7 +18,7 @@ class PageSeoResource extends Resource
 {
     protected static ?string $model = PageSeo::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-magnifying-glass';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-magnifying-glass';
 
     public static function getNavigationGroup(): ?string
     {
