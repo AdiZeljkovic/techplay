@@ -89,17 +89,14 @@ axiosInstance.interceptors.response.use(
 
                 return axiosInstance(originalRequest);
             } catch (refreshError) {
-                // Refresh failed - logout gracefully
+                // Refresh failed - clear token gracefully
                 isRefreshing = false;
                 localStorage.removeItem('token');
 
-                // Show toast since user WAS logged in
+                // Show toast so user knows their session expired
                 toast.error('Session expired. Please login again.', { id: 'session-expired' });
 
-                // Redirect to login (user was previously logged in)
-                if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-                    window.location.href = '/login';
-                }
+                // Don't redirect - let user stay on current page and choose to login
 
                 return Promise.reject(refreshError);
             }
