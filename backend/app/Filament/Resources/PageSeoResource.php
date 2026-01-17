@@ -4,7 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PageSeoResource\Pages;
 use App\Models\PageSeo;
-use Filament\Forms;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -39,50 +44,50 @@ class PageSeoResource extends Resource
     {
         return $schema
             ->components([
-                Forms\Components\Section::make('Page Information')
+                Section::make('Page Information')
                     ->schema([
-                        Forms\Components\TextInput::make('page_path')
+                        TextInput::make('page_path')
                             ->label('Page Path')
                             ->placeholder('/about')
                             ->helperText('The URL path (e.g., /about, /contact, /reviews)')
                             ->required()
                             ->unique(ignoreRecord: true),
-                        Forms\Components\TextInput::make('page_name')
+                        TextInput::make('page_name')
                             ->label('Page Name')
                             ->placeholder('About Us')
                             ->helperText('Human readable name for reference')
                             ->required(),
                     ])->columns(2),
 
-                Forms\Components\Section::make('SEO Meta Tags')
+                Section::make('SEO Meta Tags')
                     ->schema([
-                        Forms\Components\TextInput::make('meta_title')
+                        TextInput::make('meta_title')
                             ->label('Meta Title')
                             ->placeholder('About Us - Gaming News Team')
                             ->helperText('50-60 characters recommended')
                             ->maxLength(70),
-                        Forms\Components\Textarea::make('meta_description')
+                        Textarea::make('meta_description')
                             ->label('Meta Description')
                             ->placeholder('Brief description for search results...')
                             ->helperText('150-160 characters recommended')
                             ->rows(3)
                             ->maxLength(200),
-                        Forms\Components\TagsInput::make('meta_keywords')
+                        TagsInput::make('meta_keywords')
                             ->label('Keywords')
                             ->placeholder('Add keywords')
                             ->helperText('Press Enter after each keyword'),
                     ]),
 
-                Forms\Components\Section::make('Open Graph (Social Sharing)')
+                Section::make('Open Graph (Social Sharing)')
                     ->schema([
-                        Forms\Components\TextInput::make('og_title')
+                        TextInput::make('og_title')
                             ->label('OG Title')
                             ->placeholder('Leave empty to use Meta Title'),
-                        Forms\Components\Textarea::make('og_description')
+                        Textarea::make('og_description')
                             ->label('OG Description')
                             ->placeholder('Leave empty to use Meta Description')
                             ->rows(2),
-                        Forms\Components\FileUpload::make('og_image')
+                        FileUpload::make('og_image')
                             ->label('OG Image')
                             ->image()
                             ->disk('public')
@@ -90,13 +95,13 @@ class PageSeoResource extends Resource
                             ->helperText('1200x630px recommended'),
                     ])->collapsed(),
 
-                Forms\Components\Section::make('Advanced')
+                Section::make('Advanced')
                     ->schema([
-                        Forms\Components\TextInput::make('canonical_url')
+                        TextInput::make('canonical_url')
                             ->label('Canonical URL')
                             ->placeholder('Leave empty for default')
                             ->url(),
-                        Forms\Components\Toggle::make('is_noindex')
+                        Toggle::make('is_noindex')
                             ->label('NoIndex')
                             ->helperText('Hide this page from search engines'),
                     ])->collapsed(),
