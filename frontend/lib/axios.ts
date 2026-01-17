@@ -46,6 +46,14 @@ axiosInstance.interceptors.response.use(
                 return Promise.reject(error);
             }
 
+            // Check if user was logged in (had token)
+            const hadToken = !!localStorage.getItem('token');
+
+            // If no token existed, user is just a guest - don't redirect
+            if (!hadToken) {
+                return Promise.reject(error);
+            }
+
             if (isRefreshing) {
                 // Wait for the refresh to complete
                 return new Promise((resolve) => {
@@ -85,12 +93,10 @@ axiosInstance.interceptors.response.use(
                 isRefreshing = false;
                 localStorage.removeItem('token');
 
-                // Only show toast if user was previously logged in
-                if (localStorage.getItem('token')) {
-                    toast.error('Session expired. Please login again.', { id: 'session-expired' });
-                }
+                // Show toast since user WAS logged in
+                toast.error('Session expired. Please login again.', { id: 'session-expired' });
 
-                // Redirect to login (don't do hard redirect, allow SPA navigation)
+                // Redirect to login (user was previously logged in)
                 if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
                     window.location.href = '/login';
                 }
