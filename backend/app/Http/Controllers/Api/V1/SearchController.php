@@ -67,4 +67,5 @@ class SearchController extends Controller
                 'count' => $results->count(),
             ];
         });
+    }
 }
