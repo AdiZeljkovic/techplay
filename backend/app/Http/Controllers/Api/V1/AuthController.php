@@ -24,11 +24,14 @@ class AuthController extends Controller
     public function register(\App\Http\Requests\Auth\RegisterRequest $request)
     {
         // Validate reCAPTCHA token if present (optional but recommended)
-        if ($request->filled('recaptcha_token')) {
-            $captchaResult = $this->recaptcha->verify($request->recaptcha_token, 'register');
-            if (!$captchaResult['success']) {
-                return $this->error($captchaResult['error'] ?? 'reCAPTCHA verification failed', 422);
-            }
+        // Validate reCAPTCHA token (Mandatory)
+        if (!$request->filled('recaptcha_token')) {
+            return $this->error('Cloudflare Turnstile token is missing', 422);
+        }
+
+        $captchaResult = $this->recaptcha->verify($request->recaptcha_token, 'register');
+        if (!$captchaResult['success']) {
+            return $this->error($captchaResult['error'] ?? 'Security check failed. Please refresh the page.', 422);
         }
 
         $validated = $request->validated();
@@ -65,13 +68,18 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         // Validate reCAPTCHA token
-        if ($request->filled('recaptcha_token')) {
-            $captchaResult = $this->recaptcha->verify($request->recaptcha_token, 'login');
-            if (!$captchaResult['success']) {
-                throw ValidationException::withMessages([
-                    'recaptcha' => [$captchaResult['error'] ?? 'reCAPTCHA verification failed'],
-                ]);
-            }
+        // Validate reCAPTCHA token (Mandatory)
+        if (!$request->filled('recaptcha_token')) {
+            throw ValidationException::withMessages([
+                'recaptcha' => ['Security check missing. Please refresh the page.'],
+            ]);
+        }
+
+        $captchaResult = $this->recaptcha->verify($request->recaptcha_token, 'login');
+        if (!$captchaResult['success']) {
+            throw ValidationException::withMessages([
+                'recaptcha' => [$captchaResult['error'] ?? 'Security check failed. Please refresh the page.'],
+            ]);
         }
 
         $request->validate([
