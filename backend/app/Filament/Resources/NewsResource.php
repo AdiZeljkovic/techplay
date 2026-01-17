@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\NewsResource\Pages;
+use App\Filament\Components\SeoFields;
 use App\Models\Article;
 use App\Models\Category;
 use Filament\Forms;
@@ -189,49 +190,13 @@ class NewsResource extends Resource
                                     ]),
 
                                 // ─────────────────────────────────────────────
-                                // TAB: SEO
+                                // TAB: SEO with Live Checker
                                 // ─────────────────────────────────────────────
                                 Tabs\Tab::make('SEO')
                                     ->icon('heroicon-o-magnifying-glass')
                                     ->badge(fn($get) => $get('meta_title') ? '✓' : null)
                                     ->badgeColor('success')
-                                    ->schema([
-                                        Forms\Components\TextInput::make('focus_keyword')
-                                            ->label('Focus Keyword')
-                                            ->placeholder('e.g. PS5 review, gaming news')
-                                            ->helperText('Primary keyword for SEO optimization'),
-
-                                        Forms\Components\TextInput::make('meta_title')
-                                            ->label('SEO Title')
-                                            ->placeholder('Custom title for search engines...')
-                                            ->maxLength(70)
-                                            ->helperText(
-                                                fn($state) => $state
-                                                ? (strlen($state) . '/70 chars' . (strlen($state) >= 50 && strlen($state) <= 60 ? ' ✓ Optimal' : ''))
-                                                : 'Leave empty to use article title. Optimal: 50-60 chars'
-                                            ),
-
-                                        Forms\Components\Textarea::make('meta_description')
-                                            ->label('Meta Description')
-                                            ->placeholder('Compelling description for search results...')
-                                            ->rows(3)
-                                            ->maxLength(160)
-                                            ->helperText(
-                                                fn($state) => $state
-                                                ? (strlen($state) . '/160 chars' . (strlen($state) >= 150 && strlen($state) <= 160 ? ' ✓ Optimal' : ''))
-                                                : 'Optimal: 150-160 characters'
-                                            ),
-
-                                        Forms\Components\TextInput::make('canonical_url')
-                                            ->label('Canonical URL')
-                                            ->placeholder('https://...')
-                                            ->url()
-                                            ->helperText('Leave empty for default URL'),
-
-                                        Forms\Components\Toggle::make('is_noindex')
-                                            ->label('Hide from Search Engines')
-                                            ->helperText('Enable to prevent Google indexing'),
-                                    ]),
+                                    ->schema(SeoFields::make('techplay.gg/news/')),
 
                                 // ─────────────────────────────────────────────
                                 // TAB: MEDIA

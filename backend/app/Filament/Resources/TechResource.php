@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TechResource\Pages;
+use App\Filament\Components\SeoFields;
 use App\Models\Article;
 use App\Models\Category;
 use Filament\Schemas\Components\Tabs;
@@ -191,42 +192,12 @@ class TechResource extends Resource
                                             ->default(fn() => auth()->id()),
                                     ]),
 
-                                // TAB: SEO
+                                // TAB: SEO with Live Checker
                                 Tab::make('SEO')
                                     ->icon('heroicon-o-magnifying-glass')
                                     ->badge(fn($get) => $get('meta_title') ? '✓' : null)
                                     ->badgeColor('success')
-                                    ->schema([
-                                        TextInput::make('focus_keyword')
-                                            ->label('Focus Keyword')
-                                            ->placeholder('e.g. RTX 5090, best laptop 2026')
-                                            ->helperText('Primary keyword for SEO optimization'),
-
-                                        TextInput::make('meta_title')
-                                            ->label('SEO Title')
-                                            ->placeholder('Custom title for search engines...')
-                                            ->maxLength(70)
-                                            ->helperText(
-                                                fn($state) => $state
-                                                ? (strlen($state) . '/70 chars' . (strlen($state) >= 50 && strlen($state) <= 60 ? ' ✓ Optimal' : ''))
-                                                : 'Leave empty to use article title. Optimal: 50-60 chars'
-                                            ),
-
-                                        Textarea::make('meta_description')
-                                            ->label('Meta Description')
-                                            ->placeholder('Compelling description for search results...')
-                                            ->rows(3)
-                                            ->maxLength(160)
-                                            ->helperText(
-                                                fn($state) => $state
-                                                ? (strlen($state) . '/160 chars' . (strlen($state) >= 150 && strlen($state) <= 160 ? ' ✓ Optimal' : ''))
-                                                : 'Optimal: 150-160 characters'
-                                            ),
-
-                                        Toggle::make('is_noindex')
-                                            ->label('Hide from Search Engines')
-                                            ->helperText('Enable to prevent Google indexing'),
-                                    ]),
+                                    ->schema(SeoFields::make('techplay.gg/tech/', false)),
 
                                 // TAB: MEDIA
                                 Tab::make('Media')
