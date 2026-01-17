@@ -4,12 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PageSeoResource\Pages;
 use App\Models\PageSeo;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TagsInput;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\TextInput;
+use Filament\Schemas\Components\Textarea;
+use Filament\Schemas\Components\TagsInput;
+use Filament\Schemas\Components\FileUpload;
+use Filament\Schemas\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
