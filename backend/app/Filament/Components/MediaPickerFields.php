@@ -23,6 +23,13 @@ class MediaPickerFields
         string $collection = 'articles'
     ): array {
         return [
+            // Actual form field that gets saved - editable text input for the path
+            TextInput::make($pathField)
+                ->label('Image Path')
+                ->placeholder('Use Upload or Choose from Library buttons below...')
+                ->live()
+                ->helperText('Path will be set automatically when you upload or choose an image'),
+
             // Current image preview
             Placeholder::make('_current_image_preview')
                 ->label('Current Image')
