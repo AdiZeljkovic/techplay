@@ -16,6 +16,7 @@ import LiveViewCount from "@/components/tracking/LiveViewCount";
 import TrendingSidebar from "@/components/news/TrendingSidebar";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import RelatedArticles from "@/components/seo/RelatedArticles";
+import { getWebpUrl } from "@/components/ui/OptimizedImage";
 
 interface ArticleDetailViewProps {
     article: Article;
@@ -60,6 +61,9 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
         ? article.featured_image_url
         : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${article.featured_image_url}`;
 
+    // Prefer WebP version if available
+    const webpUrl = imageUrl ? getWebpUrl(imageUrl) : null;
+
     // Sanitize content
     const sanitizedContent = useMemo(() => {
         if (typeof window === 'undefined') return processedContent; // Server/Hydration mismatch avoidance if using simple dompurify
@@ -81,7 +85,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                 <div className="absolute inset-0">
                     {article.featured_image_url ? (
                         <Image
-                            src={imageUrl!}
+                            src={webpUrl || imageUrl!}
                             alt={article.title}
                             fill
                             className="object-cover"
