@@ -49,7 +49,7 @@ class ArticleResource extends JsonResource
                 ];
             }),
 
-            'reading_time' => ceil(str_word_count(strip_tags($this->content)) / 200) . ' min read',
+            'reading_time' => ($this->reading_time ?? ceil(str_word_count(strip_tags($this->content ?? '')) / 200)) . ' min read',
             'is_featured' => $this->is_featured,
             'is_featured_in_hero' => $this->is_featured_in_hero,
 

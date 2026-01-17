@@ -9,6 +9,17 @@ use Illuminate\Support\Facades\App;
 class ContentObserver
 {
     /**
+     * Handle the Article "saving" event.
+     */
+    public function saving(Article $article): void
+    {
+        if ($article->isDirty('content') && $article->content) {
+            $wordCount = str_word_count(strip_tags($article->content));
+            $article->reading_time = ceil($wordCount / 200);
+        }
+    }
+
+    /**
      * Handle the Article "saved" event.
      */
     public function saved(Article $article): void

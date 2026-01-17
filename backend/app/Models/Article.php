@@ -34,6 +34,7 @@ class Article extends Model
         'review_score',
         'review_data',
         'tags',
+        'reading_time',
     ];
 
     protected $casts = [
@@ -44,6 +45,7 @@ class Article extends Model
         'review_score' => 'decimal:1',
         'tags' => 'array',
         'views' => 'integer',
+        'reading_time' => 'integer',
     ];
 
     /**
