@@ -6,7 +6,7 @@ use App\Filament\Resources\NewsResource\Pages;
 use App\Models\Article;
 use App\Models\Category;
 use Filament\Forms;
-use Filament\Forms\Components\Tabs;
+use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
