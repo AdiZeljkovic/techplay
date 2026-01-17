@@ -88,8 +88,19 @@ class ReviewResource extends Resource
             $replayability = (float) $get('review_data.ratings.replayability');
 
             $average = ($gameplay + $visuals + $audio + $narrative + $replayability) / 5;
-
             $set('review_score', number_format($average, 1));
+
+            // Auto-set recommendation based on TechPlay rating system
+            $recommendation = match (true) {
+                $average >= 9.5 => 'must_play',     // 10 = Masterpiece
+                $average >= 8.5 => 'must_play',     // 9 = Amazing - Must Play
+                $average >= 7.5 => 'recommended',   // 8 = Great - Recommended
+                $average >= 6.5 => 'recommended',   // 7 = Good - Recommended  
+                $average >= 4.5 => 'wait_sale',     // 5-6 = Average - Wait for Sale
+                $average > 0 => 'skip',             // 1-4 = Poor/Broken - Skip
+                default => 'none',
+            };
+            $set('review_data.cta', $recommendation);
         };
 
         return $schema
