@@ -44,7 +44,7 @@ class UltimateSeo extends Page implements HasForms
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Settings';
+        return 'SEO & Marketing';
     }
 
     public static function getNavigationSort(): ?int

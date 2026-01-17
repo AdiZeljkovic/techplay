@@ -22,12 +22,12 @@ class SeoManagerResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return 'Page SEO';
+        return 'SEO Manager';
     }
 
     public static function getModelLabel(): string
     {
-        return 'Page SEO';
+        return 'SEO Manager';
     }
 
     public static function getPluralModelLabel(): string
@@ -37,12 +37,12 @@ class SeoManagerResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Settings';
+        return 'SEO & Marketing';
     }
 
     public static function getNavigationSort(): ?int
     {
-        return 2;
+        return 3;
     }
 
     public static function table(Table $table): Table

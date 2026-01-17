@@ -25,9 +25,9 @@ class AdCampaignResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'System';
+        return 'Shop & Monetization';
     }
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 5;
 
     public static function getNavigationLabel(): string
     {
@@ -38,121 +38,121 @@ class AdCampaignResource extends Resource
     {
         return $schema
             ->components([
-                    Forms\Components\TextInput::make('name')
-                        ->required()
-                        ->maxLength(255),
+                Forms\Components\TextInput::make('name')
+                    ->required()
+                    ->maxLength(255),
 
-                    Forms\Components\Select::make('type')
-                        ->options([
-                                'image' => 'Image Banner',
-                                'code' => 'Custom Code (HTML/JS)',
-                            ])
-                        ->default('image')
-                        ->required()
-                        ->live(),
+                Forms\Components\Select::make('type')
+                    ->options([
+                        'image' => 'Image Banner',
+                        'code' => 'Custom Code (HTML/JS)',
+                    ])
+                    ->default('image')
+                    ->required()
+                    ->live(),
 
-                    Forms\Components\FileUpload::make('image_url')
-                        ->label('Banner Image')
-                        ->disk('public')
-                        ->directory('ads')
-                        ->image()
-                        ->visible(fn($get) => $get('type') === 'image'),
+                Forms\Components\FileUpload::make('image_url')
+                    ->label('Banner Image')
+                    ->disk('public')
+                    ->directory('ads')
+                    ->image()
+                    ->visible(fn($get) => $get('type') === 'image'),
 
-                    Forms\Components\Textarea::make('code_block')
-                        ->label('Custom Ad Code')
-                        ->rows(6)
-                        ->visible(fn($get) => $get('type') === 'code'),
+                Forms\Components\Textarea::make('code_block')
+                    ->label('Custom Ad Code')
+                    ->rows(6)
+                    ->visible(fn($get) => $get('type') === 'code'),
 
-                    Forms\Components\TextInput::make('target_url')
-                        ->label('Click URL')
-                        ->url()
-                        ->maxLength(500),
+                Forms\Components\TextInput::make('target_url')
+                    ->label('Click URL')
+                    ->url()
+                    ->maxLength(500),
 
-                    Forms\Components\Select::make('position')
-                        ->options([
-                                'header_top' => 'Header (Top Banner)',
-                                'sidebar_top' => 'Sidebar (Top)',
-                                'sidebar_bottom' => 'Sidebar (Bottom)',
-                                'article_after_hero' => 'Article (After Hero)',
-                                'article_mid' => 'Article (Mid Content)',
-                                'footer_top' => 'Footer (Above Footer)',
-                            ])
-                        ->required(),
+                Forms\Components\Select::make('position')
+                    ->options([
+                        'header_top' => 'Header (Top Banner)',
+                        'sidebar_top' => 'Sidebar (Top)',
+                        'sidebar_bottom' => 'Sidebar (Bottom)',
+                        'article_after_hero' => 'Article (After Hero)',
+                        'article_mid' => 'Article (Mid Content)',
+                        'footer_top' => 'Footer (Above Footer)',
+                    ])
+                    ->required(),
 
-                    Forms\Components\TextInput::make('priority')
-                        ->numeric()
-                        ->default(0)
-                        ->helperText('Higher priority ads show first'),
+                Forms\Components\TextInput::make('priority')
+                    ->numeric()
+                    ->default(0)
+                    ->helperText('Higher priority ads show first'),
 
-                    Forms\Components\DatePicker::make('start_date')
-                        ->label('Start Date'),
+                Forms\Components\DatePicker::make('start_date')
+                    ->label('Start Date'),
 
-                    Forms\Components\DatePicker::make('end_date')
-                        ->label('End Date'),
+                Forms\Components\DatePicker::make('end_date')
+                    ->label('End Date'),
 
-                    Forms\Components\Toggle::make('is_active')
-                        ->label('Active')
-                        ->default(true),
-                ]);
+                Forms\Components\Toggle::make('is_active')
+                    ->label('Active')
+                    ->default(true),
+            ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                    TextColumn::make('name')
-                        ->searchable()
-                        ->sortable(),
-                    TextColumn::make('position')
-                        ->badge()
-                        ->color('info'),
-                    TextColumn::make('type')
-                        ->badge()
-                        ->color(fn($state) => $state === 'image' ? 'success' : 'warning'),
-                    IconColumn::make('is_active')
-                        ->boolean()
-                        ->label('Active'),
-                    TextColumn::make('view_count')
-                        ->label('Views')
-                        ->numeric(),
-                    TextColumn::make('click_count')
-                        ->label('Clicks')
-                        ->numeric(),
-                    TextColumn::make('start_date')
-                        ->date()
-                        ->sortable(),
-                    TextColumn::make('end_date')
-                        ->date()
-                        ->sortable(),
-                ])
+                TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('position')
+                    ->badge()
+                    ->color('info'),
+                TextColumn::make('type')
+                    ->badge()
+                    ->color(fn($state) => $state === 'image' ? 'success' : 'warning'),
+                IconColumn::make('is_active')
+                    ->boolean()
+                    ->label('Active'),
+                TextColumn::make('view_count')
+                    ->label('Views')
+                    ->numeric(),
+                TextColumn::make('click_count')
+                    ->label('Clicks')
+                    ->numeric(),
+                TextColumn::make('start_date')
+                    ->date()
+                    ->sortable(),
+                TextColumn::make('end_date')
+                    ->date()
+                    ->sortable(),
+            ])
             ->defaultSort('priority', 'desc')
             ->filters([
-                    SelectFilter::make('position')
-                        ->options([
-                                'header_top' => 'Header',
-                                'sidebar_top' => 'Sidebar Top',
-                                'sidebar_bottom' => 'Sidebar Bottom',
-                                'article_after_hero' => 'Article Hero',
-                                'article_mid' => 'Article Mid',
-                                'footer_top' => 'Footer',
-                            ]),
-                    SelectFilter::make('is_active')
-                        ->options([
-                                true => 'Active',
-                                false => 'Inactive',
-                            ]),
-                ])
-            ->headerActions([
-                    CreateAction::make(),
-                ])
-            ->actions([
-                    EditAction::make(),
-                ])
-            ->bulkActions([
-                    BulkActionGroup::make([
-                        DeleteBulkAction::make(),
+                SelectFilter::make('position')
+                    ->options([
+                        'header_top' => 'Header',
+                        'sidebar_top' => 'Sidebar Top',
+                        'sidebar_bottom' => 'Sidebar Bottom',
+                        'article_after_hero' => 'Article Hero',
+                        'article_mid' => 'Article Mid',
+                        'footer_top' => 'Footer',
                     ]),
-                ]);
+                SelectFilter::make('is_active')
+                    ->options([
+                        true => 'Active',
+                        false => 'Inactive',
+                    ]),
+            ])
+            ->headerActions([
+                CreateAction::make(),
+            ])
+            ->actions([
+                EditAction::make(),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
     }
 
     public static function getPages(): array

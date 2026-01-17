@@ -29,7 +29,7 @@ class RoleResource extends Resource
     {
         return 'System';
     }
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 3;
 
     public static function canAccess(): bool
     {
@@ -42,41 +42,41 @@ class RoleResource extends Resource
     {
         return $schema
             ->components([
-                    Forms\Components\TextInput::make('name')
-                        ->required()
-                        ->unique(ignoreRecord: true)
-                        ->maxLength(255),
-                    Forms\Components\Select::make('guard_name')
-                        ->options([
-                                'web' => 'Web',
-                                'api' => 'API',
-                            ])
-                        ->default('web')
-                        ->required(),
-                    Forms\Components\CheckboxList::make('permissions')
-                        ->relationship('permissions', 'name')
-                        ->columns(2)
-                        ->columnSpanFull()
-                        ->bulkToggleable(),
-                ]);
+                Forms\Components\TextInput::make('name')
+                    ->required()
+                    ->unique(ignoreRecord: true)
+                    ->maxLength(255),
+                Forms\Components\Select::make('guard_name')
+                    ->options([
+                        'web' => 'Web',
+                        'api' => 'API',
+                    ])
+                    ->default('web')
+                    ->required(),
+                Forms\Components\CheckboxList::make('permissions')
+                    ->relationship('permissions', 'name')
+                    ->columns(2)
+                    ->columnSpanFull()
+                    ->bulkToggleable(),
+            ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                    TextColumn::make('name')
-                        ->searchable()
-                        ->sortable(),
-                    TextColumn::make('guard_name')
-                        ->badge(),
-                    TextColumn::make('permissions_count')
-                        ->counts('permissions')
-                        ->label('Permissions'),
-                    TextColumn::make('users_count')
-                        ->counts('users')
-                        ->label('Users'),
-                ]);
+                TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('guard_name')
+                    ->badge(),
+                TextColumn::make('permissions_count')
+                    ->counts('permissions')
+                    ->label('Permissions'),
+                TextColumn::make('users_count')
+                    ->counts('users')
+                    ->label('Users'),
+            ]);
     }
 
     public static function getRelations(): array

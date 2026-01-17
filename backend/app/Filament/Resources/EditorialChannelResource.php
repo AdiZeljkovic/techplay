@@ -33,8 +33,9 @@ class EditorialChannelResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'System'; // Or 'Editorial Tools' if preferred
+        return 'System';
     }
+    protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema
     {

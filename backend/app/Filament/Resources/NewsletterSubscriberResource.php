@@ -23,7 +23,7 @@ class NewsletterSubscriberResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'System';
+        return 'SEO & Marketing';
     }
     protected static ?int $navigationSort = 5;
 
@@ -31,60 +31,60 @@ class NewsletterSubscriberResource extends Resource
     {
         return $schema
             ->components([
-                    Forms\Components\TextInput::make('email')
-                        ->email()
-                        ->required()
-                        ->maxLength(255),
-                    Forms\Components\Toggle::make('is_active')
-                        ->required(),
-                ]);
+                Forms\Components\TextInput::make('email')
+                    ->email()
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\Toggle::make('is_active')
+                    ->required(),
+            ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                    Tables\Columns\TextColumn::make('email')
-                        ->searchable()
-                        ->sortable(),
-                    Tables\Columns\IconColumn::make('email_verified_at')
-                        ->label('Verified')
-                        ->boolean()
-                        ->sortable()
-                        ->getStateUsing(fn($record) => $record->email_verified_at !== null),
-                    Tables\Columns\IconColumn::make('is_active')
-                        ->boolean()
-                        ->sortable(),
-                    Tables\Columns\TextColumn::make('created_at')
-                        ->dateTime()
-                        ->sortable()
-                        ->toggleable(isToggledHiddenByDefault: true),
-                ])
+                Tables\Columns\TextColumn::make('email')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\IconColumn::make('email_verified_at')
+                    ->label('Verified')
+                    ->boolean()
+                    ->sortable()
+                    ->getStateUsing(fn($record) => $record->email_verified_at !== null),
+                Tables\Columns\IconColumn::make('is_active')
+                    ->boolean()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
             ->filters([
-                    //
-                ])
+                //
+            ])
             ->actions([
-                    EditAction::make(),
-                    DeleteAction::make(),
-                ])
+                EditAction::make(),
+                DeleteAction::make(),
+            ])
             ->bulkActions([
-                    BulkActionGroup::make([
-                        DeleteBulkAction::make(),
-                        BulkAction::make('export')
-                            ->label('Export Selected')
-                            ->icon('heroicon-o-arrow-down-tray')
-                            ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
-                                return response()->streamDownload(function () use ($records) {
-                                    echo "Email,Status,Subscribed At\n";
-                                    foreach ($records as $record) {
-                                        $status = $record->is_active ? 'Active' : 'Unsubscribed';
-                                        echo "{$record->email},{$status},{$record->created_at}\n";
-                                    }
-                                }, 'subscribers.csv');
-                            })
-                            ->deselectRecordsAfterCompletion(),
-                    ]),
-                ]);
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    BulkAction::make('export')
+                        ->label('Export Selected')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                            return response()->streamDownload(function () use ($records) {
+                                echo "Email,Status,Subscribed At\n";
+                                foreach ($records as $record) {
+                                    $status = $record->is_active ? 'Active' : 'Unsubscribed';
+                                    echo "{$record->email},{$status},{$record->created_at}\n";
+                                }
+                            }, 'subscribers.csv');
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                ]),
+            ]);
     }
 
     public static function getRelations(): array
