@@ -86,8 +86,8 @@ class Article extends Model
             return false;
         }
 
-        $this->increment('views');
-        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 60 * 24);
+        // $this->increment('views');
+        // \Illuminate\Support\Facades\Cache::put($cacheKey, true, 60 * 24);
 
         return true;
     }
