@@ -38,6 +38,7 @@ class Article extends Model
         'is_featured_in_hero' => 'boolean',
         'published_at' => 'datetime',
         'review_data' => 'array',
+        'review_score' => 'decimal:1',
         'tags' => 'array',
         'views' => 'integer',
     ];
