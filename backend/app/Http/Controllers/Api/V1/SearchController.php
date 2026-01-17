@@ -37,7 +37,7 @@ class SearchController extends Controller
                     $q->whereIn('type', ['news', 'reviews', 'tech']);
                 })
                 ->with(['category:id,name,slug,type'])
-                ->select('id', 'title', 'slug', 'excerpt', 'featured_image', 'category_id', 'published_at')
+                ->select('id', 'title', 'slug', 'excerpt', 'featured_image_url', 'category_id', 'published_at')
                 ->orderByDesc('published_at')
                 ->limit(10)
                 ->get();
@@ -57,7 +57,7 @@ class SearchController extends Controller
                         'title' => $article->title,
                         'slug' => $article->slug,
                         'excerpt' => $article->excerpt ? \Illuminate\Support\Str::limit(strip_tags($article->excerpt), 80) : null,
-                        'image' => $article->featured_image,
+                        'image' => $article->featured_image_url,
                         'category' => $article->category?->name,
                         'category_slug' => $article->category?->slug,
                         'type' => $type,
