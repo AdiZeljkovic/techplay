@@ -67,18 +67,64 @@ class CommentController extends Controller
         }
 
         // 1. Content Sanitization (Anti-Abuse)
-        $cleanContent = strip_tags($request->content);
+        $cleanContent = strip_tags($request->input('content'));
+
+        // --- SPAM PROTECTION START ---
+        $user = Auth::user();
+
+        // A. Cooldown Check (15 seconds)
+        $lastComment = Comment::where('user_id', $user->id)->latest()->first();
+        if ($lastComment && $lastComment->created_at->diffInSeconds(now()) < 15) {
+            return response()->json(['message' => 'Please wait a few seconds before posting again.'], 429);
+        }
+
+        // B. Duplicate Check (5 minutes)
+        $isDuplicate = Comment::where('user_id', $user->id)
+            ->where('content', $cleanContent)
+            ->where('created_at', '>=', now()->subMinutes(5))
+            ->exists();
+
+        if ($isDuplicate) {
+            return response()->json(['message' => 'You have already posted this comment recently.'], 422);
+        }
+
+        // C. Determine Status (Probation & Spam Heuristics)
+        $status = 'approved';
+        $message = 'Comment posted successfully.';
+
+        // Rule 1: Probation (First 3 comments must be approved)
+        // We count only approved comments to require 3 successful interactions.
+        $approvedCount = Comment::where('user_id', $user->id)->where('status', 'approved')->count();
+
+        if ($approvedCount < 3) {
+            $status = 'pending';
+            $message = 'Comment submitted for approval (New user probation).';
+        }
+
+        // Rule 2: Link Limit (More than 1 link = pending)
+        // Simple regex to count http/https occurrences
+        $urlCount = preg_match_all('#https?://#i', $cleanContent);
+        if ($urlCount > 1) {
+            $status = 'pending';
+            // If it was already pending from probation, the message remains appropriate, 
+            // but if it was approved, we downgrade to pending.
+            if ($status === 'approved') {
+                $message = 'Comment submitted for approval (Link limit).';
+            }
+            $status = 'pending';
+        }
+        // --- SPAM PROTECTION END ---
 
         // 2. XP Check: Minimum Length
         $shouldAwardXp = strlen($cleanContent) >= 10;
 
         $comment = Comment::create([
-            'user_id' => Auth::id(),
+            'user_id' => $user->id,
             'commentable_type' => $modelClass,
             'commentable_id' => $request->commentable_id,
             'content' => $cleanContent, // Saved sanitized content
             'parent_id' => $request->parent_id,
-            'status' => 'approved',
+            'status' => $status,
         ]);
 
         // 3. Award XP via Service (Handles Cooldowns & Caps)
