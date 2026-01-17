@@ -34,6 +34,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
+    // Clear auth state without redirecting (used for invalid tokens on load)
+    const clearAuth = () => {
+        localStorage.removeItem("token");
+        setToken(null);
+        setUser(null);
+    };
+
     const fetchUser = async (authToken: string) => {
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
@@ -47,11 +54,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const userData = await response.json();
                 setUser(userData);
             } else {
-                logout(); // Invalid token
+                // Invalid token - clear auth but don't redirect
+                clearAuth();
             }
         } catch (error) {
             console.error("Failed to fetch user:", error);
-            logout();
+            // Network error - clear auth but don't redirect
+            clearAuth();
         } finally {
             setIsLoading(false);
         }
@@ -63,10 +72,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(newUser);
     };
 
+    // Logout - clears auth AND redirects (only for explicit user logout)
     const logout = () => {
-        localStorage.removeItem("token");
-        setToken(null);
-        setUser(null);
+        clearAuth();
         router.push("/login");
     };
 
