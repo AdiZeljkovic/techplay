@@ -13,8 +13,22 @@ interface ContentSectionProps {
     color?: string;
 }
 
+// Helper function to get score color
+function getScoreColor(score: number): { bg: string; text: string } {
+    if (score >= 9) return { bg: 'bg-green-500', text: 'text-green-500' };
+    if (score >= 7) return { bg: 'bg-yellow-500', text: 'text-yellow-500' };
+    if (score >= 5) return { bg: 'bg-orange-500', text: 'text-orange-500' };
+    return { bg: 'bg-red-500', text: 'text-red-500' };
+}
+
 export default function ContentSection({ title, icon: Icon, articles, viewAllLink, color = "var(--accent)" }: ContentSectionProps) {
     if (!articles || articles.length === 0) return null;
+
+    // Check if this is the reviews section
+    const isReviews = viewAllLink === '/reviews';
+
+    // Determine the correct link prefix based on section type
+    const linkPrefix = isReviews ? '/reviews' : '/news';
 
     // Split into featured (first item) and grid (next 4 items)
     const featured = articles[0];
@@ -38,7 +52,7 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Main Featured Article (Left) */}
-                <Link href={`/news/${featured.slug}`} className="group relative h-[350px] md:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-white/10">
+                <Link href={`${linkPrefix}/${featured.slug}`} className="group relative h-[350px] md:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-white/10">
                     {/* Image */}
                     <div className="absolute inset-0">
                         {featured.featured_image_url ? (
@@ -54,6 +68,13 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-[#000B25] via-[#000B25]/60 to-transparent" />
                     </div>
+
+                    {/* Review Score Badge (top-right corner) */}
+                    {isReviews && featured.review_score !== undefined && featured.review_score !== null && (
+                        <div className={`absolute top-4 right-4 w-14 h-14 rounded-full ${getScoreColor(featured.review_score).bg} flex items-center justify-center shadow-lg`}>
+                            <span className="text-white text-xl font-bold">{featured.review_score}</span>
+                        </div>
+                    )}
 
                     {/* Content Overlay */}
                     <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -83,7 +104,7 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
                 {/* Grid of 4 Smaller Articles (Right) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {gridItems.map((item) => (
-                        <Link key={item.id} href={`/news/${item.slug}`} className="group flex flex-col gap-3 p-4 bg-[#00215E] border border-white/5 rounded-2xl hover:bg-white/5 transition-all hover:border-white/10 hover:-translate-y-1 shadow-md">
+                        <Link key={item.id} href={`${linkPrefix}/${item.slug}`} className="group flex flex-col gap-3 p-4 bg-[#00215E] border border-white/5 rounded-2xl hover:bg-white/5 transition-all hover:border-white/10 hover:-translate-y-1 shadow-md">
                             <div className="relative h-32 rounded-xl overflow-hidden">
                                 {item.featured_image_url ? (
                                     <img
@@ -99,6 +120,13 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
                                 <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[9px] font-bold text-white uppercase tracking-wider">
                                     {item.category.name}
                                 </div>
+
+                                {/* Review Score Badge for grid items */}
+                                {isReviews && item.review_score !== undefined && item.review_score !== null && (
+                                    <div className={`absolute top-2 right-2 w-9 h-9 rounded-full ${getScoreColor(item.review_score).bg} flex items-center justify-center shadow-md`}>
+                                        <span className="text-white text-sm font-bold">{item.review_score}</span>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex-1 flex flex-col">
