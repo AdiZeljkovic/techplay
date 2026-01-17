@@ -24,9 +24,9 @@ class RedirectResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'System';
+        return 'SEO & Marketing';
     }
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema
     {

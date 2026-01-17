@@ -22,7 +22,7 @@ class PageSeoResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'SEO Management';
+        return 'SEO & Marketing';
     }
 
     public static function getNavigationSort(): ?int

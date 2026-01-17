@@ -21,72 +21,72 @@ class PostResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Community Hub';
+        return 'Community';
     }
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                    \Filament\Schemas\Components\Tabs::make('Tabs')
-                        ->tabs([
-                                \Filament\Schemas\Components\Tabs\Tab::make('Content')
-                                    ->icon('heroicon-o-document-text')
-                                    ->schema([
-                                            Forms\Components\Select::make('thread_id')
-                                                ->relationship('thread', 'title')
-                                                ->required()
-                                                ->searchable(),
-                                            Forms\Components\Select::make('author_id')
-                                                ->relationship('author', 'username')
-                                                ->required()
-                                                ->searchable(),
-                                            Forms\Components\RichEditor::make('content')
-                                                ->required()
-                                                ->columnSpanFull(),
-                                            Forms\Components\Toggle::make('is_solution')
-                                                ->label('Mark as Solution'),
-                                        ]),
-                            ])->columnSpanFull(),
-                ]);
+                \Filament\Schemas\Components\Tabs::make('Tabs')
+                    ->tabs([
+                        \Filament\Schemas\Components\Tabs\Tab::make('Content')
+                            ->icon('heroicon-o-document-text')
+                            ->schema([
+                                Forms\Components\Select::make('thread_id')
+                                    ->relationship('thread', 'title')
+                                    ->required()
+                                    ->searchable(),
+                                Forms\Components\Select::make('author_id')
+                                    ->relationship('author', 'username')
+                                    ->required()
+                                    ->searchable(),
+                                Forms\Components\RichEditor::make('content')
+                                    ->required()
+                                    ->columnSpanFull(),
+                                Forms\Components\Toggle::make('is_solution')
+                                    ->label('Mark as Solution'),
+                            ]),
+                    ])->columnSpanFull(),
+            ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                    Tables\Columns\TextColumn::make('id')
-                        ->sortable(),
-                    Tables\Columns\TextColumn::make('thread.title')
-                        ->limit(30)
-                        ->searchable()
-                        ->placeholder('-'),
-                    Tables\Columns\TextColumn::make('author.username')
-                        ->searchable()
-                        ->placeholder('-'),
-                    Tables\Columns\TextColumn::make('content')
-                        ->html()
-                        ->limit(50)
-                        ->placeholder('-'),
-                    Tables\Columns\IconColumn::make('is_solution')
-                        ->boolean(),
-                    Tables\Columns\TextColumn::make('created_at')
-                        ->dateTime()
-                        ->sortable(),
-                ])
+                Tables\Columns\TextColumn::make('id')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('thread.title')
+                    ->limit(30)
+                    ->searchable()
+                    ->placeholder('-'),
+                Tables\Columns\TextColumn::make('author.username')
+                    ->searchable()
+                    ->placeholder('-'),
+                Tables\Columns\TextColumn::make('content')
+                    ->html()
+                    ->limit(50)
+                    ->placeholder('-'),
+                Tables\Columns\IconColumn::make('is_solution')
+                    ->boolean(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable(),
+            ])
             ->filters([
-                    //
-                ])
+                //
+            ])
             ->actions([
-                    EditAction::make(),
-                    DeleteAction::make(),
-                ])
+                EditAction::make(),
+                DeleteAction::make(),
+            ])
             ->bulkActions([
-                    BulkActionGroup::make([
-                        DeleteBulkAction::make(),
-                    ]),
-                ]);
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
     }
 
     public static function getRelations(): array
