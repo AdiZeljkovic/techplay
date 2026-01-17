@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TechResource\Pages;
 use App\Filament\Components\SeoFields;
+use App\Filament\Components\MediaPickerFields;
 use App\Models\Article;
 use App\Models\Category;
 use Filament\Schemas\Components\Tabs;
@@ -199,29 +200,10 @@ class TechResource extends Resource
                                     ->badgeColor('success')
                                     ->schema(SeoFields::make('techplay.gg/tech/', false)),
 
-                                // TAB: MEDIA
+                                // TAB: MEDIA with Library Picker
                                 Tab::make('Media')
                                     ->icon('heroicon-o-photo')
-                                    ->schema([
-                                        FileUpload::make('featured_image_url')
-                                            ->label('Featured Image')
-                                            ->image()
-                                            ->disk('public')
-                                            ->directory('articles')
-                                            ->imageEditor()
-                                            ->imageEditorAspectRatios([
-                                                '16:9',
-                                                '4:3',
-                                                '1:1',
-                                            ])
-                                            ->maxSize(2048)
-                                            ->helperText('Recommended: 1200×630px for social sharing'),
-
-                                        TextInput::make('featured_image_alt')
-                                            ->label('Image Alt Text')
-                                            ->placeholder('Describe the image for accessibility...')
-                                            ->helperText('Important for SEO and accessibility'),
-                                    ]),
+                                    ->schema(MediaPickerFields::make('featured_image_url', 'featured_image_alt', 'articles')),
                             ])
                             ->persistTabInQueryString(),
                     ])
