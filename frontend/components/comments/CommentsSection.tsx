@@ -27,6 +27,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
     const [replyingTo, setReplyingTo] = useState<number | null>(null);
     const [replyContent, setReplyContent] = useState("");
     const [error, setError] = useState<string | null>(null);
+    const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'success' | 'warning' } | null>(null);
 
     const fetchComments = async () => {
         try {
@@ -122,6 +123,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
 
         setIsSubmitting(true);
         setError(null);
+        setStatusMessage(null);
 
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -139,9 +141,20 @@ export default function CommentsSection({ commentableId, commentableType, initia
                 })
             });
 
+            const data = await res.json().catch(() => ({}));
+
             if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
                 throw new Error(data.message || "Failed to post comment");
+            }
+
+            // Check specifically for pending status
+            if (data.status === 'pending') {
+                setStatusMessage({
+                    text: "Your comment is under review. To ensure quality discussion, the first 3 comments from new members are moderated. Thank you for your patience!",
+                    type: 'warning'
+                });
+            } else {
+                setStatusMessage({ text: "Comment posted successfully!", type: 'success' });
             }
 
             await fetchComments();
@@ -201,6 +214,14 @@ export default function CommentsSection({ commentableId, commentableType, initia
                                     required
                                 />
                                 {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+                                {statusMessage && (
+                                    <div className={`mt-3 p-3 rounded-lg text-sm border ${statusMessage.type === 'warning'
+                                            ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
+                                            : 'bg-green-500/10 border-green-500/20 text-green-500'
+                                        }`}>
+                                        {statusMessage.text}
+                                    </div>
+                                )}
                                 <div className="mt-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                                     <p className="text-xs text-[var(--text-muted)] italic">Remember to be respectful and follow our guidelines.</p>
                                     <Button

@@ -132,7 +132,11 @@ class CommentController extends Controller
             $xpService->awardXp(Auth::user(), \App\Services\XpService::XP_COMMENT, 'comment');
         }
 
-        return new \App\Http\Resources\V1\CommentResource($comment->load('user.rank'));
+        return (new \App\Http\Resources\V1\CommentResource($comment->load('user.rank')))
+            ->additional([
+                'message' => $message,
+                'status' => $status
+            ]);
     }
 
     public function vote(Request $request, $id)
