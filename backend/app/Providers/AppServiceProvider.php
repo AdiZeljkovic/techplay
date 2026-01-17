@@ -32,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\Post::observe(\App\Observers\ForumPostObserver::class);
         \App\Models\Video::observe(\App\Observers\VideoObserver::class);
         \App\Models\Guide::observe(\App\Observers\GuideObserver::class);
+        \App\Models\Media::observe(\App\Observers\MediaObserver::class);
 
         // Prevent N+1 queries in non-production environments
         \Illuminate\Database\Eloquent\Model::preventLazyLoading(!app()->isProduction());
