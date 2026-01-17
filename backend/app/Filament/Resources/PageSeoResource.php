@@ -20,11 +20,20 @@ class PageSeoResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-magnifying-glass';
 
-    protected static ?string $navigationGroup = 'SEO Management';
+    public static function getNavigationGroup(): ?string
+    {
+        return 'SEO Management';
+    }
 
-    protected static ?int $navigationSort = 2;
+    public static function getNavigationSort(): ?int
+    {
+        return 2;
+    }
 
-    protected static ?string $navigationLabel = 'Page SEO';
+    public static function getNavigationLabel(): string
+    {
+        return 'Page SEO';
+    }
 
     public static function form(Schema $schema): Schema
     {
