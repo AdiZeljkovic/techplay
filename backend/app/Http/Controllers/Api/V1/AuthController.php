@@ -51,12 +51,12 @@ class AuthController extends Controller
             \Log::warning('Failed to send verification email: ' . $e->getMessage());
         }
 
-        // Do NOT create token yet - force login after verification
-        // $token = $user->createToken('auth_token')->plainTextToken;
+        // Create token to allow access to verification page
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return $this->created([
             'user' => $user,
-            'access_token' => null, // No token until verified
+            'access_token' => $token,
             'requires_verification' => true,
         ], 'User registered successfully. Please verify your email.');
     }
