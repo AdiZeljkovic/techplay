@@ -72,10 +72,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(newUser);
     };
 
-    // Logout - clears auth AND redirects (only for explicit user logout)
+    // Logout - clears auth state (no redirect - user stays on current page)
     const logout = () => {
         clearAuth();
-        router.push("/login");
+        // User can navigate to login themselves if needed
     };
 
     const updateUser = (updatedUser: User) => {
