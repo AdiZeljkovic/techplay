@@ -41,9 +41,9 @@ class NewsletterController extends Controller
             // Continue even if email fails, or handle error?
         }
 
+        // SECURITY: Do NOT return subscriber data - token must only be sent via email
         return response()->json([
             'message' => 'Please check your email to verify your subscription.',
-            'data' => $subscriber
         ], 200);
     }
 
