@@ -9,71 +9,43 @@ return new class extends Migration {
     /**
      * Run the migrations.
      * PERFORMANCE: Add indexes for frequently queried columns
+     * Uses try-catch to handle existing indexes gracefully
      */
     public function up(): void
     {
         // Threads table indexes
-        if (!$this->indexExists('threads', 'threads_slug_index')) {
-            Schema::table('threads', function (Blueprint $table) {
-                $table->index('slug');
-            });
-        }
-
-        if (!$this->indexExists('threads', 'threads_category_id_updated_at_index')) {
-            Schema::table('threads', function (Blueprint $table) {
-                $table->index(['category_id', 'updated_at']);
-            });
-        }
-
-        if (!$this->indexExists('threads', 'threads_is_pinned_index')) {
-            Schema::table('threads', function (Blueprint $table) {
-                $table->index('is_pinned');
-            });
-        }
-
-        if (!$this->indexExists('threads', 'threads_author_id_index')) {
-            Schema::table('threads', function (Blueprint $table) {
-                $table->index('author_id');
-            });
-        }
+        $this->safeAddIndex('threads', ['slug']);
+        $this->safeAddIndex('threads', ['category_id', 'updated_at']);
+        $this->safeAddIndex('threads', ['is_pinned']);
+        $this->safeAddIndex('threads', ['author_id']);
 
         // Posts table indexes
-        if (!$this->indexExists('posts', 'posts_thread_id_index')) {
-            Schema::table('posts', function (Blueprint $table) {
-                $table->index('thread_id');
-            });
-        }
-
-        if (!$this->indexExists('posts', 'posts_author_id_index')) {
-            Schema::table('posts', function (Blueprint $table) {
-                $table->index('author_id');
-            });
-        }
+        $this->safeAddIndex('posts', ['thread_id']);
+        $this->safeAddIndex('posts', ['author_id']);
 
         // Comments table indexes
-        if (!$this->indexExists('comments', 'comments_commentable_status_index')) {
-            Schema::table('comments', function (Blueprint $table) {
-                $table->index(['commentable_type', 'commentable_id', 'status']);
-            });
-        }
-
-        if (!$this->indexExists('comments', 'comments_user_id_index')) {
-            Schema::table('comments', function (Blueprint $table) {
-                $table->index('user_id');
-            });
-        }
+        $this->safeAddIndex('comments', ['commentable_type', 'commentable_id', 'status']);
+        $this->safeAddIndex('comments', ['user_id']);
 
         // Categories table indexes
-        if (!$this->indexExists('categories', 'categories_type_index')) {
-            Schema::table('categories', function (Blueprint $table) {
-                $table->index('type');
-            });
-        }
+        $this->safeAddIndex('categories', ['type']);
+        $this->safeAddIndex('categories', ['slug', 'type']);
+    }
 
-        if (!$this->indexExists('categories', 'categories_slug_type_index')) {
-            Schema::table('categories', function (Blueprint $table) {
-                $table->index(['slug', 'type']);
+    /**
+     * Safely add an index, ignoring if it already exists.
+     */
+    private function safeAddIndex(string $table, array $columns): void
+    {
+        try {
+            Schema::table($table, function (Blueprint $t) use ($columns) {
+                $t->index($columns);
             });
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Index already exists - ignore
+            if (!str_contains($e->getMessage(), 'already exists')) {
+                throw $e;
+            }
         }
     }
 
@@ -82,39 +54,32 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('threads', function (Blueprint $table) {
-            $table->dropIndex(['slug']);
-            $table->dropIndex(['category_id', 'updated_at']);
-            $table->dropIndex(['is_pinned']);
-            $table->dropIndex(['author_id']);
-        });
+        $this->safeDropIndex('threads', ['slug']);
+        $this->safeDropIndex('threads', ['category_id', 'updated_at']);
+        $this->safeDropIndex('threads', ['is_pinned']);
+        $this->safeDropIndex('threads', ['author_id']);
 
-        Schema::table('posts', function (Blueprint $table) {
-            $table->dropIndex(['thread_id']);
-            $table->dropIndex(['author_id']);
-        });
+        $this->safeDropIndex('posts', ['thread_id']);
+        $this->safeDropIndex('posts', ['author_id']);
 
-        Schema::table('comments', function (Blueprint $table) {
-            $table->dropIndex(['commentable_type', 'commentable_id', 'status']);
-            $table->dropIndex(['user_id']);
-        });
+        $this->safeDropIndex('comments', ['commentable_type', 'commentable_id', 'status']);
+        $this->safeDropIndex('comments', ['user_id']);
 
-        Schema::table('categories', function (Blueprint $table) {
-            $table->dropIndex(['type']);
-            $table->dropIndex(['slug', 'type']);
-        });
+        $this->safeDropIndex('categories', ['type']);
+        $this->safeDropIndex('categories', ['slug', 'type']);
     }
 
     /**
-     * Check if an index exists (PostgreSQL compatible)
+     * Safely drop an index, ignoring if it doesn't exist.
      */
-    private function indexExists(string $table, string $indexName): bool
+    private function safeDropIndex(string $table, array $columns): void
     {
-        $result = DB::select("
-            SELECT 1 FROM pg_indexes 
-            WHERE tablename = ? AND indexname = ?
-        ", [$table, $indexName]);
-
-        return count($result) > 0;
+        try {
+            Schema::table($table, function (Blueprint $t) use ($columns) {
+                $t->dropIndex($columns);
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Index doesn't exist - ignore
+        }
     }
 };
