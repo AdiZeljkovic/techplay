@@ -108,7 +108,9 @@ class ForumController extends Controller
             ->withCount(['posts', 'upvotes']) // Add upvotes count
             ->firstOrFail();
 
-        $thread->increment('view_count');
+        // PERFORMANCE: Use Redis atomic increment instead of sync DB write
+        // Views are flushed to DB every 5 minutes by FlushViewCounters job
+        \Illuminate\Support\Facades\Redis::incr("views:thread:{$thread->id}");
 
         $thread->is_upvoted = Auth::guard('sanctum')->check()
             ? \Illuminate\Support\Facades\DB::table('thread_upvotes')
