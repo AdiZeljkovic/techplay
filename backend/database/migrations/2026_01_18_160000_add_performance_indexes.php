@@ -3,13 +3,17 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration {
     /**
+     * Disable transaction wrapping so each index creation is independent.
+     * This allows us to skip indexes that already exist.
+     */
+    public $withinTransaction = false;
+
+    /**
      * Run the migrations.
      * PERFORMANCE: Add indexes for frequently queried columns
-     * Uses try-catch to handle existing indexes gracefully
      */
     public function up(): void
     {
