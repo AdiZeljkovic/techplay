@@ -5,8 +5,8 @@ import NewsCategoryView from "@/components/news/NewsCategoryView";
 import ArticleDetailView from "@/components/news/ArticleDetailView";
 import { NEWS_CATEGORIES } from "@/lib/categories";
 
-// Force dynamic rendering since we depend on params
-export const dynamic = 'force-dynamic';
+// PERFORMANCE: ISR - Regenerate pages every 60 seconds
+export const revalidate = 60;
 
 async function getArticle(slug: string): Promise<Article | null> {
     let apiUrl = process.env.NEXT_PUBLIC_API_URL;

@@ -73,7 +73,9 @@ class HomeController extends Controller
             ];
         });
 
-        return $this->success($data);
+        // PERFORMANCE: Add HTTP cache header for Cloudflare edge caching
+        return $this->success($data)
+            ->header('Cache-Control', 'public, max-age=60');
     }
 }
 
