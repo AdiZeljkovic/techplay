@@ -4,14 +4,57 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
-    // Auth (Relaxed Rate Limited - 60 per minute)
+    // Auth (Rate Limited - 60 per minute)
     Route::middleware('throttle:60,1')->group(function () {
         Route::post('/auth/register', [App\Http\Controllers\Api\V1\AuthController::class, 'register']);
         Route::post('/auth/login', [App\Http\Controllers\Api\V1\AuthController::class, 'login']);
     });
 
     Route::middleware('auth:sanctum')->group(function () {
-        // ... (routes unchanged)
+        Route::post('/auth/logout', [App\Http\Controllers\Api\V1\AuthController::class, 'logout']);
+        Route::post('/auth/refresh', [App\Http\Controllers\Api\V1\AuthController::class, 'refresh']);
+        Route::get('/auth/me', [App\Http\Controllers\Api\V1\AuthController::class, 'user']);
+        Route::put('/user/profile', [App\Http\Controllers\Api\V1\AuthController::class, 'updateProfile']);
+        Route::put('/user/preferences', [App\Http\Controllers\Api\V1\AuthController::class, 'updatePreferences']);
+        Route::put('/user/password', [App\Http\Controllers\Api\V1\AuthController::class, 'changePassword']);
+        Route::get('/user/notifications/counts', [App\Http\Controllers\Api\V1\NotificationController::class, 'counts']);
+
+        // Friends
+        Route::get('/friends', [App\Http\Controllers\Api\V1\FriendController::class, 'index']);
+        Route::get('/friends/pending', [App\Http\Controllers\Api\V1\FriendController::class, 'penndingRequests']);
+        Route::get('/friends/search', [App\Http\Controllers\Api\V1\FriendController::class, 'search']);
+        Route::post('/friends/request', [App\Http\Controllers\Api\V1\FriendController::class, 'sendRequest']);
+        Route::post('/friends/block/{id}', [App\Http\Controllers\Api\V1\FriendController::class, 'block']);
+        Route::post('/friends/accept/{id}', [App\Http\Controllers\Api\V1\FriendController::class, 'acceptRequest']);
+        Route::post('/friends/decline/{id}', [App\Http\Controllers\Api\V1\FriendController::class, 'declineRequest']);
+
+        // Messages
+        Route::get('/messages', [App\Http\Controllers\Api\V1\MessageController::class, 'index']);
+        Route::post('/messages', [App\Http\Controllers\Api\V1\MessageController::class, 'store']);
+        Route::patch('/messages/{id}/read', [App\Http\Controllers\Api\V1\MessageController::class, 'markRead']);
+        Route::delete('/messages/conversation/{userId}', [App\Http\Controllers\Api\V1\MessageController::class, 'deleteConversation']);
+        Route::delete('/messages/{id}', [App\Http\Controllers\Api\V1\MessageController::class, 'destroy']);
+
+        // Email Verification
+        Route::post('/email/resend', [App\Http\Controllers\Api\V1\VerificationController::class, 'resend']);
+        Route::get('/email/status', [App\Http\Controllers\Api\V1\VerificationController::class, 'status']);
+
+        // Shop & PayPal
+        Route::post('/shop/orders', [App\Http\Controllers\Api\V1\PayPalController::class, 'createOrder']);
+        Route::post('/shop/orders/capture', [App\Http\Controllers\Api\V1\PayPalController::class, 'captureOrder']);
+        Route::post('/shop/orders/cod', [App\Http\Controllers\Api\V1\ShopController::class, 'storeOrder']);
+
+        // Subscriptions
+        Route::post('/subscriptions/activate', [App\Http\Controllers\Api\V1\PayPalController::class, 'activateSubscription']);
+
+        // Forum (Authenticated)
+        Route::post('/forum/threads', [App\Http\Controllers\Api\V1\ForumController::class, 'createThread']);
+        Route::post('/forum/threads/{slug}/posts', [App\Http\Controllers\Api\V1\ForumController::class, 'createPost']);
+        Route::post('/forum/threads/{slug}/upvote', [App\Http\Controllers\Api\V1\ForumController::class, 'upvote']);
+
+        // Support Plans
+        Route::post('/support/create-plan', [App\Http\Controllers\Api\V1\SupportController::class, 'createPlan']);
+        Route::post('/support/pledge', [App\Http\Controllers\Api\V1\SupportController::class, 'pledge']);
     });
 
     // Public Routes (High Rate Limit - 3000 per minute for production traffic)
@@ -115,5 +158,3 @@ Route::prefix('v1')->group(function () {
         Route::get('/articles/{article}/schemas', [App\Http\Controllers\Api\V1\SeoController::class, 'getSchemas']);
     });
 });
-
-
