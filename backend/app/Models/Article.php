@@ -88,8 +88,10 @@ class Article extends Model
             return false;
         }
 
-        // $this->increment('views');
-        // \Illuminate\Support\Facades\Cache::put($cacheKey, true, 60 * 24);
+        // PERFORMANCE: Use Redis atomic increment instead of sync DB write
+        // Views are flushed to DB every 5 minutes by FlushViewCounters job
+        \Illuminate\Support\Facades\Redis::incr("views:article:{$this->id}");
+        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 60 * 24);
 
         return true;
     }

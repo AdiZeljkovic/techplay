@@ -48,9 +48,9 @@ class ArticleObserver
         if ($article->status === 'published') {
             broadcast(new ArticlePublished($article))->toOthers();
 
-            // Ping IndexNow
+            // PERFORMANCE: Dispatch to queue instead of sync HTTP call
             $url = config('app.frontend_url') . "/news/{$article->slug}";
-            IndexNowService::ping($url);
+            \App\Jobs\PingIndexNow::dispatch($url);
         }
     }
 
@@ -64,9 +64,9 @@ class ArticleObserver
         if ($article->isDirty('status') && $article->status === 'published') {
             broadcast(new ArticlePublished($article))->toOthers();
 
-            // Ping IndexNow
+            // PERFORMANCE: Dispatch to queue instead of sync HTTP call
             $url = config('app.frontend_url') . "/news/{$article->slug}";
-            IndexNowService::ping($url);
+            \App\Jobs\PingIndexNow::dispatch($url);
         }
     }
 

@@ -22,8 +22,8 @@ class AdController extends Controller
             return response()->json(null);
         }
 
-        // Increment view count
-        $ad->increment('view_count');
+        // PERFORMANCE: Use Redis atomic increment instead of sync DB write
+        \Illuminate\Support\Facades\Redis::incr("views:ad:{$ad->id}");
 
         return response()->json([
             'id' => $ad->id,
@@ -42,7 +42,8 @@ class AdController extends Controller
     {
         $ad = AdCampaign::find($id);
         if ($ad) {
-            $ad->increment('click_count');
+            // PERFORMANCE: Use Redis atomic increment instead of sync DB write
+            \Illuminate\Support\Facades\Redis::incr("clicks:ad:{$ad->id}");
         }
         return response()->json(['success' => true]);
     }
