@@ -19,6 +19,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS in production/staging to fix Mixed Content errors
+        if ($this->app->environment('production') || $this->app->environment('staging') || request()->getHost() !== 'localhost') {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
         // Existing observers
         \App\Models\Post::observe(\App\Observers\PostObserver::class);
         \App\Models\Article::observe(\App\Observers\ContentObserver::class);
