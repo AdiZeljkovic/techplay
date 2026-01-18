@@ -39,7 +39,7 @@ class NewsController extends Controller
             return \App\Http\Resources\V1\ArticleResource::collection(
                 $query->latest('published_at')->paginate(12)
             );
-        });
+        })->header('Cache-Control', 'public, max-age=60');
     }
 
     /**
@@ -67,7 +67,7 @@ class NewsController extends Controller
                 ->firstOrFail();
 
             return new \App\Http\Resources\V1\ArticleResource($article);
-        });
+        })->header('Cache-Control', 'public, max-age=300');
     }
 
     /**
@@ -85,6 +85,6 @@ class NewsController extends Controller
                 ->get();
 
             return \App\Http\Resources\V1\ArticleResource::collection($articles);
-        });
+        })->header('Cache-Control', 'public, max-age=300');
     }
 }
