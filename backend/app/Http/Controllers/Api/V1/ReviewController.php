@@ -17,7 +17,7 @@ class ReviewController extends Controller
         $category = $request->get('category', 'all');
         $cacheKey = "reviews.index.page_{$page}.cat_{$category}";
 
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($request) {
+        $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($request) {
             $query = Article::query()
                 ->where('status', 'published')
                 ->where('published_at', '<=', now())
@@ -38,20 +38,24 @@ class ReviewController extends Controller
             return ReviewResource::collection(
                 $query->latest('published_at')->paginate(12)
             );
-        })->header('Cache-Control', 'public, max-age=60');
+        });
+
+        return $resource->response()->header('Cache-Control', 'public, max-age=60');
     }
 
     public function show($slug)
     {
         $cacheKey = "reviews.show.{$slug}";
 
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($slug) {
+        $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($slug) {
             $article = Article::where('slug', $slug)
                 ->where('status', 'published')
                 ->with(['author:id,username,avatar_url,bio', 'category'])
                 ->firstOrFail();
 
             return new ReviewResource($article);
-        })->header('Cache-Control', 'public, max-age=300');
+        });
+
+        return $resource->response()->header('Cache-Control', 'public, max-age=300');
     }
 }
