@@ -18,7 +18,7 @@ class NewsController extends Controller
         $cacheKey = "news.index.page_{$page}.cat_{$category}";
 
         // Note: Caching for 1 hour (production)
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($request) {
+        $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($request) {
             $query = Article::query()
                 ->where('status', 'published')
                 ->where('published_at', '<=', now())
@@ -39,7 +39,9 @@ class NewsController extends Controller
             return \App\Http\Resources\V1\ArticleResource::collection(
                 $query->latest('published_at')->paginate(12)
             );
-        })->header('Cache-Control', 'public, max-age=60');
+        });
+
+        return $resource->response()->header('Cache-Control', 'public, max-age=60');
     }
 
     /**
@@ -49,7 +51,7 @@ class NewsController extends Controller
     {
         $cacheKey = "news.show.{$slug}";
 
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 3600, function () use ($slug) {
+        $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, 3600, function () use ($slug) {
             $article = Article::where('slug', $slug)
                 ->where('status', 'published')
                 ->with([
@@ -67,7 +69,9 @@ class NewsController extends Controller
                 ->firstOrFail();
 
             return new \App\Http\Resources\V1\ArticleResource($article);
-        })->header('Cache-Control', 'public, max-age=300');
+        });
+
+        return $resource->response()->header('Cache-Control', 'public, max-age=300');
     }
 
     /**
@@ -75,7 +79,7 @@ class NewsController extends Controller
      */
     public function trending()
     {
-        return \Illuminate\Support\Facades\Cache::remember('news.trending', 3600, function () {
+        $resource = \Illuminate\Support\Facades\Cache::remember('news.trending', 3600, function () {
             $articles = Article::query()
                 ->where('status', 'published')
                 ->where('published_at', '<=', now())
@@ -85,6 +89,8 @@ class NewsController extends Controller
                 ->get();
 
             return \App\Http\Resources\V1\ArticleResource::collection($articles);
-        })->header('Cache-Control', 'public, max-age=300');
+        });
+
+        return $resource->response()->header('Cache-Control', 'public, max-age=300');
     }
 }
