@@ -38,7 +38,7 @@ class ReviewController extends Controller
             return ReviewResource::collection(
                 $query->latest('published_at')->paginate(12)
             );
-        });
+        })->header('Cache-Control', 'public, max-age=60');
     }
 
     public function show($slug)
@@ -52,6 +52,6 @@ class ReviewController extends Controller
                 ->firstOrFail();
 
             return new ReviewResource($article);
-        });
+        })->header('Cache-Control', 'public, max-age=300');
     }
 }

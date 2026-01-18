@@ -50,6 +50,7 @@ class NavigationController extends Controller
             $tree[$key] = $children;
         }
 
-        return response()->json($tree);
+        return response()->json($tree)
+            ->header('Cache-Control', 'public, max-age=300');
     }
 }
