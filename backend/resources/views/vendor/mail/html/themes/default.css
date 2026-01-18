@@ -98,41 +98,49 @@ body {
     font-size: 15px;
     line-height: 18px;
     margin: 0;
-    padding: 10px 0;
+    padding: 30px;
+    /* Increased Padding from 10px to 30px */
+    text-align: center;
+    /* Center all cell content by default */
 }
 
 /* Content Styles */
 
 h1 {
     color: #ffffff;
-    font-size: 19px;
+    font-size: 24px;
+    /* Slightly Larger */
     font-weight: bold;
     margin-top: 0;
-    text-align: left;
+    text-align: center;
+    /* Centered */
 }
 
 h2 {
     color: #ffffff;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
     margin-top: 0;
-    text-align: left;
+    text-align: center;
+    /* Centered */
 }
 
 h3 {
     color: #ffffff;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: bold;
     margin-top: 0;
-    text-align: left;
+    text-align: center;
+    /* Centered */
 }
 
 p {
     color: #cbd5e1;
     font-size: 16px;
-    line-height: 1.5em;
+    line-height: 1.6em;
     margin-top: 0;
-    text-align: left;
+    text-align: center;
+    /* Centered */
 }
 
 /* Buttons */
@@ -146,9 +154,7 @@ p {
 
 .button {
     border-radius: 50px;
-    /* Fully rounded buttons like site */
     box-shadow: 0 4px 6px rgba(252, 65, 0, 0.3);
-    /* Orange shadow */
     color: #fff;
     display: inline-block;
     text-decoration: none;
@@ -156,11 +162,12 @@ p {
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    padding: 12px 24px;
+    /* More padding inside button */
 }
 
 .button-primary {
     background-color: #FC4100;
-    /* TechPlay Orange */
     border-top: 10px solid #FC4100;
     border-right: 24px solid #FC4100;
     border-bottom: 10px solid #FC4100;
@@ -193,22 +200,37 @@ p {
 
 .subcopy p {
     font-size: 12px;
+    text-align: center;
 }
 
 /* Panels */
 
 .panel {
     border-left: #FC4100 solid 4px;
-    /* Orange border */
     margin: 21px 0;
 }
 
 .panel-content {
     background-color: #001540;
     color: #cbd5e1;
-    padding: 16px;
+    padding: 24px;
 }
 
 .panel-item {
     padding: 0;
+}
+
+.promotion {
+    background-color: #001540;
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    margin: 0;
+    margin-bottom: 25px;
+    margin-top: 25px;
+    padding: 24px;
+    width: 100%;
+}
+
+.promotion h1,
+.promotion p {
+    text-align: center;
 }
