@@ -76,3 +76,4 @@ class CategorySeoSeeder extends Seeder
         }
     }
 }
+ 
