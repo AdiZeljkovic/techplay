@@ -87,6 +87,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/reviews', [App\Http\Controllers\Api\V1\ReviewController::class, 'index']);
         Route::get('/reviews/{slug}', [App\Http\Controllers\Api\V1\ReviewController::class, 'show']);
 
+        // Categories (General)
+        Route::get('/categories/{slug}', [App\Http\Controllers\Api\V1\CategoryController::class, 'show']);
+
         // Forum
         Route::get('/forum/stats', [App\Http\Controllers\Api\V1\ForumController::class, 'stats']);
         Route::get('/forum/categories', [App\Http\Controllers\Api\V1\ForumController::class, 'categories']);

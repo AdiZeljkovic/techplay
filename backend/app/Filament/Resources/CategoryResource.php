@@ -77,6 +77,13 @@ class CategoryResource extends Resource
                             ->icon('heroicon-o-globe-alt')
                             ->schema([
                                 \App\Filament\Components\SeoForm::make(),
+                                \Filament\Schemas\Components\Section::make('Page Content (SEO)')
+                                    ->schema([
+                                        Forms\Components\RichEditor::make('seo_text')
+                                            ->label('Bottom SEO Content')
+                                            ->helperText('This text will appear at the bottom of the category page.')
+                                            ->columnSpanFull(),
+                                    ]),
                             ]),
                     ])->columnSpanFull(),
             ]);

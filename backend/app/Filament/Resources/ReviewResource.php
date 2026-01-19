@@ -104,6 +104,7 @@ class ReviewResource extends Resource
         };
 
         return $schema
+            ->columns(['default' => 1, 'lg' => 3]) // Explicit Grid Definition
             ->components([
                 // ═══════════════════════════════════════════════════════════
                 // LEFT COLUMN - MAIN CONTENT AREA (2/3 width)
@@ -341,7 +342,7 @@ class ReviewResource extends Resource
                                     ->rows(3),
                             ]),
                     ])
-                    ->columnSpan(['lg' => 2]),
+                    ->columnSpan(['default' => 1, 'lg' => 2]), // Explicit Span
 
                 // ═══════════════════════════════════════════════════════════
                 // RIGHT COLUMN - SIDEBAR WITH TABS (1/3 width)
@@ -407,9 +408,8 @@ class ReviewResource extends Resource
                             ])
                             ->persistTabInQueryString(),
                     ])
-                    ->columnSpan(['lg' => 1]),
-            ])
-            ->columns(3);
+                    ->columnSpan(['default' => 1, 'lg' => 1]), // Explicit Span
+            ]);
     }
 
     public static function table(Table $table): Table

@@ -41,6 +41,12 @@ export default function HardwareCategoryClient({ categorySlug }: HardwareCategor
         fetcher
     );
 
+    // Fetch Category Details (for SEO Text)
+    const { data: categoryData } = useSWR(
+        `/categories/${categorySlug}`,
+        fetcher
+    );
+
     const reviews = data?.data || [];
 
     return (
@@ -114,6 +120,18 @@ export default function HardwareCategoryClient({ categorySlug }: HardwareCategor
                     </div>
                 )}
             </div>
+
+            {/* SEO Bottom Content */}
+            {categoryData?.data?.seo_text && (
+                <div className="container mx-auto px-4 pb-16">
+                    <div className="bg-[var(--bg-card)]/30 rounded-2xl p-8 border border-[var(--border)]">
+                        <div
+                            className="prose prose-invert prose-p:text-[var(--text-secondary)] prose-headings:text-white max-w-none"
+                            dangerouslySetInnerHTML={{ __html: categoryData.data.seo_text }}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

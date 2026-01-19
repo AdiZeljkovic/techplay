@@ -18,6 +18,7 @@ class Category extends Model
         'focus_keyword',
         'canonical_url',
         'is_noindex',
+        'seo_text',
     ];
 
     public function parent()
