@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Category;
 
+use App\Models\PageSeo;
+
 class CategorySeoSeeder extends Seeder
 {
     public function run()
@@ -90,14 +92,48 @@ class CategorySeoSeeder extends Seeder
         ];
 
         foreach ($categories as $data) {
+            // 1. Update Category Table (Source of Truth for internal logic)
             Category::updateOrCreate(
-                ['slug' => $data['slug']], // Match strictly by SLUG only (it's unique)
+                ['slug' => $data['slug']],
                 [
                     'name' => $data['name'],
                     'type' => $data['type'],
                     'seo_title' => $data['seo_title'],
                     'seo_description' => $data['seo_description'],
                     'focus_keyword' => $data['focus_keyword'],
+                    'is_noindex' => false,
+                ]
+            );
+
+            // 2. Generate Path
+            $pathPrefix = match ($data['type']) {
+                'news' => '/news',
+                'reviews' => '/reviews',
+                'tech' => '/hardware', // Assuming 'tech' maps to /hardware based on conventions
+                'forum' => '/forum',
+                default => '/' . $data['type'],
+            };
+
+            // Special case for root categories if they have the same slug as valid root paths, but here we are treating them as sub-pages usually.
+            // However, 'hardware' slug with type 'tech' -> '/hardware/hardware' looks wrong if 'hardware' IS the section.
+            // If slug equals the prefix base (e.g. slug 'hardware' and prefix '/hardware'), maybe it should be just '/hardware'?
+            // But the user asked for SUBCATEGORIES. 
+            // Let's stick to simple concatenation for now: /news/gaming, /reviews/pc.
+            // For hardware: /hardware/hardware is redundant but technically correct if category is named Hardware.
+            // BUT, if the slug is 'hardware', maybe it IS the root hardware page?
+            // The user screenshot shows /hardware.
+            // Only if slug != 'hardware' (or whatever base is). 
+            // Let's just use /$prefix/$slug for now. The user can edit it.
+
+            $path = $pathPrefix . '/' . $data['slug'];
+
+            // 3. Update PageSeo Table (For "Page SEO" Admin View)
+            PageSeo::updateOrCreate(
+                ['page_path' => $path],
+                [
+                    'page_name' => $data['name'],
+                    'meta_title' => $data['seo_title'],
+                    'meta_description' => $data['seo_description'],
                     'is_noindex' => false,
                 ]
             );
