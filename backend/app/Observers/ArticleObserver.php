@@ -21,18 +21,18 @@ class ArticleObserver
             $newSlug = $article->slug;
 
             if ($oldSlug && $oldSlug !== $newSlug) {
-                $existing = Redirect::where('source_path', "/news/{$oldSlug}")->first();
+                $existing = Redirect::where('source_url', "/news/{$oldSlug}")->first();
 
                 if (!$existing) {
                     Redirect::create([
-                        'source_path' => "/news/{$oldSlug}",
-                        'target_path' => "/news/{$newSlug}",
+                        'source_url' => "/news/{$oldSlug}",
+                        'target_url' => "/news/{$newSlug}",
                         'status_code' => 301,
                         'is_active' => true,
                         'note' => 'Auto: slug change',
                     ]);
                 } else {
-                    $existing->update(['target_path' => "/news/{$newSlug}"]);
+                    $existing->update(['target_url' => "/news/{$newSlug}"]);
                 }
             }
         }
