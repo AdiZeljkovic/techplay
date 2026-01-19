@@ -98,9 +98,10 @@ class ArticleForm
                                         'strike',
                                         'underline',
                                         'undo',
-                                        'alignLeft',
+                                        'alignStart',
                                         'alignCenter',
-                                        'alignRight',
+                                        'alignEnd',
+                                        'alignJustify',
                                     ])
                                     ->fileAttachmentsDisk('public')
                                     ->fileAttachmentsDirectory('article-content')
