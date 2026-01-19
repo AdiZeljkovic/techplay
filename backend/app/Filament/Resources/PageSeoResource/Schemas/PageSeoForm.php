@@ -77,6 +77,11 @@ class PageSeoForm
                 Toggle::make('is_noindex')
                     ->label('NoIndex (hide from search engines)')
                     ->columnSpanFull(),
+
+                \Filament\Forms\Components\RichEditor::make('seo_text')
+                    ->label('Page Content (Bottom)')
+                    ->helperText('Content displayed at the bottom of the page.')
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }

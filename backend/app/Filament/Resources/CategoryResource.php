@@ -73,18 +73,6 @@ class CategoryResource extends Resource
                                 Forms\Components\Textarea::make('description')
                                     ->rows(3),
                             ]),
-                        \Filament\Schemas\Components\Tabs\Tab::make('SEO')
-                            ->icon('heroicon-o-globe-alt')
-                            ->schema([
-                                \App\Filament\Components\SeoForm::make(),
-                                \Filament\Schemas\Components\Section::make('Page Content (SEO)')
-                                    ->schema([
-                                        Forms\Components\RichEditor::make('seo_text')
-                                            ->label('Bottom SEO Content')
-                                            ->helperText('This text will appear at the bottom of the category page.')
-                                            ->columnSpanFull(),
-                                    ]),
-                            ]),
                     ])->columnSpanFull(),
             ]);
     }
@@ -147,4 +135,4 @@ class CategoryResource extends Resource
         ];
     }
 }
- 
+
