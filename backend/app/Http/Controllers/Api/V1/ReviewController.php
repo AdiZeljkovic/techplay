@@ -50,6 +50,8 @@ class ReviewController extends Controller
         $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($slug) {
             $article = Article::where('slug', $slug)
                 ->where('status', 'published')
+                // IMPORTANT: Only show articles with category type 'reviews'
+                ->whereHas('category', fn($q) => $q->where('type', 'reviews'))
                 ->with(['author:id,username,avatar_url,bio', 'category'])
                 ->firstOrFail();
 

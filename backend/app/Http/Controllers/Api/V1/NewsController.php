@@ -54,6 +54,8 @@ class NewsController extends Controller
         $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, 3600, function () use ($slug) {
             $article = Article::where('slug', $slug)
                 ->where('status', 'published')
+                // IMPORTANT: Only show articles with category type 'news'
+                ->whereHas('category', fn($q) => $q->where('type', 'news'))
                 ->with([
                     'author',
                     'category',
