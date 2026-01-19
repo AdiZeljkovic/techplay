@@ -66,7 +66,7 @@ class CategoryResource extends Resource
                                     ->preload()
                                     ->nullable()
                                     // If type is forum, we might want to restrict parents to forum type too, but let's keep it flexible for now or filter in query
-                                    ->visible(fn(Get $get) => $get('type') === 'forum'),
+                                    ->visible(fn($get) => $get('type') === 'forum'),
                                 Forms\Components\TextInput::make('icon')
                                     ->placeholder('heroicon-o-chat-bubble-left')
                                     ->maxLength(255),
