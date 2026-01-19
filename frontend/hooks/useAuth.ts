@@ -43,7 +43,13 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 
             }
         } catch (error: any) {
             if (error.response?.status !== 422) throw error;
-            setErrors(Object.values(error.response.data.errors).flat());
+
+            const responseErrors = error.response.data.errors;
+            if (responseErrors) {
+                setErrors(Object.values(responseErrors).flat());
+            } else {
+                setErrors([error.response.data.message || 'An error occurred during registration.']);
+            }
         }
     };
 
@@ -67,11 +73,16 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 
             }
         } catch (error: any) {
             if (error.response?.status !== 422) {
-                // Handle invalid credentials which might return 422 or plain text
                 setErrors([error.response?.data?.message || 'Something went wrong.']);
                 return;
             }
-            setErrors(Object.values(error.response.data.errors).flat());
+
+            const responseErrors = error.response.data.errors;
+            if (responseErrors) {
+                setErrors(Object.values(responseErrors).flat());
+            } else {
+                setErrors([error.response.data.message || 'Invalid credentials.']);
+            }
         }
     };
 
