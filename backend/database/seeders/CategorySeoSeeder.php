@@ -91,9 +91,10 @@ class CategorySeoSeeder extends Seeder
 
         foreach ($categories as $data) {
             Category::updateOrCreate(
-                ['slug' => $data['slug'], 'type' => $data['type']], // Match by slug AND type to avoid collisions
+                ['slug' => $data['slug']], // Match strictly by SLUG only (it's unique)
                 [
                     'name' => $data['name'],
+                    'type' => $data['type'],
                     'seo_title' => $data['seo_title'],
                     'seo_description' => $data['seo_description'],
                     'focus_keyword' => $data['focus_keyword'],
