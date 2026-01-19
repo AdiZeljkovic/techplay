@@ -274,11 +274,11 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:rounded-2xl [&_iframe]:shadow-xl [&_iframe]:border [&_iframe]:border-[var(--border)] [&_iframe]:my-8
                                 [&_.twitter-tweet]:mx-auto [&_.instagram-media]:mx-auto [&_.fb-post]:mx-auto
                                 [&_figure]:my-8 [&_figure]:text-center [&_figcaption]:text-sm [&_figcaption]:text-[var(--text-secondary)] [&_figcaption]:mt-3
-                                [&_table]:w-full [&_table]:border-collapse [&_table]:my-8 [&_table]:table-fixed [&_table]:border [&_table]:border-[var(--border)] [&_table]:rounded-xl [&_table]:overflow-hidden
-                                [&_thead]:bg-[var(--bg-elevated)]/50 [&_thead]:border-b-2 [&_thead]:border-[var(--accent)]
-                                [&_th]:py-4 [&_th]:px-6 [&_th]:text-left [&_th]:font-bold [&_th]:text-[var(--accent)] [&_th]:text-sm [&_th]:uppercase [&_th]:tracking-wider [&_th]:w-1/3
-                                [&_td]:py-4 [&_td]:px-6 [&_td]:border-b [&_td]:border-[var(--border)] [&_td]:text-[var(--text-secondary)] [&_td]:align-top
-                                [&_tr]:last:border-0 [&_tr]:hover:bg-[var(--bg-elevated)]/30 [&_tr]:transition-colors
+                                [&_table]:w-full [&_table]:border-collapse [&_table]:my-8 [&_table]:table-fixed [&_table]:border [&_table]:border-[var(--border)]
+                                [&_thead]:bg-[#1e293b] [&_thead]:text-white
+                                [&_th]:p-4 [&_th]:text-left [&_th]:font-bold [&_th]:border [&_th]:border-[var(--border)] [&_th]:text-sm [&_th]:uppercase [&_th]:tracking-wider [&_th]:w-1/3
+                                [&_td]:p-4 [&_td]:border [&_td]:border-[var(--border)] [&_td]:text-[var(--text-secondary)] [&_td]:align-top
+                                [&_tr]:border-b [&_tr]:border-[var(--border)]
                             "
                             dangerouslySetInnerHTML={{ __html: safeContent }}
                         />
