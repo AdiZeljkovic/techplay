@@ -1,33 +1,31 @@
-
-import HardwareCategoryClient from "./HardwareCategoryClient";
+import HardwareSlugClient from "./HardwareSlugClient";
 import { Metadata } from "next";
 import { HARDWARE_CATEGORIES } from "@/lib/categories";
-import { notFound } from "next/navigation";
 
-export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
-    const { category } = await params;
-    const categoryDef = HARDWARE_CATEGORIES.find(c => c.slug === category);
+type Props = {
+    params: Promise<{ category: string }>;
+};
 
-    if (!categoryDef) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { category: slug } = await params;
+    const categoryDef = HARDWARE_CATEGORIES.find(c => c.slug === slug);
+
+    if (categoryDef) {
         return {
-            title: "Category Not Found",
+            title: `${categoryDef.label} - Hardware Lab`,
+            description: `Latest ${categoryDef.label} reviews and benchmarks.`,
         };
     }
 
+    // For articles, metadata will be handled client-side or we could fetch here
+    // For now, return default
     return {
-        title: `${categoryDef.label} - Hardware Lab`,
-        description: `Latest ${categoryDef.label} reviews and benchmarks.`,
+        title: "Hardware Lab - TechPlay",
+        description: "In-depth hardware reviews and benchmarks.",
     };
 }
 
-export default async function HardwareCategoryPage({ params }: { params: Promise<{ category: string }> }) {
-    const { category } = await params;
-
-    // Validate category exists
-    const categoryDef = HARDWARE_CATEGORIES.find(c => c.slug === category);
-    if (!categoryDef) {
-        notFound();
-    }
-
-    return <HardwareCategoryClient categorySlug={category} />;
+export default async function HardwareSlugPage({ params }: Props) {
+    const { category: slug } = await params;
+    return <HardwareSlugClient slug={slug} />;
 }

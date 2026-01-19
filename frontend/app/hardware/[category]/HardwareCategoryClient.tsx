@@ -82,7 +82,7 @@ export default function HardwareCategoryClient({ categorySlug }: HardwareCategor
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                             {reviews.map((review, idx) => (
-                                <ReviewCard key={review.id} review={review} index={idx} />
+                                <ReviewCard key={review.id} review={review} index={idx} basePath="/hardware" />
                             ))}
                         </div>
 

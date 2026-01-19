@@ -9,9 +9,10 @@ import { Review } from "@/types";
 interface ReviewCardProps {
     review: Review;
     index: number;
+    basePath?: string; // Default: /reviews, but can be /hardware, /tech, etc.
 }
 
-export default function ReviewCard({ review, index }: ReviewCardProps) {
+export default function ReviewCard({ review, index, basePath = "/reviews" }: ReviewCardProps) {
     // Use review_score (new system) with fallback to rating (legacy)
     const score = review.review_score ?? review.rating ?? 0;
     const ratingColor = score >= 8 ? "text-green-500" : score >= 6 ? "text-yellow-500" : "text-red-500";
@@ -21,7 +22,7 @@ export default function ReviewCard({ review, index }: ReviewCardProps) {
     const imageUrl = review.featured_image_url || review.cover_image;
 
     return (
-        <Link href={`/reviews/${review.slug}`}>
+        <Link href={`${basePath}/${review.slug}`}>
             <motion.article
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
