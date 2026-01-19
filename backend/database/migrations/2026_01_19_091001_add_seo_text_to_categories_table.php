@@ -7,9 +7,11 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::table('categories', function (Blueprint $table) {
-            $table->longText('seo_text')->nullable()->after('focus_keyword');
-        });
+        if (!Schema::hasColumn('categories', 'seo_text')) {
+            Schema::table('categories', function (Blueprint $table) {
+                $table->longText('seo_text')->nullable()->after('focus_keyword');
+            });
+        }
     }
 
     public function down(): void
@@ -19,4 +21,4 @@ return new class extends Migration {
         });
     }
 };
- 
+
