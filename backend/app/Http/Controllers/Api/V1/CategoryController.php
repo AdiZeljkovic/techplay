@@ -11,14 +11,21 @@ class CategoryController extends Controller
 {
     public function show(string $slug): JsonResponse
     {
-        // Try to find by slug directly
+        // 1. Try exact match
         $category = Category::where('slug', $slug)->first();
 
-        // If not found, try stripping prefixes if they exist in frontend IDs (e.g., news-gaming)
+        // 2. If not found, try common prefixes (frontend might send 'gaming' but DB has 'news-gaming')
         if (!$category) {
-            // Some frontend logic sends 'news-gaming', but DB has 'gaming'.
-            // Or 'gaming' is sent and DB has 'gaming'.
-            // Let's support both if needed, but primarily exact match.
+            $prefixes = ['news-', 'reviews-', 'tech-', 'hardware-'];
+            foreach ($prefixes as $prefix) {
+                $category = Category::where('slug', $prefix . $slug)->first();
+                if ($category)
+                    break;
+            }
+        }
+
+        // 3. If still not found
+        if (!$category) {
             return response()->json(['message' => 'Category not found'], 404);
         }
 
