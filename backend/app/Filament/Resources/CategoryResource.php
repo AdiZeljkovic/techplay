@@ -73,7 +73,11 @@ class CategoryResource extends Resource
                                 Forms\Components\Textarea::make('description')
                                     ->rows(3),
                             ]),
-                        \App\Filament\Components\SeoForm::make(),
+                        \Filament\Schemas\Components\Tabs\Tab::make('SEO')
+                            ->icon('heroicon-o-globe-alt')
+                            ->schema([
+                                \App\Filament\Components\SeoForm::make(),
+                            ]),
                     ])->columnSpanFull(),
             ]);
     }
