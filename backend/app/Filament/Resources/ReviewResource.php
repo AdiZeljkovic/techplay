@@ -167,7 +167,6 @@ class ReviewResource extends Resource
                                         'codeBlock',
                                         'h2',
                                         'h3',
-                                        'h4',
                                         'italic',
                                         'link',
                                         'orderedList',
