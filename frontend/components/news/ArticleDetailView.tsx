@@ -274,6 +274,11 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:rounded-2xl [&_iframe]:shadow-xl [&_iframe]:border [&_iframe]:border-[var(--border)] [&_iframe]:my-8
                                 [&_.twitter-tweet]:mx-auto [&_.instagram-media]:mx-auto [&_.fb-post]:mx-auto
                                 [&_figure]:my-8 [&_figure]:text-center [&_figcaption]:text-sm [&_figcaption]:text-[var(--text-secondary)] [&_figcaption]:mt-3
+                                [&_table]:w-full [&_table]:border-collapse [&_table]:my-8 [&_table]:rounded-xl [&_table]:overflow-hidden [&_table]:border [&_table]:border-[var(--border)] [&_table]:bg-[var(--bg-card)]
+                                [&_thead]:bg-[var(--bg-elevated)] [&_thead]:text-[var(--text-primary)]
+                                [&_th]:p-4 [&_th]:text-left [&_th]:font-semibold [&_th]:border-b [&_th]:border-[var(--border)] [&_th]:text-sm [&_th]:uppercase [&_th]:tracking-wider
+                                [&_td]:p-4 [&_td]:border-b [&_td]:border-[var(--border)] [&_td]:text-[var(--text-secondary)]
+                                [&_tr]:border-b [&_tr]:border-[var(--border)] last:[&_tr]:border-0 hover:[&_tr]:bg-[var(--bg-elevated)]/30 transition-colors
                             "
                             dangerouslySetInnerHTML={{ __html: safeContent }}
                         />
