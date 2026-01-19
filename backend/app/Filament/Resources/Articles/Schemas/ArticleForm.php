@@ -90,6 +90,7 @@ class ArticleForm
                                         'codeBlock',
                                         'h2',
                                         'h3',
+                                        'h4',
                                         'italic',
                                         'link',
                                         'orderedList',
@@ -97,6 +98,9 @@ class ArticleForm
                                         'strike',
                                         'underline',
                                         'undo',
+                                        'alignLeft',
+                                        'alignCenter',
+                                        'alignRight',
                                     ])
                                     ->fileAttachmentsDisk('public')
                                     ->fileAttachmentsDirectory('article-content')
