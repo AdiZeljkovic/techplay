@@ -265,12 +265,15 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 prose-p:text-gray-200 prose-p:leading-relaxed prose-p:mb-6
                                 prose-a:text-[var(--accent)] prose-a:no-underline hover:prose-a:underline hover:prose-a:text-[var(--accent-hover)] transition-colors
                                 prose-strong:text-[var(--text-primary)] prose-strong:font-bold
-                                prose-img:rounded-2xl prose-img:shadow-xl prose-img:border prose-img:border-[var(--border)] prose-img:my-8
+                                prose-img:rounded-2xl prose-img:shadow-xl prose-img:border prose-img:border-[var(--border)] prose-img:my-8 prose-img:mx-auto prose-img:block
                                 prose-blockquote:border-l-4 prose-blockquote:border-[var(--accent)] prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-[var(--text-primary)] prose-blockquote:font-medium prose-blockquote:bg-[var(--bg-elevated)]/30 prose-blockquote:py-4 prose-blockquote:pr-4 prose-blockquote:rounded-r-lg
                                 prose-code:bg-[var(--bg-elevated)] prose-code:text-[var(--accent)] prose-code:px-2 prose-code:py-0.5 prose-code:rounded-md prose-code:font-mono prose-code:text-sm
                                 prose-ul:list-disc prose-ul:pl-6 prose-ul:text-[var(--text-secondary)]
                                 prose-ol:list-decimal prose-ol:pl-6 prose-ol:text-[var(--text-secondary)]
                                 prose-hr:border-[var(--border)] prose-hr:my-10
+                                [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:rounded-2xl [&_iframe]:shadow-xl [&_iframe]:border [&_iframe]:border-[var(--border)] [&_iframe]:my-8
+                                [&_.twitter-tweet]:mx-auto [&_.instagram-media]:mx-auto [&_.fb-post]:mx-auto
+                                [&_figure]:my-8 [&_figure]:text-center [&_figcaption]:text-sm [&_figcaption]:text-[var(--text-secondary)] [&_figcaption]:mt-3
                             "
                             dangerouslySetInnerHTML={{ __html: safeContent }}
                         />
