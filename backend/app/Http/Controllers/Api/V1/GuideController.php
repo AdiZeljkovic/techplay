@@ -18,7 +18,7 @@ class GuideController extends Controller
         $cacheKey = "guides.index.page_{$page}.diff_{$difficulty}.search_" . md5($search);
 
         return \Illuminate\Support\Facades\Cache::remember($cacheKey, 1800, function () use ($request, $search) {
-            $query = Guide::with('author:id,username,avatar_url');
+            $query = Guide::with('author:id,username,display_name,avatar_url');
 
             if ($request->has('difficulty') && $request->difficulty !== 'all') {
                 $query->where('difficulty', $request->difficulty);
@@ -42,7 +42,7 @@ class GuideController extends Controller
         // Cache the Guide data itself
         $guide = \Illuminate\Support\Facades\Cache::remember("guide.show.{$slug}", 3600, function () use ($slug) {
             return Guide::where('slug', $slug)
-                ->with(['author:id,username,avatar_url'])
+                ->with(['author:id,username,display_name,avatar_url'])
                 ->withCount([
                     'votes as helpful_count' => function ($query) {
                         $query->where('is_helpful', true);

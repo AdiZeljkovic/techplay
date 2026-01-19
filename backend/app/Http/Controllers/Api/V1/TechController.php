@@ -24,7 +24,7 @@ class TechController extends Controller
                 ->where('published_at', '<=', now())
                 // IMPORTANT: Only show articles with category type 'tech'
                 ->whereHas('category', fn($q) => $q->where('type', 'tech'))
-                ->with(['author:id,username,avatar_url', 'category']);
+                ->with(['author:id,username,display_name,avatar_url', 'category']);
 
             if ($request->has('category') && $request->category !== 'all') {
                 $categorySlug = $request->category;

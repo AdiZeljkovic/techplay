@@ -23,7 +23,7 @@ class ReviewController extends Controller
                 ->where('published_at', '<=', now())
                 // IMPORTANT: Only show articles with category type 'reviews'
                 ->whereHas('category', fn($q) => $q->where('type', 'reviews'))
-                ->with(['author:id,username,avatar_url', 'category']);
+                ->with(['author:id,username,display_name,avatar_url', 'category']);
 
             if ($request->has('category') && $request->category !== 'all') {
                 $categorySlug = $request->category;
@@ -52,7 +52,7 @@ class ReviewController extends Controller
                 ->where('status', 'published')
                 // IMPORTANT: Only show articles with category type 'reviews'
                 ->whereHas('category', fn($q) => $q->where('type', 'reviews'))
-                ->with(['author:id,username,avatar_url,bio', 'category'])
+                ->with(['author:id,username,display_name,avatar_url,bio', 'category'])
                 ->firstOrFail();
 
             return new ReviewResource($article);
