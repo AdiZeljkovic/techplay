@@ -167,6 +167,7 @@ class ReviewResource extends Resource
                                         'codeBlock',
                                         'h2',
                                         'h3',
+                                        'h4',
                                         'italic',
                                         'link',
                                         'orderedList',
@@ -174,6 +175,10 @@ class ReviewResource extends Resource
                                         'strike',
                                         'underline',
                                         'undo',
+                                        'alignStart',
+                                        'alignCenter',
+                                        'alignEnd',
+                                        'alignJustify',
                                     ])
                                     ->fileAttachmentsDisk('public')
                                     ->fileAttachmentsDirectory('articles/content'),

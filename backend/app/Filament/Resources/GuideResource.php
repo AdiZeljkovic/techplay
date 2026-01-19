@@ -122,6 +122,7 @@ class GuideResource extends Resource
                                         'codeBlock',
                                         'h2',
                                         'h3',
+                                        'h4',
                                         'italic',
                                         'link',
                                         'orderedList',
@@ -129,6 +130,10 @@ class GuideResource extends Resource
                                         'strike',
                                         'underline',
                                         'undo',
+                                        'alignStart',
+                                        'alignCenter',
+                                        'alignEnd',
+                                        'alignJustify',
                                     ])
                                     ->fileAttachmentsDisk('public')
                                     ->fileAttachmentsDirectory('guides/content'),
