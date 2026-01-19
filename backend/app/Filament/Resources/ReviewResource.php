@@ -399,8 +399,17 @@ class ReviewResource extends Resource
                                             ->label('🌟 Feature in Homepage Hero')
                                             ->helperText('Highlight this review at the top of homepage'),
 
-                                        Hidden::make('author_id')
-                                            ->default(fn() => auth()->id()),
+                                        Select::make('author_id')
+                                            ->label('Author')
+                                            ->options(function () {
+                                                return \App\Models\User::role(['Super Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'])
+                                                    ->get()
+                                                    ->mapWithKeys(fn($user) => [$user->id => $user->display_name ?: $user->username]);
+                                            })
+                                            ->searchable()
+                                            ->default(fn() => auth()->id())
+                                            ->required()
+                                            ->native(false),
                                     ]),
 
                                 // TAB: SEO with Live Checker
