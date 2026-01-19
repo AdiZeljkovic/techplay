@@ -178,8 +178,12 @@ class NewsResource extends Resource
 
                                         Forms\Components\Select::make('category_id')
                                             ->label('Category')
-                                            ->options(Category::where('type', 'news')->whereNotNull('parent_id')->pluck('name', 'id'))
+                                            ->relationship('category', 'name', function (Builder $query) {
+                                                return $query->where('type', 'news')
+                                                    ->whereNotNull('parent_id');
+                                            })
                                             ->searchable()
+                                            ->preload()
                                             ->required()
                                             ->native(false),
 

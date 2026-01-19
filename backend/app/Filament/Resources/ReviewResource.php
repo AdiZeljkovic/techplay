@@ -381,8 +381,12 @@ class ReviewResource extends Resource
 
                                         Select::make('category_id')
                                             ->label('Category')
-                                            ->options(Category::where('type', 'reviews')->whereNotNull('parent_id')->pluck('name', 'id'))
+                                            ->relationship('category', 'name', function (Builder $query) {
+                                                return $query->where('type', 'reviews')
+                                                    ->whereNotNull('parent_id');
+                                            })
                                             ->searchable()
+                                            ->preload()
                                             ->required()
                                             ->native(false),
 

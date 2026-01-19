@@ -181,8 +181,12 @@ class TechResource extends Resource
 
                                         Select::make('category_id')
                                             ->label('Category')
-                                            ->options(Category::where('type', 'tech')->whereNotNull('parent_id')->pluck('name', 'id'))
+                                            ->relationship('category', 'name', function (Builder $query) {
+                                                return $query->where('type', 'tech')
+                                                    ->whereNotNull('parent_id');
+                                            })
                                             ->searchable()
+                                            ->preload()
                                             ->required()
                                             ->native(false),
 
