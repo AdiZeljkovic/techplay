@@ -1,15 +1,26 @@
 <?php
 
-namespace Database\Seeders;
-
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
 use App\Models\PageSeo;
-use Illuminate\Database\Seeder;
+use App\Models\Category;
 
-class PageSeoSeeder extends Seeder
-{
-    public function run(): void
+return new class extends Migration {
+    /**
+     * COMPREHENSIVE PAGE SEO SEEDING
+     * 
+     * This migration will:
+     * 1. Clear any orphaned/incorrect PageSeo entries
+     * 2. Seed ALL static pages
+     * 3. Seed ALL parent categories (News, Reviews, Tech)
+     * 4. Seed ALL subcategories with correct paths
+     */
+    public function up(): void
     {
-        $pages = [
+        // ========================================
+        // STATIC PAGES
+        // ========================================
+        $staticPages = [
             // Main content pages
             ['page_path' => '/', 'page_name' => 'Homepage', 'meta_title' => 'TechPlay - Gaming & Tech News Portal', 'meta_description' => 'Your source for gaming news, reviews, benchmarks, and tech insights. Breaking headlines, in-depth reviews, and expert analysis from passionate gamers.', 'meta_keywords' => 'gaming news, game reviews, tech news, hardware reviews, esports, gaming portal'],
             ['page_path' => '/about', 'page_name' => 'About Us', 'meta_title' => 'About Us - Gaming News Team from Sarajevo | TechPlay', 'meta_description' => 'TechPlay is a Sarajevo-based gaming and technology media outlet. Founded by passionate gamers, we deliver unbiased reviews, breaking news, and in-depth hardware analysis.', 'meta_keywords' => 'about TechPlay, gaming news team, Sarajevo gaming, gaming journalists, tech reviewers'],
@@ -35,17 +46,21 @@ class PageSeoSeeder extends Seeder
             // Auth pages (noindex)
             ['page_path' => '/login', 'page_name' => 'Login', 'meta_title' => 'Sign In | TechPlay', 'meta_description' => 'Sign in to your TechPlay account to access community features.', 'meta_keywords' => '', 'is_noindex' => true],
             ['page_path' => '/register', 'page_name' => 'Register', 'meta_title' => 'Create Account | TechPlay', 'meta_description' => 'Join the TechPlay community. Create your free account today.', 'meta_keywords' => '', 'is_noindex' => true],
+        ];
 
-            // ========================================
-            // PARENT CATEGORIES
-            // ========================================
+        // ========================================
+        // PARENT CATEGORIES
+        // ========================================
+        $parentCategories = [
             ['page_path' => '/news', 'page_name' => 'News (Parent Category)', 'meta_title' => 'Gaming News - Breaking Headlines & Industry Updates | TechPlay', 'meta_description' => 'Stay updated with the latest gaming news, industry announcements, game releases, and developer updates. Breaking stories from PlayStation, Xbox, Nintendo, and PC gaming.', 'meta_keywords' => 'gaming news, video game news, PS5 news, Xbox news, Nintendo news, PC gaming news'],
             ['page_path' => '/reviews', 'page_name' => 'Reviews (Parent Category)', 'meta_title' => 'Game Reviews - Honest Scores & In-Depth Analysis | TechPlay', 'meta_description' => 'Read our comprehensive game reviews with detailed scores, benchmarks, pros and cons. From AAA titles to indie gems.', 'meta_keywords' => 'game reviews, video game reviews, gaming scores, honest reviews'],
             ['page_path' => '/hardware', 'page_name' => 'Hardware/Tech (Parent Category)', 'meta_title' => 'Hardware Lab - GPU, CPU & PC Component Reviews | TechPlay', 'meta_description' => 'Benchmark-driven hardware reviews with thermal testing, FPS comparisons, and raw performance numbers. Find the best graphics cards, processors, and components.', 'meta_keywords' => 'hardware reviews, GPU benchmarks, CPU reviews, graphics card reviews'],
+        ];
 
-            // ========================================
-            // NEWS SUBCATEGORIES
-            // ========================================
+        // ========================================
+        // NEWS SUBCATEGORIES
+        // ========================================
+        $newsSubcategories = [
             ['page_path' => '/news/gaming', 'page_name' => 'News: Gaming', 'meta_title' => 'Gaming News - Latest Game Announcements | TechPlay', 'meta_description' => 'Breaking gaming news covering new releases, updates, trailers, and announcements from the biggest game publishers.', 'meta_keywords' => 'gaming news, game announcements, new games, gaming updates'],
             ['page_path' => '/news/pc', 'page_name' => 'News: PC', 'meta_title' => 'PC Gaming News - Steam, Epic & More | TechPlay', 'meta_description' => 'PC gaming news covering Steam sales, Epic exclusives, hardware requirements, and everything PC gamers need to know.', 'meta_keywords' => 'PC gaming news, Steam news, Epic Games, PC game releases'],
             ['page_path' => '/news/consoles', 'page_name' => 'News: Consoles', 'meta_title' => 'Console News - PlayStation, Xbox & Nintendo | TechPlay', 'meta_description' => 'Console gaming news for PlayStation 5, Xbox Series X|S, and Nintendo Switch. Exclusives, updates, and system news.', 'meta_keywords' => 'console news, PS5 news, Xbox news, Nintendo Switch news'],
@@ -53,26 +68,44 @@ class PageSeoSeeder extends Seeder
             ['page_path' => '/news/industry', 'page_name' => 'News: Industry', 'meta_title' => 'Gaming Industry News - Business & Trends | TechPlay', 'meta_description' => 'Gaming industry news covering mergers, acquisitions, studio updates, and business trends in the gaming world.', 'meta_keywords' => 'gaming industry, game business, studio news, gaming trends'],
             ['page_path' => '/news/e-sport', 'page_name' => 'News: E-sport', 'meta_title' => 'Esports News - Tournaments & Pro Gaming | TechPlay', 'meta_description' => 'Esports news covering major tournaments, team rosters, prize pools, and competitive gaming updates.', 'meta_keywords' => 'esports news, gaming tournaments, pro gaming, competitive gaming'],
             ['page_path' => '/news/opinions', 'page_name' => 'News: Opinions', 'meta_title' => 'Gaming Opinions & Editorials | TechPlay', 'meta_description' => 'Gaming opinions, editorials, and thought pieces from our team. Hot takes and in-depth analysis.', 'meta_keywords' => 'gaming opinions, gaming editorials, game analysis'],
+        ];
 
-            // ========================================
-            // REVIEWS SUBCATEGORIES
-            // ========================================
+        // ========================================
+        // REVIEWS SUBCATEGORIES
+        // ========================================
+        $reviewsSubcategories = [
             ['page_path' => '/reviews/latest', 'page_name' => 'Reviews: Latest', 'meta_title' => 'Latest Game Reviews | TechPlay', 'meta_description' => 'Our most recent game reviews. Fresh verdicts on the newest releases across all platforms.', 'meta_keywords' => 'latest game reviews, new game reviews, recent reviews'],
             ['page_path' => '/reviews/editors-choice', 'page_name' => "Reviews: Editor's Choice", 'meta_title' => "Editor's Choice Games - Top Rated | TechPlay", 'meta_description' => "Games that earned our Editor's Choice award. The best of the best, handpicked by our review team.", 'meta_keywords' => "editor's choice games, top rated games, best games"],
             ['page_path' => '/reviews/retro', 'page_name' => 'Reviews: Retro', 'meta_title' => 'Retro Game Reviews - Classic Gaming | TechPlay', 'meta_description' => 'Revisiting classic games with modern eyes. Retro reviews of beloved titles from gaming history.', 'meta_keywords' => 'retro game reviews, classic games, vintage gaming'],
             ['page_path' => '/reviews/aaa-titles', 'page_name' => 'Reviews: AAA Titles', 'meta_title' => 'AAA Game Reviews - Big Budget Games | TechPlay', 'meta_description' => 'Reviews of major AAA releases from the biggest publishers. High-budget games put to the test.', 'meta_keywords' => 'AAA game reviews, big budget games, major releases'],
             ['page_path' => '/reviews/indie-gems', 'page_name' => 'Reviews: Indie Gems', 'meta_title' => 'Indie Game Reviews - Hidden Gems | TechPlay', 'meta_description' => 'Discover the best indie games. Reviews of hidden gems and standout titles from independent developers.', 'meta_keywords' => 'indie game reviews, indie gems, independent games'],
+        ];
 
-            // ========================================
-            // TECH/HARDWARE SUBCATEGORIES
-            // ========================================
+        // ========================================
+        // TECH/HARDWARE SUBCATEGORIES
+        // ========================================
+        $techSubcategories = [
             ['page_path' => '/hardware/reviews', 'page_name' => 'Tech: Reviews', 'meta_title' => 'Hardware Reviews - In-Depth Tech Analysis | TechPlay', 'meta_description' => 'Detailed hardware reviews with benchmarks, thermal testing, and real-world performance analysis.', 'meta_keywords' => 'hardware reviews, tech reviews, component reviews'],
             ['page_path' => '/hardware/benchmarks', 'page_name' => 'Tech: Benchmarks', 'meta_title' => 'Benchmarks - Performance Testing & Comparisons | TechPlay', 'meta_description' => 'Hardware benchmarks comparing GPUs, CPUs, and gaming performance. Data-driven analysis for smart purchases.', 'meta_keywords' => 'hardware benchmarks, GPU benchmarks, CPU benchmarks, performance testing'],
             ['page_path' => '/hardware/guides', 'page_name' => 'Tech: Guides', 'meta_title' => 'Hardware Guides - Build Tips & Tutorials | TechPlay', 'meta_description' => 'Hardware guides for building PCs, optimizing settings, and getting the most from your gaming setup.', 'meta_keywords' => 'hardware guides, PC building, optimization guides'],
             ['page_path' => '/hardware/news', 'page_name' => 'Tech: Tech News', 'meta_title' => 'Tech News - Hardware & Technology Updates | TechPlay', 'meta_description' => 'Technology news covering new hardware releases, driver updates, and industry developments.', 'meta_keywords' => 'tech news, hardware news, GPU news, CPU news'],
         ];
 
-        foreach ($pages as $page) {
+        // Combine all pages
+        $allPages = array_merge(
+            $staticPages,
+            $parentCategories,
+            $newsSubcategories,
+            $reviewsSubcategories,
+            $techSubcategories
+        );
+
+        // Clear existing page_seo entries that don't match our paths
+        $validPaths = array_column($allPages, 'page_path');
+        DB::table('page_seo')->whereNotIn('page_path', $validPaths)->delete();
+
+        // Insert/update all pages
+        foreach ($allPages as $page) {
             PageSeo::updateOrCreate(
                 ['page_path' => $page['page_path']],
                 array_merge([
@@ -82,7 +115,10 @@ class PageSeoSeeder extends Seeder
                 ], $page)
             );
         }
-
-        $this->command->info('✅ Page SEO data seeded for ' . count($pages) . ' pages!');
     }
-}
+
+    public function down(): void
+    {
+        // Don't remove SEO data on rollback
+    }
+};
