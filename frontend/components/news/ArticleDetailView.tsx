@@ -260,7 +260,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
 
                         {/* Main Text */}
                         <div
-                            className="prose prose-lg md:prose-xl max-w-none 
+                            className="prose md:prose-lg max-w-none 
                                 prose-headings:text-[var(--text-primary)] prose-headings:font-bold prose-headings:tracking-tight
                                 prose-p:text-gray-200 prose-p:leading-relaxed prose-p:mb-6
                                 prose-a:text-[var(--accent)] prose-a:no-underline hover:prose-a:underline hover:prose-a:text-[var(--accent-hover)] transition-colors
