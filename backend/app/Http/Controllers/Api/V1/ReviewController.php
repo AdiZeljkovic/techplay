@@ -15,7 +15,7 @@ class ReviewController extends Controller
     {
         $page = $request->get('page', 1);
         $category = $request->get('category', 'all');
-        $cacheKey = "reviews.index.page_{$page}.cat_{$category}";
+        $cacheKey = "reviews.index.v2.page_{$page}.cat_{$category}";
 
         $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($request) {
             $query = Article::query()
@@ -45,7 +45,7 @@ class ReviewController extends Controller
 
     public function show($slug)
     {
-        $cacheKey = "reviews.show.{$slug}";
+        $cacheKey = "reviews.show.v2.{$slug}";
 
         $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($slug) {
             $article = Article::where('slug', $slug)

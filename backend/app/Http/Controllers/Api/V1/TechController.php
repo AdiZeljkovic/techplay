@@ -47,13 +47,14 @@ class TechController extends Controller
      */
     public function show(string $slug)
     {
-        $cacheKey = "tech.show.{$slug}";
+        $cacheKey = "tech.show.v2.{$slug}";
 
         return \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($slug) {
             $article = Article::where('slug', $slug)
                 ->where('status', 'published')
                 ->whereHas('category', fn($q) => $q->where('type', 'tech'))
-                ->with(['author:id,username,avatar_url,bio', 'category'])
+                // Added display_name
+                ->with(['author:id,username,display_name,avatar_url,bio', 'category'])
                 ->firstOrFail();
 
             return new ArticleResource($article);

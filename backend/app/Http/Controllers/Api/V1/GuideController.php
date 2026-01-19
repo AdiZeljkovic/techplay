@@ -15,7 +15,7 @@ class GuideController extends Controller
         $page = $request->get('page', 1);
         $difficulty = $request->get('difficulty', 'all');
         $search = $request->get('search', '');
-        $cacheKey = "guides.index.page_{$page}.diff_{$difficulty}.search_" . md5($search);
+        $cacheKey = "guides.index.v2.page_{$page}.diff_{$difficulty}.search_" . md5($search);
 
         return \Illuminate\Support\Facades\Cache::remember($cacheKey, 1800, function () use ($request, $search) {
             $query = Guide::with('author:id,username,display_name,avatar_url');
@@ -40,7 +40,7 @@ class GuideController extends Controller
     public function show($slug)
     {
         // Cache the Guide data itself
-        $guide = \Illuminate\Support\Facades\Cache::remember("guide.show.{$slug}", 3600, function () use ($slug) {
+        $guide = \Illuminate\Support\Facades\Cache::remember("guide.show.v2.{$slug}", 3600, function () use ($slug) {
             return Guide::where('slug', $slug)
                 ->with(['author:id,username,display_name,avatar_url'])
                 ->withCount([

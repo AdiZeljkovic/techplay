@@ -15,7 +15,7 @@ class NewsController extends Controller
     {
         $page = $request->get('page', 1);
         $category = $request->get('category', 'all');
-        $cacheKey = "news.index.page_{$page}.cat_{$category}";
+        $cacheKey = "news.index.v2.page_{$page}.cat_{$category}";
 
         // Note: Caching for 1 hour (production)
         $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($request) {
@@ -49,7 +49,7 @@ class NewsController extends Controller
      */
     public function show(string $slug)
     {
-        $cacheKey = "news.show.{$slug}";
+        $cacheKey = "news.show.v2.{$slug}";
 
         $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, 3600, function () use ($slug) {
             $article = Article::where('slug', $slug)
