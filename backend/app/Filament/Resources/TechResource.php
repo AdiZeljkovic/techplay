@@ -135,6 +135,7 @@ class TechResource extends Resource
                                         'orderedList',
                                         'redo',
                                         'strike',
+                                        'table',
                                         'underline',
                                         'undo',
                                         'alignStart',

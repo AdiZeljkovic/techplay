@@ -95,6 +95,7 @@ class ArticleForm
                                         'orderedList',
                                         'redo',
                                         'strike',
+                                        'table',
                                         'underline',
                                         'undo',
                                         'alignStart',

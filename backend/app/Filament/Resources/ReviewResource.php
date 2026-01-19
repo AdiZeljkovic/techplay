@@ -172,6 +172,7 @@ class ReviewResource extends Resource
                                         'orderedList',
                                         'redo',
                                         'strike',
+                                        'table',
                                         'underline',
                                         'undo',
                                         'alignStart',
