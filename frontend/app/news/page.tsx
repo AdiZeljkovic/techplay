@@ -12,7 +12,6 @@ export default function NewsPage() {
     return (
         <>
             <NewsClient />
-            {/* @ts-expect-error Async Server Component */}
             <SeoContent path="/news" />
         </>
     );

@@ -12,7 +12,6 @@ export default function ReviewsPage() {
     return (
         <>
             <ReviewsClient />
-            {/* @ts-expect-error Async Server Component */}
             <SeoContent path="/reviews" />
         </>
     );
