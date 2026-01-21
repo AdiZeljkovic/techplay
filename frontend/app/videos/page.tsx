@@ -111,14 +111,16 @@ export default function VideosPage() {
 
                         {/* Left Content - 7 cols */}
                         <div className="lg:col-span-7 text-center lg:text-left">
-                            {/* Logo with enhanced glow */}
-                            <div className="inline-block mb-8 relative">
-                                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-fuchsia-500 blur-2xl opacity-40 scale-150" />
-                                <img
-                                    src="/privee-logo.png"
-                                    alt="Privee"
-                                    className="relative h-16 md:h-24 mx-auto lg:mx-0"
-                                />
+                            {/* Logo with enhanced glow - CENTERED */}
+                            <div className="flex justify-center lg:justify-center mb-8 relative">
+                                <div className="relative">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-fuchsia-500 blur-2xl opacity-40 scale-150" />
+                                    <img
+                                        src="/privee-logo.png"
+                                        alt="Privee"
+                                        className="relative h-16 md:h-24"
+                                    />
+                                </div>
                             </div>
 
                             {/* Premium Title with layered effects */}
@@ -147,36 +149,40 @@ export default function VideosPage() {
                                 <span className="text-fuchsia-300 font-medium"> professional cinematic quality</span>.
                             </p>
 
-                            {/* CTA Box */}
-                            <div className="relative group inline-block mb-10">
+                            {/* CTA Box with Store Badges */}
+                            <div className="relative group inline-block">
                                 <div className="absolute -inset-1.5 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 rounded-2xl blur-xl opacity-50 group-hover:opacity-80 transition-all duration-700" />
-                                <div className="relative bg-slate-900/90 backdrop-blur-2xl border border-white/20 rounded-2xl px-8 py-6 shadow-2xl">
-                                    <div className="flex items-center gap-4 flex-wrap justify-center lg:justify-start">
-                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-500 flex items-center justify-center shadow-lg shadow-fuchsia-500/40">
-                                            <Sparkles className="w-6 h-6 text-white" />
+                                <div className="relative bg-slate-900/90 backdrop-blur-2xl border border-white/20 rounded-2xl px-6 py-5 shadow-2xl">
+                                    <div className="flex flex-col lg:flex-row items-center gap-6">
+                                        {/* Left: CTA Text */}
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-500 flex items-center justify-center shadow-lg shadow-fuchsia-500/40 shrink-0">
+                                                <Sparkles className="w-6 h-6 text-white" />
+                                            </div>
+                                            <div>
+                                                <p className="text-lg font-semibold text-white">
+                                                    <span className="text-fuchsia-300">Register now</span> for your free Ultimate account
+                                                </p>
+                                                <p className="text-gray-400 text-sm">Turn your highlights into a masterpiece!</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-lg font-semibold text-white">
-                                                <span className="text-fuchsia-300">Register now</span> for your free Ultimate account
-                                            </p>
-                                            <p className="text-gray-400 text-sm">Turn your highlights into a masterpiece!</p>
+
+                                        {/* Divider */}
+                                        <div className="hidden lg:block w-px h-12 bg-white/20" />
+
+                                        {/* Right: Store Badges */}
+                                        <div className="flex items-center gap-3">
+                                            <a href="https://apps.apple.com/app/privee" target="_blank" rel="noopener noreferrer"
+                                                className="transition-transform hover:scale-105">
+                                                <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="App Store" className="h-11" />
+                                            </a>
+                                            <a href="https://play.google.com/store/apps/details?id=com.privee" target="_blank" rel="noopener noreferrer"
+                                                className="transition-transform hover:scale-105">
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" className="h-11" />
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-
-                            {/* Store badges with glass effect */}
-                            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-                                <a href="https://apps.apple.com/app/privee" target="_blank" rel="noopener noreferrer"
-                                    className="relative group">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600/50 to-fuchsia-600/50 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="App Store" className="relative h-14 rounded-lg" />
-                                </a>
-                                <a href="https://play.google.com/store/apps/details?id=com.privee" target="_blank" rel="noopener noreferrer"
-                                    className="relative group">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600/50 to-fuchsia-600/50 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" className="relative h-14 rounded-lg" />
-                                </a>
                             </div>
                         </div>
 
