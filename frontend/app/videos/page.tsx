@@ -54,12 +54,37 @@ export default function VideosPage() {
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
-            {/* Hero Section */}
-            <PageHero
-                title="Video Gallery"
-                description="Watch our latest gaming videos, reviews, trailers, and tutorials."
-                icon={Video}
-            />
+            {/* Privee Hero Section */}
+            <section className="relative py-20 md:py-28 overflow-hidden">
+                {/* Background effects */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-elevated)] via-[var(--bg-primary)] to-[var(--bg-primary)]" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-purple-600/20 rounded-full blur-[120px]" />
+                <div className="absolute top-20 right-1/4 w-[300px] h-[300px] bg-pink-500/15 rounded-full blur-[100px]" />
+
+                <div className="container mx-auto px-4 relative z-10">
+                    <div className="max-w-4xl mx-auto text-center">
+                        {/* Gradient Title */}
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-8 leading-tight">
+                            <span className="bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent">
+                                Join Privee and start your cinematic journey!
+                            </span>
+                        </h1>
+
+                        {/* Main Description */}
+                        <p className="text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed mb-8 max-w-3xl mx-auto">
+                            Your epic gaming moments and real-life adventures deserve more than just a standard upload—they deserve the big screen treatment. Privee allows you to seamlessly blend your best clips and photos into immersive, movie-like narratives with professional cinematic quality. Take total control of your content and share your journey with a global community of storytellers who value high-end production and creativity.
+                        </p>
+
+                        {/* Highlighted CTA */}
+                        <div className="inline-block bg-gradient-to-r from-purple-600/20 via-fuchsia-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl px-6 py-4 backdrop-blur-sm">
+                            <p className="text-base md:text-lg font-semibold text-white">
+                                <Sparkles className="inline w-5 h-5 mr-2 text-fuchsia-400" />
+                                Register now to claim your free Ultimate account—unlock the full potential of Privee and turn your highlights into a masterpiece!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             {/* Videos Grid */}
             <div className="container mx-auto px-4 py-8">
