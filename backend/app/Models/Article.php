@@ -84,9 +84,10 @@ class Article extends Model
     {
         $cacheKey = 'article_view_' . $this->id . '_' . $ip;
 
-        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
-            return false;
-        }
+        // TEMPORARILY DISABLED THROTTLING FOR DEBUGGING
+        // if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+        //     return false;
+        // }
 
         // Use raw DB query with COALESCE to handle NULL values
         \Illuminate\Support\Facades\DB::table('articles')
