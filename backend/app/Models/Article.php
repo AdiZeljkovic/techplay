@@ -88,8 +88,10 @@ class Article extends Model
             return false;
         }
 
-        // DIRECT DB WRITE (Simpler for this setup)
-        $this->increment('views');
+        // Use raw DB query with COALESCE to handle NULL values
+        \Illuminate\Support\Facades\DB::table('articles')
+            ->where('id', $this->id)
+            ->update(['views' => \Illuminate\Support\Facades\DB::raw('COALESCE(views, 0) + 1')]);
 
         \Illuminate\Support\Facades\Cache::put($cacheKey, true, 60 * 24);
 
