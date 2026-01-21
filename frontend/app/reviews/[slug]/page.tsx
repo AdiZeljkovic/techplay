@@ -102,7 +102,7 @@ export async function generateMetadata(
     };
 }
 
-import ArticleViewTracker from "@/components/tracking/ArticleViewTracker";
+// ... existing imports
 
 // ... existing imports
 
@@ -125,7 +125,6 @@ export default async function ReviewSlugPage({ params }: Props) {
 
     return (
         <>
-            <ArticleViewTracker slug={slug} />
             <ReviewDetailView review={review} />
         </>
     );
