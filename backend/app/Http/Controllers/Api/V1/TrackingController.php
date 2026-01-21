@@ -12,7 +12,11 @@ class TrackingController extends Controller
 
     public function recordView(Request $request, $slug)
     {
-        $article = Article::where('slug', $slug)->firstOrFail();
+        $article = Article::where('slug', $slug)->first();
+
+        if (!$article) {
+            $article = \App\Models\Guide::where('slug', $slug)->firstOrFail();
+        }
 
         // Use IP from request
         $ip = $request->ip();
@@ -20,6 +24,7 @@ class TrackingController extends Controller
         $incremented = $article->incrementViews($ip);
 
         if ($incremented) {
+            $article->refresh(); // Reload from DB to get updated view count
             return $this->success(['message' => 'View counted', 'views' => $article->views]);
         }
 

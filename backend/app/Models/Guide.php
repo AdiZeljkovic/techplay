@@ -44,6 +44,25 @@ class Guide extends Model
     }
 
     /**
+     * Increment views with IP-based throttling.
+     */
+    public function incrementViews(string $ip): bool
+    {
+        $cacheKey = 'guide_view_' . $this->id . '_' . $ip;
+
+        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            return false;
+        }
+
+        // DIRECT DB WRITE
+        $this->increment('views');
+
+        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 60 * 24);
+
+        return true;
+    }
+
+    /**
      * The "booted" method of the model.
      */
     protected static function booted(): void

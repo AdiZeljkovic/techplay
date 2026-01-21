@@ -13,10 +13,12 @@ import CommentsSection from "@/components/comments/CommentsSection";
 import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 import DOMPurify from "isomorphic-dompurify";
+import LiveViewCount from "@/components/tracking/LiveViewCount";
 
 interface Guide {
     id: number;
     title: string;
+    slug: string;
     content: string;
     difficulty: 'beginner' | 'intermediate' | 'advanced';
     featured_image_url?: string;
@@ -29,6 +31,7 @@ interface Guide {
         bio?: string;
     };
     helpful_count: number;
+    views?: number;
 }
 
 interface GuideDetailViewProps {
@@ -189,6 +192,13 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                                     <Clock className="w-4 h-4 text-[var(--accent)]" />
                                     {readingTime}
                                 </span>
+                            </div>
+
+                            <div className="hidden md:block w-px h-10 bg-white/20" />
+
+                            <div className="flex flex-col">
+                                <LiveViewCount slug={guide.slug} initialViews={guide.views || 0} />
+                                <span className="text-xs text-white/60">Views</span>
                             </div>
                         </div>
                     </div>
