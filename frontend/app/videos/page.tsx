@@ -356,9 +356,6 @@ export default function VideosPage() {
                             <h2 className="text-3xl md:text-4xl font-bold text-white">
                                 All Videos
                             </h2>
-                            <p className="text-gray-400 mt-2 max-w-lg">
-                                Discover amazing content from creators around the world
-                            </p>
                         </div>
 
                         <div className="flex items-center gap-3 px-5 py-3 bg-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl">
