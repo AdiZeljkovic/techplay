@@ -24,10 +24,19 @@ class TrackingController extends Controller
         $incremented = $article->incrementViews($ip);
 
         if ($incremented) {
-            $article->refresh(); // Reload from DB to get updated view count
-            return $this->success(['message' => 'View counted', 'views' => $article->views]);
+            // Clear the article's show cache so next page load gets fresh views
+            \Illuminate\Support\Facades\Cache::forget("news.show.v2.{$slug}");
+            \Illuminate\Support\Facades\Cache::forget("reviews.show.v2.{$slug}");
+            \Illuminate\Support\Facades\Cache::forget("tech.show.v2.{$slug}");
+            \Illuminate\Support\Facades\Cache::forget("guide.show.v2.{$slug}");
         }
 
-        return $this->success(['message' => 'View throttled', 'views' => $article->views]);
+        // Always fetch fresh view count from DB
+        $article->refresh();
+
+        return $this->success([
+            'message' => $incremented ? 'View counted' : 'View throttled',
+            'views' => $article->views ?? 0
+        ]);
     }
 }
