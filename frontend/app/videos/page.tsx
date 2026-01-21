@@ -107,21 +107,23 @@ export default function VideosPage() {
 
                 {/* Main Content */}
                 <div className="container mx-auto px-4 relative z-10 py-16">
+                    {/* Logo with enhanced glow - CENTERED PAGE WIDE */}
+                    <div className="flex justify-center mb-12 relative">
+                        <div className="relative group cursor-default">
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-fuchsia-500 blur-3xl opacity-20 scale-150 group-hover:opacity-40 transition-opacity duration-700" />
+                            <img
+                                src="/privee-logo.png"
+                                alt="Privee"
+                                className="relative h-20 md:h-28 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]"
+                            />
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-center">
 
                         {/* Left Content - 7 cols */}
                         <div className="lg:col-span-7 text-center lg:text-left">
-                            {/* Logo with enhanced glow - CENTERED */}
-                            <div className="flex justify-center lg:justify-center mb-8 relative">
-                                <div className="relative">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-fuchsia-500 blur-2xl opacity-40 scale-150" />
-                                    <img
-                                        src="/privee-logo.png"
-                                        alt="Privee"
-                                        className="relative h-16 md:h-24"
-                                    />
-                                </div>
-                            </div>
+
 
                             {/* Premium Title with layered effects */}
                             <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[0.95] tracking-tighter mb-8">
