@@ -5,7 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import { useState } from "react";
-import { Play, Clock, Video, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { Play, Clock, Video, ChevronLeft, ChevronRight, Sparkles, Newspaper, Gamepad2, GraduationCap, Star, Cpu } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import PageHero from "@/components/ui/PageHero";
 import { Button } from "@/components/ui/Button";
@@ -33,6 +33,16 @@ interface VideoResponse {
 
 export default function VideosPage() {
     const [page, setPage] = useState(1);
+    const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+    const categories = [
+        { id: 'all', name: 'All Videos', icon: Video },
+        { id: 'news', name: 'News', icon: Newspaper },
+        { id: 'game-for-fun', name: 'Game For Fun', icon: Gamepad2 },
+        { id: 'education', name: 'Education', icon: GraduationCap },
+        { id: 'reviews', name: 'Reviews', icon: Star },
+        { id: 'tech-reviews', name: 'Tech Reviews', icon: Cpu },
+    ];
     const { data, isLoading, isValidating } = useSWR<VideoResponse>(
         `/videos?page=${page}`,
         fetcher
@@ -175,6 +185,36 @@ export default function VideosPage() {
 
                 {/* Bottom fade into content */}
                 <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[var(--bg-primary)] to-transparent" />
+            </section>
+
+            {/* Category Filter Bar */}
+            <section className="relative z-20 -mt-8">
+                <div className="container mx-auto px-4">
+                    <div className="bg-gradient-to-r from-slate-900/90 via-purple-950/50 to-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl">
+                        <div className="flex flex-wrap items-center justify-center gap-2">
+                            {categories.map((category) => {
+                                const Icon = category.icon;
+                                const isActive = selectedCategory === category.id;
+                                return (
+                                    <button
+                                        key={category.id}
+                                        onClick={() => setSelectedCategory(category.id)}
+                                        className={`
+                                            flex items-center gap-2 px-5 py-3 rounded-xl font-medium text-sm transition-all duration-300
+                                            ${isActive
+                                                ? 'bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 text-white shadow-lg shadow-fuchsia-500/30'
+                                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                            }
+                                        `}
+                                    >
+                                        <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-fuchsia-400'}`} />
+                                        <span className="hidden sm:inline">{category.name}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
             </section>
 
             {/* Videos Grid */}
