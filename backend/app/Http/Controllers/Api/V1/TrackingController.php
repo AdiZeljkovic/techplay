@@ -15,7 +15,11 @@ class TrackingController extends Controller
         $article = Article::where('slug', $slug)->first();
 
         if (!$article) {
-            $article = \App\Models\Guide::where('slug', $slug)->firstOrFail();
+            $article = \App\Models\Guide::where('slug', $slug)->first();
+        }
+
+        if (!$article) {
+            $article = \App\Models\Review::where('slug', $slug)->firstOrFail();
         }
 
         // Use IP from request
