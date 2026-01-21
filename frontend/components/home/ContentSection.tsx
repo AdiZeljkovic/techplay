@@ -24,11 +24,12 @@ function getScoreColor(score: number): { bg: string; text: string } {
 export default function ContentSection({ title, icon: Icon, articles, viewAllLink, color = "var(--accent)" }: ContentSectionProps) {
     if (!articles || articles.length === 0) return null;
 
-    // Check if this is the reviews section
-    const isReviews = viewAllLink === '/reviews';
-
     // Determine the correct link prefix based on section type
-    const linkPrefix = isReviews ? '/reviews' : '/news';
+    let linkPrefix = '/news';
+    if (viewAllLink.includes('/reviews')) linkPrefix = '/reviews';
+    else if (viewAllLink.includes('/hardware')) linkPrefix = '/hardware';
+
+    const isReviews = linkPrefix === '/reviews';
 
     // Split into featured (first item) and grid (next 4 items)
     const featured = articles[0];

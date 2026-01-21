@@ -112,12 +112,21 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                         transition={{ duration: 0.5, delay: 0.3 }}
                         className="flex flex-wrap items-center gap-4"
                     >
-                        <Link
-                            href={`/news/${currentArticle.slug}`} // Assuming News route structure
-                            className="px-8 py-3.5 bg-[var(--accent)] text-white font-bold rounded-full hover:bg-[var(--accent-hover)] transition-all flex items-center gap-2 shadow-lg hover:shadow-[var(--accent)]/40 hover:-translate-y-1"
-                        >
-                            Read Full Story <ArrowRight className="w-5 h-5" />
-                        </Link>
+                        {(() => {
+                            const linkUrl =
+                                currentArticle.category?.type === 'review' ? `/reviews/${currentArticle.slug}` :
+                                    (currentArticle.category?.type === 'tech' || currentArticle.category?.slug?.includes('hardware')) ? `/hardware/${currentArticle.slug}` :
+                                        `/news/${currentArticle.slug}`;
+
+                            return (
+                                <Link
+                                    href={linkUrl}
+                                    className="px-8 py-3.5 bg-[var(--accent)] text-white font-bold rounded-full hover:bg-[var(--accent-hover)] transition-all flex items-center gap-2 shadow-lg hover:shadow-[var(--accent)]/40 hover:-translate-y-1"
+                                >
+                                    Read Full Story <ArrowRight className="w-5 h-5" />
+                                </Link>
+                            );
+                        })()}
                         <div className="flex items-center gap-2 text-white/80 text-sm font-semibold pl-4">
                             <Clock className="w-4 h-4 text-[var(--accent)]" /> 5 min read
                         </div>

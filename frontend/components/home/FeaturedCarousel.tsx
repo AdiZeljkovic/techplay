@@ -117,9 +117,18 @@ export default function FeaturedCarousel() {
                                     </span>
                                 </div>
 
-                                <Link href={`/news/${currentSlide.slug}`}>
-                                    <Button variant="primary">Read Story</Button>
-                                </Link>
+                                {(() => {
+                                    const linkUrl =
+                                        currentSlide.category?.type === 'review' ? `/reviews/${currentSlide.slug}` :
+                                            (currentSlide.category?.type === 'tech' || currentSlide.category?.slug?.includes('hardware')) ? `/hardware/${currentSlide.slug}` :
+                                                `/news/${currentSlide.slug}`;
+
+                                    return (
+                                        <Link href={linkUrl}>
+                                            <Button variant="primary">Read Story</Button>
+                                        </Link>
+                                    );
+                                })()}
                             </motion.div>
                         </div>
                     </motion.div>
