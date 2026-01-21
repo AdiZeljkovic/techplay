@@ -62,6 +62,7 @@ class ArticleResource extends JsonResource
             // SEO (expose only if needed for Head generation on frontend)
             'seo_title' => $this->seo_title,
             'meta_description' => $this->meta_description,
+            'views' => $this->views ?? 0,
         ];
     }
 }

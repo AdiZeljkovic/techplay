@@ -39,6 +39,9 @@ class GuideController extends Controller
 
     public function show($slug)
     {
+        // Increment views directly on DB to bypass cache and ensure accuracy
+        Guide::where('slug', $slug)->increment('views');
+
         // Cache the Guide data itself
         $guide = \Illuminate\Support\Facades\Cache::remember("guide.show.v2.{$slug}", 3600, function () use ($slug) {
             return Guide::where('slug', $slug)

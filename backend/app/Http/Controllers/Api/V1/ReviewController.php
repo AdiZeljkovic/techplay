@@ -45,6 +45,9 @@ class ReviewController extends Controller
 
     public function show($slug)
     {
+        // Increment views directly on DB to bypass cache and ensure accuracy
+        Article::where('slug', $slug)->increment('views');
+
         $cacheKey = "reviews.show.v2.{$slug}";
 
         $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($slug) {

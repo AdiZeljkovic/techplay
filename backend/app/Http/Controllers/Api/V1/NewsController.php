@@ -49,6 +49,9 @@ class NewsController extends Controller
      */
     public function show(string $slug)
     {
+        // Increment views directly on DB to bypass cache and ensure accuracy
+        Article::where('slug', $slug)->increment('views');
+
         $cacheKey = "news.show.v2.{$slug}";
 
         $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, 3600, function () use ($slug) {
