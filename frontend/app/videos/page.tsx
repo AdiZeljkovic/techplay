@@ -56,9 +56,10 @@ export default function VideosPage() {
         ? [...realtimeVideos.filter(rt => !fetchedVideos.some(f => f.id === rt.id)), ...fetchedVideos]
         : fetchedVideos;
 
-    const getThumbnail = (video: VideoItem) => {
+    const getThumbnail = (video: any) => {
         if (video.thumbnail_url) return video.thumbnail_url;
-        return `https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg`;
+        if (video.youtube_id) return `https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg`;
+        return '/placeholder-video.jpg';
     };
 
     const featuredVideo = displayVideos[0];
