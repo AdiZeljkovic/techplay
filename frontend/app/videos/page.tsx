@@ -63,6 +63,13 @@ export default function VideosPage() {
 
                 <div className="container mx-auto px-4 relative z-10">
                     <div className="max-w-4xl mx-auto text-center">
+                        {/* Privee Logo */}
+                        <img
+                            src="/privee-logo.png"
+                            alt="Privee"
+                            className="h-12 md:h-16 mx-auto mb-6"
+                        />
+
                         {/* Gradient Title */}
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-8 leading-tight">
                             <span className="bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent">
