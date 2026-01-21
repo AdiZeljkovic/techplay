@@ -91,7 +91,7 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
                         <div className="flex items-center gap-4 text-xs text-white/50 font-bold uppercase tracking-wide">
                             <div className="flex items-center gap-1.5">
                                 <User className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                {featured.author?.username || "Editor"}
+                                {featured.author?.display_name || featured.author?.username || "Editor"}
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <Calendar className="w-3.5 h-3.5 text-[var(--accent)]" />
@@ -134,7 +134,7 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
                                     {item.title}
                                 </h4>
                                 <div className="mt-auto flex items-center justify-between text-[10px] text-white/40 uppercase font-bold tracking-wide">
-                                    <span className="truncate max-w-[80px]">{item.author?.username || "TechPlay"}</span>
+                                    <span className="truncate max-w-[100px]">{item.author?.display_name || item.author?.username || "TechPlay"}</span>
                                     <span>{item.published_at ? format(new Date(item.published_at), 'dd/MM/yyyy') : ''}</span>
                                 </div>
                             </div>
