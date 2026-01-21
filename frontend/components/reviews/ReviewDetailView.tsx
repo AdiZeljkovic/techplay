@@ -14,6 +14,7 @@ import CommentsSection from "@/components/comments/CommentsSection";
 import ReviewSidebar from "@/components/reviews/ReviewSidebar";
 import { Article } from "@/types";
 import DOMPurify from "isomorphic-dompurify";
+import LiveViewCount from "@/components/tracking/LiveViewCount";
 
 interface ReviewDetailViewProps {
     review: Review;
@@ -194,6 +195,13 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                     {readingTime}
                                 </span>
                                 <span className="text-xs text-white/60">Read Time</span>
+                            </div>
+
+                            <div className="hidden md:block w-px h-10 bg-white/20" />
+
+                            <div className="flex flex-col">
+                                <LiveViewCount slug={review.slug} initialViews={(review as any).views || 0} />
+                                <span className="text-xs text-white/60">Views</span>
                             </div>
                         </div>
                     </div>
