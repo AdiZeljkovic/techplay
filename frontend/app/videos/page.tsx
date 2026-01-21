@@ -261,7 +261,27 @@ export default function VideosPage() {
             {/* ═══════════════════════════════════════════════════════════════════
                 FEATURED VIDEO - Hero Spotlight
             ════════════════════════════════════════════════════════════════════ */}
-            {featuredVideo && !isLoading && (
+            {isLoading ? (
+                <section className="relative py-20">
+                    <div className="container mx-auto px-4">
+                        <div className="relative rounded-3xl overflow-hidden bg-slate-900/50 border border-white/5 h-[450px]">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
+                                <div className="h-full bg-slate-800/50 animate-pulse" />
+                                <div className="p-8 lg:p-12 flex flex-col justify-center space-y-6">
+                                    <div className="w-32 h-6 bg-slate-800/50 rounded-full animate-pulse" />
+                                    <div className="w-3/4 h-12 bg-slate-800/50 rounded-lg animate-pulse" />
+                                    <div className="w-full h-8 bg-slate-800/50 rounded-lg animate-pulse" />
+                                    <div className="flex gap-4 pt-4">
+                                        <div className="w-32 h-6 bg-slate-800/50 rounded animate-pulse" />
+                                        <div className="w-32 h-6 bg-slate-800/50 rounded animate-pulse" />
+                                    </div>
+                                    <div className="w-40 h-12 bg-slate-800/50 rounded-xl animate-pulse mt-4" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            ) : featuredVideo && (
                 <section className="relative py-20">
                     <div className="container mx-auto px-4">
                         <Link
