@@ -50,17 +50,17 @@ class Guide extends Model
     {
         $cacheKey = 'guide_view_' . $this->id . '_' . $ip;
 
-        // TEMPORARILY DISABLED THROTTLING FOR DEBUGGING
-        // if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
-        //     return false;
-        // }
+        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            return false;
+        }
 
         // Use raw DB query with COALESCE to handle NULL values
         \Illuminate\Support\Facades\DB::table('guides')
             ->where('id', $this->id)
             ->update(['views' => \Illuminate\Support\Facades\DB::raw('COALESCE(views, 0) + 1')]);
 
-        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 60 * 24);
+        // Throttle for 60 minutes (1 hour)
+        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 60);
 
         return true;
     }
