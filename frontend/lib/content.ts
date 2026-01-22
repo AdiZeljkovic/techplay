@@ -48,7 +48,7 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
     // 1. YouTube: Convert links to iframe embeds
     // Handle anchor-wrapped YouTube links: <a href="youtube...">text</a>
     // Use non-greedy matching to properly extract video ID
-    const youtubeAnchorRegex = /<a\b[^>]*?\bhref\s*=\s*["']https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})[^"']*["'][^>]*>[\s\S]*?<\/a>/gi;
+    const youtubeAnchorRegex = /(?:<p>)?\s*<a\b[^>]*?\bhref\s*=\s*["']https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})[^"']*["'][^>]*>[\s\S]*?<\/a>\s*(?:<\/p>)?/gi;
     processedContent = processedContent.replace(youtubeAnchorRegex, (match, videoId) => {
         console.log('YouTube match found, videoId:', videoId); // Debug
         return `<div class="aspect-video w-full rounded-xl overflow-hidden shadow-lg my-8 border border-[var(--border)]"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
