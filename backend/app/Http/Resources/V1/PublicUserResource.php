@@ -24,7 +24,9 @@ class PublicUserResource extends JsonResource
             'display_name' => $this->display_name,
             'avatar_url' => $this->avatar_url,
             'bio' => $this->bio,
-            'role' => strtolower($this->role),
+            'role' => ($this->hasRole(['admin', 'Admin', 'administrator', 'Super Admin']) || strtolower($this->role) === 'admin') ? 'admin'
+                : (($this->hasRole(['editor', 'Editor']) || strtolower($this->role) === 'editor') ? 'editor'
+                    : (($this->hasRole(['moderator', 'Moderator']) || strtolower($this->role) === 'moderator') ? 'moderator' : 'member')),
             'created_at' => $this->created_at,
             'rank' => $this->whenLoaded('rank', function () {
                 return [
