@@ -36,6 +36,7 @@ class UserResource extends JsonResource
             'posts_count' => $this->posts_count ?? 0,
             'level' => floor(($this->xp ?? 0) / 1000) + 1,
             'xp' => $this->xp ?? 0,
+            'roles' => $this->getRoleNames(),
         ];
     }
 }

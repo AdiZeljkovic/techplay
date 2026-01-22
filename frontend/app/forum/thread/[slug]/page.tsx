@@ -21,7 +21,8 @@ interface User {
     id: number;
     username: string;
     avatar_url?: string;
-    role?: string;
+    role?: string; // Legacy
+    roles?: string[]; // New Spatie roles
     rank?: {
         name: string;
         color: string;
@@ -29,6 +30,7 @@ interface User {
     };
     xp?: number;
     forum_reputation?: number;
+    posts_count?: number;
     created_at?: string;
 }
 
@@ -329,6 +331,21 @@ export default function ThreadPage() {
                                     <Link href={`/profile/${thread.author?.username}`} className={`font-bold text-sm mb-1 hover:underline ${isStaff ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'}`}>
                                         {thread.author?.username || 'Unknown'}
                                     </Link>
+
+                                    {/* Role Display */}
+                                    {(() => {
+                                        const staffRoles = ['Super Admin', 'Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'];
+                                        const role = thread.author?.roles?.find(r => staffRoles.includes(r)) || thread.author?.role;
+                                        if (role && staffRoles.includes(role)) {
+                                            return (
+                                                <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide mb-2">
+                                                    <Shield className="w-3 h-3" /> {role}
+                                                </span>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
+
                                     {thread.author?.rank && (
                                         <span
                                             className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full mb-2"
@@ -337,12 +354,9 @@ export default function ThreadPage() {
                                             {thread.author.rank.name}
                                         </span>
                                     )}
-                                    {isStaff && (
-                                        <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide mb-2">
-                                            <Shield className="w-3 h-3" /> Staff
-                                        </span>
-                                    )}
-                                    <div className="text-xs text-[var(--text-muted)] mt-2">
+
+                                    <div className="text-xs text-[var(--text-muted)] mt-2 flex flex-col items-center gap-1">
+                                        <span>{thread.author?.posts_count || 0} posts</span>
                                         {thread.author?.created_at && (
                                             <span>Joined {format(new Date(thread.author.created_at), 'MMM yyyy')}</span>
                                         )}
@@ -424,14 +438,36 @@ export default function ThreadPage() {
                                                         <Link href={`/profile/${post.author?.username}`} className={`font-bold text-sm hover:underline block ${postIsStaff ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'}`}>
                                                             {post.author?.username || 'Unknown'}
                                                         </Link>
+
+                                                        {/* Role Display */}
+                                                        {(() => {
+                                                            const staffRoles = ['Super Admin', 'Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'];
+                                                            const role = post.author?.roles?.find(r => staffRoles.includes(r)) || post.author?.role;
+                                                            if (role && staffRoles.includes(role)) {
+                                                                return (
+                                                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide mb-1 mt-1">
+                                                                        <Shield className="w-2.5 h-2.5" /> {role}
+                                                                    </span>
+                                                                );
+                                                            }
+                                                            return null;
+                                                        })()}
+
                                                         {post.author?.rank && (
                                                             <span
-                                                                className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-full"
+                                                                className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-full block w-fit mx-auto mt-1"
                                                                 style={{ backgroundColor: `${post.author.rank.color}20`, color: post.author.rank.color }}
                                                             >
                                                                 {post.author.rank.name}
                                                             </span>
                                                         )}
+
+                                                        <div className="hidden md:block text-[10px] text-[var(--text-muted)] mt-2">
+                                                            <div>{post.author?.posts_count || 0} posts</div>
+                                                            {post.author?.created_at && (
+                                                                <div>Joined {format(new Date(post.author.created_at), 'MMM yyyy')}</div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
 

@@ -108,7 +108,12 @@ class ForumController extends Controller
     public function showThread($slug)
     {
         $thread = Thread::where('slug', $slug)
-            ->with(['author.rank', 'category'])
+            ->with([
+                'author' => function ($q) {
+                    $q->withCount('posts')->with('rank');
+                },
+                'category'
+            ])
             ->withCount(['posts', 'upvotes']) // Add upvotes count
             ->firstOrFail();
 
@@ -124,7 +129,11 @@ class ForumController extends Controller
             : false;
 
         $posts = $thread->posts()
-            ->with('author.rank')
+            ->with([
+                'author' => function ($q) {
+                    $q->withCount('posts')->with('rank');
+                }
+            ])
             ->paginate(15);
 
         return response()->json([
