@@ -26,6 +26,17 @@ class UserResource extends Resource
         return parent::getEloquentQuery()->with(['roles']);
     }
 
+    // Make email visible for Filament forms
+    public static function mutateFormDataBeforeFill(array $data): array
+    {
+        return $data;
+    }
+
+    public static function getRecord($key): \Illuminate\Database\Eloquent\Model
+    {
+        return parent::getRecord($key)->makeVisible('email');
+    }
+
     public static function getNavigationGroup(): ?string
     {
         return 'Community';
