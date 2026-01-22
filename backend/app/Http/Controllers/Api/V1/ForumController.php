@@ -19,7 +19,7 @@ class ForumController extends Controller
         $stats = Cache::remember('forum.stats', 300, function () {
             return [
                 'total_threads' => Thread::count(),
-                'total_posts' => Post::count(),
+                'total_posts' => Thread::count() + Post::count(),
                 'members' => \App\Models\User::count(),
             ];
         });
@@ -193,7 +193,7 @@ class ForumController extends Controller
             // Reload author to get post count properly if needed, but for performance, we can skip or reload count.
             // Actually, newly created post author has at least 1 post now. 
             // Better to load posts_count too.
-            $post->author->loadCount('posts');
+            $post->author->loadCount(['posts', 'threads']);
 
             // Return simplified response to avoid serialization issues
             return new \App\Http\Resources\V1\PostResource($post);

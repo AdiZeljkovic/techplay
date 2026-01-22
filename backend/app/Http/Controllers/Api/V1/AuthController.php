@@ -145,7 +145,7 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        $user = $request->user()->load('rank')->loadCount('posts'); // Load stats
+        $user = $request->user()->load('rank')->loadCount(['posts', 'threads']); // Load stats
 
         $user->next_rank = $user->nextRank();
         return new \App\Http\Resources\V1\UserResource($user);
