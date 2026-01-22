@@ -44,6 +44,7 @@ interface UserProfile {
             name: string;
             icon?: string;
             color?: string;
+            min_xp?: number;
         };
         active_support?: {
             tier: {
@@ -55,6 +56,8 @@ interface UserProfile {
     stats: {
         threads_count: number;
         posts_count: number;
+        // ... (skipping unchanged lines in tool? Better to target specific blocks)
+
         comments_count: number;
         reputation: number;
         joined_at: string;
@@ -139,6 +142,7 @@ export default function ProfilePage() {
     // XP Logic
     // XP Logic (Rank Based)
     const currentXP = stats?.xp || 0;
+    const level = stats?.level || 1;
     const currentRankMinXP = userData.rank?.min_xp || 0;
     const nextRankMinXP = profile.next_rank?.min_xp || (currentRankMinXP + 1000); // Fallback if max rank
 
