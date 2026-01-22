@@ -191,6 +191,16 @@ export default function ProfilePage() {
                                             )}
                                         </div>
 
+                                        {/* Staff Role Badge */}
+                                        {['admin', 'moderator', 'editor'].includes(userData.role) && (
+                                            <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase border ml-2 self-center ${userData.role === 'admin' ? 'text-red-500 border-red-500/30 bg-red-500/10' :
+                                                    userData.role === 'moderator' ? 'text-blue-500 border-blue-500/30 bg-blue-500/10' :
+                                                        'text-green-500 border-green-500/30 bg-green-500/10'
+                                                }`}>
+                                                {userData.role}
+                                            </span>
+                                        )}
+
                                         {/* Removed Rank Badge "AFK" here. Ranks will be in stats or sidebar */}
 
                                         {userData.active_support && (
