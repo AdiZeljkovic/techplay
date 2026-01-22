@@ -6,16 +6,18 @@ import axios from "@/lib/axios";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { Loader2, Save, User, Gamepad2, Cpu, Monitor, Lock } from "lucide-react";
+import { Loader2, Save, User, Gamepad2, Cpu, Monitor, Lock, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function SettingsPage() {
-    const { user, isLoading } = useAuth({ middleware: 'auth' });
+    const { user, isLoading, logout } = useAuth({ middleware: 'auth' });
     const router = useRouter();
 
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState<'bio' | 'ids' | 'specs' | 'security'>('bio');
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     // Form States
     const [bio, setBio] = useState(user?.bio || "");
@@ -97,7 +99,8 @@ export default function SettingsPage() {
                 new_password: passwords.new,
                 new_password_confirmation: passwords.confirm
             });
-            alert('Password changed successfully!');
+            // Show Custom Modal instead of Alert
+            setShowSuccessModal(true);
             setPasswords({ current: '', new: '', confirm: '' });
         } catch (error: any) {
             console.error("Failed to change password", error);
@@ -351,6 +354,43 @@ export default function SettingsPage() {
                     </div>
                 </div>
             </div>
+
+            <AnimatePresence>
+                {showSuccessModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6 max-w-sm w-full shadow-2xl text-center"
+                        >
+                            <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <CheckCircle className="w-8 h-8 text-green-500" />
+                            </div>
+                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">
+                                Password Changed
+                            </h3>
+                            <p className="text-[var(--text-secondary)] mb-6">
+                                Uspješno ste promijenili šifru. Molimo vas da se odjavite i ponovo prijavite radi sigurnosti.
+                            </p>
+                            <Button
+                                onClick={() => {
+                                    setShowSuccessModal(false);
+                                    logout();
+                                }}
+                                className="w-full bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-black font-bold"
+                            >
+                                U redu, odjavi me
+                            </Button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
