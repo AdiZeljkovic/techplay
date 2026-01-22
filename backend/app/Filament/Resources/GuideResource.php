@@ -135,7 +135,6 @@ class GuideResource extends Resource
                                         'alignCenter',
                                         'alignEnd',
                                         'alignJustify',
-                                        'video', // Added video button
                                     ])
                                     ->fileAttachmentsDisk('public')
                                     ->fileAttachmentsDirectory('guides/content'),

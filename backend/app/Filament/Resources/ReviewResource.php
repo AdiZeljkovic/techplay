@@ -179,7 +179,6 @@ class ReviewResource extends Resource
                                         'alignCenter',
                                         'alignEnd',
                                         'alignJustify',
-                                        'video', // Added video support
                                     ])
                                     ->fileAttachmentsDisk('public')
                                     ->fileAttachmentsDirectory('articles/content'),

@@ -138,7 +138,6 @@ class NewsResource extends Resource
                                         'alignCenter',
                                         'alignEnd',
                                         'alignJustify',
-                                        'video', // Added video button
                                     ])
                                     ->fileAttachmentsDisk('public')
                                     ->fileAttachmentsDirectory('articles/content'),
