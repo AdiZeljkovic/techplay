@@ -144,6 +144,19 @@ class ForumController extends Controller
 
         $thread = Thread::where('slug', $slug)->firstOrFail();
 
+        // Restrict replies in "News & Announcements"
+        $category = $thread->category;
+        if ($category && ($category->slug === 'news-announcements' || $category->name === 'News & Announcements')) {
+            $user = Auth::user();
+            $allowedRoles = ['Super Admin', 'Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'];
+
+            $hasPermission = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'editor', 'moderator']);
+
+            if (!$hasPermission) {
+                return response()->json(['message' => 'Only staff members can reply in News & Announcements.'], 403);
+            }
+        }
+
         if ($thread->is_locked) {
             return response()->json(['message' => 'Thread is locked.'], 403);
         }
@@ -199,6 +212,20 @@ class ForumController extends Controller
                 'content' => 'required|string|min:10|max:20000', // Max 20k chars for thread
                 'category_id' => 'required|exists:categories,id'
             ]);
+
+            // check restriction for "News & Announcements"
+            $category = Category::find($request->category_id);
+            if ($category && ($category->slug === 'news-announcements' || $category->name === 'News & Announcements')) {
+                $user = Auth::user();
+                $allowedRoles = ['Super Admin', 'Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'];
+
+                // Check Spatie roles or legacy role column
+                $hasPermission = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'editor', 'moderator']);
+
+                if (!$hasPermission) {
+                    return response()->json(['message' => 'Only staff members can create threads in News & Announcements.'], 403);
+                }
+            }
 
             // Sanitize content (allow some HTML for formatting)
             $cleanContent = strip_tags($request->content, '<p><br><strong><em><ul><ol><li><a><code><pre><blockquote>');
