@@ -53,37 +53,13 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
     // First, handle anchor-wrapped YouTube links: <a href="youtube...">text</a>
     const youtubeAnchorRegex = /<a\s+[^>]*href=["'](?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})[^"']*["'][^>]*>.*?<\/a>/gi;
     processedContent = processedContent.replace(youtubeAnchorRegex, (match, videoId) => {
-        return `
-            <div class="aspect-video w-full rounded-xl overflow-hidden shadow-lg my-8 border border-[var(--border)]">
-                <iframe 
-                    width="100%" 
-                    height="100%" 
-                    src="https://www.youtube.com/embed/${videoId}" 
-                    title="YouTube video player" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
-            </div>
-        `;
+        return `<div class="aspect-video w-full rounded-xl overflow-hidden shadow-lg my-8 border border-[var(--border)]"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
     });
 
     // Second, handle plain text YouTube URLs (in <p> tags or standalone)
     const youtubeTextRegex = /(?:<p>)?\s*(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})(?:[^\s<]*)?\s*(?:<\/p>)?/g;
     processedContent = processedContent.replace(youtubeTextRegex, (match, videoId) => {
-        return `
-            <div class="aspect-video w-full rounded-xl overflow-hidden shadow-lg my-8 border border-[var(--border)]">
-                <iframe 
-                    width="100%" 
-                    height="100%" 
-                    src="https://www.youtube.com/embed/${videoId}" 
-                    title="YouTube video player" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
-            </div>
-        `;
+        return `<div class="aspect-video w-full rounded-xl overflow-hidden shadow-lg my-8 border border-[var(--border)]"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
     });
 
     // 2. Twitter/X: Convert x.com/user/status/ID or twitter.com/...
