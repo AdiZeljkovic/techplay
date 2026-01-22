@@ -30,6 +30,27 @@ interface ArticleDetailViewProps {
 // I will use any[] to avoid import hell for now, or better:
 // The parent passes it through.
 
+// Client-side date component to avoid hydration mismatch and ensure fresh time
+const ClientDate = ({ date }: { date: string }) => {
+    const [formatted, setFormatted] = useState<string>("");
+
+    useEffect(() => {
+        try {
+            const d = new Date(date);
+            if (!isNaN(d.getTime())) {
+                setFormatted(format(d, 'dd/MM/yyyy HH:mm'));
+            } else {
+                setFormatted("Date unavailable");
+            }
+        } catch (e) {
+            setFormatted("Date unavailable");
+        }
+    }, [date]);
+
+    if (!formatted) return <span className="opacity-0">Loading...</span>; // Prevent flicker
+    return <span>{formatted}</span>;
+};
+
 export default function ArticleDetailView({ article, initialComments }: ArticleDetailViewProps) {
     const [isScrolled, setIsScrolled] = useState(false);
 
@@ -155,14 +176,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                             <div className="flex flex-col">
                                 <span className="flex items-center gap-2 text-sm font-medium">
                                     <Calendar className="w-4 h-4 text-[var(--accent)]" />
-                                    {(() => {
-                                        try {
-                                            const date = new Date(article.published_at || article.created_at);
-                                            return isNaN(date.getTime()) ? 'Date unavailable' : format(date, 'dd/MM/yyyy');
-                                        } catch (e) {
-                                            return 'Date unavailable';
-                                        }
-                                    })()}
+                                    <ClientDate date={article.published_at || article.created_at} />
                                 </span>
                                 <span className="text-xs text-white/60">Published</span>
                             </div>
@@ -212,10 +226,10 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                         </div>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Main Content Layout */}
-            <div className="container mx-auto px-4 -mt-10 relative z-20">
+            < div className="container mx-auto px-4 -mt-10 relative z-20" >
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
 
                     {/* Social Sidebar (Left on Desktop) */}
@@ -367,8 +381,8 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                 </div>
 
 
-            </div>
-        </article>
+            </div >
+        </article >
     );
 }
 
