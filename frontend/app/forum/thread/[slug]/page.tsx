@@ -80,6 +80,21 @@ const getCategoryColor = (slug: string) => {
     }
 };
 
+const getDisplayRole = (user: User | undefined) => {
+    if (!user) return null;
+    const staffRoles = ['Super Admin', 'Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'];
+
+    // Combine explicit roles and legacy role
+    const userRoles = [...(user.roles || [])];
+    if (user.role) userRoles.push(user.role);
+
+    // Find matching staff role (case insensitive normalization)
+    return staffRoles.find(sr => {
+        const nsr = sr.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return userRoles.some(ur => ur.toLowerCase().replace(/[^a-z0-9]/g, '') === nsr);
+    });
+};
+
 export default function ThreadPage() {
     const params = useParams();
     const slug = params.slug as string;
@@ -233,7 +248,13 @@ export default function ThreadPage() {
 
     const { thread, posts } = data;
     const categoryColor = getCategoryColor(thread.category?.slug || '');
-    const isStaff = thread.author?.role === 'admin' || thread.author?.role === 'editor';
+
+    // Helper to check staff for layout adjustments
+    const isStaff = (u: User) => {
+        const role = getDisplayRole(u);
+        return !!role;
+    };
+    const threadAuthorStaff = isStaff(thread.author);
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
@@ -318,7 +339,7 @@ export default function ThreadPage() {
                                 {/* Author Sidebar */}
                                 <div className="md:w-48 bg-[var(--bg-elevated)]/30 p-6 flex flex-col items-center text-center border-b md:border-b-0 md:border-r border-[var(--border)]">
                                     <Link href={`/profile/${thread.author?.username}`} className="group">
-                                        <div className={`w-20 h-20 rounded-full overflow-hidden bg-[var(--bg-secondary)] mb-3 ring-2 transition-all ${isStaff ? 'ring-[var(--accent)] shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]' : 'ring-[var(--border)] group-hover:ring-[var(--accent)]'}`}>
+                                        <div className={`w-20 h-20 rounded-full overflow-hidden bg-[var(--bg-secondary)] mb-3 ring-2 transition-all ${threadAuthorStaff ? 'ring-[var(--accent)] shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]' : 'ring-[var(--border)] group-hover:ring-[var(--accent)]'}`}>
                                             {thread.author?.avatar_url ? (
                                                 <Image src={thread.author.avatar_url} alt={thread.author.username} width={80} height={80} className="object-cover" />
                                             ) : (
@@ -328,15 +349,14 @@ export default function ThreadPage() {
                                             )}
                                         </div>
                                     </Link>
-                                    <Link href={`/profile/${thread.author?.username}`} className={`font-bold text-sm mb-1 hover:underline ${isStaff ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'}`}>
+                                    <Link href={`/profile/${thread.author?.username}`} className={`font-bold text-sm mb-1 hover:underline ${threadAuthorStaff ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'}`}>
                                         {thread.author?.username || 'Unknown'}
                                     </Link>
 
                                     {/* Role Display */}
                                     {(() => {
-                                        const staffRoles = ['Super Admin', 'Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'];
-                                        const role = thread.author?.roles?.find(r => staffRoles.includes(r)) || thread.author?.role;
-                                        if (role && staffRoles.includes(role)) {
+                                        const role = getDisplayRole(thread.author);
+                                        if (role) {
                                             return (
                                                 <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide mb-2">
                                                     <Shield className="w-3 h-3" /> {role}
@@ -411,7 +431,7 @@ export default function ThreadPage() {
                                 </h3>
 
                                 {posts.data.map((post, index) => {
-                                    const postIsStaff = post.author?.role === 'admin' || post.author?.role === 'editor';
+                                    const postAuthorStaff = isStaff(post.author);
                                     return (
                                         <div key={post.id} className={`bg-[var(--bg-card)] border border-[var(--border)] rounded-xl overflow-hidden ${post.is_solution ? 'ring-2 ring-green-500/50' : ''}`}>
                                             {post.is_solution && (
@@ -424,7 +444,7 @@ export default function ThreadPage() {
                                                 {/* Author Mini Sidebar */}
                                                 <div className="md:w-40 bg-[var(--bg-elevated)]/20 p-4 flex md:flex-col items-center md:text-center gap-3 md:gap-2 border-b md:border-b-0 md:border-r border-[var(--border)]">
                                                     <Link href={`/profile/${post.author?.username}`}>
-                                                        <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden bg-[var(--bg-secondary)] ring-2 transition-all ${postIsStaff ? 'ring-[var(--accent)]' : 'ring-[var(--border)]'}`}>
+                                                        <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden bg-[var(--bg-secondary)] ring-2 transition-all ${postAuthorStaff ? 'ring-[var(--accent)]' : 'ring-[var(--border)]'}`}>
                                                             {post.author?.avatar_url ? (
                                                                 <Image src={post.author.avatar_url} alt={post.author.username} width={64} height={64} className="object-cover" />
                                                             ) : (
@@ -435,15 +455,14 @@ export default function ThreadPage() {
                                                         </div>
                                                     </Link>
                                                     <div className="md:mt-2">
-                                                        <Link href={`/profile/${post.author?.username}`} className={`font-bold text-sm hover:underline block ${postIsStaff ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'}`}>
+                                                        <Link href={`/profile/${post.author?.username}`} className={`font-bold text-sm hover:underline block ${postAuthorStaff ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'}`}>
                                                             {post.author?.username || 'Unknown'}
                                                         </Link>
 
                                                         {/* Role Display */}
                                                         {(() => {
-                                                            const staffRoles = ['Super Admin', 'Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'];
-                                                            const role = post.author?.roles?.find(r => staffRoles.includes(r)) || post.author?.role;
-                                                            if (role && staffRoles.includes(role)) {
+                                                            const role = getDisplayRole(post.author);
+                                                            if (role) {
                                                                 return (
                                                                     <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide mb-1 mt-1">
                                                                         <Shield className="w-2.5 h-2.5" /> {role}

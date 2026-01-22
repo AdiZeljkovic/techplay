@@ -110,7 +110,7 @@ class ForumController extends Controller
         $thread = Thread::where('slug', $slug)
             ->with([
                 'author' => function ($q) {
-                    $q->withCount('posts')->with(['rank', 'roles']);
+                    $q->withCount(['posts', 'threads'])->with(['rank', 'roles']);
                 },
                 'category'
             ])
@@ -131,7 +131,7 @@ class ForumController extends Controller
         $posts = $thread->posts()
             ->with([
                 'author' => function ($q) {
-                    $q->withCount('posts')->with(['rank', 'roles']);
+                    $q->withCount(['posts', 'threads'])->with(['rank', 'roles']);
                 }
             ])
             ->paginate(15);
