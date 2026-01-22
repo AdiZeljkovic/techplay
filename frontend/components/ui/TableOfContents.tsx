@@ -34,7 +34,7 @@ export default function TableOfContents({ items }: TableOfContentsProps) {
     if (items.length < 2) return null;
 
     return (
-        <div className="bg-[#0f172a] border border-blue-800/30 rounded-2xl p-6 shadow-lg backdrop-blur-sm">
+        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg backdrop-blur-sm">
             <h4 className="flex items-center gap-3 text-sm font-bold text-white uppercase tracking-wider mb-6">
                 <div className="w-1.5 h-6 bg-[#ff4500]" />
                 On this page
