@@ -110,7 +110,7 @@ class ForumController extends Controller
         $thread = Thread::where('slug', $slug)
             ->with([
                 'author' => function ($q) {
-                    $q->withCount(['posts as real_posts_count', 'threads as real_threads_count'])
+                    $q->withCount(['posts', 'threads'])
                         ->with(['rank', 'roles']);
                 },
                 'category'
@@ -132,7 +132,7 @@ class ForumController extends Controller
         $posts = $thread->posts()
             ->with([
                 'author' => function ($q) {
-                    $q->withCount(['posts as real_posts_count', 'threads as real_threads_count'])
+                    $q->withCount(['posts', 'threads'])
                         ->with(['rank', 'roles']);
                 }
             ])
