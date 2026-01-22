@@ -299,7 +299,7 @@ class AuthController extends Controller
         }
 
         $user->update([
-            'password' => Hash::make($request->new_password),
+            'password' => $request->new_password, // Model's 'hashed' cast handles hashing
         ]);
 
         return response()->json([
