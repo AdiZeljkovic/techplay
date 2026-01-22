@@ -376,7 +376,7 @@ export default function SettingsPage() {
                                 Password Changed
                             </h3>
                             <p className="text-[var(--text-secondary)] mb-6">
-                                Uspješno ste promijenili šifru. Molimo vas da se odjavite i ponovo prijavite radi sigurnosti.
+                                Password changed successfully. Please log out and log in again for security reasons.
                             </p>
                             <Button
                                 onClick={() => {
@@ -385,7 +385,7 @@ export default function SettingsPage() {
                                 }}
                                 className="w-full bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-black font-bold"
                             >
-                                U redu, odjavi me
+                                OK, Log out
                             </Button>
                         </motion.div>
                     </motion.div>
