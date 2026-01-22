@@ -45,20 +45,19 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
 
     // --- Embed Processing ---
 
-    // 1. YouTube: Convert normal or short links to iframe
-    // Matches: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID
-    // RichEditor wraps links in <a href="...">URL</a> OR <p>URL</p>
-    // We need to handle both formats
-
-    // First, handle anchor-wrapped YouTube links: <a href="youtube...">text</a>
-    const youtubeAnchorRegex = /<a\s+[^>]*href=["'](?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})[^"']*["'][^>]*>.*?<\/a>/gi;
+    // 1. YouTube: Convert links to iframe embeds
+    // Handle anchor-wrapped YouTube links: <a href="youtube...">text</a>
+    // Use non-greedy matching to properly extract video ID
+    const youtubeAnchorRegex = /<a\b[^>]*?\bhref\s*=\s*["']https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})[^"']*["'][^>]*>[\s\S]*?<\/a>/gi;
     processedContent = processedContent.replace(youtubeAnchorRegex, (match, videoId) => {
+        console.log('YouTube match found, videoId:', videoId); // Debug
         return `<div class="aspect-video w-full rounded-xl overflow-hidden shadow-lg my-8 border border-[var(--border)]"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
     });
 
-    // Second, handle plain text YouTube URLs (in <p> tags or standalone)
-    const youtubeTextRegex = /(?:<p>)?\s*(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})(?:[^\s<]*)?\s*(?:<\/p>)?/g;
-    processedContent = processedContent.replace(youtubeTextRegex, (match, videoId) => {
+    // Also handle plain text YouTube URLs (not wrapped in anchor)
+    const youtubeTextRegex = /(?:<p>)?\s*(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})[^\s<]*)\s*(?:<\/p>)?/g;
+    processedContent = processedContent.replace(youtubeTextRegex, (match, fullUrl, videoId) => {
+        console.log('YouTube text match, videoId:', videoId); // Debug
         return `<div class="aspect-video w-full rounded-xl overflow-hidden shadow-lg my-8 border border-[var(--border)]"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
     });
 
