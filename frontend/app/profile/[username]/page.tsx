@@ -149,6 +149,8 @@ export default function ProfilePage() {
 
     const { user: userData, stats, achievements } = profile;
     const isOwnProfile = currentUser?.username === userData.username;
+    // Check staff status from user role (frontend check since backend has caching issues)
+    const isStaffUser = ['admin', 'editor', 'moderator', 'journalist', 'super_admin'].includes(userData.role?.toLowerCase() || '');
 
     // XP Logic
     // XP Logic (Rank Based)
@@ -373,11 +375,11 @@ export default function ProfilePage() {
                         <div className="md:col-span-2 space-y-6">
                             {/* Recent Activity - Different for Staff vs Regular Users */}
                             <h3 className="font-bold text-xl text-[var(--text-primary)]">
-                                {profile.is_staff ? 'Published Articles' : 'Recent Activity'}
+                                {isStaffUser ? 'Published Articles' : 'Recent Activity'}
                             </h3>
 
                             {/* Staff: Show Articles Grid */}
-                            {profile.is_staff && profile.recent_articles && profile.recent_articles.length > 0 ? (
+                            {isStaffUser && profile.recent_articles && profile.recent_articles.length > 0 ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {profile.recent_articles.map((article: any) => (
                                         <Link
@@ -395,8 +397,8 @@ export default function ProfilePage() {
                                                         />
                                                         <div className="absolute top-2 left-2">
                                                             <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${article.type === 'review' ? 'bg-purple-500/90 text-white' :
-                                                                    article.type === 'news' ? 'bg-blue-500/90 text-white' :
-                                                                        'bg-emerald-500/90 text-white'
+                                                                article.type === 'news' ? 'bg-blue-500/90 text-white' :
+                                                                    'bg-emerald-500/90 text-white'
                                                                 }`}>
                                                                 {article.type}
                                                             </span>
@@ -424,7 +426,7 @@ export default function ProfilePage() {
                                         </Link>
                                     ))}
                                 </div>
-                            ) : profile.is_staff ? (
+                            ) : isStaffUser ? (
                                 <div className="p-8 text-center border border-dashed border-[var(--border)] rounded-xl text-[var(--text-muted)]">
                                     No published articles yet.
                                 </div>
