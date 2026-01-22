@@ -249,9 +249,8 @@ export default function ProfilePage() {
                             {/* XP Bar */}
                             <div className="mt-6 max-w-xl">
                                 <div className="flex justify-between text-xs font-semibold text-[var(--text-secondary)] mb-1 uppercase tracking-wider">
-                                    <span>XP {currentXP}</span>
-                                    <span>XP {currentXP}</span>
-                                    <span>Next Rank: {nextRankMinXP} XP</span>
+                                    <span className="font-bold text-[var(--accent)]">{userData.rank?.name || 'Unranked'}</span>
+                                    <span>{Math.max(0, nextRankMinXP - currentXP)} XP to {nextRankName}</span>
                                 </div>
                                 <div className="h-3 bg-[var(--bg-elevated)] rounded-full overflow-hidden border border-[var(--border)] relative">
                                     <motion.div
