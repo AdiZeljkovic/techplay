@@ -21,6 +21,7 @@ class UserResource extends JsonResource
             'display_name' => $this->display_name,
             'avatar_url' => $this->avatar_url,
             'bio' => $this->bio,
+            'email' => $this->email, // Included for authenticated user's own settings
             'rank' => $this->whenLoaded('rank', function () {
                 return [
                     'id' => $this->rank->id,
