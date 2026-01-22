@@ -17,7 +17,7 @@ async function getReview(slug: string): Promise<Review | null> {
 
     try {
         const res = await fetch(`${apiUrl}/reviews/${slug}`, {
-            next: { revalidate: 60 },
+            cache: 'no-store', // Force fresh data
         });
 
         if (!res.ok) {

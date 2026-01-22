@@ -5,8 +5,8 @@ import NewsCategoryView from "@/components/news/NewsCategoryView";
 import ArticleDetailView from "@/components/news/ArticleDetailView";
 import { NEWS_CATEGORIES } from "@/lib/categories";
 
-// PERFORMANCE: ISR - Regenerate pages every 60 seconds
-export const revalidate = 60;
+// TEMPORARILY DISABLED: ISR for debugging cache issues
+export const revalidate = 0; // No caching - fetch fresh data every time
 
 async function getArticle(slug: string): Promise<Article | null> {
     let apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -18,7 +18,7 @@ async function getArticle(slug: string): Promise<Article | null> {
 
     try {
         const res = await fetch(`${apiUrl}/news/${slug}`, {
-            next: { revalidate: 60 },
+            cache: 'no-store', // Force fresh data - no caching
         });
 
         if (!res.ok) {

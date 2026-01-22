@@ -14,7 +14,7 @@ async function getGuide(slug: string) {
 
     try {
         const res = await fetch(`${apiUrl}/guides/${slug}`, {
-            next: { revalidate: 60 }
+            cache: 'no-store' // Force fresh data
         });
 
         if (!res.ok) return null;
