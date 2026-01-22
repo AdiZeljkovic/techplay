@@ -261,7 +261,12 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                     prose-ol:list-decimal prose-ol:pl-6 prose-ol:text-[var(--text-secondary)]
                                     prose-hr:border-[var(--border)] prose-hr:my-10
                                 "
-                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(processedContent) }}
+                                dangerouslySetInnerHTML={{
+                                    __html: DOMPurify.sanitize(processedContent, {
+                                        ADD_TAGS: ['iframe'],
+                                        ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height', 'title', 'class', 'style']
+                                    })
+                                }}
                             />
                         ) : (
                             <div className="py-20 text-center text-[var(--text-secondary)]">

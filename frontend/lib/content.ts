@@ -46,13 +46,31 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
     // --- Embed Processing ---
 
     // 1. YouTube: Convert normal or short links to iframe
-    // Matches: youtube.com/watch?v=ID or nocookie or youtu.be/ID. 
-    // Usually Rich Editors wraps links in <a href="...">...</a> or <p>URL</p>.
-    // We target plain text URLs in p tags or direct anchors if they are the only content.
+    // Matches: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID
+    // RichEditor wraps links in <a href="...">URL</a> OR <p>URL</p>
+    // We need to handle both formats
 
-    // Replace <p>https://www.youtube.com/watch?v=...</p> or just the link if it stands alone
-    const youtubeRegex = /(?:<p>)?\s*(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})(?:\S*)?\s*(?:<\/p>)?/g;
-    processedContent = processedContent.replace(youtubeRegex, (match, videoId) => {
+    // First, handle anchor-wrapped YouTube links: <a href="youtube...">text</a>
+    const youtubeAnchorRegex = /<a\s+[^>]*href=["'](?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})[^"']*["'][^>]*>.*?<\/a>/gi;
+    processedContent = processedContent.replace(youtubeAnchorRegex, (match, videoId) => {
+        return `
+            <div class="aspect-video w-full rounded-xl overflow-hidden shadow-lg my-8 border border-[var(--border)]">
+                <iframe 
+                    width="100%" 
+                    height="100%" 
+                    src="https://www.youtube.com/embed/${videoId}" 
+                    title="YouTube video player" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+        `;
+    });
+
+    // Second, handle plain text YouTube URLs (in <p> tags or standalone)
+    const youtubeTextRegex = /(?:<p>)?\s*(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})(?:[^\s<]*)?\s*(?:<\/p>)?/g;
+    processedContent = processedContent.replace(youtubeTextRegex, (match, videoId) => {
         return `
             <div class="aspect-video w-full rounded-xl overflow-hidden shadow-lg my-8 border border-[var(--border)]">
                 <iframe 

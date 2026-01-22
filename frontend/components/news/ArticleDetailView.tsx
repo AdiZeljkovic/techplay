@@ -69,7 +69,11 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
     }, [processedContent]);
 
     // Using isomorphic-dompurify inside render or memo
-    const safeContent = DOMPurify.sanitize(processedContent);
+    // Configure DOMPurify to allow iframes for embeds (YouTube, etc.)
+    const safeContent = DOMPurify.sanitize(processedContent, {
+        ADD_TAGS: ['iframe'],
+        ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height', 'title', 'class', 'style']
+    });
 
     return (
         <article className="min-h-screen bg-[var(--bg-primary)] pb-20">
