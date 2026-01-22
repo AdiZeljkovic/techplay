@@ -24,7 +24,7 @@ class PublicUserResource extends JsonResource
             'display_name' => $this->display_name,
             'avatar_url' => $this->avatar_url,
             'bio' => $this->bio,
-            'role' => $this->hasRole('admin') ? 'admin' : ($this->hasRole('editor') ? 'editor' : 'member'),
+            'role' => strtolower($this->role),
             'created_at' => $this->created_at,
             'rank' => $this->whenLoaded('rank', function () {
                 return [
