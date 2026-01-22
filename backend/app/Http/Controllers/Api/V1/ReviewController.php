@@ -40,7 +40,7 @@ class ReviewController extends Controller
             );
         });
 
-        return $resource->response()->header('Cache-Control', 'public, max-age=60');
+        return $resource->response()->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     public function show($slug)
@@ -61,6 +61,6 @@ class ReviewController extends Controller
             return new ReviewResource($article);
         });
 
-        return $resource->response()->header('Cache-Control', 'public, max-age=300');
+        return $resource->response()->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 }

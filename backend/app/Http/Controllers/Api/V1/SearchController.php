@@ -23,7 +23,7 @@ class SearchController extends Controller
         $cacheKey = 'search.articles.' . md5($query);
 
         // Cache for 60 seconds to prevent hammering
-        return Cache::remember($cacheKey, 60, function () use ($query) {
+        $result = Cache::remember($cacheKey, 60, function () use ($query) {
             $results = Article::query()
                 ->where('status', 'published')
                 ->where('published_at', '<=', now())
@@ -67,5 +67,7 @@ class SearchController extends Controller
                 'count' => $results->count(),
             ];
         });
+
+        return response()->json($result)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 }

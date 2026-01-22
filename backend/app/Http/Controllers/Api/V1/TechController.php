@@ -18,7 +18,7 @@ class TechController extends Controller
         $category = $request->get('category', 'all');
         $cacheKey = "tech.index.page_{$page}.cat_{$category}";
 
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($request) {
+        $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($request) {
             $query = Article::query()
                 ->where('status', 'published')
                 ->where('published_at', '<=', now())
@@ -40,6 +40,8 @@ class TechController extends Controller
                 $query->latest('published_at')->paginate(12)
             );
         });
+
+        return $resource->response()->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     /**
@@ -52,7 +54,7 @@ class TechController extends Controller
 
         $cacheKey = "tech.show.v2.{$slug}";
 
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($slug) {
+        $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($slug) {
             $article = Article::where('slug', $slug)
                 ->where('status', 'published')
                 ->whereHas('category', fn($q) => $q->where('type', 'tech'))
@@ -62,5 +64,7 @@ class TechController extends Controller
 
             return new ArticleResource($article);
         });
+
+        return $resource->response()->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 }

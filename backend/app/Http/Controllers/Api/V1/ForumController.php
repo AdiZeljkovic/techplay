@@ -16,19 +16,21 @@ class ForumController extends Controller
     public function stats()
     {
         // Cache stats for 5 minutes
-        return Cache::remember('forum.stats', 300, function () {
+        $stats = Cache::remember('forum.stats', 300, function () {
             return [
                 'total_threads' => Thread::count(),
                 'total_posts' => Post::count(),
                 'members' => \App\Models\User::count(),
             ];
         });
+
+        return response()->json($stats)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     public function categories()
     {
         // PERFORMANCE: Cache for 60 seconds
-        return Cache::remember('forum.categories', 60, function () {
+        $categories = Cache::remember('forum.categories', 60, function () {
             // Get all forum categories with thread counts
             $allForumCategories = Category::where('type', 'forum')
                 ->withCount('threads')
@@ -68,6 +70,8 @@ class ForumController extends Controller
 
             return $parents->values();
         });
+
+        return response()->json($categories)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     public function showCategory($slug)
@@ -98,7 +102,7 @@ class ForumController extends Controller
             ];
         });
 
-        return response()->json($data);
+        return response()->json($data)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     public function showThread($slug)
@@ -236,13 +240,15 @@ class ForumController extends Controller
     public function activeThreads()
     {
         // Cache for 60 seconds
-        return Cache::remember('forum.active_threads', 60, function () {
+        $threads = Cache::remember('forum.active_threads', 60, function () {
             return Thread::with(['author'])
                 ->withCount('posts')
                 ->orderByDesc('updated_at')
                 ->take(5)
                 ->get();
         });
+
+        return response()->json($threads)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
     public function upvote($slug)
     {

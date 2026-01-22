@@ -17,7 +17,7 @@ class GuideController extends Controller
         $search = $request->get('search', '');
         $cacheKey = "guides.index.v2.page_{$page}.diff_{$difficulty}.search_" . md5($search);
 
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 1800, function () use ($request, $search) {
+        $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, 1800, function () use ($request, $search) {
             $query = Guide::with('author:id,username,display_name,avatar_url');
 
             if ($request->has('difficulty') && $request->difficulty !== 'all') {
@@ -35,6 +35,8 @@ class GuideController extends Controller
 
             return $query->latest()->paginate(12);
         });
+
+        return response()->json($resource)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     public function show($slug)
@@ -66,7 +68,7 @@ class GuideController extends Controller
         return response()->json([
             'guide' => $guide,
             'user_vote' => $userVote
-        ]);
+        ], 200, ['Cache-Control' => 'no-cache, no-store, must-revalidate']);
     }
 
     public function vote(Request $request, $slug)
