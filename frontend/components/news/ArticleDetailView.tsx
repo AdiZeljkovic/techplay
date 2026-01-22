@@ -382,6 +382,16 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
 
 
             </div >
+
+            {/* Social Media Embed Scripts */}
+            <Script
+                src="https://platform.twitter.com/widgets.js"
+                strategy="lazyOnload"
+            />
+            <Script
+                src="//www.instagram.com/embed.js"
+                strategy="lazyOnload"
+            />
         </article >
     );
 }

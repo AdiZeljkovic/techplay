@@ -64,29 +64,29 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
     });
 
     // 2. Twitter/X: Convert x.com/user/status/ID or twitter.com/...
-    // Note: Twitter embeds usually require a script. For simplicity and performance, 
-    // we can use a blockquote fallback or a simple stylized link card if we don't want the heavy script. 
-    // OR, we can try to use standard twitter publish oembed... but that needs async fetch.
-    // Instead, let's use a "smart card" styling.
-    const twitterRegex = /(?:<p>)?\s*(?:https?:\/\/)?(?:www\.)?(?:twitter\.com|x\.com)\/(\w+)\/status\/(\d+)(?:\S*)?\s*(?:<\/p>)?/g;
+    // Uses official publish widget (needs platform.js in layout/component)
+    const twitterRegex = /(?:<p\b[^>]*>)?[\s\u00A0]*(?:https?:\/\/)?(?:www\.)?(?:twitter\.com|x\.com)\/(\w+)\/status\/(\d+)(?:\S*)?[\s\u00A0]*(?:<\/p>)?/g;
     processedContent = processedContent.replace(twitterRegex, (match, user, id) => {
-        return `
-            <div class="my-6 p-4 border border-[var(--border)] rounded-xl bg-[var(--bg-card)] max-w-lg mx-auto">
-                <div class="flex items-center gap-3 mb-2">
-                    <div class="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                    </div>
-                    <div class="text-sm font-bold text-[var(--text-primary)]">@${user}</div>
-                </div>
-                <div class="text-[var(--text-primary)] mb-2">
-                    <a href="${match.replace(/<[^>]*>/g, '').trim()}" target="_blank" class="hover:underline">View Tweet on X</a>
-                </div>
-            </div>
-         `;
+        return `<div class="flex justify-center my-6"><blockquote class="twitter-tweet" data-dnt="true" data-theme="dark"><a href="https://twitter.com/${user}/status/${id}?ref_src=twsrc%5Etfw">Loading Tweet...</a></blockquote></div>`;
     });
 
-    // Facebook posts are harder without an API token effectively. 
-    // We just ensure they are clickable links for now.
+    // 3. Instagram: Convert instagram.com/p/ID or reel/ID
+    // Uses official embed.js
+    const instagramRegex = /(?:<p\b[^>]*>)?[\s\u00A0]*(?:https?:\/\/)?(?:www\.)?instagram\.com\/(?:p|reel)\/([a-zA-Z0-9_-]+)(?:\S*)?[\s\u00A0]*(?:<\/p>)?/g;
+    processedContent = processedContent.replace(instagramRegex, (match, id) => {
+        return `<div class="flex justify-center my-6"><blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/${id}/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style=" background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"></blockquote></div>`;
+    });
+
+    // 4. Facebook: Convert facebook.com/*/posts/* and permalinks
+    // Uses iframe method for simplicity (no script required mostly, or works with standard SDK)
+    // Supports: facebook.com/page/posts/id, facebook.com/permalink.php?story_fbid=id&id=id
+    // This is tricky because FB URLs vary wildly. We'll target standard post patterns.
+    // For simplicity, we can use the "plugins/post.php" iframe which takes the full URL as href.
+    const facebookRegex = /(?:<p\b[^>]*>)?[\s\u00A0]*(https?:\/\/(?:www\.|web\.|m\.)?facebook\.com\/(?:[^/]+\/posts\/[^/?]+|permalink\.php\?[^"<\s]+|[^/]+\/videos\/[^/?]+|watch\/\?v=\d+))[\s\u00A0]*(?:<\/p>)?/g;
+    processedContent = processedContent.replace(facebookRegex, (match, url) => {
+        const encodedUrl = encodeURIComponent(url);
+        return `<div class="flex justify-center my-6"><iframe src="https://www.facebook.com/plugins/post.php?href=${encodedUrl}&show_text=true&width=500" width="500" height="600" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe></div>`;
+    });
 
     return { content: processedContent, toc };
 }
