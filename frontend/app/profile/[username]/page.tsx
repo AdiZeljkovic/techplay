@@ -76,6 +76,17 @@ interface UserProfile {
         unlocked_at?: string;
     }[];
     next_rank: any;
+    recent_articles?: {
+        id: number;
+        title: string;
+        slug: string;
+        type: string;
+        featured_image?: string;
+        excerpt?: string;
+        published_at: string;
+        views: number;
+    }[];
+    is_staff?: boolean;
 }
 
 import { SendMessageModal } from "@/components/messaging/SendMessageModal";
@@ -360,31 +371,88 @@ export default function ProfilePage() {
 
                         {/* Main Feed */}
                         <div className="md:col-span-2 space-y-6">
-                            {/* Recent Activity */}
-                            <h3 className="font-bold text-xl text-[var(--text-primary)]">Recent Activity</h3>
+                            {/* Recent Activity - Different for Staff vs Regular Users */}
+                            <h3 className="font-bold text-xl text-[var(--text-primary)]">
+                                {profile.is_staff ? 'Published Articles' : 'Recent Activity'}
+                            </h3>
 
-                            <div className="flex flex-col gap-4">
-                                {userData.posts?.slice(0, 5).map((post: any) => (
-                                    <div key={post.id} className="p-4 bg-[var(--bg-card)] rounded-xl border border-[var(--border)] hover:border-[var(--accent)] transition-all">
-                                        <div className="flex items-start gap-3">
-                                            <MessageSquare className="w-5 h-5 text-[var(--text-muted)] mt-1" />
-                                            <div>
-                                                <p className="text-[var(--text-primary)] text-sm line-clamp-3">
-                                                    "{post.content?.replace(/<[^>]*>?/gm, '').substring(0, 150)}..."
-                                                </p>
-                                                <div className="mt-2 text-xs text-[var(--text-muted)]">
-                                                    Replied to a thread • {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                            {/* Staff: Show Articles Grid */}
+                            {profile.is_staff && profile.recent_articles && profile.recent_articles.length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {profile.recent_articles.map((article: any) => (
+                                        <Link
+                                            key={article.id}
+                                            href={`/${article.type === 'review' ? 'reviews' : article.type === 'news' ? 'news' : 'guides'}/${article.slug}`}
+                                            className="group"
+                                        >
+                                            <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border)] overflow-hidden hover:border-[var(--accent)] transition-all hover:shadow-lg hover:shadow-[var(--accent)]/10">
+                                                {article.featured_image && (
+                                                    <div className="aspect-video relative overflow-hidden">
+                                                        <img
+                                                            src={article.featured_image}
+                                                            alt={article.title}
+                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                        />
+                                                        <div className="absolute top-2 left-2">
+                                                            <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${article.type === 'review' ? 'bg-purple-500/90 text-white' :
+                                                                    article.type === 'news' ? 'bg-blue-500/90 text-white' :
+                                                                        'bg-emerald-500/90 text-white'
+                                                                }`}>
+                                                                {article.type}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <div className="p-4">
+                                                    <h4 className="font-semibold text-[var(--text-primary)] line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                                                        {article.title}
+                                                    </h4>
+                                                    {article.excerpt && (
+                                                        <p className="text-sm text-[var(--text-muted)] mt-2 line-clamp-2">
+                                                            {article.excerpt}
+                                                        </p>
+                                                    )}
+                                                    <div className="flex items-center justify-between mt-3 text-xs text-[var(--text-muted)]">
+                                                        <span>{formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}</span>
+                                                        <span className="flex items-center gap-1">
+                                                            <Eye className="w-3 h-3" />
+                                                            {article.views?.toLocaleString() || 0}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            ) : profile.is_staff ? (
+                                <div className="p-8 text-center border border-dashed border-[var(--border)] rounded-xl text-[var(--text-muted)]">
+                                    No published articles yet.
+                                </div>
+                            ) : (
+                                /* Regular Users: Show Forum Posts */
+                                <div className="flex flex-col gap-4">
+                                    {userData.posts?.slice(0, 5).map((post: any) => (
+                                        <div key={post.id} className="p-4 bg-[var(--bg-card)] rounded-xl border border-[var(--border)] hover:border-[var(--accent)] transition-all">
+                                            <div className="flex items-start gap-3">
+                                                <MessageSquare className="w-5 h-5 text-[var(--text-muted)] mt-1" />
+                                                <div>
+                                                    <p className="text-[var(--text-primary)] text-sm line-clamp-3">
+                                                        "{post.content?.replace(/<[^>]*>?/gm, '').substring(0, 150)}..."
+                                                    </p>
+                                                    <div className="mt-2 text-xs text-[var(--text-muted)]">
+                                                        Replied to a thread • {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
-                                {(!userData.posts || userData.posts.length === 0) && (
-                                    <div className="p-8 text-center border dashed border-[var(--border)] rounded-xl text-[var(--text-muted)]">
-                                        No recent activity.
-                                    </div>
-                                )}
-                            </div>
+                                    ))}
+                                    {(!userData.posts || userData.posts.length === 0) && (
+                                        <div className="p-8 text-center border border-dashed border-[var(--border)] rounded-xl text-[var(--text-muted)]">
+                                            No recent activity.
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

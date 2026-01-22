@@ -157,6 +157,9 @@ class AuthController extends Controller
             ->with(['rank', 'activeSupport.tier', 'threads', 'posts'])
             ->firstOrFail();
 
+        // Check if user is staff (admin, editor, moderator, journalist)
+        $isStaff = $user->hasRole(['admin', 'Admin', 'Super Admin', 'editor', 'Editor', 'Editor-in-Chief', 'moderator', 'Moderator', 'Journalist']);
+
         // Fetch recent threads (only public data)
         $recentThreads = $user->threads()
             ->with('category:id,slug,name')
@@ -170,6 +173,16 @@ class AuthController extends Controller
             ->latest()
             ->take(5)
             ->get(['id', 'content', 'created_at', 'commentable_type', 'commentable_id']);
+
+        // Fetch recent articles for STAFF users
+        $recentArticles = [];
+        if ($isStaff) {
+            $recentArticles = $user->articles()
+                ->where('status', 'published')
+                ->latest('published_at')
+                ->take(6)
+                ->get(['id', 'title', 'slug', 'type', 'featured_image', 'excerpt', 'published_at', 'views']);
+        }
 
         // Fetch ALL achievements and mark which ones user has unlocked
         $userUnlockedIds = $user->achievements()->pluck('achievements.id')->toArray();
@@ -206,6 +219,7 @@ class AuthController extends Controller
             'achievements_count' => $unlockedCount,
             'level' => floor(($user->xp ?? 0) / 1000) + 1,
             'xp' => $user->xp ?? 0,
+            'reviews_count' => $isStaff ? $user->articles()->where('status', 'published')->count() : 0,
         ];
 
         return response()->json([
@@ -217,6 +231,8 @@ class AuthController extends Controller
             ] : null,
             'recent_threads' => $recentThreads,
             'recent_comments' => $recentComments,
+            'recent_articles' => $recentArticles, // For staff profiles
+            'is_staff' => $isStaff,
             'stats' => $stats
         ]);
     }
