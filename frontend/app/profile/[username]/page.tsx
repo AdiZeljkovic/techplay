@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
-import { User, UserPlus, UserCheck, Clock, MessageSquare, Award, Calendar, Gamepad2, Cpu, Trophy, Activity, Mail } from "lucide-react";
+import { User, UserPlus, UserCheck, Clock, MessageSquare, Award, Calendar, Gamepad2, Cpu, Trophy, Activity, Mail, Shield, ShieldCheck, Crown, Pen, Eye } from "lucide-react";
 import { useState } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 import { GamertagsCard } from "@/components/profile/GamertagsCard";
@@ -192,14 +192,25 @@ export default function ProfilePage() {
                                         </div>
 
                                         {/* Staff Role Badge */}
-                                        {['admin', 'moderator', 'editor'].includes(userData.role) && (
-                                            <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase border ml-2 self-center ${userData.role === 'admin' ? 'text-red-500 border-red-500/30 bg-red-500/10' :
-                                                    userData.role === 'moderator' ? 'text-blue-500 border-blue-500/30 bg-blue-500/10' :
-                                                        'text-green-500 border-green-500/30 bg-green-500/10'
-                                                }`}>
-                                                {userData.role}
-                                            </span>
-                                        )}
+                                        {(() => {
+                                            const roleConfig: Record<string, { color: string; bg: string; border: string; icon: any; label: string }> = {
+                                                'admin': { color: 'text-red-400', bg: 'bg-red-500/15', border: 'border-red-500/40', icon: Crown, label: 'Admin' },
+                                                'super_admin': { color: 'text-red-400', bg: 'bg-red-500/15', border: 'border-red-500/40', icon: Crown, label: 'Super Admin' },
+                                                'editor-in-chief': { color: 'text-orange-400', bg: 'bg-orange-500/15', border: 'border-orange-500/40', icon: Crown, label: 'Editor-in-Chief' },
+                                                'editor': { color: 'text-amber-400', bg: 'bg-amber-500/15', border: 'border-amber-500/40', icon: Pen, label: 'Editor' },
+                                                'moderator': { color: 'text-blue-400', bg: 'bg-blue-500/15', border: 'border-blue-500/40', icon: ShieldCheck, label: 'Moderator' },
+                                                'journalist': { color: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/40', icon: Pen, label: 'Journalist' },
+                                            };
+                                            const config = roleConfig[userData.role?.toLowerCase()];
+                                            if (!config) return null;
+                                            const IconComponent = config.icon;
+                                            return (
+                                                <span className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border flex items-center gap-1.5 shadow-lg backdrop-blur-sm ${config.color} ${config.bg} ${config.border}`}>
+                                                    <IconComponent className="w-3.5 h-3.5" />
+                                                    {config.label}
+                                                </span>
+                                            );
+                                        })()}
 
                                         {/* Removed Rank Badge "AFK" here. Ranks will be in stats or sidebar */}
 
