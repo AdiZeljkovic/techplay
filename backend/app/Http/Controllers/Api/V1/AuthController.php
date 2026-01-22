@@ -175,15 +175,12 @@ class AuthController extends Controller
             ->take(5)
             ->get(['id', 'content', 'created_at', 'commentable_type', 'commentable_id']);
 
-        // Fetch recent articles for STAFF users
-        $recentArticles = [];
-        if ($isStaff) {
-            $recentArticles = $user->articles()
-                ->where('status', 'published')
-                ->latest('published_at')
-                ->take(6)
-                ->get(['id', 'title', 'slug', 'type', 'featured_image', 'excerpt', 'published_at', 'views']);
-        }
+        // Fetch recent articles (always fetch - frontend decides if to display based on role)
+        $recentArticles = $user->articles()
+            ->where('status', 'published')
+            ->latest('published_at')
+            ->take(6)
+            ->get(['id', 'title', 'slug', 'type', 'featured_image', 'excerpt', 'published_at', 'views']);
 
         // Fetch ALL achievements and mark which ones user has unlocked
         $userUnlockedIds = $user->achievements()->pluck('achievements.id')->toArray();
