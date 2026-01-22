@@ -362,9 +362,9 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
 
                         <div className="sticky top-24 space-y-8">
                             {toc.length > 0 && (
-                                <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6 shadow-lg">
-                                    <h4 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider mb-4 flex items-center gap-2">
-                                        <div className="w-1 h-4 bg-[var(--accent)] rounded-full" />
+                                <div className="mb-8 pl-2">
+                                    <h4 className="flex items-center gap-3 text-sm font-bold text-white uppercase tracking-wider mb-4">
+                                        <div className="w-1.5 h-6 bg-[#ff4500]" />
                                         On this page
                                     </h4>
                                     <TableOfContents items={toc} />

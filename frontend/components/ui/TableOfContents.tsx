@@ -34,9 +34,9 @@ export default function TableOfContents({ items }: TableOfContentsProps) {
     if (items.length < 2) return null;
 
     return (
-        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-5 sticky top-24">
-            <h3 className="font-semibold text-[var(--text-primary)] mb-4">Table of Contents</h3>
-            <nav className="flex flex-col space-y-1">
+        <div className="bg-[#0f172a] border border-blue-800/30 rounded-2xl p-6 shadow-lg backdrop-blur-sm">
+            <h3 className="font-bold text-lg text-white mb-4">Table of Contents</h3>
+            <nav className="flex flex-col space-y-2">
                 {items.map((item) => (
                     <a
                         key={item.id}
@@ -48,14 +48,14 @@ export default function TableOfContents({ items }: TableOfContentsProps) {
                             });
                         }}
                         className={cn(
-                            "text-sm py-1 transition-colors border-l-2 pl-3",
-                            item.level === 3 ? "ml-3" : "",
+                            "text-sm py-1 transition-colors block",
+                            item.level === 3 ? "pl-4" : "",
                             activeId === item.id
-                                ? "border-[var(--accent)] text-[var(--accent)] font-medium"
-                                : "border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border)]"
+                                ? "text-[var(--accent)] font-bold"
+                                : "text-gray-300 hover:text-white"
                         )}
                     >
-                        {item.text}
+                        {item.text.replace(/&quot;/g, '"')}
                     </a>
                 ))}
             </nav>
