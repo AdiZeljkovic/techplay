@@ -21,7 +21,7 @@ class UserResource extends JsonResource
             'display_name' => $this->display_name,
             'avatar_url' => $this->avatar_url,
             'bio' => $this->bio,
-            'email' => $this->getRawOriginal('email'), // Bypass $hidden for authenticated user's own settings
+            'email' => $this->resource->getAttributes()['email'] ?? null, // Direct access bypassing $hidden
             'rank' => $this->whenLoaded('rank', function () {
                 return [
                     'id' => $this->rank->id,
