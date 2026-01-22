@@ -15,6 +15,9 @@ export default function SettingsPage() {
     const { user, isLoading, logout } = useAuth({ middleware: 'auth' });
     const router = useRouter();
 
+    // DEBUG: Log user object to see if email is present
+    console.log('Settings Page - User object:', user);
+
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState<'bio' | 'ids' | 'specs' | 'security'>('bio');
     const [showSuccessModal, setShowSuccessModal] = useState(false);
