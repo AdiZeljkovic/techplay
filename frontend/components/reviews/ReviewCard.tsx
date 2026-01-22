@@ -10,9 +10,10 @@ interface ReviewCardProps {
     review: Review;
     index: number;
     basePath?: string; // Default: /reviews, but can be /hardware, /tech, etc.
+    hideRating?: boolean;
 }
 
-export default function ReviewCard({ review, index, basePath = "/reviews" }: ReviewCardProps) {
+export default function ReviewCard({ review, index, basePath = "/reviews", hideRating = false }: ReviewCardProps) {
     // Use review_score (new system) with fallback to rating (legacy)
     const score = review.review_score ?? review.rating ?? 0;
     const ratingColor = score >= 8 ? "text-green-500" : score >= 6 ? "text-yellow-500" : "text-red-500";
@@ -42,10 +43,12 @@ export default function ReviewCard({ review, index, basePath = "/reviews" }: Rev
                         <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-light)] to-[var(--bg-elevated)]" />
                     )}
 
-                    {/* Score Badge */}
-                    <div className={`absolute top-3 right-3 w-12 h-12 rounded-full ${ratingBg} backdrop-blur-md border border-[var(--border)] flex items-center justify-center`}>
-                        <span className={`text-lg font-bold ${ratingColor}`}>{score}</span>
-                    </div>
+                    {/* Score Badge - Hidden if hideRating is true */}
+                    {!hideRating && (
+                        <div className={`absolute top-3 right-3 w-12 h-12 rounded-full ${ratingBg} backdrop-blur-md border border-[var(--border)] flex items-center justify-center`}>
+                            <span className={`text-lg font-bold ${ratingColor}`}>{score}</span>
+                        </div>
+                    )}
 
                     {/* Category Badge */}
                     <div className="absolute bottom-3 left-3">
@@ -56,7 +59,7 @@ export default function ReviewCard({ review, index, basePath = "/reviews" }: Rev
                 </div>
 
                 {/* Content */}
-                <div className="p-5 flex flex-col">
+                <div className="p-5 flex flex-col h-[calc(100%-12rem)]">
                     {review.review_data?.game_title && (
                         <p className="text-sm font-medium text-[var(--accent)] mb-1">{review.review_data.game_title}</p>
                     )}
@@ -69,16 +72,18 @@ export default function ReviewCard({ review, index, basePath = "/reviews" }: Rev
                         {review.excerpt || review.summary || "Read our full review for the verdict."}
                     </p>
 
-                    {/* Star Rating */}
-                    <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, i) => (
-                            <Star
-                                key={i}
-                                className={`w-4 h-4 ${i < Math.round(score / 2) ? "text-yellow-400 fill-yellow-400" : "text-[var(--text-muted)]"}`}
-                            />
-                        ))}
-                        <span className="text-sm text-[var(--text-muted)] ml-2">{score}</span>
-                    </div>
+                    {/* Star Rating - Hidden if hideRating is true */}
+                    {!hideRating && (
+                        <div className="flex items-center gap-1 mt-auto">
+                            {[...Array(5)].map((_, i) => (
+                                <Star
+                                    key={i}
+                                    className={`w-4 h-4 ${i < Math.round(score / 2) ? "text-yellow-400 fill-yellow-400" : "text-[var(--text-muted)]"}`}
+                                />
+                            ))}
+                            <span className="text-sm text-[var(--text-muted)] ml-2">{score}</span>
+                        </div>
+                    )}
                 </div>
             </motion.article>
         </Link>
