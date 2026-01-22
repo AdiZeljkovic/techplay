@@ -60,20 +60,9 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
         ? article.featured_image_url
         : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${article.featured_image_url}`;
 
-    // Sanitize content
-    const sanitizedContent = useMemo(() => {
-        if (typeof window === 'undefined') return processedContent; // Server/Hydration mismatch avoidance if using simple dompurify
-        // Actually isomorphic-dompurify works on server too.
-        // But let's just use it directly in render.
-        return processedContent;
-    }, [processedContent]);
-
-    // Using isomorphic-dompurify inside render or memo
-    // Configure DOMPurify to allow iframes for embeds (YouTube, etc.)
-    const safeContent = DOMPurify.sanitize(processedContent, {
-        ADD_TAGS: ['iframe'],
-        ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height', 'title', 'class', 'style']
-    });
+    // NOTE: We trust backend-sanitized content and our own processContent transformations
+    // DOMPurify was stripping iframe embeds even with ADD_TAGS config
+    const safeContent = processedContent;
 
     return (
         <article className="min-h-screen bg-[var(--bg-primary)] pb-20">
