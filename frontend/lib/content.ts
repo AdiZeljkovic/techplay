@@ -53,14 +53,14 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
     const youtubeAnchorRegex = /(?:<p\b[^>]*>)?[\s\u00A0]*<a\b[^>]*?\bhref\s*=\s*["']https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})[^"']*["'][^>]*>[\s\S]*?<\/a>[\s\u00A0]*(?:<\/p>)?/gi;
     processedContent = processedContent.replace(youtubeAnchorRegex, (match, videoId) => {
         console.log('YouTube match found, videoId:', videoId); // Debug
-        return `<div class="aspect-video w-full rounded-xl overflow-hidden shadow-lg bg-black"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+        return `<div class="relative w-full pb-[56.25%] h-0 rounded-xl overflow-hidden shadow-lg"><iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
     });
 
     // Also handle plain text YouTube URLs (not wrapped in anchor)
     const youtubeTextRegex = /(?:<p\b[^>]*>)?[\s\u00A0]*(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})[^\s<]*)\s*(?:<\/p>)?/g;
     processedContent = processedContent.replace(youtubeTextRegex, (match, fullUrl, videoId) => {
         console.log('YouTube text match, videoId:', videoId); // Debug
-        return `<div class="aspect-video w-full rounded-xl overflow-hidden shadow-lg bg-black"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+        return `<div class="relative w-full pb-[56.25%] h-0 rounded-xl overflow-hidden shadow-lg"><iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
     });
 
     // 2. Twitter/X: Convert x.com/user/status/ID or twitter.com/...
