@@ -110,7 +110,7 @@ class ForumController extends Controller
         $thread = Thread::where('slug', $slug)
             ->with([
                 'author' => function ($q) {
-                    $q->withCount('posts')->with('rank');
+                    $q->withCount('posts')->with(['rank', 'roles']);
                 },
                 'category'
             ])
@@ -131,14 +131,14 @@ class ForumController extends Controller
         $posts = $thread->posts()
             ->with([
                 'author' => function ($q) {
-                    $q->withCount('posts')->with('rank');
+                    $q->withCount('posts')->with(['rank', 'roles']);
                 }
             ])
             ->paginate(15);
 
         return response()->json([
-            'thread' => $thread,
-            'posts' => $posts
+            'thread' => new \App\Http\Resources\V1\ThreadResource($thread),
+            'posts' => \App\Http\Resources\V1\PostResource::collection($posts)
         ]);
     }
 
@@ -186,16 +186,15 @@ class ForumController extends Controller
             // Clear thread cache
             Cache::forget("forum.thread.{$slug}");
 
-            $post->load('author.rank');
+            $post->load('author.rank'); // Ensure rank loaded, posts_count might be missing on new post but can default to 1?
+
+            // Reload author to get post count properly if needed, but for performance, we can skip or reload count.
+            // Actually, newly created post author has at least 1 post now. 
+            // Better to load posts_count too.
+            $post->author->loadCount('posts');
 
             // Return simplified response to avoid serialization issues
-            return response()->json([
-                'id' => $post->id,
-                'content' => $post->content,
-                'author' => $post->author,
-                'created_at' => $post->created_at,
-                'is_solution' => $post->is_solution,
-            ], 201);
+            return new \App\Http\Resources\V1\PostResource($post);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Failed to create post: ' . $e->getMessage());
             // Fallback logging
