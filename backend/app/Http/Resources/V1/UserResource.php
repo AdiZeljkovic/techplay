@@ -21,7 +21,7 @@ class UserResource extends JsonResource
             'display_name' => $this->display_name,
             'avatar_url' => $this->avatar_url,
             'bio' => $this->bio,
-            'email' => $this->resource->getAttributes()['email'] ?? null, // Direct access bypassing $hidden
+            'email' => $this->email,
             'rank' => $this->whenLoaded('rank', function () {
                 return [
                     'id' => $this->rank->id,

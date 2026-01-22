@@ -59,7 +59,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
-        'email',                    // Don't expose email publicly
+        // 'email' removed - needed for authenticated user's own settings page
         'email_verified_at',        // Internal
         'two_factor_secret',        // Security
         'two_factor_recovery_codes',// Security
