@@ -157,8 +157,9 @@ class AuthController extends Controller
             ->with(['rank', 'activeSupport.tier', 'threads', 'posts'])
             ->firstOrFail();
 
-        // Check if user is staff (admin, editor, moderator, journalist)
-        $isStaff = $user->hasRole(['admin', 'Admin', 'Super Admin', 'editor', 'Editor', 'Editor-in-Chief', 'moderator', 'Moderator', 'Journalist']);
+        // Check if user is staff (admin, editor, moderator, journalist) - check BOTH Spatie AND DB column
+        $isStaff = $user->hasRole(['admin', 'Admin', 'Super Admin', 'editor', 'Editor', 'Editor-in-Chief', 'moderator', 'Moderator', 'Journalist'])
+            || in_array(strtolower($user->role ?? ''), ['admin', 'editor', 'moderator', 'journalist', 'super_admin']);
 
         // Fetch recent threads (only public data)
         $recentThreads = $user->threads()
