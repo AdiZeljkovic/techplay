@@ -23,9 +23,19 @@ export default function ReviewsCategoryView({ categorySlug }: ReviewsCategoryVie
     const [page, setPage] = useState(1);
 
     // Use the backend ID for fetching
+    // Use the backend ID for fetching, default to 'all' if latest
+    const categoryParam = (category.slug === 'latest' || category.slug === 'all')
+        ? 'all'
+        : category.slug; // Use slug instead of ID because backend checks slug? Or stick to ID if that's what works elsewhere. 
+    // Actually, checking previous code behavior:
+    // Code sent category.id. If 'reviews-aaa-titles' is ID, and DB slug is 'aaa-titles', sending ID would fail if backend checks slug='reviews-aaa-titles'.
+    // Assuming DB slugs match the 'slug' field in consts, NOT 'id'.
+    // Safe bet: Use category.slug for filtering (unless it's 'latest' -> 'all').
+
     const queryParams = new URLSearchParams({
         page: page.toString(),
-        category: category.id
+        category: categoryParam,
+        per_page: '12'
     });
 
     const { data, isLoading, isValidating } = useSWR<PaginatedResponse<Review>>(
