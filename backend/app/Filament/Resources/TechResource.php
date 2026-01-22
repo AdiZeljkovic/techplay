@@ -121,6 +121,7 @@ class TechResource extends Resource
                                 RichEditor::make('content')
                                     ->label('')
                                     ->placeholder('Start writing your tech article...')
+                                    ->helperText('To embed media, paste the URL or use the attach/video button.')
                                     ->required()
                                     ->toolbarButtons([
                                         'attachFiles',
@@ -142,6 +143,7 @@ class TechResource extends Resource
                                         'alignCenter',
                                         'alignEnd',
                                         'alignJustify',
+                                        'video', // Added video button
                                     ])
                                     ->fileAttachmentsDisk('public')
                                     ->fileAttachmentsDirectory('articles'),

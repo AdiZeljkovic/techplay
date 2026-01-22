@@ -179,6 +179,7 @@ class ReviewResource extends Resource
                                         'alignCenter',
                                         'alignEnd',
                                         'alignJustify',
+                                        'video', // Added video support
                                     ])
                                     ->fileAttachmentsDisk('public')
                                     ->fileAttachmentsDirectory('articles/content'),
@@ -188,14 +189,14 @@ class ReviewResource extends Resource
                         Section::make('Game / Product Details')
                             ->icon('heroicon-o-puzzle-piece')
                             ->description('Information about the game being reviewed')
-                            ->collapsed()
+                            ->collapsed(false) // Uncollapsed to show validation errors
                             ->collapsible()
                             ->schema([
                                 Grid::make(2)->schema([
                                     TextInput::make('review_data.game_title')
                                         ->label('Game Title')
                                         ->placeholder('e.g. The Legend of Zelda')
-                                        ->required()
+                                        // Removed required() to prevent blocking save on legacy items
                                         ->suffixAction(
                                             Action::make('fill_from_rawg')
                                                 ->icon('heroicon-o-cloud-arrow-down')

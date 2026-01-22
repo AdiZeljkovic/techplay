@@ -113,6 +113,7 @@ class GuideResource extends Resource
                                 RichEditor::make('content')
                                     ->label('')
                                     ->placeholder('Start writing your guide...')
+                                    ->helperText('To embed YouTube, paste the video URL. If it does not auto-embed, try using the "Source Code" block (if enabled) or attach media.')
                                     ->required()
                                     ->toolbarButtons([
                                         'attachFiles',
@@ -134,6 +135,7 @@ class GuideResource extends Resource
                                         'alignCenter',
                                         'alignEnd',
                                         'alignJustify',
+                                        'video', // Added video button
                                     ])
                                     ->fileAttachmentsDisk('public')
                                     ->fileAttachmentsDirectory('guides/content'),
@@ -143,7 +145,7 @@ class GuideResource extends Resource
                         Section::make('Step-by-Step Instructions')
                             ->icon('heroicon-o-list-bullet')
                             ->description('Add structured steps with optional images')
-                            ->collapsed()
+                            ->collapsed(false) // Uncollapsed to ensure validation visibility
                             ->collapsible()
                             ->schema([
                                 Repeater::make('steps')

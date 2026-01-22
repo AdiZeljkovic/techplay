@@ -116,6 +116,7 @@ class NewsResource extends Resource
                                 Forms\Components\RichEditor::make('content')
                                     ->label('')
                                     ->placeholder('Start writing your story...')
+                                    ->helperText('To embed media, paste the URL or use the attach/video button.')
                                     ->required()
                                     ->toolbarButtons([
                                         'attachFiles',
@@ -137,6 +138,7 @@ class NewsResource extends Resource
                                         'alignCenter',
                                         'alignEnd',
                                         'alignJustify',
+                                        'video', // Added video button
                                     ])
                                     ->fileAttachmentsDisk('public')
                                     ->fileAttachmentsDirectory('articles/content'),
