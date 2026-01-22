@@ -29,6 +29,7 @@ class PublicUserResource extends JsonResource
             'rank' => $this->whenLoaded('rank', function () {
                 return [
                     'name' => $this->rank->name,
+                    'min_xp' => $this->rank->min_xp,
                     'color' => $this->rank->color,
                     'icon' => $this->rank->icon,
                 ];

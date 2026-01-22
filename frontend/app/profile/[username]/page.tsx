@@ -137,10 +137,17 @@ export default function ProfilePage() {
     const isOwnProfile = currentUser?.username === userData.username;
 
     // XP Logic
+    // XP Logic (Rank Based)
     const currentXP = stats?.xp || 0;
-    const level = stats?.level || 1;
-    const xpForNextLevel = level * 1000; // Simplified
-    const xpProgress = (currentXP % 1000) / 10; // % of 1000
+    const currentRankMinXP = userData.rank?.min_xp || 0;
+    const nextRankMinXP = profile.next_rank?.min_xp || (currentRankMinXP + 1000); // Fallback if max rank
+
+    // Calculate progress within the current rank tier
+    const rankSpan = nextRankMinXP - currentRankMinXP;
+    const progressInRank = Math.max(0, currentXP - currentRankMinXP);
+    const xpProgress = Math.min(100, (progressInRank / rankSpan) * 100);
+
+    const nextRankName = profile.next_rank?.name || 'Next Rank';
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
@@ -239,7 +246,8 @@ export default function ProfilePage() {
                             <div className="mt-6 max-w-xl">
                                 <div className="flex justify-between text-xs font-semibold text-[var(--text-secondary)] mb-1 uppercase tracking-wider">
                                     <span>XP {currentXP}</span>
-                                    <span>Next Level: {xpForNextLevel} XP</span>
+                                    <span>XP {currentXP}</span>
+                                    <span>Next Rank: {nextRankMinXP} XP</span>
                                 </div>
                                 <div className="h-3 bg-[var(--bg-elevated)] rounded-full overflow-hidden border border-[var(--border)] relative">
                                     <motion.div
