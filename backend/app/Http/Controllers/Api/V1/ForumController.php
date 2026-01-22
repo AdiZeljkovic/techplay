@@ -110,8 +110,7 @@ class ForumController extends Controller
         $thread = Thread::where('slug', $slug)
             ->with([
                 'author' => function ($q) {
-                    $q->withCount(['posts', 'threads'])
-                        ->with(['rank', 'roles']);
+                    $q->with(['rank', 'roles']);
                 },
                 'category'
             ])
@@ -129,14 +128,24 @@ class ForumController extends Controller
                 ->exists()
             : false;
 
+        if ($thread->author) {
+            $thread->author->loadCount(['posts', 'threads']);
+        }
+
         $posts = $thread->posts()
             ->with([
                 'author' => function ($q) {
-                    $q->withCount(['posts', 'threads'])
-                        ->with(['rank', 'roles']);
+                    $q->with(['rank', 'roles']);
                 }
             ])
             ->paginate(15);
+
+        // Manually load counts to ensure accuracy
+        $posts->getCollection()->each(function ($post) {
+            if ($post->author) {
+                $post->author->loadCount(['posts', 'threads']);
+            }
+        });
 
         return response()->json([
             'thread' => new \App\Http\Resources\V1\ThreadResource($thread),
