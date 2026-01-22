@@ -86,7 +86,13 @@ class ArticleObserver
         $slug = $article->slug;
         $categoryType = $article->category?->type ?? 'news';
 
-        // Clear specific article cache
+        // Clear specific article cache (both v2 and legacy keys)
+        Cache::forget("news.show.v2.{$slug}");
+        Cache::forget("reviews.show.v2.{$slug}");
+        Cache::forget("tech.show.v2.{$slug}");
+        Cache::forget("guide.show.v2.{$slug}");
+
+        // Also clear legacy keys just in case
         Cache::forget("news.show.{$slug}");
         Cache::forget("reviews.show.{$slug}");
         Cache::forget("tech.show.{$slug}");
@@ -94,6 +100,12 @@ class ArticleObserver
 
         // Clear listing caches (first few pages are most important)
         for ($page = 1; $page <= 5; $page++) {
+            // v2 keys
+            Cache::forget("news.index.v2.page_{$page}.cat_all");
+            Cache::forget("reviews.index.v2.page_{$page}.cat_all");
+            Cache::forget("tech.index.v2.page_{$page}.cat_all");
+
+            // Legacy keys
             Cache::forget("news.index.page_{$page}.cat_all");
             Cache::forget("reviews.index.page_{$page}.cat_all");
             Cache::forget("tech.index.page_{$page}.cat_all");
@@ -101,6 +113,10 @@ class ArticleObserver
             // Also clear category-specific caches if we know the category
             if ($article->category) {
                 $catSlug = $article->category->slug;
+                Cache::forget("news.index.v2.page_{$page}.cat_{$catSlug}");
+                Cache::forget("reviews.index.v2.page_{$page}.cat_{$catSlug}");
+                Cache::forget("tech.index.v2.page_{$page}.cat_{$catSlug}");
+
                 Cache::forget("news.index.page_{$page}.cat_{$catSlug}");
                 Cache::forget("reviews.index.page_{$page}.cat_{$catSlug}");
                 Cache::forget("tech.index.page_{$page}.cat_{$catSlug}");
