@@ -309,18 +309,6 @@ class ReviewResource extends Resource
                                         ->live()
                                         ->afterStateUpdated($calculateScore),
                                 ]),
-
-                                Select::make('review_data.cta')
-                                    ->label('Recommendation')
-                                    ->options([
-                                        'must_play' => '🏆 Must Play',
-                                        'recommended' => '👍 Recommended',
-                                        'wait_sale' => '⏳ Wait for Sale',
-                                        'skip' => '👎 Skip It',
-                                        'none' => 'No Verdict',
-                                    ])
-                                    ->default('none')
-                                    ->native(false),
                             ]),
 
                         // VERDICT - Collapsible
@@ -345,6 +333,18 @@ class ReviewResource extends Resource
                                     ->label('Final Verdict')
                                     ->placeholder('Sum up your thoughts in 2-3 sentences...')
                                     ->rows(3),
+
+                                Select::make('review_data.cta')
+                                    ->label('Recommendation')
+                                    ->options([
+                                        'must_play' => '🏆 Must Play',
+                                        'recommended' => '👍 Recommended',
+                                        'wait_sale' => '⏳ Wait for Sale',
+                                        'skip' => '👎 Skip It',
+                                        'none' => 'No Verdict',
+                                    ])
+                                    ->default('none')
+                                    ->native(false),
                             ]),
                     ])
                     ->columnSpan(['default' => 1, 'lg' => 2]), // Explicit Span
