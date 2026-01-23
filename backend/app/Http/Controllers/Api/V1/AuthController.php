@@ -180,7 +180,19 @@ class AuthController extends Controller
             ->where('status', 'published')
             ->latest('published_at')
             ->take(6)
-            ->get(['id', 'title', 'slug', 'type', 'featured_image', 'excerpt', 'published_at', 'views']);
+            ->get(['id', 'title', 'slug', 'featured_image_url', 'excerpt', 'published_at', 'views'])
+            ->map(function ($article) {
+                return [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                    'slug' => $article->slug,
+                    'type' => 'news',
+                    'featured_image' => $article->featured_image_url,
+                    'excerpt' => $article->excerpt,
+                    'published_at' => $article->published_at,
+                    'views' => $article->views,
+                ];
+            });
 
         // Fetch ALL achievements and mark which ones user has unlocked
         $userUnlockedIds = $user->achievements()->pluck('achievements.id')->toArray();
