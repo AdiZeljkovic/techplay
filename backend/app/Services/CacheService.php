@@ -91,4 +91,35 @@ class CacheService
         }
         return $key;
     }
+
+    // ========================================================================
+    // ADMIN PANEL DROPDOWN CACHING
+    // ========================================================================
+
+    const PREFIX_ADMIN = 'admin:';
+    const TTL_ADMIN_DROPDOWN = 3600; // 1 hour for admin dropdowns
+
+    /**
+     * Get cached authors for Filament dropdown
+     * Returns: ['id' => 'display_name', ...]
+     */
+    public static function getAuthors(): array
+    {
+        return self::remember(self::PREFIX_ADMIN . 'authors', function () {
+            return \App\Models\User::role(['Super Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'])
+                ->get()
+                ->mapWithKeys(fn($user) => [$user->id => $user->display_name ?: $user->username])
+                ->toArray();
+        }, self::TTL_ADMIN_DROPDOWN);
+    }
+
+    /**
+     * Clear admin dropdown caches
+     * Call this when users or roles are updated
+     */
+    public static function clearAdminDropdowns(): void
+    {
+        self::forget(self::PREFIX_ADMIN . 'authors');
+        self::forget(self::PREFIX_ADMIN . 'categories');
+    }
 }

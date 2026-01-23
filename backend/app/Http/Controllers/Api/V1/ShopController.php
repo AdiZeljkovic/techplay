@@ -6,21 +6,35 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class ShopController extends Controller
 {
     public function index()
     {
-        // Return fresh data (Caching removed for active development/beta)
-        return Product::where('is_active', true)->orderBy('created_at', 'desc')->paginate(12);
+        $page = request()->get('page', 1);
+        $cacheKey = "shop.products.page_{$page}";
+
+        return Cache::remember($cacheKey, CacheService::TTL_LONG, function () {
+            return Product::where('is_active', true)
+                ->orderBy('created_at', 'desc')
+                ->paginate(12);
+        });
     }
 
     public function show($slug)
     {
-        return Product::where('slug', $slug)->where('is_active', true)->firstOrFail();
+        $cacheKey = "shop.product.{$slug}";
+
+        return Cache::remember($cacheKey, CacheService::TTL_LONG, function () use ($slug) {
+            return Product::where('slug', $slug)
+                ->where('is_active', true)
+                ->firstOrFail();
+        });
     }
 
     public function storeOrder(Request $request)

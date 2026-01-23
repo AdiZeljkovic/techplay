@@ -202,11 +202,7 @@ class TechResource extends Resource
 
                                         Select::make('author_id')
                                             ->label('Author')
-                                            ->options(function () {
-                                                return \App\Models\User::role(['Super Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'])
-                                                    ->get()
-                                                    ->mapWithKeys(fn($user) => [$user->id => $user->display_name ?: $user->username]);
-                                            })
+                                            ->options(fn() => \App\Services\CacheService::getAuthors())
                                             ->searchable()
                                             ->default(fn() => auth()->id())
                                             ->required()
