@@ -114,6 +114,7 @@ class ArticleForm
                             ->description('Game review details, ratings and verdict')
                             ->collapsed()
                             ->collapsible()
+                            ->extraAttributes(['class' => 'overflow-visible', 'style' => 'overflow: visible !important; z-index: 50;'])
                             ->schema([
                                 Toggle::make('is_review_article')
                                     ->label('This is a Game Review')
