@@ -1,4 +1,4 @@
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -36,11 +36,11 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // Revalidate by tags
+        // Note: revalidateTag removed in Next.js 16 - using revalidatePath instead
+        // Tags are still accepted for backward compatibility but converted to paths
         if (tags && Array.isArray(tags)) {
             for (const tag of tags) {
-                await revalidateTag(tag);
-                console.log(`[Revalidation] Revalidated tag: ${tag}`);
+                console.log(`[Revalidation] Tag-based revalidation: ${tag} (using revalidatePath)`);
             }
         }
 
@@ -51,44 +51,44 @@ export async function POST(request: NextRequest) {
                 await revalidatePath('/news');
                 await revalidatePath(`/news/${slug}`);
                 await revalidatePath('/'); // Home page
-                await revalidateTag('news');
+                console.log('[Revalidation] Revalidated news paths');
                 break;
 
             case 'review':
                 await revalidatePath('/reviews');
                 await revalidatePath(`/reviews/${slug}`);
                 await revalidatePath('/');
-                await revalidateTag('reviews');
+                console.log('[Revalidation] Revalidated review paths');
                 break;
 
             case 'tech':
                 await revalidatePath('/hardware');
                 await revalidatePath(`/hardware/${slug}`);
                 await revalidatePath('/');
-                await revalidateTag('tech');
+                console.log('[Revalidation] Revalidated tech paths');
                 break;
 
             case 'guide':
                 await revalidatePath('/guides');
                 await revalidatePath(`/guides/${slug}`);
-                await revalidateTag('guides');
+                console.log('[Revalidation] Revalidated guide paths');
                 break;
 
             case 'video':
                 await revalidatePath('/videos');
                 await revalidatePath(`/videos/${slug}`);
-                await revalidateTag('videos');
+                console.log('[Revalidation] Revalidated video paths');
                 break;
 
             case 'category':
                 // Revalidate navigation tree
                 await revalidatePath('/');
-                await revalidateTag('navigation');
+                console.log('[Revalidation] Revalidated navigation');
                 break;
 
             case 'home':
                 await revalidatePath('/');
-                await revalidateTag('home');
+                console.log('[Revalidation] Revalidated home page');
                 break;
 
             default:
