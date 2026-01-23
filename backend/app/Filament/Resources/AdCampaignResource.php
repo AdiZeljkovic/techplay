@@ -71,17 +71,18 @@ class AdCampaignResource extends Resource
                     ->columnSpan(1)
                     ->live(),
 
-                Forms\Components\Grid::make(2)
-                    ->schema([
-                        Forms\Components\TextInput::make('width')
-                            ->numeric()
-                            ->label('Width (px)')
-                            ->helperText('Image width in pixels'),
-                        Forms\Components\TextInput::make('height')
-                            ->numeric()
-                            ->label('Height (px)')
-                            ->helperText('Image height in pixels'),
-                    ])
+                Forms\Components\TextInput::make('width')
+                    ->numeric()
+                    ->label('Width (px)')
+                    ->helperText('Image width in pixels')
+                    ->columnSpan(1)
+                    ->visible(fn($get) => $get('type') === 'image'),
+
+                Forms\Components\TextInput::make('height')
+                    ->numeric()
+                    ->label('Height (px)')
+                    ->helperText('Image height in pixels')
+                    ->columnSpan(1)
                     ->visible(fn($get) => $get('type') === 'image'),
 
                 Forms\Components\CheckboxList::make('platforms')
