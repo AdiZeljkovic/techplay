@@ -51,14 +51,14 @@ class TopPerformingAds extends BaseWidget
                 Tables\Columns\TextColumn::make('ctr')
                     ->label('CTR')
                     ->suffix('%')
-                    ->sortable()
+                    ->sortable(false)
                     ->badge()
                     ->color(fn($state) => $state > 5 ? 'success' : ($state > 2 ? 'warning' : 'danger')),
 
                 Tables\Columns\TextColumn::make('estimated_revenue')
                     ->label('Revenue')
                     ->money('BAM')
-                    ->sortable()
+                    ->sortable(false)
                     ->badge()
                     ->color('success'),
 
@@ -66,7 +66,6 @@ class TopPerformingAds extends BaseWidget
                     ->boolean()
                     ->label('Active'),
             ])
-            ->defaultSort('ctr', 'desc')
             ->paginated([10, 25, 50]);
     }
 }
