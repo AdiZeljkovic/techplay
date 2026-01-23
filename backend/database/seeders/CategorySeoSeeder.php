@@ -15,20 +15,16 @@ class CategorySeoSeeder extends Seeder
         $categories = Category::all();
 
         foreach ($categories as $category) {
-            // 1. Determine Path Prefix based on Type
-            $pathPrefix = match ($category->type) {
-                'news' => '/news',
-                'reviews' => '/reviews',
-                'tech' => '/hardware', // 'tech' maps to '/hardware'
-                'forum' => '/forum',
-                default => '/' . $category->type,
+            // 1. Determine Path based on Type
+            $path = match ($category->type) {
+                'news' => '/news/category/' . $category->slug,
+                'reviews' => '/reviews/category/' . $category->slug,
+                'tech' => '/hardware/' . $category->slug, // 'tech' maps to '/hardware'
+                'forum' => '/forum/' . $category->slug,
+                default => '/' . $category->type . '/' . $category->slug,
             };
+            // 2. Path is already constructed above
 
-            // 2. Construct Full Path
-            // If the slug matches the parent folder (e.g. 'hardware' inside '/hardware'), we might want just '/hardware'
-            // But usually categories are sub-sections. Let's keep /hardware/hardware if the slug is hardware.
-            // Or better, assume categories are children.
-            $path = $pathPrefix . '/' . $category->slug;
 
             // 3. Generate "Professional" SEO defaults if missing on the category itself
             $seoTitle = $category->seo_title;
@@ -76,4 +72,4 @@ class CategorySeoSeeder extends Seeder
         }
     }
 }
- 
+

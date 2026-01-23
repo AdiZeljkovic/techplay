@@ -278,20 +278,13 @@ class ArticleForm
                                             ->default(now())
                                             ->helperText('When should this article go live?'),
 
-                                        Select::make('category')
+                                        Select::make('category_id')
                                             ->label('Category')
-                                            ->options([
-                                                'reviews' => '🎮 Reviews',
-                                                'gaming' => '🕹️ Gaming News',
-                                                'console' => '🎯 Console',
-                                                'pc' => '💻 PC Gaming',
-                                                'movies' => '🎬 Movies & TV',
-                                                'industry' => '📊 Industry',
-                                                'esport' => '🏆 Esports',
-                                                'opinions' => '💭 Opinions',
-                                                'guides' => '📚 Guides',
-                                                'hardware' => '🔧 Hardware',
-                                            ])
+                                            ->relationship('category', 'name')
+                                            ->getOptionLabelFromRecordUsing(fn($record) => $record->parent_id
+                                                ? "{$record->parent->name} → {$record->name}"
+                                                : $record->name)
+                                            ->preload()
                                             ->required()
                                             ->native(false)
                                             ->searchable(),

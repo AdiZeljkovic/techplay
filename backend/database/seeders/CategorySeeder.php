@@ -21,7 +21,7 @@ class CategorySeeder extends Seeder
             'icon' => 'file-text'
         ]);
 
-        $newsSubs = ['Gaming', 'Consoles', 'PC', 'Movies & TV', 'Industry', 'E-sport', 'Opinions'];
+        $newsSubs = ['Gaming', 'Consoles', 'PC', 'Movies & TV', 'Industry', 'E-sport', 'Opinions', 'Interviews'];
         foreach ($newsSubs as $sub) {
             Category::create([
                 'name' => $sub,
