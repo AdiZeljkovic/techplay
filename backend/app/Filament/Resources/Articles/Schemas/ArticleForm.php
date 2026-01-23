@@ -239,7 +239,7 @@ class ArticleForm
                                                 'none' => 'No Verdict',
                                             ])
                                             ->default('none')
-                                            ->native(false),
+                                            ->native(true),
                                     ])
                                     ->visible(fn(\Filament\Forms\Get $get) => $get('is_review_article')),
                             ]),
