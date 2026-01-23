@@ -3,52 +3,58 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Services\CacheService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class NavigationController extends Controller
 {
     /**
      * Get the navigation tree structure.
-     * This currently mimics a DB structure but is hardcoded for the "Ultra Modern" request.
-     * In future phases, this can be moved to a Categories table with parent_id.
+     * Cached for 5 minutes (300s) to reduce DB load.
+     * Invalidated when categories are created/updated/deleted.
      */
     public function index(): JsonResponse
     {
-        // Fetch all generic categories (excluding forum categories if they are different model/table)
-        // We use 'type' to distinguish roots.
+        $tree = Cache::remember('navigation.tree', CacheService::TTL_MEDIUM, function () {
+            // Fetch all generic categories (excluding forum categories if they are different model/table)
+            // We use 'type' to distinguish roots.
 
-        $roots = \App\Models\Category::whereNull('parent_id')->with('children')->get();
+            $roots = \App\Models\Category::whereNull('parent_id')->with('children')->get();
 
-        $tree = [];
+            $tree = [];
 
-        foreach ($roots as $root) {
-            $key = strtolower($root->type); // news, reviews, tech
+            foreach ($roots as $root) {
+                $key = strtolower($root->type); // news, reviews, tech
 
-            // Map children to simplified structure
-            $children = $root->children->map(function ($child) {
-                // Determine HREF based on type
-                // News: /news/{slug}
-                // Reviews: /reviews/{slug}
-                // Tech: /hardware/{slug}
+                // Map children to simplified structure
+                $children = $root->children->map(function ($child) {
+                    // Determine HREF based on type
+                    // News: /news/{slug}
+                    // Reviews: /reviews/{slug}
+                    // Tech: /hardware/{slug}
 
-                $base = match ($child->type) {
-                    'news' => '/news',
-                    'reviews' => '/reviews',
-                    'tech' => '/hardware',
-                    default => '/news'
-                };
+                    $base = match ($child->type) {
+                        'news' => '/news',
+                        'reviews' => '/reviews',
+                        'tech' => '/hardware',
+                        default => '/news'
+                    };
 
-                // Extract the last part of the slug (e.g., 'news-gaming' -> 'gaming')
-                $urlSlug = str_replace(['news-', 'reviews-', 'tech-'], '', $child->slug);
+                    // Extract the last part of the slug (e.g., 'news-gaming' -> 'gaming')
+                    $urlSlug = str_replace(['news-', 'reviews-', 'tech-'], '', $child->slug);
 
-                return [
-                    'name' => $child->name,
-                    'href' => "{$base}/{$urlSlug}"
-                ];
-            });
+                    return [
+                        'name' => $child->name,
+                        'href' => "{$base}/{$urlSlug}"
+                    ];
+                });
 
-            $tree[$key] = $children;
-        }
+                $tree[$key] = $children;
+            }
+
+            return $tree;
+        });
 
         return response()->json($tree)
             ->header('Cache-Control', 'public, max-age=300');

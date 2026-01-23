@@ -3,8 +3,8 @@ import GuideDetailView from "@/components/guides/GuideDetailView";
 import axios from "@/lib/axios";
 import { Metadata } from "next";
 
-// Force dynamic
-export const dynamic = 'force-dynamic';
+// ISR enabled with on-demand revalidation
+export const revalidate = 900; // 15 minutes (guides are more evergreen content)
 
 async function getGuide(slug: string) {
     let apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -14,7 +14,10 @@ async function getGuide(slug: string) {
 
     try {
         const res = await fetch(`${apiUrl}/guides/${slug}`, {
-            cache: 'no-store' // Force fresh data
+            next: {
+                revalidate: 900,
+                tags: ['guides', `guide-${slug}`]
+            }
         });
 
         if (!res.ok) return null;

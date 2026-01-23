@@ -5,8 +5,8 @@ import ReviewsCategoryView from "@/components/reviews/ReviewsCategoryView";
 import ReviewDetailView from "@/components/reviews/ReviewDetailView";
 import { REVIEW_CATEGORIES } from "@/lib/categories";
 
-// Force dynamic rendering since we depend on params
-export const dynamic = 'force-dynamic';
+// ISR enabled with on-demand revalidation
+export const revalidate = 600; // 10 minutes (reviews change less frequently than news)
 
 async function getReview(slug: string): Promise<Review | null> {
     let apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -17,7 +17,10 @@ async function getReview(slug: string): Promise<Review | null> {
 
     try {
         const res = await fetch(`${apiUrl}/reviews/${slug}`, {
-            cache: 'no-store', // Force fresh data
+            next: {
+                revalidate: 600,
+                tags: ['reviews', `review-${slug}`]
+            }
         });
 
         if (!res.ok) {

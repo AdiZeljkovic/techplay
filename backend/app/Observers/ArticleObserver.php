@@ -6,6 +6,7 @@ use App\Events\ArticlePublished;
 use App\Models\Article;
 use App\Models\Redirect;
 use App\Services\IndexNowService;
+use App\Services\CacheRevalidationService;
 use Illuminate\Support\Facades\Cache;
 
 class ArticleObserver
@@ -128,5 +129,13 @@ class ArticleObserver
 
         // Clear trending
         Cache::forget('news.trending');
+
+        // 🚀 TRIGGER NEXT.JS ON-DEMAND REVALIDATION
+        // This ensures instant content updates for users
+        CacheRevalidationService::revalidateArticle(
+            type: $categoryType,
+            slug: $slug,
+            additionalPaths: ['/', '/news', '/reviews', '/hardware']
+        );
     }
 }

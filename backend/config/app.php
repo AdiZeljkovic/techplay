@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Frontend Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for Next.js frontend integration including on-demand
+    | revalidation for instant content updates.
+    |
+    */
+
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
+    'revalidation_secret' => env('REVALIDATION_SECRET', 'your-secret-token'),
+
 ];
