@@ -139,13 +139,21 @@ return new class extends Migration
         }
 
         // Reviews table indexes (if separate from articles)
-        // Check if reviews table exists
-        $reviewsTableExists = DB::select("SELECT to_regclass('public.reviews') as exists");
-        if ($reviewsTableExists[0]->exists !== null) {
-            DB::statement('CREATE INDEX IF NOT EXISTS idx_reviews_product_id ON reviews (product_id)');
-            DB::statement('CREATE INDEX IF NOT EXISTS idx_reviews_author_id ON reviews (author_id)');
-            DB::statement('CREATE INDEX IF NOT EXISTS idx_reviews_rating ON reviews (rating)');
-            DB::statement('CREATE INDEX IF NOT EXISTS idx_reviews_created_at ON reviews (created_at)');
+        if (Schema::hasTable('reviews')) {
+            $reviewsColumns = collect(DB::select("SELECT column_name FROM information_schema.columns WHERE table_name = 'reviews'"))->pluck('column_name');
+
+            if ($reviewsColumns->contains('product_id')) {
+                DB::statement('CREATE INDEX IF NOT EXISTS idx_reviews_product_id ON reviews (product_id)');
+            }
+            if ($reviewsColumns->contains('author_id')) {
+                DB::statement('CREATE INDEX IF NOT EXISTS idx_reviews_author_id ON reviews (author_id)');
+            }
+            if ($reviewsColumns->contains('rating')) {
+                DB::statement('CREATE INDEX IF NOT EXISTS idx_reviews_rating ON reviews (rating)');
+            }
+            if ($reviewsColumns->contains('created_at')) {
+                DB::statement('CREATE INDEX IF NOT EXISTS idx_reviews_created_at ON reviews (created_at)');
+            }
         }
     }
 
@@ -190,12 +198,9 @@ return new class extends Migration
         DB::statement('DROP INDEX IF EXISTS idx_categories_type_parent');
 
         // Reviews table
-        $reviewsTableExists = DB::select("SELECT to_regclass('public.reviews') as exists");
-        if ($reviewsTableExists[0]->exists !== null) {
-            DB::statement('DROP INDEX IF EXISTS idx_reviews_product_id');
-            DB::statement('DROP INDEX IF EXISTS idx_reviews_author_id');
-            DB::statement('DROP INDEX IF EXISTS idx_reviews_rating');
-            DB::statement('DROP INDEX IF EXISTS idx_reviews_created_at');
-        }
+        DB::statement('DROP INDEX IF EXISTS idx_reviews_product_id');
+        DB::statement('DROP INDEX IF EXISTS idx_reviews_author_id');
+        DB::statement('DROP INDEX IF EXISTS idx_reviews_rating');
+        DB::statement('DROP INDEX IF EXISTS idx_reviews_created_at');
     }
 };
