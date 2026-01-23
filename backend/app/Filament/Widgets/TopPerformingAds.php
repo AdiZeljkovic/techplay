@@ -67,11 +67,6 @@ class TopPerformingAds extends BaseWidget
                     ->label('Active'),
             ])
             ->defaultSort('ctr', 'desc')
-            ->paginated([10, 25, 50])
-            ->actions([
-                Tables\Actions\Action::make('view')
-                    ->url(fn($record) => route('filament.admin.resources.ad-campaigns.edit', $record))
-                    ->icon('heroicon-m-eye'),
-            ]);
+            ->paginated([10, 25, 50]);
     }
 }
