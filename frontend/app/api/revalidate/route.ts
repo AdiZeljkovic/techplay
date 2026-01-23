@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         // Revalidate by tags
         if (tags && Array.isArray(tags)) {
             for (const tag of tags) {
-                revalidateTag(tag);
+                await revalidateTag(tag);
                 console.log(`[Revalidation] Revalidated tag: ${tag}`);
             }
         }
@@ -51,44 +51,44 @@ export async function POST(request: NextRequest) {
                 await revalidatePath('/news');
                 await revalidatePath(`/news/${slug}`);
                 await revalidatePath('/'); // Home page
-                revalidateTag('news');
+                await revalidateTag('news');
                 break;
 
             case 'review':
                 await revalidatePath('/reviews');
                 await revalidatePath(`/reviews/${slug}`);
                 await revalidatePath('/');
-                revalidateTag('reviews');
+                await revalidateTag('reviews');
                 break;
 
             case 'tech':
                 await revalidatePath('/hardware');
                 await revalidatePath(`/hardware/${slug}`);
                 await revalidatePath('/');
-                revalidateTag('tech');
+                await revalidateTag('tech');
                 break;
 
             case 'guide':
                 await revalidatePath('/guides');
                 await revalidatePath(`/guides/${slug}`);
-                revalidateTag('guides');
+                await revalidateTag('guides');
                 break;
 
             case 'video':
                 await revalidatePath('/videos');
                 await revalidatePath(`/videos/${slug}`);
-                revalidateTag('videos');
+                await revalidateTag('videos');
                 break;
 
             case 'category':
                 // Revalidate navigation tree
                 await revalidatePath('/');
-                revalidateTag('navigation');
+                await revalidateTag('navigation');
                 break;
 
             case 'home':
                 await revalidatePath('/');
-                revalidateTag('home');
+                await revalidateTag('home');
                 break;
 
             default:
