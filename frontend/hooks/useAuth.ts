@@ -104,10 +104,12 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 
     }, [user, error, middleware, redirectIfAuthenticated, router]);
 
     const isLoading = !user && !error;
+    const isAuthenticated = !!user;
 
     return {
         user,
         isLoading,
+        isAuthenticated,
         register,
         login,
         logout,
