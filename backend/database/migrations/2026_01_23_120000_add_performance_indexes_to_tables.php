@@ -1,8 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,71 +10,57 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Using raw SQL with IF NOT EXISTS for PostgreSQL to make migration idempotent
+
         // Articles table indexes
-        Schema::table('articles', function (Blueprint $table) {
-            $table->index('category_id', 'idx_articles_category_id');
-            $table->index('author_id', 'idx_articles_author_id');
-            $table->index('status', 'idx_articles_status');
-            $table->index('published_at', 'idx_articles_published_at');
-            $table->index(['status', 'published_at'], 'idx_articles_status_published');
-        });
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_articles_category_id ON articles (category_id)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_articles_author_id ON articles (author_id)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_articles_status ON articles (status)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_articles_published_at ON articles (published_at)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_articles_status_published ON articles (status, published_at)');
 
         // Comments table indexes (polymorphic relationship)
-        Schema::table('comments', function (Blueprint $table) {
-            $table->index(['commentable_type', 'commentable_id'], 'idx_comments_commentable');
-            $table->index('user_id', 'idx_comments_user_id');
-            $table->index('created_at', 'idx_comments_created_at');
-        });
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_comments_commentable ON comments (commentable_type, commentable_id)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_comments_user_id ON comments (user_id)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_comments_created_at ON comments (created_at)');
 
         // Guides table indexes
-        Schema::table('guides', function (Blueprint $table) {
-            $table->index('difficulty', 'idx_guides_difficulty');
-            $table->index('author_id', 'idx_guides_author_id');
-            $table->index('created_at', 'idx_guides_created_at');
-        });
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_guides_difficulty ON guides (difficulty)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_guides_author_id ON guides (author_id)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_guides_created_at ON guides (created_at)');
 
         // Threads table indexes
-        Schema::table('threads', function (Blueprint $table) {
-            $table->index('category_id', 'idx_threads_category_id');
-            $table->index('author_id', 'idx_threads_author_id');
-            $table->index('is_pinned', 'idx_threads_is_pinned');
-            $table->index('is_locked', 'idx_threads_is_locked');
-            $table->index('created_at', 'idx_threads_created_at');
-        });
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_threads_category_id ON threads (category_id)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_threads_author_id ON threads (author_id)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_threads_is_pinned ON threads (is_pinned)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_threads_is_locked ON threads (is_locked)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_threads_created_at ON threads (created_at)');
 
         // Posts table indexes (forum posts)
-        Schema::table('posts', function (Blueprint $table) {
-            $table->index('thread_id', 'idx_posts_thread_id');
-            $table->index('user_id', 'idx_posts_user_id');
-            $table->index('created_at', 'idx_posts_created_at');
-        });
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_posts_thread_id ON posts (thread_id)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts (user_id)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts (created_at)');
 
         // Videos table indexes
-        Schema::table('videos', function (Blueprint $table) {
-            $table->index('published_at', 'idx_videos_published_at');
-        });
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_videos_published_at ON videos (published_at)');
 
         // Products table indexes
-        Schema::table('products', function (Blueprint $table) {
-            $table->index('is_active', 'idx_products_is_active');
-            $table->index('created_at', 'idx_products_created_at');
-        });
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_products_is_active ON products (is_active)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_products_created_at ON products (created_at)');
 
         // Categories table indexes
-        Schema::table('categories', function (Blueprint $table) {
-            $table->index('type', 'idx_categories_type');
-            $table->index('parent_id', 'idx_categories_parent_id');
-            $table->index(['type', 'parent_id'], 'idx_categories_type_parent');
-        });
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_categories_type ON categories (type)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_categories_parent_id ON categories (parent_id)');
+        DB::statement('CREATE INDEX IF NOT EXISTS idx_categories_type_parent ON categories (type, parent_id)');
 
         // Reviews table indexes (if separate from articles)
-        if (Schema::hasTable('reviews')) {
-            Schema::table('reviews', function (Blueprint $table) {
-                $table->index('product_id', 'idx_reviews_product_id');
-                $table->index('author_id', 'idx_reviews_author_id');
-                $table->index('rating', 'idx_reviews_rating');
-                $table->index('created_at', 'idx_reviews_created_at');
-            });
+        // Check if reviews table exists
+        $reviewsTableExists = DB::select("SELECT to_regclass('public.reviews') as exists");
+        if ($reviewsTableExists[0]->exists !== null) {
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_reviews_product_id ON reviews (product_id)');
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_reviews_author_id ON reviews (author_id)');
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_reviews_rating ON reviews (rating)');
+            DB::statement('CREATE INDEX IF NOT EXISTS idx_reviews_created_at ON reviews (created_at)');
         }
     }
 
@@ -84,71 +69,47 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Articles table
-        Schema::table('articles', function (Blueprint $table) {
-            $table->dropIndex('idx_articles_category_id');
-            $table->dropIndex('idx_articles_author_id');
-            $table->dropIndex('idx_articles_status');
-            $table->dropIndex('idx_articles_published_at');
-            $table->dropIndex('idx_articles_status_published');
-        });
+        // Drop indexes if they exist
+        DB::statement('DROP INDEX IF EXISTS idx_articles_category_id');
+        DB::statement('DROP INDEX IF EXISTS idx_articles_author_id');
+        DB::statement('DROP INDEX IF EXISTS idx_articles_status');
+        DB::statement('DROP INDEX IF EXISTS idx_articles_published_at');
+        DB::statement('DROP INDEX IF EXISTS idx_articles_status_published');
 
-        // Comments table
-        Schema::table('comments', function (Blueprint $table) {
-            $table->dropIndex('idx_comments_commentable');
-            $table->dropIndex('idx_comments_user_id');
-            $table->dropIndex('idx_comments_created_at');
-        });
+        DB::statement('DROP INDEX IF EXISTS idx_comments_commentable');
+        DB::statement('DROP INDEX IF EXISTS idx_comments_user_id');
+        DB::statement('DROP INDEX IF EXISTS idx_comments_created_at');
 
-        // Guides table
-        Schema::table('guides', function (Blueprint $table) {
-            $table->dropIndex('idx_guides_difficulty');
-            $table->dropIndex('idx_guides_author_id');
-            $table->dropIndex('idx_guides_created_at');
-        });
+        DB::statement('DROP INDEX IF EXISTS idx_guides_difficulty');
+        DB::statement('DROP INDEX IF EXISTS idx_guides_author_id');
+        DB::statement('DROP INDEX IF EXISTS idx_guides_created_at');
 
-        // Threads table
-        Schema::table('threads', function (Blueprint $table) {
-            $table->dropIndex('idx_threads_category_id');
-            $table->dropIndex('idx_threads_author_id');
-            $table->dropIndex('idx_threads_is_pinned');
-            $table->dropIndex('idx_threads_is_locked');
-            $table->dropIndex('idx_threads_created_at');
-        });
+        DB::statement('DROP INDEX IF EXISTS idx_threads_category_id');
+        DB::statement('DROP INDEX IF EXISTS idx_threads_author_id');
+        DB::statement('DROP INDEX IF EXISTS idx_threads_is_pinned');
+        DB::statement('DROP INDEX IF EXISTS idx_threads_is_locked');
+        DB::statement('DROP INDEX IF EXISTS idx_threads_created_at');
 
-        // Posts table
-        Schema::table('posts', function (Blueprint $table) {
-            $table->dropIndex('idx_posts_thread_id');
-            $table->dropIndex('idx_posts_user_id');
-            $table->dropIndex('idx_posts_created_at');
-        });
+        DB::statement('DROP INDEX IF EXISTS idx_posts_thread_id');
+        DB::statement('DROP INDEX IF EXISTS idx_posts_user_id');
+        DB::statement('DROP INDEX IF EXISTS idx_posts_created_at');
 
-        // Videos table
-        Schema::table('videos', function (Blueprint $table) {
-            $table->dropIndex('idx_videos_published_at');
-        });
+        DB::statement('DROP INDEX IF EXISTS idx_videos_published_at');
 
-        // Products table
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropIndex('idx_products_is_active');
-            $table->dropIndex('idx_products_created_at');
-        });
+        DB::statement('DROP INDEX IF EXISTS idx_products_is_active');
+        DB::statement('DROP INDEX IF EXISTS idx_products_created_at');
 
-        // Categories table
-        Schema::table('categories', function (Blueprint $table) {
-            $table->dropIndex('idx_categories_type');
-            $table->dropIndex('idx_categories_parent_id');
-            $table->dropIndex('idx_categories_type_parent');
-        });
+        DB::statement('DROP INDEX IF EXISTS idx_categories_type');
+        DB::statement('DROP INDEX IF EXISTS idx_categories_parent_id');
+        DB::statement('DROP INDEX IF EXISTS idx_categories_type_parent');
 
         // Reviews table
-        if (Schema::hasTable('reviews')) {
-            Schema::table('reviews', function (Blueprint $table) {
-                $table->dropIndex('idx_reviews_product_id');
-                $table->dropIndex('idx_reviews_author_id');
-                $table->dropIndex('idx_reviews_rating');
-                $table->dropIndex('idx_reviews_created_at');
-            });
+        $reviewsTableExists = DB::select("SELECT to_regclass('public.reviews') as exists");
+        if ($reviewsTableExists[0]->exists !== null) {
+            DB::statement('DROP INDEX IF EXISTS idx_reviews_product_id');
+            DB::statement('DROP INDEX IF EXISTS idx_reviews_author_id');
+            DB::statement('DROP INDEX IF EXISTS idx_reviews_rating');
+            DB::statement('DROP INDEX IF EXISTS idx_reviews_created_at');
         }
     }
 };
