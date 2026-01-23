@@ -83,45 +83,19 @@ export default function FeatureCard({ feature, index }: FeatureCardProps) {
             onMouseLeave={handleMouseLeave}
             className="relative group h-full"
         >
-            {/* Multi-layer glow effects */}
-            <motion.div
-                animate={{
-                    opacity: isHovered ? [0.3, 0.6, 0.3] : 0,
-                    scale: isHovered ? [1, 1.1, 1] : 1,
-                }}
-                transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                }}
-                className="absolute -inset-1 rounded-2xl blur-2xl"
-                style={{
-                    background: `radial-gradient(circle at 50% 50%, ${feature.color}60, transparent 70%)`
-                }}
-            />
-
+            {/* Simple glow on hover */}
             <div
-                className="absolute -inset-0.5 rounded-2xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500"
+                className="absolute -inset-0.5 rounded-2xl opacity-0 group-hover:opacity-50 blur-xl transition-opacity duration-500"
                 style={{
-                    background: `linear-gradient(135deg, ${feature.color}40, ${feature.color}10)`
+                    backgroundColor: feature.color + '20'
                 }}
             />
 
             {/* Glassmorphism card */}
             <motion.div
                 style={{ transformStyle: "preserve-3d" }}
-                className="relative h-full backdrop-blur-sm bg-gradient-to-br from-[var(--bg-card)] to-[var(--bg-card)]/80 border border-[var(--border)] rounded-2xl p-6 flex flex-col overflow-hidden group-hover:border-[var(--accent)]/30 transition-all duration-500"
+                className="relative h-full backdrop-blur-sm bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 flex flex-col overflow-hidden group-hover:border-[var(--accent)]/30 transition-all duration-500"
             >
-                {/* Gradient overlay on hover */}
-                <motion.div
-                    animate={{
-                        opacity: isHovered ? 0.05 : 0,
-                    }}
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                        background: `radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), ${feature.color}, transparent 60%)`
-                    }}
-                />
 
                 {/* Sparkle effect for in_progress */}
                 {feature.status === 'in_progress' && isHovered && (
@@ -229,9 +203,9 @@ export default function FeatureCard({ feature, index }: FeatureCardProps) {
                     whileInView={{ scaleX: 1 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 + 0.3, duration: 0.6 }}
-                    className="absolute bottom-0 left-0 right-0 h-1 origin-left"
+                    className="absolute bottom-0 left-0 w-16 h-1 origin-left"
                     style={{
-                        background: `linear-gradient(90deg, ${feature.color}, transparent)`
+                        backgroundColor: feature.color
                     }}
                 />
             </motion.div>
