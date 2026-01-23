@@ -5,12 +5,13 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\GiveawayResource\Pages;
 use App\Models\Giveaway;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Forms\Components\{Section, TextInput, Textarea, RichEditor, Select, Toggle, DateTimePicker, FileUpload, Repeater, Grid, Group, Tabs, Placeholder};
-use Filament\Tables\Columns\{TextColumn, BadgeColumn, ImageColumn};
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\{Section, Grid, Tabs};
+use Filament\Forms\Components\{TextInput, Textarea, RichEditor, Select, Toggle, DateTimePicker, FileUpload, Repeater, Placeholder};
+use Filament\Tables\Columns\{TextColumn, ImageColumn};
 use Filament\Tables\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Str;
@@ -19,16 +20,18 @@ class GiveawayResource extends Resource
 {
     protected static ?string $model = Giveaway::class;
     protected static ?string $navigationIcon = 'heroicon-o-gift';
-    protected static ?string $navigationGroup = 'Content Studio';
     protected static ?int $navigationSort = 50;
 
-    public static function form(Form $form): Form
+    public static function getNavigationGroup(): ?string
     {
-        return $form->schema([
+        return 'Content Studio';
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema->components([
             Tabs::make('Giveaway')
                 ->tabs([
-                    // ═══════════════════════════════════════════════════════════
-                    // TAB: BASIC INFO
                     // ═══════════════════════════════════════════════════════════
                     Tabs\Tab::make('Basic Info')
                         ->icon('heroicon-o-information-circle')
