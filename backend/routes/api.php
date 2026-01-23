@@ -174,4 +174,19 @@ Route::prefix('v1')->group(function () {
         Route::get('/articles/{article}/inbound-links', [App\Http\Controllers\Api\V1\SeoController::class, 'getInboundLinks']);
         Route::get('/articles/{article}/schemas', [App\Http\Controllers\Api\V1\SeoController::class, 'getSchemas']);
     });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // GIVEAWAYS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // Public routes
+    Route::get('/giveaways/{slug}', [App\Http\Controllers\Api\V1\GiveawayController::class, 'show']);
+    Route::get('/giveaways/{slug}/leaderboard', [App\Http\Controllers\Api\V1\GiveawayController::class, 'leaderboard']);
+
+    // Authenticated routes
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/giveaways/{slug}/enter', [App\Http\Controllers\Api\V1\GiveawayController::class, 'enter']);
+        Route::get('/giveaways/{slug}/my-entry', [App\Http\Controllers\Api\V1\GiveawayController::class, 'myEntry']);
+        Route::post('/giveaways/{slug}/tasks/{taskId}/complete', [App\Http\Controllers\Api\V1\GiveawayController::class, 'completeTask']);
+    });
 });

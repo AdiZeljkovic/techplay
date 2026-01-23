@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Interviews subcategory to News section\n\n- Added ''Interviews'' to News subcategories in CategorySeeder\n- Updated ArticleForm to use dynamic category_id relationship\n- Created migration for adding Interviews subcategory\n- Created PostgreSQL script for manual database update\n- Updated CategorySeoSeeder path generation\n\nThis enables:\n- Interviews option in News admin panel dropdown\n- Automatic display in frontend navigation menu\n- SEO-friendly URLs at /news/interviews\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Interviews and Movies & TV to frontend news categories\n\n- Added ''Interviews'' category with Mic icon\n- Added ''Movies & TV'' category with Film icon\n- Updated NEWS_CATEGORIES in frontend/lib/categories.ts\n- Both categories now accessible at /news/interviews and /news/movies-tv\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(php artisan tinker:*)",
+      "Bash(git commit:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(xargs cat:*)",
+      "Bash(php artisan:*)"
+    ]
+  }
+}
