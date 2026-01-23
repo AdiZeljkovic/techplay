@@ -18,6 +18,7 @@ const FOOTER_LINKS = {
     ],
     community: [
         { name: "About Us", href: "/about" },
+        { name: "Roadmap", href: "/roadmap" },
         { name: "Impressum", href: "/impressum" },
         { name: "Marketing", href: "/marketing" },
         { name: "Contact", href: "/contact" },
