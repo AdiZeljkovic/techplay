@@ -20,9 +20,14 @@ class NavigationController extends Controller
             // Fetch all generic categories (excluding forum categories if they are different model/table)
             // We use 'type' to distinguish roots.
 
-            $roots = \App\Models\Category::whereNull('parent_id')->with('children')->get();
+            $roots = \App\Models\Category::whereNull('parent_id')
+                ->with(['children' => fn($q) => $q->orderBy('name')])
+                ->get();
 
             $tree = [];
+
+            // Custom sort order for News subcategories (Interviews goes last)
+            $newsOrder = ['Gaming', 'PC', 'Consoles', 'Movies & TV', 'Industry', 'E-sport', 'Opinions', 'Interviews'];
 
             foreach ($roots as $root) {
                 $key = strtolower($root->type); // news, reviews, tech
@@ -49,6 +54,14 @@ class NavigationController extends Controller
                         'href' => "{$base}/{$urlSlug}"
                     ];
                 });
+
+                // Apply custom sort for news
+                if ($key === 'news') {
+                    $children = $children->sortBy(function ($item) use ($newsOrder) {
+                        $index = array_search($item['name'], $newsOrder);
+                        return $index !== false ? $index : 999;
+                    })->values();
+                }
 
                 $tree[$key] = $children;
             }
