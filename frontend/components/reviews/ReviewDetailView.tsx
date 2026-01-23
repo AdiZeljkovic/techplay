@@ -351,6 +351,11 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                 </p>
                             </div>
                         </div>
+
+                        {/* Comments Section */}
+                        <div className="mt-12 pt-12 border-t border-[var(--border)]">
+                            <CommentsSection commentableId={review.id} commentableType="review" />
+                        </div>
                     </div>
 
                     {/* Sidebar (Right) */}
@@ -385,11 +390,6 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                             <AdUnit position="sidebar_bottom" />
                         </div>
                     </aside>
-                </div>
-
-                {/* Comments Section */}
-                <div className="mt-20 border-t border-[var(--border)] pt-12">
-                    <CommentsSection commentableId={review.id} commentableType="review" />
                 </div>
             </div>
         </article>
