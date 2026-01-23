@@ -63,7 +63,7 @@ interface Thread {
 
 interface ThreadData {
     thread: Thread;
-    posts: {
+    posts: Post[] | {
         data: Post[];
         links: any[];
     };
@@ -109,6 +109,13 @@ export default function ThreadPage() {
 
     const { data, isLoading, mutate } = useSWR<ThreadData>(slug ? `/forum/threads/${slug}` : null, fetcher);
 
+    // Helper to normalize posts
+    const getPosts = (data: ThreadData | undefined): Post[] => {
+        if (!data?.posts) return [];
+        if (Array.isArray(data.posts)) return data.posts;
+        return data.posts.data || [];
+    };
+
     const handleReply = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!replyContent.trim()) return;
@@ -125,16 +132,25 @@ export default function ThreadPage() {
 
             // Manually update cache to show the new post immediately
             if (data) {
-                const updatedPosts = [...data.posts.data, newPost];
-                mutate({
-                    ...data,
-                    posts: {
-                        ...data.posts,
+                const currentPosts = getPosts(data);
+                const updatedPosts = [...currentPosts, newPost];
+
+                // Construct new data preserving structure
+                const newData = { ...data };
+                if (Array.isArray(newData.posts)) {
+                    newData.posts = updatedPosts;
+                } else {
+                    newData.posts = {
+                        ...newData.posts,
                         data: updatedPosts
-                    },
+                    };
+                }
+
+                mutate({
+                    ...newData,
                     thread: { // Also update reply count
                         ...data.thread,
-                        posts_count: (data.thread.posts_count || data.posts.data.length) + 1
+                        posts_count: (data.thread.posts_count || currentPosts.length) + 1
                     }
                 }, false); // false = do not revalidate immediately
             }
@@ -246,7 +262,8 @@ export default function ThreadPage() {
         );
     }
 
-    const { thread, posts } = data;
+    const { thread, posts: rawPosts } = data;
+    const postsList = getPosts(data);
     const categoryColor = getCategoryColor(thread.category?.slug || '');
 
     // Helper to check staff for layout adjustments
@@ -320,7 +337,7 @@ export default function ThreadPage() {
                                 </span>
                                 <span className="flex items-center gap-1">
                                     <MessageSquare className="w-4 h-4" />
-                                    {thread.posts_count || posts.data.length} replies
+                                    {thread.posts_count || postsList.length} replies
                                 </span>
                             </div>
                         </div>
@@ -423,14 +440,14 @@ export default function ThreadPage() {
                         </div>
 
                         {/* Replies Section */}
-                        {posts.data.length > 0 && (
+                        {postsList.length > 0 && (
                             <div className="space-y-4">
                                 <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
                                     <MessageSquare className="w-5 h-5 text-[var(--accent)]" />
-                                    Replies ({posts.data.length})
+                                    Replies ({postsList.length})
                                 </h3>
 
-                                {posts.data.map((post, index) => {
+                                {postsList.map((post, index) => {
                                     const postAuthorStaff = isStaff(post.author);
                                     return (
                                         <div key={post.id} className={`bg-[var(--bg-card)] border border-[var(--border)] rounded-xl overflow-hidden ${post.is_solution ? 'ring-2 ring-green-500/50' : ''}`}>
@@ -499,7 +516,7 @@ export default function ThreadPage() {
                                                         <span className="text-xs text-[var(--text-muted)]">#{index + 2}</span>
                                                     </div>
                                                     <div className="prose prose-sm prose-invert max-w-none text-[var(--text-secondary)]">
-                                                        {post.content}
+                                                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
                                                     </div>
                                                 </div>
                                             </div>
