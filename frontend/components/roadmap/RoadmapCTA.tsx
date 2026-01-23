@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Bell, Twitter, Youtube, Twitch, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import Link from "next/link";
 
 export default function RoadmapCTA() {
     const socialLinks = [
@@ -110,15 +111,17 @@ export default function RoadmapCTA() {
                             viewport={{ once: true }}
                             transition={{ delay: 0.5, duration: 0.6 }}
                         >
-                            <Button
-                                size="lg"
-                                className="group"
-                            >
-                                <span className="flex items-center gap-2">
-                                    Join the Community
-                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
-                                </span>
-                            </Button>
+                            <Link href="/register">
+                                <Button
+                                    size="lg"
+                                    className="group"
+                                >
+                                    <span className="flex items-center gap-2">
+                                        Join the Community
+                                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
+                                    </span>
+                                </Button>
+                            </Link>
                         </motion.div>
 
                         {/* Bottom note */}

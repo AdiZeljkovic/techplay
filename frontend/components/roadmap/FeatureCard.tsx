@@ -134,25 +134,13 @@ export default function FeatureCard({ feature, index }: FeatureCardProps) {
 
                 {/* Icon with enhanced effects */}
                 <div className="relative mb-6 mt-2">
-                    {/* Icon glow */}
-                    <motion.div
-                        animate={{
-                            opacity: isHovered ? 0.6 : 0.3,
-                            scale: isHovered ? 1.2 : 1,
-                        }}
-                        transition={{ duration: 0.3 }}
-                        className="absolute inset-0 rounded-xl blur-xl"
-                        style={{ backgroundColor: feature.color }}
-                    />
-
                     {/* Icon container */}
                     <motion.div
                         whileHover={{ scale: 1.1, rotate: 5 }}
                         transition={{ type: "spring", stiffness: 300 }}
                         className="relative w-16 h-16 rounded-xl flex items-center justify-center"
                         style={{
-                            backgroundColor: feature.color + '20',
-                            boxShadow: `0 8px 32px ${feature.color}30`
+                            backgroundColor: feature.color + '20'
                         }}
                     >
                         <Icon className="w-8 h-8" style={{ color: feature.color }} />

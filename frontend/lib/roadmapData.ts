@@ -97,7 +97,7 @@ export const ROADMAP_2026: RoadmapFeature[] = [
   // Q3 2026 - Tools & Commerce
   {
     id: 'rig-builder',
-    title: 'RIG Builder with Amazon',
+    title: 'RIG Builder',
     description: 'Build and optimize your dream gaming PC with our smart configurator',
     details: [
       'Component compatibility checker and validation',
@@ -113,7 +113,7 @@ export const ROADMAP_2026: RoadmapFeature[] = [
   },
   {
     id: 'ai-recommendations',
-    title: 'AI Recommendation Engine: Professor Buffy',
+    title: 'Professor Buffy',
     description: 'Meet Professor Buffy, your AI-powered game discovery assistant',
     details: [
       'Personalized game recommendations based on your taste',
