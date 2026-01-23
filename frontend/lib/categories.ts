@@ -1,7 +1,7 @@
 import {
     Flame, Gamepad2, Monitor, Trophy, Briefcase, MessageSquare,
     Star, Clock, ThumbsUp, Gem, Rocket,
-    Gauge, BookOpen, Newspaper
+    Gauge, BookOpen, Newspaper, Film, Mic
 } from "lucide-react";
 
 export const NEWS_CATEGORIES = [
@@ -9,9 +9,11 @@ export const NEWS_CATEGORIES = [
     { id: "news-gaming", label: "Gaming", icon: Gamepad2, slug: "gaming" },
     { id: "news-consoles", label: "Consoles", icon: Monitor, slug: "consoles" },
     { id: "news-pc", label: "PC", icon: Monitor, slug: "pc" },
-    { id: "news-e-sport", label: "Esports", icon: Trophy, slug: "e-sport" },
+    { id: "news-movies-tv", label: "Movies & TV", icon: Film, slug: "movies-tv" },
     { id: "news-industry", label: "Industry", icon: Briefcase, slug: "industry" },
+    { id: "news-e-sport", label: "Esports", icon: Trophy, slug: "e-sport" },
     { id: "news-opinions", label: "Opinions", icon: MessageSquare, slug: "opinions" },
+    { id: "news-interviews", label: "Interviews", icon: Mic, slug: "interviews" },
 ];
 
 export const REVIEW_CATEGORIES = [
