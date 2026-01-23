@@ -8,6 +8,7 @@ import ReviewCard from "@/components/reviews/ReviewCard";
 import { Button } from "@/components/ui/Button";
 import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import PageHero from "@/components/ui/PageHero";
+import AdUnit from "@/components/ads/AdUnit";
 import { REVIEW_CATEGORIES } from "@/lib/categories";
 import { useRealTimeReviews } from "@/hooks";
 
@@ -48,6 +49,11 @@ export default function ReviewsClient() {
             />
 
             <div className="container mx-auto px-4 py-8">
+
+                {/* Top Banner Ad */}
+                <div className="mb-8">
+                    <AdUnit position="listing_top" />
+                </div>
 
                 <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
                     <h2 className="text-xl font-semibold text-[var(--text-primary)]">

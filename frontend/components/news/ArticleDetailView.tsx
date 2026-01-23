@@ -10,6 +10,7 @@ import { useMemo, useState, useEffect } from "react";
 import { processContent } from "@/lib/content";
 import TableOfContents from "@/components/ui/TableOfContents";
 import AdUnit from "@/components/ads/AdUnit";
+import InTextAd from "@/components/ads/InTextAd";
 import CommentsSection from "@/components/comments/CommentsSection";
 import DOMPurify from "isomorphic-dompurify";
 import LiveViewCount from "@/components/tracking/LiveViewCount";
@@ -265,9 +266,12 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                             </div>
                         )}
 
-                        {/* Main Text */}
-                        <div
-                            className="prose md:prose-lg max-w-none 
+                        {/* Main Text with In-Text Ads */}
+                        <InTextAd
+                            content={safeContent}
+                            afterParagraphs={[3, 6]}
+                            position="article_in_text"
+                            className="prose md:prose-lg max-w-none
                                 prose-headings:text-[var(--text-primary)] prose-headings:font-bold prose-headings:tracking-tight
                                 prose-p:text-gray-200 prose-p:leading-relaxed prose-p:mb-6
                                 prose-a:text-[var(--accent)] prose-a:no-underline hover:prose-a:underline hover:prose-a:text-[var(--accent-hover)] transition-colors
@@ -287,7 +291,6 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 [&_td]:p-4 [&_td]:border [&_td]:border-[var(--border)] [&_td]:text-[var(--text-secondary)] [&_td]:align-top
                                 [&_tr]:border-b [&_tr]:border-[var(--border)]
                             "
-                            dangerouslySetInnerHTML={{ __html: safeContent }}
                         />
 
                         {/* Mid-Article Ad (Visible only on mobile/tablet roughly) */}

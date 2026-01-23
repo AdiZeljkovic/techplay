@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // PERFORMANCE: Flush Redis view counters to database every 5 minutes
 Schedule::job(new \App\Jobs\FlushViewCounters)->everyFiveMinutes();
+
+// MONETIZATION: Sync ad metrics from Redis to database every hour
+Schedule::command('ads:sync-metrics')->hourly();

@@ -8,6 +8,7 @@ import NewsCard from "@/components/news/NewsCard";
 import { Button } from "@/components/ui/Button";
 import { Newspaper, ChevronLeft, ChevronRight, Flame } from "lucide-react";
 import PageHero from "@/components/ui/PageHero";
+import AdUnit from "@/components/ads/AdUnit";
 import { NEWS_CATEGORIES } from "@/lib/categories";
 import { useRealTimeNews } from "@/hooks";
 
@@ -53,6 +54,11 @@ export default function NewsClient() {
             />
 
             <div className="container mx-auto px-4 py-8">
+
+                {/* Top Banner Ad */}
+                <div className="mb-8">
+                    <AdUnit position="listing_top" />
+                </div>
 
                 <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
                     <h2 className="text-xl font-semibold text-[var(--text-primary)]">
