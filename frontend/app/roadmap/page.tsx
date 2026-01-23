@@ -4,6 +4,7 @@ import PageHero from "@/components/ui/PageHero";
 import RoadmapIntro from "@/components/roadmap/RoadmapIntro";
 import RoadmapTimeline from "@/components/roadmap/RoadmapTimeline";
 import RoadmapFeatures from "@/components/roadmap/RoadmapFeatures";
+import RoadmapCTA from "@/components/roadmap/RoadmapCTA";
 import { Rocket } from "lucide-react";
 
 export default function RoadmapPage() {
@@ -18,6 +19,7 @@ export default function RoadmapPage() {
             <RoadmapIntro />
             <RoadmapTimeline />
             <RoadmapFeatures />
+            <RoadmapCTA />
         </div>
     );
 }
