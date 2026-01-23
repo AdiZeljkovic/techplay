@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Guide;
 use App\Models\GuideVote;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class GuideController extends Controller
 {
@@ -17,7 +19,7 @@ class GuideController extends Controller
         $search = $request->get('search', '');
         $cacheKey = "guides.index.v2.page_{$page}.diff_{$difficulty}.search_" . md5($search);
 
-        $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, 1800, function () use ($request, $search) {
+        $resource = Cache::remember($cacheKey, CacheService::TTL_MEDIUM, function () use ($request, $search) {
             $query = Guide::with('author:id,username,display_name,avatar_url');
 
             if ($request->has('difficulty') && $request->difficulty !== 'all') {
@@ -45,7 +47,7 @@ class GuideController extends Controller
         Guide::where('slug', $slug)->increment('views');
 
         // Cache the Guide data itself
-        $guide = \Illuminate\Support\Facades\Cache::remember("guide.show.v2.{$slug}", 3600, function () use ($slug) {
+        $guide = Cache::remember("guide.show.v2.{$slug}", CacheService::TTL_LONG, function () use ($slug) {
             return Guide::where('slug', $slug)
                 ->with(['author:id,username,display_name,avatar_url'])
                 ->withCount([

@@ -114,6 +114,20 @@ class CacheService
     }
 
     /**
+     * Get cached categories for Filament dropdown
+     * Returns: ['id' => 'name', ...]
+     */
+    public static function getCategories(): array
+    {
+        return self::remember(self::PREFIX_ADMIN . 'categories', function () {
+            return \App\Models\Category::orderBy('type')->orderBy('name')
+                ->get()
+                ->mapWithKeys(fn($category) => [$category->id => $category->name . ' (' . $category->type . ')'])
+                ->toArray();
+        }, self::TTL_ADMIN_DROPDOWN);
+    }
+
+    /**
      * Clear admin dropdown caches
      * Call this when users or roles are updated
      */
