@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 import DOMPurify from "isomorphic-dompurify";
 import LiveViewCount from "@/components/tracking/LiveViewCount";
+import ArticleFooterMessage from "@/components/ui/ArticleFooterMessage";
 
 interface Guide {
     id: number;
@@ -238,6 +239,9 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                             "
                             dangerouslySetInnerHTML={{ __html: processedContent }}
                         />
+
+                        {/* Footer Message */}
+                        <ArticleFooterMessage />
 
                         {/* Voting Section */}
                         <div className="mt-12 p-8 bg-[var(--bg-elevated)]/30 rounded-2xl border border-[var(--border)] text-center">

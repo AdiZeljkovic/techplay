@@ -18,6 +18,7 @@ import LiveViewCount from "@/components/tracking/LiveViewCount";
 import TrendingSidebar from "@/components/news/TrendingSidebar";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import RelatedArticles from "@/components/seo/RelatedArticles";
+import ArticleFooterMessage from "@/components/ui/ArticleFooterMessage";
 
 interface ArticleDetailViewProps {
     article: Article;
@@ -291,6 +292,9 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                         <div className="my-12 lg:hidden">
                             <AdUnit position="article_mid" />
                         </div>
+
+                        {/* Footer Message */}
+                        <ArticleFooterMessage />
 
                         {/* Tags / Categories Footer */}
                         <div className="mt-12 pt-8 border-t border-[var(--border)] flex flex-wrap gap-2">

@@ -27,6 +27,7 @@ interface ReviewDetailViewProps {
 // Let's assume standard client-side usage is fine or we duplicate simple regex logic if needed. 
 // ArticleDetailView uses `processContent` from `@/lib/content`.
 import { processContent } from "@/lib/content";
+import ArticleFooterMessage from "@/components/ui/ArticleFooterMessage";
 
 export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
     console.log("Review Full Object:", review);
@@ -303,6 +304,9 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                 </div>
                             )}
                         </div>
+
+                        {/* Footer Message */}
+                        <ArticleFooterMessage />
 
                         {/* Tags Display */}
                         {review.tags && review.tags.length > 0 && (
