@@ -12,19 +12,31 @@ use Filament\Schemas\Schema;
 use Filament\Schemas\Components\{Section, Grid, Tabs};
 use Filament\Forms\Components\{TextInput, Textarea, RichEditor, Select, Toggle, DateTimePicker, FileUpload, Repeater, Placeholder};
 use Filament\Tables\Columns\{TextColumn, ImageColumn};
-use Filament\Tables\Actions\Action;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Str;
 
 class GiveawayResource extends Resource
 {
     protected static ?string $model = Giveaway::class;
-    protected static ?string $navigationIcon = 'heroicon-o-gift';
-    protected static ?int $navigationSort = 50;
 
     public static function getNavigationGroup(): ?string
     {
         return 'Content Studio';
+    }
+
+    public static function getNavigationIcon(): string
+    {
+        return 'heroicon-o-gift';
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Giveaways';
     }
 
     public static function form(Schema $schema): Schema
@@ -32,7 +44,6 @@ class GiveawayResource extends Resource
         return $schema->components([
             Tabs::make('Giveaway')
                 ->tabs([
-                    // ═══════════════════════════════════════════════════════════
                     Tabs\Tab::make('Basic Info')
                         ->icon('heroicon-o-information-circle')
                         ->schema([
@@ -272,7 +283,7 @@ class GiveawayResource extends Resource
                     ->placeholder('—'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->options([
                         'draft' => 'Draft',
                         'active' => 'Active',
@@ -316,11 +327,11 @@ class GiveawayResource extends Resource
                         }
                     }),
 
-                Tables\Actions\EditAction::make(),
+                EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
