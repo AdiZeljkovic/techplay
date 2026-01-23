@@ -112,25 +112,12 @@ export default function RoadmapCTA() {
                         >
                             <Button
                                 size="lg"
-                                className="group relative overflow-hidden"
+                                className="group"
                             >
-                                <span className="relative z-10 flex items-center gap-2">
+                                <span className="flex items-center gap-2">
                                     Join the Community
                                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
                                 </span>
-
-                                {/* Animated background */}
-                                <motion.div
-                                    className="absolute inset-0 bg-gradient-to-r from-[var(--accent)] via-purple-500 to-blue-500"
-                                    animate={{
-                                        x: ["0%", "100%"],
-                                    }}
-                                    transition={{
-                                        duration: 3,
-                                        repeat: Infinity,
-                                        ease: "linear"
-                                    }}
-                                />
                             </Button>
                         </motion.div>
 
