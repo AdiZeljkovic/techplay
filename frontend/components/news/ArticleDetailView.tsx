@@ -2,7 +2,7 @@
 
 import { Article } from "@/types";
 import Link from "next/link";
-import { ArrowLeft, Clock, Facebook, Linkedin, Twitter, Share2, Calendar, User, Eye } from "lucide-react";
+import { ArrowLeft, Clock, Calendar, User, Eye } from "lucide-react";
 import Image from "next/image";
 import { format, formatDistanceToNow } from "date-fns";
 import Script from "next/script";
@@ -11,6 +11,7 @@ import { processContent } from "@/lib/content";
 import TableOfContents from "@/components/ui/TableOfContents";
 import AdUnit from "@/components/ads/AdUnit";
 import InTextAd from "@/components/ads/InTextAd";
+import SocialShare from "@/components/share/SocialShare";
 import CommentsSection from "@/components/comments/CommentsSection";
 import DOMPurify from "isomorphic-dompurify";
 import LiveViewCount from "@/components/tracking/LiveViewCount";
@@ -235,20 +236,13 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
 
                     {/* Social Sidebar (Left on Desktop) */}
                     <div className="hidden lg:block lg:col-span-1 h-full">
-                        <div className={`sticky top-32 flex flex-col gap-4 items-center transition-all duration-300 ${isScrolled ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
-                            <button className="w-10 h-10 rounded-full bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[#1DA1F2] hover:border-[#1DA1F2] flex items-center justify-center transition-all hover:scale-110 shadow-lg group">
-                                <Twitter className="w-5 h-5" />
-                            </button>
-                            <button className="w-10 h-10 rounded-full bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[#4267B2] hover:border-[#4267B2] flex items-center justify-center transition-all hover:scale-110 shadow-lg group">
-                                <Facebook className="w-5 h-5" />
-                            </button>
-                            <button className="w-10 h-10 rounded-full bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[#0077B5] hover:border-[#0077B5] flex items-center justify-center transition-all hover:scale-110 shadow-lg group">
-                                <Linkedin className="w-5 h-5" />
-                            </button>
-                            <div className="w-px h-12 bg-[var(--border)] my-2" />
-                            <button className="w-10 h-10 rounded-full bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--accent)] hover:border-[var(--accent)] flex items-center justify-center transition-all hover:scale-110 shadow-lg">
-                                <Share2 className="w-5 h-5" />
-                            </button>
+                        <div className={`sticky top-32 transition-all duration-300 ${isScrolled ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
+                            <SocialShare
+                                url={`/news/${article.slug}`}
+                                title={article.title}
+                                description={article.excerpt || ''}
+                                vertical={true}
+                            />
                         </div>
                     </div>
 
@@ -311,6 +305,17 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                             <span className="px-3 py-1 bg-[var(--bg-elevated)] text-[var(--text-secondary)] text-sm rounded-lg hover:text-[var(--accent)] hover:border-[var(--accent)] border border-transparent transition-all cursor-pointer">
                                 Gaming
                             </span>
+                        </div>
+
+                        {/* Mobile Social Share */}
+                        <div className="lg:hidden mt-8 p-6 bg-[var(--bg-elevated)]/30 border border-[var(--border)] rounded-2xl">
+                            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4 text-center">Share this article</h3>
+                            <SocialShare
+                                url={`/news/${article.slug}`}
+                                title={article.title}
+                                description={article.excerpt || ''}
+                                vertical={false}
+                            />
                         </div>
 
                         {/* Author Bio Box */}
