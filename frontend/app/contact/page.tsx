@@ -40,7 +40,7 @@ export default function ContactPage() {
         <div className="min-h-screen bg-[var(--bg-primary)]">
             <PageHero
                 title="Get in Touch"
-                description="Have a question, suggestion, or just want to say hi? We'd love to hear from you."
+                description="Got a tip? Found a bug? Want to work with us? We're all ears."
             />
 
             <div className="container mx-auto px-4 py-16 md:py-24 max-w-7xl">
@@ -56,8 +56,8 @@ export default function ContactPage() {
                         <motion.div variants={fadeInUp} className="mb-12">
                             <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-6">Contact Information</h2>
                             <p className="text-[var(--text-secondary)] text-lg leading-relaxed mb-8">
-                                Whether you're a reader with a tip, a developer wanting your game reviewed, or a brand looking to partner,
-                                we're here to help. Choose the right department below for the fastest response.
+                                We actually read our emails (shocking, we know). Whether you've got a news tip, want your game reviewed,
+                                or just found a typo that's driving you nuts—hit the right inbox below and we'll get back to you.
                             </p>
 
                             <div className="space-y-6">
@@ -67,7 +67,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-[var(--text-primary)] text-lg mb-1">General & Editorial</h3>
-                                        <p className="text-[var(--text-secondary)] text-sm mb-2">For news tips, press releases, and general feedback.</p>
+                                        <p className="text-[var(--text-secondary)] text-sm mb-2">News tips, game review requests, press releases, or just saying hi.</p>
                                         <a href="mailto:info@techplay.gg" className="text-[var(--accent)] font-medium hover:underline">info@techplay.gg</a>
                                     </div>
                                 </div>
@@ -78,7 +78,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-[var(--text-primary)] text-lg mb-1">Advertising & Partnerships</h3>
-                                        <p className="text-[var(--text-secondary)] text-sm mb-2">For marketing campaigns, sponsorships, and business Inquiries.</p>
+                                        <p className="text-[var(--text-secondary)] text-sm mb-2">Want to advertise or partner with us? Let's talk rates and options.</p>
                                         <a href="mailto:marketing@techplay.gg" className="text-purple-400 font-medium hover:underline">marketing@techplay.gg</a>
                                     </div>
                                 </div>
@@ -89,7 +89,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-[var(--text-primary)] text-lg mb-1">Technical Support</h3>
-                                        <p className="text-[var(--text-secondary)] text-sm mb-2">Issues with the website or your account?</p>
+                                        <p className="text-[var(--text-secondary)] text-sm mb-2">Site broken? Can't log in? Comments not working? We'll fix it.</p>
                                         <a href="mailto:support@techplay.gg" className="text-blue-400 font-medium hover:underline">support@techplay.gg</a>
                                     </div>
                                 </div>
@@ -127,7 +127,7 @@ export default function ContactPage() {
 
                             <div className="relative z-10">
                                 <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Send us a message</h3>
-                                <p className="text-[var(--text-secondary)] mb-8">Usually we respond within 24 hours.</p>
+                                <p className="text-[var(--text-secondary)] mb-8">We try to respond within 24-48 hours. Weekends might take a bit longer (we're human).</p>
 
                                 {isSent ? (
                                     <motion.div

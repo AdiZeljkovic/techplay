@@ -32,7 +32,7 @@ export default function ImpressumClient({ staff }: { staff: any }) {
         <div className="min-h-screen bg-[var(--bg-primary)]">
             <PageHero
                 title="Impressum"
-                description="Transparency is our foundation. Meet the team and entity behind TechPlay.gg."
+                description="Legal stuff, but make it readable. Here's who we are and how to reach us."
             />
 
             <div className="container mx-auto px-4 py-16 max-w-6xl">
@@ -60,7 +60,13 @@ export default function ImpressumClient({ staff }: { staff: any }) {
                                     <h2 className="text-xl font-bold text-[var(--text-primary)]">Publisher & Owner</h2>
                                 </div>
                                 <h3 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-2">Luminor Solutions</h3>
-                                <p className="text-[var(--text-secondary)] text-lg">Digital Media & Technology Agency</p>
+                                <p className="text-[var(--text-secondary)] text-lg mb-4">Digital Media & Technology Agency</p>
+                                <div className="text-sm text-[var(--text-muted)] leading-relaxed">
+                                    <p>
+                                        Luminor Solutions is the company behind TechPlay.gg. We handle the business side—hosting, legal compliance,
+                                        partnerships—so our editorial team can focus on what matters: creating great content.
+                                    </p>
+                                </div>
                             </div>
 
                             <div className="space-y-4 mt-8">
@@ -205,6 +211,25 @@ export default function ImpressumClient({ staff }: { staff: any }) {
                         </div>
                     </motion.div>
 
+                    {/* Join Us CTA */}
+                    <motion.div
+                        variants={fadeInUp}
+                        className="col-span-1 md:col-span-3 lg:col-span-4 bg-gradient-to-r from-[var(--bg-elevated)] to-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-8 text-center"
+                    >
+                        <h3 className="text-2xl font-bold text-white mb-3">Want to Join the Team?</h3>
+                        <p className="text-[var(--text-secondary)] mb-6 max-w-2xl mx-auto">
+                            We're always looking for talented writers, video editors, and developers who share our passion
+                            for honest tech journalism. If you think you'd be a good fit, drop us a line.
+                        </p>
+                        <a
+                            href="mailto:info@techplay.gg?subject=I want to join TechPlay"
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-semibold rounded-xl transition-colors"
+                        >
+                            <Mail className="w-4 h-4" />
+                            Get in Touch
+                        </a>
+                    </motion.div>
+
                     {/* Tech Values - Small Footer */}
                     <motion.div
                         variants={fadeInUp}
@@ -212,7 +237,7 @@ export default function ImpressumClient({ staff }: { staff: any }) {
                     >
                         <p className="flex items-center justify-center gap-2 text-xs text-[var(--text-muted)] uppercase tracking-widest opacity-50">
                             <Code2 className="w-3 h-3" />
-                            Developed with <span className="text-[var(--accent)]">Next.js</span> & <span className="text-red-500">FilamentPHP</span>
+                            Built with <span className="text-[var(--accent)]">Next.js</span> & <span className="text-red-500">Laravel</span>
                         </p>
                     </motion.div>
                 </motion.div>

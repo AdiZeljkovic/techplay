@@ -28,8 +28,8 @@ export default function MarketingClient() {
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
             <PageHero
-                title="Advertise on TechPlay.gg"
-                description="Reach a passionate audience in the world of technology and gaming."
+                title="Advertise on TechPlay"
+                description="Let's talk partnerships. No corporate BS, just honest conversations about reaching gamers."
                 backgroundImage="/hero-marketing.jpg"
             />
 
@@ -43,16 +43,17 @@ export default function MarketingClient() {
                         variants={fadeInUp}
                     >
                         <h2 className="text-3xl md:text-5xl font-black text-[var(--text-primary)] mb-8 leading-tight">
-                            The Epicenter of <br />
+                            Gamers Who Actually Read<br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] to-purple-500">
-                                Tech & Gaming Culture
+                                (And Buy Stuff)
                             </span>
                         </h2>
                         <p className="text-lg md:text-xl text-[var(--text-secondary)] mb-12 max-w-3xl mx-auto leading-relaxed">
-                            Welcome to TechPlay.gg, the portal delivering daily fresh info, detailed reviews, practical guides,
-                            and engaging commentary from the dynamic world of tech and video games.
-                            If you want to present your brand to an audience truly interested in <span className="text-[var(--text-primary)] font-semibold">innovation, premium hardware, and gaming</span>,
-                            you are in the right place.
+                            Our readers come here because they trust us to cut through the marketing fluff.
+                            They're researching their next GPU, comparing monitors, deciding which game deserves their €60.
+                            <span className="block mt-4 text-[var(--text-primary)] font-semibold">
+                                If you've got a product worth their attention, we can help you tell that story.
+                            </span>
                         </p>
                     </motion.div>
                 </div>
@@ -72,9 +73,9 @@ export default function MarketingClient() {
                         className="text-center mb-16"
                     >
                         <span className="px-4 py-2 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] font-bold text-sm uppercase tracking-wider">
-                            Value Proposition
+                            Why We're Worth It
                         </span>
-                        <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mt-4">Why Advertise With Us?</h2>
+                        <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mt-4">What You're Actually Getting</h2>
                     </motion.div>
 
                     <motion.div
@@ -93,10 +94,10 @@ export default function MarketingClient() {
                                 <div className="w-14 h-14 bg-[var(--bg-elevated)] rounded-2xl flex items-center justify-center mb-6 text-[var(--accent)]">
                                     <Users className="w-7 h-7" />
                                 </div>
-                                <h3 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-4">Reach Targeted Audience</h3>
+                                <h3 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-4">People Who Actually Spend Money on Tech</h3>
                                 <p className="text-[var(--text-secondary)] text-lg leading-relaxed max-w-xl">
-                                    Our readers are your potential buyers – informed, tech-savvy, and passionate about new technologies.
-                                    Skip the noise and speak directly to decision-makers and early adopters.
+                                    Our readers aren't just browsing—they're actively shopping. They come to us when they're ready to upgrade
+                                    their setup, researching what's worth buying. If your product is good, they'll click through. If it's great, they'll buy it.
                                 </p>
                             </div>
                         </motion.div>
@@ -107,40 +108,44 @@ export default function MarketingClient() {
                             <div className="space-y-6 w-full">
                                 <div>
                                     <div className="text-4xl font-black text-[var(--text-primary)]">50K+</div>
-                                    <div className="text-sm text-[var(--text-muted)] uppercase tracking-wide">Montyly Unique Visitors</div>
+                                    <div className="text-sm text-[var(--text-muted)] uppercase tracking-wide">Monthly Readers</div>
                                 </div>
                                 <div className="w-full h-px bg-[var(--border)]" />
                                 <div>
-                                    <div className="text-4xl font-black text-[var(--text-primary)]">120K+</div>
-                                    <div className="text-sm text-[var(--text-muted)] uppercase tracking-wide">Page Views</div>
+                                    <div className="text-4xl font-black text-[var(--text-primary)]">3.2 min</div>
+                                    <div className="text-sm text-[var(--text-muted)] uppercase tracking-wide">Avg. Time on Page</div>
+                                </div>
+                                <div className="w-full h-px bg-[var(--border)]" />
+                                <div className="mt-4 text-xs text-[var(--text-muted)]">
+                                    (Real numbers, updated monthly)
                                 </div>
                             </div>
                         </motion.div>
 
-                        {/* Box 3: Brand Visibility */}
+                        {/* Box 3: Not a Billboard */}
                         <motion.div variants={fadeInUp} className="lg:col-span-4 bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-8 hover:bg-[var(--bg-elevated)] transition-colors">
                             <MonitorSmartphone className="w-10 h-10 text-blue-400 mb-6" />
-                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">Brand Visibility</h3>
+                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">We're Not a Billboard</h3>
                             <p className="text-[var(--text-secondary)]">
-                                Stand out in a relevant environment that your target group actively monitors daily.
+                                People actually read our site. Your ad won't be surrounded by clickbait or autoplaying video nonsense.
                             </p>
                         </motion.div>
 
-                        {/* Box 4: Concrete Results */}
+                        {/* Box 4: Trackable Results */}
                         <motion.div variants={fadeInUp} className="lg:col-span-4 bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-8 hover:bg-[var(--bg-elevated)] transition-colors">
                             <TrendingUp className="w-10 h-10 text-green-400 mb-6" />
-                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">Concrete Results</h3>
+                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">Trackable Performance</h3>
                             <p className="text-[var(--text-secondary)]">
-                                Whether aiming for brand awareness, lead generation, or sales, our formats deliver.
+                                You'll get real click-through data, not vague "impressions." If an ad isn't working, we'll tell you.
                             </p>
                         </motion.div>
 
-                        {/* Box 5: Community (Wide) */}
+                        {/* Box 5: Editorial Independence */}
                         <motion.div variants={fadeInUp} className="lg:col-span-4 bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-8 hover:bg-[var(--bg-elevated)] transition-colors">
-                            <Zap className="w-10 h-10 text-yellow-400 mb-6" />
-                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">Engaged Community</h3>
+                            <Shield className="w-10 h-10 text-yellow-400 mb-6" />
+                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">Editorial Independence</h3>
                             <p className="text-[var(--text-secondary)]">
-                                Connect with an audience that values quality, authentic content and honest reviews.
+                                Ads don't influence reviews. If we review your product and it's mediocre, we'll say so—even if you're a sponsor.
                             </p>
                         </motion.div>
                     </motion.div>
@@ -161,23 +166,26 @@ export default function MarketingClient() {
 
                         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                             <div>
-                                <h2 className="text-3xl md:text-5xl font-bold text-[var(--text-primary)] mb-6">Our Advertising Solutions</h2>
+                                <h2 className="text-3xl md:text-5xl font-bold text-[var(--text-primary)] mb-6">How We Can Work Together</h2>
                                 <p className="text-[var(--text-secondary)] text-lg mb-8 leading-relaxed">
-                                    We offer a wide range of advertising opportunities to meet diverse needs and budgets.
-                                    From classic formats to creative campaigns, we are ready to design a solution that best fits your brand.
+                                    We're not here to nickel-and-dime you with packages nobody understands. Here's what actually works,
+                                    based on what our partners have seen results from:
                                 </p>
 
                                 <ul className="space-y-4 mb-10">
                                     {[
-                                        "Display Banners (Standard IAB sizes)",
-                                        "Sponsored Articles & Reviews",
-                                        "Social Media Campaigns (FB, IG, Native)",
-                                        "Newsletter Inclusions",
-                                        "Custom Giveaway Contests"
+                                        { title: "Display Ads", desc: "Standard banner placements (sidebar, in-article). Simple, trackable." },
+                                        { title: "Sponsored Content", desc: "We write an honest review/guide featuring your product. Full transparency, always labeled." },
+                                        { title: "Newsletter Features", desc: "Your product gets a spotlight in our weekly newsletter (50K+ subscribers)." },
+                                        { title: "Giveaway Partnerships", desc: "Co-host a giveaway. Great for launches, high engagement rates." },
+                                        { title: "Custom Campaigns", desc: "Got a unique idea? Let's talk. We're flexible if it makes sense." }
                                     ].map((item, i) => (
-                                        <li key={i} className="flex items-center gap-3 text-[var(--text-primary)] font-medium">
-                                            <CheckCircle2 className="w-5 h-5 text-[var(--accent)] flex-shrink-0" />
-                                            {item}
+                                        <li key={i} className="flex items-start gap-3">
+                                            <CheckCircle2 className="w-5 h-5 text-[var(--accent)] flex-shrink-0 mt-1" />
+                                            <div>
+                                                <span className="text-[var(--text-primary)] font-bold">{item.title}:</span>{' '}
+                                                <span className="text-[var(--text-secondary)]">{item.desc}</span>
+                                            </div>
                                         </li>
                                     ))}
                                 </ul>
@@ -227,10 +235,13 @@ export default function MarketingClient() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                     >
-                        <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-6">Have Custom Requirements?</h2>
+                        <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-6">Let's Talk Numbers</h2>
                         <p className="text-[var(--text-secondary)] text-lg mb-10 leading-relaxed mx-auto max-w-2xl">
-                            Open to long-term partnerships? Have an idea that isn't covered by standard packages?
-                            Our marketing team is at your disposal for all questions and agreements.
+                            Pricing depends on what you need, but we're transparent—no hidden fees or weird packages.
+                            Email us with your budget and goals, and we'll put together something that makes sense.
+                            <span className="block mt-4 text-[var(--text-primary)]">
+                                Typical response time: Same day (or next morning if you email at 3 AM).
+                            </span>
                         </p>
 
                         <div className="inline-block p-[2px] rounded-full bg-gradient-to-r from-[var(--accent)] to-purple-600">
@@ -243,8 +254,8 @@ export default function MarketingClient() {
                         </div>
 
                         <p className="mt-12 text-[var(--text-muted)]">
-                            We look forward to a successful cooperation! <br />
-                            <span className="font-bold text-[var(--text-primary)]">The TechPlay.gg Team</span>
+                            Looking forward to hearing from you. <br />
+                            <span className="font-bold text-[var(--text-primary)]">— The TechPlay Team</span>
                         </p>
                     </motion.div>
                 </div>
