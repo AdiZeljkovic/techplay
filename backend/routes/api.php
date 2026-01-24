@@ -77,9 +77,14 @@ Route::prefix('v1')->group(function () {
         Route::get('/email/verify/{id}/{hash}', [App\Http\Controllers\Api\V1\VerificationController::class, 'verify'])
             ->name('verification.verify');
 
-        // Newsletter (Strict rate limit to prevent email bombing)
-        Route::middleware('throttle:3,1')->group(function () {
+        // Newsletter (CRITICAL: Strict rate limit to prevent email bombing)
+        // 1 subscribe per 10 minutes per IP to prevent spam attacks
+        Route::middleware('throttle:1,10')->group(function () {
             Route::post('/newsletter/subscribe', [App\Http\Controllers\Api\V1\NewsletterController::class, 'subscribe']);
+        });
+
+        // Newsletter verification - separate limit (stricter)
+        Route::middleware('throttle:5,60')->group(function () {
             Route::post('/newsletter/verify', [App\Http\Controllers\Api\V1\NewsletterController::class, 'verify']);
         });
 
@@ -184,11 +189,16 @@ Route::prefix('v1')->group(function () {
     Route::get('/giveaways/{slug}', [App\Http\Controllers\Api\V1\GiveawayController::class, 'show']);
     Route::get('/giveaways/{slug}/leaderboard', [App\Http\Controllers\Api\V1\GiveawayController::class, 'leaderboard']);
 
-    // Authenticated routes
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/giveaways/{slug}/enter', [App\Http\Controllers\Api\V1\GiveawayController::class, 'enter']);
+    // Authenticated routes (rate-limited to prevent abuse)
+    Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+        // Entry actions - stricter limits
+        Route::middleware('throttle:10,1')->group(function () {
+            Route::post('/giveaways/{slug}/enter', [App\Http\Controllers\Api\V1\GiveawayController::class, 'enter']);
+            Route::post('/giveaways/{slug}/tasks/{taskId}/complete', [App\Http\Controllers\Api\V1\GiveawayController::class, 'completeTask']);
+            Route::post('/giveaways/{slug}/daily-bonus', [App\Http\Controllers\Api\V1\GiveawayController::class, 'claimDailyBonus']);
+        });
+
+        // Read actions - more relaxed
         Route::get('/giveaways/{slug}/my-entry', [App\Http\Controllers\Api\V1\GiveawayController::class, 'myEntry']);
-        Route::post('/giveaways/{slug}/tasks/{taskId}/complete', [App\Http\Controllers\Api\V1\GiveawayController::class, 'completeTask']);
-        Route::post('/giveaways/{slug}/daily-bonus', [App\Http\Controllers\Api\V1\GiveawayController::class, 'claimDailyBonus']);
     });
 });

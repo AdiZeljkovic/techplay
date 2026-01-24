@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class Giveaway extends Model
@@ -126,112 +127,188 @@ class Giveaway extends Model
     }
 
     /**
-     * Pick a winner using weighted random selection
+     * Pick a winner using weighted random selection (O(n) memory-efficient algorithm)
      * More points = higher chance to win
+     *
+     * PERFORMANCE: Uses cumulative weight instead of building massive array
+     * Old: 1000 users × 100 points = 100,000 array elements (400KB+ memory)
+     * New: 1000 users = 1000 iterations (4KB memory)
+     *
+     * SECURITY: Uses DB transaction with pessimistic lock to prevent race conditions
      */
     public function pickWinner(): ?User
     {
-        $entries = $this->entries()->with('user')->where('total_points', '>', 0)->get();
+        return DB::transaction(function () {
+            // Pessimistic lock - prevent concurrent winner selection
+            $giveaway = Giveaway::where('id', $this->id)
+                ->lockForUpdate()
+                ->first();
 
-        if ($entries->isEmpty())
-            return null;
-
-        // Build weighted pool
-        $pool = [];
-        foreach ($entries as $entry) {
-            for ($i = 0; $i < $entry->total_points; $i++) {
-                $pool[] = $entry->user_id;
+            // Check if winner already selected
+            if ($giveaway->winner_id) {
+                throw new \Exception('Winner has already been selected for this giveaway.');
             }
-        }
 
-        // Random selection
-        $winnerId = $pool[array_rand($pool)];
-        $winner = User::find($winnerId);
+            // Get all entries with points (no eager loading to save memory)
+            $entries = $giveaway->entries()
+                ->where('total_points', '>', 0)
+                ->select('id', 'user_id', 'total_points')
+                ->get();
 
-        // Update giveaway
-        $this->update([
-            'winner_id' => $winnerId,
-            'status' => 'ended',
-        ]);
+            if ($entries->isEmpty()) {
+                return null;
+            }
 
-        // Send winner notification
-        if ($winner && $winner->email) {
-            $winner->notify(new \App\Notifications\GiveawayWinnerNotification($this));
-        }
+            // Calculate total weight (sum of all points)
+            $totalWeight = $entries->sum('total_points');
 
-        return $winner;
+            // Generate random number between 1 and total weight
+            $random = mt_rand(1, $totalWeight);
+
+            // Cumulative weight selection (O(n) instead of O(n*points))
+            $cumulativeWeight = 0;
+            $winnerId = null;
+
+            foreach ($entries as $entry) {
+                $cumulativeWeight += $entry->total_points;
+                if ($random <= $cumulativeWeight) {
+                    $winnerId = $entry->user_id;
+                    break;
+                }
+            }
+
+            if (!$winnerId) {
+                return null;
+            }
+
+            // Update giveaway with winner
+            $giveaway->update([
+                'winner_id' => $winnerId,
+                'status' => 'ended',
+                'winner_announced_at' => now(),
+            ]);
+
+            // Get winner user object
+            $winner = User::find($winnerId);
+
+            // Send winner notification (queued, won't block transaction)
+            if ($winner && $winner->email) {
+                $winner->notify(new \App\Notifications\GiveawayWinnerNotification($this));
+            }
+
+            return $winner;
+        });
     }
 
     /**
-     * Pick winners for all prize tiers using weighted random selection
+     * Pick winners for all prize tiers using weighted random selection (memory-efficient)
      * Returns array of ['tier_id' => [user_ids]]
+     *
+     * PERFORMANCE: Uses cumulative weight for each tier (O(n*tiers) instead of O(n*points*tiers))
+     * SECURITY: Uses DB transaction with lock to prevent concurrent selections
      */
     public function pickWinnersByTiers(): array
     {
-        $tiers = $this->prizeTiers()->orderBy('sort_order')->get();
+        return DB::transaction(function () {
+            // Pessimistic lock
+            $giveaway = Giveaway::where('id', $this->id)
+                ->lockForUpdate()
+                ->first();
 
-        if ($tiers->isEmpty()) {
-            // Fallback to single winner if no tiers defined
-            $winner = $this->pickWinner();
-            return $winner ? ['single' => [$winner->id]] : [];
-        }
-
-        $selectedWinners = [];
-
-        foreach ($tiers as $tier) {
-            $tierWinners = [];
-            $qualifiedEntries = $tier->getQualifiedEntries()->with('user')->get();
-
-            if ($qualifiedEntries->isEmpty()) {
-                continue;
+            // Check if already ended
+            if ($giveaway->status === 'ended') {
+                throw new \Exception('Winners have already been selected for this giveaway.');
             }
 
-            // Build weighted pool for this tier
-            $pool = [];
-            foreach ($qualifiedEntries as $entry) {
-                for ($i = 0; $i < $entry->total_points; $i++) {
-                    $pool[] = $entry->user_id;
+            $tiers = $giveaway->prizeTiers()->orderBy('sort_order')->get();
+
+            if ($tiers->isEmpty()) {
+                // Fallback to single winner if no tiers defined
+                $winner = $this->pickWinner();
+                return $winner ? ['single' => [$winner->id]] : [];
+            }
+
+            $selectedWinners = [];
+            $globalSelectedUserIds = []; // Track all winners across tiers
+
+            foreach ($tiers as $tier) {
+                $tierWinners = [];
+
+                // Get qualified entries (exclude already selected winners)
+                $qualifiedEntries = $tier->getQualifiedEntries()
+                    ->whereNotIn('user_id', $globalSelectedUserIds)
+                    ->select('id', 'user_id', 'total_points')
+                    ->get();
+
+                if ($qualifiedEntries->isEmpty()) {
+                    continue;
                 }
-            }
 
-            // Pick multiple winners for this tier
-            for ($i = 0; $i < $tier->winner_count; $i++) {
-                if (empty($pool)) {
-                    break;
+                // Pick multiple winners for this tier using cumulative weight
+                for ($i = 0; $i < $tier->winner_count; $i++) {
+                    if ($qualifiedEntries->isEmpty()) {
+                        break;
+                    }
+
+                    // Calculate total weight for remaining entries
+                    $totalWeight = $qualifiedEntries->sum('total_points');
+
+                    if ($totalWeight === 0) {
+                        break;
+                    }
+
+                    // Random number between 1 and total weight
+                    $random = mt_rand(1, $totalWeight);
+
+                    // Cumulative selection
+                    $cumulativeWeight = 0;
+                    $selectedEntry = null;
+
+                    foreach ($qualifiedEntries as $entry) {
+                        $cumulativeWeight += $entry->total_points;
+                        if ($random <= $cumulativeWeight) {
+                            $selectedEntry = $entry;
+                            break;
+                        }
+                    }
+
+                    if (!$selectedEntry) {
+                        continue;
+                    }
+
+                    // Add to tier winners
+                    $winnerId = $selectedEntry->user_id;
+                    $tierWinners[] = $winnerId;
+                    $globalSelectedUserIds[] = $winnerId;
+
+                    // Remove from pool (can't win same tier twice)
+                    $qualifiedEntries = $qualifiedEntries->reject(fn($e) => $e->user_id === $winnerId);
                 }
 
-                // Random selection
-                $randomIndex = array_rand($pool);
-                $winnerId = $pool[$randomIndex];
+                // Save tier winners and send notifications
+                foreach ($tierWinners as $winnerId) {
+                    $tier->winners()->attach($winnerId, [
+                        'selected_at' => now(),
+                    ]);
 
-                // Add to tier winners
-                $tierWinners[] = $winnerId;
-
-                // Remove all instances of this winner from pool (can't win same tier twice)
-                $pool = array_filter($pool, fn($id) => $id !== $winnerId);
-                $pool = array_values($pool); // Re-index array
-            }
-
-            // Save tier winners and send notifications
-            foreach ($tierWinners as $winnerId) {
-                $tier->winners()->attach($winnerId, [
-                    'selected_at' => now(),
-                ]);
-
-                // Send winner notification
-                $winner = User::find($winnerId);
-                if ($winner && $winner->email) {
-                    $winner->notify(new \App\Notifications\GiveawayWinnerNotification($this, $tier));
+                    // Send winner notification (queued)
+                    $winner = User::find($winnerId);
+                    if ($winner && $winner->email) {
+                        $winner->notify(new \App\Notifications\GiveawayWinnerNotification($this, $tier));
+                    }
                 }
+
+                $selectedWinners[$tier->id] = $tierWinners;
             }
 
-            $selectedWinners[$tier->id] = $tierWinners;
-        }
+            // Update giveaway status
+            $giveaway->update([
+                'status' => 'ended',
+                'winner_announced_at' => now(),
+            ]);
 
-        // Update giveaway status
-        $this->update(['status' => 'ended']);
-
-        return $selectedWinners;
+            return $selectedWinners;
+        });
     }
 
     /**

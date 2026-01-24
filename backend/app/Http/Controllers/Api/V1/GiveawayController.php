@@ -9,6 +9,7 @@ use App\Models\GiveawayTask;
 use App\Models\GiveawayTaskCompletion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class GiveawayController extends Controller
@@ -272,16 +273,24 @@ class GiveawayController extends Controller
             ], 422);
         }
 
-        // Mark as completed
+        // Mark as completed (with race condition protection)
         DB::transaction(function () use ($entry, $task) {
-            GiveawayTaskCompletion::create([
-                'entry_id' => $entry->id,
-                'task_id' => $task->id,
-                'completed_at' => now(),
-                'completed_date' => $task->is_repeatable ? today() : null,
-            ]);
+            // Use firstOrCreate to prevent duplicate completions on rapid clicks
+            $completion = GiveawayTaskCompletion::firstOrCreate(
+                [
+                    'entry_id' => $entry->id,
+                    'task_id' => $task->id,
+                    'completed_date' => $task->is_repeatable ? today() : null,
+                ],
+                [
+                    'completed_at' => now(),
+                ]
+            );
 
-            $entry->addPoints($task->points);
+            // Only add points if this was newly created (not already completed)
+            if ($completion->wasRecentlyCreated) {
+                $entry->addPoints($task->points);
+            }
         });
 
         // Refresh entry
@@ -294,23 +303,31 @@ class GiveawayController extends Controller
     }
 
     /**
-     * Get leaderboard for a giveaway
+     * Get leaderboard for a giveaway (cached for performance)
+     *
+     * PERFORMANCE: Cached for 60 seconds to reduce database load
+     * Frontend fetches every 30s, so 50% of requests hit cache
      */
     public function leaderboard(string $slug): JsonResponse
     {
         $giveaway = Giveaway::where('slug', $slug)->firstOrFail();
 
-        $leaders = $giveaway->entries()
-            ->with('user:id,username,avatar')
-            ->orderByDesc('total_points')
-            ->limit(10)
-            ->get()
-            ->map(fn($entry, $index) => [
-                'rank' => $index + 1,
-                'username' => $entry->user->username,
-                'avatar' => $entry->user->avatar_url,
-                'points' => $entry->total_points,
-            ]);
+        $cacheKey = "giveaway:{$giveaway->id}:leaderboard";
+        $cacheTtl = config('giveaway.cache.leaderboard_ttl', 60);
+
+        $leaders = Cache::remember($cacheKey, $cacheTtl, function () use ($giveaway) {
+            return $giveaway->entries()
+                ->with('user:id,username,avatar')
+                ->orderByDesc('total_points')
+                ->limit(10)
+                ->get()
+                ->map(fn($entry, $index) => [
+                    'rank' => $index + 1,
+                    'username' => $entry->user->username,
+                    'avatar' => $entry->user->avatar_url,
+                    'points' => $entry->total_points,
+                ]);
+        });
 
         return response()->json([
             'data' => $leaders,

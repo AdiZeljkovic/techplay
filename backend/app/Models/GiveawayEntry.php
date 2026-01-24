@@ -36,6 +36,15 @@ class GiveawayEntry extends Model
                 $entry->referral_code = strtoupper(Str::random(8));
             }
         });
+
+        // Invalidate leaderboard cache when points change
+        static::updated(function ($entry) {
+            \Illuminate\Support\Facades\Cache::forget("giveaway:{$entry->giveaway_id}:leaderboard");
+        });
+
+        static::created(function ($entry) {
+            \Illuminate\Support\Facades\Cache::forget("giveaway:{$entry->giveaway_id}:leaderboard");
+        });
     }
 
     // ─────────────────────────────────────────────────────────────
