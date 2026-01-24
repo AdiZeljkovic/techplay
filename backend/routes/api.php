@@ -180,6 +180,7 @@ Route::prefix('v1')->group(function () {
     // ═══════════════════════════════════════════════════════════════════════
 
     // Public routes
+    Route::get('/giveaways', [App\Http\Controllers\Api\V1\GiveawayController::class, 'index']);
     Route::get('/giveaways/{slug}', [App\Http\Controllers\Api\V1\GiveawayController::class, 'show']);
     Route::get('/giveaways/{slug}/leaderboard', [App\Http\Controllers\Api\V1\GiveawayController::class, 'leaderboard']);
 
@@ -188,5 +189,6 @@ Route::prefix('v1')->group(function () {
         Route::post('/giveaways/{slug}/enter', [App\Http\Controllers\Api\V1\GiveawayController::class, 'enter']);
         Route::get('/giveaways/{slug}/my-entry', [App\Http\Controllers\Api\V1\GiveawayController::class, 'myEntry']);
         Route::post('/giveaways/{slug}/tasks/{taskId}/complete', [App\Http\Controllers\Api\V1\GiveawayController::class, 'completeTask']);
+        Route::post('/giveaways/{slug}/daily-bonus', [App\Http\Controllers\Api\V1\GiveawayController::class, 'claimDailyBonus']);
     });
 });

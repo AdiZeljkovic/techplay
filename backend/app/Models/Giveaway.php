@@ -71,6 +71,11 @@ class Giveaway extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function prizeTiers(): HasMany
+    {
+        return $this->hasMany(GiveawayPrizeTier::class)->orderBy('sort_order');
+    }
+
     // ─────────────────────────────────────────────────────────────
     // SCOPES
     // ─────────────────────────────────────────────────────────────
@@ -141,6 +146,7 @@ class Giveaway extends Model
 
         // Random selection
         $winnerId = $pool[array_rand($pool)];
+        $winner = User::find($winnerId);
 
         // Update giveaway
         $this->update([
@@ -148,7 +154,92 @@ class Giveaway extends Model
             'status' => 'ended',
         ]);
 
-        return User::find($winnerId);
+        // Send winner notification
+        if ($winner && $winner->email) {
+            $winner->notify(new \App\Notifications\GiveawayWinnerNotification($this));
+        }
+
+        return $winner;
+    }
+
+    /**
+     * Pick winners for all prize tiers using weighted random selection
+     * Returns array of ['tier_id' => [user_ids]]
+     */
+    public function pickWinnersByTiers(): array
+    {
+        $tiers = $this->prizeTiers()->orderBy('sort_order')->get();
+
+        if ($tiers->isEmpty()) {
+            // Fallback to single winner if no tiers defined
+            $winner = $this->pickWinner();
+            return $winner ? ['single' => [$winner->id]] : [];
+        }
+
+        $selectedWinners = [];
+
+        foreach ($tiers as $tier) {
+            $tierWinners = [];
+            $qualifiedEntries = $tier->getQualifiedEntries()->with('user')->get();
+
+            if ($qualifiedEntries->isEmpty()) {
+                continue;
+            }
+
+            // Build weighted pool for this tier
+            $pool = [];
+            foreach ($qualifiedEntries as $entry) {
+                for ($i = 0; $i < $entry->total_points; $i++) {
+                    $pool[] = $entry->user_id;
+                }
+            }
+
+            // Pick multiple winners for this tier
+            for ($i = 0; $i < $tier->winner_count; $i++) {
+                if (empty($pool)) {
+                    break;
+                }
+
+                // Random selection
+                $randomIndex = array_rand($pool);
+                $winnerId = $pool[$randomIndex];
+
+                // Add to tier winners
+                $tierWinners[] = $winnerId;
+
+                // Remove all instances of this winner from pool (can't win same tier twice)
+                $pool = array_filter($pool, fn($id) => $id !== $winnerId);
+                $pool = array_values($pool); // Re-index array
+            }
+
+            // Save tier winners and send notifications
+            foreach ($tierWinners as $winnerId) {
+                $tier->winners()->attach($winnerId, [
+                    'selected_at' => now(),
+                ]);
+
+                // Send winner notification
+                $winner = User::find($winnerId);
+                if ($winner && $winner->email) {
+                    $winner->notify(new \App\Notifications\GiveawayWinnerNotification($this, $tier));
+                }
+            }
+
+            $selectedWinners[$tier->id] = $tierWinners;
+        }
+
+        // Update giveaway status
+        $this->update(['status' => 'ended']);
+
+        return $selectedWinners;
+    }
+
+    /**
+     * Check if giveaway uses tier system
+     */
+    public function hasTiers(): bool
+    {
+        return $this->prizeTiers()->exists();
     }
 
     public function getPublicUrl(): string

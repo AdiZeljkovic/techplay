@@ -113,6 +113,59 @@ class GiveawayResource extends Resource
                         ]),
 
                     // ═══════════════════════════════════════════════════════════
+                    // TAB: PRIZE TIERS (Optional Multi-Winner System)
+                    // ═══════════════════════════════════════════════════════════
+                    Tabs\Tab::make('Prize Tiers')
+                        ->icon('heroicon-o-star')
+                        ->schema([
+                            Section::make('Multiple Winners System')
+                                ->description('Define prize tiers with multiple winners (e.g., Gold/Silver/Bronze). Leave empty for single-winner mode.')
+                                ->schema([
+                                    Repeater::make('prizeTiers')
+                                        ->relationship()
+                                        ->schema([
+                                            Grid::make(3)->schema([
+                                                TextInput::make('tier_name')
+                                                    ->required()
+                                                    ->placeholder('e.g. Grand Prize, Silver, Bronze')
+                                                    ->label('Tier Name'),
+
+                                                TextInput::make('winner_count')
+                                                    ->numeric()
+                                                    ->required()
+                                                    ->default(1)
+                                                    ->minValue(1)
+                                                    ->label('# of Winners'),
+
+                                                TextInput::make('min_points')
+                                                    ->numeric()
+                                                    ->default(0)
+                                                    ->helperText('Min points to qualify')
+                                                    ->label('Min Points'),
+                                            ]),
+
+                                            Textarea::make('prize_description')
+                                                ->label('Prize Description')
+                                                ->placeholder('Describe this tier\'s prize...')
+                                                ->rows(2)
+                                                ->columnSpanFull(),
+
+                                            TextInput::make('sort_order')
+                                                ->numeric()
+                                                ->default(0)
+                                                ->label('Display Order')
+                                                ->helperText('Lower = higher tier'),
+                                        ])
+                                        ->defaultItems(0)
+                                        ->reorderable()
+                                        ->collapsible()
+                                        ->itemLabel(fn(array $state): ?string =>
+                                            ($state['tier_name'] ?? 'New Tier') . ' (' . ($state['winner_count'] ?? 1) . ' winner' . (($state['winner_count'] ?? 1) > 1 ? 's' : '') . ')')
+                                        ->addActionLabel('Add Prize Tier'),
+                                ]),
+                        ]),
+
+                    // ═══════════════════════════════════════════════════════════
                     // TAB: TASKS
                     // ═══════════════════════════════════════════════════════════
                     Tabs\Tab::make('Tasks')
@@ -309,7 +362,7 @@ class GiveawayResource extends Resource
                     ->requiresConfirmation()
                     ->modalHeading('Pick a Winner')
                     ->modalDescription('This will randomly select a winner based on point weights. This action cannot be undone.')
-                    ->visible(fn(Giveaway $record) => $record->hasEnded() && !$record->winner_id)
+                    ->visible(fn(Giveaway $record) => $record->hasEnded() && !$record->winner_id && !$record->hasTiers())
                     ->action(function (Giveaway $record) {
                         $winner = $record->pickWinner();
                         if ($winner) {
@@ -325,6 +378,36 @@ class GiveawayResource extends Resource
                                 ->warning()
                                 ->send();
                         }
+                    }),
+
+                Action::make('pickWinnersByTiers')
+                    ->label('Pick Winners (Tiers)')
+                    ->icon('heroicon-o-star')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Pick Winners by Prize Tiers')
+                    ->modalDescription('This will select multiple winners for each prize tier. Winners are selected using weighted random. This action cannot be undone.')
+                    ->visible(fn(Giveaway $record) => $record->hasEnded() && $record->hasTiers())
+                    ->action(function (Giveaway $record) {
+                        $results = $record->pickWinnersByTiers();
+
+                        if (empty($results)) {
+                            Notification::make()
+                                ->title('No Winners Selected')
+                                ->body('No entries qualified for any tier.')
+                                ->warning()
+                                ->send();
+                            return;
+                        }
+
+                        $totalWinners = array_sum(array_map('count', $results));
+                        $message = "🎉 Selected {$totalWinners} winner" . ($totalWinners > 1 ? 's' : '') . " across " . count($results) . " tier" . (count($results) > 1 ? 's' : '') . "!";
+
+                        Notification::make()
+                            ->title('Winners Selected!')
+                            ->body($message)
+                            ->success()
+                            ->send();
                     }),
 
                 EditAction::make(),

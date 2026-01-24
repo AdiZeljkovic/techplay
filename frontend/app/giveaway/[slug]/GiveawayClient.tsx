@@ -6,6 +6,8 @@ import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
 import { Gift, Clock, Users, Trophy, Check, ExternalLink, Share2, Copy, Loader2 } from "lucide-react";
+import confetti from "canvas-confetti";
+import Leaderboard from "@/components/giveaway/Leaderboard";
 
 interface Task {
     id: number;
@@ -106,6 +108,47 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     useEffect(() => {
         fetchEntry();
     }, [fetchEntry]);
+
+    // Confetti animation when winner is announced
+    useEffect(() => {
+        if (giveaway?.winner) {
+            // Fire confetti burst
+            const duration = 3000;
+            const end = Date.now() + duration;
+
+            const colors = ['#ff6b35', '#f7931e', '#fdc830', '#37ecba', '#8b5cf6'];
+
+            (function frame() {
+                confetti({
+                    particleCount: 3,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0, y: 0.6 },
+                    colors: colors
+                });
+                confetti({
+                    particleCount: 3,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1, y: 0.6 },
+                    colors: colors
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+
+            // Big confetti burst in center
+            setTimeout(() => {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }, 500);
+        }
+    }, [giveaway?.winner]);
 
     // Countdown timer
     useEffect(() => {
@@ -525,6 +568,9 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                 </div>
                             </div>
                         )}
+
+                        {/* Leaderboard */}
+                        <Leaderboard slug={slug} />
                     </div>
                 </div>
             </div>

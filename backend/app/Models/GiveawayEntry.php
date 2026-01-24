@@ -16,8 +16,15 @@ class GiveawayEntry extends Model
         'referral_code',
         'referred_by',
         'referral_count',
+        'streak_days',
+        'last_visit_date',
+        'streak_bonus_points',
         'ip_address',
         'user_agent',
+    ];
+
+    protected $casts = [
+        'last_visit_date' => 'date',
     ];
 
     protected static function boot()
@@ -89,5 +96,102 @@ class GiveawayEntry extends Model
     public function getReferralUrl(): string
     {
         return $this->giveaway->getPublicUrl() . '?ref=' . $this->referral_code;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // STREAK SYSTEM
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * Update daily visit streak
+     * Rewards consecutive daily visits with bonus points
+     */
+    public function updateStreak(): array
+    {
+        $today = today();
+        $lastVisit = $this->last_visit_date;
+
+        // First visit
+        if (!$lastVisit) {
+            $this->update([
+                'streak_days' => 1,
+                'last_visit_date' => $today,
+            ]);
+            return ['streak' => 1, 'bonus' => 0, 'message' => 'Streak started!'];
+        }
+
+        // Already visited today
+        if ($lastVisit->isSameDay($today)) {
+            return ['streak' => $this->streak_days, 'bonus' => 0, 'message' => 'Already visited today'];
+        }
+
+        // Consecutive day
+        if ($lastVisit->isYesterday()) {
+            $newStreak = $this->streak_days + 1;
+            $bonus = $this->calculateStreakBonus($newStreak);
+
+            $this->update([
+                'streak_days' => $newStreak,
+                'last_visit_date' => $today,
+                'streak_bonus_points' => $this->streak_bonus_points + $bonus,
+            ]);
+
+            if ($bonus > 0) {
+                $this->addPoints($bonus);
+            }
+
+            return [
+                'streak' => $newStreak,
+                'bonus' => $bonus,
+                'message' => $this->getStreakMessage($newStreak, $bonus),
+            ];
+        }
+
+        // Streak broken
+        $this->update([
+            'streak_days' => 1,
+            'last_visit_date' => $today,
+        ]);
+
+        return ['streak' => 1, 'bonus' => 0, 'message' => 'Streak reset. Visit daily to build it up!'];
+    }
+
+    /**
+     * Calculate bonus points for streak milestones
+     */
+    private function calculateStreakBonus(int $streakDays): int
+    {
+        $milestones = [
+            3 => 5,   // 3-day streak: +5 pts
+            7 => 10,  // 7-day streak: +10 pts
+            14 => 20, // 14-day streak: +20 pts
+            30 => 50, // 30-day streak: +50 pts
+        ];
+
+        return $milestones[$streakDays] ?? 0;
+    }
+
+    /**
+     * Get streak message for milestones
+     */
+    private function getStreakMessage(int $streakDays, int $bonus): string
+    {
+        if ($bonus > 0) {
+            return "🔥 {$streakDays}-day streak! Bonus: +{$bonus} points!";
+        }
+
+        return "Day {$streakDays} streak!";
+    }
+
+    /**
+     * Check if user can claim daily bonus
+     */
+    public function canClaimDailyBonus(): bool
+    {
+        if (!$this->last_visit_date) {
+            return true;
+        }
+
+        return !$this->last_visit_date->isToday();
     }
 }

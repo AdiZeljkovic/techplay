@@ -14,6 +14,82 @@ use Illuminate\Support\Facades\DB;
 class GiveawayController extends Controller
 {
     /**
+     * List all public giveaways with filters (public)
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $query = Giveaway::query()
+            ->where('is_public', true)
+            ->with(['winner:id,username,avatar'])
+            ->withCount('entries');
+
+        // Filter by status
+        $status = $request->input('status'); // 'active', 'ended', 'all'
+        if ($status === 'active') {
+            $query->active();
+        } elseif ($status === 'ended') {
+            $query->where('status', 'ended')->orWhere('ends_at', '<', now());
+        }
+
+        // Order by: active first, then by end date
+        $query->orderByRaw("
+            CASE
+                WHEN status = 'active' AND starts_at <= NOW() AND ends_at >= NOW() THEN 0
+                WHEN status = 'ended' OR ends_at < NOW() THEN 2
+                ELSE 1
+            END
+        ")->orderByDesc('ends_at');
+
+        $giveaways = $query->paginate(12);
+
+        return response()->json([
+            'data' => $giveaways->map(fn($giveaway) => [
+                'id' => $giveaway->id,
+                'title' => $giveaway->title,
+                'slug' => $giveaway->slug,
+                'description' => $giveaway->description ? strip_tags($giveaway->description) : null,
+                'featured_image' => $giveaway->featured_image
+                    ? asset('storage/' . $giveaway->featured_image)
+                    : null,
+
+                'prize' => [
+                    'name' => $giveaway->prize_name,
+                    'value' => $giveaway->prize_value,
+                    'image' => $giveaway->prize_image
+                        ? asset('storage/' . $giveaway->prize_image)
+                        : null,
+                ],
+
+                'timing' => [
+                    'starts_at' => $giveaway->starts_at?->toISOString(),
+                    'ends_at' => $giveaway->ends_at?->toISOString(),
+                    'is_active' => $giveaway->isActive(),
+                    'has_ended' => $giveaway->hasEnded(),
+                    'time_remaining' => $giveaway->getTimeRemaining(),
+                ],
+
+                'stats' => [
+                    'total_entries' => $giveaway->entries_count,
+                ],
+
+                'winner' => $giveaway->winner ? [
+                    'id' => $giveaway->winner->id,
+                    'username' => $giveaway->winner->username,
+                    'avatar' => $giveaway->winner->avatar_url,
+                ] : null,
+
+                'status' => $giveaway->status,
+            ]),
+            'meta' => [
+                'current_page' => $giveaways->currentPage(),
+                'last_page' => $giveaways->lastPage(),
+                'per_page' => $giveaways->perPage(),
+                'total' => $giveaways->total(),
+            ],
+        ]);
+    }
+
+    /**
      * Get giveaway details by slug (public)
      */
     public function show(string $slug): JsonResponse
@@ -242,6 +318,41 @@ class GiveawayController extends Controller
     }
 
     /**
+     * Claim daily visit bonus (authenticated)
+     */
+    public function claimDailyBonus(Request $request, string $slug): JsonResponse
+    {
+        $giveaway = Giveaway::where('slug', $slug)->firstOrFail();
+        $user = $request->user();
+
+        if (!$giveaway->isActive()) {
+            return response()->json([
+                'message' => 'This giveaway is not currently active.',
+            ], 422);
+        }
+
+        // Get or create entry
+        $entry = GiveawayEntry::firstOrCreate(
+            [
+                'giveaway_id' => $giveaway->id,
+                'user_id' => $user->id,
+            ],
+            [
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]
+        );
+
+        // Update streak
+        $result = $entry->updateStreak();
+
+        return response()->json([
+            'data' => $this->formatEntry($entry->fresh()),
+            'streak' => $result,
+        ]);
+    }
+
+    /**
      * Format entry for response
      */
     private function formatEntry(GiveawayEntry $entry): array
@@ -256,6 +367,9 @@ class GiveawayController extends Controller
             'referral_count' => $entry->referral_count,
             'win_chance' => $entry->getWinChance(),
             'completed_task_ids' => $entry->getCompletedTaskIds(),
+            'streak_days' => $entry->streak_days,
+            'last_visit_date' => $entry->last_visit_date?->toDateString(),
+            'can_claim_daily_bonus' => $entry->canClaimDailyBonus(),
             'created_at' => $entry->created_at->toISOString(),
         ];
     }
