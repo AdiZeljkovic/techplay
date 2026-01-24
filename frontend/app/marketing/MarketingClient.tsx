@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
     TrendingUp, Users, Target, Zap, BarChart3, Layout,
     Share2, Mail, Download, ArrowRight, CheckCircle2,
-    MonitorSmartphone, MousePointerClick
+    MonitorSmartphone, MousePointerClick, Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
