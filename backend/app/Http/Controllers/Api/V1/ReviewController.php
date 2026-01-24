@@ -27,14 +27,20 @@ class ReviewController extends Controller
                 ->whereHas('category', fn($q) => $q->where('type', 'reviews'))
                 ->with(['author:id,username,display_name,avatar_url', 'category']);
 
+            // Handle category filtering
             if ($request->has('category') && $request->category !== 'all') {
                 $categorySlug = $request->category;
-                $query->whereHas('category', function ($q) use ($categorySlug) {
-                    $q->where('slug', $categorySlug);
-                    if (is_numeric($categorySlug)) {
-                        $q->orWhere('id', $categorySlug);
-                    }
-                });
+
+                // 'reviews-latest' shows all reviews from all review categories (no extra filter)
+                // The base query already filters by category type 'reviews'
+                if ($categorySlug !== 'reviews-latest') {
+                    $query->whereHas('category', function ($q) use ($categorySlug) {
+                        $q->where('slug', $categorySlug);
+                        if (is_numeric($categorySlug)) {
+                            $q->orWhere('id', $categorySlug);
+                        }
+                    });
+                }
             }
 
             return ReviewResource::collection(
