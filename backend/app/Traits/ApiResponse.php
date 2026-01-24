@@ -3,62 +3,105 @@
 namespace App\Traits;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
- * API Response Trait
- * Provides consistent JSON response format across all API controllers.
- * 
- * Usage:
- * return $this->success($data, 'Operation successful', 200);
- * return $this->error('Something went wrong', 500);
+ * API Response Standardization Trait
+ *
+ * CONSISTENCY: Provides standardized JSON response format across all API endpoints
+ *
+ * Usage: Add to controllers with `use ApiResponse;`
  */
 trait ApiResponse
 {
     /**
-     * Return a success response
+     * Success response with data
      */
-    protected function success(
-        mixed $data = null,
-        string $message = 'Success',
-        int $statusCode = 200
-    ): JsonResponse {
-        return response()->json([
+    protected function success($data = null, string $message = null, int $code = 200): JsonResponse
+    {
+        $response = [
             'success' => true,
-            'message' => $message,
-            'data' => $data,
-        ], $statusCode);
+        ];
+
+        if ($message) {
+            $response['message'] = $message;
+        }
+
+        if ($data !== null) {
+            $response['data'] = $data;
+        }
+
+        return response()->json($response, $code);
     }
 
     /**
-     * Return an error response
+     * Error response
      */
-    protected function error(
-        string $message = 'Error',
-        int $statusCode = 400,
-        mixed $errors = null
-    ): JsonResponse {
+    protected function error(string $message, int $code = 400, array $errors = []): JsonResponse
+    {
         $response = [
             'success' => false,
             'message' => $message,
         ];
 
-        if ($errors !== null) {
+        if (!empty($errors)) {
             $response['errors'] = $errors;
         }
 
-        return response()->json($response, $statusCode);
+        return response()->json($response, $code);
     }
 
     /**
-     * Return a not found response
+     * Paginated response
      */
-    protected function notFound(string $message = 'Resource not found'): JsonResponse
+    protected function paginated(LengthAwarePaginator $paginator, string $message = null): JsonResponse
     {
-        return $this->error($message, 404);
+        $response = [
+            'success' => true,
+            'data' => $paginator->items(),
+            'pagination' => [
+                'total' => $paginator->total(),
+                'per_page' => $paginator->perPage(),
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
+            ],
+        ];
+
+        if ($message) {
+            $response['message'] = $message;
+        }
+
+        return response()->json($response);
     }
 
     /**
-     * Return an unauthorized response
+     * Created response (HTTP 201)
+     */
+    protected function created($data = null, string $message = 'Resource created successfully'): JsonResponse
+    {
+        return $this->success($data, $message, 201);
+    }
+
+    /**
+     * No content response (HTTP 204)
+     */
+    protected function noContent(): JsonResponse
+    {
+        return response()->json(null, 204);
+    }
+
+    /**
+     * Validation error response (HTTP 422)
+     */
+    protected function validationError(array $errors, string $message = 'Validation failed'): JsonResponse
+    {
+        return $this->error($message, 422, $errors);
+    }
+
+    /**
+     * Unauthorized response (HTTP 401)
      */
     protected function unauthorized(string $message = 'Unauthorized'): JsonResponse
     {
@@ -66,7 +109,7 @@ trait ApiResponse
     }
 
     /**
-     * Return a forbidden response
+     * Forbidden response (HTTP 403)
      */
     protected function forbidden(string $message = 'Forbidden'): JsonResponse
     {
@@ -74,30 +117,18 @@ trait ApiResponse
     }
 
     /**
-     * Return a validation error response
+     * Not found response (HTTP 404)
      */
-    protected function validationError(array $errors): JsonResponse
+    protected function notFound(string $message = 'Resource not found'): JsonResponse
     {
-        return response()->json([
-            'success' => false,
-            'message' => 'Validation failed',
-            'errors' => $errors,
-        ], 422);
+        return $this->error($message, 404);
     }
 
     /**
-     * Return a created response
+     * Server error response (HTTP 500)
      */
-    protected function created(mixed $data = null, string $message = 'Created successfully'): JsonResponse
+    protected function serverError(string $message = 'Internal server error'): JsonResponse
     {
-        return $this->success($data, $message, 201);
-    }
-
-    /**
-     * Return a no content response
-     */
-    protected function noContent(): JsonResponse
-    {
-        return response()->json(null, 204);
+        return $this->error($message, 500);
     }
 }

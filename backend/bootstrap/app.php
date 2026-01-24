@@ -13,6 +13,18 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
+
+        // SECURITY: Exclude PayPal webhook from CSRF verification (verified by signature)
+        $middleware->validateCsrfTokens(except: [
+            'api/v1/webhooks/paypal',
+        ]);
+
+        // SECURITY: Stateful API domains for Sanctum CSRF protection
+        $middleware->statefulApi();
+
+        // SECURITY: Add security headers to all responses
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         $middleware->redirectGuestsTo(function ($request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return null; // Don't redirect, let exception handler deal with it

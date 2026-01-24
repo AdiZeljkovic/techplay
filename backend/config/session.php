@@ -30,9 +30,12 @@ return [
     | to expire immediately when the browser is closed then you may
     | indicate that via the expire_on_close configuration option.
     |
+    | SECURITY: Set to 480 minutes (8 hours) for better UX while maintaining security
+    | Users will be logged out after 8 hours of inactivity
+    |
     */
 
-    'lifetime' => (int) env('SESSION_LIFETIME', 120),
+    'lifetime' => (int) env('SESSION_LIFETIME', 480), // 8 hours
 
     'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
 

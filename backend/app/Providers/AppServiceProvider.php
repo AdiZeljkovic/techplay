@@ -49,11 +49,24 @@ class AppServiceProvider extends ServiceProvider
         // Prevent N+1 queries in non-production environments
         \Illuminate\Database\Eloquent\Model::preventLazyLoading(!app()->isProduction());
 
+        // MONITORING: Query performance logging
+        if (config('logging.slow_query_threshold')) {
+            \Illuminate\Support\Facades\DB::listen(function ($query) {
+                if ($query->time > config('logging.slow_query_threshold', 1000)) {
+                    app(\App\Services\LoggingService::class)->logSlowQuery(
+                        $query->sql,
+                        $query->time,
+                        $query->bindings
+                    );
+                }
+            });
+        }
+
         // Pulse Authorization
         \Illuminate\Support\Facades\Gate::define('viewPulse', function ($user = null) {
-            // For now, allow local dev or logged in admins. 
+            // For now, allow local dev or logged in admins.
             // Since user might be null, we need to check.
-            // Actually, Pulse auth usually handles user resolution. 
+            // Actually, Pulse auth usually handles user resolution.
             // Let's allow if user has 'admin' role.
             $user = $user ?? auth()->user();
             return $user && in_array($user->role, ['admin', 'super_admin']);

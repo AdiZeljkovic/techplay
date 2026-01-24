@@ -129,4 +129,23 @@ return [
 
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Custom Logging Options
+    |--------------------------------------------------------------------------
+    |
+    | MONITORING: Performance and security logging configuration
+    | Used by App\Services\LoggingService
+    |
+    */
+
+    // Log all API requests (disable in production for performance)
+    'log_api_requests' => env('LOG_API_REQUESTS', false),
+
+    // Log performance metrics
+    'log_performance' => env('LOG_PERFORMANCE', false),
+
+    // Slow query threshold in milliseconds
+    'slow_query_threshold' => env('SLOW_QUERY_THRESHOLD', 1000),
+
 ];
