@@ -16,47 +16,53 @@ class HomeController extends Controller
     {
         // Cache home page data for 1 minute (was 5 mins) to improve responsiveness
         $data = Cache::remember('home:data', 60, function () {
-            // 1. Hero Articles
+            // 1. Hero Articles (exclude scheduled/future posts)
             $hero = Article::where('is_featured_in_hero', true)
                 ->where('status', 'published')
+                ->where('published_at', '<=', now())
                 ->with(['author', 'category'])
                 ->latest('published_at')
                 ->take(5)
                 ->get();
 
-            // 2. Latest News (Root type = news)
+            // 2. Latest News (Root type = news, exclude scheduled/future posts)
             $news = Article::whereHas('category', fn($q) => $q->where('type', 'news'))
                 ->where('status', 'published')
+                ->where('published_at', '<=', now())
                 ->with(['author', 'category'])
                 ->latest('published_at')
                 ->take(5)
                 ->get();
 
-            // 3. Latest Reviews (Root type = reviews)
+            // 3. Latest Reviews (Root type = reviews, exclude scheduled/future posts)
             $reviews = Article::whereHas('category', fn($q) => $q->where('type', 'reviews'))
                 ->where('status', 'published')
+                ->where('published_at', '<=', now())
                 ->with(['author', 'category'])
                 ->latest('published_at')
                 ->take(5)
                 ->get();
 
-            // 4. Tech / Hardware Lab (Root type = tech)
+            // 4. Tech / Hardware Lab (Root type = tech, exclude scheduled/future posts)
             $tech = Article::whereHas('category', fn($q) => $q->where('type', 'tech'))
                 ->where('status', 'published')
+                ->where('published_at', '<=', now())
                 ->with(['author', 'category'])
                 ->latest('published_at')
                 ->take(5)
                 ->get();
 
-            // 5. Global Latest (Mixed types)
+            // 5. Global Latest (Mixed types, exclude scheduled/future posts)
             $latestGlobal = Article::where('status', 'published')
+                ->where('published_at', '<=', now())
                 ->with(['author', 'category'])
                 ->latest('published_at')
                 ->take(5)
                 ->get();
 
-            // 6. Global Popular (Mixed types, sorted by views)
+            // 6. Global Popular (Mixed types, sorted by views, exclude scheduled/future posts)
             $popularGlobal = Article::where('status', 'published')
+                ->where('published_at', '<=', now())
                 ->with(['author', 'category'])
                 ->popular()
                 ->take(5)
