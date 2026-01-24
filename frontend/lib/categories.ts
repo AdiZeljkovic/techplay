@@ -30,5 +30,5 @@ export const HARDWARE_CATEGORIES = [
     { id: "tech-reviews", label: "Reviews", icon: Star, slug: "reviews" },
     { id: "tech-benchmarks", label: "Benchmarks", icon: Gauge, slug: "benchmarks" },
     { id: "tech-guides", label: "Guides", icon: BookOpen, slug: "guides" },
-    { id: "tech-news", label: "Tech News", icon: Newspaper, slug: "news" },
+    { id: "tech-tech-news", label: "Tech News", icon: Newspaper, slug: "news" },
 ];
