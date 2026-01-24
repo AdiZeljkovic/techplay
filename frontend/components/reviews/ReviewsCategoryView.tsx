@@ -23,9 +23,10 @@ export default function ReviewsCategoryView({ categorySlug }: ReviewsCategoryVie
     const [page, setPage] = useState(1);
 
     // Use the backend ID for fetching
-    // For 'latest' or 'all', we search without category filter (or 'all'). 
-    // For others, we assume category.id matches the backend slug (e.g. 'reviews-aaa-titles').
-    const categoryParam = (category.slug === 'latest' || category.slug === 'all')
+    // For 'all', we search without category filter. 
+    // For 'latest', we send 'reviews-latest' which the backend handles specially (shows all reviews sorted by date).
+    // For others, we use category.id which matches the backend slug (e.g. 'reviews-aaa-titles').
+    const categoryParam = category.slug === 'all'
         ? 'all'
         : category.id;
 
