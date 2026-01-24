@@ -12,7 +12,7 @@ use Illuminate\Validation\Rule;
 
 class ReportController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request, \App\Services\SanitizationService $sanitizer)
     {
         $request->validate([
             'reportable_type' => ['required', 'string', Rule::in(['thread', 'post'])],
@@ -50,11 +50,14 @@ class ReportController extends Controller
             return response()->json(['message' => 'You have already reported this content.'], 409);
         }
 
+        // Sanitize reason (XSS Protection)
+        $cleanReason = $request->reason ? $sanitizer->sanitizePlainText($request->reason) : null;
+
         $report = Report::create([
             'user_id' => Auth::id(),
             'reportable_type' => $modelClass,
             'reportable_id' => $request->reportable_id,
-            'reason' => $request->reason,
+            'reason' => $cleanReason,
             'status' => 'pending',
         ]);
         // SECURITY: Only return report ID, not full model data

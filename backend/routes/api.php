@@ -201,4 +201,11 @@ Route::prefix('v1')->group(function () {
         // Read actions - more relaxed
         Route::get('/giveaways/{slug}/my-entry', [App\Http\Controllers\Api\V1\GiveawayController::class, 'myEntry']);
     });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // WEBHOOKS (No Auth Required - External Services)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // PayPal Webhooks (Signature Verified Internally)
+    Route::post('/webhooks/paypal', [App\Http\Controllers\Api\V1\PayPalWebhookController::class, 'handleWebhook']);
 });

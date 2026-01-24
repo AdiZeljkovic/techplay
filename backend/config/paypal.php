@@ -22,4 +22,9 @@ return [
     'notify_url' => '', // Change this accordingly for your application.
     'locale' => 'en_US', // force gateway language  i.e. it_IT, es_ES, en_US ... (for express checkout only)
     'validate_ssl' => true, // Validate SSL when creating api client.
+
+    // SECURITY: Webhook signature verification (required for production)
+    // Get this ID from PayPal Dashboard > Webhooks section after creating webhook
+    // Webhook URL should be: https://your-domain.com/api/v1/webhooks/paypal
+    'webhook_id' => env('PAYPAL_WEBHOOK_ID', ''),
 ];

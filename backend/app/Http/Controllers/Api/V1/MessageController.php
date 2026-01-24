@@ -9,12 +9,12 @@ use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request, \App\Services\SanitizationService $sanitizer)
     {
         $validated = $request->validate([
             'receiver_username' => 'required|exists:users,username',
             'subject' => 'required|string|max:255',
-            'body' => 'required|string',
+            'body' => 'required|string|max:5000', // Add max length
             'parent_id' => 'nullable|exists:messages,id',
         ]);
 
@@ -25,12 +25,21 @@ class MessageController extends Controller
             return response()->json(['message' => 'Cannot message yourself'], 422);
         }
 
+        // Sanitize content (XSS Protection)
+        $cleanSubject = $sanitizer->sanitizePlainText($validated['subject']);
+        $cleanBody = $sanitizer->sanitizePlainText($validated['body']);
+
+        // Spam detection
+        if ($sanitizer->detectSpam($cleanSubject) || $sanitizer->detectSpam($cleanBody)) {
+            return response()->json(['message' => 'Message flagged as spam.'], 422);
+        }
+
         $message = Message::create([
             'parent_id' => $validated['parent_id'] ?? null,
             'sender_id' => $request->user()->id,
             'receiver_id' => $receiver->id,
-            'subject' => $validated['subject'],
-            'body' => $validated['body'],
+            'subject' => $cleanSubject,
+            'body' => $cleanBody,
             'is_read' => false,
         ]);
 

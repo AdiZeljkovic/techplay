@@ -20,7 +20,12 @@ class PayPalService
             : 'https://api-m.sandbox.paypal.com';
     }
 
-    protected function getAccessToken()
+    /**
+     * Get PayPal OAuth access token
+     *
+     * Changed from protected to public for webhook signature verification
+     */
+    public function getAccessToken()
     {
         $response = Http::withoutVerifying()
             ->withBasicAuth($this->clientId, $this->clientSecret)

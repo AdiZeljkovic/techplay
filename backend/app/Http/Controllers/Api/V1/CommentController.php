@@ -23,26 +23,38 @@ class CommentController extends Controller
             ->whereNull('parent_id')
             ->with([
                 'user.rank',
-                'replies.user.rank',
-                'replies.replies.user.rank',
-                'replies.replies.replies.user.rank'
+                'replies' => fn($q) => $q->with('user.rank')->limit(100), // Prevent memory overload
+                'replies.replies' => fn($q) => $q->with('user.rank')->limit(50),
+                'replies.replies.replies' => fn($q) => $q->with('user.rank')->limit(25),
             ])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        // Check for likes if user is logged in (explicitly check sanctum guard for optional auth)
+        // PERFORMANCE FIX: Bulk load all likes in ONE query instead of N+1
         $user = Auth::guard('sanctum')->user();
         if ($user) {
             $userId = $user->id;
-            $comments->getCollection()->transform(function ($comment) use ($userId) {
-                return $this->processCommentLikeStatus($comment, $userId);
+
+            // Collect ALL comment IDs (parent + nested replies)
+            $allCommentIds = $this->collectAllCommentIds($comments->items());
+
+            // Single query to get all user's votes for these comments
+            $userVotes = \Illuminate\Support\Facades\DB::table('comment_likes')
+                ->whereIn('comment_id', $allCommentIds)
+                ->where('user_id', $userId)
+                ->pluck('type', 'comment_id')
+                ->toArray();
+
+            // Apply votes to all comments
+            $comments->getCollection()->transform(function ($comment) use ($userVotes) {
+                return $this->applyUserVotes($comment, $userVotes);
             });
         }
 
         return \App\Http\Resources\V1\CommentResource::collection($comments);
     }
 
-    public function store(Request $request, \App\Services\XpService $xpService)
+    public function store(Request $request, \App\Services\XpService $xpService, \App\Services\SanitizationService $sanitizer)
     {
         $request->validate([
             'content' => [
@@ -66,8 +78,13 @@ class CommentController extends Controller
             return response()->json(['message' => 'Target content not found'], 404);
         }
 
-        // 1. Content Sanitization (Anti-Abuse)
-        $cleanContent = strip_tags($request->input('content'));
+        // 1. Content Sanitization (XSS Protection)
+        $cleanContent = $sanitizer->sanitizePlainText($request->input('content'));
+
+        // 1a. Spam Detection
+        if ($sanitizer->detectSpam($cleanContent)) {
+            return response()->json(['message' => 'Comment flagged as spam.'], 422);
+        }
 
         // --- SPAM PROTECTION START ---
         $user = Auth::user();
@@ -223,21 +240,41 @@ class CommentController extends Controller
         };
     }
 
-    private function processCommentLikeStatus($comment, $userId)
+    /**
+     * PERFORMANCE: Collect all comment IDs recursively in ONE pass (O(n) instead of O(n²))
+     * Replaces multiple DB queries with single array collection
+     */
+    private function collectAllCommentIds($comments): array
     {
-        $vote = \Illuminate\Support\Facades\DB::table('comment_likes')
-            ->where('comment_id', $comment->id)
-            ->where('user_id', $userId)
-            ->first();
+        $ids = [];
 
-        $comment->user_vote = $vote ? $vote->type : null;
-        // Keep legacy field just in case, though resource handles it
-        $comment->is_liked_by_user = $comment->user_vote === 'up';
+        foreach ($comments as $comment) {
+            $ids[] = $comment->id;
 
-        if ($comment->relationsToArray()['replies'] ?? false) {
-            foreach ($comment->replies as $reply) {
-                $this->processCommentLikeStatus($reply, $userId);
+            // Recursively collect reply IDs
+            if ($comment->relationLoaded('replies') && $comment->replies->isNotEmpty()) {
+                $ids = array_merge($ids, $this->collectAllCommentIds($comment->replies));
             }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * PERFORMANCE: Apply user votes from pre-loaded array (O(1) lookup per comment)
+     * Old: N queries (one per comment)
+     * New: 1 query + O(n) array lookup
+     */
+    private function applyUserVotes($comment, array $userVotes)
+    {
+        $comment->user_vote = $userVotes[$comment->id] ?? null;
+        $comment->is_liked_by_user = ($userVotes[$comment->id] ?? null) === 'up';
+
+        // Recursively apply to nested replies
+        if ($comment->relationLoaded('replies') && $comment->replies->isNotEmpty()) {
+            $comment->replies->transform(function ($reply) use ($userVotes) {
+                return $this->applyUserVotes($reply, $userVotes);
+            });
         }
 
         return $comment;

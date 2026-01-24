@@ -153,14 +153,19 @@ class ForumController extends Controller
         ]);
     }
 
-    public function createPost(Request $request, $slug)
+    public function createPost(Request $request, $slug, \App\Services\SanitizationService $sanitizer)
     {
         $request->validate([
             'content' => 'required|string|min:5|max:10000' // Max 10k chars for post
         ]);
 
-        // Sanitize content
-        $content = strip_tags($request->content, '<p><br><strong><em><ul><ol><li><a><code><pre>');
+        // Sanitize content (XSS Protection)
+        $content = $sanitizer->sanitizeRichContent($request->content);
+
+        // Spam detection
+        if ($sanitizer->detectSpam($content)) {
+            return response()->json(['message' => 'Post flagged as spam.'], 422);
+        }
 
         $thread = Thread::where('slug', $slug)->firstOrFail();
 
@@ -184,31 +189,32 @@ class ForumController extends Controller
         \Illuminate\Support\Facades\Log::info('createPost: Attempting to create', ['user' => Auth::id(), 'thread' => $thread->id]);
 
         try {
-            $post = $thread->posts()->create([
-                'content' => $content, // Use sanitized content
-                'author_id' => Auth::id(),
-                'thread_id' => $thread->id
-            ]);
+            // RACE CONDITION FIX: Use DB transaction with cache invalidation AFTER commit
+            $post = \Illuminate\Support\Facades\DB::transaction(function () use ($thread, $content, $slug) {
+                $post = $thread->posts()->create([
+                    'content' => $content,
+                    'author_id' => Auth::id(),
+                    'thread_id' => $thread->id
+                ]);
+
+                // Update thread timestamp inside transaction
+                $thread->touch();
+
+                return $post;
+            });
+
+            // Cache invalidation AFTER successful transaction commit
+            // This prevents race condition where cache is cleared before data is committed
+            Cache::forget("forum.thread.{$slug}");
 
             \Illuminate\Support\Facades\Log::info('createPost: Post created', ['id' => $post->id]);
 
-            $thread->touch();
-
-            // Clear thread cache
-            Cache::forget("forum.thread.{$slug}");
-
-            $post->load('author.rank'); // Ensure rank loaded, posts_count might be missing on new post but can default to 1?
-
-            // Reload author to get post count properly if needed, but for performance, we can skip or reload count.
-            // Actually, newly created post author has at least 1 post now. 
-            // Better to load posts_count too.
+            $post->load('author.rank');
             $post->author->loadCount(['posts', 'threads']);
 
-            // Return simplified response to avoid serialization issues
             return new \App\Http\Resources\V1\PostResource($post);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Failed to create post: ' . $e->getMessage());
-            // Fallback logging
             try {
                 file_put_contents(storage_path('logs/custom_error.log'), $e->getMessage() . PHP_EOL . $e->getTraceAsString() . PHP_EOL, FILE_APPEND);
             } catch (\Throwable $t) {
@@ -218,7 +224,7 @@ class ForumController extends Controller
         }
     }
 
-    public function createThread(Request $request)
+    public function createThread(Request $request, \App\Services\SanitizationService $sanitizer)
     {
         \Illuminate\Support\Facades\Log::info('createThread called', [
             'data' => $request->all(),
@@ -246,28 +252,36 @@ class ForumController extends Controller
                 }
             }
 
-            // Sanitize content (allow some HTML for formatting)
-            $cleanContent = strip_tags($request->content, '<p><br><strong><em><ul><ol><li><a><code><pre><blockquote>');
+            // Sanitize content (XSS Protection)
+            $cleanContent = $sanitizer->sanitizeRichContent($request->content);
+            $cleanTitle = $sanitizer->sanitizePlainText($request->title);
+
+            // Spam detection
+            if ($sanitizer->detectSpam($cleanContent) || $sanitizer->detectSpam($cleanTitle)) {
+                return response()->json(['message' => 'Thread flagged as spam.'], 422);
+            }
 
             $slug = \Illuminate\Support\Str::slug($request->title) . '-' . uniqid();
 
-            $thread = Thread::create([
-                'title' => strip_tags($request->title), // Strip HTML from title
-                'slug' => $slug,
-                'content' => $cleanContent, // Use sanitized content
-                'category_id' => $request->category_id,
-                'author_id' => Auth::id()
-            ]);
+            // RACE CONDITION FIX: Use DB transaction with cache invalidation AFTER commit
+            $thread = \Illuminate\Support\Facades\DB::transaction(function () use ($cleanTitle, $slug, $cleanContent, $request) {
+                return Thread::create([
+                    'title' => $cleanTitle,
+                    'slug' => $slug,
+                    'content' => $cleanContent,
+                    'category_id' => $request->category_id,
+                    'author_id' => Auth::id()
+                ]);
+            });
 
             \Illuminate\Support\Facades\Log::info('Thread created successfully', ['id' => $thread->id]);
 
-            // Clear all forum caches to show new thread immediately
+            // Cache invalidation AFTER successful transaction commit
             Cache::forget('forum.categories');
 
-            // Get category slug to clear specific cache
+            // Clear category-specific cache
             $category = Category::find($request->category_id);
             if ($category) {
-                // Clear first few pages of category cache
                 for ($i = 1; $i <= 5; $i++) {
                     Cache::forget("forum.category.{$category->slug}.page_{$i}");
                 }
