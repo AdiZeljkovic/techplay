@@ -5,7 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
-import { Gift, Clock, Users, Trophy, Check, ExternalLink, Share2, Copy, Loader2 } from "lucide-react";
+import { Gift, Clock, Users, Trophy, Check, ExternalLink, Share2, Copy, Loader2, Zap, Award, Star } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import Leaderboard from "@/components/giveaway/Leaderboard";
 
@@ -235,342 +236,475 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     const isEntered = !!entry;
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen bg-[var(--bg-primary)] relative overflow-hidden">
+            {/* Animated Background */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-0 left-1/4 w-96 h-96 bg-[var(--accent)]/5 rounded-full blur-[100px] animate-pulse" />
+                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
+            </div>
+
             {/* Hero Section */}
-            <div className="relative overflow-hidden">
-                {/* Background Glow */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent)]/20 via-transparent to-transparent" />
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[var(--accent)]/10 rounded-full blur-3xl" />
+            <div className="relative">
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent)]/10 via-transparent to-transparent" />
 
-                <div className="relative max-w-5xl mx-auto px-4 py-16 text-center">
-                    {/* Prize Image */}
-                    {giveaway.prize.image && (
-                        <div className="relative w-64 h-64 mx-auto mb-8">
-                            <Image
-                                src={giveaway.prize.image}
-                                alt={giveaway.prize.name}
-                                fill
-                                className="object-contain drop-shadow-2xl"
-                            />
-                        </div>
-                    )}
+                <div className="relative max-w-7xl mx-auto px-4 py-12 md:py-20">
+                    <div className="text-center mb-12">
+                        {/* Status Badge */}
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 glass"
+                        >
+                            {giveaway.winner ? (
+                                <>
+                                    <Trophy className="w-4 h-4 text-yellow-400" />
+                                    <span className="text-yellow-400 font-semibold">Winner Announced!</span>
+                                </>
+                            ) : giveaway.timing.has_ended ? (
+                                <>
+                                    <Clock className="w-4 h-4 text-red-400" />
+                                    <span className="text-red-400 font-semibold">Giveaway Ended</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Zap className="w-4 h-4 text-green-400" />
+                                    <span className="text-green-400 font-semibold">Active Giveaway</span>
+                                </>
+                            )}
+                        </motion.div>
 
-                    {/* Status Badge */}
-                    {giveaway.winner ? (
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/20 text-yellow-400 rounded-full text-sm font-semibold mb-4">
-                            <Trophy className="w-4 h-4" />
-                            Winner Announced!
-                        </div>
-                    ) : giveaway.timing.has_ended ? (
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/20 text-red-400 rounded-full text-sm font-semibold mb-4">
-                            <Clock className="w-4 h-4" />
-                            Giveaway Ended
-                        </div>
-                    ) : (
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-full text-sm font-semibold mb-4">
-                            <Gift className="w-4 h-4" />
-                            Active Giveaway
-                        </div>
-                    )}
+                        {/* Title */}
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-[var(--text-secondary)] to-white bg-clip-text text-transparent"
+                        >
+                            {giveaway.title}
+                        </motion.h1>
 
-                    {/* Title */}
-                    <h1 className="text-4xl md:text-5xl font-bold text-[var(--text-primary)] mb-4">
-                        {giveaway.title}
-                    </h1>
-
-                    {/* Prize Name & Value */}
-                    <div className="flex items-center justify-center gap-4 text-2xl font-bold text-[var(--accent)] mb-8">
-                        <span>{giveaway.prize.name}</span>
-                        {giveaway.prize.value && (
-                            <span className="text-[var(--text-secondary)]">
-                                (€{giveaway.prize.value})
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Countdown Timer */}
-                    {!giveaway.timing.has_ended && (
-                        <div className="flex items-center justify-center gap-4 mb-8">
-                            {[
-                                { label: "Days", value: time.days },
-                                { label: "Hours", value: time.hours },
-                                { label: "Minutes", value: time.mins },
-                                { label: "Seconds", value: time.secs },
-                            ].map((item) => (
-                                <div key={item.label} className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl p-4 min-w-[80px]">
-                                    <div className="text-3xl font-bold text-[var(--accent)]">
-                                        {String(item.value).padStart(2, "0")}
-                                    </div>
-                                    <div className="text-xs text-[var(--text-muted)] uppercase">
-                                        {item.label}
+                        {/* Prize Display */}
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.2 }}
+                            className="relative mb-12"
+                        >
+                            {giveaway.prize.image && (
+                                <div className="relative w-full max-w-md mx-auto aspect-square mb-6">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)]/20 to-purple-500/20 rounded-3xl blur-2xl" />
+                                    <div className="relative w-full h-full glass-card rounded-3xl p-8 flex items-center justify-center">
+                                        <Image
+                                            src={giveaway.prize.image}
+                                            alt={giveaway.prize.name}
+                                            fill
+                                            className="object-contain drop-shadow-2xl p-4"
+                                        />
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
+                            )}
 
-                    {/* Stats */}
-                    <div className="flex items-center justify-center gap-8 text-[var(--text-secondary)]">
-                        <div className="flex items-center gap-2">
-                            <Users className="w-5 h-5" />
-                            <span className="font-semibold">{giveaway.stats.total_entries}</span>
-                            <span>Entries</span>
-                        </div>
+                            <div className="inline-flex items-center gap-3 px-6 py-3 glass-card rounded-2xl">
+                                <Award className="w-6 h-6 text-[var(--accent)]" />
+                                <span className="text-2xl font-bold text-white">{giveaway.prize.name}</span>
+                                {giveaway.prize.value && (
+                                    <>
+                                        <span className="text-[var(--text-muted)]">•</span>
+                                        <span className="text-xl font-semibold text-[var(--accent)]">€{giveaway.prize.value.toLocaleString()}</span>
+                                    </>
+                                )}
+                            </div>
+                        </motion.div>
+
+                        {/* Countdown Timer */}
+                        {!giveaway.timing.has_ended && timeRemaining > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 }}
+                                className="mb-8"
+                            >
+                                <h3 className="text-sm uppercase tracking-wider text-[var(--text-muted)] mb-4">Time Remaining</h3>
+                                <div className="flex items-center justify-center gap-3 md:gap-4">
+                                    {[
+                                        { label: "Days", value: time.days },
+                                        { label: "Hours", value: time.hours },
+                                        { label: "Minutes", value: time.mins },
+                                        { label: "Seconds", value: time.secs },
+                                    ].map((item, idx) => (
+                                        <motion.div
+                                            key={item.label}
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ delay: 0.4 + idx * 0.1 }}
+                                            className="relative group"
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                            <div className="relative glass-card rounded-2xl p-4 md:p-6 min-w-[70px] md:min-w-[90px]">
+                                                <div className="text-3xl md:text-4xl font-bold text-[var(--accent)] mb-1">
+                                                    {String(item.value).padStart(2, "0")}
+                                                </div>
+                                                <div className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
+                                                    {item.label}
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* Stats */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.5 }}
+                            className="inline-flex items-center gap-2 px-4 py-2 glass rounded-full"
+                        >
+                            <Users className="w-4 h-4 text-[var(--accent)]" />
+                            <span className="font-bold text-white">{giveaway.stats.total_entries}</span>
+                            <span className="text-[var(--text-muted)]">Participants</span>
+                        </motion.div>
                     </div>
                 </div>
             </div>
 
             {/* Winner Announcement */}
-            {giveaway.winner && (
-                <div className="max-w-2xl mx-auto px-4 -mt-8 mb-12">
-                    <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-2xl p-8 text-center">
-                        <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-                        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
-                            🎉 Congratulations!
-                        </h2>
-                        <p className="text-[var(--text-secondary)] mb-4">The winner is:</p>
-                        <div className="inline-flex items-center gap-3 bg-[var(--bg-elevated)] px-6 py-3 rounded-xl">
-                            <div className="w-12 h-12 rounded-full bg-[var(--accent)] flex items-center justify-center text-white font-bold text-lg">
-                                {giveaway.winner.username[0].toUpperCase()}
+            <AnimatePresence>
+                {giveaway.winner && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                        className="max-w-2xl mx-auto px-4 mb-12"
+                    >
+                        <div className="relative group">
+                            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-3xl blur-2xl opacity-75 group-hover:opacity-100 transition-opacity" />
+                            <div className="relative glass-card rounded-3xl p-8 text-center border-2 border-yellow-500/30">
+                                <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-4 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]" />
+                                <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-yellow-200 to-orange-200 bg-clip-text text-transparent">
+                                    🎉 We Have a Winner! 🎉
+                                </h2>
+                                <div className="inline-flex items-center gap-4 bg-[var(--bg-elevated)] px-8 py-4 rounded-2xl border border-[var(--accent)]">
+                                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[var(--accent)] to-orange-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                                        {giveaway.winner.username[0].toUpperCase()}
+                                    </div>
+                                    <div className="text-left">
+                                        <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Winner</div>
+                                        <div className="text-2xl font-bold text-[var(--accent)]">
+                                            @{giveaway.winner.username}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <span className="text-xl font-bold text-[var(--accent)]">
-                                @{giveaway.winner.username}
-                            </span>
                         </div>
-                    </div>
-                </div>
-            )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Main Content */}
             <div className="max-w-5xl mx-auto px-4 pb-16">
                 <div className="grid lg:grid-cols-3 gap-8">
                     {/* Left Column - Tasks */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Entry Section */}
+                        {/* Entry CTA */}
                         {!isAuthenticated ? (
-                            <div className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl p-6 text-center">
-                                <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">
-                                    Login to Enter
-                                </h2>
-                                <p className="text-[var(--text-secondary)] mb-6">
-                                    Create an account or login to participate in this giveaway.
-                                </p>
-                                <Link
-                                    href="/login"
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent)] text-white font-semibold rounded-xl hover:bg-[var(--accent-hover)] transition-colors"
-                                >
-                                    Login / Register
-                                </Link>
-                            </div>
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="glass-card rounded-3xl p-8 text-center relative overflow-hidden group"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                <div className="relative">
+                                    <Gift className="w-16 h-16 text-[var(--accent)] mx-auto mb-4" />
+                                    <h2 className="text-2xl font-bold mb-3">Ready to Win?</h2>
+                                    <p className="text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
+                                        Sign in to participate and complete tasks to boost your chances of winning!
+                                    </p>
+                                    <Link
+                                        href="/login"
+                                        className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[var(--accent)] to-orange-600 text-white font-bold rounded-xl hover:shadow-[0_0_30px_rgba(252,65,0,0.5)] transition-all duration-300 transform hover:scale-105"
+                                    >
+                                        Login / Register
+                                    </Link>
+                                </div>
+                            </motion.div>
                         ) : !isEntered && giveaway.timing.is_active ? (
-                            <div className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl p-6 text-center">
-                                <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">
-                                    Ready to Enter?
-                                </h2>
-                                <p className="text-[var(--text-secondary)] mb-6">
-                                    Complete tasks below to earn points and increase your chances!
-                                </p>
-                                <button
-                                    onClick={handleEnter}
-                                    disabled={entering}
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent)] text-white font-semibold rounded-xl hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50"
-                                >
-                                    {entering ? (
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                    ) : (
-                                        <Gift className="w-5 h-5" />
-                                    )}
-                                    Enter Giveaway
-                                </button>
-                            </div>
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="glass-card rounded-3xl p-8 text-center relative overflow-hidden group"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                <div className="relative">
+                                    <Zap className="w-16 h-16 text-[var(--accent)] mx-auto mb-4" />
+                                    <h2 className="text-2xl font-bold mb-3">Join the Giveaway</h2>
+                                    <p className="text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
+                                        Click below to enter and start earning points by completing tasks!
+                                    </p>
+                                    <button
+                                        onClick={handleEnter}
+                                        disabled={entering}
+                                        className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[var(--accent)] to-orange-600 text-white font-bold rounded-xl hover:shadow-[0_0_30px_rgba(252,65,0,0.5)] transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                                    >
+                                        {entering ? (
+                                            <>
+                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                                Entering...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Gift className="w-5 h-5" />
+                                                Enter Giveaway
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </motion.div>
                         ) : null}
 
-                        {/* Tasks */}
-                        <div className="space-y-4">
-                            <h2 className="text-xl font-bold text-[var(--text-primary)]">
-                                Complete Tasks to Earn Points
-                            </h2>
-
-                            {giveaway.tasks.map((task) => {
-                                const isCompleted = entry?.completed_task_ids.includes(task.id);
-                                const isCompleting = completingTask === task.id;
-
-                                return (
-                                    <div
-                                        key={task.id}
-                                        className={`bg-[var(--bg-elevated)] border rounded-xl p-4 transition-all ${isCompleted
-                                                ? "border-green-500/50 bg-green-500/5"
-                                                : "border-[var(--border)] hover:border-[var(--accent)]/50"
-                                            }`}
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            {/* Icon */}
-                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${isCompleted ? "bg-green-500/20" : "bg-[var(--bg-primary)]"
-                                                }`}>
-                                                {isCompleted ? (
-                                                    <Check className="w-6 h-6 text-green-400" />
-                                                ) : (
-                                                    task.icon
-                                                )}
-                                            </div>
-
-                                            {/* Info */}
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className="font-semibold text-[var(--text-primary)]">
-                                                        {task.title}
-                                                    </h3>
-                                                    {task.is_required && (
-                                                        <span className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded">
-                                                            Required
-                                                        </span>
-                                                    )}
-                                                    {task.is_repeatable && (
-                                                        <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded">
-                                                            Daily
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                {task.description && (
-                                                    <p className="text-sm text-[var(--text-secondary)]">
-                                                        {task.description}
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            {/* Points & Action */}
-                                            <div className="flex items-center gap-4">
-                                                <div className="text-right">
-                                                    <div className="font-bold text-[var(--accent)]">
-                                                        +{task.points}
-                                                    </div>
-                                                    <div className="text-xs text-[var(--text-muted)]">
-                                                        points
-                                                    </div>
-                                                </div>
-
-                                                <button
-                                                    onClick={() => handleCompleteTask(task.id, task.url)}
-                                                    disabled={isCompleted || isCompleting || !giveaway.timing.is_active || !isEntered}
-                                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${isCompleted
-                                                            ? "bg-green-500/20 text-green-400 cursor-default"
-                                                            : "bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        }`}
-                                                >
-                                                    {isCompleting ? (
-                                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                                    ) : isCompleted ? (
-                                                        <>
-                                                            <Check className="w-4 h-4" />
-                                                            Done
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <ExternalLink className="w-4 h-4" />
-                                                            Go
-                                                        </>
-                                                    )}
-                                                </button>
-                                            </div>
-                                        </div>
+                        {/* Tasks Section */}
+                        {giveaway.tasks.length > 0 && (
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent)]/20 to-purple-500/20 flex items-center justify-center">
+                                        <Star className="w-5 h-5 text-[var(--accent)]" />
                                     </div>
-                                );
-                            })}
-                        </div>
+                                    <h2 className="text-2xl font-bold">Earn Points</h2>
+                                </div>
+
+                                {giveaway.tasks.map((task, idx) => {
+                                    const isCompleted = entry?.completed_task_ids.includes(task.id);
+                                    const isCompleting = completingTask === task.id;
+
+                                    return (
+                                        <motion.div
+                                            key={task.id}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: idx * 0.05 }}
+                                            className="group relative"
+                                        >
+                                            <div className={`absolute inset-0 rounded-2xl blur-xl transition-opacity duration-300 ${
+                                                isCompleted
+                                                    ? 'bg-green-500/20 opacity-50'
+                                                    : 'bg-[var(--accent)]/10 opacity-0 group-hover:opacity-100'
+                                            }`} />
+                                            <div className={`relative glass-card rounded-2xl p-5 transition-all duration-300 ${
+                                                isCompleted
+                                                    ? 'border-green-500/50 bg-green-500/5'
+                                                    : 'border-[var(--border)] group-hover:border-[var(--accent)]/50'
+                                            }`}>
+                                                <div className="flex items-center gap-4">
+                                                    {/* Icon */}
+                                                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl transition-all duration-300 ${
+                                                        isCompleted
+                                                            ? 'bg-green-500/20 text-green-400'
+                                                            : 'bg-gradient-to-br from-[var(--accent)]/20 to-purple-500/20 group-hover:scale-110'
+                                                    }`}>
+                                                        {isCompleted ? (
+                                                            <Check className="w-7 h-7" />
+                                                        ) : (
+                                                            <span>{task.icon}</span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Content */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                            <h3 className="font-bold text-white">
+                                                                {task.title}
+                                                            </h3>
+                                                            {task.is_required && (
+                                                                <span className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-md font-semibold">
+                                                                    Required
+                                                                </span>
+                                                            )}
+                                                            {task.is_repeatable && (
+                                                                <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-md font-semibold">
+                                                                    Daily
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {task.description && (
+                                                            <p className="text-sm text-[var(--text-muted)]">
+                                                                {task.description}
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Points & Button */}
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="text-right">
+                                                            <div className="text-2xl font-bold text-[var(--accent)]">
+                                                                +{task.points}
+                                                            </div>
+                                                            <div className="text-xs text-[var(--text-muted)]">
+                                                                points
+                                                            </div>
+                                                        </div>
+
+                                                        <button
+                                                            onClick={() => handleCompleteTask(task.id, task.url)}
+                                                            disabled={isCompleted || isCompleting || !giveaway.timing.is_active || !isEntered}
+                                                            className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all duration-300 whitespace-nowrap ${
+                                                                isCompleted
+                                                                    ? 'bg-green-500/20 text-green-400 cursor-default'
+                                                                    : 'bg-gradient-to-r from-[var(--accent)] to-orange-600 text-white hover:shadow-[0_0_20px_rgba(252,65,0,0.4)] disabled:opacity-40 disabled:cursor-not-allowed'
+                                                            }`}
+                                                        >
+                                                            {isCompleting ? (
+                                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                            ) : isCompleted ? (
+                                                                <>
+                                                                    <Check className="w-4 h-4" />
+                                                                    Done
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <ExternalLink className="w-4 h-4" />
+                                                                    Start
+                                                                </>
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
+                        )}
 
                         {/* Description */}
                         {giveaway.description && (
-                            <div className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl p-6">
-                                <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="glass-card rounded-3xl p-8"
+                            >
+                                <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent)]/20 to-purple-500/20 flex items-center justify-center">
+                                        <Gift className="w-5 h-5 text-[var(--accent)]" />
+                                    </div>
                                     About This Giveaway
                                 </h2>
                                 <div
-                                    className="prose prose-invert max-w-none"
+                                    className="prose prose-invert max-w-none text-[var(--text-secondary)]"
                                     dangerouslySetInnerHTML={{ __html: giveaway.description }}
                                 />
-                            </div>
+                            </motion.div>
                         )}
 
                         {/* Rules */}
                         {giveaway.rules && (
-                            <div className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl p-6">
-                                <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="glass-card rounded-3xl p-8"
+                            >
+                                <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent)]/20 to-purple-500/20 flex items-center justify-center">
+                                        <Trophy className="w-5 h-5 text-[var(--accent)]" />
+                                    </div>
                                     Rules & Terms
                                 </h2>
-                                <p className="text-[var(--text-secondary)] whitespace-pre-wrap">
+                                <p className="text-[var(--text-secondary)] whitespace-pre-wrap leading-relaxed">
                                     {giveaway.rules}
                                 </p>
-                            </div>
+                            </motion.div>
                         )}
                     </div>
 
-                    {/* Right Column - Entry Status */}
+                    {/* Right Column - Entry Status & Leaderboard */}
                     <div className="space-y-6">
-                        {/* Your Entry */}
+                        {/* Your Entry Card */}
                         {entry && (
-                            <div className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl p-6 sticky top-4">
-                                <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">
-                                    Your Entry
-                                </h2>
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="glass-card rounded-3xl p-6 sticky top-4 relative overflow-hidden group"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                <div className="relative">
+                                    <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
+                                        <Zap className="w-5 h-5 text-[var(--accent)]" />
+                                        Your Entry
+                                    </h2>
 
-                                {/* Points */}
-                                <div className="text-center mb-6">
-                                    <div className="text-5xl font-bold text-[var(--accent)]">
-                                        {entry.total_points}
-                                    </div>
-                                    <div className="text-[var(--text-secondary)]">
-                                        Total Points
-                                    </div>
-                                </div>
-
-                                {/* Win Chance */}
-                                <div className="bg-[var(--bg-primary)] rounded-xl p-4 mb-6">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-[var(--text-secondary)]">Win Chance</span>
-                                        <span className="font-bold text-[var(--accent)]">
-                                            {entry.win_chance}%
-                                        </span>
-                                    </div>
-                                    <div className="h-2 bg-[var(--border)] rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full bg-[var(--accent)] rounded-full transition-all duration-500"
-                                            style={{ width: `${Math.min(entry.win_chance, 100)}%` }}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Referral */}
-                                <div className="border-t border-[var(--border)] pt-6">
-                                    <h3 className="font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
-                                        <Share2 className="w-4 h-4" />
-                                        Invite Friends
-                                    </h3>
-                                    <p className="text-sm text-[var(--text-secondary)] mb-4">
-                                        Share your referral link to earn bonus points!
-                                    </p>
-
-                                    <button
-                                        onClick={handleCopyReferral}
-                                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl hover:border-[var(--accent)] transition-colors"
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                        {copied ? "Copied!" : "Copy Referral Link"}
-                                    </button>
-
-                                    {entry.referral_count > 0 && (
-                                        <div className="mt-4 text-center text-[var(--text-secondary)]">
-                                            <span className="font-bold text-[var(--accent)]">
-                                                {entry.referral_count}
-                                            </span>{" "}
-                                            friends referred
+                                    {/* Points Display */}
+                                    <div className="text-center mb-6">
+                                        <div className="relative inline-block">
+                                            <div className="absolute inset-0 bg-[var(--accent)]/20 rounded-full blur-2xl" />
+                                            <div className="relative text-6xl font-bold bg-gradient-to-r from-[var(--accent)] to-orange-400 bg-clip-text text-transparent">
+                                                {entry.total_points}
+                                            </div>
                                         </div>
-                                    )}
+                                        <div className="text-[var(--text-muted)] mt-2">Total Points</div>
+                                    </div>
+
+                                    {/* Win Chance */}
+                                    <div className="bg-[var(--bg-primary)]/50 rounded-2xl p-4 mb-6">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <span className="text-[var(--text-secondary)] font-medium">Win Chance</span>
+                                            <span className="text-2xl font-bold text-[var(--accent)]">
+                                                {entry.win_chance.toFixed(1)}%
+                                            </span>
+                                        </div>
+                                        <div className="relative h-3 bg-[var(--bg-secondary)] rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${Math.min(entry.win_chance, 100)}%` }}
+                                                transition={{ duration: 1, ease: "easeOut" }}
+                                                className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--accent)] to-orange-500 rounded-full shadow-[0_0_10px_rgba(252,65,0,0.5)]"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Referral Section */}
+                                    <div className="border-t border-[var(--border)] pt-6">
+                                        <h3 className="font-bold mb-2 flex items-center gap-2">
+                                            <Share2 className="w-4 h-4 text-[var(--accent)]" />
+                                            Invite Friends
+                                        </h3>
+                                        <p className="text-sm text-[var(--text-muted)] mb-4">
+                                            Share your link to earn bonus points!
+                                        </p>
+
+                                        <button
+                                            onClick={handleCopyReferral}
+                                            className="w-full flex items-center justify-center gap-2 px-4 py-3 glass rounded-xl hover:border-[var(--accent)] transition-all duration-300 group/btn"
+                                        >
+                                            <Copy className="w-4 h-4 group-hover/btn:text-[var(--accent)] transition-colors" />
+                                            <span className="font-medium">
+                                                {copied ? "✓ Copied!" : "Copy Referral Link"}
+                                            </span>
+                                        </button>
+
+                                        {entry.referral_count > 0 && (
+                                            <div className="mt-4 text-center">
+                                                <span className="text-2xl font-bold text-[var(--accent)]">
+                                                    {entry.referral_count}
+                                                </span>
+                                                <span className="text-[var(--text-muted)] ml-2">
+                                                    {entry.referral_count === 1 ? 'friend referred' : 'friends referred'}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         )}
 
                         {/* Leaderboard */}
-                        <Leaderboard slug={slug} />
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.1 }}
+                        >
+                            <Leaderboard slug={slug} />
+                        </motion.div>
                     </div>
                 </div>
             </div>
