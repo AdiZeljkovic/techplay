@@ -79,7 +79,7 @@ class GiveawayResource extends Resource
                                         ->label('')
                                         ->image()
                                         ->directory('giveaways')
-                                        ->imageEditor()
+                                        ->maxSize(5120)
                                         ->columnSpanFull(),
                                 ])
                                 ->collapsible(),
@@ -108,7 +108,7 @@ class GiveawayResource extends Resource
                                         ->label('Prize Image')
                                         ->image()
                                         ->directory('giveaways/prizes')
-                                        ->imageEditor(),
+                                        ->maxSize(5120),
                                 ]),
                         ]),
 
