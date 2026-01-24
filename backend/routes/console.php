@@ -16,3 +16,6 @@ Schedule::command('ads:sync-metrics')->hourly();
 
 // GIVEAWAYS: Send reminder emails for giveaways ending in 24 hours (runs every 6 hours)
 Schedule::job(new \App\Jobs\SendGiveawayReminders)->everySixHours();
+
+// PERFORMANCE: Clean old view tracking records daily (keep last 7 days)
+Schedule::command('views:clean')->daily();
