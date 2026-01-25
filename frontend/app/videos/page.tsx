@@ -1,69 +1,159 @@
 "use client";
 
-import Link from "next/link";
-import useSWR from "swr";
-import axios from "@/lib/axios";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
-    Play, Clock, Video, ChevronLeft, ChevronRight, Sparkles,
-    Newspaper, Gamepad2, GraduationCap, Star, Cpu, Eye, TrendingUp,
-    Film, Clapperboard
+    Play, Sparkles, Video, Film, Loader2, Eye, Heart, MessageCircle,
+    ChevronLeft, ChevronRight
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { useRealTimeVideos } from "@/hooks";
 
-const fetcher = (url: string) => axios.get(url).then((res) => res.data);
+// API Constants
+const API_BASE = "https://38wzs9wt1a.execute-api.eu-central-1.amazonaws.com";
+const USER_ID = "e9eaa260-4aed-421c-8f87-c4d6bfe7bc79";
 
-interface VideoItem {
-    id: number;
+// Types
+interface Movie {
+    id: string;
     title: string;
-    slug: string;
-    youtube_url: string;
-    youtube_id: string;
-    thumbnail_url?: string;
-    published_at: string;
+    status: string;
+    lastUploadedVisual?: {
+        thumbnailPathSafe: string;
+        title: string;
+        viewCount: number;
+    };
 }
 
-interface VideoResponse {
-    data: VideoItem[];
-    current_page: number;
-    last_page: number;
-    total: number;
-    next_page_url: string | null;
+interface Visual {
+    id: string;
+    title: string;
+    viewCount: number;
+    reactionCount: number;
+    commentCount: number;
+    createdAt: string;
+    media: {
+        path: string;
+        thumbnailImagePath: string;
+        thumbnailPath: string;
+    };
 }
 
 export default function VideosPage() {
-    const [page, setPage] = useState(1);
-    const [selectedCategory, setSelectedCategory] = useState<string>('all');
+    const [movies, setMovies] = useState<Movie[]>([]);
+    const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+    const [visuals, setVisuals] = useState<Visual[]>([]);
+    const [currentVisualIndex, setCurrentVisualIndex] = useState(0);
+    const [isLoadingMovies, setIsLoadingMovies] = useState(true);
+    const [isLoadingVisuals, setIsLoadingVisuals] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
 
-    const categories = [
-        { id: 'all', name: 'All Videos', icon: Video },
-        { id: 'news', name: 'News', icon: Newspaper },
-        { id: 'game-for-fun', name: 'Game For Fun', icon: Gamepad2 },
-        { id: 'education', name: 'Education', icon: GraduationCap },
-        { id: 'reviews', name: 'Reviews', icon: Star },
-        { id: 'tech-reviews', name: 'Tech Reviews', icon: Cpu },
-    ];
+    // Fetch movies on mount
+    useEffect(() => {
+        fetchMovies();
+    }, []);
 
-    const { data, isLoading, isValidating } = useSWR<VideoResponse>(
-        `/videos?page=${page}`,
-        fetcher
-    );
+    // Fetch visuals when movie is selected
+    useEffect(() => {
+        if (selectedMovie) {
+            fetchVisuals(selectedMovie.id);
+        }
+    }, [selectedMovie]);
 
-    const { videos: realtimeVideos } = useRealTimeVideos([]);
-    const fetchedVideos = data?.data || [];
-    const displayVideos = page === 1
-        ? [...realtimeVideos.filter(rt => !fetchedVideos.some(f => f.id === rt.id)), ...fetchedVideos]
-        : fetchedVideos;
+    // Setup HLS when video changes
+    useEffect(() => {
+        if (visuals.length > 0 && videoRef.current) {
+            const currentVisual = visuals[currentVisualIndex];
+            const videoUrl = currentVisual?.media?.path;
 
-    const getThumbnail = (video: any) => {
-        if (video.thumbnail_url) return video.thumbnail_url;
-        if (video.youtube_id) return `https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg`;
-        return '/placeholder-video.jpg';
+            if (videoUrl && videoUrl.includes('.m3u8')) {
+                // For HLS streams, we need hls.js
+                loadHlsVideo(videoUrl);
+            } else if (videoUrl) {
+                videoRef.current.src = videoUrl;
+            }
+        }
+    }, [visuals, currentVisualIndex]);
+
+    const loadHlsVideo = async (url: string) => {
+        if (!videoRef.current) return;
+
+        // Dynamic import of hls.js
+        const Hls = (await import('hls.js')).default;
+
+        if (Hls.isSupported()) {
+            const hls = new Hls();
+            hls.loadSource(url);
+            hls.attachMedia(videoRef.current);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                videoRef.current?.play();
+            });
+        } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
+            // Safari native HLS support
+            videoRef.current.src = url;
+            videoRef.current.addEventListener('loadedmetadata', () => {
+                videoRef.current?.play();
+            });
+        }
     };
 
-    const featuredVideo = displayVideos[0];
-    const gridVideos = displayVideos.slice(1);
+    const fetchMovies = async () => {
+        try {
+            setIsLoadingMovies(true);
+            setError(null);
+            const response = await fetch(
+                `${API_BASE}/users/get-public-movies-by-user-id?userId=${USER_ID}`
+            );
+            const data = await response.json();
+
+            // Filter movies that have visuals
+            const validMovies = (data.data?.movies?.items || []).filter(
+                (movie: Movie) => movie.lastUploadedVisual !== null
+            );
+
+            setMovies(validMovies);
+
+            // Auto-select first movie
+            if (validMovies.length > 0) {
+                setSelectedMovie(validMovies[0]);
+            }
+        } catch (err) {
+            setError("Failed to load movies");
+            console.error(err);
+        } finally {
+            setIsLoadingMovies(false);
+        }
+    };
+
+    const fetchVisuals = async (movieId: string) => {
+        try {
+            setIsLoadingVisuals(true);
+            setError(null);
+            const response = await fetch(`${API_BASE}/visuals/public/${movieId}`);
+            const data = await response.json();
+
+            setVisuals(data.data?.visuals?.items || []);
+            setCurrentVisualIndex(0);
+        } catch (err) {
+            setError("Failed to load videos");
+            console.error(err);
+        } finally {
+            setIsLoadingVisuals(false);
+        }
+    };
+
+    const handleMovieClick = (movie: Movie) => {
+        setSelectedMovie(movie);
+        setCurrentVisualIndex(0);
+    };
+
+    const handlePrevVideo = () => {
+        setCurrentVisualIndex(prev => Math.max(0, prev - 1));
+    };
+
+    const handleNextVideo = () => {
+        setCurrentVisualIndex(prev => Math.min(visuals.length - 1, prev + 1));
+    };
+
+    const currentVisual = visuals[currentVisualIndex];
 
     return (
         <div className="min-h-screen bg-slate-950">
@@ -123,7 +213,6 @@ export default function VideosPage() {
 
                         {/* Left Content - 7 cols */}
                         <div className="lg:col-span-7 text-center lg:text-left">
-
 
                             {/* Premium Title with layered effects */}
                             <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[0.95] tracking-tighter mb-8">
@@ -221,7 +310,7 @@ export default function VideosPage() {
             </section>
 
             {/* ═══════════════════════════════════════════════════════════════════
-                CATEGORY FILTER - Floating Glass Bar
+                CATEGORY FILTER - Dynamic Movie Buttons
             ════════════════════════════════════════════════════════════════════ */}
             <section className="relative z-30 -mt-12">
                 <div className="container mx-auto px-4">
@@ -230,271 +319,181 @@ export default function VideosPage() {
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-fuchsia-600/20 to-purple-600/20 rounded-2xl blur-2xl" />
 
                         <div className="relative bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 shadow-2xl shadow-purple-500/10">
-                            <div className="flex flex-wrap items-center justify-center gap-2">
-                                {categories.map((category) => {
-                                    const Icon = category.icon;
-                                    const isActive = selectedCategory === category.id;
-                                    return (
-                                        <button
-                                            key={category.id}
-                                            onClick={() => setSelectedCategory(category.id)}
-                                            className={`
-                                                relative flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-medium text-sm transition-all duration-500
-                                                ${isActive
-                                                    ? 'text-white'
-                                                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                                                }
-                                            `}
-                                        >
-                                            {isActive && (
-                                                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 rounded-xl shadow-lg shadow-fuchsia-500/30" />
-                                            )}
-                                            <Icon className={`relative w-4 h-4 ${isActive ? 'text-white' : 'text-fuchsia-400'}`} />
-                                            <span className="relative hidden sm:inline">{category.name}</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                            {isLoadingMovies ? (
+                                <div className="flex items-center justify-center py-4 gap-3">
+                                    <Loader2 className="w-5 h-5 text-fuchsia-400 animate-spin" />
+                                    <span className="text-gray-400">Loading categories...</span>
+                                </div>
+                            ) : (
+                                <div className="flex flex-wrap items-center justify-center gap-2">
+                                    {movies.map((movie) => {
+                                        const isActive = selectedMovie?.id === movie.id;
+                                        return (
+                                            <button
+                                                key={movie.id}
+                                                onClick={() => handleMovieClick(movie)}
+                                                className={`
+                                                    relative flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-medium text-sm transition-all duration-500
+                                                    ${isActive
+                                                        ? 'text-white'
+                                                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                                    }
+                                                `}
+                                            >
+                                                {isActive && (
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 rounded-xl shadow-lg shadow-fuchsia-500/30" />
+                                                )}
+                                                <Film className={`relative w-4 h-4 ${isActive ? 'text-white' : 'text-fuchsia-400'}`} />
+                                                <span className="relative">{movie.title}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* ═══════════════════════════════════════════════════════════════════
-                FEATURED VIDEO - Hero Spotlight
+                VIDEO PLAYER SECTION
             ════════════════════════════════════════════════════════════════════ */}
-            {isLoading ? (
-                <section className="relative py-20">
-                    <div className="container mx-auto px-4">
-                        <div className="relative rounded-3xl overflow-hidden bg-slate-900/50 border border-white/5 h-[450px]">
-                            <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
-                                <div className="h-full bg-slate-800/50 animate-pulse" />
-                                <div className="p-8 lg:p-12 flex flex-col justify-center space-y-6">
-                                    <div className="w-32 h-6 bg-slate-800/50 rounded-full animate-pulse" />
-                                    <div className="w-3/4 h-12 bg-slate-800/50 rounded-lg animate-pulse" />
-                                    <div className="w-full h-8 bg-slate-800/50 rounded-lg animate-pulse" />
-                                    <div className="flex gap-4 pt-4">
-                                        <div className="w-32 h-6 bg-slate-800/50 rounded animate-pulse" />
-                                        <div className="w-32 h-6 bg-slate-800/50 rounded animate-pulse" />
-                                    </div>
-                                    <div className="w-40 h-12 bg-slate-800/50 rounded-xl animate-pulse mt-4" />
-                                </div>
+            <section className="relative py-20">
+                <div className="container mx-auto px-4">
+                    {isLoadingVisuals ? (
+                        <div className="relative rounded-3xl overflow-hidden bg-slate-900/50 border border-white/5 h-[500px] flex items-center justify-center">
+                            <div className="flex flex-col items-center gap-4">
+                                <Loader2 className="w-12 h-12 text-fuchsia-400 animate-spin" />
+                                <span className="text-gray-400">Loading videos...</span>
                             </div>
                         </div>
-                    </div>
-                </section>
-            ) : featuredVideo && (
-                <section className="relative py-20">
-                    <div className="container mx-auto px-4">
-                        <Link
-                            href={`/videos/${featuredVideo.slug}`}
-                            className="group relative block rounded-3xl overflow-hidden"
-                        >
+                    ) : visuals.length > 0 && currentVisual ? (
+                        <div className="relative">
                             {/* Background glow */}
-                            <div className="absolute -inset-4 bg-gradient-to-r from-purple-600/20 via-fuchsia-600/20 to-pink-600/20 rounded-[2rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <div className="absolute -inset-4 bg-gradient-to-r from-purple-600/20 via-fuchsia-600/20 to-pink-600/20 rounded-[2rem] blur-2xl opacity-50" />
 
-                            <div className="relative bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden group-hover:border-purple-500/30 transition-all duration-500">
-                                <div className="grid grid-cols-1 lg:grid-cols-2">
-                                    {/* Thumbnail */}
-                                    <div className="relative aspect-video lg:aspect-auto lg:h-[450px] overflow-hidden">
-                                        <img
-                                            src={getThumbnail(featuredVideo)}
-                                            alt={featuredVideo.title}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-slate-900/90 hidden lg:block" />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/30 to-transparent lg:hidden" />
+                            <div className="relative bg-slate-900/50 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden">
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
+                                    {/* Main Video Player */}
+                                    <div className="lg:col-span-2">
+                                        <div className="relative aspect-[9/16] max-h-[70vh] mx-auto bg-black rounded-2xl overflow-hidden">
+                                            <video
+                                                ref={videoRef}
+                                                className="w-full h-full object-contain"
+                                                controls
+                                                playsInline
+                                                poster={currentVisual.media?.thumbnailImagePath}
+                                            />
 
-                                        {/* Play button */}
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="relative">
-                                                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-full blur-2xl opacity-40 group-hover:opacity-80 scale-150 transition-all duration-500" />
-                                                <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-fuchsia-600 flex items-center justify-center group-hover:scale-110 transition-all duration-500 shadow-2xl shadow-purple-500/50">
-                                                    <Play className="w-10 h-10 text-white ml-2" fill="white" />
+                                            {/* Video Navigation */}
+                                            {visuals.length > 1 && (
+                                                <>
+                                                    <button
+                                                        onClick={handlePrevVideo}
+                                                        disabled={currentVisualIndex === 0}
+                                                        className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                                    >
+                                                        <ChevronLeft className="w-6 h-6" />
+                                                    </button>
+                                                    <button
+                                                        onClick={handleNextVideo}
+                                                        disabled={currentVisualIndex === visuals.length - 1}
+                                                        className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                                    >
+                                                        <ChevronRight className="w-6 h-6" />
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {/* Video Info */}
+                                        <div className="mt-4">
+                                            <h2 className="text-2xl font-bold text-white mb-2">{currentVisual.title}</h2>
+                                            <div className="flex items-center gap-6 text-gray-400">
+                                                <div className="flex items-center gap-2">
+                                                    <Eye className="w-4 h-4 text-fuchsia-400" />
+                                                    <span>{currentVisual.viewCount} views</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Heart className="w-4 h-4 text-pink-400" />
+                                                    <span>{currentVisual.reactionCount} likes</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <MessageCircle className="w-4 h-4 text-purple-400" />
+                                                    <span>{currentVisual.commentCount} comments</span>
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {/* Featured badge */}
-                                        <div className="absolute top-6 left-6">
-                                            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 rounded-full text-white text-sm font-bold shadow-lg shadow-purple-500/30">
-                                                <TrendingUp className="w-4 h-4" />
-                                                Featured
-                                            </div>
-                                        </div>
                                     </div>
 
-                                    {/* Content */}
-                                    <div className="p-8 lg:p-12 flex flex-col justify-center">
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                                            <span className="text-green-400 text-sm font-medium">Latest Upload</span>
-                                        </div>
-                                        <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4 group-hover:text-fuchsia-300 transition-colors duration-500 line-clamp-2">
-                                            {featuredVideo.title}
-                                        </h2>
-                                        <p className="text-gray-400 text-lg mb-6 line-clamp-2">
-                                            Experience cinematic storytelling at its finest. Click to watch the full video.
-                                        </p>
-                                        <div className="flex items-center gap-6 text-gray-400">
-                                            <div className="flex items-center gap-2">
-                                                <Clock className="w-5 h-5 text-fuchsia-400" />
-                                                <span>{formatDistanceToNow(new Date(featuredVideo.published_at), { addSuffix: true })}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <Clapperboard className="w-5 h-5 text-purple-400" />
-                                                <span>HD Quality</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-8">
-                                            <span className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 rounded-xl text-white font-semibold shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 transition-all">
-                                                <Play className="w-5 h-5" fill="white" />
-                                                Watch Now
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </Link>
-                    </div>
-                </section>
-            )}
-
-            {/* ═══════════════════════════════════════════════════════════════════
-                VIDEO GRID - Premium Cards
-            ════════════════════════════════════════════════════════════════════ */}
-            <section className="relative py-16 pb-24">
-                {/* Background accents */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute top-1/4 left-0 w-[500px] h-[500px] bg-purple-600/5 rounded-full blur-[150px]" />
-                    <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-fuchsia-600/5 rounded-full blur-[120px]" />
-                </div>
-
-                <div className="container mx-auto px-4 relative z-10">
-                    {/* Section Header */}
-                    <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-12 gap-6">
-                        <div>
-                            <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600/20 to-fuchsia-600/20 border border-purple-500/20 flex items-center justify-center">
-                                    <Film className="w-5 h-5 text-fuchsia-400" />
-                                </div>
-                                <span className="text-fuchsia-400 font-semibold text-sm uppercase tracking-wider">Explore</span>
-                            </div>
-                            <h2 className="text-3xl md:text-4xl font-bold text-white">
-                                All Videos
-                            </h2>
-                        </div>
-
-                        <div className="flex items-center gap-3 px-5 py-3 bg-slate-800/50 backdrop-blur-sm border border-white/10 rounded-2xl">
-                            <Video className="w-5 h-5 text-fuchsia-400" />
-                            <span className="text-2xl font-bold text-white">{data?.total || 0}</span>
-                            <span className="text-gray-400">videos</span>
-                        </div>
-                    </div>
-
-                    {isLoading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {[...Array(6)].map((_, i) => (
-                                <div key={i} className="bg-slate-800/30 border border-white/5 rounded-2xl overflow-hidden">
-                                    <div className="aspect-video bg-gradient-to-br from-purple-900/30 to-slate-800/50 animate-pulse" />
-                                    <div className="p-6 space-y-4">
-                                        <div className="h-6 bg-white/10 rounded-lg w-4/5 animate-pulse" />
-                                        <div className="h-4 bg-white/5 rounded-lg w-2/3 animate-pulse" />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : gridVideos.length > 0 ? (
-                        <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-                                {gridVideos.map((video: any, index: number) => (
-                                    <Link
-                                        key={video.id}
-                                        href={`/videos/${video.slug}`}
-                                        className="group relative block"
-                                        style={{ animationDelay: `${index * 0.1}s` }}
-                                    >
-                                        {/* Card glow on hover */}
-                                        <div className="absolute -inset-2 bg-gradient-to-r from-purple-600/20 via-fuchsia-600/20 to-pink-600/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-700" />
-
-                                        <div className="relative bg-slate-800/40 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden group-hover:border-purple-500/40 transition-all duration-500">
-                                            {/* Thumbnail */}
-                                            <div className="relative aspect-video overflow-hidden">
-                                                <img
-                                                    src={getThumbnail(video)}
-                                                    alt={video.title}
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
-                                                />
-                                                {/* Overlays */}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent" />
-                                                <div className="absolute inset-0 bg-purple-600/0 group-hover:bg-purple-600/20 transition-all duration-500" />
-
-                                                {/* Play button */}
-                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
-                                                    <div className="relative transform scale-75 group-hover:scale-100 transition-transform duration-500">
-                                                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-full blur-xl opacity-60 scale-150" />
-                                                        <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-fuchsia-600 flex items-center justify-center shadow-2xl">
-                                                            <Play className="w-7 h-7 text-white ml-1" fill="white" />
-                                                        </div>
+                                    {/* Video Playlist */}
+                                    <div className="lg:col-span-1">
+                                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                                            <Video className="w-5 h-5 text-fuchsia-400" />
+                                            {selectedMovie?.title} ({visuals.length} videos)
+                                        </h3>
+                                        <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                                            {visuals.map((visual, index) => (
+                                                <button
+                                                    key={visual.id}
+                                                    onClick={() => setCurrentVisualIndex(index)}
+                                                    className={`
+                                                        w-full flex gap-3 p-3 rounded-xl transition-all duration-300
+                                                        ${index === currentVisualIndex
+                                                            ? 'bg-gradient-to-r from-purple-600/30 to-fuchsia-600/30 border border-fuchsia-500/50'
+                                                            : 'bg-slate-800/30 hover:bg-slate-800/60 border border-transparent'
+                                                        }
+                                                    `}
+                                                >
+                                                    {/* Thumbnail */}
+                                                    <div className="relative w-24 h-16 rounded-lg overflow-hidden shrink-0">
+                                                        <img
+                                                            src={visual.media?.thumbnailImagePath || visual.media?.thumbnailPath}
+                                                            alt={visual.title}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        {index === currentVisualIndex && (
+                                                            <div className="absolute inset-0 bg-fuchsia-500/30 flex items-center justify-center">
+                                                                <Play className="w-6 h-6 text-white" fill="white" />
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                </div>
-
-                                                {/* Duration badge placeholder */}
-                                                <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/80 backdrop-blur-sm rounded-md text-xs text-white font-medium">
-                                                    HD
-                                                </div>
-                                            </div>
-
-                                            {/* Content */}
-                                            <div className="p-5">
-                                                <h3 className="font-semibold text-white text-lg group-hover:text-fuchsia-300 transition-colors duration-300 line-clamp-2 mb-3">
-                                                    {video.title}
-                                                </h3>
-                                                <div className="flex items-center gap-2 text-sm text-gray-400">
-                                                    <Clock className="w-4 h-4 text-fuchsia-400/70" />
-                                                    <span>{formatDistanceToNow(new Date(video.published_at), { addSuffix: true })}</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Bottom gradient line */}
-                                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+                                                    {/* Info */}
+                                                    <div className="flex-1 text-left">
+                                                        <p className={`text-sm font-medium line-clamp-2 ${index === currentVisualIndex ? 'text-white' : 'text-gray-300'}`}>
+                                                            {visual.title}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 mt-1">
+                                                            {visual.viewCount} views
+                                                        </p>
+                                                    </div>
+                                                </button>
+                                            ))}
                                         </div>
-                                    </Link>
-                                ))}
-                            </div>
-
-                            {/* Pagination */}
-                            <div className="flex items-center justify-center gap-4">
-                                <button
-                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                    disabled={page === 1 || isValidating}
-                                    className="flex items-center gap-2 px-6 py-3.5 bg-slate-800/50 backdrop-blur-sm border border-white/10 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-slate-700/50 hover:border-purple-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                                >
-                                    <ChevronLeft className="w-5 h-5" />
-                                    <span className="hidden sm:inline">Previous</span>
-                                </button>
-
-                                <div className="flex items-center gap-3 px-8 py-3.5 bg-slate-800/80 backdrop-blur-sm border border-purple-500/30 rounded-xl">
-                                    <span className="text-gray-400">Page</span>
-                                    <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
-                                        {data?.current_page}
-                                    </span>
-                                    <span className="text-gray-400">of {data?.last_page}</span>
+                                    </div>
                                 </div>
-
-                                <button
-                                    onClick={() => setPage((p) => p + 1)}
-                                    disabled={!data?.next_page_url || isValidating}
-                                    className="flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-purple-600 to-fuchsia-600 rounded-xl text-sm font-semibold text-white hover:from-purple-500 hover:to-fuchsia-500 transition-all shadow-lg shadow-purple-500/25 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
-                                >
-                                    <span className="hidden sm:inline">Next</span>
-                                    <ChevronRight className="w-5 h-5" />
-                                </button>
                             </div>
-                        </>
-                    ) : !featuredVideo ? (
-                        /* Empty State */
+                        </div>
+                    ) : !isLoadingMovies && movies.length > 0 ? (
+                        /* Empty State - No videos in selected category */
+                        <div className="relative text-center py-32 rounded-3xl overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-slate-800/30 to-slate-900/30 backdrop-blur-sm border border-white/10" />
+                            <div className="absolute inset-0">
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px]" />
+                            </div>
+
+                            <div className="relative z-10">
+                                <div className="w-24 h-24 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-purple-600/20 to-fuchsia-600/20 border border-purple-500/20 flex items-center justify-center">
+                                    <Video className="w-12 h-12 text-fuchsia-400" />
+                                </div>
+                                <h3 className="text-3xl font-bold text-white mb-4">No videos in this category</h3>
+                                <p className="text-gray-400 text-lg max-w-md mx-auto">
+                                    Select a different category above to view videos.
+                                </p>
+                            </div>
+                        </div>
+                    ) : !isLoadingMovies ? (
+                        /* Empty State - No movies at all */
                         <div className="relative text-center py-32 rounded-3xl overflow-hidden">
                             <div className="absolute inset-0 bg-gradient-to-br from-slate-800/30 to-slate-900/30 backdrop-blur-sm border border-white/10" />
                             <div className="absolute inset-0">
@@ -514,6 +513,24 @@ export default function VideosPage() {
                     ) : null}
                 </div>
             </section>
+
+            {/* Custom scrollbar styles */}
+            <style jsx global>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 3px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: rgba(168, 85, 247, 0.5);
+                    border-radius: 3px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: rgba(168, 85, 247, 0.7);
+                }
+            `}</style>
         </div>
     );
 }
