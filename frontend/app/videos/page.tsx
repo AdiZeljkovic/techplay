@@ -31,6 +31,7 @@ interface Visual {
     createdAt: string;
     media: {
         path: string;
+        baseMediaPath?: string;
         thumbnailImagePath: string;
         thumbnailPath: string;
     };
@@ -63,35 +64,51 @@ export default function VideosPage() {
         if (visuals.length > 0 && videoRef.current) {
             const currentVisual = visuals[currentVisualIndex];
             const videoUrl = currentVisual?.media?.path;
+            const fallbackUrl = currentVisual?.media?.baseMediaPath;
 
             if (videoUrl && videoUrl.includes('.m3u8')) {
-                // For HLS streams, we need hls.js
-                loadHlsVideo(videoUrl);
+                // For HLS streams, try hls.js first
+                loadHlsVideo(videoUrl, fallbackUrl);
             } else if (videoUrl) {
                 videoRef.current.src = videoUrl;
+            } else if (fallbackUrl) {
+                videoRef.current.src = fallbackUrl;
             }
         }
     }, [visuals, currentVisualIndex]);
 
-    const loadHlsVideo = async (url: string) => {
+    const loadHlsVideo = async (url: string, fallbackUrl?: string) => {
         if (!videoRef.current) return;
 
-        // Dynamic import of hls.js
-        const Hls = (await import('hls.js')).default;
-
-        if (Hls.isSupported()) {
-            const hls = new Hls();
-            hls.loadSource(url);
-            hls.attachMedia(videoRef.current);
-            hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                videoRef.current?.play();
-            });
-        } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
-            // Safari native HLS support
+        // Check for native HLS support first (Safari)
+        if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
             videoRef.current.src = url;
             videoRef.current.addEventListener('loadedmetadata', () => {
-                videoRef.current?.play();
+                videoRef.current?.play().catch(() => { });
             });
+            return;
+        }
+
+        // Try dynamic import of hls.js
+        try {
+            const Hls = (await import('hls.js')).default;
+
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(videoRef.current);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    videoRef.current?.play().catch(() => { });
+                });
+                return;
+            }
+        } catch (error) {
+            console.warn('HLS.js not available, using fallback');
+        }
+
+        // Fallback to MP4 if available
+        if (fallbackUrl && videoRef.current) {
+            videoRef.current.src = fallbackUrl;
         }
     };
 
