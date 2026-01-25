@@ -50,7 +50,6 @@ export default function TurnstileProvider({ children }: TurnstileProviderProps) 
                 const id = window.turnstile.render(containerRef.current, {
                     sitekey: siteKey,
                     execution: 'execute',
-                    size: 'invisible',
                     callback: (token: string) => {
                         console.log("Turnstile token received");
                         if (currentResolverRef.current) {
