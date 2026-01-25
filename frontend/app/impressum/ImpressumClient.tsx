@@ -104,92 +104,47 @@ export default function ImpressumClient({ staff }: { staff: any }) {
                         </Link>
                     </motion.div>
 
-                    {/* Editor in Chief - Dynamic */}
+                    {/* Editor in Chief - Static */}
                     <motion.div
                         variants={fadeInUp}
                         className="col-span-1 md:col-span-1 lg:col-span-1 bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-6 flex flex-col items-center text-center group hover:border-[var(--accent)] transition-colors"
                     >
-                        {editorInChief ? (
-                            <Link href={`/profile/${editorInChief.username}`} className="flex flex-col items-center w-full">
-                                <Avatar className="w-20 h-20 border-2 border-[var(--accent)] mb-4">
-                                    <AvatarImage src={editorInChief.avatar_url} />
-                                    <AvatarFallback className="bg-gradient-to-br from-[var(--accent)] to-purple-600 text-white text-2xl font-bold">
-                                        {editorInChief.name.substring(0, 2).toUpperCase()}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <p className="text-[var(--accent)] font-bold text-xs uppercase tracking-wider mb-1">Editor-in-Chief</p>
-                                <h3 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors">{editorInChief.name}</h3>
-                            </Link>
-                        ) : (
-                            <div className="flex flex-col items-center w-full">
-                                <Avatar className="w-20 h-20 border-2 border-[var(--accent)] mb-4">
-                                    <AvatarFallback className="bg-gradient-to-br from-[var(--accent)] to-purple-600 text-white text-2xl font-bold">
-                                        ND
-                                    </AvatarFallback>
-                                </Avatar>
-                                <p className="text-[var(--accent)] font-bold text-xs uppercase tracking-wider mb-1">Editor-in-Chief</p>
-                                <h3 className="text-lg font-bold text-[var(--text-primary)]">Nenad Divljaković</h3>
-                            </div>
-                        )}
+                        <div className="flex flex-col items-center w-full">
+                            <Avatar className="w-20 h-20 border-2 border-[var(--accent)] mb-4">
+                                <AvatarImage src="/images/team/nenad.jpg" />
+                                <AvatarFallback className="bg-gradient-to-br from-[var(--accent)] to-purple-600 text-white text-2xl font-bold">
+                                    ND
+                                </AvatarFallback>
+                            </Avatar>
+                            <p className="text-[var(--accent)] font-bold text-xs uppercase tracking-wider mb-1">Editor-in-Chief</p>
+                            <h3 className="text-lg font-bold text-[var(--text-primary)]">Nenad Divljaković</h3>
+                        </div>
                     </motion.div>
 
-                    {/* Editors / Executive Editors - Dynamic */}
-                    {editors.length > 0 ? (
-                        editors.map((editor: any) => (
-                            <motion.div
-                                key={editor.id}
-                                variants={fadeInUp}
-                                className="col-span-1 md:col-span-1 lg:col-span-2 bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-6 flex items-center md:items-start lg:items-center gap-6 group hover:border-blue-500 transition-colors"
-                            >
-                                <Link href={`/profile/${editor.username}`} className="flex items-center gap-6 w-full">
-                                    <Avatar className="w-20 h-20 border-2 border-blue-500">
-                                        <AvatarImage src={editor.avatar_url} />
-                                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white text-2xl font-bold">
-                                            {editor.name.substring(0, 2).toUpperCase()}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <p className="text-blue-400 font-bold text-xs uppercase tracking-wider mb-1">Executive Editor</p>
-                                        <h3 className="text-xl font-bold text-[var(--text-primary)] group-hover:text-blue-400 transition-colors">{editor.name}</h3>
-                                        <p className="text-sm text-[var(--text-muted)] mt-1">Editorial Team</p>
-                                    </div>
-                                </Link>
-                            </motion.div>
-                        ))
-                    ) : (
-                        // Fallback placeholder if no editors found
-                        <motion.div
-                            variants={fadeInUp}
-                            className="col-span-1 md:col-span-1 lg:col-span-2 bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-6 hidden md:flex"
-                        />
-                    )}
-
-
-                    {/* Contributors List - Dynamic */}
+                    {/* Journalists - Static */}
                     <motion.div
                         variants={fadeInUp}
-                        className="col-span-1 md:col-span-3 lg:col-span-3 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-3xl p-8"
+                        className="col-span-1 md:col-span-3 lg:col-span-2 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-3xl p-8"
                     >
                         <div className="flex items-center gap-3 mb-6">
                             <Users className="w-6 h-6 text-[var(--text-secondary)]" />
-                            <h3 className="text-xl font-bold text-[var(--text-primary)]">Contributors & Journalists</h3>
+                            <h3 className="text-xl font-bold text-[var(--text-primary)]">Journalists</h3>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {contributors.length > 0 ? contributors.map((user: any) => (
-                                <Link key={user.id} href={`/profile/${user.username}`}>
-                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-primary)] hover:bg-[var(--bg-card)] transition-colors border border-transparent hover:border-[var(--border)] group">
-                                        <Avatar className="w-8 h-8">
-                                            <AvatarImage src={user.avatar_url} />
-                                            <AvatarFallback className="bg-[var(--bg-secondary)] text-[var(--text-muted)] text-xs font-bold">
-                                                {user.name.substring(0, 1)}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <span className="font-medium text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors">{user.name}</span>
-                                    </div>
-                                </Link>
-                            )) : (
-                                <p className="text-[var(--text-muted)] col-span-full">No contributors yet.</p>
-                            )}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {[
+                                { name: "Uroš Kurlagić", initials: "UK" },
+                                { name: "Nemanja Kočić", initials: "NK" },
+                                { name: "Miloš Rešković", initials: "MR" }
+                            ].map((journalist, idx) => (
+                                <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border)]">
+                                    <Avatar className="w-10 h-10">
+                                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white text-sm font-bold">
+                                            {journalist.initials}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <span className="font-medium text-[var(--text-primary)]">{journalist.name}</span>
+                                </div>
+                            ))}
                         </div>
                     </motion.div>
 
