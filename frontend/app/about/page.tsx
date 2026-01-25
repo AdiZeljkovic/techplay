@@ -97,43 +97,50 @@ export default function AboutPage() {
                     className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center"
                 >
                     <div>
-                        <h2 className="text-3xl font-bold text-white mb-6">How This Started</h2>
+                        <h2 className="text-3xl font-bold text-white mb-6">Our Story</h2>
                         <div className="space-y-4 text-[var(--text-secondary)]">
                             <p>
-                                TechPlay started in late 2024 when a few of us got tired of reading the same regurgitated reviews everywhere.
-                                Every GPU launch felt like a copy-paste job. Every "editorial" was just thinly veiled advertising.
+                                TechPlay started back in 2020 as a small blog covering local gaming news from the Balkans.
+                                Gaming has always been in our blood—late-night sessions, heated debates about which console is better,
+                                and that constant itch to know what's coming next.
                             </p>
                             <p>
-                                We thought: what if we just wrote about tech the way we actually talk about it with friends?
-                                No corporate jargon, no playing it safe, no pretending a mediocre product is "good for the price."
+                                What began as a passion project quickly grew into something bigger. We realized there was a gap:
+                                people wanted honest takes on games and tech, not recycled press releases dressed up as reviews.
                             </p>
                             <p>
-                                So here we are—running this thing out of Sarajevo, covering everything from AAA game launches to
-                                whether that cheap mechanical keyboard from AliExpress is actually usable. (Spoiler: sometimes yes, usually no.)
+                                Today, we cover everything from the latest AAA releases and esports drama to hardware reviews
+                                and that weird indie game everyone's sleeping on. Gaming isn't just what we write about—it's what we do
+                                when the keyboards go silent.
                             </p>
                             <p className="text-[var(--text-primary)] font-semibold">
-                                We're not the biggest, but we're damn sure trying to be the most honest.
+                                We're not the biggest, but gaming runs in our veins. And we're just getting started.
                             </p>
                         </div>
                     </div>
-                    <div className="relative h-[400px] rounded-3xl overflow-hidden border border-[var(--border)] bg-[var(--bg-card)]">
-                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/10 to-purple-900/10"></div>
+                    <div className="relative h-[400px] rounded-3xl overflow-hidden border border-[var(--border)]">
+                        <img
+                            src="/images/about/team.jpg"
+                            alt="TechPlay Team"
+                            className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)] via-transparent to-transparent"></div>
 
-                        {/* Stats overlay instead of placeholder */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center p-8 space-y-6">
-                            <div className="text-center">
-                                <div className="text-5xl font-black text-white mb-2">2024</div>
-                                <div className="text-sm text-[var(--text-muted)] uppercase tracking-wider">Year Founded</div>
-                            </div>
-                            <div className="w-20 h-px bg-[var(--border)]"></div>
-                            <div className="text-center">
-                                <div className="text-5xl font-black text-[var(--accent)] mb-2">0</div>
-                                <div className="text-sm text-[var(--text-muted)] uppercase tracking-wider">Sponsored Reviews</div>
-                            </div>
-                            <div className="w-20 h-px bg-[var(--border)]"></div>
-                            <div className="text-center">
-                                <div className="text-5xl font-black text-white mb-2">∞</div>
-                                <div className="text-sm text-[var(--text-muted)] uppercase tracking-wider">Coffees Consumed</div>
+                        {/* Stats overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 p-8">
+                            <div className="flex justify-around text-center">
+                                <div>
+                                    <div className="text-3xl font-black text-white">2020</div>
+                                    <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider">Founded</div>
+                                </div>
+                                <div>
+                                    <div className="text-3xl font-black text-[var(--accent)]">0</div>
+                                    <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider">Sponsored Reviews</div>
+                                </div>
+                                <div>
+                                    <div className="text-3xl font-black text-white">∞</div>
+                                    <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider">Gaming Hours</div>
+                                </div>
                             </div>
                         </div>
                     </div>

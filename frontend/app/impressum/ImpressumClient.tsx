@@ -32,7 +32,7 @@ export default function ImpressumClient({ staff }: { staff: any }) {
         <div className="min-h-screen bg-[var(--bg-primary)]">
             <PageHero
                 title="Impressum"
-                description="Legal stuff, but make it readable. Here's who we are and how to reach us."
+                description="Meet the people behind TechPlay and get in touch with our team."
             />
 
             <div className="container mx-auto px-4 py-16 max-w-6xl">
@@ -79,36 +79,56 @@ export default function ImpressumClient({ staff }: { staff: any }) {
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <Globe className="w-5 h-5 text-[var(--text-muted)]" />
-                                    <a href="https://luminor.ba" target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] hover:underline">
-                                        luminor.ba
+                                    <a href="https://luminor.solutions" target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] hover:underline">
+                                        luminor.solutions
                                     </a>
                                 </div>
                             </div>
                         </div>
                     </motion.div>
 
+                    {/* Founder - Static */}
+                    <motion.div
+                        variants={fadeInUp}
+                        className="col-span-1 md:col-span-1 lg:col-span-1 bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-6 flex flex-col items-center text-center group hover:border-yellow-500 transition-colors"
+                    >
+                        <Link href="/profile/adizeljkovic" className="flex flex-col items-center w-full">
+                            <Avatar className="w-20 h-20 border-2 border-yellow-500 mb-4">
+                                <AvatarImage src="/images/team/adi.jpg" />
+                                <AvatarFallback className="bg-gradient-to-br from-yellow-500 to-orange-600 text-white text-2xl font-bold">
+                                    AZ
+                                </AvatarFallback>
+                            </Avatar>
+                            <p className="text-yellow-400 font-bold text-xs uppercase tracking-wider mb-1">Founder & CEO</p>
+                            <h3 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-yellow-400 transition-colors">Adi Zeljković</h3>
+                        </Link>
+                    </motion.div>
+
                     {/* Editor in Chief - Dynamic */}
                     <motion.div
                         variants={fadeInUp}
-                        className="col-span-1 md:col-span-1 lg:col-span-2 bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-6 flex items-center md:items-start lg:items-center gap-6 group hover:border-[var(--accent)] transition-colors"
+                        className="col-span-1 md:col-span-1 lg:col-span-1 bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-6 flex flex-col items-center text-center group hover:border-[var(--accent)] transition-colors"
                     >
                         {editorInChief ? (
-                            <Link href={`/profile/${editorInChief.username}`} className="flex items-center gap-6 w-full">
-                                <Avatar className="w-20 h-20 border-2 border-[var(--accent)]">
+                            <Link href={`/profile/${editorInChief.username}`} className="flex flex-col items-center w-full">
+                                <Avatar className="w-20 h-20 border-2 border-[var(--accent)] mb-4">
                                     <AvatarImage src={editorInChief.avatar_url} />
                                     <AvatarFallback className="bg-gradient-to-br from-[var(--accent)] to-purple-600 text-white text-2xl font-bold">
                                         {editorInChief.name.substring(0, 2).toUpperCase()}
                                     </AvatarFallback>
                                 </Avatar>
-                                <div>
-                                    <p className="text-[var(--accent)] font-bold text-xs uppercase tracking-wider mb-1">Editor-in-Chief</p>
-                                    <h3 className="text-xl font-bold text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors">{editorInChief.name}</h3>
-                                    <p className="text-sm text-[var(--text-muted)] mt-1">Responsible Person</p>
-                                </div>
+                                <p className="text-[var(--accent)] font-bold text-xs uppercase tracking-wider mb-1">Editor-in-Chief</p>
+                                <h3 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors">{editorInChief.name}</h3>
                             </Link>
                         ) : (
-                            <div className="flex items-center justify-center w-full h-20 text-[var(--text-muted)]">
-                                Loading...
+                            <div className="flex flex-col items-center w-full">
+                                <Avatar className="w-20 h-20 border-2 border-[var(--accent)] mb-4">
+                                    <AvatarFallback className="bg-gradient-to-br from-[var(--accent)] to-purple-600 text-white text-2xl font-bold">
+                                        ND
+                                    </AvatarFallback>
+                                </Avatar>
+                                <p className="text-[var(--accent)] font-bold text-xs uppercase tracking-wider mb-1">Editor-in-Chief</p>
+                                <h3 className="text-lg font-bold text-[var(--text-primary)]">Nenad Divljaković</h3>
                             </div>
                         )}
                     </motion.div>
@@ -181,11 +201,11 @@ export default function ImpressumClient({ staff }: { staff: any }) {
                         <h3 className="font-bold text-[var(--text-primary)] mb-2">Contact Us</h3>
                         <div className="flex items-center gap-3 text-[var(--text-secondary)]">
                             <Mail className="w-5 h-5 text-[var(--accent)]" />
-                            <a href="mailto:info@techplay.gg" className="hover:text-white transition-colors">info@techplay.gg</a>
+                            <a href="mailto:redakcija@techplay.gg" className="hover:text-white transition-colors">redakcija@techplay.gg</a>
                         </div>
                         <div className="flex items-center gap-3 text-[var(--text-secondary)]">
                             <Phone className="w-5 h-5 text-[var(--accent)]" />
-                            <span>+387 33 123 456</span>
+                            <span>+387 62 574 783</span>
                         </div>
                     </motion.div>
 
@@ -222,7 +242,7 @@ export default function ImpressumClient({ staff }: { staff: any }) {
                             for honest tech journalism. If you think you'd be a good fit, drop us a line.
                         </p>
                         <a
-                            href="mailto:info@techplay.gg?subject=I want to join TechPlay"
+                            href="mailto:redakcija@techplay.gg?subject=Želim da se pridružim TechPlay timu"
                             className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-semibold rounded-xl transition-colors"
                         >
                             <Mail className="w-4 h-4" />
@@ -230,14 +250,17 @@ export default function ImpressumClient({ staff }: { staff: any }) {
                         </a>
                     </motion.div>
 
-                    {/* Tech Values - Small Footer */}
+                    {/* Footer */}
                     <motion.div
                         variants={fadeInUp}
                         className="col-span-1 md:col-span-3 lg:col-span-4 text-center mt-8"
                     >
-                        <p className="flex items-center justify-center gap-2 text-xs text-[var(--text-muted)] uppercase tracking-widest opacity-50">
-                            <Code2 className="w-3 h-3" />
-                            Built with <span className="text-[var(--accent)]">Next.js</span> & <span className="text-red-500">Laravel</span>
+                        <p className="text-sm text-[var(--text-muted)]">
+                            Made with ❤️ by{' '}
+                            <a href="https://luminor.solutions" target="_blank" rel="noopener noreferrer" className="text-[var(--accent)] hover:underline">
+                                Luminor.solutions
+                            </a>
+                            {' '}© All Rights Reserved 2026
                         </p>
                     </motion.div>
                 </motion.div>

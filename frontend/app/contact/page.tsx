@@ -108,7 +108,7 @@ export default function ContactPage() {
                             </address>
                             <div className="mt-4 pt-4 border-t border-[var(--border)] flex items-center gap-2 text-[var(--text-muted)] text-sm">
                                 <Phone className="w-4 h-4" />
-                                <span>+387 33 123 456</span>
+                                <span>+387 62 574 783</span>
                             </div>
                         </motion.div>
                     </motion.div>
