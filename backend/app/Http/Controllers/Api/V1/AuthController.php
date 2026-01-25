@@ -23,15 +23,16 @@ class AuthController extends Controller
 
     public function register(\App\Http\Requests\Auth\RegisterRequest $request)
     {
-        // Validate reCAPTCHA token if present (optional but recommended)
-        // Validate reCAPTCHA token (Mandatory)
-        if (!$request->filled('recaptcha_token')) {
-            return $this->error('Cloudflare Turnstile token is missing', 422);
-        }
+        // Validate reCAPTCHA/Turnstile token (can be disabled via TURNSTILE_ENABLED=false)
+        if (config('services.turnstile.enabled', true)) {
+            if (!$request->filled('recaptcha_token')) {
+                return $this->error('Cloudflare Turnstile token is missing', 422);
+            }
 
-        $captchaResult = $this->recaptcha->verify($request->recaptcha_token, 'register');
-        if (!$captchaResult['success']) {
-            return $this->error($captchaResult['error'] ?? 'Security check failed. Please refresh the page.', 422);
+            $captchaResult = $this->recaptcha->verify($request->recaptcha_token, 'register');
+            if (!$captchaResult['success']) {
+                return $this->error($captchaResult['error'] ?? 'Security check failed. Please refresh the page.', 422);
+            }
         }
 
         $validated = $request->validated();
@@ -67,19 +68,20 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        // Validate reCAPTCHA token
-        // Validate reCAPTCHA token (Mandatory)
-        if (!$request->filled('recaptcha_token')) {
-            throw ValidationException::withMessages([
-                'recaptcha' => ['Security check missing. Please refresh the page.'],
-            ]);
-        }
+        // Validate reCAPTCHA/Turnstile token (can be disabled via TURNSTILE_ENABLED=false)
+        if (config('services.turnstile.enabled', true)) {
+            if (!$request->filled('recaptcha_token')) {
+                throw ValidationException::withMessages([
+                    'recaptcha' => ['Security check missing. Please refresh the page.'],
+                ]);
+            }
 
-        $captchaResult = $this->recaptcha->verify($request->recaptcha_token, 'login');
-        if (!$captchaResult['success']) {
-            throw ValidationException::withMessages([
-                'recaptcha' => [$captchaResult['error'] ?? 'Security check failed. Please refresh the page.'],
-            ]);
+            $captchaResult = $this->recaptcha->verify($request->recaptcha_token, 'login');
+            if (!$captchaResult['success']) {
+                throw ValidationException::withMessages([
+                    'recaptcha' => [$captchaResult['error'] ?? 'Security check failed. Please refresh the page.'],
+                ]);
+            }
         }
 
         $request->validate([

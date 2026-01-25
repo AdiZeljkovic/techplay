@@ -40,5 +40,11 @@ return [
         'secret_key' => env('RECAPTCHA_SECRET_KEY', env('TURNSTILE_SECRET_KEY')),
     ],
 
+    'turnstile' => [
+        'enabled' => env('TURNSTILE_ENABLED', true),
+        'site_key' => env('TURNSTILE_SITE_KEY'),
+        'secret_key' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
 ];
 
