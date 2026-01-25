@@ -9,7 +9,6 @@ import { AuthProvider } from "@/context/AuthContext";
 import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
 import CookieConsentBanner from "@/components/ui/CookieConsentBanner";
 import GlobalSeo from "@/components/seo/GlobalSeo";
-import TurnstileProvider from "@/components/providers/TurnstileProvider";
 import { Toaster } from "react-hot-toast";
 
 
@@ -84,16 +83,14 @@ export default function RootLayout({
           <SiteSettingsProvider>
             <CartProvider>
               <AuthProvider>
-                <TurnstileProvider>
-                  <Header />
-                  <main className="flex-grow">
-                    {children}
-                  </main>
-                  <Footer />
-                  <CookieConsentBanner />
-                  <GlobalSeo />
-                  <Toaster position="bottom-right" />
-                </TurnstileProvider>
+                <Header />
+                <main className="flex-grow">
+                  {children}
+                </main>
+                <Footer />
+                <CookieConsentBanner />
+                <GlobalSeo />
+                <Toaster position="bottom-right" />
               </AuthProvider>
             </CartProvider>
           </SiteSettingsProvider>

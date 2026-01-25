@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { UserPlus, Shield, Check, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useTurnstile } from "@/components/providers/TurnstileProvider";
+import Turnstile from "@/components/ui/Turnstile";
 
 interface PasswordRequirement {
     label: string;
@@ -26,7 +26,7 @@ export default function RegisterPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState<string[]>([]);
     const [success, setSuccess] = useState(false);
-    const { executeTurnstile } = useTurnstile();
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
     const { register: registerAuth } = useAuth({
         middleware: 'guest',
@@ -49,19 +49,25 @@ export default function RegisterPage() {
 
     const password = watch("password", "");
 
+    const handleTurnstileVerify = useCallback((token: string) => {
+        setTurnstileToken(token);
+    }, []);
+
+    const handleTurnstileError = useCallback(() => {
+        setTurnstileToken(null);
+        setErrors(["Security verification failed. Please refresh the page."]);
+    }, []);
+
     const onSubmit = async (data: any) => {
         setIsLoading(true);
         setErrors([]);
         setSuccess(false);
 
-        // Execute Turnstile
-        const recaptchaToken = await executeTurnstile("register");
-
         await registerAuth({
             setErrors,
             setSuccess,
             ...data,
-            recaptcha_token: recaptchaToken
+            recaptcha_token: turnstileToken
         });
         setIsLoading(false);
     };
@@ -89,7 +95,7 @@ export default function RegisterPage() {
                     {success && (
                         <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
                             <p className="text-sm text-green-500">
-                                🎉 Registration successful! Please check your email to verify your account.
+                                Registration successful! Please check your email to verify your account.
                             </p>
                         </div>
                     )}
@@ -176,11 +182,17 @@ export default function RegisterPage() {
                             error={formErrors.password_confirmation?.message as string}
                         />
 
+                        {/* Turnstile Widget */}
+                        <Turnstile
+                            onVerify={handleTurnstileVerify}
+                            onError={handleTurnstileError}
+                        />
+
                         <Button
                             type="submit"
                             className="w-full"
                             isLoading={isLoading}
-                            disabled={!allRequirementsMet && password.length > 0}
+                            disabled={(!allRequirementsMet && password.length > 0) || (!turnstileToken && process.env.NEXT_PUBLIC_TURNSTILE_ENABLED !== 'false')}
                         >
                             Create Account
                         </Button>

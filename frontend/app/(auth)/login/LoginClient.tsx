@@ -1,19 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { LogIn, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useTurnstile } from "@/components/providers/TurnstileProvider";
+import Turnstile from "@/components/ui/Turnstile";
 
 export default function LoginClient() {
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState<string[]>([]);
     const [status, setStatus] = useState<string | null>(null);
-    const { executeTurnstile } = useTurnstile();
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
     const { login } = useAuth({
         middleware: 'guest',
@@ -31,19 +31,26 @@ export default function LoginClient() {
         },
     });
 
+    const handleTurnstileVerify = useCallback((token: string) => {
+        setTurnstileToken(token);
+    }, []);
+
+    const handleTurnstileError = useCallback(() => {
+        setTurnstileToken(null);
+        setErrors(["Security verification failed. Please refresh the page."]);
+    }, []);
+
     const onSubmit = async (data: any) => {
         setIsLoading(true);
         setErrors([]);
-
-        // Execute Turnstile
-        const recaptchaToken = await executeTurnstile("login");
 
         await login({
             setErrors,
             setStatus,
             ...data,
-            recaptcha_token: recaptchaToken
+            recaptcha_token: turnstileToken
         });
+
         setIsLoading(false);
     };
 
@@ -109,10 +116,17 @@ export default function LoginClient() {
                             </Link>
                         </div>
 
+                        {/* Turnstile Widget */}
+                        <Turnstile
+                            onVerify={handleTurnstileVerify}
+                            onError={handleTurnstileError}
+                        />
+
                         <Button
                             type="submit"
                             className="w-full"
                             isLoading={isLoading}
+                            disabled={!turnstileToken && process.env.NEXT_PUBLIC_TURNSTILE_ENABLED !== 'false'}
                         >
                             Sign In
                         </Button>
