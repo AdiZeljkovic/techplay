@@ -46,5 +46,10 @@ return [
         'secret_key' => env('TURNSTILE_SECRET_KEY'),
     ],
 
+    'rawg' => [
+        'api_key' => env('RAWG_API_KEY'),
+        'base_url' => env('RAWG_BASE_URL', 'https://api.rawg.io/api'),
+    ],
+
 ];
 

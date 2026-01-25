@@ -7,12 +7,13 @@ use Illuminate\Support\Facades\Cache;
 
 class RawgService
 {
-    protected $baseUrl = 'https://api.rawg.io/api';
+    protected $baseUrl;
     protected $apiKey;
 
     public function __construct()
     {
-        $this->apiKey = env('RAWG_API_KEY');
+        $this->apiKey = config('services.rawg.api_key');
+        $this->baseUrl = config('services.rawg.base_url', 'https://api.rawg.io/api');
     }
 
     public function searchGames($query = '', $filters = [])
