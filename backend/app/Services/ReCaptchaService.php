@@ -8,26 +8,31 @@ use Illuminate\Support\Facades\Log;
 class ReCaptchaService
 {
     protected string $secretKey;
-    protected float $minScore;
+    protected bool $enabled;
 
     public function __construct()
     {
-        $this->secretKey = config('services.recaptcha.secret_key') ?? env('RECAPTCHA_SECRET_KEY') ?? '';
-        $this->minScore = 0.5; // Threshold score (0.0 - 1.0)
+        $this->secretKey = config('services.turnstile.secret_key') ?? '';
+        $this->enabled = config('services.turnstile.enabled', true);
     }
 
     /**
-     * Verify reCAPTCHA v3 token
+     * Verify Cloudflare Turnstile token
      *
      * @param string $token The token from frontend
-     * @param string $action Expected action name
+     * @param string $action Expected action name (unused for Turnstile but kept for API compatibility)
      * @return array{success: bool, score: ?float, error: ?string}
      */
     public function verify(string $token, string $action = 'submit'): array
     {
+        if (!$this->enabled) {
+            Log::info('Turnstile verification disabled');
+            return ['success' => true, 'score' => 1.0, 'error' => null];
+        }
+
         if (empty($this->secretKey)) {
-            Log::warning('reCAPTCHA secret key not configured');
-            return ['success' => true, 'score' => 1.0, 'error' => null]; // Skip if not configured
+            Log::warning('Turnstile secret key not configured');
+            return ['success' => true, 'score' => 1.0, 'error' => null];
         }
 
         try {
@@ -39,29 +44,25 @@ class ReCaptchaService
             $data = $response->json();
 
             if (!($data['success'] ?? false)) {
-                Log::warning('Turnstile verification failed', ['errors' => $data['error-codes'] ?? []]);
+                Log::warning('Turnstile verification failed', [
+                    'errors' => $data['error-codes'] ?? [],
+                    'token_length' => strlen($token)
+                ]);
                 return [
                     'success' => false,
+                    'score' => null,
                     'error' => 'Security verification failed'
                 ];
             }
 
-            // Cloudflare Turnstile is primarily Boolean success/fail
-
             return [
                 'success' => true,
-                'score' => 1.0, // Default to 1.0 as Turnstile is pass/fail
-                'error' => null
-            ];
-
-            return [
-                'success' => true,
-                'score' => $score,
+                'score' => 1.0,
                 'error' => null
             ];
 
         } catch (\Exception $e) {
-            Log::error('reCAPTCHA verification exception: ' . $e->getMessage());
+            Log::error('Turnstile verification exception: ' . $e->getMessage());
             return [
                 'success' => false,
                 'score' => null,

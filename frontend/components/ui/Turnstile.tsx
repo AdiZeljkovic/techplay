@@ -20,7 +20,7 @@ declare global {
     }
 }
 
-const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "0x4AAAAAACK3cz501N-75UWK";
+const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "0x4AAAAAACQelqz05sxYB2FD";
 
 export default function Turnstile({ onVerify, onError, onExpire }: TurnstileProps) {
     const containerRef = useRef<HTMLDivElement>(null);
