@@ -68,10 +68,38 @@ const getXsrfToken = (): string | null => {
     return null;
 };
 
+// Helper to safely access localStorage (SSR-safe)
+const getStorageItem = (key: string): string | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+        return localStorage.getItem(key);
+    } catch {
+        return null;
+    }
+};
+
+const setStorageItem = (key: string, value: string): void => {
+    if (typeof window === 'undefined') return;
+    try {
+        localStorage.setItem(key, value);
+    } catch {
+        // Ignore storage errors
+    }
+};
+
+const removeStorageItem = (key: string): void => {
+    if (typeof window === 'undefined') return;
+    try {
+        localStorage.removeItem(key);
+    } catch {
+        // Ignore storage errors
+    }
+};
+
 // Request interceptor - add auth token and XSRF token
 axiosInstance.interceptors.request.use(async (config) => {
     // Add Bearer token if available
-    const token = localStorage.getItem('token');
+    const token = getStorageItem('token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -149,7 +177,7 @@ axiosInstance.interceptors.response.use(
             }
 
             // Check if user was logged in (had token)
-            const hadToken = !!localStorage.getItem('token');
+            const hadToken = !!getStorageItem('token');
 
             // If no token existed, user is just a guest - don't redirect
             if (!hadToken) {
@@ -176,13 +204,13 @@ axiosInstance.interceptors.response.use(
                     {},
                     {
                         headers: {
-                            Authorization: `Bearer ${localStorage.getItem('token')}`,
+                            Authorization: `Bearer ${getStorageItem('token')}`,
                         },
                     }
                 );
 
                 const newToken = refreshResponse.data.token;
-                localStorage.setItem('token', newToken);
+                setStorageItem('token', newToken);
 
                 // Update header and retry original request
                 originalRequest.headers.Authorization = `Bearer ${newToken}`;
@@ -193,7 +221,7 @@ axiosInstance.interceptors.response.use(
             } catch (refreshError) {
                 // Refresh failed - clear token gracefully
                 isRefreshing = false;
-                localStorage.removeItem('token');
+                removeStorageItem('token');
 
                 // Show toast so user knows their session expired
                 toast.error('Session expired. Please login again.', { id: 'session-expired' });
