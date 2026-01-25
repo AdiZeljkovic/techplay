@@ -29,6 +29,7 @@ return [
         'Authorization',
         'X-Requested-With',
         'X-CSRF-TOKEN',
+        'X-XSRF-TOKEN', // Sanctum stateful API CSRF token
         'X-Socket-Id', // For Laravel Echo/Reverb
     ],
 

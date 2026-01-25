@@ -20,11 +20,17 @@ DB_PERSISTENT_CONNECTION=true  # IMPORTANT: Enable persistent connections
 DB_POOL_MIN=2
 DB_POOL_MAX=10
 
-# Security
+# Security & Authentication (CRITICAL for Cloudflare)
 SANCTUM_STATEFUL_DOMAINS=techplay.gg,beta.techplay.gg,api.techplay.gg,api-beta.techplay.gg
 SANCTUM_TOKEN_EXPIRATION=10080  # 7 days
 SESSION_LIFETIME=480  # 8 hours
 SESSION_ENCRYPT=true
+SESSION_DOMAIN=.techplay.gg  # Leading dot allows subdomains (CRITICAL!)
+SESSION_SAME_SITE=lax  # 'lax' for same-site requests
+SESSION_SECURE_COOKIE=true  # Required for HTTPS
+
+# CORS - Frontend URLs (comma-separated for multiple origins)
+FRONTEND_URL=https://techplay.gg,https://beta.techplay.gg,https://www.techplay.gg
 
 # PayPal (CRITICAL)
 PAYPAL_MODE=live  # or sandbox for beta
