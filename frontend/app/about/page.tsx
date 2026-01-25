@@ -2,7 +2,7 @@
 
 import PageHero from "@/components/ui/PageHero";
 import { motion } from "framer-motion";
-import { Target, Zap, Heart, Globe, Shield, Users, ArrowRight } from "lucide-react";
+import { Target, Zap, Heart, Globe, Shield, Users, ArrowRight, Gamepad2, Monitor, Cpu, Keyboard } from "lucide-react";
 
 // SEO handled by parent layout + generateMetadata pattern
 // For client components, metadata is set via head in parent or layout
@@ -27,7 +27,7 @@ export default function AboutPage() {
         <div className="min-h-screen bg-[var(--bg-primary)]">
             <PageHero
                 title="About TechPlay"
-                description="Built by gamers, for gamers. No corporate BS, just honest tech talk."
+                description="Built by gamers, for gamers. Just honest gaming and tech talk."
             />
 
             <div className="container mx-auto px-4 py-16 max-w-6xl space-y-24">
@@ -119,11 +119,74 @@ export default function AboutPage() {
                         </div>
                     </div>
                     <div className="relative h-[400px] rounded-3xl overflow-hidden border border-[var(--border)]">
-                        <img
-                            src="/images/about/team.jpg"
-                            alt="TechPlay Team"
-                            className="absolute inset-0 w-full h-full object-cover"
-                        />
+                        {/* Gaming-themed visual background */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--bg-elevated)] via-[var(--bg-card)] to-[var(--bg-elevated)]">
+                            {/* Grid pattern overlay */}
+                            <div className="absolute inset-0 opacity-5" style={{
+                                backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+                                backgroundSize: '40px 40px'
+                            }} />
+
+                            {/* Glowing orbs */}
+                            <div className="absolute top-10 left-10 w-32 h-32 bg-[var(--accent)]/20 rounded-full blur-3xl" />
+                            <div className="absolute bottom-20 right-20 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl" />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
+
+                            {/* Floating gaming icons */}
+                            <motion.div
+                                animate={{ y: [0, -10, 0], rotate: [0, 5, 0] }}
+                                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                                className="absolute top-12 left-[15%]"
+                            >
+                                <div className="p-4 bg-[var(--bg-card)]/80 backdrop-blur-sm rounded-2xl border border-[var(--border)] shadow-lg">
+                                    <Gamepad2 className="w-10 h-10 text-[var(--accent)]" />
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                animate={{ y: [0, 10, 0], rotate: [0, -5, 0] }}
+                                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                                className="absolute top-16 right-[20%]"
+                            >
+                                <div className="p-4 bg-[var(--bg-card)]/80 backdrop-blur-sm rounded-2xl border border-[var(--border)] shadow-lg">
+                                    <Monitor className="w-10 h-10 text-blue-400" />
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                animate={{ y: [0, -8, 0], rotate: [0, -3, 0] }}
+                                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                                className="absolute top-1/3 left-[8%]"
+                            >
+                                <div className="p-3 bg-[var(--bg-card)]/80 backdrop-blur-sm rounded-xl border border-[var(--border)] shadow-lg">
+                                    <Keyboard className="w-8 h-8 text-purple-400" />
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                animate={{ y: [0, 12, 0], rotate: [0, 8, 0] }}
+                                transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+                                className="absolute top-1/4 right-[10%]"
+                            >
+                                <div className="p-3 bg-[var(--bg-card)]/80 backdrop-blur-sm rounded-xl border border-[var(--border)] shadow-lg">
+                                    <Cpu className="w-8 h-8 text-green-400" />
+                                </div>
+                            </motion.div>
+
+                            {/* Center logo/text */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                                <motion.div
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    whileInView={{ scale: 1, opacity: 1 }}
+                                    viewport={{ once: true }}
+                                    className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-purple-500 to-blue-500"
+                                >
+                                    TP
+                                </motion.div>
+                                <p className="text-sm text-[var(--text-muted)] mt-2 tracking-widest uppercase">Est. 2020</p>
+                            </div>
+                        </div>
+
                         <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)] via-transparent to-transparent"></div>
 
                         {/* Stats overlay */}
