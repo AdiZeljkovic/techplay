@@ -130,11 +130,10 @@ export default function TurnstileProvider({ children }: TurnstileProviderProps) 
                 strategy="afterInteractive"
                 onLoad={handleScriptLoad}
             />
-            {/* Container for Turnstile - invisible mode renders without visible UI */}
+            {/* Container for Turnstile widget */}
             <div
                 ref={containerRef}
                 id="turnstile-container"
-                style={{ position: 'fixed', bottom: 0, right: 0, zIndex: -1 }}
             />
             {children}
         </TurnstileContext.Provider>
