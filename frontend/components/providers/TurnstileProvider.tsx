@@ -50,14 +50,19 @@ export default function TurnstileProvider({ children }: TurnstileProviderProps) 
                 const id = window.turnstile.render(containerRef.current, {
                     sitekey: siteKey,
                     execution: 'execute',
+                    size: 'invisible',
                     callback: (token: string) => {
+                        console.log("Turnstile token received");
                         if (currentResolverRef.current) {
                             currentResolverRef.current(token);
                             currentResolverRef.current = null;
                         }
                     },
-                    "error-callback": () => {
-                        console.warn("Turnstile error");
+                    "expired-callback": () => {
+                        console.warn("Turnstile token expired");
+                    },
+                    "error-callback": (error: any) => {
+                        console.warn("Turnstile error:", error);
                         if (currentResolverRef.current) {
                             currentResolverRef.current(null);
                             currentResolverRef.current = null;
@@ -78,12 +83,12 @@ export default function TurnstileProvider({ children }: TurnstileProviderProps) 
         }
 
         return new Promise((resolve) => {
-            // Set a timeout to prevent infinite waiting
+            // Set a timeout to prevent infinite waiting (10 seconds for slow connections)
             const timeoutId = setTimeout(() => {
                 console.warn("Turnstile timeout, proceeding without token");
                 currentResolverRef.current = null;
                 resolve(null);
-            }, 5000);
+            }, 10000);
 
             currentResolverRef.current = (token) => {
                 clearTimeout(timeoutId);
@@ -93,8 +98,8 @@ export default function TurnstileProvider({ children }: TurnstileProviderProps) 
             try {
                 // Reset the widget to ensure a fresh challenge
                 window.turnstile!.reset(widgetIdRef.current!);
-                // Execute with the new action
-                window.turnstile!.execute(containerRef.current!, { action });
+                // Execute using widget ID (not container)
+                window.turnstile!.execute(widgetIdRef.current!, { action });
             } catch (e) {
                 console.error("Turnstile execute error:", e);
                 clearTimeout(timeoutId);
@@ -110,8 +115,12 @@ export default function TurnstileProvider({ children }: TurnstileProviderProps) 
                 strategy="afterInteractive"
                 onLoad={handleScriptLoad}
             />
-            {/* Hidden container for Turnstile widget */}
-            <div ref={containerRef} id="turnstile-container" className="hidden" />
+            {/* Invisible container for Turnstile widget - must not use display:none */}
+            <div
+                ref={containerRef}
+                id="turnstile-container"
+                style={{ position: 'fixed', top: '-9999px', left: '-9999px' }}
+            />
             {children}
         </TurnstileContext.Provider>
     );
