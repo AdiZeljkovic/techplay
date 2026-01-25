@@ -1,48 +1,38 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Routes that require authentication
-// Note: Only include routes that need TRUE server-side protection
-// Most auth is handled client-side with Bearer tokens in localStorage
+// Routes that require server-side authentication check
+// Note: Most routes use client-side Bearer token auth from localStorage
+// Only add routes here that absolutely need server-side protection
 const protectedRoutes: string[] = [
-    // '/support/checkout', // Handled client-side to depend on Bearer token, not cookies
-    // '/settings', // Handled client-side via useAuth to avoid middleware cookie dependency
-];
-
-// Routes that should redirect to dashboard if already logged in
-const authRoutes = [
-    '/login',
-    '/register',
+    // Currently empty - all auth handled client-side
 ];
 
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // Check for auth token in cookies (Sanctum uses cookies)
-    const authToken = request.cookies.get('laravel_session') ||
-        request.cookies.get('XSRF-TOKEN');
+    // Note: Authentication is handled client-side with Bearer tokens in localStorage
+    // Middleware cannot access localStorage, so we only handle server-side protected routes here
+    // IMPORTANT: Do NOT use XSRF-TOKEN cookie for auth checks - it's a CSRF token, not auth!
 
-    const isAuthenticated = !!authToken;
-
-    // Check if accessing a protected route without auth
+    // Check if accessing a protected route
     const isProtectedRoute = protectedRoutes.some(route =>
         pathname.startsWith(route)
     );
 
-    if (isProtectedRoute && !isAuthenticated) {
-        const loginUrl = new URL('/login', request.url);
-        loginUrl.searchParams.set('redirect', pathname);
-        return NextResponse.redirect(loginUrl);
+    if (isProtectedRoute) {
+        // For truly protected routes, check for session cookie
+        // Note: Most auth is handled client-side, this is just a fallback
+        const sessionCookie = request.cookies.get('laravel_session');
+        if (!sessionCookie) {
+            const loginUrl = new URL('/login', request.url);
+            loginUrl.searchParams.set('redirect', pathname);
+            return NextResponse.redirect(loginUrl);
+        }
     }
 
-    // Check if accessing auth routes while logged in
-    const isAuthRoute = authRoutes.some(route =>
-        pathname.startsWith(route)
-    );
-
-    if (isAuthRoute && isAuthenticated) {
-        return NextResponse.redirect(new URL('/', request.url));
-    }
+    // Auth route redirects (login/register when already logged in) are handled client-side
+    // because we use Bearer tokens in localStorage which middleware cannot access
 
     return NextResponse.next();
 }
