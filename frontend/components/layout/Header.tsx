@@ -17,13 +17,13 @@ import {
 import { cn } from "@/lib/utils";
 import SearchDropdown from "./SearchDropdown";
 
-// Social Icon Mapping
-const SOCIAL_ICON_MAP: Record<string, any> = {
-    twitter_url: Twitter,
-    facebook_url: Facebook,
-    instagram_url: Instagram,
-    youtube_url: Youtube,
-    discord_url: Linkedin, // Using Linkedin as placeholder for Discord
+// Social Icon Mapping with names for accessibility
+const SOCIAL_ICON_MAP: Record<string, { icon: any; name: string }> = {
+    twitter_url: { icon: Twitter, name: 'Twitter' },
+    facebook_url: { icon: Facebook, name: 'Facebook' },
+    instagram_url: { icon: Instagram, name: 'Instagram' },
+    youtube_url: { icon: Youtube, name: 'YouTube' },
+    discord_url: { icon: Linkedin, name: 'Discord' }, // Using Linkedin icon as placeholder
 };
 
 // Utility Links (Top Bar)
@@ -155,7 +155,8 @@ export default function Header() {
     const socialLinks = Object.keys(SOCIAL_ICON_MAP)
         .filter(key => settings[key])
         .map(key => ({
-            icon: SOCIAL_ICON_MAP[key],
+            icon: SOCIAL_ICON_MAP[key].icon,
+            name: SOCIAL_ICON_MAP[key].name,
             href: settings[key] || '#'
         }));
 
@@ -308,8 +309,8 @@ export default function Header() {
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-3 pr-4 border-r border-white/10">
                             {socialLinks.map((social, idx) => (
-                                <Link key={idx} href={social.href} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
-                                    <social.icon className="w-3.5 h-3.5" />
+                                <Link key={idx} href={social.href} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors" aria-label={`Follow us on ${social.name}`}>
+                                    <social.icon className="w-3.5 h-3.5" aria-hidden="true" />
                                 </Link>
                             ))}
                         </div>
