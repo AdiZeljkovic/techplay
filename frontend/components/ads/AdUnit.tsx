@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo, useCallback } from "react";
 import axios from "@/lib/axios";
 import Image from "next/image";
 
@@ -18,24 +18,37 @@ interface AdUnitProps {
     className?: string;
 }
 
-export default function AdUnit({ position, className = "" }: AdUnitProps) {
+// PERFORMANCE: Memoized to prevent re-renders when parent updates
+export default memo(function AdUnit({ position, className = "" }: AdUnitProps) {
     const [ad, setAd] = useState<AdData | null>(null);
     const [loading, setLoading] = useState(true);
 
+    // MEMORY LEAK FIX: Add AbortController for cleanup on unmount
     useEffect(() => {
+        const abortController = new AbortController();
+
         async function fetchAd() {
             try {
-                const res = await axios.get(`/ads/${position}`);
-                if (res.data) {
+                const res = await axios.get(`/ads/${position}`, {
+                    signal: abortController.signal
+                });
+                if (res.data && !abortController.signal.aborted) {
                     setAd(res.data);
                 }
-            } catch (error) {
-                console.error("Failed to load ad:", error);
+            } catch (error: any) {
+                // Ignore abort errors
+                if (error?.name !== 'CanceledError' && !abortController.signal.aborted) {
+                    console.error("Failed to load ad:", error);
+                }
             } finally {
-                setLoading(false);
+                if (!abortController.signal.aborted) {
+                    setLoading(false);
+                }
             }
         }
         fetchAd();
+
+        return () => abortController.abort();
     }, [position]);
 
     const handleClick = async () => {
@@ -104,4 +117,4 @@ export default function AdUnit({ position, className = "" }: AdUnitProps) {
     }
 
     return null;
-}
+});

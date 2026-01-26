@@ -10,14 +10,27 @@ class PayPalService
     protected $baseUrl;
     protected $clientId;
     protected $clientSecret;
+    protected $verifySSL;
 
     public function __construct()
     {
-        $this->clientId = env('PAYPAL_CLIENT_ID');
-        $this->clientSecret = env('PAYPAL_SECRET');
-        $this->baseUrl = env('PAYPAL_MODE', 'sandbox') === 'live'
-            ? 'https://api-m.paypal.com'
-            : 'https://api-m.sandbox.paypal.com';
+        $this->clientId = config('services.paypal.client_id');
+        $this->clientSecret = config('services.paypal.secret');
+        $this->baseUrl = config('services.paypal.base_url');
+        // Only disable SSL verification in local development
+        $this->verifySSL = !app()->environment('local');
+    }
+
+    /**
+     * Get HTTP client with proper SSL configuration
+     */
+    protected function http()
+    {
+        $client = Http::timeout(30);
+        if (!$this->verifySSL) {
+            $client = $client->withoutVerifying();
+        }
+        return $client;
     }
 
     /**
@@ -27,7 +40,7 @@ class PayPalService
      */
     public function getAccessToken()
     {
-        $response = Http::withoutVerifying()
+        $response = $this->http()
             ->withBasicAuth($this->clientId, $this->clientSecret)
             ->asForm()
             ->post("{$this->baseUrl}/v1/oauth2/token", [
@@ -46,7 +59,7 @@ class PayPalService
     {
         $token = $this->getAccessToken();
 
-        $response = Http::withoutVerifying()->withToken($token)
+        $response = $this->http()->withToken($token)
             ->post("{$this->baseUrl}/v2/checkout/orders", [
                 'intent' => 'CAPTURE',
                 'purchase_units' => [
@@ -71,7 +84,7 @@ class PayPalService
     {
         $token = $this->getAccessToken();
 
-        $response = Http::withoutVerifying()->withToken($token)
+        $response = $this->http()->withToken($token)
             ->post("{$this->baseUrl}/v2/checkout/orders/{$orderId}/capture", [
                 'headers' => [
                     'Content-Type' => 'application/json',
@@ -91,7 +104,7 @@ class PayPalService
     {
         $token = $this->getAccessToken();
 
-        $response = Http::withoutVerifying()->withToken($token)
+        $response = $this->http()->withToken($token)
             ->post("{$this->baseUrl}/v1/catalogs/products", [
                 'name' => $name,
                 'description' => $description,
@@ -106,7 +119,7 @@ class PayPalService
     {
         $token = $this->getAccessToken();
 
-        $response = Http::withoutVerifying()->withToken($token)
+        $response = $this->http()->withToken($token)
             ->post("{$this->baseUrl}/v1/billing/plans", [
                 'product_id' => $productId,
                 'name' => $name,

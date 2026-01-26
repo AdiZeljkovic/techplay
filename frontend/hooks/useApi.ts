@@ -16,11 +16,12 @@ const fetcher = async (url: string) => {
 
 /**
  * Default SWR configuration for API calls
+ * PERFORMANCE: Increased dedupingInterval to 30s to reduce API calls during navigation
  */
 const defaultConfig: SWRConfiguration = {
     revalidateOnFocus: false,
     revalidateIfStale: true,
-    dedupingInterval: 5000,
+    dedupingInterval: 30000, // 30 seconds - prevents redundant calls during page navigation
     errorRetryCount: 3,
 };
 

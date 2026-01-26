@@ -41,7 +41,7 @@ class NewsController extends Controller
             );
         });
 
-        return $resource->response()->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+        return $resource->response()->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
     }
 
     /**
@@ -76,7 +76,7 @@ class NewsController extends Controller
             return new \App\Http\Resources\V1\ArticleResource($article);
         });
 
-        return $resource->response()->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+        return $resource->response()->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
     }
 
     /**
@@ -96,6 +96,6 @@ class NewsController extends Controller
             return \App\Http\Resources\V1\ArticleResource::collection($articles);
         });
 
-        return $resource->response()->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+        return $resource->response()->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
     }
 }

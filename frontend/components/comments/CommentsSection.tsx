@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, memo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
@@ -29,7 +29,8 @@ export default function CommentsSection({ commentableId, commentableType, initia
     const [error, setError] = useState<string | null>(null);
     const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'success' | 'warning' } | null>(null);
 
-    const fetchComments = async () => {
+    // PERFORMANCE: Use useCallback to prevent unnecessary re-renders
+    const fetchComments = useCallback(async (signal?: AbortSignal) => {
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL;
             const headers: HeadersInit = {
@@ -41,25 +42,33 @@ export default function CommentsSection({ commentableId, commentableType, initia
             }
 
             const res = await fetch(`${apiUrl}/comments/${commentableType}/${commentableId}`, {
-                headers
+                headers,
+                signal
             });
-            if (res.ok) {
+            if (res.ok && !signal?.aborted) {
                 const data = await res.json();
                 setComments(data.data || []);
             }
-        } catch (err) {
-            console.error("Failed to fetch comments", err);
+        } catch (err: any) {
+            // Ignore abort errors
+            if (err?.name !== 'AbortError') {
+                console.error("Failed to fetch comments", err);
+            }
         } finally {
-            setIsLoading(false);
+            if (!signal?.aborted) {
+                setIsLoading(false);
+            }
         }
-    };
+    }, [commentableId, commentableType, token]);
 
+    // MEMORY LEAK FIX: Add AbortController for cleanup on unmount
     useEffect(() => {
         if (!isAuthLoading) {
-            fetchComments();
+            const abortController = new AbortController();
+            fetchComments(abortController.signal);
+            return () => abortController.abort();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [commentableId, commentableType, token, isAuthLoading]);
+    }, [fetchComments, isAuthLoading]);
 
     const handleVote = async (commentId: number, type: 'up' | 'down') => {
         if (!user) return;
@@ -157,6 +166,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                 setStatusMessage({ text: "Comment posted successfully!", type: 'success' });
             }
 
+            // Refresh comments without signal (user-initiated action)
             await fetchComments();
 
             if (parentId) {
@@ -290,19 +300,8 @@ export default function CommentsSection({ commentableId, commentableType, initia
     );
 }
 
-// Extracted Component with recursive design
-const CommentItem = ({
-    comment,
-    depth = 0,
-    user,
-    replyingTo,
-    setReplyingTo,
-    replyContent,
-    setReplyContent,
-    handleSubmit,
-    handleVote,
-    isSubmitting
-}: {
+// PERFORMANCE: Memoized component to prevent unnecessary re-renders
+interface CommentItemProps {
     comment: Comment;
     depth?: number;
     user: User | null;
@@ -313,7 +312,20 @@ const CommentItem = ({
     handleSubmit: (e: React.FormEvent, parentId: number | null) => void;
     handleVote: (id: number, type: 'up' | 'down') => void;
     isSubmitting: boolean;
-}) => {
+}
+
+const CommentItem = memo(function CommentItem({
+    comment,
+    depth = 0,
+    user,
+    replyingTo,
+    setReplyingTo,
+    replyContent,
+    setReplyContent,
+    handleSubmit,
+    handleVote,
+    isSubmitting
+}: CommentItemProps) {
     const displayName = comment.user.name || comment.user.username;
     const isStaff = comment.user.role === 'admin' || comment.user.role === 'editor';
     const isOwner = user?.id === comment.user.id;
@@ -470,4 +482,4 @@ const CommentItem = ({
             </div>
         </div>
     );
-};
+});

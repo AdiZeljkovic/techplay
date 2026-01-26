@@ -9,11 +9,26 @@ class RawgService
 {
     protected $baseUrl;
     protected $apiKey;
+    protected $verifySSL;
 
     public function __construct()
     {
         $this->apiKey = config('services.rawg.api_key');
         $this->baseUrl = config('services.rawg.base_url', 'https://api.rawg.io/api');
+        // Only disable SSL verification in local development
+        $this->verifySSL = !app()->environment('local');
+    }
+
+    /**
+     * Get HTTP client with proper SSL configuration
+     */
+    protected function http($timeout = 15)
+    {
+        $client = Http::timeout($timeout);
+        if (!$this->verifySSL) {
+            $client = $client->withoutVerifying();
+        }
+        return $client;
     }
 
     public function searchGames($query = '', $filters = [])
@@ -28,7 +43,7 @@ class RawgService
             ], $filters);
 
             try {
-                $response = Http::withoutVerifying()->timeout(10)->get("{$this->baseUrl}/games", $params);
+                $response = $this->http(10)->get("{$this->baseUrl}/games", $params);
 
                 if ($response->successful()) {
                     return $response->json();
@@ -54,7 +69,7 @@ class RawgService
 
         return Cache::remember($cacheKey, 86400, function () use ($slug) {
             try {
-                $response = Http::withoutVerifying()->timeout(10)->get("{$this->baseUrl}/games/{$slug}", [
+                $response = $this->http(10)->get("{$this->baseUrl}/games/{$slug}", [
                     'key' => $this->apiKey,
                 ]);
 
@@ -84,7 +99,7 @@ class RawgService
             // Log the attempt
             \Illuminate\Support\Facades\Log::info("Fetching RAWG Calendar: $startDate to $endDate with Key: " . substr($this->apiKey, 0, 4) . '...');
 
-            $response = Http::withoutVerifying()->timeout(15)->get("{$this->baseUrl}/games", [
+            $response = $this->http(15)->get("{$this->baseUrl}/games", [
                 'key' => $this->apiKey,
                 'dates' => "{$startDate},{$endDate}",
                 'ordering' => '-added',

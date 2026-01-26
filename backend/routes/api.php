@@ -3,20 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/debug-count', function () {
-    $user = \App\Models\User::where('username', 'adi')->first();
-    if (!$user)
-        return 'User adi not found';
-    $user->loadCount(['posts', 'threads']);
-    return [
-        'username' => $user->username,
-        'posts_count' => $user->posts_count,
-        'threads_count' => $user->threads_count,
-        'db_posts' => $user->posts()->count(),
-        'db_threads' => $user->threads()->count(),
-    ];
-});
-
 Route::prefix('v1')->group(function () {
     // Auth (Rate Limited - 60 per minute)
     Route::middleware('throttle:60,1')->group(function () {

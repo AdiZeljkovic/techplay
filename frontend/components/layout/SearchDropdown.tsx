@@ -35,7 +35,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
     const containerRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
-    // Debounced search
+    // Debounced search with proper cleanup to prevent memory leaks
     useEffect(() => {
         if (query.length < 2) {
             setResults([]);
@@ -43,21 +43,37 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
             return;
         }
 
+        const abortController = new AbortController();
+
         const timer = setTimeout(async () => {
             setIsLoading(true);
             try {
-                const res = await axios.get('/search/articles', { params: { q: query } });
-                setResults(res.data.results || []);
-                setIsOpen(true);
-            } catch (error) {
-                console.error("Search failed:", error);
-                setResults([]);
+                const res = await axios.get('/search/articles', {
+                    params: { q: query },
+                    signal: abortController.signal
+                });
+                // Only update state if not aborted
+                if (!abortController.signal.aborted) {
+                    setResults(res.data.results || []);
+                    setIsOpen(true);
+                }
+            } catch (error: any) {
+                // Ignore abort errors, only log real failures
+                if (error?.name !== 'CanceledError' && !abortController.signal.aborted) {
+                    console.error("Search failed:", error);
+                    setResults([]);
+                }
             } finally {
-                setIsLoading(false);
+                if (!abortController.signal.aborted) {
+                    setIsLoading(false);
+                }
             }
         }, 300); // 300ms debounce
 
-        return () => clearTimeout(timer);
+        return () => {
+            clearTimeout(timer);
+            abortController.abort();
+        };
     }, [query]);
 
     // Close on click outside

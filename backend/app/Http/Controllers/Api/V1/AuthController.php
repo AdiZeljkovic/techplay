@@ -155,8 +155,15 @@ class AuthController extends Controller
 
     public function show(string $username)
     {
+        // PERFORMANCE: Use loadCount to avoid N+1 queries for counts
         $user = User::where('username', $username)
-            ->with(['rank', 'activeSupport.tier', 'threads', 'posts'])
+            ->with(['rank', 'activeSupport.tier', 'achievements'])
+            ->withCount([
+                'threads',
+                'posts',
+                'comments as approved_comments_count' => fn($q) => $q->where('status', 'approved'),
+                'articles as published_articles_count' => fn($q) => $q->where('status', 'published'),
+            ])
             ->firstOrFail();
 
         // Check if user is staff (admin, editor, moderator, journalist) - check BOTH Spatie AND DB column
@@ -196,17 +203,14 @@ class AuthController extends Controller
                 ];
             });
 
-        // Fetch ALL achievements and mark which ones user has unlocked
-        $userUnlockedIds = $user->achievements()->pluck('achievements.id')->toArray();
+        // PERFORMANCE: Use already-loaded achievements instead of N+1 queries
+        // Build a map of user's unlocked achievements with their pivot data
+        $userAchievementsMap = $user->achievements->keyBy('id')->map(fn($a) => $a->pivot->unlocked_at);
+        $userUnlockedIds = $userAchievementsMap->keys()->toArray();
 
-        $allAchievements = \App\Models\Achievement::all()->map(function ($achievement) use ($userUnlockedIds, $user) {
-            $isUnlocked = in_array($achievement->id, $userUnlockedIds);
-            $unlockedAt = null;
-
-            if ($isUnlocked) {
-                $pivot = $user->achievements()->where('achievements.id', $achievement->id)->first()?->pivot;
-                $unlockedAt = $pivot?->unlocked_at;
-            }
+        // Get all achievements and merge with user's unlocked status
+        $allAchievements = \App\Models\Achievement::all()->map(function ($achievement) use ($userAchievementsMap) {
+            $isUnlocked = $userAchievementsMap->has($achievement->id);
 
             return [
                 'id' => $achievement->id,
@@ -215,23 +219,23 @@ class AuthController extends Controller
                 'icon_path' => $achievement->icon_path,
                 'points' => $achievement->points,
                 'is_unlocked' => $isUnlocked,
-                'unlocked_at' => $unlockedAt,
+                'unlocked_at' => $isUnlocked ? $userAchievementsMap->get($achievement->id) : null,
             ];
         });
 
         $unlockedCount = count($userUnlockedIds);
 
-        // Calculate Stats (only public counts)
+        // Calculate Stats - PERFORMANCE: Use already-loaded counts from withCount()
         $stats = [
-            'threads_count' => $user->threads()->count(),
-            'posts_count' => $user->posts()->count(),
-            'comments_count' => $user->comments()->where('status', 'approved')->count(),
+            'threads_count' => $user->threads_count,
+            'posts_count' => $user->posts_count,
+            'comments_count' => $user->approved_comments_count,
             'reputation' => $user->forum_reputation ?? 0,
             'joined_at' => $user->created_at->format('M Y'), // Only month/year
             'achievements_count' => $unlockedCount,
             'level' => floor(($user->xp ?? 0) / 1000) + 1,
             'xp' => $user->xp ?? 0,
-            'reviews_count' => $isStaff ? $user->articles()->where('status', 'published')->count() : 0,
+            'reviews_count' => $isStaff ? $user->published_articles_count : 0,
         ];
 
         return response()->json([

@@ -14,8 +14,9 @@ class HomeController extends Controller
 
     public function index(): JsonResponse
     {
-        // Cache home page data for 1 minute (was 5 mins) to improve responsiveness
-        $data = Cache::remember('home:data', 60, function () {
+        // Cache home page data for 5 minutes - balance between freshness and performance
+        // On-demand revalidation clears this cache when articles are published
+        $data = Cache::remember('home:data', 300, function () {
             // 1. Hero Articles (exclude scheduled/future posts)
             $hero = Article::where('is_featured_in_hero', true)
                 ->where('status', 'published')
@@ -79,9 +80,9 @@ class HomeController extends Controller
             ];
         });
 
-        // PERFORMANCE: Add HTTP cache header for Cloudflare edge caching
+        // PERFORMANCE: Cache for 5 mins with stale-while-revalidate for better UX
         return $this->success($data)
-            ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+            ->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
     }
 }
 
