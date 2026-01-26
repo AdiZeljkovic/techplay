@@ -31,7 +31,6 @@ class OptimizeExistingImages extends Command
     protected array $imageDirectories = [
         'articles',
         'reviews',
-        'guides',
         'giveaways',
         'ads',
     ];
@@ -156,31 +155,48 @@ class OptimizeExistingImages extends Command
 
     /**
      * Update database references from old path to new path
+     * Uses try-catch to handle missing columns gracefully
      */
     protected function updateDatabaseReferences(string $oldPath, string $newPath): void
     {
-        // Update articles
-        \App\Models\Article::where('featured_image_url', $oldPath)
-            ->update(['featured_image_url' => $newPath]);
-
-        // Update reviews (if using cover_image field)
-        if (class_exists(\App\Models\Review::class)) {
-            \App\Models\Review::where('cover_image', $oldPath)
-                ->update(['cover_image' => $newPath]);
+        // Update articles - featured_image_url is the correct column
+        try {
+            \App\Models\Article::where('featured_image_url', $oldPath)
+                ->update(['featured_image_url' => $newPath]);
+        } catch (\Exception $e) {
+            // Column might not exist, ignore
         }
 
-        // Update guides
-        if (class_exists(\App\Models\Guide::class)) {
-            \App\Models\Guide::where('featured_image', $oldPath)
-                ->update(['featured_image' => $newPath]);
+        // Update reviews - cover_image column
+        try {
+            if (class_exists(\App\Models\Review::class)) {
+                \App\Models\Review::where('cover_image', $oldPath)
+                    ->update(['cover_image' => $newPath]);
+            }
+        } catch (\Exception $e) {
+            // Column might not exist, ignore
         }
 
         // Update giveaways
-        if (class_exists(\App\Models\Giveaway::class)) {
-            \App\Models\Giveaway::where('featured_image', $oldPath)
-                ->update(['featured_image' => $newPath]);
-            \App\Models\Giveaway::where('prize_image', $oldPath)
-                ->update(['prize_image' => $newPath]);
+        try {
+            if (class_exists(\App\Models\Giveaway::class)) {
+                \App\Models\Giveaway::where('featured_image', $oldPath)
+                    ->update(['featured_image' => $newPath]);
+                \App\Models\Giveaway::where('prize_image', $oldPath)
+                    ->update(['prize_image' => $newPath]);
+            }
+        } catch (\Exception $e) {
+            // Column might not exist, ignore
+        }
+
+        // Update ad campaigns
+        try {
+            if (class_exists(\App\Models\AdCampaign::class)) {
+                \App\Models\AdCampaign::where('image_url', $oldPath)
+                    ->update(['image_url' => $newPath]);
+            }
+        } catch (\Exception $e) {
+            // Column might not exist, ignore
         }
     }
 }
