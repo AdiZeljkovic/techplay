@@ -206,67 +206,69 @@ export default function Header() {
 
     return (
         <div className="w-full font-sans sticky top-0 z-50">
-            {/* MOBILE TOP BAR */}
-            <div className="bg-[#001540] border-b border-white/5 xl:hidden">
-                <div className="container mx-auto px-4 flex justify-between items-center h-12">
-                    {/* Left: User/Sign In */}
+            {/* MOBILE: TOP BAR (Sign In / Search) */}
+            <div className="bg-[#000B25] border-b border-white/5 xl:hidden">
+                <div className="container mx-auto px-4 flex justify-between items-center h-10">
+                    {/* Left: Sign In / Register */}
                     {user ? (
                         <Link
                             href={`/profile/${user.username || 'me'}`}
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 text-white text-xs font-medium"
                         >
                             {user.avatar_url ? (
                                 <img
                                     src={user.avatar_url}
                                     alt={user.username}
-                                    className="w-8 h-8 rounded-full object-cover border border-white/20"
+                                    className="w-5 h-5 rounded-full object-cover"
                                 />
                             ) : (
-                                <div className="w-8 h-8 bg-[var(--accent)]/20 rounded-full flex items-center justify-center text-[var(--accent)] text-sm font-bold">
-                                    {user.username?.charAt(0)?.toUpperCase() || '?'}
-                                </div>
+                                <User className="w-4 h-4" />
                             )}
-                            <span className="text-white text-sm font-medium hidden sm:block">
-                                {user.display_name || user.username}
-                            </span>
+                            <span>{user.display_name || user.username}</span>
                         </Link>
                     ) : (
                         <Link
                             href="/login"
-                            className="flex items-center gap-2 text-white text-sm font-medium"
+                            className="flex items-center gap-2 text-white text-xs font-medium"
                         >
-                            <User className="w-5 h-5" />
-                            <span className="hidden sm:block">Sign In</span>
+                            <User className="w-4 h-4" />
+                            <span className="uppercase tracking-wide">Sign In / Register</span>
                         </Link>
                     )}
 
-                    {/* Center: Cart */}
-                    <Link href="/cart" className="relative text-gray-400 hover:text-white transition-colors p-2" aria-label="Shopping cart">
-                        <ShoppingCart className="w-5 h-5" aria-hidden="true" />
-                        {itemCount > 0 && (
-                            <span className="absolute top-0 right-0 w-4 h-4 bg-[var(--accent)] text-white text-[10px] font-bold rounded-full flex items-center justify-center" aria-label={`${itemCount} items in cart`}>
-                                {itemCount}
-                            </span>
-                        )}
+                    {/* Right: Search */}
+                    <button
+                        onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+                        className="p-2 text-gray-400 hover:text-white transition-colors"
+                        aria-label="Search"
+                    >
+                        <Search className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+
+            {/* MOBILE: MAIN BAR (Logo / Hamburger) */}
+            <div className="bg-[#001540] border-b border-white/5 xl:hidden">
+                <div className="container mx-auto px-4 flex justify-between items-center h-14">
+                    {/* Left: Logo */}
+                    <Link href="/" className="flex items-center gap-2">
+                        <img
+                            src={settings.site_logo
+                                ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${settings.site_logo}`
+                                : "/logo.svg"}
+                            alt="TechPlay"
+                            className="h-9 w-auto"
+                        />
                     </Link>
 
-                    {/* Right: Search & Menu */}
-                    <div className="flex items-center gap-1">
-                        <button
-                            onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-                            className="p-2.5 text-gray-400 hover:text-white transition-colors"
-                            aria-label="Search"
-                        >
-                            <Search className="w-5 h-5" />
-                        </button>
-                        <button
-                            className="p-2.5 text-gray-300 hover:text-white active:bg-white/10 rounded-lg transition-colors"
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            aria-label="Toggle menu"
-                        >
-                            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                        </button>
-                    </div>
+                    {/* Right: Hamburger Menu */}
+                    <button
+                        className="p-2 text-gray-300 hover:text-white active:bg-white/10 rounded-lg transition-colors"
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        aria-label="Toggle menu"
+                    >
+                        {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
+                    </button>
                 </div>
 
                 {/* Mobile Search Dropdown */}
