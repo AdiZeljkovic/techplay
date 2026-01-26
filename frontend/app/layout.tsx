@@ -15,9 +15,10 @@ import { Toaster } from "react-hot-toast";
 const beVietnamPro = Be_Vietnam_Pro({
   variable: "--font-main",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "600", "700"], // Reduced from 5 to 3 essential weights for faster loading
   display: 'swap',
   preload: true,
+  adjustFontFallback: true, // Adjusts fallback font metrics to match web font, reducing CLS
 });
 
 async function getSiteSettings() {
