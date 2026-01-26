@@ -3,37 +3,31 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class ImageOptimizer
 {
     /**
-     * Maximum width for article images (maintains aspect ratio)
+     * Image size variants configuration
      */
-    protected int $maxWidth = 1920;
+    protected array $variants = [
+        'thumb' => ['width' => 256, 'height' => 256, 'quality' => 80],
+        'medium' => ['width' => 640, 'height' => 480, 'quality' => 82],
+        'large' => ['width' => 1280, 'height' => 720, 'quality' => 85],
+        'original' => ['width' => 1920, 'height' => 1080, 'quality' => 85],
+    ];
 
     /**
-     * Maximum height for article images
-     */
-    protected int $maxHeight = 1080;
-
-    /**
-     * WebP quality (0-100)
+     * Default quality for WebP
      */
     protected int $quality = 82;
 
     /**
-     * Maximum file size target in KB (200KB)
-     */
-    protected int $targetSizeKb = 200;
-
-    /**
-     * Optimize an uploaded image file
-     * Resizes if needed, converts to WebP, and compresses
+     * Optimize an uploaded image and generate all size variants
+     * Returns the base path (without suffix) - variants are accessed by appending _thumb, _medium, etc.
      *
      * @param string $path Path to the image on the storage disk
      * @param string $disk Storage disk name
-     * @return string New optimized image path
+     * @return string Base path of optimized image (e.g., "articles/filename.webp")
      */
     public function optimize(string $path, string $disk = 'public'): string
     {
@@ -58,75 +52,150 @@ class ImageOptimizer
             return $path;
         }
 
-        // Calculate new dimensions (maintain aspect ratio)
+        // Generate base path for WebP
+        $directory = dirname($path);
+        $filename = pathinfo($path, PATHINFO_FILENAME);
+        $basePath = $directory . '/' . $filename;
+
+        // Generate all variants
+        foreach ($this->variants as $variantName => $config) {
+            $this->generateVariant(
+                $sourceImage,
+                $originalWidth,
+                $originalHeight,
+                $basePath,
+                $variantName,
+                $config,
+                $disk
+            );
+        }
+
+        // Cleanup source
+        imagedestroy($sourceImage);
+
+        // Delete original file if it's not already WebP
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if ($extension !== 'webp') {
+            Storage::disk($disk)->delete($path);
+        }
+
+        // Return the base path with .webp extension (original variant)
+        return $basePath . '.webp';
+    }
+
+    /**
+     * Generate a single variant of the image
+     */
+    protected function generateVariant(
+        \GdImage $sourceImage,
+        int $originalWidth,
+        int $originalHeight,
+        string $basePath,
+        string $variantName,
+        array $config,
+        string $disk
+    ): void {
+        // Calculate new dimensions
         [$newWidth, $newHeight] = $this->calculateDimensions(
             $originalWidth,
             $originalHeight,
-            $this->maxWidth,
-            $this->maxHeight
+            $config['width'],
+            $config['height']
         );
 
         // Create resized image
         $resizedImage = imagecreatetruecolor($newWidth, $newHeight);
 
-        // Preserve transparency for PNG
-        if ($mimeType === 'image/png') {
-            imagealphablending($resizedImage, false);
-            imagesavealpha($resizedImage, true);
-            $transparent = imagecolorallocatealpha($resizedImage, 0, 0, 0, 127);
-            imagefilledrectangle($resizedImage, 0, 0, $newWidth, $newHeight, $transparent);
-        }
+        // Preserve transparency
+        imagealphablending($resizedImage, false);
+        imagesavealpha($resizedImage, true);
 
         // Resize
         imagecopyresampled(
             $resizedImage,
             $sourceImage,
-            0, 0, 0, 0,
-            $newWidth, $newHeight,
-            $originalWidth, $originalHeight
+            0,
+            0,
+            0,
+            0,
+            $newWidth,
+            $newHeight,
+            $originalWidth,
+            $originalHeight
         );
 
-        // Generate new filename with .webp extension
-        $directory = dirname($path);
-        $filename = pathinfo($path, PATHINFO_FILENAME);
-        $newPath = $directory . '/' . $filename . '.webp';
-        $newFullPath = Storage::disk($disk)->path($newPath);
+        // Generate filename with suffix for variants (except 'original')
+        $suffix = $variantName === 'original' ? '' : '_' . $variantName;
+        $variantPath = $basePath . $suffix . '.webp';
+        $fullPath = Storage::disk($disk)->path($variantPath);
 
-        // Save as WebP with quality optimization
-        $quality = $this->quality;
-        imagewebp($resizedImage, $newFullPath, $quality);
-
-        // If file is still too large, reduce quality iteratively
-        $attempts = 0;
-        while (filesize($newFullPath) > ($this->targetSizeKb * 1024) && $quality > 50 && $attempts < 5) {
-            $quality -= 10;
-            imagewebp($resizedImage, $newFullPath, $quality);
-            $attempts++;
-        }
+        // Save as WebP
+        imagewebp($resizedImage, $fullPath, $config['quality']);
 
         // Cleanup
-        imagedestroy($sourceImage);
         imagedestroy($resizedImage);
-
-        // Delete original if different format
-        if ($path !== $newPath) {
-            Storage::disk($disk)->delete($path);
-        }
-
-        return $newPath;
     }
 
     /**
-     * Process image after Filament upload
-     * Called by Filament's afterStateUpdated callback
+     * Generate variants for an existing WebP image (for migration)
      */
-    public function processFilamentUpload(?string $path, string $disk = 'public'): ?string
+    public function generateVariantsForExisting(string $path, string $disk = 'public'): bool
     {
-        if (!$path) {
-            return null;
+        $fullPath = Storage::disk($disk)->path($path);
+
+        if (!file_exists($fullPath)) {
+            return false;
         }
 
-        return $this->optimize($path, $disk);
+        $imageInfo = @getimagesize($fullPath);
+        if (!$imageInfo) {
+            return false;
+        }
+
+        $mimeType = $imageInfo['mime'];
+        $originalWidth = $imageInfo[0];
+        $originalHeight = $imageInfo[1];
+
+        // Create image resource
+        $sourceImage = $this->createImageFromFile($fullPath, $mimeType);
+        if (!$sourceImage) {
+            return false;
+        }
+
+        // Get base path (remove extension and any existing suffix)
+        $directory = dirname($path);
+        $filename = pathinfo($path, PATHINFO_FILENAME);
+
+        // Remove any existing suffix (_thumb, _medium, _large)
+        $filename = preg_replace('/_(thumb|medium|large)$/', '', $filename);
+        $basePath = $directory . '/' . $filename;
+
+        // Generate only the smaller variants (thumb, medium, large)
+        // Skip 'original' as it already exists
+        $variantsToGenerate = ['thumb', 'medium', 'large'];
+
+        foreach ($variantsToGenerate as $variantName) {
+            $config = $this->variants[$variantName];
+            $variantFilePath = $basePath . '_' . $variantName . '.webp';
+
+            // Skip if variant already exists
+            if (Storage::disk($disk)->exists($variantFilePath)) {
+                continue;
+            }
+
+            $this->generateVariant(
+                $sourceImage,
+                $originalWidth,
+                $originalHeight,
+                $basePath,
+                $variantName,
+                $config,
+                $disk
+            );
+        }
+
+        imagedestroy($sourceImage);
+        return true;
     }
 
     /**
@@ -183,30 +252,15 @@ class ImageOptimizer
     }
 
     /**
-     * Set custom max dimensions
+     * Get URL helper for frontend to determine image variant URL
      */
-    public function setMaxDimensions(int $width, int $height): self
+    public static function getVariantUrl(string $baseUrl, string $variant = 'original'): string
     {
-        $this->maxWidth = $width;
-        $this->maxHeight = $height;
-        return $this;
-    }
+        if ($variant === 'original') {
+            return $baseUrl;
+        }
 
-    /**
-     * Set custom quality
-     */
-    public function setQuality(int $quality): self
-    {
-        $this->quality = max(1, min(100, $quality));
-        return $this;
-    }
-
-    /**
-     * Set target file size in KB
-     */
-    public function setTargetSize(int $sizeKb): self
-    {
-        $this->targetSizeKb = $sizeKb;
-        return $this;
+        // Insert variant suffix before .webp extension
+        return preg_replace('/\.webp$/', '_' . $variant . '.webp', $baseUrl);
     }
 }
