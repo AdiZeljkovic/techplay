@@ -206,9 +206,9 @@ export default function Header() {
 
     return (
         <div className="w-full font-sans sticky top-0 z-50">
-            {/* MOBILE: TOP BAR (Sign In / Search) */}
-            <div className="bg-[#000B25] border-b border-white/5 xl:hidden">
-                <div className="container mx-auto px-4 flex justify-between items-center h-10">
+            {/* MOBILE: SINGLE BAR (Sign In / Search / Hamburger) */}
+            <div className="bg-[#001540] border-b border-white/5 xl:hidden">
+                <div className="container mx-auto px-4 flex justify-between items-center h-12">
                     {/* Left: Sign In / Register */}
                     {user ? (
                         <Link
@@ -219,7 +219,7 @@ export default function Header() {
                                 <img
                                     src={user.avatar_url}
                                     alt={user.username}
-                                    className="w-5 h-5 rounded-full object-cover"
+                                    className="w-6 h-6 rounded-full object-cover"
                                 />
                             ) : (
                                 <User className="w-4 h-4" />
@@ -236,39 +236,23 @@ export default function Header() {
                         </Link>
                     )}
 
-                    {/* Right: Search */}
-                    <button
-                        onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-                        className="p-2 text-gray-400 hover:text-white transition-colors"
-                        aria-label="Search"
-                    >
-                        <Search className="w-5 h-5" />
-                    </button>
-                </div>
-            </div>
-
-            {/* MOBILE: MAIN BAR (Logo / Hamburger) */}
-            <div className="bg-[#001540] border-b border-white/5 xl:hidden">
-                <div className="container mx-auto px-4 flex justify-between items-center h-14">
-                    {/* Left: Logo */}
-                    <Link href="/" className="flex items-center gap-2">
-                        <img
-                            src={settings.site_logo
-                                ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${settings.site_logo}`
-                                : "/logo.svg"}
-                            alt="TechPlay"
-                            className="h-9 w-auto"
-                        />
-                    </Link>
-
-                    {/* Right: Hamburger Menu */}
-                    <button
-                        className="p-2 text-gray-300 hover:text-white active:bg-white/10 rounded-lg transition-colors"
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        aria-label="Toggle menu"
-                    >
-                        {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
-                    </button>
+                    {/* Right: Search + Hamburger */}
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+                            className="p-2 text-gray-400 hover:text-white transition-colors"
+                            aria-label="Search"
+                        >
+                            <Search className="w-5 h-5" />
+                        </button>
+                        <button
+                            className="p-2 text-gray-300 hover:text-white active:bg-white/10 rounded-lg transition-colors"
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            aria-label="Toggle menu"
+                        >
+                            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Mobile Search Dropdown */}
