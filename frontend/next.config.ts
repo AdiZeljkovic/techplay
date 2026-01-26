@@ -35,9 +35,11 @@ const nextConfig: NextConfig = {
   // Performance: Enable compression
   compress: true,
 
-  // Performance: Optimize packages
+  // Performance: Optimize packages and CSS
   experimental: {
-    optimizePackageImports: ['lucide-react', 'date-fns', 'recharts'],
+    optimizePackageImports: ['lucide-react', 'date-fns', 'recharts', 'framer-motion'],
+    // Enable CSS optimization - inlines critical CSS
+    optimizeCss: true,
   },
 
   // Keep existing image config with performance enhancements
