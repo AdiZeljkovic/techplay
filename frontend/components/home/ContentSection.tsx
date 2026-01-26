@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Calendar, User, Clock, Layers } from "lucide-react";
 import { Article } from "@/types";
 import { format } from "date-fns";
+import { getImageUrl } from "@/lib/imageUrl";
 
 interface ContentSectionProps {
     title: string;
@@ -35,6 +37,16 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
     const featured = articles[0];
     const gridItems = articles.slice(1, 5);
 
+    // Get image URLs with appropriate variants
+    const featuredImageUrl = featured.featured_image_url
+        ? getImageUrl(
+            featured.featured_image_url.startsWith('http')
+                ? featured.featured_image_url
+                : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${featured.featured_image_url}`,
+            'large' // Featured uses large variant
+        )
+        : null;
+
     return (
         <div className="mb-12">
             {/* Section Header */}
@@ -56,13 +68,13 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
                 <Link href={`${linkPrefix}/${featured.slug}`} className="group relative h-[280px] sm:h-[320px] md:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-white/10">
                     {/* Image */}
                     <div className="absolute inset-0">
-                        {featured.featured_image_url ? (
-                            <img
-                                src={featured.featured_image_url.startsWith('http')
-                                    ? featured.featured_image_url
-                                    : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${featured.featured_image_url}`}
+                        {featuredImageUrl ? (
+                            <Image
+                                src={featuredImageUrl}
                                 alt={featured.title}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                fill
+                                sizes="(max-width: 768px) 100vw, 50vw"
+                                className="object-cover transition-transform duration-700 group-hover:scale-110"
                             />
                         ) : (
                             <div className="w-full h-full bg-[#001540]" />
@@ -104,43 +116,54 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
 
                 {/* Grid of 4 Smaller Articles (Right) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {gridItems.map((item) => (
-                        <Link key={item.id} href={`${linkPrefix}/${item.slug}`} className="group flex flex-col gap-3 p-4 bg-[#00215E] border border-white/5 rounded-2xl hover:bg-white/5 transition-all hover:border-white/10 hover:-translate-y-1 shadow-md">
-                            <div className="relative h-32 rounded-xl overflow-hidden">
-                                {item.featured_image_url ? (
-                                    <img
-                                        src={item.featured_image_url.startsWith('http')
-                                            ? item.featured_image_url
-                                            : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${item.featured_image_url}`}
-                                        alt={item.title}
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full bg-[#0a0f1c]" />
-                                )}
-                                <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[9px] font-bold text-white uppercase tracking-wider">
-                                    {item.category.name}
-                                </div>
+                    {gridItems.map((item) => {
+                        const itemImageUrl = item.featured_image_url
+                            ? getImageUrl(
+                                item.featured_image_url.startsWith('http')
+                                    ? item.featured_image_url
+                                    : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${item.featured_image_url}`,
+                                'thumb' // Grid items use thumb variant
+                            )
+                            : null;
 
-                                {/* Review Score Badge for grid items */}
-                                {isReviews && item.review_score !== undefined && item.review_score !== null && (
-                                    <div className={`absolute top-2 right-2 w-9 h-9 rounded-full ${getScoreColor(item.review_score).bg} flex items-center justify-center shadow-md`}>
-                                        <span className="text-white text-sm font-bold">{item.review_score}</span>
+                        return (
+                            <Link key={item.id} href={`${linkPrefix}/${item.slug}`} className="group flex flex-col gap-3 p-4 bg-[#00215E] border border-white/5 rounded-2xl hover:bg-white/5 transition-all hover:border-white/10 hover:-translate-y-1 shadow-md">
+                                <div className="relative h-32 rounded-xl overflow-hidden">
+                                    {itemImageUrl ? (
+                                        <Image
+                                            src={itemImageUrl}
+                                            alt={item.title}
+                                            fill
+                                            sizes="(max-width: 640px) 100vw, 256px"
+                                            className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-[#0a0f1c]" />
+                                    )}
+                                    <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[9px] font-bold text-white uppercase tracking-wider">
+                                        {item.category.name}
                                     </div>
-                                )}
-                            </div>
 
-                            <div className="flex-1 flex flex-col">
-                                <h4 className="text-sm font-bold text-white leading-snug line-clamp-2 mb-2 group-hover:text-[var(--accent)] transition-colors">
-                                    {item.title}
-                                </h4>
-                                <div className="mt-auto flex items-center justify-between text-[10px] text-white/40 uppercase font-bold tracking-wide">
-                                    <span className="truncate max-w-[100px]">{item.author?.display_name || item.author?.username || "TechPlay"}</span>
-                                    <span>{item.published_at ? format(new Date(item.published_at), 'dd/MM/yyyy') : ''}</span>
+                                    {/* Review Score Badge for grid items */}
+                                    {isReviews && item.review_score !== undefined && item.review_score !== null && (
+                                        <div className={`absolute top-2 right-2 w-9 h-9 rounded-full ${getScoreColor(item.review_score).bg} flex items-center justify-center shadow-md`}>
+                                            <span className="text-white text-sm font-bold">{item.review_score}</span>
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        </Link>
-                    ))}
+
+                                <div className="flex-1 flex flex-col">
+                                    <h4 className="text-sm font-bold text-white leading-snug line-clamp-2 mb-2 group-hover:text-[var(--accent)] transition-colors">
+                                        {item.title}
+                                    </h4>
+                                    <div className="mt-auto flex items-center justify-between text-[10px] text-white/40 uppercase font-bold tracking-wide">
+                                        <span className="truncate max-w-[100px]">{item.author?.display_name || item.author?.username || "TechPlay"}</span>
+                                        <span>{item.published_at ? format(new Date(item.published_at), 'dd/MM/yyyy') : ''}</span>
+                                    </div>
+                                </div>
+                            </Link>
+                        );
+                    })}
                 </div>
             </div>
         </div>
