@@ -17,6 +17,7 @@ const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
   display: 'swap',
+  preload: true,
 });
 
 async function getSiteSettings() {
@@ -77,6 +78,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={beVietnamPro.variable} suppressHydrationWarning>
       <head>
+        {/* Preconnect to critical third-party origins for faster resource loading */}
+        <link rel="preconnect" href="https://api-beta.techplay.gg" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://api-beta.techplay.gg" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+
+        {/* Preconnect to image CDN if different from API */}
+        <link rel="preconnect" href="https://storage.googleapis.com" crossOrigin="anonymous" />
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
         <ThemeProvider>

@@ -54,6 +54,8 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                         sizes="100vw"
                         className="object-cover"
                         priority
+                        fetchPriority="high"
+                        quality={85}
                     />
                     {/* Gradient Overlay for Readability - Using Brand Blue */}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#00215E] via-[#00215E]/60 to-transparent opacity-70" />
