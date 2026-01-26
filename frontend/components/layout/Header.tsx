@@ -240,10 +240,10 @@ export default function Header() {
                     )}
 
                     {/* Center: Cart */}
-                    <Link href="/cart" className="relative text-gray-400 hover:text-white transition-colors p-2">
-                        <ShoppingCart className="w-5 h-5" />
+                    <Link href="/cart" className="relative text-gray-400 hover:text-white transition-colors p-2" aria-label="Shopping cart">
+                        <ShoppingCart className="w-5 h-5" aria-hidden="true" />
                         {itemCount > 0 && (
-                            <span className="absolute top-0 right-0 w-4 h-4 bg-[var(--accent)] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                            <span className="absolute top-0 right-0 w-4 h-4 bg-[var(--accent)] text-white text-[10px] font-bold rounded-full flex items-center justify-center" aria-label={`${itemCount} items in cart`}>
                                 {itemCount}
                             </span>
                         )}
@@ -314,10 +314,10 @@ export default function Header() {
                             ))}
                         </div>
 
-                        <Link href="/cart" className="relative text-gray-400 hover:text-white transition-colors">
-                            <ShoppingCart className="w-4 h-4" />
+                        <Link href="/cart" className="relative text-gray-400 hover:text-white transition-colors" aria-label="Shopping cart">
+                            <ShoppingCart className="w-4 h-4" aria-hidden="true" />
                             {itemCount > 0 && (
-                                <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-[var(--accent)] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                                <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-[var(--accent)] text-white text-[9px] font-bold rounded-full flex items-center justify-center" aria-label={`${itemCount} items in cart`}>
                                     {itemCount}
                                 </span>
                             )}

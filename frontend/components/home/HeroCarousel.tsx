@@ -140,15 +140,17 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                 <div className="absolute right-4 bottom-6 sm:bottom-10 md:bottom-16 md:right-10 flex items-center gap-2 md:gap-4 z-20">
                     <button
                         onClick={prevSlide}
+                        aria-label="Previous slide"
                         className="p-3 md:p-4 rounded-full border border-white/10 bg-black/20 text-white hover:bg-[var(--accent)] hover:border-[var(--accent)] transition-all backdrop-blur-md"
                     >
-                        <ChevronLeft className="w-6 h-6" />
+                        <ChevronLeft className="w-6 h-6" aria-hidden="true" />
                     </button>
                     <button
                         onClick={nextSlide}
+                        aria-label="Next slide"
                         className="p-3 md:p-4 rounded-full border border-white/10 bg-black/20 text-white hover:bg-[var(--accent)] hover:border-[var(--accent)] transition-all backdrop-blur-md"
                     >
-                        <ChevronRight className="w-6 h-6" />
+                        <ChevronRight className="w-6 h-6" aria-hidden="true" />
                     </button>
                 </div>
 
@@ -158,6 +160,8 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                         <button
                             key={idx}
                             onClick={() => setCurrentIndex(idx)}
+                            aria-label={`Go to slide ${idx + 1}`}
+                            aria-current={idx === currentIndex ? "true" : undefined}
                             className={`h-1 rounded-full transition-all duration-300 ${idx === currentIndex ? "w-8 bg-[var(--accent)]" : "w-2 bg-white/30 hover:bg-white/60"
                                 }`}
                         />
