@@ -176,7 +176,16 @@ class ReviewForm
                             ->schema([
                                 FileUpload::make('cover_image')
                                     ->image()
+                                    ->disk('public')
                                     ->directory('reviews')
+                                    ->maxSize(10240) // Allow up to 10MB upload, will be compressed
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+                                    ->saveUploadedFileUsing(function ($file) {
+                                        $path = $file->store('reviews', 'public');
+                                        $optimizer = new \App\Services\ImageOptimizer();
+                                        return $optimizer->optimize($path, 'public');
+                                    })
+                                    ->helperText('Auto-optimized to WebP (max 1920×1080, ~200KB)')
                                     ->required(),
                             ]),
                     ])
