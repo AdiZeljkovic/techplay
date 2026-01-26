@@ -36,18 +36,24 @@ class FixImagePaths extends Command
 
         foreach ($articles as $article) {
             $oldPath = $article->featured_image_url;
-            $newPath = preg_replace('/\.(jpg|jpeg|png)$/i', '.webp', $oldPath);
 
-            if (Storage::disk('public')->exists($newPath)) {
+            // Extract relative path from URL if it's a full URL
+            $relativePath = $this->extractRelativePath($oldPath);
+            $newRelativePath = preg_replace('/\.(jpg|jpeg|png)$/i', '.webp', $relativePath);
+
+            // Build new full path (same format as old)
+            $newPath = str_replace($relativePath, $newRelativePath, $oldPath);
+
+            if (Storage::disk('public')->exists($newRelativePath)) {
                 if (!$dryRun) {
                     DB::table('articles')
                         ->where('id', $article->id)
                         ->update(['featured_image_url' => $newPath]);
                 }
-                $this->line("  ✅ {$oldPath} → {$newPath}");
+                $this->line("  ✅ Updated: " . basename($oldPath) . " → " . basename($newPath));
                 $totalUpdated++;
             } else {
-                $this->line("  ⏭️  {$oldPath} (no webp found)");
+                $this->line("  ⏭️  " . basename($oldPath) . " (no webp at: {$newRelativePath})");
             }
         }
 
@@ -64,18 +70,20 @@ class FixImagePaths extends Command
 
         foreach ($reviews as $review) {
             $oldPath = $review->cover_image;
-            $newPath = preg_replace('/\.(jpg|jpeg|png)$/i', '.webp', $oldPath);
+            $relativePath = $this->extractRelativePath($oldPath);
+            $newRelativePath = preg_replace('/\.(jpg|jpeg|png)$/i', '.webp', $relativePath);
+            $newPath = str_replace($relativePath, $newRelativePath, $oldPath);
 
-            if (Storage::disk('public')->exists($newPath)) {
+            if (Storage::disk('public')->exists($newRelativePath)) {
                 if (!$dryRun) {
                     DB::table('reviews')
                         ->where('id', $review->id)
                         ->update(['cover_image' => $newPath]);
                 }
-                $this->line("  ✅ {$oldPath} → {$newPath}");
+                $this->line("  ✅ Updated: " . basename($oldPath) . " → " . basename($newPath));
                 $totalUpdated++;
             } else {
-                $this->line("  ⏭️  {$oldPath} (no webp found)");
+                $this->line("  ⏭️  " . basename($oldPath) . " (no webp at: {$newRelativePath})");
             }
         }
 
@@ -89,5 +97,20 @@ class FixImagePaths extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Extract relative storage path from full URL or return as-is if already relative
+     * e.g., "https://api.example.com/storage/articles/image.jpg" -> "articles/image.jpg"
+     */
+    protected function extractRelativePath(string $path): string
+    {
+        // If it's a full URL with /storage/, extract the path after /storage/
+        if (preg_match('#/storage/(.+)$#', $path, $matches)) {
+            return $matches[1];
+        }
+
+        // Already a relative path
+        return $path;
     }
 }
