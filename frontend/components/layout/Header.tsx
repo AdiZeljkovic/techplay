@@ -142,6 +142,8 @@ function NavItem({ item }: { item: NavItemType }) {
 
 export default function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+    const [expandedMobileItem, setExpandedMobileItem] = useState<string | null>(null);
     const { user, logout } = useAuth();
     const { itemCount } = useCart();
     const { settings } = useSiteSettings();
@@ -203,7 +205,87 @@ export default function Header() {
 
     return (
         <div className="w-full font-sans sticky top-0 z-50">
-            {/* TOP BAR */}
+            {/* MOBILE TOP BAR */}
+            <div className="bg-[#001540] border-b border-white/5 xl:hidden">
+                <div className="container mx-auto px-4 flex justify-between items-center h-12">
+                    {/* Left: User/Sign In */}
+                    {user ? (
+                        <Link
+                            href={`/profile/${user.username || 'me'}`}
+                            className="flex items-center gap-2"
+                        >
+                            {user.avatar_url ? (
+                                <img
+                                    src={user.avatar_url}
+                                    alt={user.username}
+                                    className="w-8 h-8 rounded-full object-cover border border-white/20"
+                                />
+                            ) : (
+                                <div className="w-8 h-8 bg-[var(--accent)]/20 rounded-full flex items-center justify-center text-[var(--accent)] text-sm font-bold">
+                                    {user.username?.charAt(0)?.toUpperCase() || '?'}
+                                </div>
+                            )}
+                            <span className="text-white text-sm font-medium hidden sm:block">
+                                {user.display_name || user.username}
+                            </span>
+                        </Link>
+                    ) : (
+                        <Link
+                            href="/login"
+                            className="flex items-center gap-2 text-white text-sm font-medium"
+                        >
+                            <User className="w-5 h-5" />
+                            <span className="hidden sm:block">Sign In</span>
+                        </Link>
+                    )}
+
+                    {/* Center: Cart */}
+                    <Link href="/cart" className="relative text-gray-400 hover:text-white transition-colors p-2">
+                        <ShoppingCart className="w-5 h-5" />
+                        {itemCount > 0 && (
+                            <span className="absolute top-0 right-0 w-4 h-4 bg-[var(--accent)] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                {itemCount}
+                            </span>
+                        )}
+                    </Link>
+
+                    {/* Right: Search & Menu */}
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+                            className="p-2.5 text-gray-400 hover:text-white transition-colors"
+                            aria-label="Search"
+                        >
+                            <Search className="w-5 h-5" />
+                        </button>
+                        <button
+                            className="p-2.5 text-gray-300 hover:text-white active:bg-white/10 rounded-lg transition-colors"
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            aria-label="Toggle menu"
+                        >
+                            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Mobile Search Dropdown */}
+                <AnimatePresence>
+                    {mobileSearchOpen && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden border-t border-white/5"
+                        >
+                            <div className="container mx-auto px-4 py-3">
+                                <SearchDropdown placeholder="Search TechPlay..." isMobile />
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
+            {/* DESKTOP TOP BAR */}
             <div className="bg-[#001540] border-b border-white/5 text-xs py-1 hidden xl:block">
                 <div className="container mx-auto px-4 flex justify-between items-center h-9">
                     {/* Left: Utility Links */}
@@ -331,14 +413,6 @@ export default function Header() {
                             SUPPORT US
                         </Link>
 
-                        {/* Mobile Toggle */}
-                        <button
-                            className="xl:hidden p-3 -mr-2 text-gray-300 hover:text-white active:bg-white/10 rounded-lg transition-colors"
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            aria-label="Toggle menu"
-                        >
-                            {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
-                        </button>
                     </div>
                 </div>
             </header>
@@ -347,110 +421,110 @@ export default function Header() {
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "100vh" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="xl:hidden fixed inset-0 top-[80px] bg-[#00215E] z-50 overflow-y-auto"
+                        initial={{ opacity: 0, x: "100%" }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: "100%" }}
+                        transition={{ type: "tween", duration: 0.25 }}
+                        className="xl:hidden fixed inset-0 top-[128px] bg-[#00215E] z-50 overflow-y-auto"
                     >
-                        <div className="container mx-auto px-4 py-6 space-y-6">
-                            {/* User Section for Mobile */}
-                            {user ? (
-                                <div className="bg-[#001540] rounded-2xl p-4 border border-white/10">
+                        <div className="container mx-auto px-4 py-4 space-y-4">
+                            {/* User Quick Actions (if logged in) */}
+                            {user && (
+                                <div className="flex gap-2">
                                     <Link
-                                        href={`/profile/${user.username || 'me'}`}
+                                        href="/messages"
                                         onClick={() => setIsMobileMenuOpen(false)}
-                                        className="flex items-center gap-4"
+                                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#001540] rounded-xl text-gray-300 hover:bg-white/10 transition-colors border border-white/5"
                                     >
-                                        {user.avatar_url ? (
-                                            <img src={user.avatar_url} alt={user.username} className="w-14 h-14 rounded-full object-cover border-2 border-[var(--accent)]" />
-                                        ) : (
-                                            <div className="w-14 h-14 bg-[var(--accent)]/20 rounded-full flex items-center justify-center text-[var(--accent)] text-xl font-bold">
-                                                {user.username?.charAt(0)?.toUpperCase() || '?'}
-                                            </div>
+                                        <Mail className="w-5 h-5" />
+                                        <span className="text-sm font-medium">Messages</span>
+                                        {notifications.unread_messages > 0 && (
+                                            <span className="w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{notifications.unread_messages}</span>
                                         )}
-                                        <div className="flex-1">
-                                            <p className="text-white font-bold text-lg">{user.display_name || user.username}</p>
-                                            <p className="text-gray-400 text-sm">Level {Math.floor((user.xp || 0) / 1000) + 1}</p>
-                                        </div>
                                     </Link>
-                                    <div className="flex gap-2 mt-4">
-                                        <Link
-                                            href="/messages"
-                                            onClick={() => setIsMobileMenuOpen(false)}
-                                            className="flex-1 flex items-center justify-center gap-2 py-3 bg-white/5 rounded-xl text-gray-300 hover:bg-white/10 transition-colors"
-                                        >
-                                            <Mail className="w-5 h-5" />
-                                            <span className="text-sm font-medium">Messages</span>
-                                            {notifications.unread_messages > 0 && (
-                                                <span className="w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{notifications.unread_messages}</span>
-                                            )}
-                                        </Link>
-                                        <Link
-                                            href="/friends"
-                                            onClick={() => setIsMobileMenuOpen(false)}
-                                            className="flex-1 flex items-center justify-center gap-2 py-3 bg-white/5 rounded-xl text-gray-300 hover:bg-white/10 transition-colors"
-                                        >
-                                            <Users className="w-5 h-5" />
-                                            <span className="text-sm font-medium">Friends</span>
-                                            {notifications.pending_requests > 0 && (
-                                                <span className="w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{notifications.pending_requests}</span>
-                                            )}
-                                        </Link>
-                                    </div>
-                                    <button
-                                        onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                                        className="w-full mt-3 py-3 text-red-400 hover:text-red-300 text-sm font-medium border border-red-400/20 rounded-xl hover:bg-red-400/10 transition-colors flex items-center justify-center gap-2"
+                                    <Link
+                                        href="/friends"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#001540] rounded-xl text-gray-300 hover:bg-white/10 transition-colors border border-white/5"
                                     >
-                                        <LogOut className="w-4 h-4" /> Sign Out
-                                    </button>
+                                        <Users className="w-5 h-5" />
+                                        <span className="text-sm font-medium">Friends</span>
+                                        {notifications.pending_requests > 0 && (
+                                            <span className="w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{notifications.pending_requests}</span>
+                                        )}
+                                    </Link>
                                 </div>
-                            ) : (
-                                <Link
-                                    href="/login"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className="flex items-center justify-center gap-3 w-full py-4 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-xl transition-colors"
-                                >
-                                    <User className="w-5 h-5" />
-                                    Sign In / Register
-                                </Link>
                             )}
 
-                            {/* Search for Mobile */}
-                            <SearchDropdown placeholder="Search TechPlay..." isMobile />
-
-                            <nav className="flex flex-col space-y-2">
+                            {/* Navigation with Accordion Dropdowns */}
+                            <nav className="flex flex-col">
                                 {navItems.map((item) => (
-                                    <div key={item.name} className="flex flex-col">
-                                        <Link
-                                            href={item.href}
-                                            onClick={() => !item.children && setIsMobileMenuOpen(false)}
-                                            className="py-3 px-4 text-gray-300 hover:bg-white/5 hover:text-white rounded-xl font-bold text-lg transition-colors flex justify-between items-center"
-                                        >
-                                            {item.name}
-                                            {item.hasDropdown && <ChevronDown className="w-5 h-5 text-gray-500" />}
-                                        </Link>
+                                    <div key={item.name} className="border-b border-white/5 last:border-b-0">
+                                        {item.hasDropdown && item.children ? (
+                                            <>
+                                                {/* Accordion Header */}
+                                                <button
+                                                    onClick={() => setExpandedMobileItem(
+                                                        expandedMobileItem === item.name ? null : item.name
+                                                    )}
+                                                    className="w-full py-4 px-2 text-gray-300 hover:text-white font-bold text-base transition-colors flex justify-between items-center"
+                                                >
+                                                    {item.name}
+                                                    <ChevronDown className={cn(
+                                                        "w-5 h-5 text-gray-500 transition-transform duration-200",
+                                                        expandedMobileItem === item.name ? "rotate-180" : ""
+                                                    )} />
+                                                </button>
 
-                                        {/* Mobile Submenu (Simple Indent) */}
-                                        {item.children && (
-                                            <div className="pl-6 flex flex-col gap-1 mt-1 mb-2">
-                                                {item.children.map((child, idx) => (
-                                                    <Link
-                                                        key={idx}
-                                                        href={child.href}
-                                                        onClick={() => setIsMobileMenuOpen(false)}
-                                                        className="py-3 px-3 text-gray-400 hover:text-[var(--accent)] hover:bg-white/5 text-sm font-medium rounded-lg transition-colors"
-                                                    >
-                                                        {child.name}
-                                                    </Link>
-                                                ))}
-                                            </div>
+                                                {/* Accordion Content */}
+                                                <AnimatePresence>
+                                                    {expandedMobileItem === item.name && (
+                                                        <motion.div
+                                                            initial={{ height: 0, opacity: 0 }}
+                                                            animate={{ height: "auto", opacity: 1 }}
+                                                            exit={{ height: 0, opacity: 0 }}
+                                                            transition={{ duration: 0.2 }}
+                                                            className="overflow-hidden"
+                                                        >
+                                                            <div className="pl-4 pb-3 flex flex-col gap-1">
+                                                                {/* Link to main category page */}
+                                                                <Link
+                                                                    href={item.href}
+                                                                    onClick={() => setIsMobileMenuOpen(false)}
+                                                                    className="py-2.5 px-3 text-[var(--accent)] text-sm font-semibold rounded-lg hover:bg-white/5 transition-colors"
+                                                                >
+                                                                    All {item.name}
+                                                                </Link>
+                                                                {item.children.map((child, idx) => (
+                                                                    <Link
+                                                                        key={idx}
+                                                                        href={child.href}
+                                                                        onClick={() => setIsMobileMenuOpen(false)}
+                                                                        className="py-2.5 px-3 text-gray-400 hover:text-white hover:bg-white/5 text-sm font-medium rounded-lg transition-colors"
+                                                                    >
+                                                                        {child.name}
+                                                                    </Link>
+                                                                ))}
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </>
+                                        ) : (
+                                            <Link
+                                                href={item.href}
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                className="block py-4 px-2 text-gray-300 hover:text-white font-bold text-base transition-colors"
+                                            >
+                                                {item.name}
+                                            </Link>
                                         )}
                                     </div>
                                 ))}
                             </nav>
 
                             {/* Utility Links Mobile */}
-                            <div className="pt-6 border-t border-white/10 grid grid-cols-2 gap-2">
+                            <div className="pt-4 border-t border-white/10 grid grid-cols-2 gap-2">
                                 {UTILITY_LINKS.map((link) => (
                                     <Link
                                         key={link.name}
@@ -466,20 +540,27 @@ export default function Header() {
                                 ))}
                             </div>
 
-                            {/* Mobile Footer Area */}
-                            <div className="pt-6 flex flex-col gap-6">
+                            {/* Social Links & Sign Out */}
+                            <div className="pt-4 flex flex-col gap-4">
                                 <div className="flex justify-center gap-6">
                                     {socialLinks.map((social, idx) => (
-                                        <Link key={idx} href={social.href} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">
-                                            <social.icon className="w-6 h-6" />
+                                        <Link key={idx} href={social.href} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white p-2">
+                                            <social.icon className="w-5 h-5" />
                                         </Link>
                                     ))}
                                 </div>
-                                {!user && (
+                                {user ? (
+                                    <button
+                                        onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                                        className="w-full py-3 text-red-400 hover:text-red-300 text-sm font-medium border border-red-400/20 rounded-xl hover:bg-red-400/10 transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <LogOut className="w-4 h-4" /> Sign Out
+                                    </button>
+                                ) : (
                                     <Link
                                         href="/login"
                                         onClick={() => setIsMobileMenuOpen(false)}
-                                        className="w-full text-center text-sm font-bold text-white bg-white/10 border border-white/10 px-4 py-3 rounded-xl uppercase tracking-wider"
+                                        className="w-full text-center py-3 font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] rounded-xl transition-colors"
                                     >
                                         Sign In / Register
                                     </Link>
