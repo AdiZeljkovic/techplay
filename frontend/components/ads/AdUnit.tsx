@@ -91,7 +91,7 @@ export default memo(function AdUnit({ position, className = "" }: AdUnitProps) {
                     width={728}
                     height={90}
                     className="w-full h-auto object-cover"
-                    unoptimized
+                    sizes="(max-width: 768px) 100vw, 728px"
                 />
                 <span className="absolute bottom-1 right-1 text-[10px] text-white/50 bg-black/30 px-1 rounded">
                     AD

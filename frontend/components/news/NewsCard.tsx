@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Clock, User } from "lucide-react";
 import { Article } from "@/types";
 import { formatDistanceToNow } from "date-fns";
+import { getImageUrl } from "@/lib/imageUrl";
 
 interface NewsCardProps {
     article: Article;
@@ -13,6 +14,16 @@ interface NewsCardProps {
 }
 
 export default function NewsCard({ article, index }: NewsCardProps) {
+    // Get thumbnail variant for card images (h-48 = ~192px)
+    const imageUrl = article.featured_image_url
+        ? getImageUrl(
+            article.featured_image_url.startsWith('http')
+                ? article.featured_image_url
+                : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${article.featured_image_url}`,
+            'thumb'
+        )
+        : null;
+
     return (
         <Link href={`/news/${article.slug}`}>
             <motion.article
@@ -23,11 +34,9 @@ export default function NewsCard({ article, index }: NewsCardProps) {
             >
                 {/* Image */}
                 <div className="relative h-48 w-full overflow-hidden">
-                    {article.featured_image_url ? (
+                    {imageUrl ? (
                         <Image
-                            src={article.featured_image_url.startsWith('http')
-                                ? article.featured_image_url
-                                : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${article.featured_image_url}`}
+                            src={imageUrl}
                             alt={article.title}
                             fill
                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

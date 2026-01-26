@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 import { Review } from "@/types";
+import { getImageUrl } from "@/lib/imageUrl";
 
 interface ReviewCardProps {
     review: Review;
@@ -19,8 +20,14 @@ export default function ReviewCard({ review, index, basePath = "/reviews", hideR
     const ratingColor = score >= 8 ? "text-green-500" : score >= 6 ? "text-yellow-500" : "text-red-500";
     const ratingBg = score >= 8 ? "bg-green-500/10" : score >= 6 ? "bg-yellow-500/10" : "bg-red-500/10";
 
-    // featured_image_url now comes as full URL from API
-    const imageUrl = review.featured_image_url || review.cover_image;
+    // Get thumbnail variant for card images (h-48 = ~192px)
+    const rawImageUrl = review.featured_image_url || review.cover_image;
+    const imageUrl = rawImageUrl
+        ? getImageUrl(
+            rawImageUrl.startsWith('http') ? rawImageUrl : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${rawImageUrl}`,
+            'thumb'
+        )
+        : null;
 
     return (
         <Link href={`${basePath}/${review.slug}`}>
@@ -34,9 +41,10 @@ export default function ReviewCard({ review, index, basePath = "/reviews", hideR
                 <div className="relative h-48 w-full overflow-hidden">
                     {imageUrl ? (
                         <Image
-                            src={imageUrl.startsWith('http') ? imageUrl : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${imageUrl}`}
+                            src={imageUrl}
                             alt={review.title}
                             fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                     ) : (
