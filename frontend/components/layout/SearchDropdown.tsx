@@ -146,8 +146,8 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                     className={cn(
                         "bg-[#1e293b] border border-[#334155] text-gray-300 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all placeholder:text-gray-600",
                         isMobile
-                            ? "w-full rounded-xl py-3 pl-12 pr-10 text-white"
-                            : "w-56 rounded-full py-2 pl-10 pr-8 text-sm"
+                            ? "w-full rounded-xl py-3 pl-12 pr-10 text-base text-white"
+                            : "w-44 lg:w-56 rounded-full py-2 pl-10 pr-8 text-sm"
                     )}
                 />
 
@@ -178,7 +178,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                         exit={{ opacity: 0, y: -10 }}
                         className={cn(
                             "absolute z-50 bg-[#001540]/98 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden",
-                            isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[400px]"
+                            isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[min(400px,calc(100vw-2rem))]"
                         )}
                         style={{ boxShadow: "0 20px 50px rgba(0,0,0,0.5)" }}
                     >
@@ -238,7 +238,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                         exit={{ opacity: 0, y: -10 }}
                         className={cn(
                             "absolute z-50 bg-[#001540]/98 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl p-6 text-center",
-                            isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[300px]"
+                            isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[min(300px,calc(100vw-2rem))]"
                         )}
                     >
                         <Search className="w-8 h-8 text-gray-600 mx-auto mb-2" />

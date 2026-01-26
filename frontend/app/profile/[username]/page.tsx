@@ -299,7 +299,7 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Navigation Tabs */}
-                    <div className="flex items-center gap-1 md:gap-2 mt-8 border-b border-[var(--border)] overflow-x-auto no-scrollbar">
+                    <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2 mt-8 border-b border-[var(--border)] overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
                         {[
                             { id: 'overview', label: 'Overview', icon: Activity },
                             { id: 'ids', label: 'Ids', icon: Gamepad2 },
@@ -309,7 +309,7 @@ export default function ProfilePage() {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
-                                className={`flex items-center gap-2 px-4 md:px-6 py-3 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === tab.id
+                                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 md:px-6 py-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${activeTab === tab.id
                                     ? 'border-[var(--accent)] text-[var(--accent)] bg-[var(--bg-elevated)]/50 rounded-t-lg'
                                     : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border)]'
                                     }`}

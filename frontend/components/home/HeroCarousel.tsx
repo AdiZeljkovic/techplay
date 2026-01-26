@@ -33,7 +33,7 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
     const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + featuredArticles.length) % featuredArticles.length);
 
     return (
-        <section className="relative w-full h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden bg-[#001540]">
+        <section className="relative w-full h-[350px] sm:h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden bg-[#001540]">
 
             {/* Background Image Layer with Crossfade */}
             <AnimatePresence mode="popLayout">
@@ -51,6 +51,7 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                             : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${currentArticle.featured_image_url}`}
                         alt="Hero Background"
                         fill
+                        sizes="100vw"
                         className="object-cover"
                         priority
                     />
@@ -61,7 +62,7 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
             </AnimatePresence>
 
             {/* Content Container */}
-            <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-end pb-20 md:pb-32">
+            <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-end pb-16 sm:pb-20 md:pb-28">
 
                 {/* TRENDING NOW Ticker Effect */}
                 <div className="mb-4 md:mb-6 flex items-center gap-3 overflow-hidden">
@@ -134,7 +135,7 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                 </div>
 
                 {/* Navigation Controls */}
-                <div className="absolute right-4 bottom-10 md:bottom-20 md:right-10 flex items-center gap-2 md:gap-4 z-20">
+                <div className="absolute right-4 bottom-6 sm:bottom-10 md:bottom-16 md:right-10 flex items-center gap-2 md:gap-4 z-20">
                     <button
                         onClick={prevSlide}
                         className="p-3 md:p-4 rounded-full border border-white/10 bg-black/20 text-white hover:bg-[var(--accent)] hover:border-[var(--accent)] transition-all backdrop-blur-md"
@@ -150,7 +151,7 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                 </div>
 
                 {/* Pagination Indicators */}
-                <div className="absolute bottom-10 left-4 md:left-auto md:right-1/2 md:translate-x-1/2 flex gap-2">
+                <div className="absolute bottom-6 sm:bottom-10 left-4 md:left-auto md:right-1/2 md:translate-x-1/2 flex gap-2">
                     {featuredArticles.map((_, idx) => (
                         <button
                             key={idx}

@@ -23,9 +23,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         };
 
         const sizes = {
-            sm: "h-9 px-4 text-sm",
-            md: "h-11 px-6 text-sm",
-            lg: "h-12 px-8 text-base",
+            sm: "h-10 px-4 text-sm",      // 40px - closer to 44px minimum for mobile
+            md: "h-11 px-6 text-sm",      // 44px - meets accessibility standard
+            lg: "h-12 px-8 text-base",    // 48px
         };
 
         return (

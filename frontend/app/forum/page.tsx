@@ -107,7 +107,7 @@ export default function ForumPage() {
                                             return (
                                                 <Link key={category.id} href={`/forum/${category.slug}`}>
                                                     <div
-                                                        className="group relative bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg overflow-hidden"
+                                                        className="group relative bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-4 sm:p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg overflow-hidden"
                                                         style={{
                                                             borderLeft: `4px solid ${color}`,
                                                         }}
@@ -121,16 +121,16 @@ export default function ForumPage() {
                                                         />
 
                                                         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                                            <div className="flex items-center gap-5">
+                                                            <div className="flex items-center gap-3 sm:gap-5">
                                                                 <div
-                                                                    className="w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center text-2xl shadow-lg transition-transform duration-300 group-hover:scale-110"
+                                                                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex-shrink-0 flex items-center justify-center text-xl sm:text-2xl shadow-lg transition-transform duration-300 group-hover:scale-110"
                                                                     style={{
                                                                         backgroundColor: `${color}`,
                                                                         color: '#ffffff',
                                                                         boxShadow: `0 8px 16px -4px ${color}60`
                                                                     }}
                                                                 >
-                                                                    <Icon className="w-7 h-7" />
+                                                                    <Icon className="w-6 h-6 sm:w-7 sm:h-7" />
                                                                 </div>
                                                                 <div>
                                                                     <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1 group-hover:text-[var(--accent)] transition-colors">

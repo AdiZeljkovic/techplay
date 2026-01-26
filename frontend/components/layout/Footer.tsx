@@ -156,11 +156,11 @@ export default function Footer() {
                     </div>
 
                     {/* Newsletter Column (4 Cols) */}
-                    <div className="lg:col-span-4 bg-[#001540] rounded-2xl p-6 border border-white/5 relative overflow-hidden group">
+                    <div className="lg:col-span-4 bg-[#001540] rounded-2xl p-4 sm:p-6 border border-white/5 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent)]/10 rounded-full blur-2xl transform translate-x-10 -translate-y-10 group-hover:bg-[var(--accent)]/20 transition-all" />
 
-                        <h4 className="font-bold text-white text-lg mb-2 relative z-10">Subscribe to Newsletter</h4>
-                        <p className="text-gray-400 text-xs mb-6 relative z-10 leading-relaxed">
+                        <h4 className="font-bold text-white text-base sm:text-lg mb-2 relative z-10">Subscribe to Newsletter</h4>
+                        <p className="text-gray-400 text-xs sm:text-sm mb-4 sm:mb-6 relative z-10 leading-relaxed">
                             Get the latest gaming news and reviews directly in your inbox. No spam, we promise.
                         </p>
 

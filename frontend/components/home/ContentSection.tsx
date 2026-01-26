@@ -53,7 +53,7 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Main Featured Article (Left) */}
-                <Link href={`${linkPrefix}/${featured.slug}`} className="group relative h-[350px] md:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-white/10">
+                <Link href={`${linkPrefix}/${featured.slug}`} className="group relative h-[280px] sm:h-[320px] md:h-[400px] rounded-2xl overflow-hidden shadow-lg border border-white/10">
                     {/* Image */}
                     <div className="absolute inset-0">
                         {featured.featured_image_url ? (

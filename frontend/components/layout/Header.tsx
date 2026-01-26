@@ -98,7 +98,7 @@ function NavItem({ item }: { item: NavItemType }) {
             <Link
                 href={item.href}
                 className={cn(
-                    "flex items-center gap-1 text-[13px] font-bold tracking-wide transition-colors whitespace-nowrap px-1 py-1",
+                    "flex items-center gap-1 text-[13px] font-bold tracking-wide transition-colors whitespace-nowrap px-2 py-2.5",
                     isActive || isHovered ? "text-[var(--accent)]" : "text-gray-300 hover:text-white"
                 )}
             >
@@ -119,7 +119,7 @@ function NavItem({ item }: { item: NavItemType }) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute top-full left-0 mt-2 w-56 bg-[#001540]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 p-2"
+                        className="absolute top-full left-0 mt-2 w-[min(224px,calc(100vw-2rem))] bg-[#001540]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 p-2"
                         style={{ boxShadow: "0 20px 50px rgba(0,0,0,0.5)" }}
                     >
                         <div className="flex flex-col gap-1">
@@ -333,10 +333,11 @@ export default function Header() {
 
                         {/* Mobile Toggle */}
                         <button
-                            className="xl:hidden p-2 text-gray-300 hover:text-white"
+                            className="xl:hidden p-3 -mr-2 text-gray-300 hover:text-white active:bg-white/10 rounded-lg transition-colors"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            aria-label="Toggle menu"
                         >
-                            {isMobileMenuOpen ? <X className="w-8 h-8" /> : <Menu className="w-8 h-8" />}
+                            {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
                         </button>
                     </div>
                 </div>
@@ -431,13 +432,13 @@ export default function Header() {
 
                                         {/* Mobile Submenu (Simple Indent) */}
                                         {item.children && (
-                                            <div className="pl-8 flex flex-col gap-2 mt-1 mb-2">
+                                            <div className="pl-6 flex flex-col gap-1 mt-1 mb-2">
                                                 {item.children.map((child, idx) => (
                                                     <Link
                                                         key={idx}
                                                         href={child.href}
                                                         onClick={() => setIsMobileMenuOpen(false)}
-                                                        className="py-2 text-gray-400 hover:text-[var(--accent)] text-sm font-medium"
+                                                        className="py-3 px-3 text-gray-400 hover:text-[var(--accent)] hover:bg-white/5 text-sm font-medium rounded-lg transition-colors"
                                                     >
                                                         {child.name}
                                                     </Link>
@@ -449,12 +450,15 @@ export default function Header() {
                             </nav>
 
                             {/* Utility Links Mobile */}
-                            <div className="pt-6 border-t border-white/10 grid grid-cols-2 gap-y-4">
+                            <div className="pt-6 border-t border-white/10 grid grid-cols-2 gap-2">
                                 {UTILITY_LINKS.map((link) => (
                                     <Link
                                         key={link.name}
                                         href={link.href}
-                                        className={cn("text-xs font-semibold tracking-wider hover:text-white", link.highlight ? "text-[var(--accent)]" : "text-gray-500")}
+                                        className={cn(
+                                            "text-xs font-semibold tracking-wider hover:text-white py-3 px-3 rounded-lg hover:bg-white/5 transition-colors",
+                                            link.highlight ? "text-[var(--accent)]" : "text-gray-500"
+                                        )}
                                         onClick={() => setIsMobileMenuOpen(false)}
                                     >
                                         {link.name}

@@ -30,6 +30,7 @@ export default function NewsCard({ article, index }: NewsCardProps) {
                                 : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${article.featured_image_url}`}
                             alt={article.title}
                             fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                     ) : (
@@ -45,7 +46,7 @@ export default function NewsCard({ article, index }: NewsCardProps) {
                 </div>
 
                 {/* Content */}
-                <div className="p-5 flex flex-col">
+                <div className="p-4 sm:p-5 flex flex-col">
                     <h3 className="text-lg font-semibold text-[var(--text-primary)] line-clamp-2 group-hover:text-[var(--accent)] transition-colors mb-2">
                         {article.title}
                     </h3>
