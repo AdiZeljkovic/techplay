@@ -7,6 +7,7 @@ import Image from "next/image";
 import axios from "@/lib/axios";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 import { ArrowLeft, Send, AlertCircle, FileText, Hash, AlignLeft, Sparkles } from "lucide-react";
 import useSWR from "swr";
 import ForumSidebar from "@/components/forum/ForumSidebar";
@@ -231,12 +232,11 @@ function CreateThreadForm() {
                                     <AlignLeft className="w-4 h-4 text-[var(--accent)]" />
                                     Content <span className="text-red-500">*</span>
                                 </label>
-                                <textarea
-                                    value={content}
-                                    onChange={(e) => setContent(e.target.value)}
+                                <RichTextEditor
+                                    content={content}
+                                    onChange={setContent}
                                     placeholder="Share your thoughts, questions, or ideas..."
-                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl px-4 py-4 text-[var(--text-primary)] placeholder:text-gray-500 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all min-h-[250px] resize-y leading-relaxed"
-                                    required
+                                    minHeight="250px"
                                 />
                             </div>
 

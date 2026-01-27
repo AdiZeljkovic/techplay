@@ -12,6 +12,7 @@ import { toast } from "react-hot-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 import ForumSidebar from "@/components/forum/ForumSidebar";
 import DOMPurify from "isomorphic-dompurify";
 
@@ -554,11 +555,11 @@ export default function ThreadPage() {
                                                 </div>
                                             </div>
                                             <div className="flex-1">
-                                                <textarea
-                                                    value={replyContent}
-                                                    onChange={(e) => setReplyContent(e.target.value)}
-                                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl p-4 text-[var(--text-primary)] placeholder:text-gray-500 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all min-h-[120px] resize-y"
+                                                <RichTextEditor
+                                                    content={replyContent}
+                                                    onChange={setReplyContent}
                                                     placeholder="Share your thoughts..."
+                                                    minHeight="120px"
                                                 />
                                             </div>
                                         </div>
