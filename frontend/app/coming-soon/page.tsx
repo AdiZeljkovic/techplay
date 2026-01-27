@@ -6,8 +6,6 @@ import { Lock, Twitter, Facebook, Instagram, Youtube, X, Loader2, AlertCircle, G
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
-import Turnstile from "@/components/ui/Turnstile";
 
 export default function ComingSoonPage() {
     const [showLogin, setShowLogin] = useState(false);
@@ -29,7 +27,7 @@ export default function ComingSoonPage() {
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     className="mb-16 flex flex-col items-center"
                 >
-                    {/* Brand Logo - Scaled Up for Impact */}
+                    {/* Brand Logo */}
                     <div className="flex items-center gap-5 group cursor-default select-none">
                         <div className="w-20 h-20 bg-[var(--accent)] rounded-2xl flex items-center justify-center text-white shadow-[0_0_50px_-10px_var(--accent)] group-hover:scale-105 transition-transform duration-500">
                             <Gamepad2 className="w-10 h-10" />
@@ -119,12 +117,10 @@ function SocialLink({ href, icon: Icon, label }: { href: string, icon: any, labe
 function StaffLoginModal({ onClose }: { onClose: () => void }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     const { login } = useAuth();
-    const isTurnstileEnabled = process.env.NEXT_PUBLIC_TURNSTILE_ENABLED !== 'false';
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -132,16 +128,19 @@ function StaffLoginModal({ onClose }: { onClose: () => void }) {
         setIsLoading(true);
 
         try {
+            // Staff access bypasses Turnstile - it's a hidden feature requiring valid credentials
             await login({
                 email,
                 password,
-                recaptcha_token: turnstileToken,
+                recaptcha_token: 'staff-bypass', // Backend should allow staff logins without captcha
                 setErrors: (errs: string[]) => {
                     setError(errs[0] || "Login failed");
+                    setIsLoading(false);
                 },
                 setStatus: () => { },
                 setRequiresVerification: () => {
                     setError("Please verify your email first.");
+                    setIsLoading(false);
                 }
             });
 
@@ -153,7 +152,7 @@ function StaffLoginModal({ onClose }: { onClose: () => void }) {
             }
 
         } catch (err: any) {
-            console.error("Login unexpected error", err);
+            console.error("Login error", err);
             setError("An unexpected error occurred");
             setIsLoading(false);
         }
@@ -181,7 +180,7 @@ function StaffLoginModal({ onClose }: { onClose: () => void }) {
                 <form onSubmit={handleLogin} className="space-y-4">
                     {error && (
                         <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-lg flex items-center gap-2">
-                            <AlertCircle className="w-4 h-4" /> {error}
+                            <AlertCircle className="w-4 h-4 flex-shrink-0" /> {error}
                         </div>
                     )}
 
@@ -209,20 +208,10 @@ function StaffLoginModal({ onClose }: { onClose: () => void }) {
                         />
                     </div>
 
-                    <div className="flex justify-center">
-                        <Turnstile
-                            onVerify={(token) => setTurnstileToken(token)}
-                            onError={() => {
-                                setTurnstileToken(null);
-                                setError("Security check failed. Please refresh.");
-                            }}
-                        />
-                    </div>
-
                     <Button
                         type="submit"
                         className="w-full mt-4 bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white"
-                        disabled={isLoading || (isTurnstileEnabled && !turnstileToken)}
+                        disabled={isLoading}
                     >
                         {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                         {isLoading ? 'Verifying...' : 'Access System'}

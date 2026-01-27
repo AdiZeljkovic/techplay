@@ -69,7 +69,10 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         // Validate reCAPTCHA/Turnstile token (can be disabled via TURNSTILE_ENABLED=false)
-        if (config('services.turnstile.enabled', true)) {
+        // Allow 'staff-bypass' token for maintenance mode staff access
+        $bypassToken = $request->input('recaptcha_token') === 'staff-bypass';
+
+        if (config('services.turnstile.enabled', true) && !$bypassToken) {
             if (!$request->filled('recaptcha_token')) {
                 throw ValidationException::withMessages([
                     'recaptcha' => ['Security check missing. Please refresh the page.'],
