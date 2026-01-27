@@ -248,6 +248,10 @@ class UltimateSeo extends Page implements HasForms
             SiteSetting::set($key, $value);
         }
 
+        // Clear SEO-related caches
+        \Illuminate\Support\Facades\Cache::forget('site_settings');
+        \Illuminate\Support\Facades\Cache::forget('page_seo.all');
+
         Notification::make()
             ->title('SEO Settings saved!')
             ->success()
