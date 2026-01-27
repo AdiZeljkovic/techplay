@@ -2,16 +2,14 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Mail\Mailables\Address;
-use Illuminate\Queue\SerializesModels;
 
 class ContactFormMessage extends Mailable
 {
-    use Queueable, SerializesModels;
+    // Removed Queueable to send emails synchronously
 
     public string $senderName;
     public string $senderEmail;
