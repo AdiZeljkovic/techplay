@@ -20,12 +20,12 @@ export default function ReviewCard({ review, index, basePath = "/reviews", hideR
     const ratingColor = score >= 8 ? "text-green-500" : score >= 6 ? "text-yellow-500" : "text-red-500";
     const ratingBg = score >= 8 ? "bg-green-500/10" : score >= 6 ? "bg-yellow-500/10" : "bg-red-500/10";
 
-    // Get thumbnail variant for card images (h-48 = ~192px)
+    // Get medium variant for card images (better quality for h-48 cards on retina displays)
     const rawImageUrl = review.featured_image_url || review.cover_image;
     const imageUrl = rawImageUrl
         ? getImageUrl(
             rawImageUrl.startsWith('http') ? rawImageUrl : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${rawImageUrl}`,
-            'thumb'
+            'medium'
         )
         : null;
 

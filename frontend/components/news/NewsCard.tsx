@@ -14,13 +14,13 @@ interface NewsCardProps {
 }
 
 export default function NewsCard({ article, index }: NewsCardProps) {
-    // Get thumbnail variant for card images (h-48 = ~192px)
+    // Get medium variant for card images (better quality for retina displays)
     const imageUrl = article.featured_image_url
         ? getImageUrl(
             article.featured_image_url.startsWith('http')
                 ? article.featured_image_url
                 : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${article.featured_image_url}`,
-            'thumb'
+            'medium'
         )
         : null;
 

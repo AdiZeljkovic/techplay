@@ -122,7 +122,7 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
                                 item.featured_image_url.startsWith('http')
                                     ? item.featured_image_url
                                     : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${item.featured_image_url}`,
-                                'thumb' // Grid items use thumb variant
+                                'medium' // Better quality for grid items
                             )
                             : null;
 
