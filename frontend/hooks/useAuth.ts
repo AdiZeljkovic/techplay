@@ -28,6 +28,16 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 
             const response = await axios.post('/auth/register', props);
             // ApiResponse wraps in {success, message, data}
             const payload = response.data.data || response.data;
+
+            // Redirect to verify email if required - do NOT store token or login user
+            if (payload.requires_verification) {
+                // Call success callback if provided
+                if (setSuccess) setSuccess(true);
+                router.push('/verify-email');
+                return;
+            }
+
+            // Only store token and login if no verification required
             if (payload.access_token) {
                 localStorage.setItem('token', payload.access_token);
             }
@@ -35,12 +45,6 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 
 
             // Call success callback if provided
             if (setSuccess) setSuccess(true);
-
-            // Redirect to verify email if required
-            if (payload.requires_verification) {
-                router.push('/verify-email');
-                return;
-            }
         } catch (error: any) {
             if (error.response?.status !== 422) throw error;
 
@@ -53,24 +57,28 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 
         }
     };
 
-    const login = async ({ setErrors, setStatus, ...props }: any) => {
+    const login = async ({ setErrors, setStatus, setRequiresVerification, email, ...props }: any) => {
         setErrors([]);
         setStatus(null);
+        if (setRequiresVerification) setRequiresVerification(null);
 
         try {
-            const response = await axios.post('/auth/login', props);
+            const response = await axios.post('/auth/login', { email, ...props });
             // ApiResponse wraps in {success, message, data}
             const payload = response.data.data || response.data;
+
+            // If verification is required, do NOT store token or login user
+            if (payload.requires_verification) {
+                // Notify the component that verification is required
+                if (setRequiresVerification) setRequiresVerification(email);
+                return;
+            }
+
+            // Only store token and login if verified
             if (payload.access_token) {
                 localStorage.setItem('token', payload.access_token);
             }
             await mutate();
-
-            // Redirect to verify email if not verified
-            if (payload.requires_verification) {
-                router.push('/verify-email');
-                return;
-            }
         } catch (error: any) {
             if (error.response?.status !== 422) {
                 setErrors([error.response?.data?.message || 'Something went wrong.']);

@@ -5,15 +5,19 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { LogIn, Shield } from "lucide-react";
+import { LogIn, Shield, Mail, RefreshCw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Turnstile from "@/components/ui/Turnstile";
+import axios from "@/lib/axios";
 
 export default function LoginClient() {
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState<string[]>([]);
     const [status, setStatus] = useState<string | null>(null);
     const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+    const [requiresVerification, setRequiresVerification] = useState<string | null>(null);
+    const [isResending, setIsResending] = useState(false);
+    const [resendSuccess, setResendSuccess] = useState(false);
 
     const { login } = useAuth({
         middleware: 'guest',
@@ -43,16 +47,106 @@ export default function LoginClient() {
     const onSubmit = async (data: any) => {
         setIsLoading(true);
         setErrors([]);
+        setResendSuccess(false);
 
         await login({
             setErrors,
             setStatus,
+            setRequiresVerification,
             ...data,
             recaptcha_token: turnstileToken
         });
 
         setIsLoading(false);
     };
+
+    const handleResendVerification = async () => {
+        if (!requiresVerification) return;
+
+        setIsResending(true);
+        setResendSuccess(false);
+
+        try {
+            await axios.post('/auth/email/resend', { email: requiresVerification });
+            setResendSuccess(true);
+        } catch (error: any) {
+            setErrors([error.response?.data?.message || 'Failed to resend verification email.']);
+        } finally {
+            setIsResending(false);
+        }
+    };
+
+    // Show verification required screen
+    if (requiresVerification) {
+        return (
+            <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center px-4">
+                <div className="w-full max-w-md">
+                    <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-8 text-center">
+                        {/* Icon */}
+                        <div className="w-16 h-16 bg-[var(--accent)]/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Mail className="w-8 h-8 text-[var(--accent)]" />
+                        </div>
+
+                        {/* Title */}
+                        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-3">
+                            Verify Your Email
+                        </h1>
+
+                        {/* Message */}
+                        <p className="text-[var(--text-secondary)] mb-6">
+                            We've sent a verification link to{" "}
+                            <span className="text-[var(--accent)] font-medium">{requiresVerification}</span>.
+                            Please check your inbox and click the link to verify your account.
+                        </p>
+
+                        {/* Resend Success */}
+                        {resendSuccess && (
+                            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-sm text-green-500">
+                                Verification email sent! Check your inbox.
+                            </div>
+                        )}
+
+                        {/* Errors */}
+                        {errors.length > 0 && (
+                            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                                <ul className="text-sm text-red-500 list-disc list-inside">
+                                    {errors.map((error, index) => (
+                                        <li key={index}>{error}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        {/* Resend Button */}
+                        <Button
+                            onClick={handleResendVerification}
+                            variant="outline"
+                            className="w-full mb-4"
+                            isLoading={isResending}
+                        >
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Resend Verification Email
+                        </Button>
+
+                        {/* Divider */}
+                        <div className="border-t border-[var(--border)] my-6" />
+
+                        {/* Back to Login */}
+                        <p className="text-sm text-[var(--text-muted)] mb-3">
+                            Didn't receive the email? Check your spam folder or click above to resend.
+                        </p>
+
+                        <button
+                            onClick={() => setRequiresVerification(null)}
+                            className="text-sm text-[var(--accent)] hover:underline"
+                        >
+                            ← Back to Login
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center px-4">
@@ -152,3 +246,4 @@ export default function LoginClient() {
         </div>
     );
 }
+
