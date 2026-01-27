@@ -4,6 +4,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
+    // System Status (Public)
+    Route::get('/system/status', [App\Http\Controllers\Api\V1\SystemController::class, 'status']);
+
     // Auth (Rate Limited - 60 per minute)
     Route::middleware('throttle:60,1')->group(function () {
         Route::post('/auth/register', [App\Http\Controllers\Api\V1\AuthController::class, 'register']);

@@ -12,6 +12,7 @@ use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Forms\Get;
 
 class SiteSettingResource extends Resource
 {
@@ -43,13 +44,23 @@ class SiteSettingResource extends Resource
                 Forms\Components\Select::make('type')
                     ->options([
                         'text' => 'Text',
+                        'boolean' => 'Boolean (Toggle)',
                         'image' => 'Image URL',
                         'json' => 'JSON',
                     ])
-                    ->required(),
+                    ->required()
+                    ->live(),
                 Forms\Components\Textarea::make('value')
                     ->rows(3)
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->hidden(fn(Get $get) => $get('type') === 'boolean'),
+                Forms\Components\Toggle::make('value')
+                    ->label('Enabled')
+                    ->visible(fn(Get $get) => $get('type') === 'boolean')
+                    ->formatStateUsing(function ($state) {
+                        return filter_var($state, FILTER_VALIDATE_BOOLEAN);
+                    })
+                    ->dehydrateStateUsing(fn($state) => $state ? '1' : '0'),
             ]);
     }
 
