@@ -42,7 +42,12 @@ export default function TrendingSidebar() {
             </h4>
             <div className="space-y-4">
                 {trendingArticles.map((article) => {
-                    const basePath = article.category?.type === 'review' ? '/reviews' : '/news';
+                    // Determine if this is a review article
+                    const isReview =
+                        article.category?.type === 'review' ||
+                        article.category?.slug?.includes('review') ||
+                        article.slug?.endsWith('-review');
+                    const basePath = isReview ? '/reviews' : '/news';
                     return (
                         <Link href={`${basePath}/${article.slug}`} key={article.id} className="block group cursor-pointer">
                             <div className="text-xs text-[var(--accent)] font-bold mb-1 uppercase">
