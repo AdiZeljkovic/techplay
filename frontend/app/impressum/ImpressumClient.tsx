@@ -132,16 +132,11 @@ const TeamMemberCard = ({ member, featured = false }: { member: StaffMember; fea
 };
 
 export default function ImpressumClient({ staff }: { staff: StaffData | null }) {
-    // Get staff by role
-    const superAdmins = staff?.['Super Admin'] || [];
+    // Get staff by role - each role gets its own section
     const editorInChief = staff?.['Editor-in-Chief'] || [];
     const editors = staff?.['Editor'] || [];
     const journalists = staff?.['Journalist'] || [];
     const moderators = staff?.['Moderator'] || [];
-
-    // Combine for Leadership section (Super Admin + Editor-in-Chief)
-    const allLeadership = [...superAdmins, ...editorInChief];
-    const editorial = [...editors, ...journalists];
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
@@ -231,30 +226,45 @@ export default function ImpressumClient({ staff }: { staff: StaffData | null }) 
                         </div>
                     </motion.section>
 
-                    {/* Leadership Section */}
-                    {allLeadership.length > 0 && (
+                    {/* Editor-in-Chief Section */}
+                    {editorInChief.length > 0 && (
                         <motion.section variants={fadeInUp}>
                             <div className="flex items-center gap-3 mb-6">
-                                <Crown className="w-6 h-6 text-yellow-400" />
-                                <h2 className="text-2xl font-bold text-[var(--text-primary)]">Leadership</h2>
+                                <Crown className="w-6 h-6 text-purple-400" />
+                                <h2 className="text-2xl font-bold text-[var(--text-primary)]">Editor-in-Chief</h2>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {allLeadership.map((member) => (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {editorInChief.map((member) => (
                                     <TeamMemberCard key={member.id} member={member} featured />
                                 ))}
                             </div>
                         </motion.section>
                     )}
 
-                    {/* Editorial Team Section */}
-                    {editorial.length > 0 && (
+                    {/* Editors Section */}
+                    {editors.length > 0 && (
                         <motion.section variants={fadeInUp}>
                             <div className="flex items-center gap-3 mb-6">
                                 <PenTool className="w-6 h-6 text-blue-400" />
-                                <h2 className="text-2xl font-bold text-[var(--text-primary)]">Editorial Team</h2>
+                                <h2 className="text-2xl font-bold text-[var(--text-primary)]">Editors</h2>
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                                {editorial.map((member) => (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                                {editors.map((member) => (
+                                    <TeamMemberCard key={member.id} member={member} />
+                                ))}
+                            </div>
+                        </motion.section>
+                    )}
+
+                    {/* Journalists Section */}
+                    {journalists.length > 0 && (
+                        <motion.section variants={fadeInUp}>
+                            <div className="flex items-center gap-3 mb-6">
+                                <Newspaper className="w-6 h-6 text-cyan-400" />
+                                <h2 className="text-2xl font-bold text-[var(--text-primary)]">Journalists</h2>
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                                {journalists.map((member) => (
                                     <TeamMemberCard key={member.id} member={member} />
                                 ))}
                             </div>
