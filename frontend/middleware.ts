@@ -32,8 +32,16 @@ export async function middleware(request: NextRequest) {
         if (!hasBypassCookie) {
             try {
                 // Fetch status from API (backend)
-                // Use env var or default to local backend
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+                let apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+                // Sanitize URL: remove trailing slash
+                apiUrl = apiUrl.replace(/\/$/, '');
+                // Sanitize URL: remove /api/v1 suffix if present to avoid duplication
+                if (apiUrl.endsWith('/api/v1')) {
+                    apiUrl = apiUrl.substring(0, apiUrl.length - 7);
+                }
+
+                // Now apiUrl is clean base domain (e.g. http://localhost:8000)
                 const res = await fetch(`${apiUrl}/api/v1/system/status`, {
                     // Fail fast if backend is slow
                     signal: AbortSignal.timeout(2000),
