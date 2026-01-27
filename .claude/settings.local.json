@@ -10,7 +10,8 @@
       "Bash(grep:*)",
       "Bash(find:*)",
       "Bash(xargs cat:*)",
-      "Bash(php artisan:*)"
+      "Bash(php artisan:*)",
+      "Bash(xargs basename:*)"
     ]
   }
 }

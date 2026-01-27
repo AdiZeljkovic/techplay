@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import {
-    Play, Sparkles, Video, Film, Loader2, Eye, Heart, MessageCircle,
+    Play, Sparkles, Video, Film, Loader2,
     ChevronLeft, ChevronRight
 } from "lucide-react";
 
@@ -426,20 +426,6 @@ export default function VideosPage() {
                                         {/* Video Info */}
                                         <div className="mt-4">
                                             <h2 className="text-2xl font-bold text-white mb-2">{currentVisual.title}</h2>
-                                            <div className="flex items-center gap-6 text-gray-400">
-                                                <div className="flex items-center gap-2">
-                                                    <Eye className="w-4 h-4 text-fuchsia-400" />
-                                                    <span>{currentVisual.viewCount} views</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Heart className="w-4 h-4 text-pink-400" />
-                                                    <span>{currentVisual.reactionCount} likes</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <MessageCircle className="w-4 h-4 text-purple-400" />
-                                                    <span>{currentVisual.commentCount} comments</span>
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
 
@@ -479,9 +465,6 @@ export default function VideosPage() {
                                                     <div className="flex-1 text-left">
                                                         <p className={`text-sm font-medium line-clamp-2 ${index === currentVisualIndex ? 'text-white' : 'text-gray-300'}`}>
                                                             {visual.title}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500 mt-1">
-                                                            {visual.viewCount} views
                                                         </p>
                                                     </div>
                                                 </button>
