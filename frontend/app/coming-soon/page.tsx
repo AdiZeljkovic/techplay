@@ -88,19 +88,7 @@ export default function ComingSoonPage() {
     );
 }
 
-function SocialLink({ href, icon: Icon, label }: { href: string, icon: any, label: string }) {
-    return (
-        <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-12 h-12 rounded-full bg-[var(--bg-elevated)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent)] hover:bg-[var(--accent)]/10 transition-all group"
-            aria-label={label}
-        >
-            <Icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-        </a>
-    );
-}
+
 
 function StaffLoginModal({ onClose }: { onClose: () => void }) {
     const [email, setEmail] = useState("");
