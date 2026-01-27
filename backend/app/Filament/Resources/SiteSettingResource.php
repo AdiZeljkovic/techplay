@@ -53,10 +53,10 @@ class SiteSettingResource extends Resource
                 Forms\Components\Textarea::make('value')
                     ->rows(3)
                     ->columnSpanFull()
-                    ->hidden(fn(Get $get) => $get('type') === 'boolean'),
+                    ->hidden(fn($get) => $get('type') === 'boolean'),
                 Forms\Components\Toggle::make('value')
                     ->label('Enabled')
-                    ->visible(fn(Get $get) => $get('type') === 'boolean')
+                    ->visible(fn($get) => $get('type') === 'boolean')
                     ->formatStateUsing(function ($state) {
                         return filter_var($state, FILTER_VALIDATE_BOOLEAN);
                     })
