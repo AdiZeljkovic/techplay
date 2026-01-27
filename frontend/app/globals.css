@@ -117,6 +117,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 140px; /* Compensate for sticky header height */
 }
 
 body {
