@@ -60,7 +60,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 
     const login = async ({ setErrors, setStatus, setRequiresVerification, email, ...props }: any) => {
         setErrors([]);
         setStatus(null);
-        if (setRequiresVerification) setRequiresVerification(null);
+        // Note: Don't reset setRequiresVerification here - let the component manage that state
 
         try {
             const response = await axios.post('/auth/login', { email, ...props });
