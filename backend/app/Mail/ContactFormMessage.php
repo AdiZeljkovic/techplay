@@ -33,7 +33,6 @@ class ContactFormMessage extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            from: new Address('noreply@techplay.gg', 'TechPlay Contact Form'),
             replyTo: [new Address($this->senderEmail, $this->senderName)],
             subject: "[TechPlay Contact] {$this->subject}",
         );
