@@ -83,7 +83,7 @@ export default function MarketingClient() {
                         </h2>
                         <p className="text-lg md:text-xl text-[var(--text-secondary)] mb-12 max-w-3xl mx-auto leading-relaxed">
                             TechPlay isn't just another content farm. We're a community-driven hub where
-                            regional gamers come for deep dives, honest reviews, and tech analysis.
+                            gamers come for deep dives, honest reviews, and tech analysis.
                             <br /><br />
                             When you advertise with us, you're not just buying pixels—you're starting a conversation
                             with an audience that actually listens, researches, and invests in their setup.
@@ -133,9 +133,9 @@ export default function MarketingClient() {
                             <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-purple-400">
                                 <Globe className="w-6 h-6" />
                             </div>
-                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Regional Focus</h3>
-                            <p className="text-4xl font-black text-[var(--text-primary)] mb-2">SEE</p>
-                            <p className="text-[var(--text-secondary)] text-sm">Bosnia, Croatia, Serbia, Montenegro</p>
+                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Global Reach</h3>
+                            <p className="text-4xl font-black text-[var(--text-primary)] mb-2">Worldwide</p>
+                            <p className="text-[var(--text-secondary)] text-sm">US, EU, and Global Audience</p>
                         </motion.div>
 
                         {/* Tech Savvy */}
@@ -273,9 +273,9 @@ export default function MarketingClient() {
                             {/* Card 1 */}
                             <div className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl group hover:border-[var(--accent)] transition-colors">
                                 <Shield className="w-10 h-10 text-[var(--accent)] mb-6" />
-                                <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-4">Sponsored Reviews</h3>
+                                <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-4">Brand Storytelling</h3>
                                 <p className="text-[var(--text-secondary)] mb-6">
-                                    Deep-dive reviews of your hardware or game. Fully honest, fully transparent, but giving your product the spotlight it deserves.
+                                    Share your announcements through PR and promo articles. We give your launches the context they need, ensuring your message lands with impact.
                                 </p>
                             </div>
 
