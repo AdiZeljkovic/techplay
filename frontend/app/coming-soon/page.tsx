@@ -1,10 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
-import { Lock, Twitter, Facebook, Instagram, Youtube, ArrowRight, X, Loader2, AlertCircle } from "lucide-react";
+import { Lock, Twitter, Facebook, Instagram, Youtube, X, Loader2, AlertCircle, Gamepad2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/context/AuthContext";
@@ -12,6 +10,11 @@ import { useRouter } from "next/navigation";
 
 export default function ComingSoonPage() {
     const [showLogin, setShowLogin] = useState(false);
+
+    // Auth hook login method normally takes (token, user), but we need to fetch token first.
+    // We already fixed handleLogin to do fetching manually.
+    const { login } = useAuth();
+
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center relative overflow-hidden text-center p-4">
 
@@ -22,21 +25,29 @@ export default function ComingSoonPage() {
                 <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] pointer-events-none" />
             </div>
 
-            <div className="relative z-10 max-w-4xl mx-auto">
+            <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="mb-12"
+                    className="mb-16 flex flex-col items-center"
                 >
-                    <Image
-                        src="/techplay-logo.png"
-                        alt="TechPlay"
-                        width={240}
-                        height={60}
-                        className="h-16 w-auto mx-auto mb-8"
-                    />
-                    <div className="inline-block px-4 py-2 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[var(--accent)] font-bold text-sm tracking-widest uppercase mb-6">
+                    {/* Brand Logo - Scaled Up for Impact */}
+                    <div className="flex items-center gap-5 group cursor-default select-none">
+                        <div className="w-20 h-20 bg-[var(--accent)] rounded-2xl flex items-center justify-center text-white shadow-[0_0_50px_-10px_var(--accent)] group-hover:scale-105 transition-transform duration-500">
+                            <Gamepad2 className="w-10 h-10" />
+                        </div>
+                        <div className="flex flex-col justify-center text-left">
+                            <span className="font-black text-6xl leading-none text-[var(--text-primary)] tracking-tight">
+                                TECH<span className="text-[var(--accent)]">PLAY</span>
+                            </span>
+                            <span className="text-sm font-bold text-[var(--text-muted)] tracking-[0.3em] uppercase leading-none mt-3 group-hover:text-[var(--accent)] transition-colors pl-1">
+                                Gaming Portal
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="mt-12 inline-block px-6 py-2 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[var(--accent)] font-bold text-xs tracking-[0.2em] uppercase backdrop-blur-sm">
                         System Upgrade In Progress
                     </div>
                 </motion.div>
@@ -82,14 +93,14 @@ export default function ComingSoonPage() {
             >
                 <button
                     onClick={() => setShowLogin(true)}
-                    className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] text-sm transition-colors opacity-50 hover:opacity-100"
+                    className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] text-sm transition-colors opacity-50 hover:opacity-100 font-medium"
                 >
                     <Lock className="w-3 h-3" /> Staff Access
                 </button>
             </motion.div>
 
             {/* Staff Login Modal */}
-            {showLogin && <StaffLoginModal onClose={() => setShowLogin(false)} />}
+            {showLogin && <StaffLoginModal onClose={() => setShowLogin(false)} loginFn={login} />}
         </div>
     );
 }
@@ -108,13 +119,11 @@ function SocialLink({ href, icon: Icon, label }: { href: string, icon: any, labe
     );
 }
 
-function StaffLoginModal({ onClose }: { onClose: () => void }) {
+function StaffLoginModal({ onClose, loginFn }: { onClose: () => void, loginFn: (token: string, user: any) => void }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const { login } = useAuth();
-    const router = useRouter();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -124,7 +133,13 @@ function StaffLoginModal({ onClose }: { onClose: () => void }) {
         try {
             // 1. Call Login API directly since auth context doesn't handle API calls
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
-            const response = await fetch(`${apiUrl}/auth/login`, {
+
+            // Fix API URL if it ends with /api/v1 (duplicate prevention) - CLIENT SIDE
+            // Actually nice to have here too just in case
+            const cleanApiUrl = apiUrl.replace(/\/api\/v1\/?$/, '');
+            const finalUrl = `${cleanApiUrl}/api/v1/auth/login`;
+
+            const response = await fetch(finalUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -140,7 +155,7 @@ function StaffLoginModal({ onClose }: { onClose: () => void }) {
             }
 
             // 2. Update Auth Context with retrieved token and user
-            login(data.access_token, data.user);
+            loginFn(data.access_token, data.user);
 
             // 3. Set Bypass Cookie for Middleware
             document.cookie = `techplay_maintenance_bypass=true; path=/; max-age=86400; SameSite=Strict`;
@@ -159,18 +174,18 @@ function StaffLoginModal({ onClose }: { onClose: () => void }) {
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl w-full max-w-md p-8 relative shadow-2xl"
+                className="bg-[#0f172a] border border-slate-700/50 rounded-2xl w-full max-w-md p-8 relative shadow-2xl"
             >
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                    className="absolute top-4 right-4 text-slate-400 hover:text-white"
                 >
                     <X className="w-5 h-5" />
                 </button>
 
                 <div className="text-center mb-8">
-                    <h2 className="text-2xl font-bold text-[var(--text-primary)]">Staff Access</h2>
-                    <p className="text-[var(--text-secondary)] text-sm mt-2">Enter your credentials to bypass maintenance mode.</p>
+                    <h2 className="text-2xl font-bold text-white">Staff Access</h2>
+                    <p className="text-slate-400 text-sm mt-2">Enter your credentials to bypass maintenance mode.</p>
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-4">
@@ -180,31 +195,31 @@ function StaffLoginModal({ onClose }: { onClose: () => void }) {
                         </div>
                     )}
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-[var(--text-secondary)]">Email Address</label>
+                    <div className="space-y-2 text-left">
+                        <label className="text-sm font-medium text-slate-300">Email Address</label>
                         <Input
                             type="email"
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="admin@techplay.gg"
-                            className="bg-[var(--bg-elevated)]"
+                            className="bg-slate-800/50 border-slate-700"
                         />
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-[var(--text-secondary)]">Password</label>
+                    <div className="space-y-2 text-left">
+                        <label className="text-sm font-medium text-slate-300">Password</label>
                         <Input
                             type="password"
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="••••••••"
-                            className="bg-[var(--bg-elevated)]"
+                            className="bg-slate-800/50 border-slate-700"
                         />
                     </div>
 
-                    <Button type="submit" className="w-full" disabled={isLoading}>
+                    <Button type="submit" className="w-full mt-4 bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white" disabled={isLoading}>
                         {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                         {isLoading ? 'Verifying...' : 'Access System'}
                     </Button>

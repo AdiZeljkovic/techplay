@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import AppShell from "@/components/layout/AppShell";
 import { CartProvider } from "@/context/CartContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
@@ -90,11 +89,9 @@ export default function RootLayout({
             <MobileMenuProvider>
               <CartProvider>
                 <AuthProvider>
-                  <Header />
-                  <main className="flex-grow">
+                  <AppShell>
                     {children}
-                  </main>
-                  <Footer />
+                  </AppShell>
                   <CookieConsentBanner />
                   <GlobalSeo />
                   <Toaster position="bottom-right" />
