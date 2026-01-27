@@ -367,19 +367,8 @@ export default function Header() {
             {/* MAIN HEADER */}
             <header className="bg-[#00215E]/95 backdrop-blur-md border-b border-white/5 shadow-lg relative z-40">
                 <div className="container mx-auto px-4 h-20 flex items-center justify-between">
-                    {/* Logo (Left) + Hamburger on Mobile */}
-                    <div className="flex items-center gap-4">
-                        <BrandLogo />
-
-                        {/* Hamburger Menu - Mobile Only */}
-                        <button
-                            className="xl:hidden p-2 text-gray-300 hover:text-white active:bg-white/10 rounded-lg transition-colors ml-auto"
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            aria-label="Toggle menu"
-                        >
-                            {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
-                        </button>
-                    </div>
+                    {/* Logo (Left) */}
+                    <BrandLogo />
 
                     {/* Desktop Nav (Center) */}
                     <nav className="hidden xl:flex items-center gap-5 h-full">
@@ -402,6 +391,15 @@ export default function Header() {
                         >
                             SUPPORT US
                         </Link>
+
+                        {/* Hamburger Menu - Mobile Only */}
+                        <button
+                            className="xl:hidden p-2 text-gray-300 hover:text-white active:bg-white/10 rounded-lg transition-colors"
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            aria-label="Toggle menu"
+                        >
+                            {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
+                        </button>
 
                     </div>
                 </div>
