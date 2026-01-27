@@ -132,13 +132,17 @@ const TeamMemberCard = ({ member, featured = false }: { member: StaffMember; fea
 };
 
 export default function ImpressumClient({ staff }: { staff: StaffData | null }) {
-    const superAdmins = staff?.['Super Admin'] || [];
+    // Get leadership (pure admins) - now returned as 'Leadership' from backend
+    const leadership = staff?.['Leadership'] || [];
+
+    // Get editorial roles
     const editorInChief = staff?.['Editor-in-Chief'] || [];
     const editors = staff?.['Editor'] || [];
     const journalists = staff?.['Journalist'] || [];
     const moderators = staff?.['Moderator'] || [];
 
-    const leadership = [...superAdmins, ...editorInChief];
+    // Combine editorial leadership with pure admin leadership
+    const allLeadership = [...editorInChief, ...leadership];
     const editorial = [...editors, ...journalists];
 
     return (
@@ -230,14 +234,14 @@ export default function ImpressumClient({ staff }: { staff: StaffData | null }) 
                     </motion.section>
 
                     {/* Leadership Section */}
-                    {leadership.length > 0 && (
+                    {allLeadership.length > 0 && (
                         <motion.section variants={fadeInUp}>
                             <div className="flex items-center gap-3 mb-6">
                                 <Crown className="w-6 h-6 text-yellow-400" />
                                 <h2 className="text-2xl font-bold text-[var(--text-primary)]">Leadership</h2>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {leadership.map((member) => (
+                                {allLeadership.map((member) => (
                                     <TeamMemberCard key={member.id} member={member} featured />
                                 ))}
                             </div>
