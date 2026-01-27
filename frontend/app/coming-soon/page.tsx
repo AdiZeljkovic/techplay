@@ -7,13 +7,10 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import Turnstile from "@/components/ui/Turnstile";
 
 export default function ComingSoonPage() {
     const [showLogin, setShowLogin] = useState(false);
-
-    // We don't strictly need useAuth here in parent, 
-    // but we can pass it down or let modal use it.
-    // Let's let modal use it directly to keep it self-contained.
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center relative overflow-hidden text-center p-4">
@@ -122,11 +119,12 @@ function SocialLink({ href, icon: Icon, label }: { href: string, icon: any, labe
 function StaffLoginModal({ onClose }: { onClose: () => void }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Use the functional hook that handles CSRF and API calls
     const { login } = useAuth();
+    const isTurnstileEnabled = process.env.NEXT_PUBLIC_TURNSTILE_ENABLED !== 'false';
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -137,6 +135,7 @@ function StaffLoginModal({ onClose }: { onClose: () => void }) {
             await login({
                 email,
                 password,
+                recaptcha_token: turnstileToken,
                 setErrors: (errs: string[]) => {
                     setError(errs[0] || "Login failed");
                 },
@@ -146,15 +145,10 @@ function StaffLoginModal({ onClose }: { onClose: () => void }) {
                 }
             });
 
-            // Check if login successful (token present)
             if (localStorage.getItem('token')) {
-                // Set Bypass Cookie for Middleware
                 document.cookie = `techplay_maintenance_bypass=true; path=/; max-age=86400; SameSite=Strict`;
-                // Redirect to home
                 window.location.href = "/";
             } else {
-                // If no token but also no error set by callback, something weird happened
-                // But usually setErrors would have been called if it failed
                 setIsLoading(false);
             }
 
@@ -215,7 +209,21 @@ function StaffLoginModal({ onClose }: { onClose: () => void }) {
                         />
                     </div>
 
-                    <Button type="submit" className="w-full mt-4 bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white" disabled={isLoading}>
+                    <div className="flex justify-center">
+                        <Turnstile
+                            onVerify={(token) => setTurnstileToken(token)}
+                            onError={() => {
+                                setTurnstileToken(null);
+                                setError("Security check failed. Please refresh.");
+                            }}
+                        />
+                    </div>
+
+                    <Button
+                        type="submit"
+                        className="w-full mt-4 bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white"
+                        disabled={isLoading || (isTurnstileEnabled && !turnstileToken)}
+                    >
                         {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                         {isLoading ? 'Verifying...' : 'Access System'}
                     </Button>
