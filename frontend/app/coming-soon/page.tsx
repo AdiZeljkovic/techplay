@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Lock, Twitter, Facebook, Instagram, Youtube, X, Loader2, AlertCircle, Gamepad2 } from "lucide-react";
+import { Lock, X, Loader2, AlertCircle, Gamepad2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/hooks/useAuth";
@@ -65,18 +65,6 @@ export default function ComingSoonPage() {
                     TechPlay is currently under maintenance. We're deploying new features, optimizing performance, and crafting a better experience for you.
                     <br /><span className="text-[var(--text-muted)] text-base mt-4 block">We'll be back online shortly.</span>
                 </motion.p>
-
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.6 }}
-                    className="flex justify-center gap-6"
-                >
-                    <SocialLink href="https://twitter.com" icon={Twitter} label="Twitter" />
-                    <SocialLink href="https://facebook.com" icon={Facebook} label="Facebook" />
-                    <SocialLink href="https://instagram.com" icon={Instagram} label="Instagram" />
-                    <SocialLink href="https://youtube.com" icon={Youtube} label="YouTube" />
-                </motion.div>
             </div>
 
             {/* Staff Login Trigger */}
