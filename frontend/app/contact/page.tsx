@@ -2,11 +2,11 @@
 
 import PageHero from "@/components/ui/PageHero";
 import { motion } from "framer-motion";
-import { Mail, MapPin, Send, MessageSquare, Briefcase, HelpCircle, ArrowRight, CheckCircle2, Loader2, Phone } from "lucide-react";
+import { Mail, MapPin, Send, MessageSquare, Briefcase, HelpCircle, ArrowRight, CheckCircle2, Loader2, Phone, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useRef } from "react";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -26,14 +26,46 @@ const staggerContainer = {
 export default function ContactPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSent, setIsSent] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const formRef = useRef<HTMLFormElement>(null);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setIsSubmitting(false);
-        setIsSent(true);
+        setError(null);
+
+        const formData = new FormData(e.target as HTMLFormElement);
+        const data = {
+            name: formData.get('name') as string,
+            email: formData.get('email') as string,
+            subject: formData.get('subject') as string,
+            message: formData.get('message') as string,
+        };
+
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+            const response = await fetch(`${apiUrl}/contact`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || 'Failed to send message');
+            }
+
+            setIsSent(true);
+            formRef.current?.reset();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -151,15 +183,21 @@ export default function ContactPage() {
                                         </Button>
                                     </motion.div>
                                 ) : (
-                                    <form onSubmit={handleSubmit} className="space-y-6">
+                                    <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+                                        {error && (
+                                            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-400">
+                                                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                                                <p className="text-sm">{error}</p>
+                                            </div>
+                                        )}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
                                                 <label htmlFor="name" className="text-sm font-medium text-[var(--text-secondary)]">Name</label>
-                                                <Input id="name" placeholder="John Doe" required className="bg-[var(--bg-primary)]" />
+                                                <Input id="name" name="name" placeholder="John Doe" required className="bg-[var(--bg-primary)]" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label htmlFor="email" className="text-sm font-medium text-[var(--text-secondary)]">Email</label>
-                                                <Input id="email" type="email" placeholder="john@example.com" required className="bg-[var(--bg-primary)]" />
+                                                <Input id="email" name="email" type="email" placeholder="john@example.com" required className="bg-[var(--bg-primary)]" />
                                             </div>
                                         </div>
 
@@ -168,6 +206,7 @@ export default function ContactPage() {
                                             <div className="relative">
                                                 <select
                                                     id="subject"
+                                                    name="subject"
                                                     className="w-full h-10 px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border)] rounded-md text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] appearance-none"
                                                     required
                                                     defaultValue=""
@@ -187,7 +226,7 @@ export default function ContactPage() {
 
                                         <div className="space-y-2">
                                             <label htmlFor="message" className="text-sm font-medium text-[var(--text-secondary)]">Message</label>
-                                            <Textarea id="message" placeholder="How can we help you?" required className="min-h-[150px] bg-[var(--bg-primary)]" />
+                                            <Textarea id="message" name="message" placeholder="How can we help you?" required className="min-h-[150px] bg-[var(--bg-primary)]" />
                                         </div>
 
                                         <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting}>

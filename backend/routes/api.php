@@ -74,6 +74,11 @@ Route::prefix('v1')->group(function () {
             Route::post('/newsletter/verify', [App\Http\Controllers\Api\V1\NewsletterController::class, 'verify']);
         });
 
+        // Contact Form (Rate limited - 3 per 10 minutes to prevent spam)
+        Route::middleware('throttle:3,10')->group(function () {
+            Route::post('/contact', [App\Http\Controllers\Api\V1\ContactController::class, 'store']);
+        });
+
         // Navigation
         Route::get('/navigation/tree', [App\Http\Controllers\Api\V1\NavigationController::class, 'index']);
 
