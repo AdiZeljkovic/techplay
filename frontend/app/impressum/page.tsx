@@ -8,12 +8,20 @@ async function getStaffData() {
         ? `${baseUrl}/staff`
         : `${baseUrl}/api/v1/staff`;
 
+    console.log('[Impressum] Fetching staff from:', url);
+
     try {
         const res = await fetch(url, { cache: 'no-store' });
-        if (!res.ok) return null;
-        return res.json();
+        console.log('[Impressum] Staff API response status:', res.status);
+        if (!res.ok) {
+            console.error('[Impressum] Staff API error - status:', res.status);
+            return null;
+        }
+        const data = await res.json();
+        console.log('[Impressum] Staff data received:', JSON.stringify(data).substring(0, 200));
+        return data;
     } catch (error) {
-        console.error("Failed to fetch staff:", error);
+        console.error("[Impressum] Failed to fetch staff:", error);
         return null;
     }
 }
