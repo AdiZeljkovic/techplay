@@ -254,7 +254,7 @@ class ForumController extends Controller
 
             // Sanitize content (XSS Protection)
             $cleanContent = $sanitizer->sanitizeRichContent($request->content);
-            $cleanTitle = $sanitizer->sanitizePlainText($request->title);
+            $cleanTitle = $sanitizer->sanitizeTitle($request->title);
 
             // Spam detection
             if ($sanitizer->detectSpam($cleanContent) || $sanitizer->detectSpam($cleanTitle)) {

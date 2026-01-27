@@ -35,6 +35,26 @@ class SanitizationService
     }
 
     /**
+     * Sanitize title/headline - strips HTML but does NOT HTML-encode
+     * Use for: Thread titles, article titles - where frontend handles escaping
+     * 
+     * SECURITY: Safe because React/Next.js automatically escapes text content
+     */
+    public function sanitizeTitle(string $title): string
+    {
+        // Remove ALL HTML tags
+        $clean = strip_tags($title);
+
+        // Decode any existing HTML entities (prevents &amp; becoming &amp;amp;)
+        $clean = html_entity_decode($clean, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        // Trim whitespace
+        $clean = trim($clean);
+
+        return $clean;
+    }
+
+    /**
      * Sanitize rich content - allows SAFE HTML tags
      * Use for: Article content, guide descriptions (admin/editor only!)
      *
