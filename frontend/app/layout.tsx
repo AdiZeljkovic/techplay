@@ -7,6 +7,7 @@ import { CartProvider } from "@/context/CartContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
+import { MobileMenuProvider } from "@/context/MobileMenuContext";
 import CookieConsentBanner from "@/components/ui/CookieConsentBanner";
 import GlobalSeo from "@/components/seo/GlobalSeo";
 import { Toaster } from "react-hot-toast";
@@ -86,18 +87,20 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
         <ThemeProvider>
           <SiteSettingsProvider>
-            <CartProvider>
-              <AuthProvider>
-                <Header />
-                <main className="flex-grow">
-                  {children}
-                </main>
-                <Footer />
-                <CookieConsentBanner />
-                <GlobalSeo />
-                <Toaster position="bottom-right" />
-              </AuthProvider>
-            </CartProvider>
+            <MobileMenuProvider>
+              <CartProvider>
+                <AuthProvider>
+                  <Header />
+                  <main className="flex-grow">
+                    {children}
+                  </main>
+                  <Footer />
+                  <CookieConsentBanner />
+                  <GlobalSeo />
+                  <Toaster position="bottom-right" />
+                </AuthProvider>
+              </CartProvider>
+            </MobileMenuProvider>
           </SiteSettingsProvider>
         </ThemeProvider>
       </body>

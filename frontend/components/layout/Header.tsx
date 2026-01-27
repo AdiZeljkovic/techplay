@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/context/ThemeContext";
 import { useCart } from "@/context/CartContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
+import { useMobileMenu } from "@/context/MobileMenuContext";
 import axios from "@/lib/axios";
 import {
     Menu, X, Search, User, LogOut, ShoppingCart,
@@ -141,7 +142,7 @@ function NavItem({ item }: { item: NavItemType }) {
 }
 
 export default function Header() {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { isOpen: isMobileMenuOpen, setIsOpen: setIsMobileMenuOpen } = useMobileMenu();
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
     const [expandedMobileItem, setExpandedMobileItem] = useState<string | null>(null);
     const { user, logout } = useAuth();
@@ -261,31 +262,6 @@ export default function Header() {
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </div>
-
-            {/* MOBILE: MAIN BAR (Logo / Hamburger) */}
-            <div className="bg-[#001540] xl:hidden">
-                <div className="container mx-auto px-4 flex justify-between items-center h-14">
-                    {/* Left: Logo */}
-                    <Link href="/" className="flex items-center gap-2">
-                        <img
-                            src={settings.site_logo
-                                ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${settings.site_logo}`
-                                : "/logo.svg"}
-                            alt="TechPlay"
-                            className="h-10 w-auto"
-                        />
-                    </Link>
-
-                    {/* Right: Hamburger Menu */}
-                    <button
-                        className="p-2 text-gray-300 hover:text-white active:bg-white/10 rounded-lg transition-colors"
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        aria-label="Toggle menu"
-                    >
-                        {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
-                    </button>
-                </div>
             </div>
 
             {/* DESKTOP TOP BAR */}
