@@ -32,7 +32,6 @@ class SiteSettingResource extends Resource
             ->components([
                 Forms\Components\TextInput::make('key')
                     ->required()
-                    ->disabled()
                     ->maxLength(255),
                 Forms\Components\Select::make('group')
                     ->options([
