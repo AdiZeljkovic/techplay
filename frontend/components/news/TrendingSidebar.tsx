@@ -41,16 +41,19 @@ export default function TrendingSidebar() {
                 Trending Now
             </h4>
             <div className="space-y-4">
-                {trendingArticles.map((article) => (
-                    <Link href={`/news/${article.slug}`} key={article.id} className="block group cursor-pointer">
-                        <div className="text-xs text-[var(--accent)] font-bold mb-1 uppercase">
-                            {article.category?.name || "News"}
-                        </div>
-                        <h5 className="text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors line-clamp-2">
-                            {article.title}
-                        </h5>
-                    </Link>
-                ))}
+                {trendingArticles.map((article) => {
+                    const basePath = article.category?.type === 'review' ? '/reviews' : '/news';
+                    return (
+                        <Link href={`${basePath}/${article.slug}`} key={article.id} className="block group cursor-pointer">
+                            <div className="text-xs text-[var(--accent)] font-bold mb-1 uppercase">
+                                {article.category?.name || "News"}
+                            </div>
+                            <h5 className="text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors line-clamp-2">
+                                {article.title}
+                            </h5>
+                        </Link>
+                    );
+                })}
             </div>
         </div>
     );
