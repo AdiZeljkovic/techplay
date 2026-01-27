@@ -132,17 +132,15 @@ const TeamMemberCard = ({ member, featured = false }: { member: StaffMember; fea
 };
 
 export default function ImpressumClient({ staff }: { staff: StaffData | null }) {
-    // Get leadership (pure admins) - now returned as 'Leadership' from backend
-    const leadership = staff?.['Leadership'] || [];
-
-    // Get editorial roles
+    // Get staff by role
+    const superAdmins = staff?.['Super Admin'] || [];
     const editorInChief = staff?.['Editor-in-Chief'] || [];
     const editors = staff?.['Editor'] || [];
     const journalists = staff?.['Journalist'] || [];
     const moderators = staff?.['Moderator'] || [];
 
-    // Combine editorial leadership with pure admin leadership
-    const allLeadership = [...editorInChief, ...leadership];
+    // Combine for Leadership section (Super Admin + Editor-in-Chief)
+    const allLeadership = [...superAdmins, ...editorInChief];
     const editorial = [...editors, ...journalists];
 
     return (
