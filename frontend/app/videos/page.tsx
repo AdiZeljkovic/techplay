@@ -219,7 +219,7 @@ export default function VideosPage() {
                         <div className="relative group cursor-default">
                             <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-fuchsia-500 blur-3xl opacity-20 scale-150 group-hover:opacity-40 transition-opacity duration-700" />
                             <img
-                                src="/privee-logo.png"
+                                src="/Privee logo svg.svg"
                                 alt="Privee"
                                 className="relative h-20 md:h-28 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]"
                             />
@@ -314,7 +314,7 @@ export default function VideosPage() {
 
                             {/* Hero image */}
                             <img
-                                src="/privee-hero.png"
+                                src="/Woman DEX gradient.png"
                                 alt="Privee"
                                 className="relative z-10 max-h-[520px] w-auto object-contain drop-shadow-[0_0_80px_rgba(168,85,247,0.4)] hover:scale-105 transition-transform duration-1000"
                             />
