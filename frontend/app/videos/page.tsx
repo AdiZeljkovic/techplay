@@ -316,7 +316,7 @@ export default function VideosPage() {
                             <img
                                 src="/Woman DEX gradient.png"
                                 alt="Privee"
-                                className="relative z-10 max-h-[520px] w-auto object-contain drop-shadow-[0_0_80px_rgba(168,85,247,0.4)] hover:scale-105 transition-transform duration-1000"
+                                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 max-h-[480px] w-auto object-contain drop-shadow-[0_0_80px_rgba(168,85,247,0.4)] hover:scale-105 transition-transform duration-1000"
                             />
                         </div>
                     </div>
