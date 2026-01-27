@@ -5,15 +5,15 @@ import { useState } from "react";
 import { Lock, Twitter, Facebook, Instagram, Youtube, X, Loader2, AlertCircle, Gamepad2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 
 export default function ComingSoonPage() {
     const [showLogin, setShowLogin] = useState(false);
 
-    // Auth hook login method normally takes (token, user), but we need to fetch token first.
-    // We already fixed handleLogin to do fetching manually.
-    const { login } = useAuth();
+    // We don't strictly need useAuth here in parent, 
+    // but we can pass it down or let modal use it.
+    // Let's let modal use it directly to keep it self-contained.
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center relative overflow-hidden text-center p-4">
@@ -100,7 +100,7 @@ export default function ComingSoonPage() {
             </motion.div>
 
             {/* Staff Login Modal */}
-            {showLogin && <StaffLoginModal onClose={() => setShowLogin(false)} loginFn={login} />}
+            {showLogin && <StaffLoginModal onClose={() => setShowLogin(false)} />}
         </div>
     );
 }
@@ -119,11 +119,14 @@ function SocialLink({ href, icon: Icon, label }: { href: string, icon: any, labe
     );
 }
 
-function StaffLoginModal({ onClose, loginFn }: { onClose: () => void, loginFn: (token: string, user: any) => void }) {
+function StaffLoginModal({ onClose }: { onClose: () => void }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+
+    // Use the functional hook that handles CSRF and API calls
+    const { login } = useAuth();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -131,40 +134,33 @@ function StaffLoginModal({ onClose, loginFn }: { onClose: () => void, loginFn: (
         setIsLoading(true);
 
         try {
-            // 1. Call Login API directly since auth context doesn't handle API calls
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
-
-            // Fix API URL if it ends with /api/v1 (duplicate prevention) - CLIENT SIDE
-            // Actually nice to have here too just in case
-            const cleanApiUrl = apiUrl.replace(/\/api\/v1\/?$/, '');
-            const finalUrl = `${cleanApiUrl}/api/v1/auth/login`;
-
-            const response = await fetch(finalUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+            await login({
+                email,
+                password,
+                setErrors: (errs: string[]) => {
+                    setError(errs[0] || "Login failed");
                 },
-                body: JSON.stringify({ email, password }),
+                setStatus: () => { },
+                setRequiresVerification: () => {
+                    setError("Please verify your email first.");
+                }
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Login failed');
+            // Check if login successful (token present)
+            if (localStorage.getItem('token')) {
+                // Set Bypass Cookie for Middleware
+                document.cookie = `techplay_maintenance_bypass=true; path=/; max-age=86400; SameSite=Strict`;
+                // Redirect to home
+                window.location.href = "/";
+            } else {
+                // If no token but also no error set by callback, something weird happened
+                // But usually setErrors would have been called if it failed
+                setIsLoading(false);
             }
 
-            // 2. Update Auth Context with retrieved token and user
-            loginFn(data.access_token, data.user);
-
-            // 3. Set Bypass Cookie for Middleware
-            document.cookie = `techplay_maintenance_bypass=true; path=/; max-age=86400; SameSite=Strict`;
-
-            // 4. Redirect to home (middleware will allow pass)
-            window.location.href = "/";
         } catch (err: any) {
-            setError(err.message || "Invalid credentials");
-        } finally {
+            console.error("Login unexpected error", err);
+            setError("An unexpected error occurred");
             setIsLoading(false);
         }
     };
@@ -203,7 +199,7 @@ function StaffLoginModal({ onClose, loginFn }: { onClose: () => void, loginFn: (
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="admin@techplay.gg"
-                            className="bg-slate-800/50 border-slate-700"
+                            className="bg-slate-800/50 border-slate-700 text-white"
                         />
                     </div>
 
@@ -215,7 +211,7 @@ function StaffLoginModal({ onClose, loginFn }: { onClose: () => void, loginFn: (
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="••••••••"
-                            className="bg-slate-800/50 border-slate-700"
+                            className="bg-slate-800/50 border-slate-700 text-white"
                         />
                     </div>
 
