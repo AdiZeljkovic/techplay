@@ -67,7 +67,12 @@ export async function generateMetadata(): Promise<Metadata> {
         'msvalidate.01': settings.seo_bing_verification,
         'baidu-site-verification': settings.seo_baidu_verification,
       },
-    }
+    },
+    alternates: {
+      types: {
+        'application/rss+xml': [{ url: `${process.env.NEXT_PUBLIC_API_URL}/feed`, title: 'TechPlay RSS Feed' }],
+      },
+    },
   };
 }
 

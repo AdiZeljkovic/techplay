@@ -8,6 +8,7 @@ Route::get('/', function () {
 });
 
 // Sitemaps
+Route::get('/feed', [App\Http\Controllers\RssController::class, 'index']);
 Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 Route::get('/sitemap-pages.xml', [SitemapController::class, 'pages']);
 Route::get('/sitemap-articles.xml', [SitemapController::class, 'articles']);
