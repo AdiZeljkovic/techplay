@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
@@ -99,8 +100,23 @@ export default function RootLayout({
                     {children}
                   </AppShell>
                   <CookieConsentBanner />
+                  <CookieConsentBanner />
                   <GlobalSeo />
                   <Toaster position="bottom-right" />
+
+                  {/* Google Analytics */}
+                  <Script
+                    src="https://www.googletagmanager.com/gtag/js?id=G-9JT5SKKVQJ"
+                    strategy="afterInteractive"
+                  />
+                  <Script id="google-analytics" strategy="afterInteractive">
+                    {`
+                      window.dataLayer = window.dataLayer || [];
+                      function gtag(){dataLayer.push(arguments);}
+                      gtag('js', new Date());
+                      gtag('config', 'G-9JT5SKKVQJ');
+                    `}
+                  </Script>
                 </AuthProvider>
               </CartProvider>
             </MobileMenuProvider>
