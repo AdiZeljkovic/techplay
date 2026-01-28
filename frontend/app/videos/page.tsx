@@ -280,11 +280,11 @@ export default function VideosPage() {
 
                                         {/* Right: Store Badges */}
                                         <div className="flex items-center gap-3">
-                                            <a href="https://apps.apple.com/app/privee" target="_blank" rel="noopener noreferrer"
+                                            <a href="https://apps.apple.com/pl/app/privee-world/id1629866639" target="_blank" rel="noopener noreferrer"
                                                 className="transition-transform hover:scale-105">
                                                 <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="App Store" className="h-11" />
                                             </a>
-                                            <a href="https://play.google.com/store/apps/details?id=com.privee" target="_blank" rel="noopener noreferrer"
+                                            <a href="https://play.google.com/store/apps/details?id=com.privee.privee_mobile" target="_blank" rel="noopener noreferrer"
                                                 className="transition-transform hover:scale-105">
                                                 <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" className="h-11" />
                                             </a>
