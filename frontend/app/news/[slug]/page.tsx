@@ -74,9 +74,29 @@ export async function generateMetadata(
 
     const title = article.seo_title || article.title;
     const description = article.seo_description || article.excerpt || "Read more on TechPlay.";
-    const images = article.featured_image_url
-        ? [article.featured_image_url.startsWith('http') ? article.featured_image_url : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${article.featured_image_url}`]
-        : [];
+
+    // Robust Image URL generation
+    let imageUrl = article.featured_image_url;
+    if (imageUrl) {
+        // Fix localhost/127.0.0.1 in URLs (common dev/prod mismatch)
+        if (imageUrl.includes('localhost') || imageUrl.includes('127.0.0.1')) {
+            try {
+                const urlObj = new URL(imageUrl);
+                imageUrl = `${process.env.NEXT_PUBLIC_STORAGE_URL}${urlObj.pathname}`;
+            } catch (e) {
+                // If invalid URL, fall back to simple replacement
+                imageUrl = imageUrl.replace(/http:\/\/localhost:\d+/, process.env.NEXT_PUBLIC_STORAGE_URL || '');
+            }
+        }
+        // Handle relative paths
+        else if (!imageUrl.startsWith('http')) {
+            const storageUrl = process.env.NEXT_PUBLIC_STORAGE_URL?.replace(/\/$/, '') || '';
+            const path = imageUrl.replace(/^\//, '');
+            imageUrl = `${storageUrl}/${path}`;
+        }
+    }
+
+    const images = imageUrl ? [imageUrl] : [];
 
     return {
         title: title,
