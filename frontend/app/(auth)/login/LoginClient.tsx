@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -18,6 +19,16 @@ export default function LoginClient() {
     const [requiresVerification, setRequiresVerification] = useState<string | null>(null);
     const [isResending, setIsResending] = useState(false);
     const [resendSuccess, setResendSuccess] = useState(false);
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        if (searchParams.get('verification_required') === 'true') {
+            const email = searchParams.get('email');
+            if (email) {
+                setRequiresVerification(email);
+            }
+        }
+    }, [searchParams]);
 
     const { login } = useAuth({
         middleware: 'guest',

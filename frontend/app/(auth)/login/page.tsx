@@ -1,4 +1,4 @@
-
+import { Suspense } from "react";
 import LoginClient from "./LoginClient";
 import { Metadata } from "next";
 
@@ -8,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
-    return <LoginClient />;
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[var(--bg-primary)]" />}>
+            <LoginClient />
+        </Suspense>
+    );
 }

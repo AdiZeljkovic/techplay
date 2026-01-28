@@ -33,7 +33,9 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 
             if (payload.requires_verification) {
                 // Call success callback if provided
                 if (setSuccess) setSuccess(true);
-                router.push('/verify-email');
+                // Redirect to login page with verification status to show the "Verify Email" screen
+                const emailEncoded = encodeURIComponent(props.email || '');
+                router.push(`/login?verification_required=true&email=${emailEncoded}`);
                 return;
             }
 
