@@ -137,19 +137,22 @@ class GenerateSitemap extends Command
         $xml = $this->xmlHeader();
         $lastmod = now()->toIso8601String();
 
-        // News categories
-        foreach (['gaming', 'esports', 'industry', 'entertainment', 'tech'] as $cat) {
+        // News categories - URL format: /news/gaming
+        $newsCategories = ['gaming', 'pc', 'consoles', 'movies-tv', 'industry', 'e-sport', 'opinions', 'interviews'];
+        foreach ($newsCategories as $cat) {
             $xml .= $this->urlEntry("{$this->frontendUrl}/news/{$cat}", $lastmod, 'daily', '0.6');
         }
 
-        // Review categories
-        foreach (['games', 'hardware', 'peripherals', 'software'] as $cat) {
+        // Review categories - URL format: /reviews/aaa-titles
+        $reviewCategories = ['aaa-titles', 'editors-choice', 'indie-gems', 'latest', 'retro'];
+        foreach ($reviewCategories as $cat) {
             $xml .= $this->urlEntry("{$this->frontendUrl}/reviews/{$cat}", $lastmod, 'daily', '0.6');
         }
 
-        // Hardware categories
-        foreach (['gpus', 'cpus', 'motherboards', 'ram', 'storage', 'cases', 'psus', 'cooling', 'peripherals', 'monitors', 'laptops'] as $cat) {
-            $xml .= $this->urlEntry("{$this->frontendUrl}/hardware/{$cat}", $lastmod, 'weekly', '0.6');
+        // Tech categories - URL format: /tech/benchmarks
+        $techCategories = ['benchmarks', 'guides', 'reviews', 'news'];
+        foreach ($techCategories as $cat) {
+            $xml .= $this->urlEntry("{$this->frontendUrl}/tech/{$cat}", $lastmod, 'weekly', '0.6');
         }
 
         $xml .= '</urlset>';

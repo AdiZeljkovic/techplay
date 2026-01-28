@@ -126,28 +126,28 @@ class SitemapController extends Controller
 
     /**
      * Category Pages Sitemap
-     * Format: /news/gaming, /reviews/gaming, /hardware/gpus
+     * Format: /news/gaming, /reviews/aaa-titles, /tech/benchmarks
      */
     public function categories(): Response
     {
         $xml = $this->xmlHeader();
 
-        // News categories
-        $newsCategories = ['gaming', 'esports', 'industry', 'entertainment', 'tech'];
+        // News categories - URL format: /news/gaming
+        $newsCategories = ['gaming', 'pc', 'consoles', 'movies-tv', 'industry', 'e-sport', 'opinions', 'interviews'];
         foreach ($newsCategories as $cat) {
             $xml .= $this->urlEntry("{$this->frontendUrl}/news/{$cat}", null, 'daily', '0.6');
         }
 
-        // Review categories
-        $reviewCategories = ['games', 'hardware', 'peripherals', 'software'];
+        // Review categories - URL format: /reviews/aaa-titles
+        $reviewCategories = ['aaa-titles', 'editors-choice', 'indie-gems', 'latest', 'retro'];
         foreach ($reviewCategories as $cat) {
             $xml .= $this->urlEntry("{$this->frontendUrl}/reviews/{$cat}", null, 'daily', '0.6');
         }
 
-        // Hardware/Tech categories - use /hardware not /tech for URLs
-        $hardwareCategories = ['gpus', 'cpus', 'motherboards', 'ram', 'storage', 'cases', 'psus', 'cooling', 'peripherals', 'monitors', 'laptops'];
-        foreach ($hardwareCategories as $cat) {
-            $xml .= $this->urlEntry("{$this->frontendUrl}/hardware/{$cat}", null, 'weekly', '0.6');
+        // Tech categories - URL format: /tech/benchmarks
+        $techCategories = ['benchmarks', 'guides', 'reviews', 'news'];
+        foreach ($techCategories as $cat) {
+            $xml .= $this->urlEntry("{$this->frontendUrl}/tech/{$cat}", null, 'weekly', '0.6');
         }
 
         $xml .= '</urlset>';
