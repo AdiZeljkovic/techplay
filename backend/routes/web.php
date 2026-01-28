@@ -8,6 +8,8 @@ Route::get('/', function () {
 });
 
 // Sitemaps
+Route::get('/sitemap.xml', [SitemapController::class, 'index']);
+Route::get('/sitemap-pages.xml', [SitemapController::class, 'pages']);
 Route::get('/sitemap-images.xml', [SitemapController::class, 'images']);
 Route::get('/sitemap-videos.xml', [SitemapController::class, 'videos']);
 Route::get('/sitemap-news.xml', [SitemapController::class, 'news']);
