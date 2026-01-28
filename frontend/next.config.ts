@@ -97,6 +97,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
+  async rewrites() {
+    return [
+      {
+        source: '/feed',
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg'}/feed`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
