@@ -85,6 +85,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'api.techplay.gg',
+      },
+      {
+        protocol: 'https',
         hostname: 'streaming-media.production.privee.world',
       },
       {
