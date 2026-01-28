@@ -103,13 +103,15 @@ class SitemapController extends Controller
         $xml = $this->xmlHeader();
 
         $articles = Article::where('status', 'published')
-            ->select('slug', 'type', 'updated_at')
+            ->with('category:id,type')
+            ->select('slug', 'category_id', 'updated_at')
             ->orderBy('updated_at', 'desc')
             ->limit(10000)
             ->get();
 
         foreach ($articles as $article) {
-            $type = $this->getArticleTypePath($article->type);
+            $categoryType = $article->category->type ?? 'news';
+            $type = $this->getArticleTypePath($categoryType);
             $xml .= $this->urlEntry(
                 "{$this->frontendUrl}/{$type}/{$article->slug}",
                 $article->updated_at->toIso8601String(),
@@ -250,12 +252,14 @@ class SitemapController extends Controller
 
         $articles = Article::where('status', 'published')
             ->where('published_at', '>=', now()->subHours(48))
-            ->select('slug', 'type', 'title', 'published_at')
+            ->with('category:id,type')
+            ->select('slug', 'category_id', 'title', 'published_at')
             ->orderBy('published_at', 'desc')
             ->get();
 
         foreach ($articles as $article) {
-            $type = $this->getArticleTypePath($article->type);
+            $categoryType = $article->category->type ?? 'news';
+            $type = $this->getArticleTypePath($categoryType);
             $xml .= "  <url>\n";
             $xml .= "    <loc>{$this->frontendUrl}/{$type}/{$article->slug}</loc>\n";
             $xml .= "    <news:news>\n";
@@ -283,13 +287,15 @@ class SitemapController extends Controller
 
         $articles = Article::where('status', 'published')
             ->whereNotNull('featured_image_url')
-            ->select('slug', 'type', 'title', 'featured_image_url', 'updated_at')
+            ->with('category:id,type')
+            ->select('slug', 'category_id', 'title', 'featured_image_url', 'updated_at')
             ->orderBy('updated_at', 'desc')
             ->limit(5000)
             ->get();
 
         foreach ($articles as $article) {
-            $type = $this->getArticleTypePath($article->type);
+            $categoryType = $article->category->type ?? 'news';
+            $type = $this->getArticleTypePath($categoryType);
             $xml .= "  <url>\n";
             $xml .= "    <loc>{$this->frontendUrl}/{$type}/{$article->slug}</loc>\n";
             $xml .= "    <image:image>\n";
