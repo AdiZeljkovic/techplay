@@ -3,45 +3,51 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\Guide;
+use App\Models\Video;
+use App\Models\Product;
+use App\Models\Category;
+use App\Models\Giveaway;
 use App\Services\SchemaService;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class SitemapController extends Controller
 {
+    private string $frontendUrl;
+    private string $apiUrl;
+
+    public function __construct()
+    {
+        $this->frontendUrl = config('app.frontend_url', 'https://techplay.gg');
+        $this->apiUrl = config('app.url', 'https://api-beta.techplay.gg');
+    }
+
     /**
      * Main Sitemap Index - links to all sub-sitemaps
      */
     public function index(): Response
     {
-        $frontendUrl = config('app.frontend_url', 'https://techplay.gg');
-        $apiUrl = config('app.url', 'https://api-beta.techplay.gg');
-
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
-        // Main pages sitemap
-        $xml .= "  <sitemap>\n";
-        $xml .= "    <loc>{$apiUrl}/sitemap-pages.xml</loc>\n";
-        $xml .= "    <lastmod>" . now()->toIso8601String() . "</lastmod>\n";
-        $xml .= "  </sitemap>\n";
+        $sitemaps = [
+            'sitemap-pages.xml',
+            'sitemap-articles.xml',
+            'sitemap-categories.xml',
+            'sitemap-guides.xml',
+            'sitemap-videos.xml',
+            'sitemap-products.xml',
+            'sitemap-news.xml',
+            'sitemap-images.xml',
+        ];
 
-        // News sitemap
-        $xml .= "  <sitemap>\n";
-        $xml .= "    <loc>{$apiUrl}/sitemap-news.xml</loc>\n";
-        $xml .= "    <lastmod>" . now()->toIso8601String() . "</lastmod>\n";
-        $xml .= "  </sitemap>\n";
-
-        // Images sitemap
-        $xml .= "  <sitemap>\n";
-        $xml .= "    <loc>{$apiUrl}/sitemap-images.xml</loc>\n";
-        $xml .= "    <lastmod>" . now()->toIso8601String() . "</lastmod>\n";
-        $xml .= "  </sitemap>\n";
-
-        // Videos sitemap
-        $xml .= "  <sitemap>\n";
-        $xml .= "    <loc>{$apiUrl}/sitemap-videos.xml</loc>\n";
-        $xml .= "    <lastmod>" . now()->toIso8601String() . "</lastmod>\n";
-        $xml .= "  </sitemap>\n";
+        foreach ($sitemaps as $sitemap) {
+            $xml .= "  <sitemap>\n";
+            $xml .= "    <loc>{$this->apiUrl}/{$sitemap}</loc>\n";
+            $xml .= "    <lastmod>" . now()->toIso8601String() . "</lastmod>\n";
+            $xml .= "  </sitemap>\n";
+        }
 
         $xml .= '</sitemapindex>';
 
@@ -49,26 +55,51 @@ class SitemapController extends Controller
     }
 
     /**
-     * Pages Sitemap - static pages and article URLs
+     * Static Pages Sitemap
      */
     public function pages(): Response
     {
-        $frontendUrl = config('app.frontend_url', 'https://techplay.gg');
+        $xml = $this->xmlHeader();
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        $staticPages = [
+            ['/', 'daily', '1.0'],
+            ['/news', 'hourly', '0.9'],
+            ['/reviews', 'daily', '0.9'],
+            ['/hardware', 'daily', '0.9'],
+            ['/videos', 'daily', '0.8'],
+            ['/guides', 'weekly', '0.8'],
+            ['/calendar', 'daily', '0.7'],
+            ['/games', 'weekly', '0.7'],
+            ['/forum', 'hourly', '0.7'],
+            ['/shop', 'weekly', '0.6'],
+            ['/giveaways', 'weekly', '0.6'],
+            ['/about', 'monthly', '0.5'],
+            ['/contact', 'monthly', '0.5'],
+            ['/impressum', 'yearly', '0.3'],
+            ['/marketing', 'monthly', '0.5'],
+            ['/rating-system', 'monthly', '0.4'],
+            ['/roadmap', 'monthly', '0.4'],
+            ['/support', 'monthly', '0.5'],
+            ['/privacy', 'yearly', '0.2'],
+            ['/terms', 'yearly', '0.2'],
+            ['/cookies', 'yearly', '0.2'],
+        ];
 
-        // Static pages
-        $staticPages = ['/', '/news', '/reviews', '/hardware', '/videos', '/guides', '/calendar', '/games', '/forum', '/shop', '/about', '/contact', '/impressum', '/marketing'];
-        foreach ($staticPages as $page) {
-            $xml .= "  <url>\n";
-            $xml .= "    <loc>{$frontendUrl}{$page}</loc>\n";
-            $xml .= "    <changefreq>daily</changefreq>\n";
-            $xml .= "    <priority>" . ($page === '/' ? '1.0' : '0.8') . "</priority>\n";
-            $xml .= "  </url>\n";
+        foreach ($staticPages as [$page, $changefreq, $priority]) {
+            $xml .= $this->urlEntry("{$this->frontendUrl}{$page}", null, $changefreq, $priority);
         }
 
-        // All published articles
+        $xml .= '</urlset>';
+        return response($xml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    /**
+     * Articles Sitemap - news, reviews, hardware
+     */
+    public function articles(): Response
+    {
+        $xml = $this->xmlHeader();
+
         $articles = Article::where('status', 'published')
             ->select('slug', 'type', 'updated_at')
             ->orderBy('updated_at', 'desc')
@@ -76,111 +107,155 @@ class SitemapController extends Controller
             ->get();
 
         foreach ($articles as $article) {
-            $type = $article->type === 'review' ? 'reviews' : ($article->type === 'hardware' ? 'hardware' : 'news');
-            $xml .= "  <url>\n";
-            $xml .= "    <loc>{$frontendUrl}/{$type}/{$article->slug}</loc>\n";
-            $xml .= "    <lastmod>" . $article->updated_at->toIso8601String() . "</lastmod>\n";
-            $xml .= "    <changefreq>weekly</changefreq>\n";
-            $xml .= "    <priority>0.6</priority>\n";
-            $xml .= "  </url>\n";
+            $type = $this->getArticleTypePath($article->type);
+            $xml .= $this->urlEntry(
+                "{$this->frontendUrl}/{$type}/{$article->slug}",
+                $article->updated_at->toIso8601String(),
+                'weekly',
+                '0.7'
+            );
         }
 
         $xml .= '</urlset>';
-
         return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
     /**
-     * Image Sitemap
+     * Category Pages Sitemap
+     * Format: /news/gaming, /reviews/gaming, /hardware/gpus
      */
-    public function images(): Response
+    public function categories(): Response
     {
-        $articles = Article::where('status', 'published')
-            ->whereNotNull('featured_image_url')
-            ->select('slug', 'title', 'featured_image_url', 'updated_at')
+        $xml = $this->xmlHeader();
+
+        // News categories
+        $newsCategories = ['gaming', 'esports', 'industry', 'entertainment', 'tech'];
+        foreach ($newsCategories as $cat) {
+            $xml .= $this->urlEntry("{$this->frontendUrl}/news/{$cat}", null, 'daily', '0.6');
+        }
+
+        // Review categories
+        $reviewCategories = ['games', 'hardware', 'peripherals', 'software'];
+        foreach ($reviewCategories as $cat) {
+            $xml .= $this->urlEntry("{$this->frontendUrl}/reviews/{$cat}", null, 'daily', '0.6');
+        }
+
+        // Hardware/Tech categories - use /hardware not /tech for URLs
+        $hardwareCategories = ['gpus', 'cpus', 'motherboards', 'ram', 'storage', 'cases', 'psus', 'cooling', 'peripherals', 'monitors', 'laptops'];
+        foreach ($hardwareCategories as $cat) {
+            $xml .= $this->urlEntry("{$this->frontendUrl}/hardware/{$cat}", null, 'weekly', '0.6');
+        }
+
+        $xml .= '</urlset>';
+        return response($xml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    /**
+     * Guides Sitemap
+     */
+    public function guides(): Response
+    {
+        $xml = $this->xmlHeader();
+
+        $guides = Guide::where('status', 'published')
+            ->where('is_noindex', false)
+            ->select('slug', 'updated_at')
             ->orderBy('updated_at', 'desc')
             ->limit(5000)
             ->get();
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">' . "\n";
+        foreach ($guides as $guide) {
+            $xml .= $this->urlEntry(
+                "{$this->frontendUrl}/guides/{$guide->slug}",
+                $guide->updated_at->toIso8601String(),
+                'monthly',
+                '0.6'
+            );
+        }
 
-        foreach ($articles as $article) {
+        $xml .= '</urlset>';
+        return response($xml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    /**
+     * Videos Sitemap (standalone videos, not article embeds)
+     */
+    public function videos(): Response
+    {
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">' . "\n";
+
+        $videos = Video::whereNotNull('published_at')
+            ->select('slug', 'title', 'youtube_url', 'thumbnail_url', 'published_at')
+            ->orderBy('published_at', 'desc')
+            ->limit(2000)
+            ->get();
+
+        foreach ($videos as $video) {
             $xml .= "  <url>\n";
-            $xml .= "    <loc>" . config('app.frontend_url') . "/news/{$article->slug}</loc>\n";
-            $xml .= "    <image:image>\n";
-            $xml .= "      <image:loc>{$article->featured_image_url}</image:loc>\n";
-            $xml .= "      <image:title>" . htmlspecialchars($article->title) . "</image:title>\n";
-            $xml .= "    </image:image>\n";
+            $xml .= "    <loc>{$this->frontendUrl}/videos/{$video->slug}</loc>\n";
+            $xml .= "    <video:video>\n";
+            $xml .= "      <video:title>" . htmlspecialchars($video->title) . "</video:title>\n";
+            $xml .= "      <video:description>" . htmlspecialchars($video->title) . "</video:description>\n";
+            if ($video->thumbnail_url) {
+                $xml .= "      <video:thumbnail_loc>{$video->thumbnail_url}</video:thumbnail_loc>\n";
+            }
+            if ($video->youtube_url) {
+                $xml .= "      <video:player_loc>{$video->youtube_url}</video:player_loc>\n";
+            }
+            $xml .= "      <video:publication_date>" . $video->published_at->toIso8601String() . "</video:publication_date>\n";
+            $xml .= "    </video:video>\n";
             $xml .= "  </url>\n";
         }
 
         $xml .= '</urlset>';
-
         return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
     /**
-     * Video Sitemap
+     * Products Sitemap (Shop)
      */
-    public function videos(): Response
+    public function products(): Response
     {
-        $articles = Article::where('status', 'published')
-            ->where(function ($q) {
-                $q->where('content', 'LIKE', '%youtube.com%')
-                    ->orWhere('content', 'LIKE', '%youtu.be%')
-                    ->orWhere('content', 'LIKE', '%twitch.tv%');
-            })
-            ->select('slug', 'title', 'excerpt', 'content', 'published_at', 'updated_at')
+        $xml = $this->xmlHeader();
+
+        $products = Product::where('is_active', true)
+            ->select('slug', 'updated_at')
             ->orderBy('updated_at', 'desc')
-            ->limit(1000)
+            ->limit(5000)
             ->get();
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">' . "\n";
-
-        foreach ($articles as $article) {
-            $videos = SchemaService::getVideoSchema($article);
-
-            foreach ($videos as $video) {
-                $xml .= "  <url>\n";
-                $xml .= "    <loc>" . config('app.frontend_url') . "/news/{$article->slug}</loc>\n";
-                $xml .= "    <video:video>\n";
-                $xml .= "      <video:title>" . htmlspecialchars($video['name'] ?? $article->title) . "</video:title>\n";
-                $xml .= "      <video:description>" . htmlspecialchars($video['description'] ?? '') . "</video:description>\n";
-                if (isset($video['thumbnailUrl'])) {
-                    $xml .= "      <video:thumbnail_loc>{$video['thumbnailUrl']}</video:thumbnail_loc>\n";
-                }
-                if (isset($video['embedUrl'])) {
-                    $xml .= "      <video:player_loc>{$video['embedUrl']}</video:player_loc>\n";
-                }
-                $xml .= "    </video:video>\n";
-                $xml .= "  </url>\n";
-            }
+        foreach ($products as $product) {
+            $xml .= $this->urlEntry(
+                "{$this->frontendUrl}/shop/{$product->slug}",
+                $product->updated_at->toIso8601String(),
+                'weekly',
+                '0.5'
+            );
         }
 
         $xml .= '</urlset>';
-
         return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
     /**
-     * News Sitemap (last 48 hours for Google News)
+     * Google News Sitemap (last 48 hours)
      */
     public function news(): Response
     {
-        $articles = Article::where('status', 'published')
-            ->where('published_at', '>=', now()->subHours(48))
-            ->select('slug', 'title', 'published_at')
-            ->orderBy('published_at', 'desc')
-            ->get();
-
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">' . "\n";
 
+        $articles = Article::where('status', 'published')
+            ->where('published_at', '>=', now()->subHours(48))
+            ->select('slug', 'type', 'title', 'published_at')
+            ->orderBy('published_at', 'desc')
+            ->get();
+
         foreach ($articles as $article) {
+            $type = $this->getArticleTypePath($article->type);
             $xml .= "  <url>\n";
-            $xml .= "    <loc>" . config('app.frontend_url') . "/news/{$article->slug}</loc>\n";
+            $xml .= "    <loc>{$this->frontendUrl}/{$type}/{$article->slug}</loc>\n";
             $xml .= "    <news:news>\n";
             $xml .= "      <news:publication>\n";
             $xml .= "        <news:name>TechPlay</news:name>\n";
@@ -193,7 +268,66 @@ class SitemapController extends Controller
         }
 
         $xml .= '</urlset>';
-
         return response($xml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    /**
+     * Image Sitemap
+     */
+    public function images(): Response
+    {
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">' . "\n";
+
+        $articles = Article::where('status', 'published')
+            ->whereNotNull('featured_image_url')
+            ->select('slug', 'type', 'title', 'featured_image_url', 'updated_at')
+            ->orderBy('updated_at', 'desc')
+            ->limit(5000)
+            ->get();
+
+        foreach ($articles as $article) {
+            $type = $this->getArticleTypePath($article->type);
+            $xml .= "  <url>\n";
+            $xml .= "    <loc>{$this->frontendUrl}/{$type}/{$article->slug}</loc>\n";
+            $xml .= "    <image:image>\n";
+            $xml .= "      <image:loc>{$article->featured_image_url}</image:loc>\n";
+            $xml .= "      <image:title>" . htmlspecialchars($article->title) . "</image:title>\n";
+            $xml .= "    </image:image>\n";
+            $xml .= "  </url>\n";
+        }
+
+        $xml .= '</urlset>';
+        return response($xml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    // ========== Helper Methods ==========
+
+    private function xmlHeader(): string
+    {
+        return '<?xml version="1.0" encoding="UTF-8"?>' . "\n" .
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    }
+
+    private function urlEntry(string $loc, ?string $lastmod = null, string $changefreq = 'weekly', string $priority = '0.5'): string
+    {
+        $xml = "  <url>\n";
+        $xml .= "    <loc>{$loc}</loc>\n";
+        if ($lastmod) {
+            $xml .= "    <lastmod>{$lastmod}</lastmod>\n";
+        }
+        $xml .= "    <changefreq>{$changefreq}</changefreq>\n";
+        $xml .= "    <priority>{$priority}</priority>\n";
+        $xml .= "  </url>\n";
+        return $xml;
+    }
+
+    private function getArticleTypePath(string $type): string
+    {
+        return match ($type) {
+            'review' => 'reviews',
+            'hardware' => 'hardware',
+            default => 'news',
+        };
     }
 }
