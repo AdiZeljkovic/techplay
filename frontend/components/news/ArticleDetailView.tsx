@@ -264,7 +264,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                         {/* Main Text with In-Text Ads */}
                         <InTextAd
                             content={safeContent}
-                            afterParagraphs={[3, 6]}
+                            afterParagraphs={[3]}
                             position="article_in_text"
                             className="prose md:prose-lg max-w-none
                                 prose-headings:text-[var(--text-primary)] prose-headings:font-bold prose-headings:tracking-tight
