@@ -11,11 +11,13 @@ use App\Models\Giveaway;
 use App\Services\SchemaService;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class SitemapController extends Controller
 {
     private string $frontendUrl;
     private string $apiUrl;
+    private const CACHE_TTL = 3600; // 1 hour cache
 
     public function __construct()
     {
