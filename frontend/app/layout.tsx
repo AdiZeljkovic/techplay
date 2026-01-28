@@ -100,7 +100,7 @@ export default function RootLayout({
                     {children}
                   </AppShell>
                   <CookieConsentBanner />
-                  <CookieConsentBanner />
+
                   <GlobalSeo />
                   <Toaster position="bottom-right" />
 
