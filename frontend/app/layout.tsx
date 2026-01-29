@@ -95,7 +95,7 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-9JT5SKKVQJ');
+            gtag('config', 'G-9JT5SKKVQJ', { debug_mode: true });
           `}
         </Script>
 
