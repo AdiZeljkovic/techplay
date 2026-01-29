@@ -93,21 +93,15 @@ export default function RootLayout({
         {/* Google Analytics - Raw script for maximum compatibility */}
         <script
           async
-          src="https://www.googletagmanager.com/gtag/js?id=G-JFFXNJNLF2"
+          src="https://www.googletagmanager.com/gtag/js?id=G-0J974Y0X23"
         />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
-              gtag('consent', 'default', {
-                'analytics_storage': 'granted',
-                'ad_storage': 'denied',
-                'ad_user_data': 'denied',
-                'ad_personalization': 'denied'
-              });
               gtag('js', new Date());
-              gtag('config', 'G-JFFXNJNLF2');
+              gtag('config', 'G-0J974Y0X23');
             `,
           }}
         />
