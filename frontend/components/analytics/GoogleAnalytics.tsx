@@ -22,8 +22,10 @@ export default function GoogleAnalytics({ gaId }: { gaId: string }) {
         const url = pathname + searchParams.toString();
 
         if (typeof window.gtag !== "undefined") {
+            console.log("GA4: Sending pageview", url);
             window.gtag("config", gaId, {
                 page_path: url,
+                debug_mode: true, // Forces data to show in DebugView
             });
         }
     }, [pathname, searchParams, gaId]);
@@ -44,6 +46,7 @@ export default function GoogleAnalytics({ gaId }: { gaId: string }) {
             gtag('js', new Date());
             gtag('config', '${gaId}', {
               page_path: window.location.pathname,
+              debug_mode: true,
             });
           `,
                 }}
