@@ -107,7 +107,7 @@ export default function RootLayout({
 
                   {/* Google Analytics */}
                   <Suspense fallback={null}>
-                    <GoogleAnalytics gaId="G-9JT5SKKVQJ" />
+                    <GoogleAnalytics gaId="G-ZGHZ0TPNM0" />
                   </Suspense>
                 </AuthProvider>
               </CartProvider>
