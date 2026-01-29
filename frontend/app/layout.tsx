@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Script from "next/script";
+
 import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
@@ -10,6 +10,7 @@ import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
 import { MobileMenuProvider } from "@/context/MobileMenuContext";
 import CookieConsentBanner from "@/components/ui/CookieConsentBanner";
 import GlobalSeo from "@/components/seo/GlobalSeo";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import { Toaster } from "react-hot-toast";
 
 
@@ -105,18 +106,7 @@ export default function RootLayout({
                   <Toaster position="bottom-right" />
 
                   {/* Google Analytics */}
-                  <Script
-                    src="https://www.googletagmanager.com/gtag/js?id=G-9JT5SKKVQJ"
-                    strategy="afterInteractive"
-                  />
-                  <Script id="google-analytics" strategy="afterInteractive">
-                    {`
-                      window.dataLayer = window.dataLayer || [];
-                      function gtag(){dataLayer.push(arguments);}
-                      gtag('js', new Date());
-                      gtag('config', 'G-9JT5SKKVQJ');
-                    `}
-                  </Script>
+                  <GoogleAnalytics gaId="G-9JT5SKKVQJ" />
                 </AuthProvider>
               </CartProvider>
             </MobileMenuProvider>
