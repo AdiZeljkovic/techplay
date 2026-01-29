@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import Script from "next/script";
 import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
@@ -10,7 +10,6 @@ import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
 import { MobileMenuProvider } from "@/context/MobileMenuContext";
 import CookieConsentBanner from "@/components/ui/CookieConsentBanner";
 import GlobalSeo from "@/components/seo/GlobalSeo";
-import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import { Toaster } from "react-hot-toast";
 
 
@@ -86,8 +85,21 @@ export default function RootLayout({
   return (
     <html lang="en" className={beVietnamPro.variable} suppressHydrationWarning>
       <head>
-        {/* Preconnect to API for faster data fetching - saves ~80ms LCP per PageSpeed */}
-        {/* Preconnect to API for faster data fetching - saves ~80ms LCP per PageSpeed */}
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-ZGHZ0TPNM0"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-ZGHZ0TPNM0');
+          `}
+        </Script>
+
+        {/* Preconnect to API for faster data fetching */}
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg'} crossOrigin="anonymous" />
         <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg'} />
       </head>
@@ -104,11 +116,6 @@ export default function RootLayout({
 
                   <GlobalSeo />
                   <Toaster position="bottom-right" />
-
-                  {/* Google Analytics */}
-                  <Suspense fallback={null}>
-                    <GoogleAnalytics gaId="G-ZGHZ0TPNM0" />
-                  </Suspense>
                 </AuthProvider>
               </CartProvider>
             </MobileMenuProvider>
