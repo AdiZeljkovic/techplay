@@ -85,7 +85,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={beVietnamPro.variable} suppressHydrationWarning>
       <head>
-        {/* Google Analytics */}
+        {/* Preconnect to API for faster data fetching */}
+        <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg'} crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg'} />
+      </head>
+      <body className="min-h-screen flex flex-col" suppressHydrationWarning>
+        {/* Google Analytics - Must be in body for Next.js App Router */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-JFFXNJNLF2"
           strategy="afterInteractive"
@@ -108,11 +113,6 @@ export default function RootLayout({
           `}
         </Script>
 
-        {/* Preconnect to API for faster data fetching */}
-        <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg'} crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg'} />
-      </head>
-      <body className="min-h-screen flex flex-col" suppressHydrationWarning>
         <ThemeProvider>
           <SiteSettingsProvider>
             <MobileMenuProvider>
