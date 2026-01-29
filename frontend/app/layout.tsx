@@ -90,28 +90,27 @@ export default function RootLayout({
         <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg'} />
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
-        {/* Google Analytics - Must be in body for Next.js App Router */}
-        <Script
+        {/* Google Analytics - Raw script for maximum compatibility */}
+        <script
+          async
           src="https://www.googletagmanager.com/gtag/js?id=G-JFFXNJNLF2"
-          strategy="afterInteractive"
         />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            
-            // Grant consent by default for analytics
-            gtag('consent', 'default', {
-              'analytics_storage': 'granted',
-              'ad_storage': 'denied',
-              'ad_user_data': 'denied',
-              'ad_personalization': 'denied'
-            });
-            
-            gtag('js', new Date());
-            gtag('config', 'G-JFFXNJNLF2', { debug_mode: true });
-          `}
-        </Script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('consent', 'default', {
+                'analytics_storage': 'granted',
+                'ad_storage': 'denied',
+                'ad_user_data': 'denied',
+                'ad_personalization': 'denied'
+              });
+              gtag('js', new Date());
+              gtag('config', 'G-JFFXNJNLF2');
+            `,
+          }}
+        />
 
         <ThemeProvider>
           <SiteSettingsProvider>
