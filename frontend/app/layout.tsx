@@ -106,7 +106,9 @@ export default function RootLayout({
                   <Toaster position="bottom-right" />
 
                   {/* Google Analytics */}
-                  <GoogleAnalytics gaId="G-9JT5SKKVQJ" />
+                  <Suspense fallback={null}>
+                    <GoogleAnalytics gaId="G-9JT5SKKVQJ" />
+                  </Suspense>
                 </AuthProvider>
               </CartProvider>
             </MobileMenuProvider>
