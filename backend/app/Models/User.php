@@ -53,6 +53,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'discord_token',
         'discord_refresh_token',
         'discord_avatar',
+        'last_daily_claim',
+        'daily_streak',
     ];
 
     /**
@@ -96,6 +98,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'cookie_preferences' => 'array',
             'subscription_ends_at' => 'datetime',
             'last_seen_at' => 'datetime',
+            'last_daily_claim' => 'datetime',
         ];
     }
 

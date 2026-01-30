@@ -1,5 +1,6 @@
 import { Client, Events, Message, TextChannel } from 'discord.js';
 import { ApiService } from './ApiService';
+import { BuffyService } from './BuffyService';
 
 interface LeaderboardUser {
     username: string;
@@ -12,6 +13,7 @@ export class XpService {
     private static instance: XpService;
     private client: Client;
     private api: ApiService;
+    private buffy: BuffyService;
     private cooldowns: Set<string> = new Set();
     private lastLeaderboard: Map<string, number> = new Map();
     private weeklyActivity: Map<string, { name: string, xp: number }> = new Map();
@@ -28,6 +30,7 @@ export class XpService {
     private constructor(client: Client) {
         this.client = client;
         this.api = ApiService.getInstance();
+        this.buffy = BuffyService.getInstance();
     }
 
     public static getInstance(client?: Client): XpService {
@@ -43,6 +46,8 @@ export class XpService {
         this.client.on(Events.MessageCreate, async (message: Message) => {
             await this.handleMessage(message);
         });
+
+        console.log('⭐ XP Service started - tracking activity');
     }
 
     private async syncLeaderboardCache() {
@@ -76,14 +81,25 @@ export class XpService {
 
             const channel = message.channel as TextChannel;
 
+            // Announce rank up with Buffy embed
             if (xpResponse.rank_up) {
-                channel.send(`🎉 **Level Up!** ${message.author} is now **${xpResponse.new_rank}**!`);
+                const embed = this.buffy.createLevelUpEmbed(
+                    message.author.username,
+                    xpResponse.new_rank,
+                    xpResponse.new_xp || 0
+                );
+                channel.send({ embeds: [embed] });
             }
 
-            // Announce achievements
+            // Announce achievements with Buffy embed
             if (xpResponse.achievements_unlocked && xpResponse.achievements_unlocked.length > 0) {
                 for (const achievement of xpResponse.achievements_unlocked) {
-                    channel.send(`🏆 **Achievement Unlocked!** ${message.author} earned **${achievement.name}**! ${achievement.description}`);
+                    const embed = this.buffy.createAchievementEmbed(
+                        message.author.username,
+                        achievement.name,
+                        achievement.description || ''
+                    );
+                    channel.send({ embeds: [embed] });
                 }
             }
 
@@ -121,7 +137,7 @@ export class XpService {
             const newPos = currentUser.rank_position;
 
             if (oldPos !== undefined && newPos < oldPos) {
-                channel.send(`⚔️ **Watch out!** @${currentUser.username} just moved up to **#${newPos}** on the Leaderboard!`);
+                channel.send(`⚔️ *Professor Buffy announces:* **${currentUser.name || currentUser.username}** just climbed to **#${newPos}** on the Leaderboard! The competition heats up! 🔥`);
             }
         }
 

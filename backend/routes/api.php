@@ -26,6 +26,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/user/{discordId}', [App\Http\Controllers\Api\V1\DiscordIntegrationController::class, 'getUser']);
         Route::post('/xp', [App\Http\Controllers\Api\V1\DiscordXpController::class, 'addXp']);
         Route::get('/leaderboard', [App\Http\Controllers\Api\V1\DiscordLeaderboardController::class, 'top']);
+        Route::post('/daily', [App\Http\Controllers\Api\V1\DiscordDailyController::class, 'claim']);
     });
 
     Route::middleware('auth:sanctum')->group(function () {

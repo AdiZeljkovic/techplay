@@ -162,4 +162,35 @@ export class ApiService {
             return [];
         }
     }
+
+    /**
+     * Claim daily bonus XP
+     */
+    public async claimDailyBonus(discordId: string): Promise<{
+        already_claimed?: boolean;
+        hours_left?: number;
+        xp_awarded?: number;
+        streak?: number;
+        total_xp?: number;
+    } | null> {
+        try {
+            const response = await this.client.post('/discord/daily', {
+                discord_id: discordId
+            });
+            return response.data;
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
+                return null; // User not linked
+            }
+            if (axios.isAxiosError(error) && error.response?.status === 429) {
+                // Already claimed
+                return {
+                    already_claimed: true,
+                    hours_left: error.response.data?.hours_left || 24
+                };
+            }
+            console.error('[ApiService] Failed to claim daily bonus:', error instanceof Error ? error.message : 'Unknown error');
+            return null;
+        }
+    }
 }
