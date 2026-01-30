@@ -74,9 +74,17 @@ export class XpService {
                 xp: current.xp + this.XP_PER_MESSAGE
             });
 
+            const channel = message.channel as TextChannel;
+
             if (xpResponse.rank_up) {
-                const channel = message.channel as TextChannel;
                 channel.send(`🎉 **Level Up!** ${message.author} is now **${xpResponse.new_rank}**!`);
+            }
+
+            // Announce achievements
+            if (xpResponse.achievements_unlocked && xpResponse.achievements_unlocked.length > 0) {
+                for (const achievement of xpResponse.achievements_unlocked) {
+                    channel.send(`🏆 **Achievement Unlocked!** ${message.author} earned **${achievement.name}**! ${achievement.description}`);
+                }
             }
 
             await this.checkOvertakes(message);

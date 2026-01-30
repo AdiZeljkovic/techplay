@@ -5,11 +5,19 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Rank;
+use App\Services\AchievementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class DiscordXpController extends Controller
 {
+    protected AchievementService $achievements;
+
+    public function __construct(AchievementService $achievements)
+    {
+        $this->achievements = $achievements;
+    }
+
     /**
      * Handle XP updates from Discord Bot.
      * Expects: { "discord_id": "123", "xp": 15, "username": "optional_fallback" }
@@ -43,6 +51,7 @@ class DiscordXpController extends Controller
         // Add XP
         $oldXp = $user->xp;
         $user->increment('xp', $xpAmount);
+        $user->refresh(); // Refresh to get updated xp value
 
         // Check for Rank Up
         $newRank = Rank::where('min_xp', '<=', $user->xp)
@@ -55,14 +64,19 @@ class DiscordXpController extends Controller
             $rankUp = true;
         }
 
-        // TODO: Check for Discord Achievements (e.g. 1000 XP from Discord)
-        // This would require a separate table tracking 'source' of XP or just general XP check
+        // Check for XP-based achievements
+        $unlockedAchievements = $this->achievements->checkXpAchievements($user);
 
         return response()->json([
             'message' => 'XP Added',
             'new_xp' => $user->xp,
             'rank_up' => $rankUp,
-            'new_rank' => $rankUp ? $newRank->name : null
+            'new_rank' => $rankUp ? $newRank->name : null,
+            'achievements_unlocked' => array_map(fn($a) => [
+                'name' => $a->name,
+                'description' => $a->description,
+                'icon' => $a->icon_path,
+            ], $unlockedAchievements),
         ]);
     }
 }
