@@ -109,6 +109,11 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('xp')
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('discord_id')
+                    ->label('Discord ID')
+                    ->toggleable()
+                    ->searchable()
+                    ->copyable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

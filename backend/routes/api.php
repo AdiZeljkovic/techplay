@@ -11,6 +11,21 @@ Route::prefix('v1')->group(function () {
     Route::middleware('throttle:60,1')->group(function () {
         Route::post('/auth/register', [App\Http\Controllers\Api\V1\AuthController::class, 'register']);
         Route::post('/auth/login', [App\Http\Controllers\Api\V1\AuthController::class, 'login']);
+
+        // Social Auth (Discord)
+        Route::get('/auth/discord/redirect', [App\Http\Controllers\Api\V1\SocialAuthController::class, 'redirect']);
+        Route::get('/auth/discord/callback', [App\Http\Controllers\Api\V1\SocialAuthController::class, 'callback']);
+
+        // Internal Webhooks (Secured by app logic/middleware typically, or local only)
+        Route::post('/webhooks/discord/notify', [App\Http\Controllers\Api\V1\WebhookController::class, 'notify']);
+    });
+
+    // Discord Bot Integration (Bot-token authenticated, higher rate limit)
+    // 300/min allows for active Discord servers while preventing abuse
+    Route::middleware('throttle:300,1')->prefix('discord')->group(function () {
+        Route::get('/user/{discordId}', [App\Http\Controllers\Api\V1\DiscordIntegrationController::class, 'getUser']);
+        Route::post('/xp', [App\Http\Controllers\Api\V1\DiscordXpController::class, 'addXp']);
+        Route::get('/leaderboard', [App\Http\Controllers\Api\V1\DiscordLeaderboardController::class, 'top']);
     });
 
     Route::middleware('auth:sanctum')->group(function () {

@@ -49,6 +49,10 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'paypal_customer_id',
         'subscription_ends_at',
         'last_seen_at',
+        'discord_id',
+        'discord_token',
+        'discord_refresh_token',
+        'discord_avatar',
     ];
 
     /**
@@ -71,6 +75,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'cookie_preferences',       // Private
         'settings',                 // Private
         'updated_at',               // Not needed publicly
+        'discord_token',            // Security
+        'discord_refresh_token',    // Security
     ];
 
     /**

@@ -60,5 +60,13 @@ return [
             : 'https://api-m.sandbox.paypal.com',
     ],
 
+    'discord' => [
+        'client_id' => env('DISCORD_CLIENT_ID'),
+        'client_secret' => env('DISCORD_CLIENT_SECRET'),
+        'redirect' => env('DISCORD_REDIRECT_URI', 'https://techplay.gg/auth/callback/discord'),
+        'webhook_url' => env('DISCORD_WEBHOOK_URL'),
+        'bot_secret' => env('DISCORD_BOT_SECRET'), // Required for bot API authentication
+    ],
+
 ];
 
