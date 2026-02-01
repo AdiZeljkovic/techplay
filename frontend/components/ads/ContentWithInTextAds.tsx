@@ -48,9 +48,12 @@ export default function ContentWithInTextAds({
             const adPosition = placeholder.getAttribute('data-ad-position') || position;
             const adIndex = placeholder.getAttribute('data-ad-index') || '';
 
-            // Create a wrapper div for the ad
+            // Create a wrapper div for the ad - CLS FIX: Reserve minimum height
             const adWrapper = document.createElement('div');
             adWrapper.className = 'my-8 flex justify-center';
+            adWrapper.style.minHeight = '280px'; // Reserve space for in_content ad size
+            adWrapper.style.maxWidth = '336px';
+            adWrapper.style.margin = '2rem auto';
             adWrapper.setAttribute('data-ad-wrapper', 'true');
             adWrapper.setAttribute('data-ad-position', adPosition);
             adWrapper.setAttribute('data-ad-index', adIndex);

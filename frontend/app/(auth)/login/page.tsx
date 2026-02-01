@@ -5,6 +5,7 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
     title: "Login",
     description: "Sign in to your TechPlay account",
+    robots: { index: false, follow: false },
 };
 
 export default function LoginPage() {

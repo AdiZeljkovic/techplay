@@ -23,10 +23,26 @@ Route::prefix('v1')->group(function () {
     // Discord Bot Integration (Bot-token authenticated, higher rate limit)
     // 300/min allows for active Discord servers while preventing abuse
     Route::middleware('throttle:300,1')->prefix('discord')->group(function () {
+        // User & XP
         Route::get('/user/{discordId}', [App\Http\Controllers\Api\V1\DiscordIntegrationController::class, 'getUser']);
         Route::post('/xp', [App\Http\Controllers\Api\V1\DiscordXpController::class, 'addXp']);
         Route::get('/leaderboard', [App\Http\Controllers\Api\V1\DiscordLeaderboardController::class, 'top']);
         Route::post('/daily', [App\Http\Controllers\Api\V1\DiscordDailyController::class, 'claim']);
+
+        // Subscriptions (news/giveaway notifications)
+        Route::get('/subscriptions', [App\Http\Controllers\Api\V1\DiscordSubscriptionController::class, 'index']);
+        Route::post('/subscriptions', [App\Http\Controllers\Api\V1\DiscordSubscriptionController::class, 'subscribe']);
+        Route::delete('/subscriptions', [App\Http\Controllers\Api\V1\DiscordSubscriptionController::class, 'unsubscribe']);
+
+        // Gift XP
+        Route::post('/gift', [App\Http\Controllers\Api\V1\DiscordGiftController::class, 'gift']);
+
+        // Admin Operations
+        Route::prefix('admin')->group(function () {
+            Route::post('/xp/give', [App\Http\Controllers\Api\V1\DiscordAdminController::class, 'giveXp']);
+            Route::post('/xp/remove', [App\Http\Controllers\Api\V1\DiscordAdminController::class, 'removeXp']);
+            Route::post('/event', [App\Http\Controllers\Api\V1\DiscordAdminController::class, 'startEvent']);
+        });
     });
 
     Route::middleware('auth:sanctum')->group(function () {

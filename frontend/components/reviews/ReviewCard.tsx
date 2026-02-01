@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -14,7 +15,8 @@ interface ReviewCardProps {
     hideRating?: boolean;
 }
 
-export default function ReviewCard({ review, index, basePath = "/reviews", hideRating = false }: ReviewCardProps) {
+// PERF: Memoized to prevent re-renders when parent list updates
+export default memo(function ReviewCard({ review, index, basePath = "/reviews", hideRating = false }: ReviewCardProps) {
     // Use review_score (new system) with fallback to rating (legacy)
     const score = review.review_score ?? review.rating ?? 0;
     const ratingColor = score >= 8 ? "text-green-500" : score >= 6 ? "text-yellow-500" : "text-red-500";
@@ -44,6 +46,7 @@ export default function ReviewCard({ review, index, basePath = "/reviews", hideR
                             src={imageUrl}
                             alt={review.title}
                             fill
+                            quality={80}
                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
@@ -96,4 +99,4 @@ export default function ReviewCard({ review, index, basePath = "/reviews", hideR
             </motion.article>
         </Link>
     );
-}
+});

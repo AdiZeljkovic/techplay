@@ -4,11 +4,17 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import axios from "@/lib/axios";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
-import RichTextEditor from "@/components/ui/RichTextEditor";
 import { ArrowLeft, Send, AlertCircle, FileText, Hash, AlignLeft, Sparkles } from "lucide-react";
+
+// PERF: Dynamic import for heavy editor (~50KB+ with Tiptap extensions)
+const RichTextEditor = dynamic(() => import("@/components/ui/RichTextEditor"), {
+    loading: () => <div className="h-64 bg-[var(--bg-elevated)] rounded-lg animate-pulse" />,
+    ssr: false
+});
 import useSWR from "swr";
 import ForumSidebar from "@/components/forum/ForumSidebar";
 

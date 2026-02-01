@@ -193,4 +193,144 @@ export class ApiService {
             return null;
         }
     }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // SUBSCRIPTIONS
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * Get all subscriptions
+     */
+    public async getSubscriptions(): Promise<Array<{ discord_id: string; type: string }> | null> {
+        try {
+            const response = await this.client.get('/discord/subscriptions');
+            return response.data.data || [];
+        } catch (error) {
+            console.error('[ApiService] Failed to fetch subscriptions:', error instanceof Error ? error.message : 'Unknown error');
+            return null;
+        }
+    }
+
+    /**
+     * Subscribe to notifications
+     */
+    public async subscribe(discordId: string, type: string): Promise<boolean> {
+        try {
+            await this.client.post('/discord/subscriptions', {
+                discord_id: discordId,
+                type: type
+            });
+            return true;
+        } catch (error) {
+            console.error('[ApiService] Failed to subscribe:', error instanceof Error ? error.message : 'Unknown error');
+            return false;
+        }
+    }
+
+    /**
+     * Unsubscribe from notifications
+     */
+    public async unsubscribe(discordId: string, type: string): Promise<boolean> {
+        try {
+            await this.client.delete('/discord/subscriptions', {
+                data: { discord_id: discordId, type: type }
+            });
+            return true;
+        } catch (error) {
+            console.error('[ApiService] Failed to unsubscribe:', error instanceof Error ? error.message : 'Unknown error');
+            return false;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // GIFT XP
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * Gift XP from one user to another
+     */
+    public async giftXp(senderDiscordId: string, receiverDiscordId: string, amount: number): Promise<{
+        success: boolean;
+        error?: string;
+        sender_new_xp?: number;
+        receiver_new_xp?: number;
+    }> {
+        try {
+            const response = await this.client.post('/discord/gift', {
+                sender_discord_id: senderDiscordId,
+                receiver_discord_id: receiverDiscordId,
+                amount: amount
+            });
+            return { success: true, ...response.data };
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.data?.message) {
+                return { success: false, error: error.response.data.message };
+            }
+            return { success: false, error: 'Failed to process gift' };
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ADMIN OPERATIONS
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * Admin: Give XP to a user
+     */
+    public async adminGiveXp(discordId: string, amount: number): Promise<{
+        success: boolean;
+        new_xp?: number;
+        error?: string;
+    }> {
+        try {
+            const response = await this.client.post('/discord/admin/xp/give', {
+                discord_id: discordId,
+                amount: amount
+            });
+            return { success: true, new_xp: response.data.new_xp };
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.data?.message) {
+                return { success: false, error: error.response.data.message };
+            }
+            return { success: false, error: 'Failed to give XP' };
+        }
+    }
+
+    /**
+     * Admin: Remove XP from a user
+     */
+    public async adminRemoveXp(discordId: string, amount: number): Promise<{
+        success: boolean;
+        new_xp?: number;
+        error?: string;
+    }> {
+        try {
+            const response = await this.client.post('/discord/admin/xp/remove', {
+                discord_id: discordId,
+                amount: amount
+            });
+            return { success: true, new_xp: response.data.new_xp };
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.data?.message) {
+                return { success: false, error: error.response.data.message };
+            }
+            return { success: false, error: 'Failed to remove XP' };
+        }
+    }
+
+    /**
+     * Admin: Start an event
+     */
+    public async adminStartEvent(eventName: string, durationHours: number): Promise<boolean> {
+        try {
+            await this.client.post('/discord/admin/event', {
+                name: eventName,
+                duration_hours: durationHours
+            });
+            return true;
+        } catch (error) {
+            console.error('[ApiService] Failed to start event:', error instanceof Error ? error.message : 'Unknown error');
+            return false;
+        }
+    }
 }

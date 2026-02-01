@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -13,7 +14,8 @@ interface NewsCardProps {
     index: number;
 }
 
-export default function NewsCard({ article, index }: NewsCardProps) {
+// PERF: Memoized to prevent re-renders when parent list updates
+export default memo(function NewsCard({ article, index }: NewsCardProps) {
     // Get medium variant for card images (better quality for retina displays)
     const imageUrl = article.featured_image_url
         ? getImageUrl(
@@ -39,6 +41,7 @@ export default function NewsCard({ article, index }: NewsCardProps) {
                             src={imageUrl}
                             alt={article.title}
                             fill
+                            quality={80}
                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
@@ -79,4 +82,4 @@ export default function NewsCard({ article, index }: NewsCardProps) {
             </motion.article>
         </Link>
     );
-}
+});

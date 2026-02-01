@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "analyze": "cross-env ANALYZE=true next build --webpack",
+    "analyze:turbo": "next experimental-analyze"
   },
   "dependencies": {
     "@paypal/react-paypal-js": "^8.9.2",
@@ -19,6 +21,7 @@
     "@tiptap/react": "^3.17.1",
     "@tiptap/starter-kit": "^3.17.1",
     "axios": "^1.13.2",
+    "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -40,12 +43,15 @@
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.1.6",
     "@tailwindcss/postcss": "^4",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-scroll": "^1.8.10",
     "critters": "^0.0.23",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
     "tailwindcss": "^4",

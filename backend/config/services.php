@@ -66,6 +66,8 @@ return [
         'redirect' => env('DISCORD_REDIRECT_URI', 'https://techplay.gg/auth/callback/discord'),
         'webhook_url' => env('DISCORD_WEBHOOK_URL'),
         'bot_secret' => env('DISCORD_BOT_SECRET'), // Required for bot API authentication
+        'bot_token' => env('DISCORD_BOT_TOKEN'),   // Bot token for adding users to guild
+        'guild_id' => env('DISCORD_GUILD_ID'),     // Your Discord server ID
     ],
 
 ];

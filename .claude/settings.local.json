@@ -11,7 +11,15 @@
       "Bash(find:*)",
       "Bash(xargs cat:*)",
       "Bash(php artisan:*)",
-      "Bash(xargs basename:*)"
+      "Bash(xargs basename:*)",
+      "Bash(composer require:*)",
+      "Bash(npm install:*)",
+      "Bash($env:ANALYZE=\"true\")",
+      "Bash(npm run build:*)",
+      "Bash(set ANALYZE=true)",
+      "Bash(npm run analyze:*)",
+      "Bash(npm run analyze:turbo:*)",
+      "Bash(tree:*)"
     ]
   }
 }

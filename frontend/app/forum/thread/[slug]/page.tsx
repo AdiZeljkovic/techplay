@@ -4,6 +4,7 @@ import useSWR, { mutate } from "swr";
 import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { formatDistanceToNow, format } from "date-fns";
@@ -12,8 +13,13 @@ import { toast } from "react-hot-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
-import RichTextEditor from "@/components/ui/RichTextEditor";
 import ForumSidebar from "@/components/forum/ForumSidebar";
+
+// PERF: Dynamic import for heavy editor (~50KB+ with Tiptap extensions)
+const RichTextEditor = dynamic(() => import("@/components/ui/RichTextEditor"), {
+    loading: () => <div className="h-32 bg-[var(--bg-elevated)] rounded-lg animate-pulse" />,
+    ssr: false
+});
 import DOMPurify from "isomorphic-dompurify";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);

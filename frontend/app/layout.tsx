@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
@@ -57,8 +57,10 @@ export async function generateMetadata(): Promise<Metadata> {
       site: settings.seo_social_twitter,
     },
     robots: {
-      index: settings.seo_noindex_search !== '1' && settings.seo_noindex_search !== 'true',
-      follow: settings.seo_noindex_search !== '1' && settings.seo_noindex_search !== 'true',
+      // Global default: allow indexing. Individual pages can override with their own noindex.
+      // seo_noindex_search should only apply to /search pages, not globally.
+      index: true,
+      follow: true,
     },
     verification: {
       google: settings.seo_google_verification,
@@ -77,6 +79,15 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+// MOBILE: Explicit viewport configuration for better mobile experience
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: '#001540',
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -85,26 +96,35 @@ export default function RootLayout({
   return (
     <html lang="en" className={beVietnamPro.variable} suppressHydrationWarning>
       <head>
-        {/* Preconnect to API for faster data fetching */}
-        <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg'} crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg'} />
+        {/* Preconnect to API - critical for LCP as content comes from API */}
+        <link rel="preconnect" href="https://api-beta.techplay.gg" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://api-beta.techplay.gg" />
+
+        {/* Preconnect to image CDN/storage - images are loaded from here */}
+        <link rel="preconnect" href="https://api-beta.techplay.gg" />
+        <link rel="dns-prefetch" href="https://api-beta.techplay.gg" />
+
+        {/* Google Fonts - preconnect to both domains */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
+        {/* Google Analytics - load after page content */}
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
-        {/* Google Analytics - Raw script for maximum compatibility */}
-        <script
-          async
+        {/* Google Analytics - lazyOnload for better LCP (loads after page is fully interactive) */}
+        <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-0J974Y0X23"
+          strategy="lazyOnload"
         />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-0J974Y0X23');
-            `,
-          }}
-        />
+        <Script id="google-analytics" strategy="lazyOnload">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-0J974Y0X23');
+          `}
+        </Script>
 
         <ThemeProvider>
           <SiteSettingsProvider>

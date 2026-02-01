@@ -28,6 +28,12 @@ export default function LoginClient() {
                 setRequiresVerification(email);
             }
         }
+
+        // Handle Discord OAuth errors
+        const error = searchParams.get('error');
+        if (error) {
+            setErrors([decodeURIComponent(error)]);
+        }
     }, [searchParams]);
 
     const { login } = useAuth({

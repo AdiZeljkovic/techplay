@@ -402,4 +402,204 @@ export class BuffyService {
             .setFooter({ text: BuffyService.FOOTER_TEXT })
             .setTimestamp();
     }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // NOTIFICATION EMBEDS (DMs)
+    // ═══════════════════════════════════════════════════════════════════
+
+    public createNewsNotificationEmbed(title: string, excerpt: string, url: string): EmbedBuilder {
+        return new EmbedBuilder()
+            .setTitle(`📰 New Article on TechPlay!`)
+            .setDescription(
+                `*Hoot! Professor Buffy has news for you!*\n\n` +
+                `**${title}**\n\n` +
+                `${excerpt}\n\n` +
+                `[📖 Read Full Article](${url})`
+            )
+            .setColor(BuffyService.COLORS.PRIMARY)
+            .setThumbnail(BuffyService.AVATAR_URL)
+            .setFooter({ text: `${BuffyService.FOOTER_TEXT} • Use /subscribe to manage notifications` })
+            .setTimestamp();
+    }
+
+    public createGiveawayNotificationEmbed(title: string, endDate: string, url: string): EmbedBuilder {
+        return new EmbedBuilder()
+            .setTitle(`🎁 New Giveaway Started!`)
+            .setDescription(
+                `*Hoot hoot! Free stuff alert!*\n\n` +
+                `**${title}**\n\n` +
+                `⏰ Ends: ${endDate}\n\n` +
+                `[🎯 Enter Now!](${url})\n\n` +
+                `*Don't miss your chance, young gamer!*`
+            )
+            .setColor(BuffyService.COLORS.SUCCESS)
+            .setThumbnail(BuffyService.AVATAR_URL)
+            .setFooter({ text: `${BuffyService.FOOTER_TEXT} • Use /subscribe to manage notifications` })
+            .setTimestamp();
+    }
+
+    public createSubscriptionEmbed(subscribed: boolean, type: string): EmbedBuilder {
+        const action = subscribed ? 'subscribed to' : 'unsubscribed from';
+        const emoji = subscribed ? '✅' : '🔕';
+
+        return new EmbedBuilder()
+            .setTitle(`${emoji} Notification ${subscribed ? 'Enabled' : 'Disabled'}`)
+            .setDescription(
+                `*Professor Buffy updates his notification list...*\n\n` +
+                `You have ${action} **${type}** notifications!\n\n` +
+                (subscribed
+                    ? `I'll send you a DM whenever there's something new! 📬`
+                    : `You won't receive DMs for ${type} anymore.`)
+            )
+            .setColor(subscribed ? BuffyService.COLORS.SUCCESS : BuffyService.COLORS.WARNING)
+            .setThumbnail(BuffyService.AVATAR_URL)
+            .setFooter({ text: BuffyService.FOOTER_TEXT })
+            .setTimestamp();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // GIFT EMBEDS
+    // ═══════════════════════════════════════════════════════════════════
+
+    public createGiftEmbed(senderName: string, receiverName: string, amount: number): EmbedBuilder {
+        return new EmbedBuilder()
+            .setTitle(`🎁 XP Gift!`)
+            .setDescription(
+                `*Professor Buffy witnesses a generous act!*\n\n` +
+                `**${senderName}** gifted **${amount} XP** to **${receiverName}**!\n\n` +
+                `*Such kindness warms this old owl's heart!* 💝`
+            )
+            .setColor(BuffyService.COLORS.SUCCESS)
+            .setThumbnail(BuffyService.AVATAR_URL)
+            .setFooter({ text: BuffyService.FOOTER_TEXT })
+            .setTimestamp();
+    }
+
+    public createGiftErrorEmbed(message: string): EmbedBuilder {
+        return new EmbedBuilder()
+            .setTitle(`🎁 Gift Failed`)
+            .setDescription(
+                `*Professor Buffy shakes his head...*\n\n` +
+                `${message}`
+            )
+            .setColor(BuffyService.COLORS.ERROR)
+            .setThumbnail(BuffyService.AVATAR_URL)
+            .setFooter({ text: BuffyService.FOOTER_TEXT })
+            .setTimestamp();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // CHALLENGE/DUEL EMBEDS
+    // ═══════════════════════════════════════════════════════════════════
+
+    public createChallengeEmbed(challengerName: string, opponentName: string): EmbedBuilder {
+        return new EmbedBuilder()
+            .setTitle(`⚔️ Trivia Duel Challenge!`)
+            .setDescription(
+                `*Professor Buffy announces a battle of wits!*\n\n` +
+                `**${challengerName}** has challenged **${opponentName}** to a trivia duel!\n\n` +
+                `${opponentName}, do you accept? You have 60 seconds to respond!\n\n` +
+                `🟢 React with ✅ to accept\n` +
+                `🔴 React with ❌ to decline`
+            )
+            .setColor(BuffyService.COLORS.WARNING)
+            .setThumbnail(BuffyService.AVATAR_URL)
+            .setFooter({ text: BuffyService.FOOTER_TEXT })
+            .setTimestamp();
+    }
+
+    public createDuelQuestionEmbed(question: string, category: string, questionNum: number, totalQuestions: number): EmbedBuilder {
+        return new EmbedBuilder()
+            .setTitle(`⚔️ Duel Question ${questionNum}/${totalQuestions}`)
+            .setDescription(
+                `**Category:** ${category}\n\n` +
+                `**${question}**\n\n` +
+                `*First to answer correctly gets the point!*`
+            )
+            .setColor(BuffyService.COLORS.PRIMARY)
+            .setThumbnail(BuffyService.AVATAR_URL)
+            .setFooter({ text: `${BuffyService.FOOTER_TEXT} • Type your answer!` })
+            .setTimestamp();
+    }
+
+    public createDuelResultEmbed(winnerName: string | null, player1: string, player1Score: number, player2: string, player2Score: number, xpReward: number): EmbedBuilder {
+        const resultText = winnerName
+            ? `🏆 **${winnerName}** wins the duel and earns **${xpReward} XP**!`
+            : `🤝 It's a **tie**! Both players earn **${Math.floor(xpReward / 2)} XP**!`;
+
+        return new EmbedBuilder()
+            .setTitle(`⚔️ Duel Complete!`)
+            .setDescription(
+                `*Professor Buffy tallies the scores...*\n\n` +
+                `**${player1}**: ${player1Score} points\n` +
+                `**${player2}**: ${player2Score} points\n\n` +
+                `${resultText}\n\n` +
+                `*A battle well fought!*`
+            )
+            .setColor(BuffyService.COLORS.XP)
+            .setThumbnail(BuffyService.AVATAR_URL)
+            .setFooter({ text: BuffyService.FOOTER_TEXT })
+            .setTimestamp();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ADMIN EMBEDS
+    // ═══════════════════════════════════════════════════════════════════
+
+    public createAdminXpEmbed(action: 'give' | 'remove', adminName: string, targetName: string, amount: number, newTotal: number): EmbedBuilder {
+        const emoji = action === 'give' ? '➕' : '➖';
+        const verb = action === 'give' ? 'granted' : 'removed';
+
+        return new EmbedBuilder()
+            .setTitle(`${emoji} Admin XP ${action === 'give' ? 'Grant' : 'Removal'}`)
+            .setDescription(
+                `**${adminName}** ${verb} **${amount} XP** ${action === 'give' ? 'to' : 'from'} **${targetName}**\n\n` +
+                `📊 New Total: **${newTotal.toLocaleString()} XP**`
+            )
+            .setColor(action === 'give' ? BuffyService.COLORS.SUCCESS : BuffyService.COLORS.ERROR)
+            .setFooter({ text: `Admin Action • ${BuffyService.FOOTER_TEXT}` })
+            .setTimestamp();
+    }
+
+    public createAnnouncementEmbed(message: string): EmbedBuilder {
+        return new EmbedBuilder()
+            .setTitle(`📢 Community Announcement`)
+            .setDescription(
+                `*Professor Buffy clears his throat...*\n\n` +
+                `${message}`
+            )
+            .setColor(BuffyService.COLORS.PRIMARY)
+            .setThumbnail(BuffyService.AVATAR_URL)
+            .setFooter({ text: BuffyService.FOOTER_TEXT })
+            .setTimestamp();
+    }
+
+    public createEventEmbed(eventName: string, duration: string, active: boolean): EmbedBuilder {
+        if (active) {
+            return new EmbedBuilder()
+                .setTitle(`🎉 Event Started: ${eventName}!`)
+                .setDescription(
+                    `*Professor Buffy waves his wand...*\n\n` +
+                    `**${eventName}** is now active!\n\n` +
+                    `⏰ Duration: **${duration}**\n\n` +
+                    `*Make the most of it, gamers!* 🚀`
+                )
+                .setColor(BuffyService.COLORS.SUCCESS)
+                .setThumbnail(BuffyService.AVATAR_URL)
+                .setFooter({ text: BuffyService.FOOTER_TEXT })
+                .setTimestamp();
+        } else {
+            return new EmbedBuilder()
+                .setTitle(`🔔 Event Ended: ${eventName}`)
+                .setDescription(
+                    `*Professor Buffy waves goodbye...*\n\n` +
+                    `**${eventName}** has ended!\n\n` +
+                    `*Thanks for participating!*`
+                )
+                .setColor(BuffyService.COLORS.WARNING)
+                .setThumbnail(BuffyService.AVATAR_URL)
+                .setFooter({ text: BuffyService.FOOTER_TEXT })
+                .setTimestamp();
+        }
+    }
 }

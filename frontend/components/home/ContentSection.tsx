@@ -6,6 +6,7 @@ import { ArrowRight, Calendar, User, Clock, Layers } from "lucide-react";
 import { Article } from "@/types";
 import { format } from "date-fns";
 import { getImageUrl } from "@/lib/imageUrl";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 interface ContentSectionProps {
     title: string;
@@ -13,6 +14,7 @@ interface ContentSectionProps {
     articles: Article[];
     viewAllLink: string;
     color?: string;
+    isLoading?: boolean;
 }
 
 // Helper function to get score color
@@ -23,8 +25,56 @@ function getScoreColor(score: number): { bg: string; text: string } {
     return { bg: 'bg-red-500', text: 'text-red-500' };
 }
 
-export default function ContentSection({ title, icon: Icon, articles, viewAllLink, color = "var(--accent)" }: ContentSectionProps) {
-    if (!articles || articles.length === 0) return null;
+// Skeleton component for loading state - matches exact layout dimensions to prevent CLS
+function ContentSectionSkeleton({ title, icon: Icon, viewAllLink }: { title: string; icon: any; viewAllLink: string }) {
+    return (
+        <div className="mb-12">
+            {/* Section Header */}
+            <div className="flex items-center justify-between mb-6 border-l-4 border-[var(--accent)] pl-4">
+                <h2 className="text-2xl font-bold text-white uppercase tracking-wide flex items-center gap-3">
+                    <Icon className="w-6 h-6 text-[var(--accent)]" />
+                    {title}
+                </h2>
+                <Link
+                    href={viewAllLink}
+                    className="group flex items-center gap-2 text-xs font-bold text-white/60 hover:text-[var(--accent)] transition-colors uppercase tracking-widest"
+                >
+                    View All <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Main Featured Skeleton (Left) - matches h-[280px] sm:h-[320px] md:h-[400px] */}
+                <div className="h-[280px] sm:h-[320px] md:h-[400px] rounded-2xl overflow-hidden border border-white/10">
+                    <Skeleton className="h-full w-full rounded-none" />
+                </div>
+
+                {/* Grid of 4 Smaller Skeletons (Right) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="flex flex-col gap-3 p-4 bg-[#00215E] border border-white/5 rounded-2xl">
+                            <Skeleton className="h-32 w-full rounded-xl" />
+                            <div className="flex-1 flex flex-col gap-2">
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-3/4" />
+                                <div className="mt-auto flex items-center justify-between">
+                                    <Skeleton className="h-3 w-16" />
+                                    <Skeleton className="h-3 w-16" />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default function ContentSection({ title, icon: Icon, articles, viewAllLink, color = "var(--accent)", isLoading = false }: ContentSectionProps) {
+    // CLS FIX: Show skeleton with same dimensions instead of returning null
+    if (isLoading || !articles || articles.length === 0) {
+        return <ContentSectionSkeleton title={title} icon={Icon} viewAllLink={viewAllLink} />;
+    }
 
     // Determine the correct link prefix based on section type
     let linkPrefix = '/news';
@@ -117,12 +167,13 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
                 {/* Grid of 4 Smaller Articles (Right) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {gridItems.map((item) => {
+                        // PERF: Use 'thumb' variant (256px) for small grid items (displayed at ~228x128)
                         const itemImageUrl = item.featured_image_url
                             ? getImageUrl(
                                 item.featured_image_url.startsWith('http')
                                     ? item.featured_image_url
                                     : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${item.featured_image_url}`,
-                                'medium' // Better quality for grid items
+                                'thumb'
                             )
                             : null;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
 
 interface Product {
     id: number;
@@ -69,8 +69,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const clearCart = () => setItems([]);
 
-    const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+    // PERF: Memoize calculations to prevent re-computation on every render
+    const totalPrice = useMemo(() => items.reduce((sum, item) => sum + (item.price * item.quantity), 0), [items]);
+    const itemCount = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
 
     return (
         <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, totalPrice, itemCount }}>

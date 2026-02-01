@@ -51,8 +51,8 @@ export function CardGridSkeleton({ count = 6 }: { count?: number }) {
 export function ArticleSkeleton() {
     return (
         <div className="space-y-8">
-            {/* Hero */}
-            <Skeleton className="h-[60vh] w-full rounded-none" />
+            {/* Hero - CLS FIX: Match exact responsive heights from ArticleDetailView */}
+            <Skeleton className="h-[50vh] md:h-[60vh] lg:h-[70vh] w-full rounded-none" />
 
             {/* Content */}
             <div className="container mx-auto px-4 max-w-4xl space-y-4">

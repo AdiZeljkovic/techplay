@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
@@ -183,23 +184,53 @@ export default function Header() {
         fetchCategories();
     }, []);
 
-    // Fetch Notifications (Poll every 30s)
+    // Fetch Notifications (Poll every 30s, pause when tab hidden for battery/performance)
     useEffect(() => {
         if (!user) return;
+
+        let interval: NodeJS.Timeout | null = null;
 
         const fetchNotifications = async () => {
             try {
                 const res = await axios.get('/user/notifications/counts');
                 setNotifications(res.data);
             } catch (error) {
-                console.error("Failed to fetch notifications", error);
+                // Silent fail - non-critical
             }
         };
 
-        fetchNotifications(); // Initial fetch
-        const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
+        const startPolling = () => {
+            fetchNotifications(); // Immediate fetch
+            interval = setInterval(fetchNotifications, 30000);
+        };
 
-        return () => clearInterval(interval);
+        const stopPolling = () => {
+            if (interval) {
+                clearInterval(interval);
+                interval = null;
+            }
+        };
+
+        // PERF: Use Page Visibility API to pause polling when tab is hidden
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                stopPolling();
+            } else {
+                startPolling(); // Resume and fetch immediately when tab becomes visible
+            }
+        };
+
+        // Start polling if tab is visible
+        if (!document.hidden) {
+            startPolling();
+        }
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            stopPolling();
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, [user]);
 
     // Close mobile menu on route change
@@ -217,10 +248,13 @@ export default function Header() {
                             className="flex items-center gap-2 text-white text-xs font-medium"
                         >
                             {user.avatar_url ? (
-                                <img
+                                <Image
                                     src={user.avatar_url}
-                                    alt={user.username}
+                                    alt={user.username || 'Avatar'}
+                                    width={20}
+                                    height={20}
                                     className="w-5 h-5 rounded-full object-cover"
+                                    unoptimized={user.avatar_url.includes('discord') || user.avatar_url.includes('gravatar')}
                                 />
                             ) : (
                                 <User className="w-4 h-4" />
@@ -328,10 +362,13 @@ export default function Header() {
 
                                 <Link href={`/profile/${user.username || 'me'}`} className="flex items-center gap-2 group">
                                     {user.avatar_url ? (
-                                        <img
+                                        <Image
                                             src={user.avatar_url}
-                                            alt={user.username}
+                                            alt={user.username || 'Avatar'}
+                                            width={32}
+                                            height={32}
                                             className="w-8 h-8 rounded-full object-cover border border-white/20 group-hover:border-[var(--accent)] transition-colors"
+                                            unoptimized={user.avatar_url.includes('discord') || user.avatar_url.includes('gravatar')}
                                         />
                                     ) : (
                                         <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-[var(--accent)] transition-colors text-white">

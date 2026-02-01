@@ -117,6 +117,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                             className="object-cover"
                             priority
                             quality={90}
+                            sizes="100vw"
                         />
                     ) : (
                         <div className="w-full h-full bg-gradient-to-br from-indigo-900 to-black" />

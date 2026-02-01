@@ -35,6 +35,7 @@ export default function HomeClient() {
                             icon={Zap}
                             articles={latestNews}
                             viewAllLink="/news"
+                            isLoading={isLoading}
                         />
 
                         {/* Mid-Section Ad 1 */}
@@ -46,6 +47,7 @@ export default function HomeClient() {
                             icon={Gamepad2}
                             articles={latestReviews}
                             viewAllLink="/reviews"
+                            isLoading={isLoading}
                         />
 
                         {/* Mid-Section Ad 2 */}
@@ -57,7 +59,8 @@ export default function HomeClient() {
                             icon={Cpu}
                             articles={hardwareLab}
                             viewAllLink="/hardware"
-                            color="#06b6d4" // Custom accent for hardware
+                            color="#06b6d4"
+                            isLoading={isLoading}
                         />
 
                     </div>

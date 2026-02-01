@@ -67,14 +67,15 @@ export default function BentoGrid() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-6 h-auto md:h-[600px]"
+                    className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-6 min-h-[800px] md:h-[600px]"
                 >
                     {/* Main Feature - Spans 2 cols, 2 rows */}
-                    <Link href={`/news/${MOCK_ARTICLES[0].slug}`} className="group relative col-span-1 md:col-span-2 md:row-span-2 rounded-2xl overflow-hidden border border-[var(--border)]">
+                    <Link href={`/news/${MOCK_ARTICLES[0].slug}`} className="group relative col-span-1 md:col-span-2 md:row-span-2 rounded-2xl overflow-hidden border border-[var(--border)] aspect-[4/3] md:aspect-auto">
                         <Image
                             src={MOCK_ARTICLES[0].cover_image}
                             alt={MOCK_ARTICLES[0].title}
                             fill
+                            sizes="(max-width: 768px) 100vw, 66vw"
                             className="object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -91,7 +92,7 @@ export default function BentoGrid() {
                             <div className="flex items-center gap-4 text-sm text-gray-400">
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 rounded-full bg-white/10 relative overflow-hidden">
-                                        <Image src={MOCK_ARTICLES[0].author.avatar} alt="Author" fill className="object-cover" />
+                                        <Image src={MOCK_ARTICLES[0].author.avatar} alt="Author" fill sizes="32px" className="object-cover" />
                                     </div>
                                     <span className="text-white">{MOCK_ARTICLES[0].author.name}</span>
                                 </div>
@@ -104,11 +105,12 @@ export default function BentoGrid() {
                     </Link>
 
                     {/* Secondary Top */}
-                    <Link href={`/news/${MOCK_ARTICLES[1].slug}`} className="group relative col-span-1 row-span-1 rounded-2xl overflow-hidden border border-[var(--border)]">
+                    <Link href={`/news/${MOCK_ARTICLES[1].slug}`} className="group relative col-span-1 row-span-1 rounded-2xl overflow-hidden border border-[var(--border)] aspect-video md:aspect-auto">
                         <Image
                             src={MOCK_ARTICLES[1].cover_image}
                             alt={MOCK_ARTICLES[1].title}
                             fill
+                            sizes="(max-width: 768px) 100vw, 33vw"
                             className="object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
@@ -125,11 +127,12 @@ export default function BentoGrid() {
                     {/* Secondary Bottom */}
                     <div className="col-span-1 row-span-1 grid grid-rows-2 gap-4">
                         {MOCK_ARTICLES.slice(2).map((article, idx) => (
-                            <Link key={article.id} href={`/news/${article.slug}`} className="group relative rounded-xl overflow-hidden border border-[var(--border)]">
+                            <Link key={article.id} href={`/news/${article.slug}`} className="group relative rounded-xl overflow-hidden border border-[var(--border)] aspect-[3/2] md:aspect-auto">
                                 <Image
                                     src={article.cover_image}
                                     alt={article.title}
                                     fill
+                                    sizes="(max-width: 768px) 100vw, 33vw"
                                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-l from-black/80 via-black/40 to-transparent" />

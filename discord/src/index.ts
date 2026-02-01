@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Events, REST, Routes, ActivityType, Message, PermissionFlagsBits, GuildMember, ApplicationCommandOptionType } from 'discord.js';
+import { Client, GatewayIntentBits, Events, REST, Routes, ActivityType, Message, PermissionFlagsBits, GuildMember, ApplicationCommandOptionType, TextChannel } from 'discord.js';
 import { config } from './config';
 import { ApiService } from './services/ApiService';
 import { PollingService } from './services/PollingService';
@@ -9,6 +9,8 @@ import { StatusService } from './services/StatusService';
 import { TriviaService } from './services/TriviaService';
 import { RecapService } from './services/RecapService';
 import { BuffyService } from './services/BuffyService';
+import { SubscriptionService } from './services/SubscriptionService';
+import { ChallengeService } from './services/ChallengeService';
 
 console.log('🦉 Starting Professor Buffy (TechPlay Bot)...');
 
@@ -85,6 +87,59 @@ const commands = [
         description: '💬 Show trending forum discussions',
     },
     {
+        name: 'subscribe',
+        description: '📬 Manage notification subscriptions',
+        options: [
+            {
+                name: 'news',
+                description: 'Get DM notifications when new articles are published',
+                type: ApplicationCommandOptionType.Subcommand,
+            },
+            {
+                name: 'giveaway',
+                description: 'Get DM notifications when new giveaways start',
+                type: ApplicationCommandOptionType.Subcommand,
+            },
+            {
+                name: 'status',
+                description: 'Check your current subscriptions',
+                type: ApplicationCommandOptionType.Subcommand,
+            }
+        ]
+    },
+    {
+        name: 'gift',
+        description: '🎁 Gift XP to another user',
+        options: [
+            {
+                name: 'user',
+                description: 'The user to gift XP to',
+                type: ApplicationCommandOptionType.User,
+                required: true,
+            },
+            {
+                name: 'amount',
+                description: 'Amount of XP to gift (minimum 10)',
+                type: ApplicationCommandOptionType.Integer,
+                required: true,
+                min_value: 10,
+                max_value: 1000,
+            }
+        ]
+    },
+    {
+        name: 'challenge',
+        description: '⚔️ Challenge another user to a trivia duel',
+        options: [
+            {
+                name: 'user',
+                description: 'The user to challenge',
+                type: ApplicationCommandOptionType.User,
+                required: true,
+            }
+        ]
+    },
+    {
         name: 'admin',
         description: '⚙️ Admin tools for TechPlay',
         default_member_permissions: PermissionFlagsBits.Administrator.toString(),
@@ -98,6 +153,87 @@ const commands = [
                 name: 'recap',
                 description: 'Manually trigger the weekly recap post',
                 type: ApplicationCommandOptionType.Subcommand,
+            },
+            {
+                name: 'xp',
+                description: 'Manage user XP',
+                type: ApplicationCommandOptionType.SubcommandGroup,
+                options: [
+                    {
+                        name: 'give',
+                        description: 'Give XP to a user',
+                        type: ApplicationCommandOptionType.Subcommand,
+                        options: [
+                            {
+                                name: 'user',
+                                description: 'The user to give XP to',
+                                type: ApplicationCommandOptionType.User,
+                                required: true,
+                            },
+                            {
+                                name: 'amount',
+                                description: 'Amount of XP to give',
+                                type: ApplicationCommandOptionType.Integer,
+                                required: true,
+                                min_value: 1,
+                            }
+                        ]
+                    },
+                    {
+                        name: 'remove',
+                        description: 'Remove XP from a user',
+                        type: ApplicationCommandOptionType.Subcommand,
+                        options: [
+                            {
+                                name: 'user',
+                                description: 'The user to remove XP from',
+                                type: ApplicationCommandOptionType.User,
+                                required: true,
+                            },
+                            {
+                                name: 'amount',
+                                description: 'Amount of XP to remove',
+                                type: ApplicationCommandOptionType.Integer,
+                                required: true,
+                                min_value: 1,
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: 'announce',
+                description: 'Make an announcement as Professor Buffy',
+                type: ApplicationCommandOptionType.Subcommand,
+                options: [
+                    {
+                        name: 'message',
+                        description: 'The announcement message',
+                        type: ApplicationCommandOptionType.String,
+                        required: true,
+                    }
+                ]
+            },
+            {
+                name: 'event',
+                description: 'Start a special event',
+                type: ApplicationCommandOptionType.Subcommand,
+                options: [
+                    {
+                        name: 'name',
+                        description: 'Event name (e.g., "Double XP")',
+                        type: ApplicationCommandOptionType.String,
+                        required: true,
+                    },
+                    {
+                        name: 'duration',
+                        description: 'Duration in hours',
+                        type: ApplicationCommandOptionType.Integer,
+                        required: true,
+                        min_value: 1,
+                        max_value: 168,
+                    }
+                ]
             }
         ]
     }
@@ -144,6 +280,14 @@ client.once(Events.ClientReady, async (c) => {
 
     const recapService = new RecapService(client);
     recapService.start();
+
+    // Initialize Subscription Service
+    const subscriptionService = SubscriptionService.getInstance(client);
+    await subscriptionService.start();
+
+    // Initialize Challenge Service
+    const challengeService = ChallengeService.getInstance(client);
+    challengeService.start();
 
     // Register commands
     await registerCommands();
@@ -343,8 +487,36 @@ client.on(Events.InteractionCreate, async (interaction) => {
     // /admin - Admin tools
     // ───────────────────────────────────────────────────────────────────────
     if (interaction.commandName === 'admin') {
+        const subGroup = interaction.options.getSubcommandGroup(false);
         const sub = interaction.options.getSubcommand();
 
+        // /admin xp give/remove
+        if (subGroup === 'xp') {
+            await interaction.deferReply();
+            const targetUser = interaction.options.getUser('user', true);
+            const amount = interaction.options.getInteger('amount', true);
+
+            if (sub === 'give') {
+                const result = await api.adminGiveXp(targetUser.id, amount);
+                if (result.success) {
+                    const embed = buffy.createAdminXpEmbed('give', interaction.user.username, targetUser.username, amount, result.new_xp || 0);
+                    await interaction.editReply({ embeds: [embed] });
+                } else {
+                    await interaction.editReply(`❌ Failed: ${result.error}`);
+                }
+            } else if (sub === 'remove') {
+                const result = await api.adminRemoveXp(targetUser.id, amount);
+                if (result.success) {
+                    const embed = buffy.createAdminXpEmbed('remove', interaction.user.username, targetUser.username, amount, result.new_xp || 0);
+                    await interaction.editReply({ embeds: [embed] });
+                } else {
+                    await interaction.editReply(`❌ Failed: ${result.error}`);
+                }
+            }
+            return;
+        }
+
+        // /admin stats
         if (sub === 'stats') {
             await interaction.deferReply({ ephemeral: true });
             const status = await api.getSystemStatus();
@@ -358,14 +530,61 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     `🔗 Linked Users: **${linked}+**\n` +
                     `⚙️ Bot Latency: **${client.ws.ping}ms**`
             });
+            return;
         }
 
+        // /admin recap
         if (sub === 'recap') {
             await interaction.deferReply({ ephemeral: true });
             await recapService.postWeeklyRecap();
             await interaction.editReply('✅ Weekly Recap posted manually!');
+            return;
         }
-        return;
+
+        // /admin announce
+        if (sub === 'announce') {
+            const message = interaction.options.getString('message', true);
+
+            // Find announcements channel
+            const announcementChannel = interaction.guild?.channels.cache.find(
+                c => c.name === 'announcements' || c.name === 'general'
+            ) as TextChannel | undefined;
+
+            if (!announcementChannel) {
+                await interaction.reply({ content: '❌ No announcements channel found!', ephemeral: true });
+                return;
+            }
+
+            const embed = buffy.createAnnouncementEmbed(message);
+            await announcementChannel.send({ embeds: [embed] });
+            await interaction.reply({ content: `✅ Announcement posted in #${announcementChannel.name}!`, ephemeral: true });
+            return;
+        }
+
+        // /admin event
+        if (sub === 'event') {
+            const eventName = interaction.options.getString('name', true);
+            const duration = interaction.options.getInteger('duration', true);
+
+            const success = await api.adminStartEvent(eventName, duration);
+
+            if (success) {
+                // Post event announcement
+                const announcementChannel = interaction.guild?.channels.cache.find(
+                    c => c.name === 'announcements' || c.name === 'general'
+                ) as TextChannel | undefined;
+
+                if (announcementChannel) {
+                    const embed = buffy.createEventEmbed(eventName, `${duration} hours`, true);
+                    await announcementChannel.send({ embeds: [embed] });
+                }
+
+                await interaction.reply({ content: `✅ Event "${eventName}" started for ${duration} hours!`, ephemeral: true });
+            } else {
+                await interaction.reply({ content: '❌ Failed to start event', ephemeral: true });
+            }
+            return;
+        }
     }
 
     // ───────────────────────────────────────────────────────────────────────
@@ -427,6 +646,123 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
         const content = threads.slice(0, 5).map(t => `💬 **${t.title}**\nReplies: ${t.replies_count || 0}\n[View Thread](https://techplay.gg/forum/threads/${t.slug})`).join('\n\n');
         await interaction.editReply({ content: `🔥 **Trending on the Forum**\n\n${content}` });
+    }
+
+    // ───────────────────────────────────────────────────────────────────────
+    // /subscribe - Notification subscriptions
+    // ───────────────────────────────────────────────────────────────────────
+    if (interaction.commandName === 'subscribe') {
+        const subscriptionService = SubscriptionService.getInstance();
+        const sub = interaction.options.getSubcommand();
+
+        if (sub === 'status') {
+            const subs = subscriptionService.getUserSubscriptions(interaction.user.id);
+            const statusText = subs.length > 0
+                ? `You are subscribed to: **${subs.join(', ')}**`
+                : 'You have no active subscriptions.';
+
+            await interaction.reply({
+                content: `📬 **Your Subscriptions**\n\n${statusText}\n\nUse \`/subscribe news\` or \`/subscribe giveaway\` to manage.`,
+                ephemeral: true
+            });
+            return;
+        }
+
+        const type = sub as 'news' | 'giveaway';
+        const isCurrentlySubscribed = subscriptionService.isSubscribed(interaction.user.id, type);
+
+        if (isCurrentlySubscribed) {
+            await subscriptionService.unsubscribe(interaction.user.id, type);
+        } else {
+            await subscriptionService.subscribe(interaction.user.id, type);
+        }
+
+        const embed = buffy.createSubscriptionEmbed(!isCurrentlySubscribed, type);
+        await interaction.reply({ embeds: [embed], ephemeral: true });
+        return;
+    }
+
+    // ───────────────────────────────────────────────────────────────────────
+    // /gift - Gift XP to another user
+    // ───────────────────────────────────────────────────────────────────────
+    if (interaction.commandName === 'gift') {
+        await interaction.deferReply();
+
+        const targetUser = interaction.options.getUser('user', true);
+        const amount = interaction.options.getInteger('amount', true);
+
+        // Can't gift to yourself
+        if (targetUser.id === interaction.user.id) {
+            const embed = buffy.createGiftErrorEmbed("You can't gift XP to yourself!");
+            await interaction.editReply({ embeds: [embed] });
+            return;
+        }
+
+        // Can't gift to bots
+        if (targetUser.bot) {
+            const embed = buffy.createGiftErrorEmbed("You can't gift XP to a bot!");
+            await interaction.editReply({ embeds: [embed] });
+            return;
+        }
+
+        const result = await api.giftXp(interaction.user.id, targetUser.id, amount);
+
+        if (!result.success) {
+            const embed = buffy.createGiftErrorEmbed(result.error || 'Failed to process gift');
+            await interaction.editReply({ embeds: [embed] });
+            return;
+        }
+
+        const embed = buffy.createGiftEmbed(interaction.user.username, targetUser.username, amount);
+        await interaction.editReply({ embeds: [embed] });
+        return;
+    }
+
+    // ───────────────────────────────────────────────────────────────────────
+    // /challenge - 1v1 Trivia Duel
+    // ───────────────────────────────────────────────────────────────────────
+    if (interaction.commandName === 'challenge') {
+        const challengeService = ChallengeService.getInstance();
+        const targetUser = interaction.options.getUser('user', true);
+
+        if (!interaction.channel || !interaction.channel.isTextBased()) {
+            await interaction.reply({ content: 'This command can only be used in a text channel.', ephemeral: true });
+            return;
+        }
+
+        const embed = await challengeService.createChallenge(
+            interaction.user,
+            targetUser,
+            interaction.channel as TextChannel
+        );
+
+        if (embed) {
+            await interaction.reply({ embeds: [embed] });
+        }
+        return;
+    }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CHALLENGE ACCEPTANCE (Message reactions)
+// ═══════════════════════════════════════════════════════════════════════════
+
+client.on(Events.MessageReactionAdd, async (reaction, user) => {
+    if (user.bot) return;
+
+    const challengeService = ChallengeService.getInstance();
+    const pending = challengeService.getPendingChallenge(reaction.message.channelId);
+
+    if (!pending || pending.opponentId !== user.id) return;
+
+    const channel = reaction.message.channel;
+    if (!channel.isTextBased() || channel.isDMBased()) return;
+
+    if (reaction.emoji.name === '✅') {
+        await challengeService.acceptChallenge(user.id, reaction.message.channelId);
+    } else if (reaction.emoji.name === '❌') {
+        await challengeService.declineChallenge(user.id, reaction.message.channelId);
+        await (channel as TextChannel).send(`❌ **${pending.opponentName}** declined the challenge.`);
     }
 });
 
