@@ -20,7 +20,7 @@ interface AdUnitProps {
 
 // CLS FIX: Define expected ad sizes by position to reserve space
 const AD_SIZES: Record<string, { width: number; height: number; mobileHeight?: number }> = {
-    'home_hero': { width: 728, height: 90, mobileHeight: 50 },
+    'home_hero': { width: 970, height: 250, mobileHeight: 100 },
     'home_mid_1': { width: 728, height: 90, mobileHeight: 50 },
     'home_mid_2': { width: 728, height: 90, mobileHeight: 50 },
     'sidebar': { width: 300, height: 250 },
