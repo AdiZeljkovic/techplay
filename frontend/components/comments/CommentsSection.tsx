@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback, memo } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
+import axios from "@/lib/axios";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,7 +19,7 @@ interface CommentsSectionProps {
 }
 
 export default function CommentsSection({ commentableId, commentableType, initialComments = [] }: CommentsSectionProps) {
-    const { user, token, isLoading: isAuthLoading } = useAuth();
+    const { user, isLoading: isAuthLoading } = useAuth();
     const [comments, setComments] = useState<Comment[]>(initialComments);
     const [isLoading, setIsLoading] = useState(initialComments.length === 0);
 
@@ -32,26 +33,15 @@ export default function CommentsSection({ commentableId, commentableType, initia
     // PERFORMANCE: Use useCallback to prevent unnecessary re-renders
     const fetchComments = useCallback(async (signal?: AbortSignal) => {
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-            const headers: HeadersInit = {
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-            };
-            if (token) {
-                headers["Authorization"] = `Bearer ${token}`;
-            }
-
-            const res = await fetch(`${apiUrl}/comments/${commentableType}/${commentableId}`, {
-                headers,
+            const res = await axios.get(`/comments/${commentableType}/${commentableId}`, {
                 signal
             });
-            if (res.ok && !signal?.aborted) {
-                const data = await res.json();
-                setComments(data.data || []);
+            if (!signal?.aborted) {
+                setComments(res.data.data || res.data || []);
             }
         } catch (err: any) {
-            // Ignore abort errors
-            if (err?.name !== 'AbortError') {
+            // Ignore abort/cancel errors
+            if (err?.name !== 'AbortError' && err?.code !== 'ERR_CANCELED') {
                 console.error("Failed to fetch comments", err);
             }
         } finally {
@@ -59,7 +49,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                 setIsLoading(false);
             }
         }
-    }, [commentableId, commentableType, token]);
+    }, [commentableId, commentableType]);
 
     // MEMORY LEAK FIX: Add AbortController for cleanup on unmount
     useEffect(() => {
@@ -111,14 +101,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
         });
 
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/comments/${commentId}/vote`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({ type })
-            });
+            await axios.post(`/comments/${commentId}/vote`, { type });
         } catch (err) {
             console.error("Vote failed", err);
         }
@@ -135,26 +118,14 @@ export default function CommentsSection({ commentableId, commentableType, initia
         setStatusMessage(null);
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-            const res = await fetch(`${apiUrl}/comments`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    commentable_id: commentableId,
-                    commentable_type: commentableType,
-                    content: text,
-                    parent_id: parentId
-                })
+            const res = await axios.post(`/comments`, {
+                commentable_id: commentableId,
+                commentable_type: commentableType,
+                content: text,
+                parent_id: parentId
             });
 
-            const data = await res.json().catch(() => ({}));
-
-            if (!res.ok) {
-                throw new Error(data.message || "Failed to post comment");
-            }
+            const data = res.data.data || res.data;
 
             // Check specifically for pending status
             if (data.status === 'pending') {
@@ -175,8 +146,9 @@ export default function CommentsSection({ commentableId, commentableType, initia
             } else {
                 setContent("");
             }
-        } catch (err) {
-            setError((err as Error).message || "Something went wrong.");
+        } catch (err: any) {
+            const message = err?.response?.data?.message || err?.message || "Something went wrong.";
+            setError(message);
         } finally {
             setIsSubmitting(false);
         }
@@ -226,8 +198,8 @@ export default function CommentsSection({ commentableId, commentableType, initia
                                 {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
                                 {statusMessage && (
                                     <div className={`mt-3 p-3 rounded-lg text-sm border ${statusMessage.type === 'warning'
-                                            ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
-                                            : 'bg-green-500/10 border-green-500/20 text-green-500'
+                                        ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
+                                        : 'bg-green-500/10 border-green-500/20 text-green-500'
                                         }`}>
                                         {statusMessage.text}
                                     </div>

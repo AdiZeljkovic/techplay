@@ -28,25 +28,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storedToken = localStorage.getItem("token");
         const storedUser = localStorage.getItem("user");
 
-        if (storedToken && storedUser) {
-            try {
-                const parsedUser = JSON.parse(storedUser);
-                setToken(storedToken);
-                setUser(parsedUser);
+        if (storedToken) {
+            setToken(storedToken);
 
-                // Optionally verify token in background (don't block UI)
-                verifyToken(storedToken, parsedUser);
-            } catch (e) {
-                // Invalid JSON in localStorage, clear it
-                clearAuth();
+            if (storedUser) {
+                try {
+                    const parsedUser = JSON.parse(storedUser);
+                    setUser(parsedUser);
+                    // Verify token in background (don't block UI)
+                    verifyToken(storedToken);
+                } catch (e) {
+                    // Invalid JSON - fetch fresh user data
+                    fetchAndSetUser(storedToken);
+                }
+            } else {
+                // Token exists but no cached user - fetch it
+                fetchAndSetUser(storedToken);
             }
         }
 
         setIsLoading(false);
     }, []);
 
+    // Fetch user and store in localStorage
+    const fetchAndSetUser = async (authToken: string) => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                    Accept: "application/json",
+                },
+            });
+
+            if (response.ok) {
+                const json = await response.json();
+                const userData = json.data || json;
+                setUser(userData);
+                localStorage.setItem("user", JSON.stringify(userData));
+            } else {
+                // Token invalid - clear everything
+                clearAuth();
+            }
+        } catch (error) {
+            console.error("Failed to fetch user:", error);
+            // Network error - keep token, maybe try again later
+        }
+    };
+
     // Background verification - only updates if there's new data
-    const verifyToken = async (authToken: string, cachedUser: User) => {
+    const verifyToken = async (authToken: string) => {
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
                 headers: {
