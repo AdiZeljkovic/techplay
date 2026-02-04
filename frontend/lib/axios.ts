@@ -15,7 +15,7 @@ const getApiBase = (): string => {
 const API_BASE = getApiBase();
 
 const axiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1',
+    baseURL: (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1').replace(/\/+$/, ''),
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
