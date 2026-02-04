@@ -24,24 +24,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const router = useRouter();
 
     useEffect(() => {
-        // Check for token in localStorage on mount
+        // Restore auth state from localStorage on mount
         const storedToken = localStorage.getItem("token");
-        if (storedToken) {
-            setToken(storedToken);
-            fetchUser(storedToken);
-        } else {
-            setIsLoading(false);
+        const storedUser = localStorage.getItem("user");
+
+        if (storedToken && storedUser) {
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                setToken(storedToken);
+                setUser(parsedUser);
+
+                // Optionally verify token in background (don't block UI)
+                verifyToken(storedToken, parsedUser);
+            } catch (e) {
+                // Invalid JSON in localStorage, clear it
+                clearAuth();
+            }
         }
+
+        setIsLoading(false);
     }, []);
 
-    // Clear auth state without redirecting (used for invalid tokens on load)
-    const clearAuth = () => {
-        localStorage.removeItem("token");
-        setToken(null);
-        setUser(null);
-    };
-
-    const fetchUser = async (authToken: string) => {
+    // Background verification - only updates if there's new data
+    const verifyToken = async (authToken: string, cachedUser: User) => {
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
                 headers: {
@@ -52,36 +57,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             if (response.ok) {
                 const json = await response.json();
-                // API returns { data: { ...user } } wrapper - extract actual user
-                const userData = json.data || json;
-                setUser(userData);
-            } else {
-                // Invalid token - clear auth but don't redirect
+                const freshUser = json.data || json;
+                // Update with fresh data if available
+                setUser(freshUser);
+                localStorage.setItem("user", JSON.stringify(freshUser));
+            } else if (response.status === 401) {
+                // Token is truly invalid - clear auth
                 clearAuth();
             }
+            // For other errors (network, 500, etc.) - keep using cached user
         } catch (error) {
-            console.error("Failed to fetch user:", error);
-            // Network error - clear auth but don't redirect
-            clearAuth();
-        } finally {
-            setIsLoading(false);
+            // Network error - keep using cached user, don't logout
+            console.warn("Could not verify token, using cached user data");
         }
+    };
+
+    // Clear auth state
+    const clearAuth = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        setToken(null);
+        setUser(null);
     };
 
     const login = (newToken: string, newUser: User) => {
         localStorage.setItem("token", newToken);
+        localStorage.setItem("user", JSON.stringify(newUser));
         setToken(newToken);
         setUser(newUser);
     };
 
-    // Logout - clears auth state (no redirect - user stays on current page)
+    // Logout - clears auth state
     const logout = () => {
         clearAuth();
-        // User can navigate to login themselves if needed
     };
 
     const updateUser = (updatedUser: User) => {
         setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
     };
 
     return (
@@ -98,3 +111,4 @@ export function useAuth() {
     }
     return context;
 }
+
