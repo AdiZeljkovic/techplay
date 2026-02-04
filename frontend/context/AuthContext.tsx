@@ -51,7 +51,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
 
             if (response.ok) {
-                const userData = await response.json();
+                const json = await response.json();
+                // API returns { data: { ...user } } wrapper - extract actual user
+                const userData = json.data || json;
                 setUser(userData);
             } else {
                 // Invalid token - clear auth but don't redirect
