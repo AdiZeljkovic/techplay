@@ -194,7 +194,7 @@ Route::prefix('v1')->group(function () {
     });
 
     // Rate-limited authenticated actions
-    Route::middleware(['auth:sanctum', 'throttle:6,1'])->post('/comments', [App\Http\Controllers\Api\V1\CommentController::class, 'store']);
+    Route::middleware(['auth:sanctum', 'throttle:30,1'])->post('/comments', [App\Http\Controllers\Api\V1\CommentController::class, 'store']);
     Route::middleware(['auth:sanctum', 'throttle:30,1'])->post('/comments/{id}/vote', [App\Http\Controllers\Api\V1\CommentController::class, 'vote']);
     Route::middleware(['auth:sanctum', 'throttle:5,1'])->post('/reports', [App\Http\Controllers\Api\V1\ReportController::class, 'store']);
 
