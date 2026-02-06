@@ -1,59 +1,88 @@
 /*
- * TechPlay Admin Panel - Premium Theme
- * Matching Frontend Design System (Deep Navy)
- * Consolidated & Enhanced
+ * TechPlay Admin Panel — Command Center Theme v2
+ * Complete Visual Overhaul — Premium Dark Design
+ * Designed to match frontend deep-navy aesthetic with dramatic accents
  */
 
 /* ============================================
-   1. CSS CUSTOM PROPERTIES
+   1. DESIGN TOKENS
    ============================================ */
 
 :root {
-    --tp-bg-primary: #001540;
-    --tp-bg-secondary: #000B25;
-    --tp-bg-card: #00215E;
-    --tp-bg-elevated: #002B7A;
+    /* Layered depth system — each layer clearly distinct */
+    --tp-void: #04080f;
+    --tp-abyss: #060c1a;
+    --tp-deep: #0a1228;
+    --tp-base: #0e1a3a;
+    --tp-surface: #122148;
+    --tp-elevated: #182c5a;
+    --tp-highlight: #1e3570;
 
+    /* Accent */
     --tp-accent: #FC4100;
-    --tp-accent-dark: #d93800;
-    --tp-accent-light: rgba(252, 65, 0, 0.15);
-    --tp-accent-glow: rgba(252, 65, 0, 0.08);
+    --tp-accent-bright: #FF6633;
+    --tp-accent-dim: #c43500;
+    --tp-accent-glow: rgba(252, 65, 0, 0.35);
+    --tp-accent-subtle: rgba(252, 65, 0, 0.15);
+    --tp-accent-faint: rgba(252, 65, 0, 0.06);
 
-    --tp-text-primary: #FFFFFF;
-    --tp-text-secondary: #E0E7FF;
-    --tp-text-muted: #94A3B8;
+    /* Secondary accent for variety */
+    --tp-blue: #3B82F6;
+    --tp-green: #10B981;
+    --tp-amber: #F59E0B;
+    --tp-red: #EF4444;
 
-    --tp-border: rgba(255, 255, 255, 0.1);
-    --tp-border-light: rgba(255, 255, 255, 0.06);
+    /* Text hierarchy */
+    --tp-text-bright: #FFFFFF;
+    --tp-text-primary: #E2E8F7;
+    --tp-text-secondary: #9BA8C9;
+    --tp-text-muted: #5F6E8C;
+    --tp-text-dim: #3D4A66;
 
-    --tp-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    --tp-shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.3);
-    --tp-radius-lg: 16px;
-    --tp-radius-md: 12px;
+    /* Borders */
+    --tp-border-strong: rgba(255, 255, 255, 0.12);
+    --tp-border: rgba(255, 255, 255, 0.08);
+    --tp-border-faint: rgba(255, 255, 255, 0.04);
+    --tp-border-accent: rgba(252, 65, 0, 0.30);
+
+    /* Shadows */
+    --tp-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --tp-shadow-md: 0 8px 30px rgba(0, 0, 0, 0.5);
+    --tp-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
+    --tp-shadow-glow: 0 0 30px rgba(252, 65, 0, 0.12);
+
+    /* Radii */
+    --tp-radius-xs: 4px;
     --tp-radius-sm: 8px;
+    --tp-radius-md: 12px;
+    --tp-radius-lg: 16px;
+    --tp-radius-xl: 20px;
+
+    /* Transitions */
+    --tp-ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 
 /* ============================================
-   2. BASE LAYOUT
+   2. BASE LAYOUT & BACKGROUND
    ============================================ */
 
+/* Main content area — gradient with mesh overlay */
 .fi-main {
-    background: linear-gradient(180deg, #001540 0%, #00215E 50%, #001540 100%) !important;
-    position: relative;
-}
-
-.fi-main::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at top right, rgba(0, 43, 122, 0.3) 0%, transparent 60%);
-    pointer-events: none;
+    background: var(--tp-deep) !important;
+    background-image:
+        radial-gradient(ellipse at 20% 0%, rgba(252, 65, 0, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.008) 1px, transparent 1px) !important;
+    background-size: 100% 100%, 100% 100%, 24px 24px !important;
+    min-height: 100vh !important;
 }
 
 .fi-body {
     max-width: none !important;
 }
 
+/* Full width overrides */
 .fi-main-ctn,
 .fi-page > div,
 .fi-form {
@@ -61,92 +90,241 @@
     width: 100% !important;
 }
 
+/* Page entrance animation */
 .fi-page {
-    animation: fadeIn 0.25s ease-out;
+    animation: tp-fadeUp 0.3s var(--tp-ease) both;
 }
 
+
 /* ============================================
-   3. SIDEBAR
+   3. SIDEBAR — Completely redesigned
    ============================================ */
 
 .fi-sidebar {
-    background: var(--tp-bg-secondary) !important;
+    background: var(--tp-void) !important;
     border-right: 1px solid var(--tp-border) !important;
-}
-
-/* Logo / Brand area */
-.fi-sidebar-header {
-    border-bottom: 1px solid var(--tp-border) !important;
-    padding: 16px 20px !important;
     position: relative !important;
 }
 
+/* Accent strip on right edge of sidebar */
+.fi-sidebar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(
+        180deg,
+        var(--tp-accent) 0%,
+        rgba(252, 65, 0, 0.3) 30%,
+        transparent 70%
+    );
+    z-index: 1;
+}
+
+/* Brand / Logo area */
+.fi-sidebar-header {
+    padding: 20px 16px !important;
+    border-bottom: none !important;
+    position: relative !important;
+    background: linear-gradient(180deg, rgba(252, 65, 0, 0.06), transparent) !important;
+}
+
+/* Gradient accent line under logo */
 .fi-sidebar-header::after {
     content: '';
     position: absolute;
     bottom: 0;
-    left: 20px;
-    right: 20px;
-    height: 1px;
-    background: linear-gradient(90deg, var(--tp-accent), transparent);
+    left: 16px;
+    right: 16px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--tp-accent), var(--tp-accent-dim), transparent);
+    border-radius: 2px;
 }
 
-/* Navigation groups */
+/* Brand name styling */
+.fi-sidebar-header a,
+.fi-sidebar-header span,
+.fi-logo * {
+    color: var(--tp-text-bright) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
+}
+
+/* Navigation container */
+.fi-sidebar-nav {
+    padding: 8px 0 !important;
+}
+
 .fi-sidebar-nav-groups {
-    padding: 12px 8px !important;
+    padding: 4px 8px !important;
+    gap: 4px !important;
 }
 
+/* Group separators */
 .fi-sidebar-group + .fi-sidebar-group {
-    border-top: 1px solid var(--tp-border-light) !important;
-    padding-top: 12px !important;
     margin-top: 8px !important;
+    padding-top: 8px !important;
+    position: relative;
 }
 
+.fi-sidebar-group + .fi-sidebar-group::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 16px;
+    right: 16px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--tp-border), transparent);
+}
+
+/* Group labels */
 .fi-sidebar-group-label {
-    font-size: 0.65rem !important;
+    font-size: 0.6rem !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.08em !important;
-    color: var(--tp-text-muted) !important;
-    font-weight: 600 !important;
-    padding: 16px 12px 8px !important;
+    letter-spacing: 0.1em !important;
+    color: var(--tp-text-dim) !important;
+    font-weight: 700 !important;
+    padding: 12px 12px 6px !important;
 }
 
-/* Sidebar items */
+/* Navigation items */
+.fi-sidebar-item {
+    margin: 1px 0 !important;
+}
+
 .fi-sidebar-item-button {
     border-radius: var(--tp-radius-sm) !important;
-    transition: all 0.2s ease !important;
+    padding: 9px 12px !important;
+    transition: all 0.2s var(--tp-ease) !important;
     border-left: 3px solid transparent !important;
-    margin: 2px 0 !important;
+    position: relative !important;
+    overflow: hidden !important;
 }
 
+/* Item hover */
 .fi-sidebar-item-button:hover {
-    background: var(--tp-bg-card) !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-left-color: rgba(252, 65, 0, 0.3) !important;
     transform: translateX(2px);
 }
 
+/* Item ACTIVE — dramatic accent treatment */
 .fi-sidebar-item-button.fi-active {
-    background: linear-gradient(90deg, rgba(252, 65, 0, 0.12), transparent) !important;
+    background: linear-gradient(90deg,
+        rgba(252, 65, 0, 0.15) 0%,
+        rgba(252, 65, 0, 0.05) 40%,
+        transparent 100%
+    ) !important;
     border-left-color: var(--tp-accent) !important;
-    box-shadow: inset 3px 0 8px rgba(252, 65, 0, 0.08) !important;
+    box-shadow:
+        inset 3px 0 12px rgba(252, 65, 0, 0.1),
+        0 0 20px rgba(252, 65, 0, 0.05) !important;
 }
 
 .fi-sidebar-item-button.fi-active .fi-sidebar-item-label {
-    color: var(--tp-accent) !important;
+    color: var(--tp-text-bright) !important;
+    font-weight: 600 !important;
 }
 
 .fi-sidebar-item-button.fi-active .fi-sidebar-item-icon {
     color: var(--tp-accent) !important;
 }
 
+/* Item label */
+.fi-sidebar-item-label {
+    font-size: 0.835rem !important;
+    color: var(--tp-text-secondary) !important;
+    transition: color 0.2s var(--tp-ease) !important;
+}
+
+.fi-sidebar-item-button:hover .fi-sidebar-item-label {
+    color: var(--tp-text-primary) !important;
+}
+
+/* Item icon */
+.fi-sidebar-item-icon {
+    color: var(--tp-text-muted) !important;
+    transition: color 0.2s var(--tp-ease) !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+.fi-sidebar-item-button:hover .fi-sidebar-item-icon {
+    color: var(--tp-text-secondary) !important;
+}
+
+/* Item badge */
+.fi-sidebar-item-badge {
+    background: var(--tp-accent) !important;
+    color: white !important;
+    font-size: 0.65rem !important;
+    font-weight: 700 !important;
+    min-width: 20px !important;
+    height: 20px !important;
+    border-radius: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Collapsed sidebar */
+.fi-sidebar-nav-collapsed .fi-sidebar-item-button {
+    justify-content: center !important;
+    padding: 10px !important;
+    border-left: none !important;
+}
+
+.fi-sidebar-nav-collapsed .fi-sidebar-item-button.fi-active {
+    background: rgba(252, 65, 0, 0.12) !important;
+    border-radius: var(--tp-radius-sm) !important;
+}
+
+
 /* ============================================
-   4. TOPBAR / HEADER
+   4. TOPBAR — Glass header
    ============================================ */
 
 .fi-topbar {
-    background: rgba(0, 11, 37, 0.85) !important;
+    background: rgba(4, 8, 15, 0.8) !important;
+    backdrop-filter: blur(24px) saturate(1.5) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.5) !important;
     border-bottom: 1px solid var(--tp-border) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
+    position: relative !important;
+}
+
+/* Subtle accent gradient line at bottom */
+.fi-topbar::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(252, 65, 0, 0.3) 30%,
+        rgba(252, 65, 0, 0.1) 70%,
+        transparent 100%
+    );
+}
+
+/* Topbar navigation */
+.fi-topbar nav {
+    padding: 0 8px !important;
+}
+
+/* Sidebar toggle button in topbar */
+.fi-sidebar-open-btn,
+.fi-sidebar-close-btn {
+    color: var(--tp-text-muted) !important;
+    transition: color 0.2s var(--tp-ease) !important;
+}
+
+.fi-sidebar-open-btn:hover,
+.fi-sidebar-close-btn:hover {
+    color: var(--tp-accent) !important;
 }
 
 /* Breadcrumbs */
@@ -157,66 +335,125 @@
 .fi-breadcrumbs-item-label {
     color: var(--tp-text-muted) !important;
     font-size: 0.8rem !important;
-    transition: color 0.2s ease !important;
+    transition: color 0.15s !important;
+}
+
+.fi-breadcrumbs-item-label:hover {
+    color: var(--tp-text-primary) !important;
 }
 
 .fi-breadcrumbs-item:last-child .fi-breadcrumbs-item-label {
     color: var(--tp-accent) !important;
+    font-weight: 500 !important;
 }
 
 .fi-breadcrumbs-item-separator {
-    color: var(--tp-text-muted) !important;
-    opacity: 0.5 !important;
+    color: var(--tp-text-dim) !important;
 }
 
 /* Page heading */
 .fi-header-heading {
-    font-size: 1.75rem !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.02em !important;
+    font-size: 1.65rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.03em !important;
+    color: var(--tp-text-bright) !important;
 }
 
+.fi-header-subheading {
+    color: var(--tp-text-secondary) !important;
+}
+
+/* Page header on create/edit */
 .fi-page-create .fi-header,
 .fi-page-edit .fi-header {
     margin-bottom: 24px !important;
-    padding-bottom: 16px !important;
-    border-bottom: 1px solid var(--tp-border-light) !important;
+    padding-bottom: 20px !important;
+    border-bottom: 1px solid var(--tp-border) !important;
+    position: relative;
 }
 
-/* User menu / Dropdowns */
-.fi-dropdown-panel {
-    background: rgba(0, 21, 64, 0.95) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
+
+/* ============================================
+   5. GLOBAL SEARCH
+   ============================================ */
+
+.fi-global-search-field input {
+    background: var(--tp-abyss) !important;
     border: 1px solid var(--tp-border) !important;
     border-radius: var(--tp-radius-md) !important;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
+    color: var(--tp-text-primary) !important;
+    transition: all 0.2s var(--tp-ease) !important;
+}
+
+.fi-global-search-field input:focus {
+    border-color: var(--tp-border-accent) !important;
+    box-shadow: 0 0 0 3px rgba(252, 65, 0, 0.08) !important;
+}
+
+.fi-global-search-field input::placeholder {
+    color: var(--tp-text-dim) !important;
+}
+
+.fi-global-search-results {
+    background: var(--tp-abyss) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-md) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    box-shadow: var(--tp-shadow-lg) !important;
+}
+
+
+/* ============================================
+   6. USER MENU & DROPDOWNS
+   ============================================ */
+
+.fi-dropdown-panel {
+    background: var(--tp-abyss) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    border: 1px solid var(--tp-border-strong) !important;
+    border-radius: var(--tp-radius-md) !important;
+    box-shadow: var(--tp-shadow-lg), 0 0 1px rgba(255, 255, 255, 0.05) !important;
+    overflow: hidden !important;
+}
+
+.fi-dropdown-header {
+    border-bottom: 1px solid var(--tp-border) !important;
+    padding: 12px 16px !important;
+}
+
+.fi-dropdown-list {
+    padding: 4px !important;
 }
 
 .fi-dropdown-list-item-button {
-    transition: all 0.15s ease !important;
+    border-radius: var(--tp-radius-sm) !important;
+    transition: all 0.15s var(--tp-ease) !important;
+    padding: 8px 12px !important;
 }
 
 .fi-dropdown-list-item-button:hover {
-    background: var(--tp-bg-card) !important;
+    background: var(--tp-surface) !important;
 }
 
+
 /* ============================================
-   5. CARDS / SECTIONS / CONTAINERS
+   7. CARDS / SECTIONS / CONTAINERS
    ============================================ */
 
 .fi-section {
-    background: rgba(255, 255, 255, 0.02) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: var(--tp-radius-sm) !important;
+    background: var(--tp-base) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-md) !important;
     width: 100% !important;
-    margin-top: 16px !important;
-    margin-bottom: 0 !important;
-    box-shadow: none !important;
-    position: relative;
-    overflow: hidden;
+    box-shadow: var(--tp-shadow-sm) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 0.25s var(--tp-ease) !important;
 }
 
+/* Accent top border — always visible as thin line, glows on hover */
 .fi-section::before {
     content: '';
     position: absolute;
@@ -224,125 +461,252 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, var(--tp-accent), transparent 70%);
-    border-radius: var(--tp-radius-sm) var(--tp-radius-sm) 0 0;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    background: linear-gradient(90deg,
+        var(--tp-accent) 0%,
+        rgba(252, 65, 0, 0.4) 50%,
+        transparent 100%
+    );
+    opacity: 0.5;
+    transition: opacity 0.3s var(--tp-ease);
+    z-index: 1;
 }
 
 .fi-section:hover::before {
     opacity: 1;
 }
 
+.fi-section:hover {
+    border-color: var(--tp-border-strong) !important;
+    box-shadow: var(--tp-shadow-md), 0 0 30px rgba(252, 65, 0, 0.03) !important;
+}
+
+/* Section header */
 .fi-section-header {
-    padding: 12px 16px !important;
-    background: rgba(0, 0, 0, 0.2) !important;
-    border-bottom: 1px solid var(--tp-border-light) !important;
-    border-radius: var(--tp-radius-sm) var(--tp-radius-sm) 0 0 !important;
+    padding: 14px 20px !important;
+    background: rgba(0, 0, 0, 0.25) !important;
+    border-bottom: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-md) var(--tp-radius-md) 0 0 !important;
 }
 
 .fi-section-header-heading {
-    font-size: 0.85rem !important;
-    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.03em !important;
+    letter-spacing: 0.06em !important;
+    color: var(--tp-text-primary) !important;
 }
 
 .fi-section-header-description {
     font-size: 0.75rem !important;
     color: var(--tp-text-muted) !important;
-    margin-top: 2px !important;
+    margin-top: 4px !important;
 }
 
+/* Section content */
 .fi-section-content {
-    padding: 16px !important;
+    padding: 20px !important;
 }
 
+/* Section collapse */
 .fi-section-collapse-btn {
-    padding: 4px !important;
+    color: var(--tp-text-muted) !important;
+    transition: color 0.15s !important;
 }
 
-/* Stat widgets */
+.fi-section-collapse-btn:hover {
+    color: var(--tp-accent) !important;
+}
+
+
+/* ============================================
+   8. STAT WIDGETS
+   ============================================ */
+
 .fi-wi-stats-overview-stat {
-    background: var(--tp-bg-card) !important;
+    background: var(--tp-base) !important;
     border: 1px solid var(--tp-border) !important;
     border-radius: var(--tp-radius-md) !important;
-    transition: all 0.25s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 0.3s var(--tp-ease) !important;
+    box-shadow: var(--tp-shadow-sm) !important;
+}
+
+/* Accent top line on stat cards */
+.fi-wi-stats-overview-stat::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--tp-accent), var(--tp-accent-bright));
+    opacity: 0;
+    transition: opacity 0.3s var(--tp-ease);
 }
 
 .fi-wi-stats-overview-stat:hover {
-    border-color: rgba(252, 65, 0, 0.3) !important;
-    transform: translateY(-3px) !important;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+    transform: translateY(-4px) !important;
+    border-color: var(--tp-border-accent) !important;
+    box-shadow: var(--tp-shadow-md), var(--tp-shadow-glow) !important;
 }
 
+.fi-wi-stats-overview-stat:hover::before {
+    opacity: 1;
+}
+
+/* Stat value */
+.fi-wi-stats-overview-stat-value {
+    font-size: 1.75rem !important;
+    font-weight: 800 !important;
+    color: var(--tp-text-bright) !important;
+    letter-spacing: -0.02em !important;
+}
+
+/* Stat label */
+.fi-wi-stats-overview-stat-label {
+    font-size: 0.75rem !important;
+    color: var(--tp-text-muted) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-weight: 600 !important;
+}
+
+/* Chart in stats */
+.fi-wi-stats-overview-stat-chart {
+    opacity: 0.6 !important;
+}
+
+
 /* ============================================
-   6. TABLES
+   9. TABLES — Premium Data Grid
    ============================================ */
 
+/* Table container */
 .fi-ta-ctn {
-    background: rgba(0, 33, 94, 0.3) !important;
+    background: var(--tp-base) !important;
     border: 1px solid var(--tp-border) !important;
     border-radius: var(--tp-radius-lg) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
+    box-shadow: var(--tp-shadow-md) !important;
     overflow: hidden !important;
 }
 
+/* Table element */
 .fi-ta-table {
     background: transparent !important;
 }
 
+/* Table header */
 .fi-ta-header-cell {
-    background: rgba(17, 24, 39, 0.6) !important;
-    border-bottom: 1px solid var(--tp-border) !important;
-    font-size: 0.7rem !important;
+    background: var(--tp-abyss) !important;
+    border-bottom: 2px solid var(--tp-border-strong) !important;
+    font-size: 0.68rem !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
+    letter-spacing: 0.08em !important;
     color: var(--tp-text-muted) !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
+    padding: 14px 16px !important;
+    white-space: nowrap !important;
 }
 
+/* First header cell accent line */
+.fi-ta-header-cell:first-child {
+    position: relative !important;
+}
+
+/* Table rows */
 .fi-ta-row {
-    border-bottom: 1px solid var(--tp-border-light) !important;
-    transition: all 0.15s ease !important;
+    border-bottom: 1px solid var(--tp-border-faint) !important;
+    transition: all 0.15s var(--tp-ease) !important;
 }
 
+/* Alternating rows — visible stripes */
 .fi-ta-row:nth-child(even) {
-    background: rgba(255, 255, 255, 0.015) !important;
+    background: rgba(255, 255, 255, 0.02) !important;
 }
 
+/* Row hover — dramatic accent */
 .fi-ta-row:hover {
-    background: rgba(252, 65, 0, 0.04) !important;
-    box-shadow: inset 3px 0 0 var(--tp-accent) !important;
+    background: rgba(252, 65, 0, 0.05) !important;
+    box-shadow: inset 4px 0 0 var(--tp-accent) !important;
 }
 
+.fi-ta-row:hover .fi-ta-cell {
+    color: var(--tp-text-primary) !important;
+}
+
+/* Table cells */
 .fi-ta-cell {
-    padding: 12px 16px !important;
+    padding: 14px 16px !important;
+    color: var(--tp-text-secondary) !important;
+    font-size: 0.875rem !important;
+    vertical-align: middle !important;
 }
 
+/* Table actions */
 .fi-ta-actions {
     gap: 4px !important;
 }
 
+.fi-ta-actions .fi-icon-btn {
+    transition: all 0.15s var(--tp-ease) !important;
+    border-radius: var(--tp-radius-sm) !important;
+}
+
+.fi-ta-actions .fi-icon-btn:hover {
+    background: var(--tp-accent-subtle) !important;
+    color: var(--tp-accent) !important;
+}
+
+/* Table search */
+.fi-ta-search-field {
+    max-width: 300px !important;
+}
+
+.fi-ta-search-field input {
+    background: var(--tp-deep) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-md) !important;
+    color: var(--tp-text-primary) !important;
+}
+
+.fi-ta-search-field input:focus {
+    border-color: var(--tp-border-accent) !important;
+    box-shadow: 0 0 0 3px rgba(252, 65, 0, 0.08) !important;
+}
+
 /* Empty state */
 .fi-ta-empty-state {
-    padding: 48px 24px !important;
+    padding: 60px 24px !important;
 }
 
 .fi-ta-empty-state-icon {
-    color: var(--tp-text-muted) !important;
+    color: var(--tp-text-dim) !important;
+    opacity: 0.5 !important;
 }
 
 .fi-ta-empty-state-heading {
     color: var(--tp-text-secondary) !important;
+    font-weight: 600 !important;
 }
 
+.fi-ta-empty-state-description {
+    color: var(--tp-text-muted) !important;
+}
+
+/* Filters */
+.fi-ta-filters-btn {
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-sm) !important;
+    background: var(--tp-deep) !important;
+}
+
+
 /* ============================================
-   7. FORMS
+   10. FORMS
    ============================================ */
 
-/* Full-width overrides */
+/* Full-width form overrides */
 .fi-page-create .fi-form,
 .fi-page-edit .fi-form {
     padding: 0 !important;
@@ -367,24 +731,17 @@
 
 /* Field wrappers */
 .fi-fo-field-wrp {
-    gap: 4px !important;
-    margin-bottom: 20px !important;
+    gap: 6px !important;
+    margin-bottom: 16px !important;
 }
 
 /* Labels */
-.fi-fo-field-wrp-label {
-    font-size: 0.8rem !important;
-    font-weight: 500 !important;
-    color: var(--tp-text-secondary) !important;
-}
-
 .fi-fo-field-wrp-label label {
-    font-size: 0.8rem !important;
-    font-weight: 600 !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.04em !important;
-    color: rgba(255, 255, 255, 0.7) !important;
-    margin-bottom: 8px !important;
+    letter-spacing: 0.06em !important;
+    color: var(--tp-text-secondary) !important;
 }
 
 /* Required asterisk */
@@ -395,85 +752,100 @@
 /* Helper text */
 .fi-fo-field-wrp-helper-text {
     font-size: 0.7rem !important;
-    color: var(--tp-text-muted) !important;
+    color: var(--tp-text-dim) !important;
     margin-top: 4px !important;
 }
 
 /* Input wrapper */
 .fi-input-wrp {
-    background: rgba(255, 255, 255, 0.05) !important;
+    background: var(--tp-deep) !important;
     border: 1px solid var(--tp-border) !important;
     border-radius: var(--tp-radius-sm) !important;
-    transition: all 0.2s ease !important;
+    transition: all 0.2s var(--tp-ease) !important;
 }
 
 .fi-input-wrp:focus-within {
-    border-color: rgba(252, 65, 0, 0.5) !important;
-    box-shadow: 0 0 0 3px rgba(252, 65, 0, 0.1), 0 0 20px rgba(252, 65, 0, 0.05) !important;
+    border-color: var(--tp-accent) !important;
+    box-shadow:
+        0 0 0 3px rgba(252, 65, 0, 0.1),
+        0 0 20px rgba(252, 65, 0, 0.05),
+        inset 0 0 0 1px rgba(252, 65, 0, 0.1) !important;
 }
 
 /* Inputs, textareas, selects */
 .fi-input,
 .fi-textarea,
 .fi-select-trigger {
-    background: rgba(255, 255, 255, 0.04) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 6px !important;
-    padding: 12px 14px !important;
-    font-size: 0.95rem !important;
-    color: #fff !important;
-    transition: all 0.2s ease !important;
+    background: var(--tp-deep) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-sm) !important;
+    padding: 11px 14px !important;
+    font-size: 0.9rem !important;
+    color: var(--tp-text-bright) !important;
+    transition: all 0.2s var(--tp-ease) !important;
 }
 
 .fi-input:focus,
 .fi-textarea:focus,
 .fi-select-trigger:focus {
     border-color: var(--tp-accent) !important;
-    box-shadow: 0 0 0 3px rgba(252, 65, 0, 0.15) !important;
+    box-shadow:
+        0 0 0 3px rgba(252, 65, 0, 0.1),
+        0 0 20px rgba(252, 65, 0, 0.05) !important;
     outline: none !important;
 }
 
-.fi-input::placeholder {
-    color: var(--tp-text-muted) !important;
+.fi-input::placeholder,
+.fi-textarea::placeholder {
+    color: var(--tp-text-dim) !important;
 }
 
-/* Select options */
+/* Select options panel */
 .fi-select-option {
-    padding: 8px 12px !important;
-    font-size: 0.85rem !important;
+    padding: 10px 14px !important;
+    transition: background 0.1s !important;
 }
 
-/* File upload */
+.fi-select-option:hover {
+    background: var(--tp-surface) !important;
+}
+
+/* File upload — premium drop zone */
 .fi-fo-file-upload {
-    border: 2px dashed rgba(255, 255, 255, 0.15) !important;
-    border-radius: var(--tp-radius-sm) !important;
-    background: rgba(255, 255, 255, 0.02) !important;
-    padding: 24px !important;
-    transition: all 0.2s ease !important;
+    border: 2px dashed var(--tp-border-strong) !important;
+    border-radius: var(--tp-radius-md) !important;
+    background: var(--tp-deep) !important;
+    padding: 32px !important;
+    transition: all 0.25s var(--tp-ease) !important;
+    position: relative !important;
 }
 
 .fi-fo-file-upload:hover {
-    border-color: rgba(252, 65, 0, 0.4) !important;
+    border-color: var(--tp-accent) !important;
     background: rgba(252, 65, 0, 0.03) !important;
-    transform: scale(1.005);
+    box-shadow: 0 0 30px rgba(252, 65, 0, 0.06) !important;
 }
 
-/* Toggle */
+/* Toggle switch */
 .fi-toggle-wrp {
     padding: 8px 0 !important;
 }
 
 .fi-toggle {
-    background: rgba(255, 255, 255, 0.1) !important;
+    background: var(--tp-surface) !important;
+    border: 1px solid var(--tp-border) !important;
+    transition: all 0.2s var(--tp-ease) !important;
 }
 
 .fi-toggle[data-checked] {
     background: var(--tp-accent) !important;
+    border-color: var(--tp-accent) !important;
+    box-shadow: 0 0 12px rgba(252, 65, 0, 0.3) !important;
 }
 
 /* Tags input */
 .fi-tags-input {
-    min-height: 38px !important;
+    min-height: 40px !important;
 }
 
 .fi-tags-input-tags {
@@ -481,264 +853,451 @@
 }
 
 .fi-tags-input-tag {
-    background: var(--tp-accent-light) !important;
-    border: 1px solid rgba(252, 65, 0, 0.3) !important;
-    color: #fff !important;
-    border-radius: 4px !important;
-    padding: 4px 8px !important;
-    font-size: 0.8rem !important;
+    background: var(--tp-accent-subtle) !important;
+    border: 1px solid var(--tp-border-accent) !important;
+    color: var(--tp-accent-bright) !important;
+    border-radius: var(--tp-radius-xs) !important;
+    padding: 4px 10px !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
 }
 
 /* Form actions */
 .fi-form-actions {
     margin-top: 32px !important;
     padding-top: 24px !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-top: 1px solid var(--tp-border) !important;
     gap: 12px !important;
 }
 
+/* Checkbox */
+.fi-checkbox-input {
+    border-color: var(--tp-border-strong) !important;
+    background: var(--tp-deep) !important;
+}
+
+.fi-checkbox-input:checked {
+    background-color: var(--tp-accent) !important;
+    border-color: var(--tp-accent) !important;
+}
+
+/* Radio */
+.fi-radio-input {
+    border-color: var(--tp-border-strong) !important;
+    background: var(--tp-deep) !important;
+}
+
+.fi-radio-input:checked {
+    border-color: var(--tp-accent) !important;
+    color: var(--tp-accent) !important;
+}
+
+
 /* ============================================
-   8. BUTTONS
+   11. BUTTONS — Bold & Glowing
    ============================================ */
 
 .fi-btn {
     padding: 10px 20px !important;
     font-weight: 600 !important;
-    border-radius: 6px !important;
-    font-size: 0.9rem !important;
-    transition: all 0.2s ease !important;
+    border-radius: var(--tp-radius-sm) !important;
+    font-size: 0.875rem !important;
+    transition: all 0.2s var(--tp-ease) !important;
+    letter-spacing: 0.01em !important;
 }
 
+/* Primary button — gradient with glow */
 .fi-btn-primary {
-    background: linear-gradient(135deg, var(--tp-accent) 0%, var(--tp-accent-dark) 100%) !important;
+    background: linear-gradient(135deg, var(--tp-accent) 0%, var(--tp-accent-dim) 100%) !important;
     border: none !important;
-    border-radius: var(--tp-radius-sm) !important;
-    font-weight: 600 !important;
-    box-shadow: 0 4px 15px rgba(252, 65, 0, 0.3) !important;
+    color: white !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 15px rgba(252, 65, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
 .fi-btn-primary:hover {
-    transform: translateY(-1px) !important;
-    box-shadow: 0 6px 20px rgba(252, 65, 0, 0.4) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(252, 65, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    background: linear-gradient(135deg, var(--tp-accent-bright) 0%, var(--tp-accent) 100%) !important;
 }
 
 .fi-btn-primary:active {
     transform: translateY(0) scale(0.98) !important;
+    box-shadow: 0 2px 10px rgba(252, 65, 0, 0.3) !important;
 }
 
+/* Secondary / Gray button */
 .fi-btn-gray {
-    background: rgba(255, 255, 255, 0.08) !important;
-    border: 1px solid var(--tp-border) !important;
-    border-radius: var(--tp-radius-sm) !important;
+    background: var(--tp-surface) !important;
+    border: 1px solid var(--tp-border-strong) !important;
     color: var(--tp-text-secondary) !important;
 }
 
 .fi-btn-gray:hover {
-    background: rgba(255, 255, 255, 0.12) !important;
-    color: var(--tp-text-primary) !important;
+    background: var(--tp-elevated) !important;
+    border-color: var(--tp-border-accent) !important;
+    color: var(--tp-text-bright) !important;
+    transform: translateY(-1px) !important;
 }
 
+/* Danger button */
 .fi-btn-danger {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    background: linear-gradient(135deg, var(--tp-red) 0%, #DC2626 100%) !important;
     border: none !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3) !important;
+}
+
+.fi-btn-danger:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4) !important;
+}
+
+/* Icon buttons */
+.fi-icon-btn {
+    transition: all 0.15s var(--tp-ease) !important;
     border-radius: var(--tp-radius-sm) !important;
 }
 
+.fi-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+}
+
+
 /* ============================================
-   9. RICH EDITOR / TIPTAP
+   12. RICH EDITOR / TIPTAP
    ============================================ */
 
 .fi-fo-rich-editor {
-    background: rgba(255, 255, 255, 0.02) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: var(--tp-radius-sm) !important;
+    background: var(--tp-deep) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-md) !important;
     overflow: hidden !important;
+    transition: border-color 0.2s var(--tp-ease) !important;
+}
+
+.fi-fo-rich-editor:focus-within {
+    border-color: var(--tp-border-accent) !important;
 }
 
 .fi-fo-rich-editor .tiptap-wrapper {
-    border-radius: var(--tp-radius-sm) !important;
+    border-radius: var(--tp-radius-md) !important;
 }
 
+/* Toolbar */
 .fi-fo-rich-editor .tiptap-toolbar {
-    background: rgba(0, 0, 0, 0.3) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-    padding: 10px 12px !important;
+    background: var(--tp-abyss) !important;
+    border-bottom: 1px solid var(--tp-border) !important;
+    padding: 8px 12px !important;
     gap: 2px !important;
 }
 
 .fi-fo-rich-editor .tiptap-toolbar button {
+    border-radius: var(--tp-radius-xs) !important;
     padding: 6px !important;
+    transition: all 0.15s !important;
 }
 
+.fi-fo-rich-editor .tiptap-toolbar button:hover {
+    background: var(--tp-surface) !important;
+}
+
+.fi-fo-rich-editor .tiptap-toolbar button.is-active {
+    background: var(--tp-accent-subtle) !important;
+    color: var(--tp-accent) !important;
+}
+
+/* Editor content */
 .fi-fo-rich-editor .ProseMirror {
     color: var(--tp-text-primary) !important;
     min-height: 300px !important;
-    padding: 16px !important;
+    padding: 20px !important;
     font-size: 1rem !important;
-    line-height: 1.7 !important;
+    line-height: 1.75 !important;
 }
 
+.fi-fo-rich-editor .ProseMirror:focus {
+    outline: none !important;
+}
+
+
 /* ============================================
-   10. BADGES & TAGS
+   13. BADGES & STATUS TAGS
    ============================================ */
 
 .fi-badge {
     border-radius: 6px !important;
-    font-size: 0.7rem !important;
-    font-weight: 600 !important;
-    padding: 4px 8px !important;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    padding: 4px 10px !important;
+    letter-spacing: 0.02em !important;
+    text-transform: uppercase !important;
 }
 
+/* Specific badge colors for better contrast */
+.fi-badge-success,
+.fi-badge[style*="--c-50: var(--success"] {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #34D399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.25) !important;
+}
+
+.fi-badge-warning,
+.fi-badge[style*="--c-50: var(--warning"] {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #FBBF24 !important;
+    border: 1px solid rgba(245, 158, 11, 0.25) !important;
+}
+
+.fi-badge-danger,
+.fi-badge[style*="--c-50: var(--danger"] {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #F87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.25) !important;
+}
+
+
 /* ============================================
-   11. TABS & NAVIGATION
+   14. TABS & NAVIGATION
    ============================================ */
 
+.fi-tabs {
+    margin-bottom: 8px !important;
+}
+
 .fi-tabs-list {
-    border-bottom: 1px solid var(--tp-border-light) !important;
+    border-bottom: 2px solid var(--tp-border) !important;
     gap: 0 !important;
+    padding: 0 4px !important;
 }
 
 .fi-tabs-tab {
     border-radius: 0 !important;
-    border-bottom: 2px solid transparent !important;
-    padding: 10px 16px !important;
-    margin-bottom: -1px !important;
-    transition: all 0.2s ease !important;
+    border-bottom: 3px solid transparent !important;
+    padding: 12px 20px !important;
+    margin-bottom: -2px !important;
+    transition: all 0.2s var(--tp-ease) !important;
     color: var(--tp-text-muted) !important;
+    font-weight: 500 !important;
+    font-size: 0.85rem !important;
+    position: relative !important;
 }
 
 .fi-tabs-tab:hover {
-    background: rgba(255, 255, 255, 0.03) !important;
     color: var(--tp-text-primary) !important;
+    background: rgba(255, 255, 255, 0.02) !important;
 }
 
+/* Active tab — accent underline */
 .fi-tabs-tab[aria-selected="true"] {
     background: transparent !important;
     color: var(--tp-accent) !important;
     border-bottom-color: var(--tp-accent) !important;
+    font-weight: 600 !important;
 }
 
+
 /* ============================================
-   12. PAGINATION
+   15. PAGINATION
    ============================================ */
 
+.fi-pagination-items {
+    gap: 4px !important;
+}
+
 .fi-pagination-item-btn {
-    background: rgba(255, 255, 255, 0.05) !important;
+    background: var(--tp-surface) !important;
     border: 1px solid var(--tp-border) !important;
     border-radius: var(--tp-radius-sm) !important;
-    transition: all 0.15s ease !important;
+    color: var(--tp-text-secondary) !important;
+    transition: all 0.15s var(--tp-ease) !important;
+    min-width: 36px !important;
+    height: 36px !important;
 }
 
 .fi-pagination-item-btn:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
+    background: var(--tp-elevated) !important;
+    border-color: var(--tp-border-strong) !important;
+    color: var(--tp-text-bright) !important;
 }
 
+/* Active page */
 .fi-pagination-item-btn[aria-current="page"] {
     background: var(--tp-accent) !important;
     border-color: var(--tp-accent) !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(252, 65, 0, 0.3) !important;
 }
 
+/* Per-page selector */
+.fi-ta-page-trigger {
+    background: var(--tp-surface) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-sm) !important;
+}
+
+
 /* ============================================
-   13. MODALS
+   16. MODALS — Glass overlay
    ============================================ */
 
 .fi-modal-close-overlay {
-    background: rgba(0, 0, 0, 0.6) !important;
-    backdrop-filter: blur(4px) !important;
-    -webkit-backdrop-filter: blur(4px) !important;
+    background: rgba(4, 8, 15, 0.7) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
 }
 
 .fi-modal-content {
-    background: rgba(0, 11, 37, 0.92) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid var(--tp-border) !important;
+    background: var(--tp-abyss) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    border: 1px solid var(--tp-border-strong) !important;
     border-radius: var(--tp-radius-lg) !important;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6) !important;
+    box-shadow: var(--tp-shadow-lg), 0 0 1px rgba(255, 255, 255, 0.08) !important;
+    overflow: hidden !important;
+}
+
+/* Modal accent top line */
+.fi-modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--tp-accent), transparent);
+    z-index: 1;
 }
 
 .fi-modal-header {
-    border-bottom: 1px solid var(--tp-border-light) !important;
+    border-bottom: 1px solid var(--tp-border) !important;
+    padding: 20px 24px !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+}
+
+.fi-modal-content-ctn {
     padding: 20px 24px !important;
 }
 
 .fi-modal-footer {
-    border-top: 1px solid var(--tp-border-light) !important;
+    border-top: 1px solid var(--tp-border) !important;
     padding: 16px 24px !important;
-    background: rgba(0, 0, 0, 0.2) !important;
+    background: rgba(0, 0, 0, 0.15) !important;
 }
 
+
 /* ============================================
-   14. NOTIFICATIONS
+   17. NOTIFICATIONS — Slide-in glass
    ============================================ */
 
 .fi-notification {
-    background: rgba(0, 21, 64, 0.95) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid var(--tp-border) !important;
+    background: var(--tp-abyss) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid var(--tp-border-strong) !important;
     border-radius: var(--tp-radius-md) !important;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4) !important;
-    animation: slideInRight 0.3s ease-out;
+    box-shadow: var(--tp-shadow-lg) !important;
+    animation: tp-slideIn 0.4s var(--tp-ease);
+    overflow: hidden !important;
 }
 
-/* ============================================
-   15. DROPDOWNS (select lists, etc.)
-   ============================================ */
-
-.fi-select-input {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border: 1px solid var(--tp-border) !important;
-    border-radius: var(--tp-radius-sm) !important;
+/* Color-coded left border */
+.fi-notification-success {
+    border-left: 3px solid var(--tp-green) !important;
 }
 
+.fi-notification-warning {
+    border-left: 3px solid var(--tp-amber) !important;
+}
+
+.fi-notification-danger {
+    border-left: 3px solid var(--tp-red) !important;
+}
+
+.fi-notification-info {
+    border-left: 3px solid var(--tp-blue) !important;
+}
+
+
 /* ============================================
-   16. SCROLLBARS
+   18. SCROLLBARS — Themed
    ============================================ */
 
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.2);
 }
 
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+
 /* ============================================
-   17. LOADING / EMPTY STATES
+   19. LOADING & EMPTY STATES
    ============================================ */
 
 .fi-loading-indicator {
     color: var(--tp-accent) !important;
 }
 
+/* Skeleton loading pulse */
+.fi-loading-indicator-spinner {
+    border-color: rgba(252, 65, 0, 0.2) !important;
+    border-top-color: var(--tp-accent) !important;
+}
+
+
 /* ============================================
-   18. LOGIN PAGE BRANDING
+   20. LOGIN PAGE — Branded experience
    ============================================ */
 
 .fi-simple-layout {
-    background: linear-gradient(180deg, #000B25 0%, #001540 50%, #000B25 100%) !important;
-    position: relative !important;
+    background: var(--tp-void) !important;
     min-height: 100vh !important;
+    position: relative !important;
+    overflow: hidden !important;
 }
 
+/* Animated gradient orbs behind login */
 .fi-simple-layout::before {
     content: '';
     position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(ellipse at top center, rgba(252, 65, 0, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at bottom left, rgba(0, 43, 122, 0.3) 0%, transparent 50%);
+    top: -20%;
+    left: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(252, 65, 0, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: tp-float 12s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.fi-simple-layout::after {
+    content: '';
+    position: absolute;
+    bottom: -20%;
+    right: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: tp-float 15s ease-in-out infinite reverse;
     pointer-events: none;
 }
 
@@ -747,73 +1306,125 @@
     z-index: 1;
 }
 
+/* Login card — glass */
 .fi-simple-main {
-    background: rgba(0, 33, 94, 0.4) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
-    border: 1px solid var(--tp-border) !important;
-    border-radius: var(--tp-radius-lg) !important;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5) !important;
+    background: rgba(10, 18, 40, 0.85) !important;
+    backdrop-filter: blur(30px) !important;
+    -webkit-backdrop-filter: blur(30px) !important;
+    border: 1px solid var(--tp-border-strong) !important;
+    border-radius: var(--tp-radius-xl) !important;
+    box-shadow:
+        var(--tp-shadow-lg),
+        0 0 80px rgba(252, 65, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    overflow: hidden !important;
+    position: relative !important;
+}
+
+/* Accent top border on login card */
+.fi-simple-main::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--tp-accent), transparent);
+    z-index: 1;
 }
 
 .fi-simple-main .fi-header-heading {
-    color: var(--tp-text-primary) !important;
+    color: var(--tp-text-bright) !important;
     text-align: center !important;
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
 }
 
 .fi-simple-main .fi-logo {
     display: flex !important;
     justify-content: center !important;
-    margin-bottom: 24px !important;
+    margin-bottom: 28px !important;
 }
 
+/* Login form inputs */
+.fi-simple-main .fi-input {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: var(--tp-border-strong) !important;
+}
+
+.fi-simple-main .fi-btn-primary {
+    width: 100% !important;
+    padding: 12px !important;
+    font-size: 0.95rem !important;
+}
+
+
 /* ============================================
-   19. DASHBOARD WELCOME BANNER
+   21. DASHBOARD — Welcome Banner
    ============================================ */
 
 .tp-welcome-banner {
-    background: linear-gradient(135deg, rgba(0, 33, 94, 0.6), rgba(252, 65, 0, 0.06));
-    border: 1px solid var(--tp-border);
+    background: linear-gradient(135deg,
+        var(--tp-base) 0%,
+        rgba(252, 65, 0, 0.08) 50%,
+        var(--tp-surface) 100%
+    );
+    border: 1px solid var(--tp-border-strong);
     border-radius: var(--tp-radius-lg);
-    padding: 32px;
-    margin-bottom: 24px;
+    padding: 36px 40px;
+    margin-bottom: 28px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     position: relative;
     overflow: hidden;
+    box-shadow: var(--tp-shadow-md);
 }
 
+/* Decorative mesh in banner */
 .tp-welcome-banner::before {
     content: '';
     position: absolute;
     top: -50%;
-    right: -10%;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(252, 65, 0, 0.08) 0%, transparent 70%);
+    right: -5%;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(252, 65, 0, 0.1) 0%, transparent 70%);
     pointer-events: none;
 }
 
+.tp-welcome-banner::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--tp-accent), transparent 60%);
+}
+
 .tp-welcome-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--tp-text-primary);
-    letter-spacing: -0.02em;
-    margin: 0 0 4px;
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: var(--tp-text-bright);
+    letter-spacing: -0.03em;
+    margin: 0 0 6px;
+    position: relative;
+    z-index: 1;
 }
 
 .tp-welcome-subtitle {
     font-size: 0.9rem;
     color: var(--tp-text-muted);
     margin: 0;
+    position: relative;
+    z-index: 1;
 }
 
+/* Quick stats row */
 .tp-welcome-stats {
     display: flex;
-    gap: 24px;
+    gap: 16px;
     position: relative;
     z-index: 1;
 }
@@ -822,74 +1433,152 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 12px 20px;
+    padding: 14px 22px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--tp-border);
     border-radius: var(--tp-radius-md);
-    min-width: 80px;
-    transition: all 0.2s ease;
+    min-width: 85px;
+    transition: all 0.25s var(--tp-ease);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .tp-quick-stat:hover {
-    border-color: rgba(252, 65, 0, 0.3);
-    transform: translateY(-2px);
+    border-color: var(--tp-border-accent);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), var(--tp-shadow-glow);
 }
 
 .tp-quick-stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.6rem;
+    font-weight: 800;
     color: var(--tp-accent);
+    line-height: 1;
 }
 
 .tp-quick-stat-label {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: var(--tp-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-top: 2px;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    margin-top: 4px;
 }
 
 /* Quick actions row */
 .tp-quick-actions {
     display: flex;
     gap: 12px;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
 }
 
 .tp-quick-action {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background: rgba(255, 255, 255, 0.04);
+    gap: 10px;
+    padding: 12px 20px;
+    background: var(--tp-base);
     border: 1px solid var(--tp-border);
-    border-radius: var(--tp-radius-sm);
+    border-radius: var(--tp-radius-md);
     color: var(--tp-text-secondary);
     font-size: 0.85rem;
-    font-weight: 500;
+    font-weight: 600;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: all 0.25s var(--tp-ease);
+    position: relative;
+    overflow: hidden;
+}
+
+.tp-quick-action::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--tp-accent);
+    opacity: 0;
+    transition: opacity 0.25s;
 }
 
 .tp-quick-action:hover {
-    background: var(--tp-accent-light);
-    border-color: rgba(252, 65, 0, 0.3);
-    color: var(--tp-text-primary);
-    transform: translateY(-1px);
+    border-color: var(--tp-border-accent);
+    color: var(--tp-text-bright);
+    transform: translateY(-2px);
+    box-shadow: var(--tp-shadow-sm), 0 0 20px rgba(252, 65, 0, 0.06);
+}
+
+.tp-quick-action:hover::before {
+    opacity: 1;
 }
 
 .tp-quick-action-icon {
-    font-size: 1rem;
+    font-size: 1.1rem;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--tp-accent-subtle);
+    border-radius: var(--tp-radius-sm);
+    color: var(--tp-accent);
+    flex-shrink: 0;
 }
 
+
 /* ============================================
-   20. ANIMATIONS / MICRO-INTERACTIONS
+   22. WIDGET TABLES (MostViewed, BrokenLinks etc.)
    ============================================ */
 
-@keyframes fadeIn {
+.fi-wi-table {
+    background: var(--tp-base) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-md) !important;
+    overflow: hidden !important;
+}
+
+
+/* ============================================
+   23. INFOLIST (View pages)
+   ============================================ */
+
+.fi-in-entry {
+    padding: 12px 0 !important;
+    border-bottom: 1px solid var(--tp-border-faint) !important;
+}
+
+.fi-in-entry-wrp-label {
+    color: var(--tp-text-muted) !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-weight: 600 !important;
+}
+
+.fi-in-text {
+    color: var(--tp-text-primary) !important;
+}
+
+
+/* ============================================
+   24. RELATION MANAGERS
+   ============================================ */
+
+.fi-resource-relation-manager {
+    background: var(--tp-base) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-md) !important;
+}
+
+
+/* ============================================
+   25. ANIMATIONS
+   ============================================ */
+
+@keyframes tp-fadeUp {
     from {
         opacity: 0;
-        transform: translateY(4px);
+        transform: translateY(8px);
     }
     to {
         opacity: 1;
@@ -897,7 +1586,7 @@
     }
 }
 
-@keyframes slideInRight {
+@keyframes tp-slideIn {
     from {
         transform: translateX(100%);
         opacity: 0;
@@ -908,15 +1597,62 @@
     }
 }
 
+@keyframes tp-float {
+    0%, 100% {
+        transform: translate(0, 0);
+    }
+    33% {
+        transform: translate(20px, -30px);
+    }
+    66% {
+        transform: translate(-15px, 15px);
+    }
+}
+
+@keyframes tp-glow {
+    0%, 100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Global smooth transitions on interactive elements */
+a, button, input, select, textarea {
+    transition: color 0.15s var(--tp-ease), background-color 0.15s var(--tp-ease), border-color 0.15s var(--tp-ease), box-shadow 0.15s var(--tp-ease);
+}
+
+
 /* ============================================
-   21. RESPONSIVE
+   26. RESPONSIVE — Mobile First
    ============================================ */
+
+@media (max-width: 1024px) {
+    .tp-welcome-banner {
+        padding: 28px !important;
+    }
+
+    .tp-welcome-stats {
+        gap: 12px !important;
+    }
+
+    .tp-quick-stat {
+        padding: 10px 16px !important;
+        min-width: 70px !important;
+    }
+
+    .tp-quick-stat-value {
+        font-size: 1.3rem !important;
+    }
+}
 
 @media (max-width: 768px) {
     /* Tables: horizontal scroll */
     .fi-ta-ctn {
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch !important;
+        border-radius: var(--tp-radius-md) !important;
     }
 
     /* Forms: single column */
@@ -926,56 +1662,367 @@
 
     /* Smaller section padding */
     .fi-section-content {
-        padding: 12px !important;
+        padding: 14px !important;
     }
 
     .fi-section-header {
-        padding: 10px 12px !important;
+        padding: 12px 14px !important;
     }
 
-    /* Welcome banner stack */
+    /* Welcome banner — stack vertically */
     .tp-welcome-banner {
         flex-direction: column !important;
         text-align: center !important;
-        gap: 16px !important;
-        padding: 24px !important;
+        gap: 20px !important;
+        padding: 24px 20px !important;
+    }
+
+    .tp-welcome-title {
+        font-size: 1.35rem !important;
     }
 
     .tp-welcome-stats {
         justify-content: center !important;
+        flex-wrap: wrap !important;
     }
 
+    .tp-quick-stat {
+        min-width: 75px !important;
+        padding: 10px 14px !important;
+    }
+
+    /* Quick actions — wrap */
     .tp-quick-actions {
         flex-wrap: wrap !important;
         justify-content: center !important;
-    }
-
-    /* Smaller headings */
-    .fi-header-heading {
-        font-size: 1.25rem !important;
-    }
-
-    .tp-welcome-title {
-        font-size: 1.25rem !important;
-    }
-}
-
-@media (max-width: 640px) {
-    /* Even smaller on very small screens */
-    .fi-header-heading {
-        font-size: 1.1rem !important;
-    }
-
-    .fi-ta-cell {
-        padding: 8px 12px !important;
-    }
-
-    .tp-quick-actions {
         gap: 8px !important;
     }
 
     .tp-quick-action {
-        padding: 8px 12px !important;
+        padding: 10px 14px !important;
         font-size: 0.8rem !important;
     }
+
+    /* Smaller page heading */
+    .fi-header-heading {
+        font-size: 1.25rem !important;
+    }
+
+    /* Table cells compact */
+    .fi-ta-cell {
+        padding: 10px 12px !important;
+        font-size: 0.8rem !important;
+    }
+
+    .fi-ta-header-cell {
+        padding: 10px 12px !important;
+        font-size: 0.65rem !important;
+    }
+
+    /* Stat widgets stack */
+    .fi-wi-stats-overview-stat {
+        padding: 16px !important;
+    }
+
+    .fi-wi-stats-overview-stat-value {
+        font-size: 1.4rem !important;
+    }
+
+    /* Buttons smaller */
+    .fi-btn {
+        padding: 8px 16px !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* Sidebar overlay */
+    .fi-sidebar {
+        box-shadow: var(--tp-shadow-lg) !important;
+    }
+
+    /* Modals full width on mobile */
+    .fi-modal-content {
+        margin: 16px !important;
+        border-radius: var(--tp-radius-md) !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .fi-header-heading {
+        font-size: 1.1rem !important;
+    }
+
+    .tp-welcome-title {
+        font-size: 1.15rem !important;
+    }
+
+    .tp-welcome-stats {
+        gap: 8px !important;
+    }
+
+    .tp-quick-stat {
+        min-width: 65px !important;
+        padding: 8px 10px !important;
+    }
+
+    .tp-quick-stat-value {
+        font-size: 1.1rem !important;
+    }
+
+    .tp-quick-stat-label {
+        font-size: 0.55rem !important;
+    }
+
+    .tp-quick-action {
+        flex: 1 1 calc(50% - 4px) !important;
+        padding: 8px 10px !important;
+        font-size: 0.75rem !important;
+        gap: 6px !important;
+    }
+
+    .tp-quick-action-icon {
+        width: 22px !important;
+        height: 22px !important;
+        font-size: 0.85rem !important;
+    }
+
+    .fi-section-content {
+        padding: 12px !important;
+    }
+
+    .fi-ta-cell {
+        padding: 8px 10px !important;
+    }
+
+    /* Sidebar width on mobile */
+    .fi-sidebar {
+        max-width: 280px !important;
+    }
+
+    /* Form actions stack */
+    .fi-form-actions {
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .fi-form-actions .fi-btn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
+
+/* ============================================
+   27. DARK MODE FILAMENT OVERRIDES
+   ============================================ */
+
+/* Override Filament's dark mode background colors */
+.dark .fi-body {
+    background: var(--tp-deep) !important;
+}
+
+.dark .fi-sidebar {
+    background: var(--tp-void) !important;
+}
+
+.dark .fi-topbar {
+    background: rgba(4, 8, 15, 0.8) !important;
+}
+
+/* Ensure all section/card backgrounds use our tokens */
+.dark .fi-section {
+    background: var(--tp-base) !important;
+}
+
+.dark .fi-ta-ctn {
+    background: var(--tp-base) !important;
+}
+
+.dark .fi-wi-stats-overview-stat {
+    background: var(--tp-base) !important;
+}
+
+/* Override any Filament text-gray classes in dark mode */
+.dark .fi-sidebar-item-label,
+.dark .fi-sidebar-group-label {
+    color: inherit !important;
+}
+
+/* Widget headers */
+.fi-wi-header {
+    padding: 16px 20px !important;
+    border-bottom: 1px solid var(--tp-border) !important;
+}
+
+.fi-wi-header-heading {
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    color: var(--tp-text-primary) !important;
+}
+
+
+/* ============================================
+   28. FILAMENT INFOLIST COMPONENTS
+   ============================================ */
+
+.fi-in-component-ctn {
+    padding: 16px 0 !important;
+}
+
+.fi-in-text-item-value {
+    color: var(--tp-text-primary) !important;
+}
+
+
+/* ============================================
+   29. ACTION GROUPS & HEADER ACTIONS
+   ============================================ */
+
+.fi-ac-btn-group {
+    gap: 8px !important;
+}
+
+.fi-header-actions {
+    gap: 8px !important;
+}
+
+
+/* ============================================
+   30. TABLE COLUMN TYPES
+   ============================================ */
+
+/* Image column */
+.fi-ta-image {
+    border-radius: var(--tp-radius-sm) !important;
+    overflow: hidden !important;
+}
+
+/* Icon column */
+.fi-ta-icon {
+    color: var(--tp-text-muted) !important;
+}
+
+/* Text column */
+.fi-ta-text {
+    color: var(--tp-text-secondary) !important;
+}
+
+/* Color column */
+.fi-ta-color-item {
+    border-radius: var(--tp-radius-xs) !important;
+    border: 1px solid var(--tp-border) !important;
+}
+
+
+/* ============================================
+   31. TABLE TOOLBAR (Search, Filters, Actions)
+   ============================================ */
+
+.fi-ta-header-toolbar {
+    padding: 16px 20px !important;
+    border-bottom: 1px solid var(--tp-border) !important;
+    background: rgba(0, 0, 0, 0.15) !important;
+    gap: 12px !important;
+}
+
+.fi-ta-header-toolbar-search {
+    max-width: 320px !important;
+}
+
+/* Bulk actions bar */
+.fi-ta-selection-indicator {
+    background: var(--tp-accent-subtle) !important;
+    border: 1px solid var(--tp-border-accent) !important;
+    border-radius: var(--tp-radius-sm) !important;
+    padding: 8px 16px !important;
+}
+
+
+/* ============================================
+   32. ADDITIONAL POLISH
+   ============================================ */
+
+/* Avatar styling */
+.fi-avatar {
+    border: 2px solid var(--tp-border-strong) !important;
+    box-shadow: 0 0 0 2px var(--tp-deep) !important;
+}
+
+/* Color swatch in forms */
+.fi-fo-color-picker {
+    border-radius: var(--tp-radius-sm) !important;
+}
+
+/* Date picker */
+.fi-fo-date-time-picker {
+    background: var(--tp-abyss) !important;
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-md) !important;
+    box-shadow: var(--tp-shadow-lg) !important;
+}
+
+/* Key-value entries */
+.fi-fo-key-value {
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-sm) !important;
+    overflow: hidden !important;
+}
+
+/* Fieldset */
+.fi-fieldset {
+    border: 1px solid var(--tp-border) !important;
+    border-radius: var(--tp-radius-md) !important;
+    padding: 20px !important;
+}
+
+.fi-fieldset-label {
+    color: var(--tp-text-muted) !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-weight: 600 !important;
+    padding: 0 8px !important;
+    background: var(--tp-base) !important;
+}
+
+/* Placeholder in empty widgets */
+.fi-wi-placeholder {
+    color: var(--tp-text-dim) !important;
+}
+
+/* Indicator (like sidebar badge dot) */
+.fi-sidebar-item-active-indicator {
+    background: var(--tp-accent) !important;
+}
+
+/* Header actions styling */
+.fi-header-actions .fi-btn {
+    box-shadow: var(--tp-shadow-sm) !important;
+}
+
+/* Table checkbox styling */
+.fi-ta-record-checkbox {
+    border-color: var(--tp-border-strong) !important;
+    background: var(--tp-deep) !important;
+}
+
+.fi-ta-record-checkbox:checked {
+    background-color: var(--tp-accent) !important;
+    border-color: var(--tp-accent) !important;
+}
+
+/* Table reorder handle */
+.fi-ta-reorder-handle {
+    color: var(--tp-text-dim) !important;
+    cursor: grab !important;
+}
+
+.fi-ta-reorder-handle:active {
+    cursor: grabbing !important;
+    color: var(--tp-accent) !important;
+}
+
+/* Make sure content is fully visible */
+.fi-main > * {
+    position: relative;
+    z-index: 1;
 }
