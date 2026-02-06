@@ -18,6 +18,8 @@ class SiteSettingResource extends Resource
 {
     protected static ?string $model = SiteSetting::class;
 
+    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+
     protected static ?string $navigationLabel = 'Site Settings';
 
     public static function getNavigationGroup(): ?string

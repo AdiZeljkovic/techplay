@@ -20,6 +20,8 @@ class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
 
+    protected static ?string $navigationIcon = 'heroicon-o-cube';
+
     public static function form(Schema $schema): Schema
     {
         return $schema

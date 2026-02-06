@@ -38,6 +38,8 @@ class GuideResource extends Resource
 {
     protected static ?string $model = Guide::class;
 
+    protected static ?string $navigationIcon = 'heroicon-o-book-open';
+
     protected static ?string $slug = 'guides';
 
     public static function getNavigationGroup(): ?string

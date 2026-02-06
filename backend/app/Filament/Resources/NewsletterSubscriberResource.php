@@ -19,7 +19,7 @@ class NewsletterSubscriberResource extends Resource
 {
     protected static ?string $model = NewsletterSubscriber::class;
 
-    // protected static string $navigationIcon = 'heroicon-o-envelope';
+    protected static ?string $navigationIcon = 'heroicon-o-envelope';
 
     public static function getNavigationGroup(): ?string
     {

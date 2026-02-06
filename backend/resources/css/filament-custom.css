@@ -101,21 +101,21 @@
    ============================================ */
 
 .fi-sidebar {
-    background: linear-gradient(180deg, #060e1f 0%, #081428 100%) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+    background: linear-gradient(180deg, #07101e 0%, #091525 50%, #0b1830 100%) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
     position: relative !important;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 4px 0 30px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Inner subtle glow at top of sidebar */
+/* Warm glow at top of sidebar matching dashboard accent */
 .fi-sidebar::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 120px;
-    background: linear-gradient(180deg, rgba(252, 65, 0, 0.03) 0%, transparent 100%);
+    height: 200px;
+    background: linear-gradient(180deg, rgba(252, 65, 0, 0.04) 0%, transparent 100%);
     pointer-events: none;
     z-index: 0;
 }
@@ -245,23 +245,29 @@
     background: rgba(255, 255, 255, 0.05) !important;
 }
 
-/* Item ACTIVE — accent pill with glow */
+/* Item ACTIVE — accent pill matching dashboard card style */
 .fi-sidebar-item-button.fi-active {
-    background: rgba(252, 65, 0, 0.12) !important;
-    box-shadow: 0 0 20px rgba(252, 65, 0, 0.06) !important;
+    background: linear-gradient(90deg,
+        rgba(252, 65, 0, 0.14) 0%,
+        rgba(252, 65, 0, 0.06) 70%,
+        transparent 100%
+    ) !important;
+    box-shadow:
+        0 0 20px rgba(252, 65, 0, 0.05),
+        inset 0 0 0 1px rgba(252, 65, 0, 0.08) !important;
 }
 
-/* Active accent indicator bar on left */
+/* Active accent indicator bar on left — glowing */
 .fi-sidebar-item-button.fi-active::before {
     content: '';
     position: absolute;
     left: 0;
-    top: 20%;
-    bottom: 20%;
+    top: 15%;
+    bottom: 15%;
     width: 3px;
-    border-radius: 0 3px 3px 0;
-    background: var(--tp-accent);
-    box-shadow: 0 0 8px rgba(252, 65, 0, 0.4);
+    border-radius: 0 4px 4px 0;
+    background: linear-gradient(180deg, var(--tp-accent), var(--tp-accent-dim));
+    box-shadow: 0 0 12px rgba(252, 65, 0, 0.5), 0 0 4px rgba(252, 65, 0, 0.3);
 }
 
 .fi-sidebar-item-button.fi-active .fi-sidebar-item-label {
@@ -271,6 +277,7 @@
 
 .fi-sidebar-item-button.fi-active .fi-sidebar-item-icon {
     color: var(--tp-accent) !important;
+    filter: drop-shadow(0 0 4px rgba(252, 65, 0, 0.3)) !important;
 }
 
 /* Item label */
@@ -340,19 +347,16 @@
    ============================================ */
 
 .fi-topbar {
-    background: linear-gradient(90deg,
-        rgba(6, 14, 31, 0.92) 0%,
-        rgba(8, 20, 40, 0.88) 50%,
-        rgba(6, 14, 31, 0.92) 100%
-    ) !important;
-    backdrop-filter: blur(30px) saturate(1.8) !important;
-    -webkit-backdrop-filter: blur(30px) saturate(1.8) !important;
+    background: rgba(7, 16, 30, 0.95) !important;
+    backdrop-filter: blur(30px) saturate(1.6) !important;
+    -webkit-backdrop-filter: blur(30px) saturate(1.6) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
     position: relative !important;
     min-height: 56px !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2) !important;
 }
 
-/* Accent gradient line at bottom of topbar */
+/* Accent gradient line at bottom of topbar — visible */
 .fi-topbar::after {
     content: '';
     position: absolute;
@@ -361,10 +365,9 @@
     right: 0;
     height: 1px;
     background: linear-gradient(90deg,
-        transparent 5%,
-        rgba(252, 65, 0, 0.4) 25%,
-        rgba(252, 65, 0, 0.15) 60%,
-        transparent 95%
+        rgba(252, 65, 0, 0.5) 0%,
+        rgba(252, 65, 0, 0.2) 40%,
+        transparent 80%
     );
 }
 

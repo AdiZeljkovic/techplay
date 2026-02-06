@@ -22,6 +22,8 @@ class ForumCategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
 
+    protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-bottom-center-text';
+
     public static function getNavigationGroup(): ?string
     {
         return 'Community';
