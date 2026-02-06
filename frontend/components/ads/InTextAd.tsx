@@ -21,12 +21,18 @@ export default function InTextAd({
     position = "article_in_text",
 }: InTextAdProps) {
     const contentParts = useMemo(() => {
-        // Split content by <p> tags
+        // Split content by top-level <p> tags (not those inside tables, blockquotes, etc.)
         const parts: { html: string; showAd?: boolean }[] = [];
 
-        // Match all paragraph tags with their content
+        // Replace block elements that can contain <p> tags with same-length placeholders
+        // so the regex won't match nested <p> tags. Same length preserves positions.
+        const contentForMatching = content.replace(
+            /<(table|blockquote|figure|ul|ol)\b[\s\S]*?<\/\1>/gi,
+            (match) => "\x00".repeat(match.length)
+        );
+
         const paragraphRegex = /<p[^>]*>[\s\S]*?<\/p>/gi;
-        const matches = content.match(paragraphRegex) || [];
+        const matches = contentForMatching.match(paragraphRegex) || [];
 
         // If we don't have enough paragraphs, just return the content as-is
         if (matches.length < Math.min(...afterParagraphs)) {
@@ -37,10 +43,10 @@ export default function InTextAd({
         let paragraphCount = 0;
         const paragraphPositions: number[] = [];
 
-        // Find positions of each paragraph
+        // Find positions of each top-level paragraph
         let match;
         const regex = new RegExp(paragraphRegex);
-        while ((match = regex.exec(content)) !== null) {
+        while ((match = regex.exec(contentForMatching)) !== null) {
             paragraphPositions.push(match.index + match[0].length);
             paragraphCount++;
         }
