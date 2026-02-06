@@ -236,11 +236,6 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                                 prose-ul:list-disc prose-ul:pl-6 prose-ul:text-[var(--text-secondary)]
                                 prose-ol:list-decimal prose-ol:pl-6 prose-ol:text-[var(--text-secondary)]
                                 prose-hr:border-[var(--border)] prose-hr:my-10
-                                [&_table]:w-full [&_table]:border-collapse [&_table]:my-8 [&_table]:table-fixed [&_table]:border [&_table]:border-[var(--border)]
-                                [&_thead]:bg-[#1e293b] [&_thead]:text-white
-                                [&_th]:p-4 [&_th]:text-left [&_th]:font-bold [&_th]:border [&_th]:border-[var(--border)] [&_th]:text-sm [&_th]:uppercase [&_th]:tracking-wider
-                                [&_td]:p-4 [&_td]:border [&_td]:border-[var(--border)] [&_td]:text-[var(--text-secondary)] [&_td]:align-top
-                                [&_tr]:border-b [&_tr]:border-[var(--border)]
                             "
                             dangerouslySetInnerHTML={{ __html: processedContent }}
                         />

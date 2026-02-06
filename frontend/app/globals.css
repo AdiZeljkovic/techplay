@@ -269,3 +269,66 @@ body {
   border-radius: 8px;
   margin: 1em 0;
 }
+
+/* ========================================
+   ARTICLE CONTENT TABLE STYLES
+   Force correct display values for tables
+   rendered from Filament/TipTap HTML.
+   TipTap uses <th> inside <tbody> (no <thead>).
+   ======================================== */
+
+.prose table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border);
+}
+
+.prose thead {
+  display: table-header-group;
+}
+
+.prose tbody {
+  display: table-row-group;
+}
+
+.prose tr {
+  display: table-row;
+  border-bottom: 1px solid var(--border);
+}
+
+.prose th {
+  display: table-cell;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+  background: #1e293b;
+  border: 1px solid var(--border);
+}
+
+.prose td {
+  display: table-cell;
+  padding: 1rem;
+  color: var(--text-secondary);
+  vertical-align: top;
+  border: 1px solid var(--border);
+}
+
+/* Remove extra margin from <p> tags inside table cells (TipTap wraps cell content in <p>) */
+.prose th p,
+.prose td p {
+  margin: 0;
+  padding: 0;
+}
+
+/* Even row striping for readability */
+.prose tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
