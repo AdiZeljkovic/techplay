@@ -334,30 +334,16 @@ body {
 }
 
 /* ========================================
-   PROFILE PAGE
+   PROFILE PAGE - GAMING UI
    ======================================== */
 
-/* Animated avatar ring - conic gradient spinning */
+/* Animated avatar ring */
 @keyframes spin-ring {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-/* Glass stat card */
-.glass-stat {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.glass-stat:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-/* Achievement glow on hover for unlocked */
+/* Achievement glow on hover */
 @keyframes achievement-glow {
   0%, 100% { box-shadow: 0 0 5px rgba(252, 65, 0, 0.3); }
   50% { box-shadow: 0 0 20px rgba(252, 65, 0, 0.6); }
@@ -365,4 +351,48 @@ body {
 
 .achievement-unlocked:hover {
   animation: achievement-glow 2s ease-in-out infinite;
+}
+
+/* HUD grid pattern background */
+.profile-grid-bg {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Glow card - gradient border on hover */
+.glow-card {
+  position: relative;
+  overflow: hidden;
+}
+.glow-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, transparent, transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  transition: background 0.4s ease;
+  pointer-events: none;
+}
+.glow-card:hover::before {
+  background: linear-gradient(135deg, var(--accent), #8b5cf6, transparent, transparent);
+}
+
+/* Profile section header with accent bar */
+.profile-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-left: 1rem;
+  border-left: 3px solid var(--accent);
+  font-weight: 700;
+  font-size: 1.125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }

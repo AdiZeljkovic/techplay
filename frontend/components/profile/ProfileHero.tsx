@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { UserPlus, Clock, Mail, Award, Calendar, Shield, ShieldCheck, Crown, Pen } from "lucide-react";
+import { UserPlus, Clock, Mail, Award, Calendar, ShieldCheck, Crown, Pen, Activity, Gamepad2, Cpu, Trophy } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import type { ProfileUser, ProfileStats, UserProfile } from "@/lib/types/profile";
@@ -17,6 +17,8 @@ interface ProfileHeroProps {
     loadingAction: boolean;
     onSendRequest: () => void;
     onOpenMessage: () => void;
+    activeTab: string;
+    onTabChange: (tab: string) => void;
 }
 
 const roleConfig: Record<string, { color: string; bg: string; border: string; icon: any; label: string }> = {
@@ -28,16 +30,24 @@ const roleConfig: Record<string, { color: string; bg: string; border: string; ic
     journalist: { color: "text-emerald-400", bg: "bg-emerald-500/15", border: "border-emerald-500/40", icon: Pen, label: "Journalist" },
 };
 
+const tabs = [
+    { id: "overview", label: "Overview", icon: Activity },
+    { id: "ids", label: "IDs", icon: Gamepad2 },
+    { id: "gear", label: "Gear", icon: Cpu },
+    { id: "achievements", label: "Achievements", icon: Trophy },
+];
+
 export default function ProfileHero({
     userData,
     stats,
     nextRank,
     isOwnProfile,
-    currentUser,
     friendStatus,
     loadingAction,
     onSendRequest,
     onOpenMessage,
+    activeTab,
+    onTabChange,
 }: ProfileHeroProps) {
     const currentXP = stats?.xp || 0;
     const level = stats?.level || 1;
@@ -47,13 +57,12 @@ export default function ProfileHero({
     const progressInRank = Math.max(0, currentXP - currentRankMinXP);
     const xpProgress = Math.min(100, (progressInRank / rankSpan) * 100);
     const nextRankName = nextRank?.name || "Next Rank";
-
     const config = roleConfig[userData.role?.toLowerCase()];
 
     return (
         <div className="relative">
-            {/* Cover Image */}
-            <div className="relative h-48 md:h-64 overflow-hidden">
+            {/* === IMMERSIVE COVER === */}
+            <div className="relative h-[340px] md:h-[420px] overflow-hidden">
                 {userData.cover_image ? (
                     <img
                         src={userData.cover_image}
@@ -61,79 +70,111 @@ export default function ProfileHero({
                         className="w-full h-full object-cover"
                     />
                 ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-[var(--bg-secondary)] via-[#001a4d] to-[var(--bg-elevated)]">
-                        {/* Subtle pattern overlay */}
+                    <div className="w-full h-full bg-gradient-to-br from-[#000a20] via-[#001540] to-[#001a4d]">
                         <div
-                            className="absolute inset-0 opacity-10"
+                            className="absolute inset-0"
                             style={{
-                                backgroundImage: `radial-gradient(circle at 25% 50%, rgba(252, 65, 0, 0.15) 0%, transparent 50%),
-                                                  radial-gradient(circle at 75% 30%, rgba(139, 92, 246, 0.1) 0%, transparent 50%)`,
+                                backgroundImage: `
+                                    radial-gradient(ellipse at 20% 60%, rgba(252, 65, 0, 0.08) 0%, transparent 60%),
+                                    radial-gradient(ellipse at 80% 30%, rgba(139, 92, 246, 0.06) 0%, transparent 60%),
+                                    radial-gradient(ellipse at 50% 90%, rgba(6, 182, 212, 0.04) 0%, transparent 50%)
+                                `,
                             }}
                         />
+                        {/* Subtle grid overlay on default cover */}
+                        <div className="absolute inset-0 profile-grid-bg opacity-50" />
                     </div>
                 )}
-                {/* Gradient fade at bottom */}
-                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[var(--bg-primary)] to-transparent" />
-            </div>
 
-            {/* Profile Info Overlay */}
-            <div className="container mx-auto px-4 max-w-5xl relative -mt-20 md:-mt-24 z-10">
-                <div className="flex flex-col md:flex-row items-center md:items-end gap-5 md:gap-8">
-                    {/* Avatar with animated ring */}
-                    <div className="relative flex-shrink-0">
-                        {/* Spinning ring */}
-                        <div
-                            className="absolute -inset-1.5 rounded-full"
-                            style={{
-                                background: "conic-gradient(from 0deg, #FC4100, #8b5cf6, #06b6d4, #FC4100)",
-                                animation: "spin-ring 4s linear infinite",
-                            }}
-                        />
-                        {/* Avatar */}
-                        <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full bg-[var(--bg-elevated)] border-4 border-[var(--bg-primary)] flex items-center justify-center overflow-hidden shadow-2xl">
-                            {userData.avatar_url ? (
-                                <img src={userData.avatar_url} alt={userData.username} className="w-full h-full object-cover" />
-                            ) : (
-                                <span className="text-5xl font-bold text-[var(--accent)]">
-                                    {userData.username?.charAt(0)?.toUpperCase() || "?"}
-                                </span>
+                {/* Heavy gradient fade - bottom 70% */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)]/70 to-transparent" />
+
+                {/* === ACTION BUTTONS - top right === */}
+                <div className="absolute top-4 right-4 md:top-6 md:right-6 z-20 flex gap-2">
+                    {!isOwnProfile && (
+                        <>
+                            <button
+                                onClick={onOpenMessage}
+                                className="px-4 py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-medium hover:bg-white/20 transition-all flex items-center gap-2"
+                            >
+                                <Mail className="w-4 h-4" />
+                                <span className="hidden sm:inline">Message</span>
+                            </button>
+                            {friendStatus === "none" && (
+                                <button
+                                    onClick={onSendRequest}
+                                    disabled={loadingAction}
+                                    className="px-4 py-2 rounded-lg bg-[var(--accent)] text-white text-sm font-bold hover:bg-[var(--accent-hover)] transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(252,65,0,0.3)]"
+                                >
+                                    <UserPlus className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Add Friend</span>
+                                </button>
                             )}
-                        </div>
-                        {/* Level Badge */}
-                        <div className="absolute -bottom-1 -right-1 md:bottom-1 md:right-1 z-20 bg-[var(--accent)] text-white font-bold w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-4 border-[var(--bg-primary)] shadow-lg text-lg">
-                            {level}
-                        </div>
-                    </div>
+                            {friendStatus === "pending" && (
+                                <button disabled className="px-4 py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 text-white/60 text-sm font-medium flex items-center gap-2">
+                                    <Clock className="w-4 h-4" />
+                                    Sent
+                                </button>
+                            )}
+                        </>
+                    )}
+                    {isOwnProfile && (
+                        <Link href="/settings">
+                            <button className="px-4 py-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-medium hover:bg-white/20 transition-all">
+                                Edit Profile
+                            </button>
+                        </Link>
+                    )}
+                </div>
 
-                    {/* User Info */}
-                    <div className="flex-1 text-center md:text-left pb-2 w-full">
-                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                            <div>
-                                <div className="flex items-center justify-center md:justify-start gap-3 flex-wrap">
-                                    <div className="flex flex-col">
-                                        <h1 className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight">
-                                            {userData.display_name || userData.username}
-                                        </h1>
-                                        {userData.display_name && (
-                                            <span className="text-sm text-[var(--text-muted)] font-mono">@{userData.username}</span>
-                                        )}
-                                    </div>
+                {/* === USER INFO - overlaid at bottom === */}
+                <div className="absolute bottom-14 md:bottom-16 left-0 right-0 z-10">
+                    <div className="container mx-auto px-4 max-w-5xl">
+                        <div className="flex items-end gap-5 md:gap-7">
+                            {/* Avatar with animated ring */}
+                            <div className="relative flex-shrink-0">
+                                <div
+                                    className="absolute -inset-1.5 rounded-full opacity-80"
+                                    style={{
+                                        background: "conic-gradient(from 0deg, #FC4100, #8b5cf6, #06b6d4, #FC4100)",
+                                        animation: "spin-ring 6s linear infinite",
+                                    }}
+                                />
+                                <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full bg-[var(--bg-elevated)] border-[3px] border-[var(--bg-primary)] flex items-center justify-center overflow-hidden shadow-2xl">
+                                    {userData.avatar_url ? (
+                                        <img src={userData.avatar_url} alt={userData.username} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="text-4xl md:text-5xl font-bold text-[var(--accent)]">
+                                            {userData.username?.charAt(0)?.toUpperCase() || "?"}
+                                        </span>
+                                    )}
+                                </div>
+                                {/* Level Badge */}
+                                <div className="absolute -bottom-1 -right-1 z-20 bg-gradient-to-br from-[var(--accent)] to-[#d43600] text-white font-black w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center border-[3px] border-[var(--bg-primary)] shadow-[0_0_15px_rgba(252,65,0,0.4)] text-base md:text-lg">
+                                    {level}
+                                </div>
+                            </div>
 
-                                    {/* Role Badge */}
+                            {/* Name + Badges + XP */}
+                            <div className="flex-1 min-w-0 pb-1">
+                                <div className="flex items-center gap-3 flex-wrap mb-1">
+                                    <h1 className="text-2xl md:text-4xl font-black text-white tracking-tight drop-shadow-lg truncate">
+                                        {userData.display_name || userData.username}
+                                    </h1>
+
                                     {config && (() => {
                                         const IconComponent = config.icon;
                                         return (
-                                            <span className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border flex items-center gap-1.5 shadow-lg backdrop-blur-sm ${config.color} ${config.bg} ${config.border}`}>
-                                                <IconComponent className="w-3.5 h-3.5" />
+                                            <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border flex items-center gap-1.5 backdrop-blur-sm shadow-lg ${config.color} ${config.bg} ${config.border}`}>
+                                                <IconComponent className="w-3 h-3" />
                                                 {config.label}
                                             </span>
                                         );
                                     })()}
 
-                                    {/* Supporter Badge */}
                                     {userData.active_support && (
                                         <span
-                                            className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border flex items-center gap-1 shadow-[0_0_15px_-3px_var(--glow)] h-fit"
+                                            className="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border flex items-center gap-1 shadow-[0_0_15px_-3px_var(--glow)]"
                                             style={{
                                                 color: userData.active_support.tier.color || "#F59E0B",
                                                 borderColor: `${userData.active_support.tier.color || "#F59E0B"}40`,
@@ -146,57 +187,56 @@ export default function ProfileHero({
                                         </span>
                                     )}
                                 </div>
-                                <p className="text-[var(--text-muted)] mt-2 flex items-center justify-center md:justify-start gap-2 text-sm">
-                                    <Calendar className="w-4 h-4" />
-                                    Joined {format(new Date(userData.created_at), "MMMM yyyy")}
-                                </p>
-                            </div>
 
-                            {/* Actions */}
-                            <div className="flex gap-3 justify-center flex-shrink-0">
-                                {!isOwnProfile && (
-                                    <>
-                                        <Button variant="secondary" size="sm" onClick={onOpenMessage}>
-                                            <Mail className="w-4 h-4 mr-2" />
-                                            Message
-                                        </Button>
-                                        {friendStatus === "none" && (
-                                            <Button onClick={onSendRequest} disabled={loadingAction} className="shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]">
-                                                <UserPlus className="w-4 h-4 mr-2" />
-                                                Add Friend
-                                            </Button>
-                                        )}
-                                        {friendStatus === "pending" && (
-                                            <Button variant="secondary" disabled>
-                                                <Clock className="w-4 h-4 mr-2" />
-                                                Sent
-                                            </Button>
-                                        )}
-                                    </>
-                                )}
-                                {isOwnProfile && (
-                                    <Link href="/settings">
-                                        <Button variant="outline" size="sm">
-                                            Edit Profile
-                                        </Button>
-                                    </Link>
-                                )}
+                                <div className="flex items-center gap-3 text-sm text-white/60 mb-3">
+                                    {userData.display_name && (
+                                        <span className="font-mono text-white/40">@{userData.username}</span>
+                                    )}
+                                    <span className="flex items-center gap-1.5">
+                                        <Calendar className="w-3.5 h-3.5" />
+                                        Joined {format(new Date(userData.created_at), "MMM yyyy")}
+                                    </span>
+                                </div>
+
+                                {/* XP Bar */}
+                                <div className="max-w-md">
+                                    <div className="flex justify-between text-[11px] font-bold text-white/70 mb-1 uppercase tracking-wider">
+                                        <span className="text-[var(--accent)]">{userData.rank?.name || "Unranked"}</span>
+                                        <span>{Math.max(0, nextRankMinXP - currentXP)} XP to {nextRankName}</span>
+                                    </div>
+                                    <div className="h-2.5 bg-black/40 rounded-full overflow-hidden backdrop-blur-sm border border-white/10">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${xpProgress}%` }}
+                                            transition={{ duration: 1.2, ease: "easeOut" }}
+                                            className="h-full bg-gradient-to-r from-[var(--accent)] via-[#ff6b35] to-purple-500 rounded-full shadow-[0_0_12px_rgba(252,65,0,0.5)]"
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        {/* XP Bar */}
-                        <div className="mt-5 max-w-xl">
-                            <div className="flex justify-between text-xs font-semibold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider">
-                                <span className="font-bold text-[var(--accent)]">{userData.rank?.name || "Unranked"}</span>
-                                <span>{Math.max(0, nextRankMinXP - currentXP)} XP to {nextRankName}</span>
-                            </div>
-                            <div className="h-3 bg-[var(--bg-elevated)] rounded-full overflow-hidden border border-[var(--border)] relative">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${xpProgress}%` }}
-                                    transition={{ duration: 1, ease: "easeOut" }}
-                                    className="h-full bg-gradient-to-r from-[var(--accent)] to-purple-500 rounded-full shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]"
-                                />
+                {/* === TAB NAVIGATION - glass bar at bottom edge === */}
+                <div className="absolute bottom-0 left-0 right-0 z-20">
+                    <div className="bg-black/30 backdrop-blur-xl border-t border-white/10">
+                        <div className="container mx-auto px-4 max-w-5xl">
+                            <div className="flex items-center gap-0 overflow-x-auto no-scrollbar">
+                                {tabs.map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => onTabChange(tab.id)}
+                                        className={`flex items-center gap-2 px-5 md:px-6 py-3 text-sm font-semibold transition-all whitespace-nowrap border-b-2 ${
+                                            activeTab === tab.id
+                                                ? "border-[var(--accent)] text-[var(--accent)] bg-white/5"
+                                                : "border-transparent text-white/50 hover:text-white/80 hover:bg-white/5"
+                                        }`}
+                                    >
+                                        <tab.icon className="w-4 h-4" />
+                                        {tab.label}
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     </div>

@@ -1,86 +1,66 @@
 import { Copy, Gamepad2, Zap, MessageSquare, Monitor } from "lucide-react";
-import { Button } from "../ui/Button";
 
 interface GamertagsCardProps {
     tags: Record<string, string>;
 }
 
-// Helper for icons/colors
 const getPlatformStyle = (key: string) => {
     const k = key.toLowerCase();
 
-    if (k.includes('steam')) return {
-        icon: Gamepad2, // Ideally Steam Icon
-        bg: 'bg-[#171a21]',
-        gradient: 'from-[#171a21] to-[#1b2838]',
-        border: 'border-[#1b2838]',
-        iconBg: 'bg-[#00adee]/20',
-        text: 'text-[#00adee]',
-        subtext: 'text-[#66c0f4]',
-        label: 'Steam'
+    if (k.includes("steam")) return {
+        icon: Gamepad2,
+        bg: "from-[#1b2838] to-[#171a21]",
+        accent: "#00adee",
+        label: "Steam",
     };
-
-    if (k.includes('epic')) return {
+    if (k.includes("epic")) return {
         icon: Zap,
-        bg: 'bg-[#2a2a2a]',
-        gradient: 'from-[#2a2a2a] to-[#121212]',
-        border: 'border-white/10',
-        iconBg: 'bg-white/20',
-        text: 'text-white',
-        subtext: 'text-gray-400',
-        label: 'Epic Games'
+        bg: "from-[#2a2a2a] to-[#121212]",
+        accent: "#ffffff",
+        label: "Epic Games",
     };
-
-    if (k.includes('xbox')) return {
+    if (k.includes("xbox")) return {
         icon: Gamepad2,
-        bg: 'bg-[#107C10]',
-        gradient: 'from-[#107C10] to-[#0b580b]',
-        border: 'border-[#0b580b]',
-        iconBg: 'bg-black/20',
-        text: 'text-white',
-        subtext: 'text-green-200',
-        label: 'Xbox Live'
+        bg: "from-[#107C10] to-[#0b580b]",
+        accent: "#5dc21e",
+        label: "Xbox Live",
     };
-
-    if (k.includes('psn') || k.includes('playstation')) return {
+    if (k.includes("psn") || k.includes("playstation")) return {
         icon: Gamepad2,
-        bg: 'bg-[#003791]',
-        gradient: 'from-[#003791] to-[#001D4A]',
-        border: 'border-[#002868]',
-        iconBg: 'bg-white/20',
-        text: 'text-white',
-        subtext: 'text-blue-300',
-        label: 'PlayStation'
+        bg: "from-[#003791] to-[#001D4A]",
+        accent: "#4a90d9",
+        label: "PlayStation",
     };
-
-    if (k.includes('discord')) return {
+    if (k.includes("discord")) return {
         icon: MessageSquare,
-        bg: 'bg-[#5865F2]',
-        gradient: 'from-[#5865F2] to-[#404EED]',
-        border: 'border-[#4752c4]',
-        iconBg: 'bg-white/20',
-        text: 'text-white',
-        subtext: 'text-indigo-200',
-        label: 'Discord'
+        bg: "from-[#5865F2] to-[#404EED]",
+        accent: "#7289da",
+        label: "Discord",
     };
-
-    // Default
+    if (k.includes("nintendo") || k.includes("switch")) return {
+        icon: Gamepad2,
+        bg: "from-[#e60012] to-[#8b0000]",
+        accent: "#e60012",
+        label: "Nintendo",
+    };
+    if (k.includes("battle") || k.includes("blizzard")) return {
+        icon: Gamepad2,
+        bg: "from-[#148eff] to-[#004aad]",
+        accent: "#00aeff",
+        label: "Battle.net",
+    };
     return {
         icon: Monitor,
-        bg: 'bg-[var(--bg-elevated)]',
-        gradient: 'from-gray-800 to-gray-900',
-        border: 'border-[var(--border)]',
-        iconBg: 'bg-white/5',
-        text: 'text-gray-400',
-        subtext: 'text-gray-500',
-        label: key
+        bg: "from-gray-800 to-gray-900",
+        accent: "#94a3b8",
+        label: key,
     };
 };
 
 export const GamertagsCard = ({ tags }: GamertagsCardProps) => {
     if (!tags || Object.keys(tags).length === 0) {
         return (
-            <div className="text-[var(--text-muted)] italic text-center p-8 bg-[var(--bg-card)] rounded-xl border border-[var(--border)]">
+            <div className="p-10 text-center border border-dashed border-white/[0.06] rounded-xl text-white/30">
                 No gamertags added yet.
             </div>
         );
@@ -88,65 +68,75 @@ export const GamertagsCard = ({ tags }: GamertagsCardProps) => {
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
-        // Toast would be better, but alert is fine for now
-        const el = document.createElement('div');
-        el.innerText = 'Copied!';
-        el.className = 'fixed bottom-4 right-4 bg-[var(--accent)] text-black px-4 py-2 rounded shadow-lg z-50 animate-bounce';
+        const el = document.createElement("div");
+        el.innerText = "Copied!";
+        el.className = "fixed bottom-4 right-4 bg-[var(--accent)] text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm font-bold";
         document.body.appendChild(el);
-        setTimeout(() => el.remove(), 2000);
+        setTimeout(() => el.remove(), 1500);
     };
 
     return (
-        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6">
-            <h3 className="font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                <Gamepad2 className="w-5 h-5 text-[var(--accent)]" />
-                Gaming IDs
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(tags).map(([platform, id]) => {
-                    if (!id) return null;
-                    const style = getPlatformStyle(platform);
-                    const Icon = style.icon;
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Object.entries(tags).map(([platform, id]) => {
+                if (!id) return null;
+                const style = getPlatformStyle(platform);
+                const Icon = style.icon;
 
-                    return (
-                        <div
-                            key={platform}
-                            className={`relative group overflow-hidden rounded-xl p-4 border transition-all duration-300 hover:scale-[1.02] hover:shadow-xl ${style.border} ${style.bg}`}
-                        >
-                            {/* Background Gradient/Mesh effect */}
-                            <div className={`absolute inset-0 opacity-20 bg-gradient-to-br ${style.gradient}`} />
-                            <div className="absolute -right-6 -bottom-6 opacity-10 rotate-12 transition-transform group-hover:rotate-0 group-hover:scale-110">
-                                <Icon className="w-24 h-24" />
-                            </div>
+                return (
+                    <div
+                        key={platform}
+                        className="group relative overflow-hidden rounded-xl border border-white/[0.06] transition-all duration-300 hover:scale-[1.02]"
+                        style={{
+                            boxShadow: `0 0 0 0 ${style.accent}00`,
+                            transition: "box-shadow 0.3s, transform 0.3s",
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.boxShadow = `0 0 30px -5px ${style.accent}40, inset 0 1px 0 ${style.accent}20`;
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.boxShadow = `0 0 0 0 ${style.accent}00`;
+                        }}
+                    >
+                        {/* Background gradient */}
+                        <div className={`absolute inset-0 bg-gradient-to-br ${style.bg}`} />
 
-                            <div className="relative z-10 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className={`p-3 rounded-lg ${style.iconBg} shadow-lg ring-1 ring-white/10`}>
-                                        <Icon className={`w-6 h-6 ${style.text}`} />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className={`text-[10px] font-bold uppercase tracking-widest mb-0.5 ${style.subtext}`}>
-                                            {style.label}
-                                        </span>
-                                        <span className="text-white font-bold tracking-wide text-lg text-shadow-sm font-mono leading-none py-1">
-                                            {id}
-                                        </span>
-                                    </div>
-                                </div>
+                        {/* Glossy overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent h-1/2" />
 
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => copyToClipboard(id as string)}
-                                    className="text-white/50 hover:text-white hover:bg-white/10 shrink-0"
-                                >
-                                    <Copy className="w-4 h-4" />
-                                </Button>
-                            </div>
+                        {/* Background icon watermark */}
+                        <div className="absolute -right-4 -bottom-4 opacity-[0.06] group-hover:opacity-[0.1] transition-opacity">
+                            <Icon className="w-28 h-28" />
                         </div>
-                    );
-                })}
-            </div>
+
+                        {/* Content */}
+                        <div className="relative z-10 p-5 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div
+                                    className="p-3 rounded-xl shadow-lg ring-1 ring-white/10"
+                                    style={{ backgroundColor: `${style.accent}20` }}
+                                >
+                                    <Icon className="w-6 h-6" style={{ color: style.accent }} />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/40 mb-0.5">
+                                        {style.label}
+                                    </span>
+                                    <span className="text-white font-bold text-lg font-mono leading-tight">
+                                        {id}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => copyToClipboard(id as string)}
+                                className="p-2.5 rounded-lg bg-white/5 hover:bg-white/15 text-white/40 hover:text-white transition-all border border-white/[0.06]"
+                            >
+                                <Copy className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                );
+            })}
         </div>
     );
 };
