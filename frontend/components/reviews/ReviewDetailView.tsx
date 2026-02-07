@@ -59,33 +59,38 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
     const scoreBg = displayScore >= 8 ? "bg-green-500" : displayScore >= 6 ? "bg-yellow-500" : "bg-red-500";
 
     // JSON-LD: Product with review (Google requires review/offers/aggregateRating on Product)
+    const ratingValue = Number(review.review_score ?? review.rating ?? 0);
+    const reviewObj: Record<string, any> = {
+        "@type": "Review",
+        "headline": review.seo_title || review.title,
+        "author": {
+            "@type": "Person",
+            "name": review.author?.display_name || review.author?.username || "TechPlay Reviewer",
+            "url": `${process.env.NEXT_PUBLIC_APP_URL}/profile/${review.author?.username}`
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "TechPlay",
+            "url": process.env.NEXT_PUBLIC_APP_URL
+        },
+        "datePublished": review.published_at || review.created_at,
+        "reviewBody": review.summary || review.excerpt || ""
+    };
+    // Only include reviewRating when we have a valid score
+    if (ratingValue > 0) {
+        reviewObj["reviewRating"] = {
+            "@type": "Rating",
+            "ratingValue": ratingValue.toString(),
+            "bestRating": "10",
+            "worstRating": "1"
+        };
+    }
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "Product",
         "name": review.item_name || review.title,
         "image": review.cover_image || review.featured_image_url,
-        "review": {
-            "@type": "Review",
-            "headline": review.seo_title || review.title,
-            "reviewRating": {
-                "@type": "Rating",
-                "ratingValue": review.rating,
-                "bestRating": "10",
-                "worstRating": "1"
-            },
-            "author": {
-                "@type": "Person",
-                "name": review.author?.display_name || review.author?.username || "TechPlay Reviewer",
-                "url": `${process.env.NEXT_PUBLIC_APP_URL}/profile/${review.author?.username}`
-            },
-            "publisher": {
-                "@type": "Organization",
-                "name": "TechPlay",
-                "url": process.env.NEXT_PUBLIC_APP_URL
-            },
-            "datePublished": review.published_at || review.created_at,
-            "reviewBody": review.summary || review.excerpt || ""
-        }
+        "review": reviewObj
     };
 
     const { content: processedContent, toc } = useMemo(() => processContent(review.content || ''), [review.content]);
