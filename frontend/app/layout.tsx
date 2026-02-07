@@ -96,12 +96,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={beVietnamPro.variable} suppressHydrationWarning>
       <head>
-        {/* Preconnect to API - critical for LCP as content comes from API */}
+        {/* Preconnect to API & storage - critical for LCP */}
         <link rel="preconnect" href="https://api-beta.techplay.gg" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://api-beta.techplay.gg" />
-
-        {/* Preconnect to image CDN/storage - images are loaded from here */}
-        <link rel="preconnect" href="https://api-beta.techplay.gg" />
         <link rel="dns-prefetch" href="https://api-beta.techplay.gg" />
 
         {/* Google Fonts - preconnect to both domains */}
