@@ -14,9 +14,10 @@ const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
 interface ReviewCategoryClientProps {
     categorySlug: string;
+    initialData?: any;
 }
 
-export default function ReviewCategoryClient({ categorySlug }: ReviewCategoryClientProps) {
+export default function ReviewCategoryClient({ categorySlug, initialData }: ReviewCategoryClientProps) {
     const [page, setPage] = useState(1);
 
     // Find the category definition
@@ -33,7 +34,8 @@ export default function ReviewCategoryClient({ categorySlug }: ReviewCategoryCli
 
     const { data, isLoading, isValidating } = useSWR<PaginatedResponse<Review>>(
         `/reviews?${queryParams.toString()}`,
-        fetcher
+        fetcher,
+        page === 1 && initialData ? { fallbackData: initialData, revalidateOnMount: false } : {}
     );
 
     // Fetch Category Details (for SEO Text)

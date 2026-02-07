@@ -14,9 +14,10 @@ const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
 interface NewsCategoryClientProps {
     categorySlug: string;
+    initialData?: any;
 }
 
-export default function NewsCategoryClient({ categorySlug }: NewsCategoryClientProps) {
+export default function NewsCategoryClient({ categorySlug, initialData }: NewsCategoryClientProps) {
     const [page, setPage] = useState(1);
 
     // Find the category definition
@@ -33,7 +34,8 @@ export default function NewsCategoryClient({ categorySlug }: NewsCategoryClientP
 
     const { data, isLoading, isValidating } = useSWR<PaginatedResponse<Article>>(
         `/news?${queryParams.toString()}`,
-        fetcher
+        fetcher,
+        page === 1 && initialData ? { fallbackData: initialData, revalidateOnMount: false } : {}
     );
 
     // Fetch Category Details (for SEO Text)

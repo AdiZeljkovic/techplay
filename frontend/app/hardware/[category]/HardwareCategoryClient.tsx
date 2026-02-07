@@ -15,9 +15,10 @@ const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
 interface HardwareCategoryClientProps {
     categorySlug: string;
+    initialData?: any;
 }
 
-export default function HardwareCategoryClient({ categorySlug }: HardwareCategoryClientProps) {
+export default function HardwareCategoryClient({ categorySlug, initialData }: HardwareCategoryClientProps) {
     const [page, setPage] = useState(1);
 
     // Find the category definition to get its ID (which is used for API filtering)
@@ -38,7 +39,8 @@ export default function HardwareCategoryClient({ categorySlug }: HardwareCategor
 
     const { data, isLoading, isValidating } = useSWR<PaginatedResponse<Review>>(
         `/tech?${queryParams.toString()}`,
-        fetcher
+        fetcher,
+        page === 1 && initialData ? { fallbackData: initialData, revalidateOnMount: false } : {}
     );
 
     // Fetch Category Details (for SEO Text)
