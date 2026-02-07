@@ -19,7 +19,10 @@ return [
 
     'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => explode(',', env('FRONTEND_URL', 'http://localhost:3000')),
+    'allowed_origins' => array_values(array_unique(array_merge(
+        explode(',', env('FRONTEND_URL', 'http://localhost:3000')),
+        ['https://techplay.gg', 'https://www.techplay.gg', 'https://beta.techplay.gg'],
+    ))),
 
     'allowed_origins_patterns' => [],
 
