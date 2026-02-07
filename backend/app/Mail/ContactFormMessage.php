@@ -13,7 +13,7 @@ class ContactFormMessage extends Mailable
 
     public string $senderName;
     public string $senderEmail;
-    public string $subject;
+    public string $contactSubject;
     public string $messageContent;
 
     /**
@@ -23,7 +23,7 @@ class ContactFormMessage extends Mailable
     {
         $this->senderName = $name;
         $this->senderEmail = $email;
-        $this->subject = $subject;
+        $this->contactSubject = $subject;
         $this->messageContent = $message;
     }
 
@@ -34,7 +34,7 @@ class ContactFormMessage extends Mailable
     {
         return new Envelope(
             replyTo: [new Address($this->senderEmail, $this->senderName)],
-            subject: "[TechPlay Contact] {$this->subject}",
+            subject: "[TechPlay Contact] {$this->contactSubject}",
         );
     }
 
@@ -48,7 +48,7 @@ class ContactFormMessage extends Mailable
             with: [
                 'senderName' => $this->senderName,
                 'senderEmail' => $this->senderEmail,
-                'subject' => $this->subject,
+                'subject' => $this->contactSubject,
                 'messageContent' => $this->messageContent,
             ],
         );
