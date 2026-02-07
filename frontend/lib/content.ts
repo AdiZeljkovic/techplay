@@ -8,11 +8,10 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
     const toc: TOCItem[] = [];
     const idMap = new Map<string, number>();
 
+    // Step 1: Process headings for TOC (h2, h3)
     let processedContent = (html || '').replace(/<(h[2-3])([^>]*)>(.*?)<\/\1>/gi, (match, tag, attrs, text) => {
-        // Strip tags from text to get clean title
         const cleanText = text.replace(/<[^>]*>/g, '').trim();
 
-        // Generate header ID
         let id = cleanText
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, '-')
@@ -20,7 +19,6 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
 
         if (!id) id = 'heading';
 
-        // Handle duplicates
         if (idMap.has(id)) {
             const count = idMap.get(id)! + 1;
             idMap.set(id, count);
@@ -35,7 +33,6 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
             level: parseInt(tag.charAt(1)),
         });
 
-        // Add ID to the tag
         if (attrs.includes('id=')) {
             return match;
         }
@@ -45,47 +42,46 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
 
     // --- Embed Processing ---
 
-    // 1. YouTube: Convert links to iframe embeds
-    // 1. YouTube: Convert links to iframe embeds
-    // Handle anchor-wrapped YouTube links: <a href="youtube...">text</a>
-    // Use non-greedy matching to properly extract video ID
-    // Updated to handle <p> tags with attributes and non-breaking spaces
-    const youtubeAnchorRegex = /(?:<p\b[^>]*>)?[\s\u00A0]*<a\b[^>]*?\bhref\s*=\s*["']https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})[^"']*["'][^>]*>[\s\S]*?<\/a>[\s\u00A0]*(?:<\/p>)?/gi;
-    processedContent = processedContent.replace(youtubeAnchorRegex, (match, videoId) => {
-        console.log('YouTube match found, videoId:', videoId); // Debug
-        return `<div class="relative w-full pb-[56.25%] h-0 rounded-xl overflow-hidden shadow-lg"><iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+    // Step 2: Pre-process - unwrap social media <a> links that are the sole content of a <p> tag.
+    // The rich text editor (TipTap/Filament) wraps pasted URLs in <a> tags:
+    //   <p><a href="https://x.com/...">https://x.com/...</a></p>
+    // We convert these back to plain URLs so the embed regexes below can match them.
+    const socialDomains = 'youtube\\.com\\/watch|youtu\\.be|twitter\\.com|x\\.com|instagram\\.com\\/(?:p|reel)|facebook\\.com';
+    const unwrapRegex = new RegExp(
+        `<p\\b[^>]*>[\\s\\u00A0]*<a\\b[^>]*?href=["'](https?:\\/\\/(?:www\\.)?(?:${socialDomains})[^"']*?)["'][^>]*>[\\s\\S]*?<\\/a>[\\s\\u00A0]*<\\/p>`,
+        'gi'
+    );
+    processedContent = processedContent.replace(unwrapRegex, '<p>$1</p>');
+
+    // Step 3: YouTube - convert URLs to responsive iframe embeds
+    // Matches: youtube.com/watch?v=ID, youtu.be/ID (with optional params after the 11-char ID)
+    // IMPORTANT: [^\s<]* ensures we don't eat into HTML tags (unlike \S* which would)
+    const youtubeRegex = /(?:<p\b[^>]*>)?[\s\u00A0]*(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})[^\s<]*[\s\u00A0]*(?:<\/p>)?/gi;
+    processedContent = processedContent.replace(youtubeRegex, (_, videoId) => {
+        return `<div class="embed-container my-8"><div class="relative w-full" style="padding-bottom:56.25%"><iframe class="absolute top-0 left-0 w-full h-full rounded-xl" src="https://www.youtube.com/embed/${videoId}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div></div>`;
     });
 
-    // Also handle plain text YouTube URLs (not wrapped in anchor)
-    const youtubeTextRegex = /(?:<p\b[^>]*>)?[\s\u00A0]*(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})[^\s<]*)\s*(?:<\/p>)?/g;
-    processedContent = processedContent.replace(youtubeTextRegex, (match, fullUrl, videoId) => {
-        console.log('YouTube text match, videoId:', videoId); // Debug
-        return `<div class="relative w-full pb-[56.25%] h-0 rounded-xl overflow-hidden shadow-lg"><iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+    // Step 4: Twitter/X - convert URLs to tweet blockquotes
+    // The blockquote will be processed by Twitter's widgets.js (loaded via useEmbedScripts hook)
+    // IMPORTANT: [^\s<]* prevents eating into HTML tags (was (?:\S*)? which broke following <h2> tags)
+    const twitterRegex = /(?:<p\b[^>]*>)?[\s\u00A0]*(?:https?:\/\/)?(?:www\.)?(?:twitter\.com|x\.com)\/(\w+)\/status\/(\d+)[^\s<]*[\s\u00A0]*(?:<\/p>)?/gi;
+    processedContent = processedContent.replace(twitterRegex, (_, user, id) => {
+        return `<div class="embed-container flex justify-center my-8"><blockquote class="twitter-tweet" data-dnt="true" data-theme="dark"><a href="https://twitter.com/${user}/status/${id}">Loading Tweet...</a></blockquote></div>`;
     });
 
-    // 2. Twitter/X: Convert x.com/user/status/ID or twitter.com/...
-    // Uses official publish widget (needs platform.js in layout/component)
-    const twitterRegex = /(?:<p\b[^>]*>)?[\s\u00A0]*(?:https?:\/\/)?(?:www\.)?(?:twitter\.com|x\.com)\/(\w+)\/status\/(\d+)(?:\S*)?[\s\u00A0]*(?:<\/p>)?/g;
-    processedContent = processedContent.replace(twitterRegex, (match, user, id) => {
-        return `<div class="flex justify-center my-6"><blockquote class="twitter-tweet" data-dnt="true" data-theme="dark"><a href="https://twitter.com/${user}/status/${id}?ref_src=twsrc%5Etfw">Loading Tweet...</a></blockquote></div>`;
+    // Step 5: Instagram - convert URLs to iframe embeds (no external script needed)
+    // Matches: instagram.com/p/CODE or instagram.com/reel/CODE
+    const instagramRegex = /(?:<p\b[^>]*>)?[\s\u00A0]*(?:https?:\/\/)?(?:www\.)?instagram\.com\/(p|reel)\/([a-zA-Z0-9_-]+)[^\s<]*[\s\u00A0]*(?:<\/p>)?/gi;
+    processedContent = processedContent.replace(instagramRegex, (_, type, id) => {
+        return `<div class="embed-container flex justify-center my-8"><iframe src="https://www.instagram.com/${type}/${id}/embed/" style="max-width:540px;width:100%;min-height:500px;border:none;border-radius:12px;overflow:hidden;background:#000;" scrolling="no" allowtransparency="true"></iframe></div>`;
     });
 
-    // 3. Instagram: Convert instagram.com/p/ID or reel/ID
-    // Uses official embed.js
-    const instagramRegex = /(?:<p\b[^>]*>)?[\s\u00A0]*(?:https?:\/\/)?(?:www\.)?instagram\.com\/(?:p|reel)\/([a-zA-Z0-9_-]+)(?:\S*)?[\s\u00A0]*(?:<\/p>)?/g;
-    processedContent = processedContent.replace(instagramRegex, (match, id) => {
-        return `<div class="flex justify-center my-6"><blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/${id}/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style=" background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"></blockquote></div>`;
-    });
-
-    // 4. Facebook: Convert facebook.com/*/posts/* and permalinks
-    // Uses iframe method for simplicity (no script required mostly, or works with standard SDK)
-    // Supports: facebook.com/page/posts/id, facebook.com/permalink.php?story_fbid=id&id=id
-    // This is tricky because FB URLs vary wildly. We'll target standard post patterns.
-    // For simplicity, we can use the "plugins/post.php" iframe which takes the full URL as href.
-    const facebookRegex = /(?:<p\b[^>]*>)?[\s\u00A0]*(https?:\/\/(?:www\.|web\.|m\.)?facebook\.com\/(?:[^/]+\/posts\/[^/?]+|permalink\.php\?[^"<\s]+|[^/]+\/videos\/[^/?]+|watch\/\?v=\d+))[\s\u00A0]*(?:<\/p>)?/g;
-    processedContent = processedContent.replace(facebookRegex, (match, url) => {
+    // Step 6: Facebook - convert URLs to iframe embeds
+    // Supports: facebook.com/page/posts/id, permalink.php, videos, watch
+    const facebookRegex = /(?:<p\b[^>]*>)?[\s\u00A0]*(https?:\/\/(?:www\.|web\.|m\.)?facebook\.com\/(?:[^/]+\/posts\/[^\s<]+|permalink\.php\?[^\s<]+|[^/]+\/videos\/[^\s<]+|watch\/\?v=\d+))[^\s<]*[\s\u00A0]*(?:<\/p>)?/gi;
+    processedContent = processedContent.replace(facebookRegex, (_, url) => {
         const encodedUrl = encodeURIComponent(url);
-        return `<div class="flex justify-center my-6"><iframe src="https://www.facebook.com/plugins/post.php?href=${encodedUrl}&show_text=true&width=500" width="500" height="600" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe></div>`;
+        return `<div class="embed-container flex justify-center my-8"><iframe src="https://www.facebook.com/plugins/post.php?href=${encodedUrl}&show_text=true&width=500" width="500" height="600" style="border:none;overflow:hidden;max-width:100%;border-radius:12px;" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe></div>`;
     });
 
     return { content: processedContent, toc };

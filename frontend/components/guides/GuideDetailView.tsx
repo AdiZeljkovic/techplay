@@ -7,6 +7,7 @@ import Image from "next/image";
 import { format, formatDistanceToNow } from "date-fns";
 import Script from "next/script";
 import { processContent } from "@/lib/content";
+import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import TableOfContents from "@/components/ui/TableOfContents";
 import AdUnit from "@/components/ads/AdUnit";
 import CommentsSection from "@/components/comments/CommentsSection";
@@ -44,6 +45,7 @@ interface GuideDetailViewProps {
 export default function GuideDetailView({ guide, userVote: initialVote }: GuideDetailViewProps) {
     const [isScrolled, setIsScrolled] = useState(false);
     const { user } = useAuth();
+    useEmbedScripts();
     const [voteState, setVoteState] = useState<'helpful' | 'not_helpful' | null>(
         initialVote === true ? 'helpful' : initialVote === false ? 'not_helpful' : null
     );

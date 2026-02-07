@@ -5,9 +5,9 @@ import Link from "next/link";
 import { ArrowLeft, Clock, Calendar, User, Eye } from "lucide-react";
 import Image from "next/image";
 import { format, formatDistanceToNow } from "date-fns";
-import Script from "next/script";
 import { useMemo, useState, useEffect } from "react";
 import { processContent } from "@/lib/content";
+import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import TableOfContents from "@/components/ui/TableOfContents";
 import AdUnit from "@/components/ads/AdUnit";
 import InTextAd from "@/components/ads/InTextAd";
@@ -57,6 +57,7 @@ const ClientDate = ({ date }: { date: string }) => {
 
 export default function ArticleDetailView({ article, initialComments }: ArticleDetailViewProps) {
     const [isScrolled, setIsScrolled] = useState(false);
+    useEmbedScripts();
 
     // Calculate reading time
     const readingTime = useMemo(() => {
@@ -391,15 +392,6 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
 
             </div >
 
-            {/* Social Media Embed Scripts */}
-            <Script
-                src="https://platform.twitter.com/widgets.js"
-                strategy="lazyOnload"
-            />
-            <Script
-                src="//www.instagram.com/embed.js"
-                strategy="lazyOnload"
-            />
         </article >
     );
 }

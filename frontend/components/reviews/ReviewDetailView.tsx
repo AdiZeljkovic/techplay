@@ -5,8 +5,8 @@ import Link from "next/link";
 import { ArrowLeft, Clock, Calendar, Check, X, Star } from "lucide-react";
 import Image from "next/image";
 import { format } from "date-fns";
-import Script from "next/script";
 import { useMemo, useState, useEffect } from "react";
+import Script from "next/script";
 import { motion } from "framer-motion";
 import TableOfContents from "@/components/ui/TableOfContents";
 import AdUnit from "@/components/ads/AdUnit";
@@ -27,13 +27,13 @@ interface ReviewDetailViewProps {
 // Let's assume standard client-side usage is fine or we duplicate simple regex logic if needed. 
 // ArticleDetailView uses `processContent` from `@/lib/content`.
 import { processContent } from "@/lib/content";
+import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import ArticleFooterMessage from "@/components/ui/ArticleFooterMessage";
 import { decodeHtml } from "@/lib/decode";
 
 export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
-    console.log("Review Full Object:", review);
-    console.log("Review Data Field:", review.review_data); // DEBUG SPECIFIC
     const [isScrolled, setIsScrolled] = useState(false);
+    useEmbedScripts();
 
     // Calculate reading time
     const readingTime = useMemo(() => {
