@@ -6,107 +6,30 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
-import { User, UserPlus, UserCheck, Clock, MessageSquare, Award, Calendar, Gamepad2, Cpu, Trophy, Activity, Mail, Shield, ShieldCheck, Crown, Pen, Eye } from "lucide-react";
+import { User, Activity, Gamepad2, Cpu, Trophy } from "lucide-react";
 import { useState } from "react";
-import { formatDistanceToNow, format } from "date-fns";
 import { GamertagsCard } from "@/components/profile/GamertagsCard";
 import { SpecsCard } from "@/components/profile/SpecsCard";
 import { AchievementGrid } from "@/components/profile/AchievementGrid";
-import { motion } from "framer-motion";
+import { SendMessageModal } from "@/components/messaging/SendMessageModal";
+import ProfileHero from "@/components/profile/ProfileHero";
+import ProfileStats from "@/components/profile/ProfileStats";
+import ProfileOverview from "@/components/profile/ProfileOverview";
+import type { UserProfile } from "@/lib/types/profile";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
-
-interface UserProfile {
-    user: {
-        id: number;
-        username: string;
-        display_name?: string;
-        role: string;
-        email: string;
-        created_at: string;
-        threads: any[];
-        posts: any[];
-        xp: number;
-        gamertags: any;
-        pc_specs: any;
-        achievements: {
-            id: number;
-            name: string;
-            description: string;
-            points: number;
-            icon_path?: string;
-            is_unlocked: boolean;
-            unlocked_at?: string;
-        }[];
-        avatar_url?: string;
-        bio?: string;
-        rank?: {
-            name: string;
-            icon?: string;
-            color?: string;
-            min_xp?: number;
-        };
-        active_support?: {
-            tier: {
-                name: string;
-                color: string;
-            };
-        };
-    };
-    stats: {
-        threads_count: number;
-        posts_count: number;
-        // ... (skipping unchanged lines in tool? Better to target specific blocks)
-
-        comments_count: number;
-        reputation: number;
-        joined_at: string;
-        xp: number;
-        achievements_count: number;
-        level: number;
-        reviews_count?: number;
-    };
-    achievements: {
-        id: number;
-        name: string;
-        description: string;
-        points: number;
-        icon_path?: string;
-        is_unlocked: boolean;
-        unlocked_at?: string;
-    }[];
-    next_rank: any;
-    recent_articles?: {
-        id: number;
-        title: string;
-        slug: string;
-        type: string;
-        featured_image?: string;
-        excerpt?: string;
-        published_at: string;
-        views: number;
-    }[];
-    is_staff?: boolean;
-}
-
-import { SendMessageModal } from "@/components/messaging/SendMessageModal";
 
 export default function ProfilePage() {
     const params = useParams();
     const { user: currentUser, isLoading: authLoading } = useAuth();
 
-    // Resolve "me" to actual username
     const rawUsername = params.username as string;
-    const username = (rawUsername === 'me' && currentUser) ? currentUser.username : rawUsername;
+    const username = rawUsername === "me" && currentUser ? currentUser.username : rawUsername;
+    const shouldFetch = username && username !== "me";
 
-    // Don't fetch if 'me' but no user yet
-    const shouldFetch = username && (username !== 'me');
-
-    const [friendStatus, setFriendStatus] = useState<'none' | 'pending' | 'accepted'>('none');
+    const [friendStatus, setFriendStatus] = useState<"none" | "pending" | "accepted">("none");
     const [loadingAction, setLoadingAction] = useState(false);
-    const [activeTab, setActiveTab] = useState<'overview' | 'ids' | 'gear' | 'achievements'>('overview');
-
-    // Messaging Modal State
+    const [activeTab, setActiveTab] = useState<"overview" | "ids" | "gear" | "achievements">("overview");
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
 
     const { data: profile, isLoading } = useSWR<UserProfile>(shouldFetch ? `/users/${username}` : null, fetcher);
@@ -115,21 +38,33 @@ export default function ProfilePage() {
         if (!currentUser) return alert("Please login first.");
         setLoadingAction(true);
         try {
-            await axios.post('/friends/request', { username });
-            setFriendStatus('pending');
-        } catch (error) {
+            await axios.post("/friends/request", { username });
+            setFriendStatus("pending");
+        } catch {
             alert("Failed to send request.");
         } finally {
             setLoadingAction(false);
         }
     };
 
-    if (isLoading || authLoading || (rawUsername === 'me' && !currentUser)) {
+    if (isLoading || authLoading || (rawUsername === "me" && !currentUser)) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)] pt-20">
-                <div className="container mx-auto px-4 py-8 max-w-5xl animate-pulse">
-                    <div className="h-48 bg-[var(--bg-card)] rounded-xl mb-8" />
-                    <div className="h-96 bg-[var(--bg-card)] rounded-xl" />
+            <div className="min-h-screen bg-[var(--bg-primary)]">
+                <div className="h-48 md:h-64 bg-[var(--bg-secondary)] animate-pulse" />
+                <div className="container mx-auto px-4 py-8 max-w-5xl animate-pulse -mt-20">
+                    <div className="flex items-end gap-6">
+                        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-[var(--bg-card)]" />
+                        <div className="flex-1 space-y-3 pb-4">
+                            <div className="h-8 w-48 bg-[var(--bg-card)] rounded" />
+                            <div className="h-4 w-32 bg-[var(--bg-card)] rounded" />
+                            <div className="h-3 w-64 bg-[var(--bg-card)] rounded-full" />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-6 gap-3 mt-8">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                            <div key={i} className="h-24 bg-[var(--bg-card)] rounded-xl" />
+                        ))}
+                    </div>
                 </div>
             </div>
         );
@@ -149,331 +84,79 @@ export default function ProfilePage() {
 
     const { user: userData, stats, achievements } = profile;
     const isOwnProfile = currentUser?.username === userData.username;
-    // Check staff status from user role (frontend check since backend has caching issues)
-    const isStaffUser = ['admin', 'editor', 'moderator', 'journalist', 'super_admin'].includes(userData.role?.toLowerCase() || '');
+    const isStaffUser = ["admin", "editor", "moderator", "journalist", "super_admin"].includes(userData.role?.toLowerCase() || "");
 
-    // XP Logic
-    // XP Logic (Rank Based)
-    const currentXP = stats?.xp || 0;
-    const level = stats?.level || 1;
-    const currentRankMinXP = userData.rank?.min_xp || 0;
-    const nextRankMinXP = profile.next_rank?.min_xp || (currentRankMinXP + 1000); // Fallback if max rank
-
-    // Calculate progress within the current rank tier
-    const rankSpan = nextRankMinXP - currentRankMinXP;
-    const progressInRank = Math.max(0, currentXP - currentRankMinXP);
-    const xpProgress = Math.min(100, (progressInRank / rankSpan) * 100);
-
-    const nextRankName = profile.next_rank?.name || 'Next Rank';
+    const tabs = [
+        { id: "overview", label: "Overview", icon: Activity },
+        { id: "ids", label: "Ids", icon: Gamepad2 },
+        { id: "gear", label: "Gear", icon: Cpu },
+        { id: "achievements", label: "Achievements", icon: Trophy },
+    ];
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
-            {/* Header / Hero */}
-            <div className="relative pt-20 pb-8 bg-gradient-to-b from-[var(--bg-secondary)] to-[var(--bg-primary)] border-b border-[var(--border)]">
-                <div className="container mx-auto px-4 max-w-5xl">
-                    <div className="flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-8 pb-6">
-                        {/* Avatar container with Level Badge */}
-                        <div className="relative">
-                            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-[var(--bg-elevated)] border-4 border-[var(--bg-primary)] flex items-center justify-center overflow-hidden shadow-2xl relative z-10">
-                                {userData.avatar_url ? (
-                                    <img src={userData.avatar_url} alt={userData.username} className="w-full h-full object-cover" />
-                                ) : (
-                                    <span className="text-5xl font-bold text-[var(--accent)]">
-                                        {userData.username?.charAt(0)?.toUpperCase() || '?'}
-                                    </span>
-                                )}
-                            </div>
+            {/* Hero: Cover + Avatar + User Info + XP */}
+            <div className="pt-16">
+                <ProfileHero
+                    userData={userData}
+                    stats={stats}
+                    nextRank={profile.next_rank}
+                    isOwnProfile={isOwnProfile}
+                    currentUser={currentUser}
+                    friendStatus={friendStatus}
+                    loadingAction={loadingAction}
+                    onSendRequest={handleSendRequest}
+                    onOpenMessage={() => setIsMessageModalOpen(true)}
+                />
+            </div>
 
-                            {/* Level Badge */}
-                            <div className="absolute -bottom-2 -right-2 md:bottom-2 md:right-2 z-20 bg-[var(--accent)] text-black font-bold w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-4 border-[var(--bg-primary)] shadow-lg text-lg">
-                                {level}
-                            </div>
-                        </div>
+            {/* Stats Bar */}
+            <ProfileStats stats={stats} isStaff={isStaffUser} />
 
-                        {/* User Info */}
-                        <div className="flex-1 text-center md:text-left mb-2 w-full">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div>
-                                    <div className="flex items-center justify-center md:justify-start gap-3">
-                                        <div className="flex flex-col">
-                                            <h1 className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight">
-                                                {userData.display_name || userData.username}
-                                            </h1>
-                                            {userData.display_name && (
-                                                <span className="text-sm text-[var(--text-muted)] font-mono">@{userData.username}</span>
-                                            )}
-                                        </div>
-
-                                        {/* Staff Role Badge */}
-                                        {(() => {
-                                            const roleConfig: Record<string, { color: string; bg: string; border: string; icon: any; label: string }> = {
-                                                'admin': { color: 'text-red-400', bg: 'bg-red-500/15', border: 'border-red-500/40', icon: Crown, label: 'Admin' },
-                                                'super_admin': { color: 'text-red-400', bg: 'bg-red-500/15', border: 'border-red-500/40', icon: Crown, label: 'Super Admin' },
-                                                'editor-in-chief': { color: 'text-orange-400', bg: 'bg-orange-500/15', border: 'border-orange-500/40', icon: Crown, label: 'Editor-in-Chief' },
-                                                'editor': { color: 'text-amber-400', bg: 'bg-amber-500/15', border: 'border-amber-500/40', icon: Pen, label: 'Editor' },
-                                                'moderator': { color: 'text-blue-400', bg: 'bg-blue-500/15', border: 'border-blue-500/40', icon: ShieldCheck, label: 'Moderator' },
-                                                'journalist': { color: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/40', icon: Pen, label: 'Journalist' },
-                                            };
-                                            const config = roleConfig[userData.role?.toLowerCase()];
-                                            if (!config) return null;
-                                            const IconComponent = config.icon;
-                                            return (
-                                                <span className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border flex items-center gap-1.5 shadow-lg backdrop-blur-sm ${config.color} ${config.bg} ${config.border}`}>
-                                                    <IconComponent className="w-3.5 h-3.5" />
-                                                    {config.label}
-                                                </span>
-                                            );
-                                        })()}
-
-                                        {/* Removed Rank Badge "AFK" here. Ranks will be in stats or sidebar */}
-
-                                        {userData.active_support && (
-                                            <span
-                                                className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border flex items-center gap-1 shadow-[0_0_15px_-3px_var(--glow)] h-fit self-center"
-                                                style={{
-                                                    color: userData.active_support.tier.color || '#F59E0B',
-                                                    borderColor: `${userData.active_support.tier.color || '#F59E0B'}40`,
-                                                    backgroundColor: `${userData.active_support.tier.color || '#F59E0B'}10`,
-                                                    '--glow': userData.active_support.tier.color || '#F59E0B'
-                                                } as any}
-                                            >
-                                                <Award className="w-3 h-3" />
-                                                {userData.active_support.tier.name}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="text-[var(--text-muted)] mt-2 flex items-center justify-center md:justify-start gap-2 text-sm">
-                                        <Calendar className="w-4 h-4" />
-                                        Joined {format(new Date(userData.created_at), 'MMMM yyyy')}
-                                    </p>
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex gap-3 justify-center">
-                                    {!isOwnProfile && (
-                                        <>
-                                            <Button variant="secondary" size="sm" onClick={() => setIsMessageModalOpen(true)}>
-                                                <Mail className="w-4 h-4 mr-2" />
-                                                Message
-                                            </Button>
-                                            {friendStatus === 'none' && (
-                                                <Button onClick={handleSendRequest} disabled={loadingAction} className="shadow-[0_0_15px_rgba(var(--accent-rgb),0.3)]">
-                                                    <UserPlus className="w-4 h-4 mr-2" />
-                                                    Add Friend
-                                                </Button>
-                                            )}
-                                            {friendStatus === 'pending' && (
-                                                <Button variant="secondary" disabled>
-                                                    <Clock className="w-4 h-4 mr-2" />
-                                                    Sent
-                                                </Button>
-                                            )}
-                                        </>
-                                    )}
-                                    {isOwnProfile && (
-                                        <Link href="/settings">
-                                            <Button variant="outline" size="sm">
-                                                Edit Profile
-                                            </Button>
-                                        </Link>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* XP Bar */}
-                            <div className="mt-6 max-w-xl">
-                                <div className="flex justify-between text-xs font-semibold text-[var(--text-secondary)] mb-1 uppercase tracking-wider">
-                                    <span className="font-bold text-[var(--accent)]">{userData.rank?.name || 'Unranked'}</span>
-                                    <span>{Math.max(0, nextRankMinXP - currentXP)} XP to {nextRankName}</span>
-                                </div>
-                                <div className="h-3 bg-[var(--bg-elevated)] rounded-full overflow-hidden border border-[var(--border)] relative">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${xpProgress}%` }}
-                                        transition={{ duration: 1, ease: "easeOut" }}
-                                        className="h-full bg-gradient-to-r from-[var(--accent)] to-purple-500 rounded-full shadow-[0_0_10px_rgba(var(--accent-rgb),0.5)]"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Navigation Tabs */}
-                    <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2 mt-8 border-b border-[var(--border)] overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
-                        {[
-                            { id: 'overview', label: 'Overview', icon: Activity },
-                            { id: 'ids', label: 'Ids', icon: Gamepad2 },
-                            { id: 'gear', label: 'Gear', icon: Cpu },
-                            { id: 'achievements', label: 'Achievements', icon: Trophy },
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id as any)}
-                                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 md:px-6 py-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${activeTab === tab.id
-                                    ? 'border-[var(--accent)] text-[var(--accent)] bg-[var(--bg-elevated)]/50 rounded-t-lg'
-                                    : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border)]'
-                                    }`}
-                            >
-                                <tab.icon className="w-4 h-4" />
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
+            {/* Navigation Tabs */}
+            <div className="container mx-auto px-4 max-w-5xl mt-8">
+                <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2 border-b border-[var(--border)] overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as any)}
+                            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 md:px-6 py-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
+                                activeTab === tab.id
+                                    ? "border-[var(--accent)] text-[var(--accent)] bg-[var(--bg-elevated)]/50 rounded-t-lg"
+                                    : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border)]"
+                            }`}
+                        >
+                            <tab.icon className="w-4 h-4" />
+                            {tab.label}
+                        </button>
+                    ))}
                 </div>
             </div>
 
             {/* Content Area */}
             <div className="container mx-auto px-4 py-8 max-w-5xl">
-                {activeTab === 'overview' && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {/* Left Sidebar: About & Mini Stats */}
-                        <div className="space-y-6">
-                            <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6">
-                                <h3 className="font-semibold text-[var(--text-primary)] mb-4">About</h3>
-                                <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
-                                    {userData.bio || "This user hasn't written a bio yet."}
-                                </p>
-                            </div>
-
-                            <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6">
-                                <h3 className="font-semibold text-[var(--text-primary)] mb-4">Stats</h3>
-                                <div className="space-y-3">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-[var(--text-muted)]">Threads Created</span>
-                                        <span className="font-mono">{userData.threads?.length || 0}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-[var(--text-muted)]">Forum Posts</span>
-                                        <span className="font-mono">{userData.posts?.length || 0}</span>
-                                    </div>
-
-                                    {/* Conditional Stats */}
-                                    {['admin', 'editor', 'moderator'].includes(userData.role) ? (
-                                        <>
-                                            <div className="flex justify-between text-sm">
-                                                <span className="text-[var(--text-muted)]">Articles Published</span>
-                                                <span className="font-mono text-[var(--accent)]">{stats.reviews_count || 0}</span>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-[var(--text-muted)]">Achievements</span>
-                                            <span className="font-mono text-[var(--accent)]">{stats.achievements_count || 0}</span>
-                                        </div>
-                                    )}
-
-                                    {/* XP / Level is already in header, but keeping strict stats here */}
-                                    <div className="flex justify-between text-sm pt-2 border-t border-[var(--border)] mt-2">
-                                        <span className="text-[var(--text-muted)]">Global Rank</span>
-                                        <span className="font-bold text-white">{userData.rank?.name || 'Rookie'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Main Feed */}
-                        <div className="md:col-span-2 space-y-6">
-                            {/* Recent Activity - Different for Staff vs Regular Users */}
-                            <h3 className="font-bold text-xl text-[var(--text-primary)]">
-                                {isStaffUser ? 'Published Articles' : 'Recent Activity'}
-                            </h3>
-
-                            {/* Staff: Show Articles Grid */}
-                            {isStaffUser && profile.recent_articles && profile.recent_articles.length > 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {profile.recent_articles.map((article: any) => (
-                                        <Link
-                                            key={article.id}
-                                            href={`/${article.type === 'review' ? 'reviews' : article.type === 'news' ? 'news' : 'guides'}/${article.slug}`}
-                                            className="group"
-                                        >
-                                            <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border)] overflow-hidden hover:border-[var(--accent)] transition-all hover:shadow-lg hover:shadow-[var(--accent)]/10">
-                                                {article.featured_image && (
-                                                    <div className="aspect-video relative overflow-hidden">
-                                                        <img
-                                                            src={article.featured_image}
-                                                            alt={article.title}
-                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                        />
-                                                        <div className="absolute top-2 left-2">
-                                                            <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${article.type === 'review' ? 'bg-purple-500/90 text-white' :
-                                                                article.type === 'news' ? 'bg-blue-500/90 text-white' :
-                                                                    'bg-emerald-500/90 text-white'
-                                                                }`}>
-                                                                {article.type}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                <div className="p-4">
-                                                    <h4 className="font-semibold text-[var(--text-primary)] line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
-                                                        {article.title}
-                                                    </h4>
-                                                    {article.excerpt && (
-                                                        <p className="text-sm text-[var(--text-muted)] mt-2 line-clamp-2">
-                                                            {article.excerpt}
-                                                        </p>
-                                                    )}
-                                                    <div className="flex items-center justify-between mt-3 text-xs text-[var(--text-muted)]">
-                                                        <span>{formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}</span>
-                                                        <span className="flex items-center gap-1">
-                                                            <Eye className="w-3 h-3" />
-                                                            {article.views?.toLocaleString() || 0}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            ) : isStaffUser ? (
-                                <div className="p-8 text-center border border-dashed border-[var(--border)] rounded-xl text-[var(--text-muted)]">
-                                    No published articles yet.
-                                </div>
-                            ) : (
-                                /* Regular Users: Show Forum Posts */
-                                <div className="flex flex-col gap-4">
-                                    {userData.posts?.slice(0, 5).map((post: any) => (
-                                        <div key={post.id} className="p-4 bg-[var(--bg-card)] rounded-xl border border-[var(--border)] hover:border-[var(--accent)] transition-all">
-                                            <div className="flex items-start gap-3">
-                                                <MessageSquare className="w-5 h-5 text-[var(--text-muted)] mt-1" />
-                                                <div>
-                                                    <p className="text-[var(--text-primary)] text-sm line-clamp-3">
-                                                        "{post.content?.replace(/<[^>]*>?/gm, '').substring(0, 150)}..."
-                                                    </p>
-                                                    <div className="mt-2 text-xs text-[var(--text-muted)]">
-                                                        Replied to a thread • {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {(!userData.posts || userData.posts.length === 0) && (
-                                        <div className="p-8 text-center border border-dashed border-[var(--border)] rounded-xl text-[var(--text-muted)]">
-                                            No recent activity.
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                {activeTab === "overview" && (
+                    <ProfileOverview
+                        userData={userData}
+                        stats={stats}
+                        isStaff={isStaffUser}
+                        recentArticles={profile.recent_articles}
+                    />
                 )}
 
-                {activeTab === 'ids' && (
+                {activeTab === "ids" && (
                     <div className="max-w-2xl mx-auto">
                         <GamertagsCard tags={userData.gamertags} />
                     </div>
                 )}
 
-                {activeTab === 'gear' && (
+                {activeTab === "gear" && (
                     <div className="max-w-3xl mx-auto">
                         <SpecsCard specs={userData.pc_specs} />
                     </div>
                 )}
 
-                {activeTab === 'achievements' && (
-                    <AchievementGrid achievements={achievements || []} />
-                )}
+                {activeTab === "achievements" && <AchievementGrid achievements={achievements || []} />}
             </div>
 
             <SendMessageModal

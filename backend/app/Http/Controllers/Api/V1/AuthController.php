@@ -276,12 +276,19 @@ class AuthController extends Controller
             'pc_specs.mobo' => 'nullable|string|max:255',
             'pc_specs.case' => 'nullable|string|max:255',
             'avatar' => 'nullable|image|max:2048', // 2MB Max
+            'cover_image' => 'nullable|image|max:5120', // 5MB Max
         ]);
 
         // Handle Avatar Upload
         if ($request->hasFile('avatar')) {
             $path = $request->file('avatar')->store('avatars', 'public');
             $user->avatar_url = asset('storage/' . $path);
+        }
+
+        // Handle Cover Image Upload
+        if ($request->hasFile('cover_image')) {
+            $path = $request->file('cover_image')->store('covers', 'public');
+            $user->cover_image = $path;
         }
 
         $user->update([

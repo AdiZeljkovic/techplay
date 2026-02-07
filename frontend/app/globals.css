@@ -332,3 +332,37 @@ body {
 .prose tbody tr:nth-child(even) {
   background: rgba(255, 255, 255, 0.03);
 }
+
+/* ========================================
+   PROFILE PAGE
+   ======================================== */
+
+/* Animated avatar ring - conic gradient spinning */
+@keyframes spin-ring {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Glass stat card */
+.glass-stat {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Achievement glow on hover for unlocked */
+@keyframes achievement-glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(252, 65, 0, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(252, 65, 0, 0.6); }
+}
+
+.achievement-unlocked:hover {
+  animation: achievement-glow 2s ease-in-out infinite;
+}

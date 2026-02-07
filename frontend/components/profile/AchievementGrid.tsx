@@ -45,8 +45,8 @@ export const AchievementGrid = ({ achievements }: AchievementGridProps) => {
                     key={achievement.id}
                     className={`relative group border rounded-xl p-4 flex flex-col items-center text-center transition-all overflow-hidden
                         ${achievement.is_unlocked
-                            ? 'bg-[var(--bg-card)] border-[var(--border)] hover:border-[var(--accent)] hover:shadow-[0_0_15px_rgba(var(--accent-rgb),0.1)]'
-                            : 'bg-[var(--bg-elevated)] border-transparent opacity-60 grayscale hover:grayscale-0 hover:opacity-80'
+                            ? 'achievement-unlocked bg-[var(--bg-card)] border-[var(--border)] hover:border-[var(--accent)]'
+                            : 'bg-[var(--bg-secondary)] border-transparent opacity-50 grayscale hover:grayscale-0 hover:opacity-75'
                         }
                     `}
                 >

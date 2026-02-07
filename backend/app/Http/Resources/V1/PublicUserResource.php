@@ -23,6 +23,7 @@ class PublicUserResource extends JsonResource
             'username' => $this->username,
             'display_name' => $this->display_name,
             'avatar_url' => $this->avatar_url,
+            'cover_image' => $this->cover_image ? asset('storage/' . $this->cover_image) : null,
             'bio' => $this->bio,
             'role' => ($this->hasRole(['admin', 'Admin', 'administrator', 'Super Admin']) || strtolower($this->role) === 'admin') ? 'admin'
                 : (($this->hasRole(['editor', 'Editor']) || strtolower($this->role) === 'editor') ? 'editor'

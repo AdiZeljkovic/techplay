@@ -29,6 +29,8 @@ export default function SettingsClient() {
     const [specs, setSpecs] = useState(user?.pc_specs || {});
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar_url || null);
+    const [coverFile, setCoverFile] = useState<File | null>(null);
+    const [coverPreview, setCoverPreview] = useState<string | null>(user?.cover_image || null);
 
     // Password State
     const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
@@ -41,6 +43,7 @@ export default function SettingsClient() {
         if (Object.keys(specs).length === 0 && user.pc_specs) setSpecs(user.pc_specs);
         // Only set preview if not already set by file selection
         if (!avatarPreview && user.avatar_url) setAvatarPreview(user.avatar_url);
+        if (!coverPreview && user.cover_image) setCoverPreview(user.cover_image);
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,6 +51,14 @@ export default function SettingsClient() {
         if (file) {
             setAvatarFile(file);
             setAvatarPreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setCoverFile(file);
+            setCoverPreview(URL.createObjectURL(file));
         }
     };
 
@@ -71,6 +82,10 @@ export default function SettingsClient() {
 
             if (avatarFile) {
                 formData.append('avatar', avatarFile);
+            }
+
+            if (coverFile) {
+                formData.append('cover_image', coverFile);
             }
 
             // Using POST to /user/profile with _method: PUT
@@ -202,6 +217,50 @@ export default function SettingsClient() {
                                     <p className="text-xs text-[var(--text-muted)] mt-1 text-right">
                                         {bio.length}/500 characters
                                     </p>
+                                </div>
+
+                                {/* Cover Image Upload */}
+                                <div className="pt-4 border-t border-[var(--border)]">
+                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-4">
+                                        Profile Cover Image
+                                    </label>
+                                    <div className="space-y-3">
+                                        <div className="relative aspect-[4/1] rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--bg-elevated)]">
+                                            {coverPreview ? (
+                                                <img src={coverPreview} alt="Cover preview" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)] bg-gradient-to-br from-[var(--bg-secondary)] via-[#001a4d] to-[var(--bg-elevated)]">
+                                                    <span className="text-sm">No cover image</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleCoverChange}
+                                                className="block w-full text-sm text-[var(--text-muted)]
+                                                  file:mr-4 file:py-2 file:px-4
+                                                  file:rounded-full file:border-0
+                                                  file:text-sm file:font-semibold
+                                                  file:bg-[var(--accent)] file:text-black
+                                                  hover:file:bg-[var(--accent)]/90
+                                                  cursor-pointer"
+                                            />
+                                            {coverPreview && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setCoverFile(null); setCoverPreview(null); }}
+                                                    className="text-xs text-red-400 hover:text-red-300 whitespace-nowrap"
+                                                >
+                                                    Remove
+                                                </button>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-[var(--text-muted)]">
+                                            Recommended: 1920x480px. JPG, PNG or WEBP. Max 5MB.
+                                        </p>
+                                    </div>
                                 </div>
 
                                 {/* Avatar Upload */}

@@ -37,6 +37,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'email',
         'password',
         'avatar_url',
+        'cover_image',
         'bio',
         'forum_reputation', // Added for Observer updates
         'rank_id',          // Added for Observer updates
