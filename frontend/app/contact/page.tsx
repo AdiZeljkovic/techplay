@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { useState, FormEvent, useRef } from "react";
-import baseAxios from "axios";
+import { submitContactForm } from "./actions";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -44,17 +44,16 @@ export default function ContactPage() {
         };
 
         try {
-            const response = await baseAxios.post('/api/contact', data);
+            const result = await submitContactForm(data);
 
-            if (response.data?.success) {
+            if (result.success) {
                 setIsSent(true);
                 formRef.current?.reset();
             } else {
-                throw new Error(response.data?.message || 'Failed to send message');
+                setError(result.message);
             }
-        } catch (err: any) {
-            const message = err?.response?.data?.message || err?.message || 'An error occurred. Please try again.';
-            setError(message);
+        } catch {
+            setError('An error occurred. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
