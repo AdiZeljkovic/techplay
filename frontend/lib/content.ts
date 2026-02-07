@@ -8,12 +8,21 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
     const toc: TOCItem[] = [];
     const idMap = new Map<string, number>();
 
-    // Step 0: Clean up empty paragraphs from the rich text editor (TipTap/Filament).
-    // These are created when pressing Enter multiple times and produce unwanted gaps.
-    // Matches: <p></p>, <p> </p>, <p>&nbsp;</p>, <p><br></p>, <p><br class="..."></p>,
-    // <p>&#8203;</p> (zero-width space), <p>\u200B</p>, and any combination thereof.
+    // Step 0: Remove empty paragraphs from TipTap/Filament rich text editor.
+    // Instead of enumerating invisible characters, we check if any visible text remains
+    // after stripping all HTML tags and entities. Keeps paragraphs with images/videos.
     let processedContent = (html || '')
-        .replace(/<p[^>]*>(\s|\u200B|\uFEFF|\u200C|\u200D|&nbsp;|&#8203;|&#x200[BbCcDd];|<br[^>]*\/?>)*<\/p>/gi, '');
+        .replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, (match, inner) => {
+            // Keep paragraphs containing meaningful elements (images, videos, iframes, etc.)
+            if (/<(img|video|iframe|embed|object|canvas|svg)\b/i.test(inner)) return match;
+            // Strip all HTML tags, then all HTML entities, then all whitespace/invisible chars
+            const visible = inner
+                .replace(/<[^>]*>/g, '')
+                .replace(/&[a-z]+;/gi, '')
+                .replace(/&#x?[\da-f]+;/gi, '')
+                .replace(/[\s\u00A0\u200B\u200C\u200D\uFEFF]/g, '');
+            return visible.length > 0 ? match : '';
+        });
 
     // Step 1: Process headings for TOC (h2, h3)
     processedContent = processedContent.replace(/<(h[2-3])([^>]*)>(.*?)<\/\1>/gi, (match, tag, attrs, text) => {
