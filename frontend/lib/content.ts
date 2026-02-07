@@ -61,12 +61,14 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
         return `<div class="embed-container my-8"><div class="relative w-full" style="padding-bottom:56.25%"><iframe class="absolute top-0 left-0 w-full h-full rounded-xl" src="https://www.youtube.com/embed/${videoId}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div></div>`;
     });
 
-    // Step 4: Twitter/X - convert URLs to tweet blockquotes
-    // The blockquote will be processed by Twitter's widgets.js (loaded via useEmbedScripts hook)
-    // IMPORTANT: [^\s<]* prevents eating into HTML tags (was (?:\S*)? which broke following <h2> tags)
+    // Step 4: Twitter/X - convert URLs to iframe embeds
+    // Uses Twitter's own embed iframe URL (same URL that widgets.js creates internally).
+    // Iframe approach is used instead of blockquote+script because React re-renders
+    // destroy the widget DOM when dangerouslySetInnerHTML re-applies the original HTML.
+    // IMPORTANT: [^\s<]* prevents eating into HTML tags
     const twitterRegex = /(?:<p\b[^>]*>)?[\s\u00A0]*(?:https?:\/\/)?(?:www\.)?(?:twitter\.com|x\.com)\/(\w+)\/status\/(\d+)[^\s<]*[\s\u00A0]*(?:<\/p>)?/gi;
     processedContent = processedContent.replace(twitterRegex, (_, user, id) => {
-        return `<div class="embed-container flex justify-center my-8"><blockquote class="twitter-tweet" data-dnt="true" data-theme="dark"><a href="https://twitter.com/${user}/status/${id}">Loading Tweet...</a></blockquote></div>`;
+        return `<div class="embed-container flex justify-center my-8"><iframe src="https://platform.twitter.com/embed/Tweet.html?dnt=true&id=${id}&theme=dark" style="width:550px;max-width:100%;min-height:300px;border:none;border-radius:12px;overflow:hidden;" allowfullscreen scrolling="no" class="twitter-embed-iframe"></iframe></div>`;
     });
 
     // Step 5: Instagram - convert URLs to iframe embeds (no external script needed)

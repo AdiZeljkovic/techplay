@@ -2,53 +2,35 @@
 
 import { useEffect } from 'react';
 
-declare global {
-    interface Window {
-        twttr?: {
-            widgets: {
-                load: (el?: HTMLElement) => void;
-            };
-        };
-    }
-}
-
 /**
- * Hook to load and initialize social media embed scripts after React renders content.
- * Handles Twitter/X blockquote embeds with polling to ensure script is ready.
- * Instagram and Facebook use iframe embeds that don't need external scripts.
+ * Hook to handle social media embed iframes.
+ * Listens for postMessage events from Twitter embed iframes to auto-resize their height.
+ * All embeds (Twitter, Instagram, Facebook) now use iframes - no external scripts needed.
  */
 export function useEmbedScripts() {
     useEffect(() => {
-        const hasTweets = document.querySelectorAll('blockquote.twitter-tweet').length > 0;
-        if (!hasTweets) return;
+        const handleMessage = (event: MessageEvent) => {
+            // Twitter iframe auto-resize via postMessage
+            if (event.origin === 'https://platform.twitter.com' || event.origin === 'https://twitframe.com') {
+                try {
+                    const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
 
-        // Try to process tweets immediately if twttr is already loaded
-        if (window.twttr?.widgets) {
-            window.twttr.widgets.load();
-            return;
-        }
-
-        // Load the script if not already in the DOM
-        if (!document.querySelector('script[src*="platform.twitter.com/widgets.js"]')) {
-            const script = document.createElement('script');
-            script.src = 'https://platform.twitter.com/widgets.js';
-            script.async = true;
-            document.head.appendChild(script);
-        }
-
-        // Poll until twttr becomes available, then process
-        let attempts = 0;
-        const interval = setInterval(() => {
-            attempts++;
-            if (window.twttr?.widgets) {
-                window.twttr.widgets.load();
-                clearInterval(interval);
-            } else if (attempts >= 30) {
-                // Give up after ~9 seconds
-                clearInterval(interval);
+                    // Twitter sends resize messages with the tweet height
+                    if (data['twttr.embed']) {
+                        const iframes = document.querySelectorAll<HTMLIFrameElement>('iframe.twitter-embed-iframe');
+                        iframes.forEach((iframe) => {
+                            if (iframe.contentWindow === event.source && data['twttr.embed'].params?.[0]?.height) {
+                                iframe.style.height = `${data['twttr.embed'].params[0].height}px`;
+                            }
+                        });
+                    }
+                } catch {
+                    // Ignore parse errors from unrelated messages
+                }
             }
-        }, 300);
+        };
 
-        return () => clearInterval(interval);
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
     }, []);
 }
