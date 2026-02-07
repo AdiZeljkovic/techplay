@@ -15,15 +15,23 @@ interface BreadcrumbsProps {
 
 export default function Breadcrumbs({ items, className = "" }: BreadcrumbsProps) {
     // Generate JSON-LD structured data for SEO
+    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg';
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
-        "itemListElement": items.map((item, index) => ({
-            "@type": "ListItem",
-            "position": index + 1,
-            "name": item.label,
-            "item": item.href ? `${process.env.NEXT_PUBLIC_SITE_URL || ''}${item.href}` : undefined
-        }))
+        "itemListElement": items.map((item, index) => {
+            const isLast = index === items.length - 1;
+            const entry: Record<string, any> = {
+                "@type": "ListItem",
+                "position": index + 1,
+                "name": item.label || "Page",
+            };
+            // Google requires absolute URL for all items except the last
+            if (!isLast) {
+                entry["item"] = item.href ? `${siteUrl}${item.href}` : `${siteUrl}/`;
+            }
+            return entry;
+        })
     };
 
     return (
