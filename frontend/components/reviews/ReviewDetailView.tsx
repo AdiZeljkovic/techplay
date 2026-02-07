@@ -58,36 +58,34 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
     const ratingColor = displayScore >= 8 ? "text-green-500 border-green-500" : displayScore >= 6 ? "text-yellow-500 border-yellow-500" : "text-red-500 border-red-500";
     const scoreBg = displayScore >= 8 ? "bg-green-500" : displayScore >= 6 ? "bg-yellow-500" : "bg-red-500";
 
-    // JSON-LD for Review
+    // JSON-LD: Product with review (Google requires review/offers/aggregateRating on Product)
     const jsonLd = {
         "@context": "https://schema.org",
-        "@type": "Review",
-        "headline": review.seo_title || review.title,
-        "itemReviewed": {
-            "@type": "Product",
-            "name": review.item_name || review.title,
-            "image": review.cover_image || review.featured_image_url
-        },
-        "reviewRating": {
-            "@type": "Rating",
-            "ratingValue": review.rating,
-            "bestRating": "10",
-            "worstRating": "1"
-        },
-        "author": {
-            "@type": "Person",
-            "name": review.author?.display_name || review.author?.username || "TechPlay Reviewer",
-            "url": `${process.env.NEXT_PUBLIC_APP_URL}/profile/${review.author?.username}`
-        },
-        "publisher": {
-            "@type": "Organization",
-            "name": "TechPlay",
-            "url": process.env.NEXT_PUBLIC_APP_URL
-        },
-        "datePublished": review.published_at || review.created_at,
-        "reviewBody": review.summary || review.excerpt || "",
-        "pros": review.pros,
-        "cons": review.cons
+        "@type": "Product",
+        "name": review.item_name || review.title,
+        "image": review.cover_image || review.featured_image_url,
+        "review": {
+            "@type": "Review",
+            "headline": review.seo_title || review.title,
+            "reviewRating": {
+                "@type": "Rating",
+                "ratingValue": review.rating,
+                "bestRating": "10",
+                "worstRating": "1"
+            },
+            "author": {
+                "@type": "Person",
+                "name": review.author?.display_name || review.author?.username || "TechPlay Reviewer",
+                "url": `${process.env.NEXT_PUBLIC_APP_URL}/profile/${review.author?.username}`
+            },
+            "publisher": {
+                "@type": "Organization",
+                "name": "TechPlay",
+                "url": process.env.NEXT_PUBLIC_APP_URL
+            },
+            "datePublished": review.published_at || review.created_at,
+            "reviewBody": review.summary || review.excerpt || ""
+        }
     };
 
     const { content: processedContent, toc } = useMemo(() => processContent(review.content || ''), [review.content]);
