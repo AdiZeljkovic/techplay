@@ -39,7 +39,7 @@ export default function TableOfContents({ items }: TableOfContentsProps) {
                 <div className="w-1.5 h-6 bg-[#ff4500]" />
                 On this page
             </h4>
-            <nav>
+            <nav className="max-h-[50vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                 <ul className="flex flex-col space-y-3">
                     {items.map((item) => (
                         <li key={item.id} className={item.level === 3 ? "pl-4" : ""}>
