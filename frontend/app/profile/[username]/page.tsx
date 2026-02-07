@@ -94,7 +94,7 @@ export default function ProfilePage() {
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
-            <div className="pt-16">
+            <div>
                 <ProfileHero
                     userData={userData}
                     stats={stats}
