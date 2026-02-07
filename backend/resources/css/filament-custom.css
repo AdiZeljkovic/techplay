@@ -97,36 +97,50 @@
 
 
 /* ============================================
-   3. SIDEBAR — Modern pill-style navigation
+   3. SIDEBAR — Premium integrated navigation
    ============================================ */
 
 .fi-sidebar {
-    background: linear-gradient(180deg, #07101e 0%, #091525 50%, #0b1830 100%) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+    background: linear-gradient(180deg, #060e1c 0%, #081320 40%, #0a1628 100%) !important;
+    border-right: 1px solid rgba(252, 65, 0, 0.08) !important;
     position: relative !important;
-    box-shadow: 4px 0 30px rgba(0, 0, 0, 0.4) !important;
+    box-shadow: 4px 0 40px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Warm glow at top of sidebar matching dashboard accent */
+/* Warm accent glow at top of sidebar */
 .fi-sidebar::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 200px;
-    background: linear-gradient(180deg, rgba(252, 65, 0, 0.04) 0%, transparent 100%);
+    height: 300px;
+    background: radial-gradient(ellipse at 30% 0%, rgba(252, 65, 0, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Subtle dot grid texture overlay on sidebar */
+.fi-sidebar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+    background-size: 20px 20px;
     pointer-events: none;
     z-index: 0;
 }
 
 /* Brand / Logo area — premium treatment */
 .fi-sidebar-header {
-    padding: 22px 20px 18px !important;
+    padding: 20px 18px 16px !important;
     border-bottom: none !important;
     position: relative !important;
     z-index: 1 !important;
-    margin-bottom: 4px !important;
+    margin-bottom: 8px !important;
 }
 
 /* Gradient accent line under brand */
@@ -134,38 +148,43 @@
     content: '';
     position: absolute;
     bottom: 0;
-    left: 20px;
-    right: 20px;
-    height: 1px;
+    left: 16px;
+    right: 16px;
+    height: 2px;
     background: linear-gradient(90deg,
         var(--tp-accent) 0%,
-        rgba(252, 65, 0, 0.3) 40%,
+        rgba(252, 65, 0, 0.4) 30%,
+        rgba(252, 65, 0, 0.1) 60%,
         transparent 100%
     );
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(252, 65, 0, 0.3);
 }
 
 /* Brand name styling */
 .fi-sidebar-header a,
 .fi-sidebar-header span,
+.fi-logo,
 .fi-logo * {
     color: var(--tp-text-bright) !important;
     font-weight: 800 !important;
-    letter-spacing: 0.04em !important;
-    font-size: 1.1rem !important;
+    letter-spacing: 0.05em !important;
+    font-size: 1.15rem !important;
+    text-shadow: 0 0 20px rgba(252, 65, 0, 0.15) !important;
 }
 
-/* Collapse/expand toggle in sidebar */
+/* Collapse/expand toggle in sidebar header */
 .fi-sidebar-header .fi-icon-btn {
     color: var(--tp-text-dim) !important;
-    width: 28px !important;
-    height: 28px !important;
+    width: 30px !important;
+    height: 30px !important;
     border-radius: 8px !important;
     transition: all 0.2s var(--tp-ease) !important;
 }
 
 .fi-sidebar-header .fi-icon-btn:hover {
-    background: rgba(255, 255, 255, 0.06) !important;
-    color: var(--tp-text-primary) !important;
+    background: rgba(252, 65, 0, 0.1) !important;
+    color: var(--tp-accent) !important;
 }
 
 /* Navigation container */
@@ -177,123 +196,158 @@
 
 .fi-sidebar-nav-groups {
     padding: 0 10px !important;
-    gap: 0 !important;
+    gap: 2px !important;
 }
 
-/* Group separators — subtle line */
+/* Group separators */
 .fi-sidebar-group {
-    margin-bottom: 4px !important;
+    margin-bottom: 2px !important;
 }
 
 .fi-sidebar-group + .fi-sidebar-group {
-    margin-top: 4px !important;
-    padding-top: 12px !important;
+    margin-top: 2px !important;
+    padding-top: 10px !important;
     position: relative;
 }
 
 .fi-sidebar-group + .fi-sidebar-group::before {
     content: '';
     position: absolute;
-    top: 4px;
-    left: 14px;
-    right: 14px;
+    top: 2px;
+    left: 16px;
+    right: 16px;
     height: 1px;
-    background: rgba(255, 255, 255, 0.05);
+    background: linear-gradient(90deg, rgba(252, 65, 0, 0.15), rgba(255, 255, 255, 0.04), transparent);
+}
+
+/* Group button/header container */
+.fi-sidebar-group-btn {
+    padding: 6px 14px !important;
+    cursor: pointer !important;
+    transition: all 0.15s var(--tp-ease) !important;
+    border-radius: 8px !important;
+}
+
+.fi-sidebar-group-btn:hover {
+    background: rgba(255, 255, 255, 0.02) !important;
 }
 
 /* Group labels — with accent indicator */
 .fi-sidebar-group-label {
-    font-size: 0.62rem !important;
+    font-size: 0.65rem !important;
     text-transform: uppercase !important;
     letter-spacing: 0.12em !important;
-    color: var(--tp-text-dim) !important;
+    color: rgba(252, 65, 0, 0.55) !important;
     font-weight: 700 !important;
-    padding: 8px 14px 8px !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
 }
 
-/* Accent dot before group labels */
-.fi-sidebar-group-label::before {
-    content: '';
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: var(--tp-accent);
-    opacity: 0.6;
-    flex-shrink: 0;
+/* Group collapse button */
+.fi-sidebar-group-collapse-btn {
+    color: var(--tp-text-dim) !important;
+    transition: color 0.15s var(--tp-ease) !important;
+}
+
+.fi-sidebar-group-collapse-btn:hover {
+    color: var(--tp-accent) !important;
+}
+
+/* Group items container */
+.fi-sidebar-group-items {
+    padding: 2px 0 !important;
 }
 
 /* Navigation items */
 .fi-sidebar-item {
-    margin: 2px 0 !important;
+    margin: 1px 0 !important;
 }
 
-/* Navigation item button — pill style */
-.fi-sidebar-item-button {
+/* Navigation item link — pill style (correct Filament 4.4 class: fi-sidebar-item-btn) */
+.fi-sidebar-item-btn {
     border-radius: 10px !important;
-    padding: 10px 14px !important;
+    padding: 9px 14px !important;
     transition: all 0.2s var(--tp-ease) !important;
     border-left: none !important;
     position: relative !important;
     overflow: hidden !important;
+    gap: 12px !important;
 }
 
-/* Item hover — subtle pill highlight */
-.fi-sidebar-item-button:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
+/* Item hover — visible pill highlight */
+.fi-sidebar-item-btn:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+    transform: translateX(2px);
 }
 
-/* Item ACTIVE — accent pill matching dashboard card style */
-.fi-sidebar-item-button.fi-active {
+/* Item ACTIVE — accent pill with glow (fi-active is on parent li) */
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
     background: linear-gradient(90deg,
-        rgba(252, 65, 0, 0.14) 0%,
-        rgba(252, 65, 0, 0.06) 70%,
-        transparent 100%
+        rgba(252, 65, 0, 0.18) 0%,
+        rgba(252, 65, 0, 0.08) 60%,
+        rgba(252, 65, 0, 0.02) 100%
     ) !important;
     box-shadow:
-        0 0 20px rgba(252, 65, 0, 0.05),
-        inset 0 0 0 1px rgba(252, 65, 0, 0.08) !important;
+        0 0 25px rgba(252, 65, 0, 0.08),
+        inset 0 0 0 1px rgba(252, 65, 0, 0.12) !important;
 }
 
 /* Active accent indicator bar on left — glowing */
-.fi-sidebar-item-button.fi-active::before {
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn::before {
     content: '';
     position: absolute;
     left: 0;
-    top: 15%;
-    bottom: 15%;
+    top: 12%;
+    bottom: 12%;
     width: 3px;
     border-radius: 0 4px 4px 0;
-    background: linear-gradient(180deg, var(--tp-accent), var(--tp-accent-dim));
-    box-shadow: 0 0 12px rgba(252, 65, 0, 0.5), 0 0 4px rgba(252, 65, 0, 0.3);
+    background: linear-gradient(180deg, var(--tp-accent-bright), var(--tp-accent));
+    box-shadow: 0 0 14px rgba(252, 65, 0, 0.6), 0 0 6px rgba(252, 65, 0, 0.4);
 }
 
-.fi-sidebar-item-button.fi-active .fi-sidebar-item-label {
+/* Active item subtle shimmer effect */
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(252, 65, 0, 0.04), transparent);
+    animation: tp-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes tp-shimmer {
+    0% { left: -100%; }
+    50% { left: 100%; }
+    100% { left: 100%; }
+}
+
+/* Active label — bright */
+.fi-sidebar-item.fi-active .fi-sidebar-item-label {
     color: var(--tp-text-bright) !important;
     font-weight: 600 !important;
 }
 
-.fi-sidebar-item-button.fi-active .fi-sidebar-item-icon {
+/* Active icon — accent colored with glow */
+.fi-sidebar-item.fi-active .fi-sidebar-item-icon {
     color: var(--tp-accent) !important;
-    filter: drop-shadow(0 0 4px rgba(252, 65, 0, 0.3)) !important;
+    filter: drop-shadow(0 0 6px rgba(252, 65, 0, 0.4)) !important;
 }
 
 /* Item label */
 .fi-sidebar-item-label {
     font-size: 0.84rem !important;
     color: var(--tp-text-secondary) !important;
-    transition: color 0.2s var(--tp-ease) !important;
+    transition: all 0.2s var(--tp-ease) !important;
     font-weight: 450 !important;
 }
 
-.fi-sidebar-item-button:hover .fi-sidebar-item-label {
+.fi-sidebar-item-btn:hover .fi-sidebar-item-label {
     color: var(--tp-text-primary) !important;
 }
 
-/* Item icon — container style */
-.fi-sidebar-item-icon {
+/* Item icon */
+.fi-sidebar-item-icon,
+.fi-sidebar-item-btn svg:first-child {
     color: var(--tp-text-muted) !important;
     transition: all 0.2s var(--tp-ease) !important;
     width: 20px !important;
@@ -301,12 +355,19 @@
     flex-shrink: 0 !important;
 }
 
-.fi-sidebar-item-button:hover .fi-sidebar-item-icon {
-    color: var(--tp-text-secondary) !important;
+.fi-sidebar-item-btn:hover .fi-sidebar-item-icon,
+.fi-sidebar-item-btn:hover svg:first-child {
+    color: var(--tp-accent-bright) !important;
+    filter: drop-shadow(0 0 3px rgba(252, 65, 0, 0.2)) !important;
+}
+
+/* Grouped border (tree lines) — accent styled */
+.fi-sidebar-item-grouped-border {
+    color: rgba(252, 65, 0, 0.15) !important;
 }
 
 /* Item badge — accent pill */
-.fi-sidebar-item-badge {
+.fi-sidebar-item-badge-ctn .fi-badge {
     background: var(--tp-accent) !important;
     color: white !important;
     font-size: 0.6rem !important;
@@ -314,75 +375,66 @@
     min-width: 20px !important;
     height: 20px !important;
     border-radius: 10px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-shadow: 0 0 8px rgba(252, 65, 0, 0.25) !important;
-}
-
-/* Collapsed sidebar — centered icons */
-.fi-sidebar-nav-collapsed .fi-sidebar-item-button {
-    justify-content: center !important;
-    padding: 10px !important;
-    border-radius: 10px !important;
-}
-
-.fi-sidebar-nav-collapsed .fi-sidebar-item-button.fi-active {
-    background: rgba(252, 65, 0, 0.12) !important;
-}
-
-.fi-sidebar-nav-collapsed .fi-sidebar-item-button.fi-active::before {
-    display: none;
+    box-shadow: 0 0 10px rgba(252, 65, 0, 0.3) !important;
 }
 
 /* Sidebar footer area */
 .fi-sidebar-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-top: 1px solid rgba(252, 65, 0, 0.08) !important;
     padding: 12px !important;
+    position: relative !important;
+    z-index: 1 !important;
 }
 
 
 /* ============================================
-   4. TOPBAR — Premium glass header
+   4. TOPBAR — Premium integrated header
    ============================================ */
 
-.fi-topbar {
-    background: rgba(7, 16, 30, 0.95) !important;
-    backdrop-filter: blur(30px) saturate(1.6) !important;
-    -webkit-backdrop-filter: blur(30px) saturate(1.6) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+.fi-topbar-ctn {
     position: relative !important;
-    min-height: 56px !important;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2) !important;
 }
 
-/* Accent gradient line at bottom of topbar — visible */
+.fi-topbar {
+    background: linear-gradient(90deg, #060e1c 0%, rgba(7, 16, 30, 0.97) 50%, #060e1c 100%) !important;
+    backdrop-filter: blur(30px) saturate(1.6) !important;
+    -webkit-backdrop-filter: blur(30px) saturate(1.6) !important;
+    border-bottom: none !important;
+    position: relative !important;
+    min-height: 60px !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3) !important;
+    padding: 0 16px !important;
+}
+
+/* Accent gradient line at bottom of topbar — 2px bright */
 .fi-topbar::after {
     content: '';
     position: absolute;
-    bottom: -1px;
+    bottom: 0;
     left: 0;
     right: 0;
-    height: 1px;
+    height: 2px;
     background: linear-gradient(90deg,
-        rgba(252, 65, 0, 0.5) 0%,
-        rgba(252, 65, 0, 0.2) 40%,
-        transparent 80%
+        var(--tp-accent) 0%,
+        rgba(252, 65, 0, 0.4) 30%,
+        rgba(252, 65, 0, 0.1) 60%,
+        transparent 100%
     );
+    box-shadow: 0 2px 12px rgba(252, 65, 0, 0.2);
 }
 
-/* Topbar inner content */
-.fi-topbar nav {
-    padding: 4px 12px !important;
+/* Topbar start section (logo + collapse buttons) */
+.fi-topbar-start {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
 }
 
-.fi-topbar-ctn {
-    padding: 0 8px !important;
-}
-
-/* Sidebar toggle buttons */
-.fi-sidebar-open-btn,
-.fi-sidebar-close-btn {
+/* Sidebar toggle buttons in topbar (correct Filament 4.4 classes) */
+.fi-topbar-open-sidebar-btn,
+.fi-topbar-close-sidebar-btn,
+.fi-topbar-open-collapse-sidebar-btn,
+.fi-topbar-close-collapse-sidebar-btn {
     color: var(--tp-text-muted) !important;
     width: 36px !important;
     height: 36px !important;
@@ -393,15 +445,24 @@
     transition: all 0.2s var(--tp-ease) !important;
 }
 
-.fi-sidebar-open-btn:hover,
-.fi-sidebar-close-btn:hover {
-    background: rgba(255, 255, 255, 0.06) !important;
+.fi-topbar-open-sidebar-btn:hover,
+.fi-topbar-close-sidebar-btn:hover,
+.fi-topbar-open-collapse-sidebar-btn:hover,
+.fi-topbar-close-collapse-sidebar-btn:hover {
+    background: rgba(252, 65, 0, 0.1) !important;
     color: var(--tp-accent) !important;
 }
 
-/* Global search field — pill style */
+/* Topbar end section */
+.fi-topbar-end {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+/* Global search field — pill style with subtle glow */
 .fi-global-search-field {
-    min-width: 200px !important;
+    min-width: 220px !important;
 }
 
 .fi-global-search-field input {
@@ -412,13 +473,13 @@
     padding: 8px 16px 8px 40px !important;
     font-size: 0.85rem !important;
     transition: all 0.25s var(--tp-ease) !important;
-    height: 38px !important;
+    height: 40px !important;
 }
 
 .fi-global-search-field input:focus {
     background: rgba(255, 255, 255, 0.06) !important;
-    border-color: rgba(252, 65, 0, 0.35) !important;
-    box-shadow: 0 0 0 3px rgba(252, 65, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    border-color: rgba(252, 65, 0, 0.4) !important;
+    box-shadow: 0 0 0 3px rgba(252, 65, 0, 0.1), 0 0 20px rgba(252, 65, 0, 0.08) !important;
     outline: none !important;
 }
 
@@ -434,7 +495,7 @@
 
 /* Search results dropdown */
 .fi-global-search-results {
-    background: rgba(6, 12, 26, 0.96) !important;
+    background: rgba(6, 12, 26, 0.97) !important;
     border: 1px solid var(--tp-border-strong) !important;
     border-radius: var(--tp-radius-md) !important;
     backdrop-filter: blur(24px) !important;
@@ -444,16 +505,17 @@
     overflow: hidden !important;
 }
 
-/* User menu button in topbar */
+/* User avatar in topbar — accent ring with glow */
 .fi-topbar .fi-avatar {
-    border: 2px solid rgba(252, 65, 0, 0.25) !important;
-    box-shadow: 0 0 0 2px rgba(6, 14, 31, 0.8), 0 0 12px rgba(252, 65, 0, 0.1) !important;
+    border: 2px solid rgba(252, 65, 0, 0.35) !important;
+    box-shadow: 0 0 0 3px rgba(6, 14, 31, 0.9), 0 0 15px rgba(252, 65, 0, 0.15) !important;
     transition: all 0.2s var(--tp-ease) !important;
 }
 
 .fi-topbar .fi-avatar:hover {
-    border-color: rgba(252, 65, 0, 0.5) !important;
-    box-shadow: 0 0 0 2px rgba(6, 14, 31, 0.8), 0 0 20px rgba(252, 65, 0, 0.15) !important;
+    border-color: var(--tp-accent) !important;
+    box-shadow: 0 0 0 3px rgba(6, 14, 31, 0.9), 0 0 25px rgba(252, 65, 0, 0.25) !important;
+    transform: scale(1.05);
 }
 
 /* Breadcrumbs */
