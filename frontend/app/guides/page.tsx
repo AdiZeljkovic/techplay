@@ -1,13 +1,16 @@
 import { Metadata } from "next";
+import { generatePageMetadata } from "@/lib/seo";
 import GuidesClientPage from "@/components/guides/GuidesClientPage";
 
 // Revalidate every 15 minutes
 export const revalidate = 900;
 
-export const metadata: Metadata = {
-    title: "Gaming Guides & Tutorials",
-    description: "Master your favorite games with our in-depth guides, tips, and strategy walkthroughs.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+    return generatePageMetadata('/guides', {
+        title: "Gaming Guides & Tutorials",
+        description: "Master your favorite games with our in-depth guides, tips, and strategy walkthroughs.",
+    });
+}
 
 async function getInitialGuides() {
     let apiUrl = process.env.NEXT_PUBLIC_API_URL;

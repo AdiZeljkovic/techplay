@@ -1,14 +1,16 @@
-
 import HardwareClient from "./HardwareClient";
 import { Metadata } from "next";
+import { generatePageMetadata } from "@/lib/seo";
 
 // Revalidate every 10 minutes
 export const revalidate = 600;
 
-export const metadata: Metadata = {
-    title: "Hardware Lab",
-    description: "Benchmark-driven reviews. Thermals. Raw performance numbers.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+    return generatePageMetadata('/hardware', {
+        title: "Hardware Lab",
+        description: "Benchmark-driven reviews. Thermals. Raw performance numbers.",
+    });
+}
 
 async function getInitialHardware() {
     let apiUrl = process.env.NEXT_PUBLIC_API_URL;
