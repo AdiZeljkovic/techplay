@@ -1,5 +1,10 @@
-
+import { Metadata } from "next";
 import ImpressumClient from "./ImpressumClient";
+
+export const metadata: Metadata = {
+    title: "Impressum",
+    description: "Legal information about TechPlay — company details, editorial team, and contact information.",
+};
 
 async function getStaffData() {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
