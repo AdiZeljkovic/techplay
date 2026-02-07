@@ -30,7 +30,7 @@ class NewsResource extends Resource
 {
     protected static ?string $model = Article::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-newspaper';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-newspaper';
 
     protected static ?string $modelPolicy = \App\Policies\NewsPolicy::class;
 

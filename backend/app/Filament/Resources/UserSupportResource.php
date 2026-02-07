@@ -18,7 +18,7 @@ class UserSupportResource extends Resource
 {
     protected static ?string $model = UserSupport::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-lifebuoy';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-lifebuoy';
 
     public static function getNavigationGroup(): ?string
     {

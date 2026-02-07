@@ -18,7 +18,7 @@ class RankResource extends Resource
 {
     protected static ?string $model = Rank::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-arrow-trending-up';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-trending-up';
 
     public static function getNavigationGroup(): ?string
     {

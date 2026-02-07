@@ -22,7 +22,7 @@ class VideoResource extends Resource
 {
     protected static ?string $model = Video::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-video-camera';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-video-camera';
 
     protected static ?string $slug = 'videos';
 

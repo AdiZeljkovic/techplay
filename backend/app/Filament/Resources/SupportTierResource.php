@@ -18,7 +18,7 @@ class SupportTierResource extends Resource
 {
     protected static ?string $model = SupportTier::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-heart';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-heart';
 
     public static function getNavigationGroup(): ?string
     {

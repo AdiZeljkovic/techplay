@@ -49,7 +49,7 @@ class ReviewResource extends Resource
 {
     protected static ?string $model = Article::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-star';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-star';
 
     protected static ?string $modelPolicy = \App\Policies\ArticlePolicy::class;
 
