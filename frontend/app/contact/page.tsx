@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { useState, FormEvent, useRef } from "react";
+import axios from "@/lib/axios";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -43,26 +44,17 @@ export default function ContactPage() {
         };
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
-            const response = await fetch(`${apiUrl}/contact`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify(data),
-            });
+            const response = await axios.post('/contact', data);
 
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.message || 'Failed to send message');
+            if (response.data?.success) {
+                setIsSent(true);
+                formRef.current?.reset();
+            } else {
+                throw new Error(response.data?.message || 'Failed to send message');
             }
-
-            setIsSent(true);
-            formRef.current?.reset();
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'An error occurred. Please try again.');
+        } catch (err: any) {
+            const message = err?.response?.data?.message || err?.message || 'An error occurred. Please try again.';
+            setError(message);
         } finally {
             setIsSubmitting(false);
         }
@@ -100,7 +92,7 @@ export default function ContactPage() {
                                     <div>
                                         <h3 className="font-bold text-[var(--text-primary)] text-lg mb-1">General & Editorial</h3>
                                         <p className="text-[var(--text-secondary)] text-sm mb-2">News tips, game review requests, press releases, or just saying hi.</p>
-                                        <a href="mailto:info@techplay.gg" className="text-[var(--accent)] font-medium hover:underline">info@techplay.gg</a>
+                                        <a href="mailto:redakcija@techplay.gg" className="text-[var(--accent)] font-medium hover:underline">redakcija@techplay.gg</a>
                                     </div>
                                 </div>
 

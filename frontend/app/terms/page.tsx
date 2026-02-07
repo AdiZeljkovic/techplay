@@ -137,7 +137,7 @@ export default function TermsPage() {
                                 <h2>10. Contact Us</h2>
                                 <p>
                                     To resolve a complaint regarding the Site or to receive further information regarding use of the Site, please contact us at:<br />
-                                    <a href="mailto:info@techplay.gg">info@techplay.gg</a>
+                                    <a href="mailto:redakcija@techplay.gg">redakcija@techplay.gg</a>
                                 </p>
                             </div>
                         </div>
