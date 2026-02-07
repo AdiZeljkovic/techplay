@@ -10,43 +10,58 @@ interface ProfileStatsProps {
 
 export default function ProfileStats({ stats, isStaff }: ProfileStatsProps) {
     const statItems = [
-        { icon: Zap, label: "Level", value: stats.level, color: "text-[var(--accent)]", glow: "rgba(252,65,0,0.3)" },
-        { icon: Flame, label: "XP", value: stats.xp.toLocaleString(), color: "text-orange-400", glow: "rgba(251,146,60,0.3)" },
-        { icon: MessageSquare, label: "Threads", value: stats.threads_count, color: "text-blue-400", glow: "rgba(96,165,250,0.3)" },
-        { icon: MessageSquare, label: "Posts", value: stats.posts_count, color: "text-cyan-400", glow: "rgba(34,211,238,0.3)" },
-        { icon: Trophy, label: "Achievements", value: stats.achievements_count, color: "text-yellow-400", glow: "rgba(250,204,21,0.3)" },
-        { icon: Star, label: "Reputation", value: stats.reputation, color: "text-purple-400", glow: "rgba(192,132,252,0.3)" },
+        { icon: Zap, label: "Level", value: stats.level, color: "#FC4100", bg: "rgba(252,65,0,0.08)" },
+        { icon: Flame, label: "XP", value: stats.xp.toLocaleString(), color: "#fb923c", bg: "rgba(251,146,60,0.08)" },
+        { icon: MessageSquare, label: "Threads", value: stats.threads_count, color: "#60a5fa", bg: "rgba(96,165,250,0.08)" },
+        { icon: MessageSquare, label: "Posts", value: stats.posts_count, color: "#22d3ee", bg: "rgba(34,211,238,0.08)" },
+        { icon: Trophy, label: "Achievements", value: stats.achievements_count, color: "#facc15", bg: "rgba(250,204,21,0.08)" },
+        { icon: Star, label: "Reputation", value: stats.reputation, color: "#c084fc", bg: "rgba(192,132,252,0.08)" },
     ];
 
     if (isStaff && stats.reviews_count) {
-        statItems.push({ icon: Pen, label: "Articles", value: stats.reviews_count, color: "text-emerald-400", glow: "rgba(52,211,153,0.3)" });
+        statItems.push({ icon: Pen, label: "Articles", value: stats.reviews_count, color: "#34d399", bg: "rgba(52,211,153,0.08)" });
     }
 
     return (
-        <div className="relative bg-[var(--bg-secondary)] border-y border-white/5">
-            {/* HUD grid pattern */}
-            <div className="absolute inset-0 profile-grid-bg opacity-40" />
+        <div className="relative bg-gradient-to-b from-[var(--bg-secondary)] to-[var(--bg-primary)]">
+            {/* Subtle top line accent */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--accent)]/20 to-transparent" />
 
-            <div className="relative container mx-auto px-4 max-w-5xl">
-                <div className="flex items-stretch overflow-x-auto no-scrollbar snap-x snap-mandatory">
-                    {statItems.map((stat, i) => (
+            <div className="relative container mx-auto px-4 max-w-5xl py-5 md:py-6">
+                <div className="grid grid-cols-3 md:flex md:items-stretch gap-2.5 md:gap-3">
+                    {statItems.map((stat) => (
                         <div
                             key={stat.label}
-                            className={`group flex-1 min-w-[100px] snap-start flex items-center justify-center py-4 md:py-5 transition-all hover:bg-white/[0.03] ${
-                                i > 0 ? "border-l border-white/[0.06]" : ""
-                            }`}
+                            className="group relative rounded-xl border border-white/[0.04] bg-white/[0.02] backdrop-blur-sm p-3 md:p-4 md:flex-1 flex flex-col items-center justify-center gap-1.5 transition-all duration-300 hover:border-white/[0.08] hover:bg-white/[0.04] overflow-hidden"
                         >
-                            <div className="flex flex-col items-center gap-1 px-3">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                    <stat.icon
-                                        className={`w-4 h-4 ${stat.color} transition-all group-hover:drop-shadow-[0_0_6px_var(--tw-shadow-color)]`}
-                                        style={{ "--tw-shadow-color": stat.glow } as any}
-                                    />
+                            {/* Hover glow */}
+                            <div
+                                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"
+                                style={{ background: `radial-gradient(circle at 50% 0%, ${stat.bg}, transparent 70%)` }}
+                            />
+
+                            {/* Colored top accent line */}
+                            <div
+                                className="absolute top-0 left-2 right-2 h-[2px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                style={{ backgroundColor: stat.color }}
+                            />
+
+                            <div className="relative flex flex-col items-center gap-1">
+                                {/* Icon in subtle circle */}
+                                <div
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center mb-0.5 transition-transform duration-300 group-hover:scale-110"
+                                    style={{ backgroundColor: stat.bg }}
+                                >
+                                    <stat.icon className="w-4 h-4" style={{ color: stat.color }} />
                                 </div>
+
+                                {/* Value */}
                                 <span className="text-xl md:text-2xl font-black text-white tabular-nums tracking-tight leading-none">
                                     {stat.value}
                                 </span>
-                                <span className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-semibold mt-0.5">
+
+                                {/* Label */}
+                                <span className="text-[9px] md:text-[10px] uppercase tracking-[0.15em] text-white/35 font-semibold">
                                     {stat.label}
                                 </span>
                             </div>
@@ -54,6 +69,9 @@ export default function ProfileStats({ stats, isStaff }: ProfileStatsProps) {
                     ))}
                 </div>
             </div>
+
+            {/* Bottom fade line */}
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
         </div>
     );
 }
