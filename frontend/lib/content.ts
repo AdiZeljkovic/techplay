@@ -10,9 +10,10 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
 
     // Step 0: Clean up empty paragraphs from the rich text editor (TipTap/Filament).
     // These are created when pressing Enter multiple times and produce unwanted gaps.
-    // Matches: <p></p>, <p> </p>, <p>&nbsp;</p>, <p><br></p>, <p><br/></p>
+    // Matches: <p></p>, <p> </p>, <p>&nbsp;</p>, <p><br></p>, <p><br class="..."></p>,
+    // <p>&#8203;</p> (zero-width space), <p>\u200B</p>, and any combination thereof.
     let processedContent = (html || '')
-        .replace(/<p[^>]*>(\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, '');
+        .replace(/<p[^>]*>(\s|\u200B|\uFEFF|\u200C|\u200D|&nbsp;|&#8203;|&#x200[BbCcDd];|<br[^>]*\/?>)*<\/p>/gi, '');
 
     // Step 1: Process headings for TOC (h2, h3)
     processedContent = processedContent.replace(/<(h[2-3])([^>]*)>(.*?)<\/\1>/gi, (match, tag, attrs, text) => {

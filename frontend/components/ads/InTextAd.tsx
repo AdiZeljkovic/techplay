@@ -21,7 +21,6 @@ export default function InTextAd({
     position = "article_in_text",
 }: InTextAdProps) {
     const contentParts = useMemo(() => {
-        // Split content by top-level <p> tags (not those inside tables, blockquotes, etc.)
         const parts: { html: string; showAd?: boolean }[] = [];
 
         // Replace block elements that can contain <p> tags with same-length placeholders
@@ -32,40 +31,37 @@ export default function InTextAd({
         );
 
         const paragraphRegex = /<p[^>]*>[\s\S]*?<\/p>/gi;
-        const matches = contentForMatching.match(paragraphRegex) || [];
+        const paragraphPositions: number[] = [];
+
+        // Find end-positions of each top-level paragraph
+        let match;
+        while ((match = paragraphRegex.exec(contentForMatching)) !== null) {
+            paragraphPositions.push(match.index + match[0].length);
+        }
 
         // If we don't have enough paragraphs, just return the content as-is
-        if (matches.length < Math.min(...afterParagraphs)) {
+        if (paragraphPositions.length < Math.min(...afterParagraphs)) {
             return [{ html: content }];
         }
 
-        let lastIndex = 0;
-        let paragraphCount = 0;
-        const paragraphPositions: number[] = [];
+        // Only split at ad injection points (not per-paragraph).
+        // This keeps all paragraphs between ads in a single prose container
+        // so CSS margin collapse works correctly.
+        const sortedAdPoints = [...afterParagraphs].sort((a, b) => a - b);
+        let currentIndex = 0;
 
-        // Find positions of each top-level paragraph
-        let match;
-        const regex = new RegExp(paragraphRegex);
-        while ((match = regex.exec(contentForMatching)) !== null) {
-            paragraphPositions.push(match.index + match[0].length);
-            paragraphCount++;
+        for (const adAfterParagraph of sortedAdPoints) {
+            if (adAfterParagraph <= paragraphPositions.length) {
+                const splitPos = paragraphPositions[adAfterParagraph - 1];
+                parts.push({
+                    html: content.substring(currentIndex, splitPos),
+                    showAd: true,
+                });
+                currentIndex = splitPos;
+            }
         }
 
-        // Build parts array with ad injection points
-        let currentIndex = 0;
-        paragraphPositions.forEach((position, idx) => {
-            const paragraphNumber = idx + 1;
-
-            // Add content up to this point
-            parts.push({
-                html: content.substring(currentIndex, position),
-                showAd: afterParagraphs.includes(paragraphNumber),
-            });
-
-            currentIndex = position;
-        });
-
-        // Add remaining content
+        // Add remaining content after the last ad point
         if (currentIndex < content.length) {
             parts.push({ html: content.substring(currentIndex) });
         }
