@@ -13,7 +13,11 @@ import { HARDWARE_CATEGORIES } from "@/lib/categories";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
-export default function HardwareClient() {
+interface HardwareClientProps {
+    initialData?: any;
+}
+
+export default function HardwareClient({ initialData }: HardwareClientProps) {
     const [page, setPage] = useState(1);
 
     // Fetch tech articles from dedicated endpoint
@@ -23,7 +27,8 @@ export default function HardwareClient() {
 
     const { data, isLoading, isValidating } = useSWR<PaginatedResponse<Review>>(
         `/tech?${queryParams.toString()}`,
-        fetcher
+        fetcher,
+        page === 1 && initialData ? { fallbackData: initialData, revalidateOnMount: false } : {}
     );
 
     // Fetch Category Details (for SEO Text) - 'tech' is the main hardware category identifier

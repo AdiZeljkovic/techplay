@@ -14,7 +14,11 @@ import { useRealTimeReviews } from "@/hooks";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
-export default function ReviewsClient() {
+interface ReviewsClientProps {
+    initialData?: any;
+}
+
+export default function ReviewsClient({ initialData }: ReviewsClientProps) {
     const [page, setPage] = useState(1);
 
     // Default to 'all'
@@ -23,7 +27,8 @@ export default function ReviewsClient() {
 
     const { data, isLoading, isValidating } = useSWR<PaginatedResponse<Review>>(
         `/reviews?${queryParams.toString()}`,
-        fetcher
+        fetcher,
+        page === 1 && initialData ? { fallbackData: initialData, revalidateOnMount: false } : {}
     );
 
     // Real-time hook

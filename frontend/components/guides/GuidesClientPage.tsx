@@ -49,7 +49,11 @@ const GUIDE_CATEGORIES = [
     { id: 'advanced', label: 'Advanced', icon: Rocket, slug: 'advanced' },
 ];
 
-export default function GuidesClientPage() {
+interface GuidesClientPageProps {
+    initialData?: any;
+}
+
+export default function GuidesClientPage({ initialData }: GuidesClientPageProps) {
     const [difficulty, setDifficulty] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [page, setPage] = useState(1);
@@ -63,7 +67,14 @@ export default function GuidesClientPage() {
         return `/guides?${params.toString()}`;
     }, [difficulty, searchQuery, page]);
 
-    const { data, isLoading, isValidating } = useSWR<GuidesResponse>(apiUrl, fetcher);
+    // Use server data as fallback only for the default unfiltered page 1
+    const isDefaultView = page === 1 && difficulty === 'all' && !searchQuery;
+
+    const { data, isLoading, isValidating } = useSWR<GuidesResponse>(
+        apiUrl,
+        fetcher,
+        isDefaultView && initialData ? { fallbackData: initialData, revalidateOnMount: false } : {}
+    );
 
     // Real-time hook
     const { guides: realtimeGuides, newCount } = useRealTimeGuides([]);

@@ -14,7 +14,11 @@ import { useRealTimeNews } from "@/hooks";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
-export default function NewsClient() {
+interface NewsClientProps {
+    initialData?: any;
+}
+
+export default function NewsClient({ initialData }: NewsClientProps) {
     const [page, setPage] = useState(1);
 
     // Default to 'all' for the main index page
@@ -23,7 +27,8 @@ export default function NewsClient() {
 
     const { data, isLoading, isValidating } = useSWR<PaginatedResponse<Article>>(
         `/news?${queryParams.toString()}`,
-        fetcher
+        fetcher,
+        page === 1 && initialData ? { fallbackData: initialData, revalidateOnMount: false } : {}
     );
 
     // Real-time hook - new articles will appear at the top
