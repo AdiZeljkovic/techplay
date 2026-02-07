@@ -60,9 +60,9 @@ export default function ProfileHero({
     const config = roleConfig[userData.role?.toLowerCase()];
 
     return (
-        <div className="relative">
+        <div className="relative -mt-[120px] md:-mt-[116px]">
             {/* === IMMERSIVE COVER === */}
-            <div className="relative h-[340px] md:h-[420px] overflow-hidden">
+            <div className="relative h-[460px] md:h-[536px] overflow-hidden">
                 {userData.cover_image ? (
                     <img
                         src={userData.cover_image}
@@ -90,7 +90,7 @@ export default function ProfileHero({
                 <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)]/70 to-transparent" />
 
                 {/* === ACTION BUTTONS - top right === */}
-                <div className="absolute top-4 right-4 md:top-6 md:right-6 z-20 flex gap-2">
+                <div className="absolute top-[130px] right-4 md:top-[126px] md:right-6 z-20 flex gap-2">
                     {!isOwnProfile && (
                         <>
                             <button

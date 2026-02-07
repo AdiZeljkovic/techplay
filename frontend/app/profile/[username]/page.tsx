@@ -50,7 +50,7 @@ export default function ProfilePage() {
     if (isLoading || authLoading || (rawUsername === "me" && !currentUser)) {
         return (
             <div className="min-h-screen bg-[var(--bg-primary)]">
-                <div className="h-[340px] md:h-[420px] bg-gradient-to-b from-[var(--bg-secondary)] to-[var(--bg-primary)] animate-pulse relative">
+                <div className="-mt-[120px] md:-mt-[116px] h-[460px] md:h-[536px] bg-gradient-to-b from-[var(--bg-secondary)] to-[var(--bg-primary)] animate-pulse relative">
                     <div className="absolute bottom-16 left-0 right-0">
                         <div className="container mx-auto px-4 max-w-5xl flex items-end gap-6">
                             <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-white/5" />
