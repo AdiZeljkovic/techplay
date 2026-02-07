@@ -44,10 +44,7 @@ export default function ContactPage() {
         };
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
-            const response = await baseAxios.post(`${apiUrl}/contact`, data, {
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            });
+            const response = await baseAxios.post('/api/contact', data);
 
             if (response.data?.success) {
                 setIsSent(true);
