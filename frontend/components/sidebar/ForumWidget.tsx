@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { MessagesSquare, MessageCircle, User as UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { decodeHtml } from "@/lib/decode";
 
 interface ForumThread {
     id: number;
@@ -76,12 +77,12 @@ export default function ForumWidget() {
                         className="block p-4 hover:bg-white/5 transition-colors group"
                     >
                         <h4 className="text-sm font-semibold text-white/90 group-hover:text-[var(--accent)] transition-colors line-clamp-2 mb-2">
-                            {thread.title}
+                            {decodeHtml(thread.title)}
                         </h4>
                         <div className="flex items-center justify-between text-xs text-white/40">
                             <div className="flex items-center gap-1.5">
                                 <UserIcon className="w-3 h-3" />
-                                {thread.author?.display_name || thread.author?.username || 'User'}
+                                {decodeHtml(thread.author?.display_name || thread.author?.username) || 'User'}
                             </div>
                             <div className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-full">
                                 <MessageCircle className="w-3 h-3 text-[var(--accent)]" />

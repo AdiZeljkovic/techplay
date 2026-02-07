@@ -15,6 +15,7 @@ import axios from "@/lib/axios";
 import DOMPurify from "isomorphic-dompurify";
 import LiveViewCount from "@/components/tracking/LiveViewCount";
 import ArticleFooterMessage from "@/components/ui/ArticleFooterMessage";
+import { decodeHtml } from "@/lib/decode";
 
 interface Guide {
     id: number;
@@ -150,7 +151,7 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                         </div>
 
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-xl animate-fade-in-up delay-100">
-                            {guide.title}
+                            {decodeHtml(guide.title)}
                         </h1>
 
                         <div className="flex flex-wrap items-center gap-6 text-white/90 animate-fade-in-up delay-200">

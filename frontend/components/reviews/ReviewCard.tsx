@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 import { Review } from "@/types";
 import { getImageUrl } from "@/lib/imageUrl";
+import { decodeHtml } from "@/lib/decode";
 
 interface ReviewCardProps {
     review: Review;
@@ -64,7 +65,7 @@ export default memo(function ReviewCard({ review, index, basePath = "/reviews", 
                     {/* Category Badge */}
                     <div className="absolute bottom-3 left-3">
                         <span className="px-2.5 py-1 bg-[var(--accent)] text-white text-xs font-semibold rounded uppercase">
-                            {review.category?.name || 'Latest'}
+                            {decodeHtml(review.category?.name) || 'Latest'}
                         </span>
                     </div>
                 </div>
@@ -76,11 +77,11 @@ export default memo(function ReviewCard({ review, index, basePath = "/reviews", 
                     )}
 
                     <h3 className="text-lg font-semibold text-[var(--text-primary)] line-clamp-2 group-hover:text-[var(--accent)] transition-colors mb-2">
-                        {review.title}
+                        {decodeHtml(review.title)}
                     </h3>
 
                     <p className="text-sm text-[var(--text-secondary)] line-clamp-2 mb-4 flex-grow">
-                        {review.excerpt || review.summary || "Read our full review for the verdict."}
+                        {decodeHtml(review.excerpt || review.summary) || "Read our full review for the verdict."}
                     </p>
 
                     {/* Star Rating - Hidden if hideRating is true */}

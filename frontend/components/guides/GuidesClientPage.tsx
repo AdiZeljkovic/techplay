@@ -10,6 +10,7 @@ import { formatDistanceToNow } from "date-fns";
 import PageHero from "@/components/ui/PageHero";
 import { Button } from "@/components/ui/Button";
 import { useRealTimeGuides } from "@/hooks";
+import { decodeHtml } from "@/lib/decode";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -161,10 +162,10 @@ export default function GuidesClientPage() {
 
                                     <div className="p-5 flex-1 flex flex-col">
                                         <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2 group-hover:text-[var(--accent)] transition-colors line-clamp-2">
-                                            {guide.title}
+                                            {decodeHtml(guide.title)}
                                         </h3>
                                         <p className="text-sm text-[var(--text-secondary)] line-clamp-2 mb-4 flex-1">
-                                            {guide.excerpt || "Click to read the full guide..."}
+                                            {decodeHtml(guide.excerpt) || "Click to read the full guide..."}
                                         </p>
 
                                         <div className="flex items-center justify-between pt-4 border-t border-[var(--border)]">

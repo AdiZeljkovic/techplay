@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, TrendingUp, Clock, ChevronRight, ChevronLeft } from "lucide-react";
 import { Article } from "@/types";
+import { decodeHtml } from "@/lib/decode";
 
 interface HeroCarouselProps {
     articles: Article[];
@@ -78,9 +79,9 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                         className="text-white/80 text-xs font-mono uppercase tracking-wide flex items-center gap-2"
                     >
                         <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
-                        {currentArticle.category.name}
+                        {decodeHtml(currentArticle.category.name)}
                         <span className="text-white/40">|</span>
-                        <span className="text-white font-bold">{currentArticle.author?.display_name || currentArticle.author?.username}</span>
+                        <span className="text-white font-bold">{decodeHtml(currentArticle.author?.display_name || currentArticle.author?.username)}</span>
                         <span className="text-white/40">|</span>
                         {/* Date formatter or TimeAgo logic needed, using static for now or pass property */}
                         {new Date(currentArticle.published_at).toLocaleDateString('en-GB')}
@@ -96,7 +97,7 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                         transition={{ duration: 0.5, delay: 0.1 }}
                         className="text-3xl md:text-5xl lg:text-7xl font-black text-white leading-[1.1] mb-4 md:mb-6 tracking-tight drop-shadow-lg line-clamp-3 md:line-clamp-none"
                     >
-                        {currentArticle.title}
+                        {decodeHtml(currentArticle.title)}
                     </motion.h1>
 
                     {/* <motion.p

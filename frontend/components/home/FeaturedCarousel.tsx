@@ -10,6 +10,7 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import { Article, PaginatedResponse } from "@/types";
 import { formatDistanceToNow } from "date-fns";
+import { decodeHtml } from "@/lib/decode";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -94,7 +95,7 @@ export default function FeaturedCarousel() {
                             >
                                 <div className="flex gap-2 mb-4">
                                     <span className="inline-block px-3 py-1 bg-neon-teal/20 text-neon-teal rounded-full text-sm font-bold border border-neon-teal/30 capitalize">
-                                        {currentSlide.category.name}
+                                        {decodeHtml(currentSlide.category.name)}
                                     </span>
                                     {currentSlide.status === 'published' && (
                                         <span className="inline-block px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-bold border border-green-500/30">
@@ -104,7 +105,7 @@ export default function FeaturedCarousel() {
                                 </div>
 
                                 <h2 className="text-3xl md:text-5xl font-bold font-display mb-4 leading-tight">
-                                    {currentSlide.title}
+                                    {decodeHtml(currentSlide.title)}
                                 </h2>
 
                                 <div className="flex items-center gap-6 text-gray-300 mb-6">

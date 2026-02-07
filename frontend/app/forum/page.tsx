@@ -10,6 +10,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import PageHero from "@/components/ui/PageHero";
 import ForumSidebar from "@/components/forum/ForumSidebar";
+import { decodeHtml } from "@/lib/decode";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -94,7 +95,7 @@ export default function ForumPage() {
                                             <Info className="w-5 h-5" />
                                         </div>
                                         <h2 className="text-xl font-bold text-[var(--text-primary)] tracking-tight">
-                                            {parent.name}
+                                            {decodeHtml(parent.name)}
                                         </h2>
                                     </div>
 
@@ -134,11 +135,11 @@ export default function ForumPage() {
                                                                 </div>
                                                                 <div>
                                                                     <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1 group-hover:text-[var(--accent)] transition-colors">
-                                                                        {category.name}
+                                                                        {decodeHtml(category.name)}
                                                                     </h3>
                                                                     {category.description && (
                                                                         <p className="text-[var(--text-secondary)] text-sm mb-0 line-clamp-1 max-w-xl">
-                                                                            {category.description}
+                                                                            {decodeHtml(category.description)}
                                                                         </p>
                                                                     )}
 
@@ -170,7 +171,7 @@ export default function ForumPage() {
                                                                                 </div>
                                                                                 <div className="flex-1 min-w-0">
                                                                                     <div className="text-xs font-medium text-[var(--text-primary)] truncate group-hover:text-[var(--accent)] transition-colors">
-                                                                                        {category.latest_thread.title}
+                                                                                        {decodeHtml(category.latest_thread.title)}
                                                                                     </div>
                                                                                     <div className="text-[10px] text-[var(--text-secondary)] truncate">
                                                                                         {formatDistanceToNow(new Date(category.latest_thread.created_at), { addSuffix: true })}

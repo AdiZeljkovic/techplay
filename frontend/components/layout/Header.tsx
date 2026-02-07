@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchDropdown from "./SearchDropdown";
+import { decodeHtml } from "@/lib/decode";
 
 // Social Icon Mapping with names for accessibility
 const SOCIAL_ICON_MAP: Record<string, { icon: any; name: string }> = {
@@ -259,7 +260,7 @@ export default function Header() {
                             ) : (
                                 <User className="w-4 h-4" />
                             )}
-                            <span>{user.display_name || user.username}</span>
+                            <span>{decodeHtml(user.display_name || user.username)}</span>
                         </Link>
                     ) : (
                         <Link
@@ -377,7 +378,7 @@ export default function Header() {
                                     )}
                                     <div className="flex flex-col">
                                         <span className="text-gray-200 font-medium group-hover:text-[var(--accent)] text-xs leading-tight truncate max-w-[120px]">
-                                            {user.display_name || user.username || "My Profile"}
+                                            {decodeHtml(user.display_name || user.username) || "My Profile"}
                                         </span>
                                         <span className="text-[10px] text-gray-500 font-mono leading-tight">
                                             Lvl {Math.floor((user.xp || 0) / 1000) + 1}

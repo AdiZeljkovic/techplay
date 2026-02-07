@@ -7,6 +7,7 @@ import { Article } from "@/types";
 import { format } from "date-fns";
 import { getImageUrl } from "@/lib/imageUrl";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { decodeHtml } from "@/lib/decode";
 
 interface ContentSectionProps {
     title: string;
@@ -142,13 +143,13 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
                     {/* Content Overlay */}
                     <div className="absolute bottom-0 left-0 right-0 p-6">
                         <span className="inline-block px-3 py-1 bg-[var(--accent)] text-white text-[10px] font-bold uppercase tracking-wider rounded mb-3 shadow-[0_4px_10px_rgba(252,65,0,0.4)]">
-                            {featured.category.name}
+                            {decodeHtml(featured.category.name)}
                         </span>
                         <h3 className="text-2xl font-bold text-white leading-tight mb-3 group-hover:text-[var(--accent-hover)] transition-colors">
-                            {featured.title}
+                            {decodeHtml(featured.title)}
                         </h3>
                         <p className="text-white/70 text-sm line-clamp-2 mb-4 font-medium leading-relaxed">
-                            {featured.excerpt}
+                            {decodeHtml(featured.excerpt)}
                         </p>
 
                         <div className="flex items-center gap-4 text-xs text-white/50 font-bold uppercase tracking-wide">
@@ -192,7 +193,7 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
                                         <div className="w-full h-full bg-[#0a0f1c]" />
                                     )}
                                     <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[9px] font-bold text-white uppercase tracking-wider">
-                                        {item.category.name}
+                                        {decodeHtml(item.category.name)}
                                     </div>
 
                                     {/* Review Score Badge for grid items */}
@@ -205,7 +206,7 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
 
                                 <div className="flex-1 flex flex-col">
                                     <h4 className="text-sm font-bold text-white leading-snug line-clamp-2 mb-2 group-hover:text-[var(--accent)] transition-colors">
-                                        {item.title}
+                                        {decodeHtml(item.title)}
                                     </h4>
                                     <div className="mt-auto flex items-center justify-between text-[10px] text-white/40 uppercase font-bold tracking-wide">
                                         <span className="truncate max-w-[100px]">{item.author?.display_name || item.author?.username || "TechPlay"}</span>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Clock, ArrowRight } from "lucide-react";
 import { Article } from "@/types";
+import { decodeHtml } from "@/lib/decode";
 
 interface RelatedArticlesProps {
     articles: Article[];
@@ -59,7 +60,7 @@ export default function RelatedArticles({
                             {/* Category Badge */}
                             <div className="absolute top-3 left-3">
                                 <span className="px-2 py-1 bg-[var(--accent)] text-white text-[10px] font-bold uppercase rounded">
-                                    {article.category?.name || 'News'}
+                                    {decodeHtml(article.category?.name) || 'News'}
                                 </span>
                             </div>
                         </div>
@@ -67,7 +68,7 @@ export default function RelatedArticles({
                         {/* Content */}
                         <div className="p-4">
                             <h3 className="text-white font-bold line-clamp-2 group-hover:text-[var(--accent)] transition-colors mb-2">
-                                {article.title}
+                                {decodeHtml(article.title)}
                             </h3>
                             <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
                                 <Clock className="w-3 h-3" />

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { decodeHtml } from "@/lib/decode";
 
 export default function NewsTabsWidget() {
     const [activeTab, setActiveTab] = useState<"latest" | "popular">("latest");
@@ -98,7 +99,7 @@ export default function NewsTabsWidget() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-0.5">
-                                            <span className="text-[9px] font-bold text-[var(--accent)] uppercase">{item.category?.name || 'News'}</span>
+                                            <span className="text-[9px] font-bold text-[var(--accent)] uppercase">{decodeHtml(item.category?.name) || 'News'}</span>
                                             <span className="text-[9px] text-white/30">•</span>
                                             <span className="text-[9px] text-white/40 flex items-center gap-1">
                                                 {activeTab === "latest" ? (
@@ -109,7 +110,7 @@ export default function NewsTabsWidget() {
                                             </span>
                                         </div>
                                         <h4 className="text-sm font-medium text-white/90 leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
-                                            {item.title}
+                                            {decodeHtml(item.title)}
                                         </h4>
                                     </div>
                                 </Link>

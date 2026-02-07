@@ -5,6 +5,7 @@ import axios from "@/lib/axios";
 import { Article } from "@/types";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { decodeHtml } from "@/lib/decode";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data.data);
 
@@ -51,10 +52,10 @@ export default function TrendingSidebar() {
                     return (
                         <Link href={`${basePath}/${article.slug}`} key={article.id} className="block group cursor-pointer">
                             <div className="text-xs text-[var(--accent)] font-bold mb-1 uppercase">
-                                {article.category?.name || "News"}
+                                {decodeHtml(article.category?.name) || "News"}
                             </div>
                             <h5 className="text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors line-clamp-2">
-                                {article.title}
+                                {decodeHtml(article.title)}
                             </h5>
                         </Link>
                     );

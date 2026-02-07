@@ -19,6 +19,7 @@ import TrendingSidebar from "@/components/news/TrendingSidebar";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import RelatedArticles from "@/components/seo/RelatedArticles";
 import ArticleFooterMessage from "@/components/ui/ArticleFooterMessage";
+import { decodeHtml } from "@/lib/decode";
 
 interface ArticleDetailViewProps {
     article: Article;
@@ -121,8 +122,8 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                         <Breadcrumbs
                             items={[
                                 { label: 'News', href: '/news' },
-                                { label: article.category?.name || 'Article', href: `/news/${article.category?.slug || 'gaming'}` },
-                                { label: article.title }
+                                { label: decodeHtml(article.category?.name) || 'Article', href: `/news/${article.category?.slug || 'gaming'}` },
+                                { label: decodeHtml(article.title) }
                             ]}
                             className="mb-6"
                         />
@@ -130,7 +131,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                         {/* Category Badge */}
                         <div className="mb-4 animate-fade-in-up">
                             <span className="px-4 py-1.5 text-xs font-bold tracking-wider bg-[var(--accent)] text-white rounded-full uppercase shadow-[0_0_15px_rgba(var(--accent-rgb),0.5)]">
-                                {article.category?.name || "News"}
+                                {decodeHtml(article.category?.name) || "News"}
                             </span>
                         </div>
 
@@ -143,7 +144,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                     ? 'text-2xl md:text-4xl lg:text-5xl'
                                     : 'text-3xl md:text-5xl lg:text-6xl'}
                         `}>
-                            {article.title}
+                            {decodeHtml(article.title)}
                         </h1>
 
                         {/* Author & Meta Data */}
@@ -166,7 +167,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 </div>
                                 <div className="group-hover:text-[var(--accent)] transition-colors">
                                     <p className="text-sm font-bold text-white group-hover:text-[var(--accent)] transition-colors">
-                                        {article.author?.display_name || article.author?.username || "TechPlay Editor"}
+                                        {decodeHtml(article.author?.display_name || article.author?.username || "TechPlay Editor")}
                                     </p>
                                     <p className="text-xs text-white/60">
                                         Author
@@ -240,8 +241,8 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                         <div className={`sticky top-32 transition-all duration-300 ${isScrolled ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
                             <SocialShare
                                 url={`/news/${article.slug}`}
-                                title={article.title}
-                                description={article.excerpt || ''}
+                                title={decodeHtml(article.title)}
+                                description={decodeHtml(article.excerpt) || ''}
                                 vertical={true}
                             />
                         </div>
@@ -256,7 +257,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                         {article.excerpt && (
                             <div className="mb-10 pl-6 border-l-4 border-[var(--accent)]">
                                 <p className="text-xl md:text-2xl font-medium text-[var(--text-primary)] leading-relaxed italic">
-                                    "{article.excerpt}"
+                                    "{decodeHtml(article.excerpt)}"
                                 </p>
                             </div>
                         )}
@@ -296,7 +297,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                             <span className="text-sm font-semibold text-[var(--text-primary)] mr-2">Tags:</span>
                             {/* Just placeholders or category since tags aren't in Article type fully yet */}
                             <span className="px-3 py-1 bg-[var(--bg-elevated)] text-[var(--text-secondary)] text-sm rounded-lg hover:text-[var(--accent)] hover:border-[var(--accent)] border border-transparent transition-all cursor-pointer">
-                                {article.category?.name}
+                                {decodeHtml(article.category?.name)}
                             </span>
                             <span className="px-3 py-1 bg-[var(--bg-elevated)] text-[var(--text-secondary)] text-sm rounded-lg hover:text-[var(--accent)] hover:border-[var(--accent)] border border-transparent transition-all cursor-pointer">
                                 Technology
@@ -311,8 +312,8 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                             <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4 text-center">Share this article</h3>
                             <SocialShare
                                 url={`/news/${article.slug}`}
-                                title={article.title}
-                                description={article.excerpt || ''}
+                                title={decodeHtml(article.title)}
+                                description={decodeHtml(article.excerpt) || ''}
                                 vertical={false}
                             />
                         </div>
@@ -339,11 +340,11 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                             <div className="flex-1">
                                 <Link href={`/profile/${article.author?.username}`} className="inline-block group">
                                     <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--accent)] transition-colors">
-                                        About {article.author?.display_name || article.author?.username || "The Author"}
+                                        About {decodeHtml(article.author?.display_name || article.author?.username || "The Author")}
                                     </h3>
                                 </Link>
                                 <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-4">
-                                    {article.author?.bio || "TechPlay editor and gaming enthusiast. Covering the latest in technology, esports, and hardware reviews."}
+                                    {decodeHtml(article.author?.bio) || "TechPlay editor and gaming enthusiast. Covering the latest in technology, esports, and hardware reviews."}
                                 </p>
                                 <Link
                                     href={`/profile/${article.author?.username}`}

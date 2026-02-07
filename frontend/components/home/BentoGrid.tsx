@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Clock, Star } from "lucide-react";
+import { decodeHtml } from "@/lib/decode";
 
 interface Article {
     id: number;
@@ -81,13 +82,13 @@ export default function BentoGrid() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                         <div className="absolute bottom-0 left-0 p-8 w-full">
                             <span className="inline-block px-3 py-1 mb-4 text-xs font-bold text-white bg-[var(--accent)] rounded-full">
-                                {MOCK_ARTICLES[0].category.name}
+                                {decodeHtml(MOCK_ARTICLES[0].category.name)}
                             </span>
                             <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight group-hover:text-[var(--accent)] transition-colors">
-                                {MOCK_ARTICLES[0].title}
+                                {decodeHtml(MOCK_ARTICLES[0].title)}
                             </h2>
                             <p className="text-gray-300 text-lg mb-6 max-w-2xl line-clamp-2">
-                                {MOCK_ARTICLES[0].excerpt}
+                                {decodeHtml(MOCK_ARTICLES[0].excerpt)}
                             </p>
                             <div className="flex items-center gap-4 text-sm text-gray-400">
                                 <div className="flex items-center gap-2">
@@ -116,10 +117,10 @@ export default function BentoGrid() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                         <div className="absolute bottom-0 left-0 p-6">
                             <span className="inline-block px-2 py-1 mb-2 text-[10px] font-bold text-white bg-blue-600 rounded-full">
-                                {MOCK_ARTICLES[1].category.name}
+                                {decodeHtml(MOCK_ARTICLES[1].category.name)}
                             </span>
                             <h3 className="text-xl font-bold text-white mb-2 leading-tight group-hover:text-blue-400 transition-colors">
-                                {MOCK_ARTICLES[1].title}
+                                {decodeHtml(MOCK_ARTICLES[1].title)}
                             </h3>
                         </div>
                     </Link>
@@ -138,10 +139,10 @@ export default function BentoGrid() {
                                 <div className="absolute inset-0 bg-gradient-to-l from-black/80 via-black/40 to-transparent" />
                                 <div className="absolute inset-0 p-4 flex flex-col justify-center items-end text-right">
                                     <span className="inline-block px-2 py-0.5 mb-2 text-[10px] font-bold text-white bg-green-600 rounded-full">
-                                        {article.category.name}
+                                        {decodeHtml(article.category.name)}
                                     </span>
                                     <h4 className="text-lg font-bold text-white leading-tight group-hover:text-green-400 transition-colors max-w-[80%]">
-                                        {article.title}
+                                        {decodeHtml(article.title)}
                                     </h4>
                                 </div>
                             </Link>

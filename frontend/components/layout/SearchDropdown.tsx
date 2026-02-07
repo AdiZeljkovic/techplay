@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, Loader2, FileText } from "lucide-react";
 import axios from "@/lib/axios";
 import { cn } from "@/lib/utils";
+import { decodeHtml } from "@/lib/decode";
 
 interface SearchResult {
     id: number;
@@ -210,10 +211,10 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                                     {/* Content */}
                                     <div className="flex-1 min-w-0">
                                         <p className="text-white font-medium text-sm leading-tight line-clamp-2">
-                                            {result.title}
+                                            {decodeHtml(result.title)}
                                         </p>
                                         <p className="text-xs text-[var(--accent)] uppercase tracking-wide mt-1">
-                                            {result.category}
+                                            {decodeHtml(result.category)}
                                         </p>
                                     </div>
                                 </button>

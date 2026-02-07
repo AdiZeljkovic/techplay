@@ -9,6 +9,7 @@ import Link from "next/link";
 import { User, Comment } from "@/types";
 import { Button } from "../ui/Button";
 import { MessageSquare, CornerDownRight, Send, Trophy, ShieldCheck, Gamepad2, ChevronUp, ChevronDown } from "lucide-react";
+import { decodeHtml } from "@/lib/decode";
 
 // Removed local Comment interface in favor of shared type
 
@@ -298,7 +299,7 @@ const CommentItem = memo(function CommentItem({
     handleVote,
     isSubmitting
 }: CommentItemProps) {
-    const displayName = comment.user.name || comment.user.username;
+    const displayName = decodeHtml(comment.user.name || comment.user.username);
     const isStaff = comment.user.role === 'admin' || comment.user.role === 'editor';
     const isOwner = user?.id === comment.user.id;
 
@@ -347,7 +348,7 @@ const CommentItem = memo(function CommentItem({
                     </div>
 
                     <div className={`text-[var(--text-secondary)] leading-relaxed text-sm ${depth === 0 ? 'text-base' : ''}`}>
-                        {comment.content}
+                        {decodeHtml(comment.content)}
                     </div>
 
                     {/* Actions */}

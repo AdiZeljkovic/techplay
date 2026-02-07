@@ -5,6 +5,7 @@ import * as LucideIcons from "lucide-react";
 import { RoadmapFeature } from "@/lib/roadmapData";
 import { CheckCircle2, Clock, Circle, Sparkles } from "lucide-react";
 import { useState } from "react";
+import { decodeHtml } from "@/lib/decode";
 
 interface FeatureCardProps {
     feature: RoadmapFeature;
@@ -149,12 +150,12 @@ export default function FeatureCard({ feature, index }: FeatureCardProps) {
 
                 {/* Title */}
                 <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3 pr-20 leading-tight group-hover:text-[var(--accent)] transition-colors duration-300">
-                    {feature.title}
+                    {decodeHtml(feature.title)}
                 </h3>
 
                 {/* Description */}
                 <p className="text-sm text-[var(--text-secondary)] mb-5 leading-relaxed">
-                    {feature.description}
+                    {decodeHtml(feature.description)}
                 </p>
 
                 {/* Divider */}

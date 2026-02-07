@@ -28,6 +28,7 @@ interface ReviewDetailViewProps {
 // ArticleDetailView uses `processContent` from `@/lib/content`.
 import { processContent } from "@/lib/content";
 import ArticleFooterMessage from "@/components/ui/ArticleFooterMessage";
+import { decodeHtml } from "@/lib/decode";
 
 export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
     console.log("Review Full Object:", review);
@@ -139,7 +140,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
 
                         <div className="mb-4 animate-fade-in-up flex items-center gap-3">
                             <span className="px-4 py-1.5 text-xs font-bold tracking-wider bg-[var(--accent)] text-white rounded-full uppercase shadow-[0_0_15px_rgba(var(--accent-rgb),0.5)]">
-                                {review.category?.name || "Review"}
+                                {decodeHtml(review.category?.name) || "Review"}
                             </span>
 
                             {/* Score Check in Hero */}
@@ -150,7 +151,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                         </div>
 
                         <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight drop-shadow-xl animate-fade-in-up delay-100">
-                            {review.title}
+                            {decodeHtml(review.title)}
                         </h1>
 
                         <div className="flex flex-wrap items-center gap-6 text-white/90 animate-fade-in-up delay-200">
@@ -172,7 +173,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                 </div>
                                 <div className="group-hover:text-[var(--accent)] transition-colors">
                                     <p className="text-sm font-bold text-white group-hover:text-[var(--accent)] transition-colors">
-                                        {review.author?.display_name || review.author?.username || "TechPlay Reviewer"}
+                                        {decodeHtml(review.author?.display_name || review.author?.username || "TechPlay Reviewer")}
                                     </p>
                                     <p className="text-xs text-white/60">Reviewer</p>
                                 </div>
@@ -221,8 +222,8 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                         <div className={`sticky top-32 transition-all duration-300 ${isScrolled ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
                             <SocialShare
                                 url={`/reviews/${review.slug}`}
-                                title={review.title}
-                                description={review.excerpt || ''}
+                                title={decodeHtml(review.title)}
+                                description={decodeHtml(review.excerpt) || ''}
                                 vertical={true}
                             />
                         </div>
@@ -237,7 +238,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                         {review.summary && (
                             <div className="mb-10 pl-6 border-l-4 border-[var(--accent)]">
                                 <p className="text-xl md:text-2xl font-medium text-[var(--text-primary)] leading-relaxed italic">
-                                    "{review.summary}"
+                                    "{decodeHtml(review.summary)}"
                                 </p>
                             </div>
                         )}
@@ -325,8 +326,8 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                             <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4 text-center">Share this review</h3>
                             <SocialShare
                                 url={`/reviews/${review.slug}`}
-                                title={review.title}
-                                description={review.excerpt || ''}
+                                title={decodeHtml(review.title)}
+                                description={decodeHtml(review.excerpt) || ''}
                                 vertical={false}
                             />
                         </div>
@@ -353,11 +354,11 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                             <div className="flex-1">
                                 <Link href={`/profile/${review.author?.username}`} className="inline-block group">
                                     <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--accent)] transition-colors">
-                                        About {review.author?.display_name || review.author?.username || "The Author"}
+                                        About {decodeHtml(review.author?.display_name || review.author?.username || "The Author")}
                                     </h3>
                                 </Link>
                                 <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-4">
-                                    {review.author?.bio || "TechPlay reviewer. Expert in detailed analysis and performance testing."}
+                                    {decodeHtml(review.author?.bio) || "TechPlay reviewer. Expert in detailed analysis and performance testing."}
                                 </p>
                             </div>
                         </div>

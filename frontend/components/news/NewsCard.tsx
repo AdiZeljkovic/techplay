@@ -8,6 +8,7 @@ import { Clock, User } from "lucide-react";
 import { Article } from "@/types";
 import { formatDistanceToNow } from "date-fns";
 import { getImageUrl } from "@/lib/imageUrl";
+import { decodeHtml } from "@/lib/decode";
 
 interface NewsCardProps {
     article: Article;
@@ -52,7 +53,7 @@ export default memo(function NewsCard({ article, index }: NewsCardProps) {
                     {/* Category Badge */}
                     <div className="absolute top-3 left-3">
                         <span className="px-2.5 py-1 bg-[var(--accent)] text-white text-xs font-semibold rounded uppercase">
-                            {article.category.name}
+                            {decodeHtml(article.category.name)}
                         </span>
                     </div>
                 </div>
@@ -60,11 +61,11 @@ export default memo(function NewsCard({ article, index }: NewsCardProps) {
                 {/* Content */}
                 <div className="p-4 sm:p-5 flex flex-col">
                     <h3 className="text-lg font-semibold text-[var(--text-primary)] line-clamp-2 group-hover:text-[var(--accent)] transition-colors mb-2">
-                        {article.title}
+                        {decodeHtml(article.title)}
                     </h3>
 
                     <p className="text-sm text-[var(--text-secondary)] line-clamp-2 mb-4 flex-grow">
-                        {article.excerpt || "No excerpt available for this article."}
+                        {decodeHtml(article.excerpt) || "No excerpt available for this article."}
                     </p>
 
                     {/* Meta */}
