@@ -28,10 +28,11 @@ const defaultConfig: SWRConfiguration = {
 /**
  * Hook for fetching home page data
  */
-export function useHome() {
+export function useHome(fallbackData?: { hero: any[]; news: any[]; reviews: any[]; tech: any[] }) {
     const { data, error, isLoading, mutate } = useSWR('/home', fetcher, {
         ...defaultConfig,
-        revalidateOnMount: true,
+        revalidateOnMount: !fallbackData, // Skip initial fetch if we have server data
+        fallbackData: fallbackData ? { data: fallbackData } : undefined,
     });
 
     return {
@@ -39,7 +40,7 @@ export function useHome() {
         news: data?.data?.news ?? [],
         reviews: data?.data?.reviews ?? [],
         tech: data?.data?.tech ?? [],
-        isLoading,
+        isLoading: fallbackData ? false : isLoading,
         isError: !!error,
         mutate,
     };

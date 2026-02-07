@@ -8,8 +8,17 @@ import ContentSection from "@/components/home/ContentSection";
 import AdUnit from "@/components/ads/AdUnit";
 import { useHome } from "@/hooks/useApi";
 
-export default function HomeClient() {
-    const { hero: heroArticles, news: latestNews, reviews: latestReviews, tech: hardwareLab, isLoading } = useHome();
+interface HomeClientProps {
+    initialData?: {
+        hero: Article[];
+        news: Article[];
+        reviews: Article[];
+        tech: Article[];
+    };
+}
+
+export default function HomeClient({ initialData }: HomeClientProps) {
+    const { hero: heroArticles, news: latestNews, reviews: latestReviews, tech: hardwareLab, isLoading } = useHome(initialData);
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
