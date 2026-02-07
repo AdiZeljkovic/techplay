@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { useState, FormEvent, useRef } from "react";
-import axios from "@/lib/axios";
+import baseAxios from "axios";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -44,7 +44,10 @@ export default function ContactPage() {
         };
 
         try {
-            const response = await axios.post('/contact', data);
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+            const response = await baseAxios.post(`${apiUrl}/contact`, data, {
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            });
 
             if (response.data?.success) {
                 setIsSent(true);

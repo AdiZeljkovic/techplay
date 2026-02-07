@@ -14,9 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
 
-        // SECURITY: Exclude PayPal webhook from CSRF verification (verified by signature)
+        // SECURITY: Exclude routes from CSRF verification
+        // - PayPal webhook: verified by PayPal signature
+        // - Contact form: public endpoint, protected by rate limiting (3/10min)
         $middleware->validateCsrfTokens(except: [
             'api/v1/webhooks/paypal',
+            'api/v1/contact',
         ]);
 
         // SECURITY: Stateful API domains for Sanctum CSRF protection
