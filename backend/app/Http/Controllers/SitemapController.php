@@ -27,22 +27,36 @@ class SitemapController extends Controller
 
     /**
      * Main Sitemap Index - links to all sub-sitemaps
+     * Only includes sitemaps that have content to avoid Google "Missing XML tag" errors
      */
     public function index(): Response
     {
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
+        // Always-present sitemaps (static pages, categories always have entries)
         $sitemaps = [
             'sitemap-pages.xml',
             'sitemap-articles.xml',
             'sitemap-categories.xml',
-            'sitemap-guides.xml',
-            'sitemap-videos.xml',
-            'sitemap-products.xml',
-            'sitemap-news.xml',
-            'sitemap-images.xml',
         ];
+
+        // Conditional sitemaps - only include if they have content
+        if (Guide::where('status', 'published')->where('is_noindex', false)->exists()) {
+            $sitemaps[] = 'sitemap-guides.xml';
+        }
+        if (Video::whereNotNull('published_at')->exists()) {
+            $sitemaps[] = 'sitemap-videos.xml';
+        }
+        if (Product::where('is_active', true)->exists()) {
+            $sitemaps[] = 'sitemap-products.xml';
+        }
+        if (Article::where('status', 'published')->where('published_at', '>=', now()->subHours(48))->exists()) {
+            $sitemaps[] = 'sitemap-news.xml';
+        }
+        if (Article::where('status', 'published')->whereNotNull('featured_image_url')->exists()) {
+            $sitemaps[] = 'sitemap-images.xml';
+        }
 
         foreach ($sitemaps as $sitemap) {
             $xml .= "  <sitemap>\n";
@@ -168,6 +182,10 @@ class SitemapController extends Controller
             ->limit(5000)
             ->get();
 
+        if ($guides->isEmpty()) {
+            $xml .= $this->urlEntry("{$this->frontendUrl}/guides", null, 'weekly', '0.8');
+        }
+
         foreach ($guides as $guide) {
             $xml .= $this->urlEntry(
                 "{$this->frontendUrl}/guides/{$guide->slug}",
@@ -194,6 +212,14 @@ class SitemapController extends Controller
             ->orderBy('published_at', 'desc')
             ->limit(2000)
             ->get();
+
+        if ($videos->isEmpty()) {
+            $xml .= "  <url>\n";
+            $xml .= "    <loc>{$this->frontendUrl}/videos</loc>\n";
+            $xml .= "    <changefreq>daily</changefreq>\n";
+            $xml .= "    <priority>0.8</priority>\n";
+            $xml .= "  </url>\n";
+        }
 
         foreach ($videos as $video) {
             $xml .= "  <url>\n";
@@ -229,6 +255,10 @@ class SitemapController extends Controller
             ->limit(5000)
             ->get();
 
+        if ($products->isEmpty()) {
+            $xml .= $this->urlEntry("{$this->frontendUrl}/shop", null, 'weekly', '0.6');
+        }
+
         foreach ($products as $product) {
             $xml .= $this->urlEntry(
                 "{$this->frontendUrl}/shop/{$product->slug}",
@@ -256,6 +286,14 @@ class SitemapController extends Controller
             ->select('slug', 'category_id', 'title', 'published_at')
             ->orderBy('published_at', 'desc')
             ->get();
+
+        if ($articles->isEmpty()) {
+            $xml .= "  <url>\n";
+            $xml .= "    <loc>{$this->frontendUrl}/news</loc>\n";
+            $xml .= "    <changefreq>hourly</changefreq>\n";
+            $xml .= "    <priority>0.9</priority>\n";
+            $xml .= "  </url>\n";
+        }
 
         foreach ($articles as $article) {
             $categoryType = $article->category->type ?? 'news';
