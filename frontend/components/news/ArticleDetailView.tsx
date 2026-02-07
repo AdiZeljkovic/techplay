@@ -42,7 +42,7 @@ const ClientDate = ({ date }: { date: string }) => {
         try {
             const d = new Date(date);
             if (!isNaN(d.getTime())) {
-                setFormatted(format(d, 'dd/MM/yyyy HH:mm'));
+                setFormatted(format(d, 'dd/MM/yyyy'));
             } else {
                 setFormatted("Date unavailable");
             }
