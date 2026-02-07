@@ -6,7 +6,10 @@ import { useEffect } from 'react';
 export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 'auth' | 'guest', redirectIfAuthenticated?: string } = {}) => {
     const router = useRouter();
 
-    const { data: user, error, mutate } = useSWR('/auth/me', () =>
+    // Only fetch /auth/me when a token exists to avoid 401 console errors
+    const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('token');
+
+    const { data: user, error, mutate } = useSWR(hasToken ? '/auth/me' : null, () =>
         axios.get('/auth/me')
             .then(res => {
                 // Handle Laravel Resource 'data' wrapper

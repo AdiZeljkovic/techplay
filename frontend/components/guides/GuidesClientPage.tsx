@@ -117,7 +117,7 @@ export default function GuidesClientPage({ initialData }: GuidesClientPageProps)
                             placeholder="Search guides..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-[#0f1221]/95 backdrop-blur-xl border border-white/10 rounded-full py-4 pl-14 pr-6 text-white placeholder:text-gray-500 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all shadow-2xl"
+                            className="w-full bg-[#0f1221]/95 backdrop-blur-xl border border-white/10 rounded-full py-4 pl-14 pr-6 text-white placeholder:text-gray-400 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all shadow-2xl"
                         />
                     </div>
                 </form>

@@ -79,7 +79,7 @@ export default function ForumWidget() {
                         <h4 className="text-sm font-semibold text-white/90 group-hover:text-[var(--accent)] transition-colors line-clamp-2 mb-2">
                             {decodeHtml(thread.title)}
                         </h4>
-                        <div className="flex items-center justify-between text-xs text-white/40">
+                        <div className="flex items-center justify-between text-xs text-white/60">
                             <div className="flex items-center gap-1.5">
                                 <UserIcon className="w-3 h-3" />
                                 {decodeHtml(thread.author?.display_name || thread.author?.username) || 'User'}

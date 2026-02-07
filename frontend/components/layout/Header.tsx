@@ -322,7 +322,7 @@ export default function Header() {
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-3 pr-4 border-r border-white/10">
                             {socialLinks.map((social, idx) => (
-                                <Link key={idx} href={social.href} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors" aria-label={`Follow us on ${social.name}`}>
+                                <Link key={idx} href={social.href} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label={`Follow us on ${social.name}`}>
                                     <social.icon className="w-3.5 h-3.5" aria-hidden="true" />
                                 </Link>
                             ))}
@@ -380,12 +380,12 @@ export default function Header() {
                                         <span className="text-gray-200 font-medium group-hover:text-[var(--accent)] text-xs leading-tight truncate max-w-[120px]">
                                             {decodeHtml(user.display_name || user.username) || "My Profile"}
                                         </span>
-                                        <span className="text-[10px] text-gray-500 font-mono leading-tight">
+                                        <span className="text-[10px] text-gray-400 font-mono leading-tight">
                                             Lvl {Math.floor((user.xp || 0) / 1000) + 1}
                                         </span>
                                     </div>
                                 </Link>
-                                <button onClick={logout} className="ml-2 text-gray-500 hover:text-red-400 transition-colors p-2 hover:bg-white/5 rounded-full" title="Sign Out">
+                                <button onClick={logout} className="ml-2 text-gray-400 hover:text-red-400 transition-colors p-2 hover:bg-white/5 rounded-full" title="Sign Out">
                                     <LogOut className="w-4 h-4" />
                                 </button>
                             </div>
@@ -425,7 +425,7 @@ export default function Header() {
                         {/* Support Us Button */}
                         <Link
                             href="/support"
-                            className="hidden md:flex items-center gap-2 px-6 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[13px] font-bold rounded-full transition-all shadow-lg shadow-[var(--accent)]/20 uppercase tracking-wide"
+                            className="hidden md:flex items-center gap-2 px-6 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-sm font-bold rounded-full transition-all shadow-lg shadow-[var(--accent)]/20 uppercase tracking-wide"
                         >
                             SUPPORT US
                         </Link>
@@ -497,7 +497,7 @@ export default function Header() {
                                                 >
                                                     {item.name}
                                                     <ChevronDown className={cn(
-                                                        "w-5 h-5 text-gray-500 transition-transform duration-200",
+                                                        "w-5 h-5 text-gray-400 transition-transform duration-200",
                                                         expandedMobileItem === item.name ? "rotate-180" : ""
                                                     )} />
                                                 </button>
@@ -557,7 +557,7 @@ export default function Header() {
                                         href={link.href}
                                         className={cn(
                                             "text-xs font-semibold tracking-wider hover:text-white py-3 px-3 rounded-lg hover:bg-white/5 transition-colors",
-                                            link.highlight ? "text-[var(--accent)]" : "text-gray-500"
+                                            link.highlight ? "text-[var(--accent)]" : "text-gray-400"
                                         )}
                                         onClick={() => setIsMobileMenuOpen(false)}
                                     >

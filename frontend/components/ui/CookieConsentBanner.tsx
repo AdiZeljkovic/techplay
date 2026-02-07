@@ -113,6 +113,7 @@ export default function CookieConsentBanner() {
                                 <button
                                     onClick={() => handleRejectAll()}
                                     className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                                    aria-label="Close cookie consent"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>

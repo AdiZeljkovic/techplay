@@ -135,7 +135,7 @@ export default function GameDetailPage() {
                 </div>
 
                 <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-end pb-24">
-                    <Link href="/calendar" className="absolute top-8 left-4 md:left-8 flex items-center gap-2 text-white/70 hover:text-white transition-colors bg-black/30 px-4 py-2 rounded-full backdrop-blur-md hover:bg-black/50">
+                    <Link href="/calendar" className="absolute top-8 left-4 md:left-8 flex items-center gap-2 text-white/80 hover:text-white transition-colors bg-black/30 px-4 py-2 rounded-full backdrop-blur-md hover:bg-black/50">
                         <ArrowLeft className="w-4 h-4" />
                         Back to Calendar
                     </Link>
@@ -162,7 +162,7 @@ export default function GameDetailPage() {
                                 <CountdownTimer targetDate={game.released} />
                             </div>
                         ) : (
-                            <div className="flex items-center gap-6 mt-8 mb-8 text-white/50">
+                            <div className="flex items-center gap-6 mt-8 mb-8 text-white/70">
                                 <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-xl backdrop-blur-md border border-white/10">
                                     <Calendar className="w-5 h-5 text-white" />
                                     <span className="text-sm">Released: <span className="text-white font-bold">{game.released}</span></span>
@@ -180,7 +180,7 @@ export default function GameDetailPage() {
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-xl backdrop-blur-md border border-white/10">
-                                        <Star className="w-5 h-5 text-gray-500" />
+                                        <Star className="w-5 h-5 text-gray-400" />
                                         <span className="text-sm text-gray-300">No Score Yet</span>
                                     </div>
                                 )}
@@ -218,7 +218,7 @@ export default function GameDetailPage() {
                         {/* More Details Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="glass-panel p-6 rounded-2xl border border-white/5 bg-[#0f1221]/60 hover:bg-[#0f1221]/80 transition-colors">
-                                <h3 className="text-xs uppercase text-gray-500 font-bold mb-3 tracking-widest flex items-center gap-2">
+                                <h3 className="text-xs uppercase text-gray-400 font-bold mb-3 tracking-widest flex items-center gap-2">
                                     <Hourglass className="w-4 h-4" /> Average Playtime
                                 </h3>
                                 <div className="text-2xl font-bold text-white">
@@ -227,7 +227,7 @@ export default function GameDetailPage() {
                             </div>
 
                             <div className="glass-panel p-6 rounded-2xl border border-white/5 bg-[#0f1221]/60 hover:bg-[#0f1221]/80 transition-colors">
-                                <h3 className="text-xs uppercase text-gray-500 font-bold mb-3 tracking-widest flex items-center gap-2">
+                                <h3 className="text-xs uppercase text-gray-400 font-bold mb-3 tracking-widest flex items-center gap-2">
                                     <Tag className="w-4 h-4" /> Genres & Tags
                                 </h3>
                                 <div className="flex flex-wrap gap-2">
@@ -244,7 +244,7 @@ export default function GameDetailPage() {
                         {/* Additional Info Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="glass-panel p-6 rounded-2xl border border-white/5 bg-[#0f1221]/60 hover:bg-[#0f1221]/80 transition-colors">
-                                <h3 className="text-xs uppercase text-gray-500 font-bold mb-3 tracking-widest">Developers</h3>
+                                <h3 className="text-xs uppercase text-gray-400 font-bold mb-3 tracking-widest">Developers</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {game.developers?.map(d => (
                                         <span key={d.name} className="text-white font-medium text-lg">{d.name}</span>
@@ -252,7 +252,7 @@ export default function GameDetailPage() {
                                 </div>
                             </div>
                             <div className="glass-panel p-6 rounded-2xl border border-white/5 bg-[#0f1221]/60 hover:bg-[#0f1221]/80 transition-colors">
-                                <h3 className="text-xs uppercase text-gray-500 font-bold mb-3 tracking-widest">Publishers</h3>
+                                <h3 className="text-xs uppercase text-gray-400 font-bold mb-3 tracking-widest">Publishers</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {game.publishers?.map(p => (
                                         <span key={p.name} className="text-white font-medium text-lg">{p.name}</span>
@@ -310,13 +310,13 @@ export default function GameDetailPage() {
                                                 <span className="font-bold text-gray-300 group-hover:text-white">
                                                     {store.store.name}
                                                 </span>
-                                                <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-white" />
+                                                <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-white" />
                                             </a>
                                         );
                                     })}
                                 </div>
                             ) : (
-                                <p className="text-gray-500 text-sm">Store links not available yet.</p>
+                                <p className="text-gray-400 text-sm">Store links not available yet.</p>
                             )}
 
                             {game.website && (
@@ -335,7 +335,7 @@ export default function GameDetailPage() {
 
                             {/* Platforms Tags */}
                             <div className="mt-8">
-                                <h3 className="text-xs uppercase text-gray-500 font-bold mb-4 tracking-widest">Available On</h3>
+                                <h3 className="text-xs uppercase text-gray-400 font-bold mb-4 tracking-widest">Available On</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {game.platforms?.map(p => (
                                         <span key={p.platform.name} className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs font-bold text-gray-300">

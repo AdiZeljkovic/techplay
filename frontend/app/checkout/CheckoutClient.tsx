@@ -41,7 +41,7 @@ export default function CheckoutClient() {
                 </div>
                 <h2 className="text-3xl font-display font-bold text-white mb-2">Order Placed!</h2>
                 <p className="text-gray-400 mb-8">Thank you for your order. We'll contact you shortly.</p>
-                <div className="text-sm text-gray-500">Redirecting to shop...</div>
+                <div className="text-sm text-gray-400">Redirecting to shop...</div>
             </div>
         );
     }

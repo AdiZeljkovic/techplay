@@ -91,7 +91,7 @@ export default function PageHero({
                                 "flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0",
                                 isSelected
                                     ? "bg-[var(--accent)] text-white shadow-[0_0_15px_rgba(var(--accent-rgb),0.5)] scale-105"
-                                    : "text-white/50 hover:text-white hover:bg-white/5"
+                                    : "text-white/70 hover:text-white hover:bg-white/5"
                             );
 
                             if (basePath) {

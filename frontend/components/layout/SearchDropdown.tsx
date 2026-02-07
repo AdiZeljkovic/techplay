@@ -133,7 +133,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                 <Search className={cn(
                     "absolute left-3 top-1/2 -translate-y-1/2 transition-colors",
                     isMobile ? "w-5 h-5 left-4" : "w-4 h-4",
-                    isLoading ? "text-[var(--accent)]" : "text-gray-500 group-focus-within:text-[var(--accent)]"
+                    isLoading ? "text-[var(--accent)]" : "text-gray-400 group-focus-within:text-[var(--accent)]"
                 )} />
 
                 <input
@@ -157,7 +157,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                     <button
                         onClick={clearSearch}
                         className={cn(
-                            "absolute top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors",
+                            "absolute top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors",
                             isMobile ? "right-4" : "right-3"
                         )}
                     >
@@ -204,7 +204,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                                         />
                                     ) : (
                                         <div className="w-16 h-12 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                                            <FileText className="w-5 h-5 text-gray-500" />
+                                            <FileText className="w-5 h-5 text-gray-400" />
                                         </div>
                                     )}
 
@@ -223,7 +223,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
 
                         {/* Footer */}
                         <div className="px-4 py-2 border-t border-white/10 bg-white/5">
-                            <p className="text-xs text-gray-500 text-center">
+                            <p className="text-xs text-gray-400 text-center">
                                 Press <kbd className="px-1 py-0.5 bg-white/10 rounded text-gray-400">↵</kbd> to select,
                                 <kbd className="px-1 py-0.5 bg-white/10 rounded text-gray-400 ml-1">↑↓</kbd> to navigate
                             </p>

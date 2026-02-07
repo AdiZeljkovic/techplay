@@ -173,7 +173,7 @@ export default function Footer() {
                             ) : (
                                 <>
                                     <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                         <input
                                             type="email"
                                             value={email}
@@ -209,12 +209,12 @@ export default function Footer() {
 
                 {/* Bottom Bar */}
                 <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-gray-500 text-xs">
+                    <p className="text-gray-400 text-xs">
                         © {new Date().getFullYear()} TechPlay Gaming Portal. All rights reserved.
                     </p>
                     <div className="flex gap-6">
                         {FOOTER_LINKS.legal.map((link) => (
-                            <Link key={link.name} href={link.href} className="text-gray-500 hover:text-white text-xs transition-colors">
+                            <Link key={link.name} href={link.href} className="text-gray-400 hover:text-white text-xs transition-colors">
                                 {link.name}
                             </Link>
                         ))}

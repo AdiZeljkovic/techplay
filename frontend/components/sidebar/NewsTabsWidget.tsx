@@ -49,7 +49,7 @@ export default function NewsTabsWidget() {
                     onClick={() => setActiveTab("latest")}
                     className={cn(
                         "flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-all relative",
-                        activeTab === "latest" ? "text-white" : "text-white/40 hover:text-white/70"
+                        activeTab === "latest" ? "text-white" : "text-white/60 hover:text-white/80"
                     )}
                 >
                     Latest
@@ -61,7 +61,7 @@ export default function NewsTabsWidget() {
                     onClick={() => setActiveTab("popular")}
                     className={cn(
                         "flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-all relative",
-                        activeTab === "popular" ? "text-white" : "text-white/40 hover:text-white/70"
+                        activeTab === "popular" ? "text-white" : "text-white/60 hover:text-white/80"
                     )}
                 >
                     Popular
@@ -75,7 +75,7 @@ export default function NewsTabsWidget() {
             <div className="p-2">
                 <AnimatePresence mode="wait">
                     {loading ? (
-                        <div className="p-4 text-center text-white/40 text-xs">Loading...</div>
+                        <div className="p-4 text-center text-white/60 text-xs">Loading...</div>
                     ) : (
                         <motion.div
                             key={activeTab}
@@ -86,7 +86,7 @@ export default function NewsTabsWidget() {
                             className="flex flex-col gap-1"
                         >
                             {currentData.length === 0 && (
-                                <div className="p-4 text-center text-white/40 text-xs">No articles found.</div>
+                                <div className="p-4 text-center text-white/60 text-xs">No articles found.</div>
                             )}
                             {currentData.map((item, idx) => (
                                 <Link
@@ -100,8 +100,8 @@ export default function NewsTabsWidget() {
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-0.5">
                                             <span className="text-[9px] font-bold text-[var(--accent)] uppercase">{decodeHtml(item.category?.name) || 'News'}</span>
-                                            <span className="text-[9px] text-white/30">•</span>
-                                            <span className="text-[9px] text-white/40 flex items-center gap-1">
+                                            <span className="text-[9px] text-white/60">•</span>
+                                            <span className="text-[9px] text-white/60 flex items-center gap-1">
                                                 {activeTab === "latest" ? (
                                                     <><Clock className="w-2.5 h-2.5" /> {item.published_at ? formatDistanceToNow(new Date(item.published_at), { addSuffix: true }) : ''}</>
                                                 ) : (
@@ -120,7 +120,7 @@ export default function NewsTabsWidget() {
                 </AnimatePresence>
             </div>
 
-            <Link href="/news" className="block py-3 text-center text-xs font-bold text-white/50 hover:text-white hover:bg-white/5 transition-colors uppercase tracking-widest border-t border-white/5">
+            <Link href="/news" className="block py-3 text-center text-xs font-bold text-white/70 hover:text-white hover:bg-white/5 transition-colors uppercase tracking-widest border-t border-white/5">
                 View All News
             </Link>
         </div>

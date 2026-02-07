@@ -143,7 +143,7 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
 
                     {/* Content Overlay */}
                     <div className="absolute bottom-0 left-0 right-0 p-6">
-                        <span className="inline-block px-3 py-1 bg-[var(--accent)] text-white text-[10px] font-bold uppercase tracking-wider rounded mb-3 shadow-[0_4px_10px_rgba(252,65,0,0.4)]">
+                        <span className="inline-block px-3 py-1 bg-[var(--accent)] text-white text-xs font-bold uppercase tracking-wider rounded mb-3 shadow-[0_4px_10px_rgba(252,65,0,0.4)]">
                             {decodeHtml(featured.category.name)}
                         </span>
                         <h3 className="text-2xl font-bold text-white leading-tight mb-3 group-hover:text-[var(--accent-hover)] transition-colors">
@@ -153,7 +153,7 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
                             {decodeHtml(featured.excerpt)}
                         </p>
 
-                        <div className="flex items-center gap-4 text-xs text-white/50 font-bold uppercase tracking-wide">
+                        <div className="flex items-center gap-4 text-xs text-white/70 font-bold uppercase tracking-wide">
                             <div className="flex items-center gap-1.5">
                                 <User className="w-3.5 h-3.5 text-[var(--accent)]" />
                                 {featured.author?.display_name || featured.author?.username || "Editor"}
@@ -210,7 +210,7 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
                                     <h4 className="text-sm font-bold text-white leading-snug line-clamp-2 mb-2 group-hover:text-[var(--accent)] transition-colors">
                                         {decodeHtml(item.title)}
                                     </h4>
-                                    <div className="mt-auto flex items-center justify-between text-[10px] text-white/40 uppercase font-bold tracking-wide">
+                                    <div className="mt-auto flex items-center justify-between text-[10px] text-white/60 uppercase font-bold tracking-wide">
                                         <span className="truncate max-w-[100px]">{item.author?.display_name || item.author?.username || "TechPlay"}</span>
                                         <span>{item.published_at ? format(new Date(item.published_at), 'dd/MM/yyyy') : ''}</span>
                                     </div>

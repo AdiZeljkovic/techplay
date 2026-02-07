@@ -220,7 +220,7 @@ function CreateThreadForm() {
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="Enter a clear, descriptive title..."
-                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] placeholder:text-gray-500 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all text-lg"
+                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] placeholder:text-gray-400 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all text-lg"
                                     maxLength={255}
                                     required
                                 />

@@ -47,13 +47,13 @@ export default function GlobalError({
                     {/* Error Details (Development only) */}
                     {process.env.NODE_ENV === "development" && error.message && (
                         <div className="mb-6 p-4 bg-gray-900/50 rounded-lg border border-gray-800 text-left">
-                            <p className="text-xs text-gray-500 mb-1">Error message:</p>
+                            <p className="text-xs text-gray-400 mb-1">Error message:</p>
                             <p className="text-sm text-red-400 font-mono break-words">
                                 {error.message}
                             </p>
                             {error.digest && (
                                 <>
-                                    <p className="text-xs text-gray-500 mt-3 mb-1">Digest:</p>
+                                    <p className="text-xs text-gray-400 mt-3 mb-1">Digest:</p>
                                     <p className="text-xs text-gray-400 font-mono">
                                         {error.digest}
                                     </p>
@@ -81,7 +81,7 @@ export default function GlobalError({
                     </div>
 
                     {/* Support Link */}
-                    <p className="mt-8 text-sm text-gray-500">
+                    <p className="mt-8 text-sm text-gray-400">
                         If the problem persists, please{" "}
                         <Link href="/contact" className="text-cyan-400 hover:underline">
                             contact support

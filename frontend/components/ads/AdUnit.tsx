@@ -128,7 +128,7 @@ export default memo(function AdUnit({ position, className = "" }: AdUnitProps) {
                     className="w-full h-full object-cover"
                     sizes={`(max-width: 768px) 100vw, ${adSize.width}px`}
                 />
-                <span className="absolute bottom-1 right-1 text-[10px] text-white/50 bg-black/30 px-1 rounded">
+                <span className="absolute bottom-1 right-1 text-[10px] text-white/70 bg-black/40 px-1 rounded">
                     AD
                 </span>
             </div>

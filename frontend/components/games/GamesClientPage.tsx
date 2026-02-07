@@ -99,14 +99,14 @@ export default function GamesClientPage() {
                             placeholder="Search thousands of games..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full bg-[#0f1221] border-2 border-[var(--border)] rounded-full py-5 pl-16 pr-6 text-lg text-white placeholder:text-gray-500 focus:outline-none focus:border-[var(--accent)] focus:ring-0 transition-all placeholder:font-light font-medium"
+                            className="w-full bg-[#0f1221] border-2 border-[var(--border)] rounded-full py-5 pl-16 pr-6 text-lg text-white placeholder:text-gray-400 focus:outline-none focus:border-[var(--accent)] focus:ring-0 transition-all placeholder:font-light font-medium"
                         />
                         {search && (
                             <button
                                 onClick={() => { setSearch(""); setDebouncedSearch(""); }}
                                 className="absolute right-6 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded-full transition-colors"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                             </button>
                         )}
                     </div>

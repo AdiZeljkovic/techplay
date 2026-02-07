@@ -63,7 +63,7 @@ function NewsletterVerifyContent() {
                         </div>
                         <h2 className="text-white text-2xl font-bold mb-2">Verified!</h2>
                         <p className="text-gray-400">{message}</p>
-                        <p className="text-gray-500 text-sm mt-4">Redirecting you to homepage...</p>
+                        <p className="text-gray-400 text-sm mt-4">Redirecting you to homepage...</p>
                     </div>
                 )}
 
