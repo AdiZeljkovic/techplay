@@ -8,8 +8,14 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
     const toc: TOCItem[] = [];
     const idMap = new Map<string, number>();
 
+    // Step 0: Clean up empty paragraphs from the rich text editor (TipTap/Filament).
+    // These are created when pressing Enter multiple times and produce unwanted gaps.
+    // Matches: <p></p>, <p> </p>, <p>&nbsp;</p>, <p><br></p>, <p><br/></p>
+    let processedContent = (html || '')
+        .replace(/<p[^>]*>(\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, '');
+
     // Step 1: Process headings for TOC (h2, h3)
-    let processedContent = (html || '').replace(/<(h[2-3])([^>]*)>(.*?)<\/\1>/gi, (match, tag, attrs, text) => {
+    processedContent = processedContent.replace(/<(h[2-3])([^>]*)>(.*?)<\/\1>/gi, (match, tag, attrs, text) => {
         const cleanText = text.replace(/<[^>]*>/g, '').trim();
 
         let id = cleanText
