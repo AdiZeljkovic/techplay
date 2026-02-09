@@ -43,7 +43,7 @@ export function setupWelcome(client: Client) {
         const buffy = BuffyService.getInstance();
 
         const welcomeChannel = member.guild.channels.cache.find(
-            c => c.name === 'welcome' || c.name === 'general' || c.name === 'chat'
+            c => c.name === 'new-people'
         );
 
         if (welcomeChannel && welcomeChannel.isTextBased()) {

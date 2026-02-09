@@ -96,6 +96,32 @@ export class ApiService {
     }
 
     /**
+     * Fetches the latest guides
+     */
+    public async getLatestGuides(limit: number = 5): Promise<NewsItem[]> {
+        try {
+            const response = await this.client.get('/guides');
+            return response.data.data ? response.data.data.slice(0, limit) : [];
+        } catch (error) {
+            console.error('[ApiService] Failed to fetch guides:', error instanceof Error ? error.message : 'Unknown error');
+            return [];
+        }
+    }
+
+    /**
+     * Fetches the latest tech/hardware articles
+     */
+    public async getLatestTech(limit: number = 5): Promise<NewsItem[]> {
+        try {
+            const response = await this.client.get('/tech');
+            return response.data.data ? response.data.data.slice(0, limit) : [];
+        } catch (error) {
+            console.error('[ApiService] Failed to fetch tech articles:', error instanceof Error ? error.message : 'Unknown error');
+            return [];
+        }
+    }
+
+    /**
      * Fetches the latest giveaways
      */
     public async getActiveGiveaways(): Promise<any[]> {
