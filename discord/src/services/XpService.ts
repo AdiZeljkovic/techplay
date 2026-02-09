@@ -161,6 +161,14 @@ export class XpService {
         return topUser;
     }
 
+    public getWeeklyMessageCount(): number {
+        let total = 0;
+        for (const data of this.weeklyActivity.values()) {
+            total += Math.round(data.xp / this.XP_PER_MESSAGE);
+        }
+        return total;
+    }
+
     public resetWeeklyActivity() {
         this.weeklyActivity.clear();
     }

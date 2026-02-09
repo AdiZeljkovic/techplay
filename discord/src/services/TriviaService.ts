@@ -4,6 +4,7 @@ import axios from 'axios';
 import * as he from 'he';
 
 export class TriviaService {
+    private static instance: TriviaService;
     private client: Client;
     private api: ApiService;
     private activeQuestion: { q: string, a: string[] } | null = null;
@@ -12,9 +13,16 @@ export class TriviaService {
     private readonly TRIVIA_XP_REWARD = 50;
     private readonly TRIVIA_API_URL = 'https://opentdb.com/api.php?amount=1&category=18'; // Category 18 = Computers/Tech
 
-    constructor(client: Client) {
+    private constructor(client: Client) {
         this.client = client;
         this.api = ApiService.getInstance();
+    }
+
+    public static getInstance(client?: Client): TriviaService {
+        if (!TriviaService.instance && client) {
+            TriviaService.instance = new TriviaService(client);
+        }
+        return TriviaService.instance;
     }
 
     private normalizeAnswer(text: string): string {

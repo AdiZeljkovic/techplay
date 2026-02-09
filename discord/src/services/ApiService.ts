@@ -70,6 +70,32 @@ export class ApiService {
     }
 
     /**
+     * Fetches the latest reviews
+     */
+    public async getLatestReviews(limit: number = 5): Promise<NewsItem[]> {
+        try {
+            const response = await this.client.get('/reviews');
+            return response.data.data ? response.data.data.slice(0, limit) : [];
+        } catch (error) {
+            console.error('[ApiService] Failed to fetch reviews:', error instanceof Error ? error.message : 'Unknown error');
+            return [];
+        }
+    }
+
+    /**
+     * Searches articles by query string
+     */
+    public async searchArticles(query: string): Promise<NewsItem[]> {
+        try {
+            const response = await this.client.get('/search/articles', { params: { q: query } });
+            return response.data.data || [];
+        } catch (error) {
+            console.error('[ApiService] Failed to search articles:', error instanceof Error ? error.message : 'Unknown error');
+            return [];
+        }
+    }
+
+    /**
      * Fetches the latest giveaways
      */
     public async getActiveGiveaways(): Promise<any[]> {
