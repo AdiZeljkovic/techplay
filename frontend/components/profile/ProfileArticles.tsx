@@ -10,8 +10,9 @@ interface ProfileArticlesProps {
 }
 
 const typeColors: Record<string, string> = {
-    review: "bg-purple-500/90",
+    reviews: "bg-purple-500/90",
     news: "bg-blue-500/90",
+    tech: "bg-orange-500/90",
     guide: "bg-emerald-500/90",
 };
 
@@ -25,7 +26,7 @@ export default function ProfileArticles({ articles }: ProfileArticlesProps) {
     }
 
     const getArticleUrl = (article: RecentArticle) =>
-        `/${article.type === "review" ? "reviews" : article.type === "news" ? "news" : "guides"}/${article.slug}`;
+        `/${article.type === "reviews" ? "reviews" : article.type === "tech" ? "hardware" : article.type === "news" ? "news" : "guides"}/${article.slug}`;
 
     const [featured, ...rest] = articles;
 

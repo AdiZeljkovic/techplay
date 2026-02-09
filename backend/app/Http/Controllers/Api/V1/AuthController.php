@@ -191,14 +191,15 @@ class AuthController extends Controller
         $recentArticles = $user->articles()
             ->where('status', 'published')
             ->latest('published_at')
+            ->with('category:id,type,name')
             ->take(6)
-            ->get(['id', 'title', 'slug', 'featured_image_url', 'excerpt', 'published_at', 'views'])
+            ->get(['id', 'title', 'slug', 'featured_image_url', 'excerpt', 'published_at', 'views', 'category_id'])
             ->map(function ($article) {
                 return [
                     'id' => $article->id,
                     'title' => $article->title,
                     'slug' => $article->slug,
-                    'type' => 'news',
+                    'type' => $article->category?->type ?? 'news',
                     'featured_image' => $article->featured_image_url,
                     'excerpt' => $article->excerpt,
                     'published_at' => $article->published_at,
