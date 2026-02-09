@@ -120,7 +120,7 @@ export default function FeaturedCarousel() {
 
                                 {(() => {
                                     const linkUrl =
-                                        currentSlide.category?.type === 'review' ? `/reviews/${currentSlide.slug}` :
+                                        currentSlide.category?.type === 'reviews' ? `/reviews/${currentSlide.slug}` :
                                             (currentSlide.category?.type === 'tech' || currentSlide.category?.slug?.includes('hardware')) ? `/hardware/${currentSlide.slug}` :
                                                 `/news/${currentSlide.slug}`;
 

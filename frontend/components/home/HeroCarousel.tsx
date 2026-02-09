@@ -118,7 +118,7 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                     >
                         {(() => {
                             const linkUrl =
-                                currentArticle.category?.type === 'review' ? `/reviews/${currentArticle.slug}` :
+                                currentArticle.category?.type === 'reviews' ? `/reviews/${currentArticle.slug}` :
                                     (currentArticle.category?.type === 'tech' || currentArticle.category?.slug?.includes('hardware')) ? `/hardware/${currentArticle.slug}` :
                                         `/news/${currentArticle.slug}`;
 

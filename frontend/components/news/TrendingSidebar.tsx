@@ -45,7 +45,7 @@ export default function TrendingSidebar() {
                 {trendingArticles.map((article) => {
                     // Determine if this is a review article
                     const isReview =
-                        article.category?.type === 'review' ||
+                        article.category?.type === 'reviews' ||
                         article.category?.slug?.includes('review') ||
                         article.slug?.endsWith('-review');
                     const basePath = isReview ? '/reviews' : '/news';
