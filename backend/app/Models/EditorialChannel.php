@@ -13,6 +13,7 @@ class EditorialChannel extends Model
         'name',
         'slug',
         'description',
+        'topic',
         'icon',
         'color',
         'sort_order',

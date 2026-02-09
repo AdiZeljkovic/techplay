@@ -9,8 +9,8 @@ use App\Filament\Resources\Tasks\TaskResource;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 use Livewire\WithFileUploads;
-
 
 use App\Models\EditorialChannel;
 use App\Models\EditorialMessageReaction;
@@ -68,8 +68,8 @@ class EditorialChat extends Page
 
         if ($this->activeChannel) {
             $key = 'user_' . auth()->id() . '_channel_' . $this->activeChannel . '_read_at';
-            $this->previousReadAt = \Illuminate\Support\Facades\Cache::get($key);
-            \Illuminate\Support\Facades\Cache::put($key, now(), now()->addDays(30));
+            $this->previousReadAt = Cache::get($key);
+            Cache::put($key, now(), now()->addDays(30));
         }
     }
 
@@ -89,7 +89,7 @@ class EditorialChat extends Page
     public $showSearch = false;
 
     // Threading
-    public $activeThread = null; // ID of the parent message
+    public $activeThread = null;
     public $threadMessage = '';
 
     // Unread Divider
@@ -103,6 +103,15 @@ class EditorialChat extends Page
     public $giphySearch = '';
     public $giphyResults = [];
 
+    // Voice messages
+    public $voiceMessage = [];
+
+    // Channel topic editing
+    public $editingTopic = false;
+    public $topicContent = '';
+
+    // User presence
+    public $manualStatus = null;
 
     // Computed property for channels
     public function getChannelsProperty()
@@ -113,7 +122,6 @@ class EditorialChat extends Page
             if (!$channel->is_private) {
                 return true;
             }
-            // Check roles if private
             $allowed = $channel->allowed_roles ?? [];
             if (in_array($user->role ?? '', ['admin', 'super_admin'])) {
                 return true;
@@ -137,8 +145,8 @@ class EditorialChat extends Page
         $this->activeRecipient = null;
 
         $key = 'user_' . auth()->id() . '_channel_' . $this->activeChannel . '_read_at';
-        $this->previousReadAt = \Illuminate\Support\Facades\Cache::get($key);
-        \Illuminate\Support\Facades\Cache::put($key, now(), now()->addDays(30));
+        $this->previousReadAt = Cache::get($key);
+        Cache::put($key, now(), now()->addDays(30));
 
         $this->activeThread = null;
         $this->updateLastSeen();
@@ -174,8 +182,6 @@ class EditorialChat extends Page
 
     protected function updateLastSeen()
     {
-        // Update user's last seen timestamp for online status
-        // Ensure the last_seen_at column exists or wrap in try/catch if migration failed on server potentially
         try {
             auth()->user()->update(['last_seen_at' => now()]);
         } catch (\Exception $e) {
@@ -188,14 +194,66 @@ class EditorialChat extends Page
         $this->attachment = null;
     }
 
+    // === Rate Limiting ===
+
+    protected function isRateLimited(): bool
+    {
+        $key = 'chat_rate_limit:' . auth()->id();
+        $count = Cache::get($key, 0);
+
+        if ($count >= 5) {
+            Notification::make()
+                ->title('Slow down!')
+                ->body('You can send up to 5 messages every 10 seconds.')
+                ->warning()
+                ->send();
+            return true;
+        }
+
+        Cache::put($key, $count + 1, now()->addSeconds(10));
+        return false;
+    }
+
+    // === Typing Indicators ===
+
+    public function updatedMessage($value)
+    {
+        if (strlen($value) > 0) {
+            $context = $this->activeChannel ?? 'dm_' . $this->activeRecipient;
+            Cache::put("typing:{$context}:" . auth()->id(), auth()->user()->name, now()->addSeconds(4));
+        }
+        $this->updateLastSeen();
+    }
+
+    public function getTypingUsersProperty(): array
+    {
+        $context = $this->activeChannel ?? 'dm_' . $this->activeRecipient;
+        if (!$context) return [];
+
+        $typingUsers = [];
+        $usersToCheck = $this->activeRecipient
+            ? [$this->activeRecipient]
+            : $this->users->pluck('id')->toArray();
+
+        foreach ($usersToCheck as $userId) {
+            if ($userId == auth()->id()) continue;
+            $name = Cache::get("typing:{$context}:{$userId}");
+            if ($name) $typingUsers[] = $name;
+        }
+        return $typingUsers;
+    }
+
+    // === Send Messages ===
+
     public function sendMessage()
     {
+        if ($this->isRateLimited()) return;
+
         $this->validate([
             'message' => 'required_without:attachment|string|max:2000',
-            'attachment' => 'nullable|file|max:10240', // 10MB max
+            'attachment' => 'nullable|file|max:10240',
         ]);
 
-        // Parse @mentions
         $mentionedIds = $this->parseMentions($this->message);
 
         $attachmentUrl = null;
@@ -206,7 +264,7 @@ class EditorialChat extends Page
         $message = EditorialMessage::create([
             'user_id' => auth()->id(),
             'content' => $this->message,
-            'channel' => $this->activeChannel, // Still storing slug string for simplicity and backward compat
+            'channel' => $this->activeChannel,
             'recipient_id' => $this->activeRecipient,
             'mentioned_user_ids' => $mentionedIds,
             'attachment_url' => $attachmentUrl,
@@ -217,10 +275,16 @@ class EditorialChat extends Page
         $this->message = '';
         $this->attachment = null;
         $this->updateLastSeen();
+
+        // Clear typing indicator
+        $context = $this->activeChannel ?? 'dm_' . $this->activeRecipient;
+        Cache::forget("typing:{$context}:" . auth()->id());
     }
 
     public function sendThreadReply()
     {
+        if ($this->isRateLimited()) return;
+
         $this->validate([
             'threadMessage' => 'required',
         ]);
@@ -243,6 +307,8 @@ class EditorialChat extends Page
         $this->threadMessage = '';
         $this->updateLastSeen();
     }
+
+    // === Giphy ===
 
     public function updatedGiphySearch()
     {
@@ -271,14 +337,15 @@ class EditorialChat extends Page
 
     public function selectGiphy($url)
     {
-        $mentionedIds = [];
+        if ($this->isRateLimited()) return;
 
         $message = EditorialMessage::create([
             'user_id' => auth()->id(),
             'content' => '',
+            'message_type' => 'gif',
             'channel' => $this->activeChannel,
             'recipient_id' => $this->activeRecipient,
-            'mentioned_user_ids' => $mentionedIds,
+            'mentioned_user_ids' => [],
             'attachment_url' => $url,
             'parent_id' => $this->activeThread,
         ]);
@@ -290,6 +357,8 @@ class EditorialChat extends Page
         $this->giphyResults = [];
         $this->updateLastSeen();
     }
+
+    // === Threading ===
 
     public function setActiveThread($messageId)
     {
@@ -308,7 +377,7 @@ class EditorialChat extends Page
 
         return EditorialMessage::with(['user.roles', 'reactions.user'])
             ->where('parent_id', $this->activeThread)
-            ->oldest() // Connection: chronological order for thread
+            ->oldest()
             ->get();
     }
 
@@ -316,6 +385,20 @@ class EditorialChat extends Page
     {
         return EditorialMessage::with('user')->find($this->activeThread);
     }
+
+    // === Quoting ===
+
+    public function quoteMessage($messageId)
+    {
+        $message = EditorialMessage::with('user')->find($messageId);
+        if (!$message) return;
+
+        $quotedText = str_replace("\n", "\n> ", $message->content);
+        $author = $message->user->username ?? $message->user->name;
+        $this->message = "> @{$author}: {$quotedText}\n\n" . $this->message;
+    }
+
+    // === Mentions ===
 
     protected function parseMentions(string $content): array
     {
@@ -330,12 +413,56 @@ class EditorialChat extends Page
             ->toArray();
     }
 
+    // === Messages Query ===
+
+    protected function parseSearchFilters(string $search): array
+    {
+        $filters = ['text' => '', 'from' => null, 'has' => [], 'before' => null, 'after' => null];
+
+        if (preg_match('/from:(\w+)/i', $search, $m)) {
+            $filters['from'] = $m[1];
+            $search = str_replace($m[0], '', $search);
+        }
+
+        if (preg_match_all('/has:(\w+)/i', $search, $m)) {
+            $filters['has'] = $m[1];
+            foreach ($m[0] as $match) {
+                $search = str_replace($match, '', $search);
+            }
+        }
+
+        if (preg_match('/before:([\d-]+)/i', $search, $m)) {
+            $filters['before'] = $m[1];
+            $search = str_replace($m[0], '', $search);
+        }
+        if (preg_match('/after:([\d-]+)/i', $search, $m)) {
+            $filters['after'] = $m[1];
+            $search = str_replace($m[0], '', $search);
+        }
+
+        $filters['text'] = trim($search);
+        return $filters;
+    }
+
     public function getMessagesProperty()
     {
         $query = EditorialMessage::with(['user.roles', 'reactions.user', 'replies'])->orderBy('created_at', 'desc')->take(100);
 
         if ($this->search) {
-            $query->where('content', 'like', '%' . $this->search . '%');
+            $filters = $this->parseSearchFilters($this->search);
+
+            if ($filters['text']) {
+                $query->where('content', 'like', '%' . $filters['text'] . '%');
+            }
+            if ($filters['from']) {
+                $query->whereHas('user', fn($q) => $q->where('username', $filters['from'])->orWhere('name', 'like', '%' . $filters['from'] . '%'));
+            }
+            foreach ($filters['has'] as $has) {
+                if ($has === 'attachment') $query->whereNotNull('attachment_url');
+                if ($has === 'link') $query->where('content', 'like', '%http%');
+            }
+            if ($filters['before']) $query->where('created_at', '<', $filters['before']);
+            if ($filters['after']) $query->where('created_at', '>', $filters['after']);
         }
 
         // Exclude replies from main view unless searching
@@ -361,20 +488,16 @@ class EditorialChat extends Page
 
     public function getUsersProperty()
     {
-        // Only return users with editorial roles
         return User::with('roles')
             ->where('id', '!=', auth()->id())
             ->where(function ($query) {
-                // Check Spatie roles
                 $query->whereHas(
                     'roles',
                     fn($q) =>
                     $q->whereIn('name', $this->editorialRoles)
                 );
-                // OR check old role column
                 $query->orWhereIn('role', ['admin', 'super_admin']);
             })
-            // Count unread DM messages sent BY this user TO me
             ->withCount([
                 'sentEditorialMessages as unread_count' => function ($q) {
                     $q->where('recipient_id', auth()->id())
@@ -387,19 +510,59 @@ class EditorialChat extends Page
 
     public function getUnreadCountProperty()
     {
-        // Count unread messages for current user
         return EditorialMessage::where('recipient_id', auth()->id())
             ->whereNull('read_at')
             ->count();
     }
 
-    public function isUserOnline(User $user): bool
+    // === Channel Unread Badges ===
+
+    public function getChannelUnreadCount(string $channelSlug): int
     {
-        if (!$user->last_seen_at) {
-            return false;
-        }
-        // Consider online if seen in last 5 minutes
-        return $user->last_seen_at->gt(now()->subMinutes(5));
+        return Cache::remember(
+            "channel_unread:{$channelSlug}:" . auth()->id(),
+            10,
+            function () use ($channelSlug) {
+                $key = 'user_' . auth()->id() . '_channel_' . $channelSlug . '_read_at';
+                $lastRead = Cache::get($key);
+
+                $query = EditorialMessage::where('channel', $channelSlug)
+                    ->whereNull('recipient_id')
+                    ->whereNull('parent_id')
+                    ->where('user_id', '!=', auth()->id());
+
+                if ($lastRead) {
+                    $query->where('created_at', '>', $lastRead);
+                }
+
+                return $query->count();
+            }
+        );
+    }
+
+    // === User Presence ===
+
+    public function getUserPresence(User $user): string
+    {
+        $manual = Cache::get('user_manual_status:' . $user->id);
+        if ($manual === 'busy') return 'busy';
+
+        if (!$user->last_seen_at) return 'offline';
+
+        $minutesAgo = $user->last_seen_at->diffInMinutes(now());
+
+        if ($manual === 'away') return 'away';
+        if ($minutesAgo <= 5) return 'online';
+        if ($minutesAgo <= 10) return 'away';
+
+        return 'offline';
+    }
+
+    public function setUserStatus($status)
+    {
+        Cache::put('user_manual_status:' . auth()->id(), $status, now()->addHours(8));
+        $this->manualStatus = $status;
+        Notification::make()->title('Status updated to ' . ucfirst($status))->success()->send();
     }
 
     public function getUserRoleBadge(User $user): array
@@ -412,20 +575,20 @@ class EditorialChat extends Page
             'Moderator' => ['color' => '#3b82f6', 'short' => 'Mod'],
         ];
 
-        // Check Spatie roles first
         foreach ($user->roles as $role) {
             if (isset($roleColors[$role->name])) {
                 return $roleColors[$role->name];
             }
         }
 
-        // Fallback to old role column
         if (in_array($user->role ?? '', ['admin', 'super_admin'])) {
             return ['color' => '#ef4444', 'short' => 'A'];
         }
 
         return ['color' => '#6b7280', 'short' => '?'];
     }
+
+    // === Pinned Messages ===
 
     public function getPinnedMessagesProperty()
     {
@@ -456,6 +619,8 @@ class EditorialChat extends Page
             Notification::make()->title('Message unpinned')->success()->send();
         }
     }
+
+    // === Reactions & Bookmarks ===
 
     public function toggleReaction($messageId, $emoji)
     {
@@ -496,6 +661,8 @@ class EditorialChat extends Page
         }
     }
 
+    // === Task Creation ===
+
     public function createTaskFromMessage($messageId)
     {
         $message = EditorialMessage::find($messageId);
@@ -508,7 +675,7 @@ class EditorialChat extends Page
             'status' => 'pending',
             'priority' => 'medium',
             'created_by' => auth()->id(),
-            'assigned_to' => $this->activeRecipient ?? null, // Assign to DM recipient if in DM
+            'assigned_to' => $this->activeRecipient ?? null,
         ]);
 
         Notification::make()
@@ -520,7 +687,7 @@ class EditorialChat extends Page
         return redirect()->to(TaskResource::getUrl('edit', ['record' => $task->id]));
     }
 
-    // === Edit/Delete Message Methods ===
+    // === Edit/Delete Message ===
 
     public function startEditMessage($messageId)
     {
@@ -572,16 +739,80 @@ class EditorialChat extends Page
             return;
         }
 
-        $message->delete(); // Soft delete
+        $message->delete();
         Notification::make()->title('Message deleted')->success()->send();
     }
+
+    // === Voice Messages ===
+
+    public function updatedVoiceMessage()
+    {
+        if (empty($this->voiceMessage)) return;
+
+        $file = $this->voiceMessage[0];
+        $path = $file->store('editorial-chat/voice', 'public');
+
+        $message = EditorialMessage::create([
+            'user_id' => auth()->id(),
+            'content' => '',
+            'message_type' => 'voice',
+            'channel' => $this->activeChannel,
+            'recipient_id' => $this->activeRecipient,
+            'attachment_url' => $path,
+            'mentioned_user_ids' => [],
+        ]);
+
+        broadcast(new \App\Events\EditorialMessageSent($message))->toOthers();
+        $this->voiceMessage = [];
+        $this->updateLastSeen();
+    }
+
+    // === Channel Topics ===
+
+    public function startEditTopic()
+    {
+        $channel = EditorialChannel::where('slug', $this->activeChannel)->first();
+        $this->topicContent = $channel->topic ?? '';
+        $this->editingTopic = true;
+    }
+
+    public function saveTopic()
+    {
+        $user = auth()->user();
+        if (!$user->hasRole(['Super Admin', 'Editor-in-Chief', 'Editor'])) {
+            Notification::make()->title('Permission denied')->warning()->send();
+            return;
+        }
+
+        $channel = EditorialChannel::where('slug', $this->activeChannel)->first();
+        if ($channel) {
+            $channel->update(['topic' => $this->topicContent]);
+            Notification::make()->title('Topic updated')->success()->send();
+        }
+        $this->editingTopic = false;
+    }
+
+    public function cancelEditTopic()
+    {
+        $this->editingTopic = false;
+        $this->topicContent = '';
+    }
+
+    // === Message Formatting ===
 
     public function formatMessageContent(string $content): string
     {
         // First, escape HTML
         $content = e($content);
 
-        // Code blocks (```code```) - preserve whitespace
+        // Blockquotes (> text) - must be before other processing
+        $content = preg_replace(
+            '/^&gt;\s?(.+)$/m',
+            '<div style="border-left: 3px solid #FC4100; padding: 4px 12px; margin: 4px 0; background: rgba(252,65,0,0.05); color: rgba(255,255,255,0.7); font-size: 0.8rem;">$1</div>',
+            $content
+        );
+
+        // Code blocks (```code```)
         $content = preg_replace(
             '/```([\s\S]*?)```/',
             '<pre style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 0.8rem; overflow-x: auto; margin: 8px 0;">$1</pre>',

@@ -13,6 +13,7 @@ class EditorialMessage extends Model
     protected $fillable = [
         'user_id',
         'content',
+        'message_type',
         'attachment_url',
         'channel',
         'recipient_id',
@@ -20,6 +21,7 @@ class EditorialMessage extends Model
         'is_pinned',
         'read_at',
         'edited_at',
+        'parent_id',
     ];
 
     protected $casts = [

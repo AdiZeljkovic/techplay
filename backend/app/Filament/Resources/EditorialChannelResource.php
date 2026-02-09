@@ -55,6 +55,10 @@ class EditorialChannelResource extends Resource
                 TextInput::make('description')
                     ->maxLength(255),
 
+                TextInput::make('topic')
+                    ->maxLength(255)
+                    ->helperText('Quick topic shown in chat header (editable from chat too)'),
+
                 TextInput::make('icon')
                     ->default('heroicon-o-chat-bubble-left-right')
                     ->helperText('Heroicon name, e.g. heroicon-o-star'),
