@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
-import { Gift, Clock, Users, Trophy, Filter, Loader2, Calendar } from "lucide-react";
+import { Gift, Clock, Users, Trophy, Filter, Loader2, Calendar, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 import PageHero from "@/components/ui/PageHero";
 
@@ -159,7 +159,7 @@ export default function GiveawaysClient() {
                                                 )}
 
                                                 {/* Status Badge */}
-                                                <div className="absolute top-4 right-4">
+                                                <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
                                                     {giveaway.winner ? (
                                                         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/90 backdrop-blur-md text-white rounded-full text-xs font-bold">
                                                             <Trophy className="w-3 h-3" />
@@ -175,6 +175,14 @@ export default function GiveawaysClient() {
                                                             Ended
                                                         </div>
                                                     )}
+
+                                                    {/* Ending Soon badge */}
+                                                    {giveaway.timing.is_active && giveaway.timing.time_remaining !== null && giveaway.timing.time_remaining < 86400 && (
+                                                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/90 backdrop-blur-md text-white rounded-full text-xs font-bold animate-pulse">
+                                                            <AlertTriangle className="w-3 h-3" />
+                                                            Ending Soon!
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
 
@@ -187,11 +195,11 @@ export default function GiveawaysClient() {
 
                                                 {/* Prize */}
                                                 <div className="flex items-center justify-between mb-4">
-                                                    <span className="text-sm font-semibold text-[var(--accent)]">
+                                                    <span className="text-sm font-semibold text-[var(--text-secondary)]">
                                                         {giveaway.prize.name}
                                                     </span>
                                                     {giveaway.prize.value && (
-                                                        <span className="text-sm font-bold text-[var(--text-secondary)]">
+                                                        <span className="text-lg font-black text-[var(--accent)]">
                                                             €{giveaway.prize.value}
                                                         </span>
                                                     )}
@@ -206,15 +214,6 @@ export default function GiveawaysClient() {
                                                         </span>
                                                     </div>
 
-                                                    {giveaway.timing.is_active && giveaway.timing.time_remaining && (
-                                                        <div className="flex items-center gap-2 text-[var(--accent)]">
-                                                            <Clock className="w-4 h-4" />
-                                                            <span className="text-sm font-semibold">
-                                                                {formatTimeRemaining(giveaway.timing.time_remaining)}
-                                                            </span>
-                                                        </div>
-                                                    )}
-
                                                     {giveaway.winner && (
                                                         <div className="flex items-center gap-2">
                                                             <div className="w-6 h-6 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-xs font-bold">
@@ -226,6 +225,18 @@ export default function GiveawaysClient() {
                                                         </div>
                                                     )}
                                                 </div>
+
+                                                {/* Countdown bar for active giveaways */}
+                                                {giveaway.timing.is_active && giveaway.timing.time_remaining && (
+                                                    <div className={`flex items-center justify-center gap-2 mt-3 py-2 rounded-lg text-xs font-bold ${
+                                                        giveaway.timing.time_remaining < 86400
+                                                            ? "bg-red-500/10 text-red-400"
+                                                            : "bg-[var(--accent)]/10 text-[var(--accent)]"
+                                                    }`}>
+                                                        <Clock className="w-3.5 h-3.5" />
+                                                        {formatTimeRemaining(giveaway.timing.time_remaining)} remaining
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </Link>

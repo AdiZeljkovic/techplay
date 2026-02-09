@@ -97,7 +97,10 @@ class GiveawayController extends Controller
     {
         $giveaway = Giveaway::where('slug', $slug)
             ->where('is_public', true)
-            ->with(['tasks' => fn($q) => $q->orderBy('sort_order')])
+            ->with([
+                'tasks' => fn($q) => $q->orderBy('sort_order'),
+                'prizeTiers' => fn($q) => $q->orderBy('sort_order'),
+            ])
             ->firstOrFail();
 
         return response()->json([
@@ -144,6 +147,14 @@ class GiveawayController extends Controller
                     'is_repeatable' => $task->is_repeatable,
                 ]),
 
+                'prize_tiers' => $giveaway->prizeTiers->map(fn($tier) => [
+                    'id' => $tier->id,
+                    'tier_name' => $tier->tier_name,
+                    'prize_description' => $tier->prize_description,
+                    'winner_count' => $tier->winner_count,
+                    'min_points' => $tier->min_points,
+                ]),
+
                 'winner' => $giveaway->winner ? [
                     'id' => $giveaway->winner->id,
                     'username' => $giveaway->winner->username,
@@ -168,6 +179,18 @@ class GiveawayController extends Controller
             return response()->json([
                 'message' => 'This giveaway is not currently active.',
             ], 422);
+        }
+
+        // IP rate limit
+        $maxPerIp = config('giveaway.security.max_entries_per_ip', 5);
+        $ipCount = GiveawayEntry::where('giveaway_id', $giveaway->id)
+            ->where('ip_address', $request->ip())
+            ->count();
+
+        if ($ipCount >= $maxPerIp) {
+            return response()->json([
+                'message' => 'Maximum entries from this network have been reached.',
+            ], 429);
         }
 
         $user = $request->user();
