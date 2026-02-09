@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
-import { Gift, Clock, Users, Trophy, Check, ExternalLink, Share2, Copy, Loader2, Zap, Award, Star, Flame } from "lucide-react";
+import { Gift, Clock, Users, Trophy, Check, ExternalLink, Share2, Copy, Loader2, Zap, Award, Star, Flame, CalendarDays } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import Leaderboard from "@/components/giveaway/Leaderboard";
@@ -321,34 +321,53 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                 )}
                             </motion.div>
 
-                            {/* Countdown */}
-                            {!giveaway.timing.has_ended && timeRemaining > 0 && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.2 }}
-                                    className="mb-5"
-                                >
-                                    <div className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] font-semibold mb-2">Time Remaining</div>
-                                    <div className="flex items-center justify-center md:justify-start gap-2 md:gap-3">
-                                        {[
-                                            { label: "Days", value: time.days },
-                                            { label: "Hrs", value: time.hours },
-                                            { label: "Min", value: time.mins },
-                                            { label: "Sec", value: time.secs },
-                                        ].map((item) => (
-                                            <div key={item.label} className="glow-card rounded-xl bg-[var(--bg-card)] border border-white/[0.06] p-3 md:p-4 min-w-[56px] md:min-w-[68px] text-center">
-                                                <div className="text-2xl md:text-3xl font-bold text-[var(--accent)] leading-none">
-                                                    {String(item.value).padStart(2, "0")}
+                            {/* Countdown + Dates */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="mb-5 space-y-3"
+                            >
+                                {/* Countdown timer (only when active & time remaining) */}
+                                {!giveaway.timing.has_ended && timeRemaining > 0 && (
+                                    <>
+                                        <div className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] font-semibold">Time Remaining</div>
+                                        <div className="flex items-center justify-center md:justify-start gap-2 md:gap-3">
+                                            {[
+                                                { label: "Days", value: time.days },
+                                                { label: "Hrs", value: time.hours },
+                                                { label: "Min", value: time.mins },
+                                                { label: "Sec", value: time.secs },
+                                            ].map((item) => (
+                                                <div key={item.label} className="glow-card rounded-xl bg-[var(--bg-card)] border border-white/[0.06] p-3 md:p-4 min-w-[56px] md:min-w-[68px] text-center">
+                                                    <div className="text-2xl md:text-3xl font-bold text-[var(--accent)] leading-none">
+                                                        {String(item.value).padStart(2, "0")}
+                                                    </div>
+                                                    <div className="text-[9px] uppercase tracking-widest text-[var(--text-muted)] mt-1">
+                                                        {item.label}
+                                                    </div>
                                                 </div>
-                                                <div className="text-[9px] uppercase tracking-widest text-[var(--text-muted)] mt-1">
-                                                    {item.label}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </motion.div>
-                            )}
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* Start / End dates */}
+                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 text-sm">
+                                    {giveaway.timing.starts_at && (
+                                        <div className="flex items-center gap-1.5 text-[var(--text-muted)]">
+                                            <CalendarDays className="w-3.5 h-3.5" />
+                                            <span>Started: <span className="text-white font-medium">{new Date(giveaway.timing.starts_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span></span>
+                                        </div>
+                                    )}
+                                    {giveaway.timing.ends_at && (
+                                        <div className="flex items-center gap-1.5 text-[var(--text-muted)]">
+                                            <Clock className="w-3.5 h-3.5" />
+                                            <span>{giveaway.timing.has_ended ? 'Ended' : 'Ends'}: <span className={`font-medium ${giveaway.timing.has_ended ? 'text-red-400' : 'text-white'}`}>{new Date(giveaway.timing.ends_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span></span>
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
 
                             {/* Participants */}
                             <motion.div
