@@ -116,7 +116,9 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 
         if (middleware === 'auth' && error) logout();
     }, [user, error, middleware, redirectIfAuthenticated, router]);
 
-    const isLoading = !user && !error;
+    // If no token exists, user is definitely not logged in - not loading
+    // If token exists but we have no user and no error yet - still loading
+    const isLoading = hasToken && !user && !error;
     const isAuthenticated = !!user;
 
     return {
