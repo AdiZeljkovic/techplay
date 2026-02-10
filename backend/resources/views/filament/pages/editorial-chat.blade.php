@@ -1797,11 +1797,135 @@
             .msg-role { font-size: 0.5rem; }
             .header-channel-name { font-size: 0.85rem; }
         }
+
+        /* ===== MOBILE ADVANCED FEATURES ===== */
+
+        /* Bottom Tab Bar (mobile only) */
+        .mobile-tab-bar {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--tp-abyss, #060c1a);
+            border-top: 1px solid var(--tp-border, rgba(255,255,255,0.08));
+            z-index: 30;
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 8px;
+        }
+        .mobile-tab-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            color: var(--tp-text-muted, #5F6E8C);
+            font-size: 0.65rem;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 8px;
+            transition: background 0.1s, color 0.1s;
+        }
+        .mobile-tab-item.active {
+            color: var(--tp-accent, #FC4100);
+            background: rgba(252,65,0,0.1);
+        }
+        .mobile-tab-item .icon { font-size: 1.4rem; }
+        .mobile-tab-badge {
+            position: absolute;
+            top: 2px;
+            right: 8px;
+            background: var(--tp-accent, #FC4100);
+            color: #fff;
+            font-size: 0.55rem;
+            padding: 1px 4px;
+            border-radius: 8px;
+            min-width: 14px;
+            text-align: center;
+        }
+
+        /* Sticky Date Separators */
+        .date-separator {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: var(--tp-deep, #0a1228);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Pull-to-refresh indicator */
+        .pull-refresh-indicator {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--tp-text-muted, #5F6E8C);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--tp-base, #0e1a3a);
+            border-radius: 20px;
+            border: 1px solid var(--tp-border, rgba(255,255,255,0.08));
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .pull-refresh-indicator.active { opacity: 1; }
+        .pull-refresh-indicator .spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--tp-border, rgba(255,255,255,0.08));
+            border-top-color: var(--tp-accent, #FC4100);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Compact View */
+        .compact-view .message-row { padding: 2px 10px !important; }
+        .compact-view .message-row:not(.grouped) { padding: 4px 10px !important; }
+        .compact-view .msg-avatar, .compact-view .msg-avatar-spacer { width: 22px; height: 22px; font-size: 0.55rem; }
+        .compact-view .msg-text { font-size: 0.78rem; line-height: 1.3; }
+        .compact-view .msg-author { font-size: 0.75rem; }
+        .compact-view .msg-time { font-size: 0.58rem; }
+        .compact-view .msg-role { font-size: 0.48rem; padding: 0px 3px; }
+        .compact-view .date-separator { padding: 6px 10px 2px; font-size: 0.65rem; }
+
+        /* Keyboard avoidance (mobile) */
+        @media (max-width: 768px) {
+            .mobile-tab-bar { display: flex; }
+            .chat-wrapper.keyboard-open { padding-bottom: 60px; }
+            .input-area.keyboard-active {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 40;
+                background: var(--tp-deep, #0a1228);
+                border-top: 1px solid var(--tp-border, rgba(255,255,255,0.08));
+                box-shadow: 0 -2px 12px rgba(0,0,0,0.3);
+            }
+        }
     </style>
 
     <div class="chat-wrapper" wire:poll.3s
+         @touchstart="handleTouchStart($event)"
+         @touchmove="handleTouchMove($event)"
          x-data="{
             sidebarOpen: window.innerWidth > 768,
+            mobileTab: 'chat',
+            compactView: localStorage.getItem('chat_compact_view') === 'true',
+            touchStartX: 0,
+            touchStartY: 0,
+            pulling: false,
+            pullDistance: 0,
             notifAudio: null,
             lastMsgId: '{{ $this->messages->first()?->id ?? '' }}',
             lastMsgCount: {{ $this->messages->count() }},
@@ -1832,6 +1956,52 @@
             clearDraft(key) {
                 localStorage.removeItem('chat_draft_' + key);
                 this.drafts.delete(key);
+            },
+            handleTouchStart(e) {
+                this.touchStartX = e.touches[0].clientX;
+                this.touchStartY = e.touches[0].clientY;
+            },
+            handleTouchMove(e) {
+                if (!e.touches[0]) return;
+                const deltaX = e.touches[0].clientX - this.touchStartX;
+                const deltaY = e.touches[0].clientY - this.touchStartY;
+
+                // Horizontal swipe (sidebar toggle)
+                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+                    if (deltaX > 0 && this.touchStartX < 30 && window.innerWidth <= 768) {
+                        this.sidebarOpen = true;
+                    } else if (deltaX < -50 && this.sidebarOpen && window.innerWidth <= 768) {
+                        this.sidebarOpen = false;
+                    }
+                }
+            },
+            handlePullStart(e) {
+                const scrollTop = e.currentTarget.scrollTop;
+                if (scrollTop === 0 && window.innerWidth <= 768) {
+                    this.touchStartY = e.touches[0].clientY;
+                    this.pulling = true;
+                }
+            },
+            handlePullMove(e) {
+                if (!this.pulling || !e.touches[0]) return;
+                const delta = e.touches[0].clientY - this.touchStartY;
+                if (delta > 0) {
+                    this.pullDistance = Math.min(delta, 80);
+                    if (this.pullDistance > 40) {
+                        e.preventDefault();
+                    }
+                }
+            },
+            handlePullEnd() {
+                if (this.pullDistance > 60) {
+                    $wire.call('$refresh');
+                }
+                this.pulling = false;
+                this.pullDistance = 0;
+            },
+            toggleCompactView() {
+                this.compactView = !this.compactView;
+                localStorage.setItem('chat_compact_view', this.compactView);
             },
             allUsers: @js($this->mentionUsersJson),
             hovercardData: null,
@@ -2141,10 +2311,14 @@
             {{-- Messages --}}
             <div class="messages-container"
                  x-data="{ dragging: false }"
+                 @touchstart="handlePullStart($event)"
+                 @touchmove="handlePullMove($event)"
+                 @touchend="handlePullEnd()"
                  @dragover.prevent="dragging = true"
                  @dragleave.prevent="dragging = false"
                  @drop.prevent="dragging = false; let files = $event.dataTransfer.files; if (files.length > 0) { @this.upload('attachment', files[0]); }"
-                 :class="{ 'drag-over': dragging }">
+                 :class="{ 'drag-over': dragging }"
+                 :style="pulling ? `transform: translateY(${pullDistance}px); transition: none;` : 'transition: transform 0.2s'">
 
                 {{-- Drop zone overlay --}}
                 <div x-show="dragging" class="drop-zone-overlay">
@@ -2892,6 +3066,39 @@
                 </div>
             </div>
         @endif
+
+        {{-- Pull-to-refresh indicator --}}
+        <div class="pull-refresh-indicator" :class="{ 'active': pullDistance > 40 }" x-show="pulling">
+            <div class="spinner" x-show="pullDistance > 60"></div>
+            <span x-text="pullDistance > 60 ? 'Release to refresh' : 'Pull to refresh'"></span>
+        </div>
+
+        {{-- Mobile Bottom Tab Bar --}}
+        <div class="mobile-tab-bar">
+            <div class="mobile-tab-item" :class="{ 'active': mobileTab === 'home' }" @click="mobileTab = 'home'; sidebarOpen = true">
+                <span class="icon">&#127968;</span>
+                <span>Home</span>
+            </div>
+            <div class="mobile-tab-item" :class="{ 'active': mobileTab === 'dms' }" @click="mobileTab = 'dms'; sidebarOpen = true">
+                <span class="icon">&#128172;</span>
+                <span>DMs</span>
+                @if($this->unreadCount > 0)
+                    <span class="mobile-tab-badge">{{ $this->unreadCount }}</span>
+                @endif
+            </div>
+            <div class="mobile-tab-item" :class="{ 'active': mobileTab === 'chat' }" @click="mobileTab = 'chat'; sidebarOpen = false">
+                <span class="icon">&#128172;</span>
+                <span>Chat</span>
+            </div>
+            <div class="mobile-tab-item" :class="{ 'active': mobileTab === 'mentions' }" @click="mobileTab = 'mentions'">
+                <span class="icon">&#64;</span>
+                <span>Mentions</span>
+            </div>
+            <div class="mobile-tab-item" @click="toggleCompactView()">
+                <span class="icon" x-text="compactView ? '&#128269;' : '&#128200;'"></span>
+                <span x-text="compactView ? 'Expand' : 'Compact'"></span>
+            </div>
+        </div>
     </div>
 
     <script>
