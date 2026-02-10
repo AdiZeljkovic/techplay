@@ -287,6 +287,23 @@ class EditorialChat extends Page
         // Dispatch OG data fetch for URLs in message
         $this->dispatchOgFetch($message);
 
+        // Send notifications to mentioned users
+        $notifyIds = collect($mentionedIds)->reject(auth()->id())->unique()->values();
+        foreach ($notifyIds as $userId) {
+            $mentionedUser = User::find($userId);
+            if ($mentionedUser) {
+                Notification::make()
+                    ->title('Mentioned by ' . auth()->user()->name)
+                    ->body(Str::limit($this->message, 100))
+                    ->actions([
+                        \Filament\Notifications\Actions\Action::make('view')
+                            ->label('View')
+                            ->url('/admin/editorial-chat?msg=' . $message->id),
+                    ])
+                    ->sendToDatabase($mentionedUser);
+            }
+        }
+
         broadcast(new \App\Events\EditorialMessageSent($message))->toOthers();
 
         $this->message = '';

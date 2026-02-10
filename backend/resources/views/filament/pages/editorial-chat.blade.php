@@ -909,6 +909,78 @@
             line-height: 1.5;
         }
 
+        /* ===== MENTION AUTOCOMPLETE ===== */
+        .mention-dropdown {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            margin-bottom: 4px;
+            background: var(--tp-base, #0e1a3a);
+            border: 1px solid var(--tp-border-strong, rgba(255,255,255,0.12));
+            border-radius: var(--tp-radius-sm, 8px);
+            box-shadow: var(--tp-shadow-md, 0 8px 30px rgba(0,0,0,0.5));
+            z-index: 50;
+            max-height: 240px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+        .mention-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: var(--tp-radius-xs, 4px);
+            cursor: pointer;
+            transition: background 0.08s;
+        }
+        .mention-item:hover, .mention-item.active {
+            background: rgba(255,255,255,0.06);
+        }
+        .mention-item-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.6rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .mention-item-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: inherit;
+        }
+        .mention-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .mention-item-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--tp-text-bright, #fff);
+        }
+        .mention-item-username {
+            font-size: 0.72rem;
+            color: var(--tp-text-muted, #5F6E8C);
+            margin-left: 6px;
+        }
+        .mention-item-role {
+            font-size: 0.55rem;
+            font-weight: 600;
+            padding: 1px 4px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        .mention-item-broadcast {
+            font-size: 0.72rem;
+            color: var(--tp-text-secondary, #9BA8C9);
+        }
+
         /* ===== INPUT AREA ===== */
         .input-area {
             padding: 12px 16px 16px;
@@ -1621,6 +1693,7 @@
                 localStorage.removeItem('chat_draft_' + key);
                 this.drafts.delete(key);
             },
+            allUsers: @json($this->users->map(fn($u) => ['id' => $u->id, 'name' => $u->name, 'username' => $u->username, 'role' => $this->getUserRoleBadge($u), 'avatar_url' => $u->avatar_url])),
             hovercardData: null,
             hovercardPos: { x: 0, y: 0 },
             hovercardTimeout: null,
@@ -2322,6 +2395,99 @@
                         const mins = Math.floor(seconds / 60);
                         const secs = seconds % 60;
                         return `${mins}:${secs.toString().padStart(2, '0')}`;
+                    },
+
+                    // Mention autocomplete
+                    showMentions: false,
+                    mentionQuery: '',
+                    mentionResults: [],
+                    mentionIndex: 0,
+                    mentionStart: -1,
+
+                    checkMention(event) {
+                        const ta = event.target;
+                        const pos = ta.selectionStart;
+                        const text = ta.value;
+
+                        // Find the @ that starts the current mention
+                        let atPos = -1;
+                        for (let i = pos - 1; i >= 0; i--) {
+                            if (text[i] === '@') {
+                                // Check it's start of word (beginning or preceded by space/newline)
+                                if (i === 0 || /[\s]/.test(text[i - 1])) {
+                                    atPos = i;
+                                }
+                                break;
+                            }
+                            if (/[\s]/.test(text[i])) break;
+                        }
+
+                        if (atPos === -1) {
+                            this.showMentions = false;
+                            return;
+                        }
+
+                        this.mentionStart = atPos;
+                        this.mentionQuery = text.substring(atPos + 1, pos).toLowerCase();
+                        this.mentionIndex = 0;
+
+                        const q = this.mentionQuery;
+                        const specials = [
+                            { type: 'broadcast', username: 'channel', name: '@channel', desc: 'Notify everyone in channel' },
+                            { type: 'broadcast', username: 'here', name: '@here', desc: 'Notify online members' },
+                        ];
+
+                        const matchedSpecials = specials.filter(s =>
+                            s.username.startsWith(q) || s.name.toLowerCase().includes(q)
+                        );
+
+                        const users = (typeof allUsers !== 'undefined' ? allUsers : []);
+                        const matchedUsers = users.filter(u =>
+                            (u.name && u.name.toLowerCase().includes(q)) ||
+                            (u.username && u.username.toLowerCase().includes(q))
+                        ).slice(0, 6);
+
+                        this.mentionResults = [...matchedSpecials, ...matchedUsers];
+                        this.showMentions = this.mentionResults.length > 0;
+                    },
+
+                    selectMention(item) {
+                        const ta = this.$refs.messageInput;
+                        const text = ta.value;
+                        const insertName = item.username || item.name;
+                        const before = text.substring(0, this.mentionStart);
+                        const after = text.substring(ta.selectionStart);
+                        const newText = before + '@' + insertName + ' ' + after;
+
+                        $wire.set('message', newText);
+                        this.showMentions = false;
+                        this.mentionQuery = '';
+
+                        $nextTick(() => {
+                            const newPos = this.mentionStart + insertName.length + 2;
+                            ta.selectionStart = ta.selectionEnd = newPos;
+                            ta.focus();
+                        });
+                    },
+
+                    handleMentionKeydown(event) {
+                        if (!this.showMentions) return;
+
+                        if (event.key === 'ArrowDown') {
+                            event.preventDefault();
+                            this.mentionIndex = Math.min(this.mentionIndex + 1, this.mentionResults.length - 1);
+                        } else if (event.key === 'ArrowUp') {
+                            event.preventDefault();
+                            this.mentionIndex = Math.max(this.mentionIndex - 1, 0);
+                        } else if (event.key === 'Tab' || (event.key === 'Enter' && !event.shiftKey)) {
+                            if (this.mentionResults.length > 0) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                this.selectMention(this.mentionResults[this.mentionIndex]);
+                            }
+                        } else if (event.key === 'Escape') {
+                            this.showMentions = false;
+                        }
                     }
                 }" style="position: relative;">
 
@@ -2359,12 +2525,59 @@
                         <button type="button" @click="stopRecording()" title="Send" style="color: #22c55e;">&#10003;</button>
                     </div>
 
+                    {{-- Mention Autocomplete Dropdown --}}
+                    <div x-show="showMentions" x-transition.opacity class="mention-dropdown">
+                        <template x-for="(item, idx) in mentionResults" :key="item.username || item.name">
+                            <div class="mention-item"
+                                :class="{ 'active': idx === mentionIndex }"
+                                @click="selectMention(item)"
+                                @mouseenter="mentionIndex = idx">
+                                <template x-if="item.type === 'broadcast'">
+                                    <div class="mention-item-avatar" style="background: var(--tp-accent, #FC4100); font-size: 0.7rem;">
+                                        <span x-text="item.username === 'channel' ? '📢' : '👋'"></span>
+                                    </div>
+                                </template>
+                                <template x-if="item.type !== 'broadcast'">
+                                    <div class="mention-item-avatar" :style="'background:' + (item.role?.color || '#3b82f6')">
+                                        <template x-if="item.avatar_url">
+                                            <img :src="item.avatar_url" alt="">
+                                        </template>
+                                        <template x-if="!item.avatar_url">
+                                            <span x-text="item.name?.charAt(0) || '?'"></span>
+                                        </template>
+                                    </div>
+                                </template>
+                                <div class="mention-item-info">
+                                    <template x-if="item.type === 'broadcast'">
+                                        <div>
+                                            <span class="mention-item-name" x-text="item.name"></span>
+                                            <span class="mention-item-broadcast" x-text="' — ' + item.desc"></span>
+                                        </div>
+                                    </template>
+                                    <template x-if="item.type !== 'broadcast'">
+                                        <div>
+                                            <span class="mention-item-name" x-text="item.name"></span>
+                                            <span class="mention-item-username" x-text="'@' + item.username"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                                <template x-if="item.role && item.type !== 'broadcast'">
+                                    <span class="mention-item-role"
+                                        :style="'background:' + item.role.color + '15; color:' + item.role.color"
+                                        x-text="item.role.short"></span>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+
                     <div class="input-box">
                         <textarea wire:model="message" x-ref="messageInput"
                             placeholder="Message {{ $this->activeChannel ? '#' . ($this->channels->firstWhere('slug', $this->activeChannel)?->name ?? 'channel') : ($this->activeRecipient ? $this->users->find($this->activeRecipient)?->name ?? 'user' : 'chat') }}..."
                             rows="1"
-                            @keydown.enter.prevent="if (!$event.shiftKey) { clearDraft('{{ $draftKey }}'); $wire.sendMessage(); }"
+                            @keydown="handleMentionKeydown($event)"
+                            @keydown.enter.prevent="if (!showMentions && !$event.shiftKey) { clearDraft('{{ $draftKey }}'); $wire.sendMessage(); }"
                             @paste="handlePaste($event)"
+                            @input="checkMention($event)"
                             @input.debounce.1000ms="saveDraft('{{ $draftKey }}', $event.target.value)"
                             autocomplete="off"></textarea>
 
