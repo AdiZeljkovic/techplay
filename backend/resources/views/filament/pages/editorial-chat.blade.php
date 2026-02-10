@@ -1714,8 +1714,17 @@
             .message-row:not(.grouped) { padding: 8px 10px; }
             .date-separator { padding: 8px 10px 2px; }
             .msg-avatar, .msg-avatar-spacer { width: 28px; height: 28px; font-size: 0.65rem; }
-            .msg-body { min-width: 0; max-width: calc(100vw - 80px); }
-            .msg-text { font-size: 0.82rem; width: auto; display: block; }
+            .msg-body { min-width: 0; width: calc(100% - 40px); }
+            .msg-text,
+            .message-row.own-message .msg-text,
+            .message-row:not(.own-message) .msg-text {
+                font-size: 0.82rem;
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                word-break: break-word;
+                overflow-wrap: break-word;
+            }
             .msg-attachment img { max-width: 200px; max-height: 150px; }
 
             /* OG preview fit screen */
