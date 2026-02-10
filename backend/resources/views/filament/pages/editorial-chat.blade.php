@@ -2179,7 +2179,7 @@
                             @if($isMe && $msg->canEdit())
                                 <button wire:click="startEditMessage({{ $msg->id }})" title="Edit">&#9998;</button>
                             @endif
-                            @if($isMe)
+                            @if($isMe || auth()->user()->hasRole('Super Admin'))
                                 <button wire:click="deleteMessage({{ $msg->id }})" title="Delete" style="color: var(--tp-red);">&#128465;</button>
                             @endif
                             <div class="action-sep"></div>

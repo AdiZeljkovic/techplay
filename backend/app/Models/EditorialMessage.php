@@ -77,6 +77,7 @@ class EditorialMessage extends Model
      */
     public function canDelete(): bool
     {
-        return $this->user_id === auth()->id();
+        return $this->user_id === auth()->id()
+            || auth()->user()?->hasRole('Super Admin');
     }
 }
