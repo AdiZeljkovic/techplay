@@ -1,9 +1,20 @@
 <x-filament-panels::page>
     <style>
+        /* ===== HIDE PAGE HEADER & MAKE FULL SCREEN ===== */
+        .fi-header {
+            display: none !important;
+        }
+
+        .fi-main {
+            padding: 0 !important;
+            max-width: none !important;
+        }
+
         /* ===== FOUNDATION ===== */
         .chat-wrapper {
             display: flex;
-            height: calc(100vh - 90px);
+            height: 100vh;
+            width: 100%;
             background: var(--tp-deep, #0a1228);
             border-radius: 0;
             border: none;
