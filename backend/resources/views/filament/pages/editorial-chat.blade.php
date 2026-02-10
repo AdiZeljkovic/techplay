@@ -1031,8 +1031,8 @@
         /* Hover actions - Slack style, top-right of message row */
         .hover-actions {
             position: absolute;
-            top: -4px;
-            right: 20px;
+            top: -12px;
+            right: 12px;
             display: none;
             gap: 1px;
             opacity: 0;
@@ -1044,7 +1044,7 @@
             padding: 2px 4px;
             box-shadow: var(--tp-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.4));
             transition: opacity 0.15s var(--tp-ease), transform 0.15s var(--tp-ease);
-            z-index: 20;
+            z-index: 5;
         }
 
         .message-row:hover .hover-actions {
@@ -1342,15 +1342,25 @@
         }
 
         .input-box {
-            background: var(--tp-base, #0e1a3a);
-            border: 1px solid var(--tp-border, rgba(255, 255, 255, 0.08));
-            border-radius: var(--tp-radius-sm, 8px);
-            transition: all 0.2s var(--tp-ease);
+            background: var(--tp-base, #ffffff);
+            border: 1px solid var(--tp-border, #ebe9f1);
+            border-radius: var(--tp-radius-lg, 12px);
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            position: relative;
+            z-index: 20;
+        }
+
+        .dark .input-box {
+            background: var(--tp-surface, #2f3349);
+            border-color: var(--tp-border, #434968);
         }
 
         .input-box:focus-within {
             border-color: var(--tp-accent, #7367f0);
-            box-shadow: 0 0 0 3px var(--tp-accent-faint, rgba(115, 103, 240, 0.06));
+            box-shadow: 0 4px 12px rgba(115, 103, 240, 0.15);
             transform: translateY(-1px);
         }
 
@@ -1491,6 +1501,10 @@
 
         .emoji-picker button:hover {
             background: rgba(0, 0, 0, 0.06);
+        }
+
+        .dark .chat-wrapper .emoji-picker button:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .gif-picker {
@@ -3847,20 +3861,23 @@
                 <span x-text="compactView ? 'Expand' : 'Compact'"></span>
             </div>
         </div>
+
+        {{-- Keyboard shortcuts hint overlay --}}
+        <div x-show="showKeyboardHints" x-transition style="position: absolute; bottom: 20px; right: 20px; background: var(--tp-base, #ffffff);
+                    border: 1px solid var(--tp-border, #ebe9f1); border-radius: 8px;
+                    padding: 12px 16px; font-size: 0.75rem; color: var(--tp-text-muted, #5F6E8C);
+                    z-index: 200; pointer-events: none; box-shadow: 0 4px 16px rgba(0,0,0,0.15);">
+            <div style="font-weight: 700; margin-bottom: 4px; color: var(--tp-text-bright, #333);">Keyboard Shortcuts
+            </div>
+            <div>Ctrl+K: Search</div>
+            <div>Ctrl+Enter: Send Message</div>
+            <div>Ctrl+Shift+S: Toggle Sidebar</div>
+            <div>Ctrl+Shift+T: Close Thread</div>
+            <div>Esc: Close Overlays</div>
+        </div>
     </div>
 
-    {{-- Keyboard shortcuts hint overlay --}}
-    <div x-show="showKeyboardHints" x-transition style="position: fixed; bottom: 20px; right: 20px; background: var(--tp-base, #0e1a3a);
-                border: 1px solid var(--tp-border-strong, rgba(255,255,255,0.12)); border-radius: 8px;
-                padding: 12px 16px; font-size: 0.75rem; color: var(--tp-text-muted, #5F6E8C);
-                z-index: 200; pointer-events: none; box-shadow: 0 4px 16px rgba(0,0,0,0.5);">
-        <div style="font-weight: 700; margin-bottom: 4px; color: var(--tp-text-bright, #fff);">Keyboard Shortcuts</div>
-        <div>Ctrl+K: Search</div>
-        <div>Ctrl+Enter: Send Message</div>
-        <div>Ctrl+Shift+S: Toggle Sidebar</div>
-        <div>Ctrl+Shift+T: Close Thread</div>
-        <div>Esc: Close Overlays</div>
-    </div>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
