@@ -529,7 +529,7 @@
         .date-separator {
             display: flex;
             align-items: center;
-            padding: 16px 20px 8px;
+            padding: 10px 20px 4px;
             position: relative;
         }
         .date-separator::before {
@@ -558,7 +558,7 @@
         .unread-divider {
             display: flex;
             align-items: center;
-            padding: 8px 20px;
+            padding: 4px 20px;
         }
         .unread-divider-line { flex: 1; height: 1px; background: var(--tp-red, #EF4444); }
         .unread-divider-text {
@@ -572,16 +572,20 @@
         /* Message row - Slack flat style */
         .message-row {
             display: flex;
-            gap: 10px;
-            padding: 6px 20px;
+            gap: 8px;
+            padding: 4px 20px;
             position: relative;
             transition: background 0.05s;
         }
         .message-row:hover { background: rgba(255,255,255,0.02); }
 
+        .message-row:not(.grouped) {
+            padding-top: 8px;
+        }
+
         .message-row.grouped {
-            padding-top: 1px;
-            padding-bottom: 1px;
+            padding-top: 0;
+            padding-bottom: 0;
         }
 
         .message-row.highlight {
@@ -589,21 +593,21 @@
         }
 
         .msg-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: var(--tp-radius-sm, 8px);
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 0.72rem;
             color: #fff;
             flex-shrink: 0;
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
         .msg-avatar-spacer {
-            width: 36px;
+            width: 32px;
             flex-shrink: 0;
             display: flex;
             align-items: flex-start;
@@ -611,11 +615,11 @@
         }
 
         .msg-hover-time {
-            font-size: 0.6rem;
+            font-size: 0.58rem;
             color: transparent;
-            padding-top: 4px;
+            padding-top: 2px;
             font-variant-numeric: tabular-nums;
-            min-width: 36px;
+            min-width: 32px;
             text-align: center;
         }
         .message-row.grouped:hover .msg-hover-time { color: var(--tp-text-dim, #3D4A66); }
@@ -628,12 +632,13 @@
         .msg-header {
             display: flex;
             align-items: baseline;
-            gap: 6px;
-            margin-bottom: 1px;
+            gap: 5px;
+            margin-bottom: 0;
+            line-height: 1.3;
         }
 
         .msg-author {
-            font-size: 0.88rem;
+            font-size: 0.84rem;
             font-weight: 800;
             color: var(--tp-text-bright, #fff);
             cursor: pointer;
@@ -641,27 +646,27 @@
         .msg-author:hover { text-decoration: underline; }
 
         .msg-role {
-            font-size: 0.58rem;
+            font-size: 0.55rem;
             font-weight: 600;
-            padding: 1px 5px;
+            padding: 1px 4px;
             border-radius: 3px;
             letter-spacing: 0.02em;
         }
 
         .msg-time {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             color: var(--tp-text-dim, #3D4A66);
         }
 
         .msg-edited {
-            font-size: 0.62rem;
+            font-size: 0.6rem;
             color: var(--tp-text-dim, #3D4A66);
         }
 
         .msg-text {
-            font-size: 0.88rem;
+            font-size: 0.84rem;
             color: var(--tp-text-primary, #E2E8F7);
-            line-height: 1.46;
+            line-height: 1.38;
             word-wrap: break-word;
             overflow-wrap: break-word;
         }
@@ -673,17 +678,17 @@
             background: var(--tp-void, #04080f);
             border: 1px solid var(--tp-border, rgba(255,255,255,0.08));
             border-radius: var(--tp-radius-xs, 4px);
-            padding: 10px 14px;
-            margin: 6px 0;
+            padding: 8px 12px;
+            margin: 4px 0;
             overflow-x: auto;
-            font-size: 0.82rem;
-            line-height: 1.4;
+            font-size: 0.78rem;
+            line-height: 1.35;
         }
         .msg-text code {
             background: var(--tp-void, #04080f);
-            padding: 2px 5px;
+            padding: 1px 4px;
             border-radius: 3px;
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             border: 1px solid var(--tp-border-faint, rgba(255,255,255,0.04));
         }
         .msg-text pre code { background: none; padding: 0; border: none; }
@@ -698,16 +703,16 @@
 
         .msg-text .blockquote {
             border-left: 3px solid var(--tp-accent, #FC4100);
-            padding: 4px 12px;
-            margin: 4px 0;
+            padding: 2px 10px;
+            margin: 2px 0;
             color: var(--tp-text-secondary, #9BA8C9);
         }
 
         /* Attachments */
-        .msg-attachment { margin-top: 6px; }
+        .msg-attachment { margin-top: 3px; }
         .msg-attachment img {
-            max-width: 360px;
-            max-height: 280px;
+            max-width: 320px;
+            max-height: 220px;
             border-radius: var(--tp-radius-sm, 8px);
             border: 1px solid var(--tp-border-faint, rgba(255,255,255,0.04));
             cursor: pointer;
@@ -716,24 +721,24 @@
         .msg-file-download {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 14px;
+            gap: 6px;
+            padding: 6px 10px;
             background: var(--tp-base, #0e1a3a);
             border: 1px solid var(--tp-border, rgba(255,255,255,0.08));
-            border-radius: var(--tp-radius-sm, 8px);
+            border-radius: 6px;
             color: var(--tp-text-primary, #E2E8F7);
             text-decoration: none;
-            font-size: 0.82rem;
-            margin-top: 4px;
+            font-size: 0.78rem;
+            margin-top: 3px;
             transition: border-color 0.15s;
         }
         .msg-file-download:hover { border-color: var(--tp-border-strong, rgba(255,255,255,0.12)); }
 
-        .voice-player { margin-top: 4px; }
+        .voice-player { margin-top: 2px; }
         .voice-player audio {
             width: 100%;
-            max-width: 300px;
-            height: 32px;
+            max-width: 260px;
+            height: 28px;
             border-radius: var(--tp-radius-xs, 4px);
         }
 
@@ -776,18 +781,18 @@
         /* Reactions */
         .reactions-row {
             display: flex;
-            gap: 4px;
-            margin-top: 4px;
+            gap: 3px;
+            margin-top: 2px;
             flex-wrap: wrap;
         }
 
         .reaction-btn {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            padding: 2px 8px;
-            border-radius: 16px;
-            font-size: 0.78rem;
+            gap: 3px;
+            padding: 1px 6px;
+            border-radius: 12px;
+            font-size: 0.72rem;
             background: var(--tp-surface, #122148);
             border: 1px solid var(--tp-border, rgba(255,255,255,0.08));
             cursor: pointer;
@@ -796,22 +801,22 @@
         }
         .reaction-btn:hover { background: var(--tp-elevated, #182c5a); border-color: var(--tp-border-strong, rgba(255,255,255,0.12)); }
         .reaction-btn.active { border-color: var(--tp-blue, #3B82F6); background: rgba(59, 130, 246, 0.1); }
-        .reaction-emoji { font-size: 0.82rem; line-height: 1; }
-        .reaction-count { font-weight: 600; font-size: 0.7rem; }
+        .reaction-emoji { font-size: 0.75rem; line-height: 1; }
+        .reaction-count { font-weight: 600; font-size: 0.65rem; }
 
         /* Thread reply count */
         .thread-reply-count {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
             background: none;
             border: none;
             color: var(--tp-blue, #3B82F6);
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 600;
             cursor: pointer;
-            padding: 4px 0;
-            margin-top: 2px;
+            padding: 2px 0;
+            margin-top: 1px;
             transition: color 0.1s;
         }
         .thread-reply-count:hover { color: #60a5fa; text-decoration: underline; }
