@@ -32,7 +32,7 @@ class SendChatReminder implements ShouldQueue
             ->title('Chat Reminder')
             ->body("From {$this->authorName}: {$this->messagePreview}")
             ->actions([
-                \Filament\Notifications\Actions\Action::make('view')
+                \Filament\Actions\Action::make('view')
                     ->label('View Message')
                     ->url($url),
             ])

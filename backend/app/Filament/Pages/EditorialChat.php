@@ -296,7 +296,7 @@ class EditorialChat extends Page
                     ->title('Mentioned by ' . auth()->user()->name)
                     ->body(Str::limit($this->message, 100))
                     ->actions([
-                        \Filament\Notifications\Actions\Action::make('view')
+                        \Filament\Actions\Action::make('view')
                             ->label('View')
                             ->url('/admin/editorial-chat?msg=' . $message->id),
                     ])
