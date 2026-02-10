@@ -2038,11 +2038,21 @@
                             @endif
 
                             @if($msg->content)
-                                <div class="msg-text">{!! $this->formatMessageContent($msg->content) !!}</div>
+                                @php
+                                    $hasOgPreview = $msg->og_data && ($msg->og_data['title'] ?? null);
+                                    $displayContent = $msg->content;
+                                    if ($hasOgPreview && !empty($msg->og_data['url'])) {
+                                        $displayContent = trim(str_replace($msg->og_data['url'], '', $displayContent));
+                                    }
+                                @endphp
+                                @if($displayContent)
+                                    <div class="msg-text">{!! $this->formatMessageContent($displayContent) !!}</div>
+                                @endif
                             @endif
 
                             {{-- OG Preview --}}
-                            @if($msg->og_data && ($msg->og_data['title'] ?? null))
+                            @php $hasOgPreview = $hasOgPreview ?? ($msg->og_data && ($msg->og_data['title'] ?? null)); @endphp
+                            @if($hasOgPreview)
                                 <div class="og-preview">
                                     <div class="og-preview-text">
                                         @if($msg->og_data['site_name'] ?? null)
