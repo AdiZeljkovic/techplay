@@ -13,9 +13,11 @@
         /* ===== FOUNDATION ===== */
         .chat-wrapper {
             display: flex;
-            height: calc(100vh - 10rem);
-            max-height: 720px;
+            height: calc(100vh - 12rem);
+            max-height: 680px;
             width: 100%;
+            max-width: 1300px;
+            margin: 0 auto;
             background: var(--tp-base, #ffffff);
             border-radius: var(--tp-radius-lg, 10px);
             border: 1px solid var(--tp-border, #ebe9f1);
