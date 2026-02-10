@@ -28,12 +28,12 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->spa()
-            ->darkMode(true, true) // Force dark mode
+            ->darkMode(true, false) // Support dark mode but default to light
             ->colors([
-                'primary' => '#FC4100', // TechPlay Accent
+                'primary' => '#7367f0', // Materio Purple
                 'gray' => Color::Slate,
             ])
-            ->font('Be Vietnam Pro')
+            ->font('Inter')
             ->brandName('TechPlay')
             ->brandLogoHeight('3rem')
             ->sidebarCollapsibleOnDesktop()
