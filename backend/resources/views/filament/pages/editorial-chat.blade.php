@@ -1722,15 +1722,19 @@
             .header-divider { display: none; }
             .header-channel-name { font-size: 0.9rem; }
 
-            /* Messages compact */
+            /* Messages - Slack-like spacing */
             .message-row {
-                padding: 4px 10px;
+                padding: 8px 12px !important;
                 width: 100% !important;
                 box-sizing: border-box !important;
+                margin-bottom: 2px;
             }
-            .message-row:not(.grouped) { padding: 8px 10px; }
-            .date-separator { padding: 8px 10px 2px; }
-            .msg-avatar, .msg-avatar-spacer { width: 28px; height: 28px; font-size: 0.65rem; flex-shrink: 0; }
+            .message-row:not(.grouped) {
+                padding: 12px 12px !important;
+                margin-top: 8px;
+            }
+            .date-separator { padding: 12px 12px 6px; }
+            .msg-avatar, .msg-avatar-spacer { width: 32px; height: 32px; font-size: 0.68rem; flex-shrink: 0; }
             .msg-body {
                 min-width: 0;
                 flex: 1 !important;
@@ -1740,36 +1744,45 @@
             .msg-text,
             .message-row.own-message .msg-text,
             .message-row:not(.own-message) .msg-text {
-                font-size: 0.82rem;
+                font-size: 0.88rem !important;
                 display: block !important;
                 width: 100% !important;
                 max-width: 100% !important;
                 word-break: break-word;
                 overflow-wrap: break-word;
+                padding: 8px 12px !important;
+                line-height: 1.4 !important;
             }
-            .msg-attachment img { max-width: 200px; max-height: 150px; }
+            .msg-attachment img { max-width: 240px; max-height: 180px; }
 
             /* OG preview fit screen */
             .og-preview { max-width: 100% !important; }
 
-            /* Hover actions: always visible on mobile */
+            /* Hide reaction buttons by default - show only when message is tapped */
             .hover-actions {
+                display: none !important;
+            }
+            .message-row.show-actions .hover-actions {
                 position: static !important;
                 display: flex !important;
-                opacity: 0.5;
-                margin-top: 4px;
+                opacity: 0.7;
+                margin-top: 6px;
                 background: transparent !important;
                 box-shadow: none !important;
                 border: none !important;
                 padding: 0 !important;
-                gap: 2px;
+                gap: 4px;
             }
             .hover-actions button {
-                font-size: 0.7rem;
-                padding: 2px 4px;
+                font-size: 0.75rem;
+                padding: 4px 6px;
                 min-width: unset;
             }
-            .message-row:hover .hover-actions { opacity: 1; }
+
+            /* Reactions row spacing */
+            .reactions-row {
+                margin-top: 6px !important;
+            }
 
             /* Input area compact */
             .input-area { padding: 8px 10px 12px; }
