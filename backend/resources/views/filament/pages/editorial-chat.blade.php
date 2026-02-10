@@ -1676,24 +1676,38 @@
 
         /* ===== MOBILE RESPONSIVE (max-width: 768px) ===== */
         @media (max-width: 768px) {
+            /* Full viewport - override Filament panel layout */
+            .fi-page {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
             .chat-wrapper {
-                height: calc(100vh - 64px);
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 60px !important;
+                height: calc(100vh - 60px) !important;
+                width: 100vw !important;
                 border-radius: 0;
                 border: none;
-                position: relative;
-                width: 100vw !important;
+                margin: 0 !important;
+                z-index: 20;
             }
 
             /* Chat main area - full width on mobile */
             .chat-main {
-                width: 100vw !important;
+                width: 100% !important;
                 flex: 1 !important;
-                max-width: 100vw !important;
+                max-width: 100% !important;
+                height: 100% !important;
             }
 
             .messages-container {
                 width: 100% !important;
-                max-width: 100vw !important;
+                max-width: 100% !important;
+                height: 100% !important;
             }
 
             /* Sidebar as overlay */
@@ -1945,14 +1959,21 @@
 
         /* Keyboard avoidance (mobile) */
         @media (max-width: 768px) {
-            .mobile-tab-bar { display: flex; }
+            .mobile-tab-bar {
+                display: flex !important;
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                z-index: 50 !important;
+            }
             .chat-wrapper.keyboard-open { padding-bottom: 60px; }
             .input-area.keyboard-active {
                 position: fixed;
-                bottom: 0;
+                bottom: 60px;
                 left: 0;
                 right: 0;
-                z-index: 40;
+                z-index: 45;
                 background: var(--tp-deep, #0a1228);
                 border-top: 1px solid var(--tp-border, rgba(255,255,255,0.08));
                 box-shadow: 0 -2px 12px rgba(0,0,0,0.3);
