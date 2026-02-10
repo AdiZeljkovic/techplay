@@ -32,6 +32,11 @@ class FetchOgData implements ShouldQueue
 
             $ogData = $this->parseOgTags($html);
 
+            // Fallback: try JSON-LD schema if OG tags missing
+            if (!$ogData['title']) {
+                $ogData = $this->mergeJsonLd($html, $ogData);
+            }
+
             if ($ogData['title'] || $ogData['description']) {
                 $message->update(['og_data' => $ogData]);
             }
@@ -47,16 +52,25 @@ class FetchOgData implements ShouldQueue
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_MAXREDIRS => 3,
-            CURLOPT_TIMEOUT => 5,
-            CURLOPT_CONNECTTIMEOUT => 3,
+            CURLOPT_MAXREDIRS => 5,
+            CURLOPT_TIMEOUT => 8,
+            CURLOPT_CONNECTTIMEOUT => 4,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_HTTPHEADER => [
-                'Accept: text/html,application/xhtml+xml',
-                'Accept-Language: en-US,en;q=0.9',
+                'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language: hr,en-US;q=0.9,en;q=0.8',
+                'Cache-Control: no-cache',
+                'Pragma: no-cache',
+                'Sec-Fetch-Dest: document',
+                'Sec-Fetch-Mode: navigate',
+                'Sec-Fetch-Site: none',
+                'Sec-Fetch-User: ?1',
+                'Upgrade-Insecure-Requests: 1',
             ],
-            CURLOPT_USERAGENT => 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            CURLOPT_REFERER => 'https://www.google.com/',
             CURLOPT_ENCODING => '',
+            CURLOPT_COOKIEFILE => '',
         ]);
 
         $html = curl_exec($ch);
@@ -80,28 +94,25 @@ class FetchOgData implements ShouldQueue
             'site_name' => null,
         ];
 
-        // Extract all meta tags at once for more reliable parsing
+        // Extract all meta tags at once
         preg_match_all('/<meta\s[^>]*>/is', $html, $metaTags);
 
         foreach ($metaTags[0] as $tag) {
-            // Extract property and content attributes
             $property = null;
             $content = null;
+            $name = null;
 
             if (preg_match('/property\s*=\s*["\']([^"\']+)["\']/i', $tag, $m)) {
                 $property = $m[1];
             }
-            if (preg_match('/content\s*=\s*["\']([^"\']*(?:[^"\'\\\\]|\\\\.)*)["\']/i', $tag, $m)) {
-                $content = html_entity_decode($m[1], ENT_QUOTES, 'UTF-8');
+            if (preg_match('/content\s*=\s*["\'](.+?)["\']/is', $tag, $m)) {
+                $content = html_entity_decode(trim($m[1]), ENT_QUOTES, 'UTF-8');
             }
-
-            // Also check name attribute for fallback meta tags
-            $name = null;
             if (preg_match('/name\s*=\s*["\']([^"\']+)["\']/i', $tag, $m)) {
-                $name = $m[1];
+                $name = strtolower($m[1]);
             }
 
-            if ($property && $content !== null) {
+            if ($property && $content) {
                 match ($property) {
                     'og:title' => $data['title'] = $data['title'] ?? $content,
                     'og:description' => $data['description'] = $data['description'] ?? $content,
@@ -111,15 +122,76 @@ class FetchOgData implements ShouldQueue
                 };
             }
 
-            // Fallback: meta name="description"
-            if ($name === 'description' && $content !== null && !$data['description']) {
+            // Twitter card fallbacks
+            if ($name === 'twitter:title' && $content && !$data['title']) {
+                $data['title'] = $content;
+            }
+            if ($name === 'twitter:description' && $content && !$data['description']) {
                 $data['description'] = $content;
+            }
+            if ($name === 'twitter:image' && $content && !$data['image']) {
+                $data['image'] = $content;
+            }
+
+            // Standard meta fallbacks
+            if ($name === 'description' && $content && !$data['description']) {
+                $data['description'] = $content;
+            }
+            if ($name === 'title' && $content && !$data['title']) {
+                $data['title'] = $content;
             }
         }
 
         // Fallback to <title> tag
         if (!$data['title'] && preg_match('/<title[^>]*>([^<]+)<\/title>/is', $html, $m)) {
             $data['title'] = html_entity_decode(trim($m[1]), ENT_QUOTES, 'UTF-8');
+        }
+
+        return $data;
+    }
+
+    protected function mergeJsonLd(string $html, array $data): array
+    {
+        // Find JSON-LD script blocks
+        preg_match_all('/<script[^>]+type=["\']application\/ld\+json["\'][^>]*>(.*?)<\/script>/is', $html, $matches);
+
+        foreach ($matches[1] as $json) {
+            $ld = json_decode(trim($json), true);
+            if (!$ld) continue;
+
+            // Handle @graph wrapper
+            $items = isset($ld['@graph']) ? $ld['@graph'] : [$ld];
+
+            foreach ($items as $item) {
+                $type = $item['@type'] ?? '';
+                if (!in_array($type, ['Article', 'NewsArticle', 'BlogPosting', 'WebPage', 'Product', 'VideoObject'])) {
+                    continue;
+                }
+
+                if (!$data['title'] && !empty($item['headline'])) {
+                    $data['title'] = $item['headline'];
+                }
+                if (!$data['title'] && !empty($item['name'])) {
+                    $data['title'] = $item['name'];
+                }
+                if (!$data['description'] && !empty($item['description'])) {
+                    $data['description'] = $item['description'];
+                }
+                if (!$data['image']) {
+                    $img = $item['image'] ?? $item['thumbnailUrl'] ?? null;
+                    if (is_array($img)) {
+                        $data['image'] = $img['url'] ?? $img[0] ?? null;
+                    } elseif (is_string($img)) {
+                        $data['image'] = $img;
+                    }
+                }
+                if (!$data['site_name'] && !empty($item['publisher']['name'])) {
+                    $data['site_name'] = $item['publisher']['name'];
+                }
+
+                // Found a match, stop
+                if ($data['title']) break 2;
+            }
         }
 
         return $data;
