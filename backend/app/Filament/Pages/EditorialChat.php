@@ -329,7 +329,7 @@ class EditorialChat extends Page
         preg_match('/(https?:\/\/[^\s<>"\')]+)/i', $message->content, $matches);
 
         if (!empty($matches[1])) {
-            FetchOgData::dispatch($message->id, $matches[1]);
+            FetchOgData::dispatchSync($message->id, $matches[1]);
         }
     }
 
