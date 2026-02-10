@@ -117,18 +117,18 @@
 
 
 /* ============================================
-   3. SIDEBAR — Clean card style
+   3. SIDEBAR — Materio dark sidebar
    ============================================ */
 
 .fi-sidebar {
-    background: var(--tp-abyss) !important;
-    border-right: 1px solid var(--tp-border) !important;
-    box-shadow: var(--tp-shadow-sm) !important;
+    background: #2B2C40 !important;
+    border-right: none !important;
+    box-shadow: 0 0.125rem 1rem rgba(0, 0, 0, 0.25) !important;
 }
 
 .fi-sidebar-header {
     padding: 1.25rem 1.125rem 1rem !important;
-    border-bottom: 1px solid var(--tp-border) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
     margin-bottom: 0.5rem !important;
 }
 
@@ -136,13 +136,13 @@
 .fi-sidebar-header span,
 .fi-logo,
 .fi-logo * {
-    color: var(--tp-text-primary) !important;
+    color: #e7e3fc !important;
     font-weight: 700 !important;
     font-size: 1.25rem !important;
 }
 
 .fi-sidebar-header .fi-icon-btn {
-    color: var(--tp-text-muted) !important;
+    color: rgba(231, 227, 252, 0.5) !important;
     width: 2rem !important;
     height: 2rem !important;
     border-radius: var(--tp-radius-sm) !important;
@@ -150,8 +150,8 @@
 }
 
 .fi-sidebar-header .fi-icon-btn:hover {
-    background: var(--tp-accent-faint) !important;
-    color: var(--tp-accent) !important;
+    background: rgba(231, 227, 252, 0.08) !important;
+    color: #e7e3fc !important;
 }
 
 .fi-sidebar-nav {
@@ -168,7 +168,7 @@
 }
 
 .fi-sidebar-group+.fi-sidebar-group {
-    margin-top: 0.125rem !important;
+    margin-top: 0.5rem !important;
     padding-top: 0.75rem !important;
     position: relative;
 }
@@ -176,11 +176,11 @@
 .fi-sidebar-group+.fi-sidebar-group::before {
     content: '';
     position: absolute;
-    top: 0.125rem;
+    top: 0;
     left: 1rem;
     right: 1rem;
     height: 1px;
-    background: var(--tp-border) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
 }
 
 .fi-sidebar-group-btn {
@@ -191,24 +191,24 @@
 }
 
 .fi-sidebar-group-btn:hover {
-    background: var(--tp-surface) !important;
+    background: rgba(231, 227, 252, 0.04) !important;
 }
 
 .fi-sidebar-group-label {
     font-size: 0.7rem !important;
     text-transform: uppercase !important;
     letter-spacing: 0.06em !important;
-    color: var(--tp-text-muted) !important;
+    color: rgba(231, 227, 252, 0.38) !important;
     font-weight: 600 !important;
 }
 
 .fi-sidebar-group-collapse-btn {
-    color: var(--tp-text-muted) !important;
+    color: rgba(231, 227, 252, 0.38) !important;
     transition: color 0.15s var(--tp-ease) !important;
 }
 
 .fi-sidebar-group-collapse-btn:hover {
-    color: var(--tp-accent) !important;
+    color: #e7e3fc !important;
 }
 
 .fi-sidebar-group-items {
@@ -227,37 +227,39 @@
 }
 
 .fi-sidebar-item-btn:hover {
-    background: var(--tp-surface) !important;
+    background: rgba(231, 227, 252, 0.06) !important;
 }
 
+/* Active item — Materio purple gradient pill */
 .fi-sidebar-item.fi-active>.fi-sidebar-item-btn {
-    background: var(--tp-accent-subtle) !important;
-    box-shadow: none !important;
+    background: linear-gradient(270deg, #9E95F5 0%, #7367F0 100%) !important;
+    box-shadow: 0 0.125rem 0.5rem rgba(115, 103, 240, 0.45) !important;
+    border-radius: var(--tp-radius-sm) !important;
 }
 
 .fi-sidebar-item.fi-active .fi-sidebar-item-label {
-    color: var(--tp-accent) !important;
-    font-weight: 600 !important;
+    color: #ffffff !important;
+    font-weight: 500 !important;
 }
 
 .fi-sidebar-item.fi-active .fi-sidebar-item-icon {
-    color: var(--tp-accent) !important;
+    color: #ffffff !important;
 }
 
 .fi-sidebar-item-label {
     font-size: 0.875rem !important;
-    color: var(--tp-text-secondary) !important;
+    color: rgba(231, 227, 252, 0.7) !important;
     transition: color 0.15s var(--tp-ease) !important;
     font-weight: 400 !important;
 }
 
 .fi-sidebar-item-btn:hover .fi-sidebar-item-label {
-    color: var(--tp-text-primary) !important;
+    color: #e7e3fc !important;
 }
 
 .fi-sidebar-item-icon,
 .fi-sidebar-item-btn svg:first-child {
-    color: var(--tp-text-muted) !important;
+    color: rgba(231, 227, 252, 0.5) !important;
     transition: color 0.15s var(--tp-ease) !important;
     width: 1.25rem !important;
     height: 1.25rem !important;
@@ -266,11 +268,11 @@
 
 .fi-sidebar-item-btn:hover .fi-sidebar-item-icon,
 .fi-sidebar-item-btn:hover svg:first-child {
-    color: var(--tp-accent) !important;
+    color: #e7e3fc !important;
 }
 
 .fi-sidebar-item-grouped-border {
-    color: var(--tp-border) !important;
+    color: rgba(255, 255, 255, 0.06) !important;
 }
 
 .fi-sidebar-item-badge-ctn .fi-badge {
@@ -284,8 +286,19 @@
 }
 
 .fi-sidebar-footer {
-    border-top: 1px solid var(--tp-border) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
     padding: 0.75rem !important;
+    color: rgba(231, 227, 252, 0.7) !important;
+}
+
+.fi-sidebar-footer a,
+.fi-sidebar-footer button {
+    color: rgba(231, 227, 252, 0.7) !important;
+}
+
+.fi-sidebar-footer a:hover,
+.fi-sidebar-footer button:hover {
+    color: #e7e3fc !important;
 }
 
 .fi-sidebar-item-active-indicator {
@@ -1590,7 +1603,7 @@ textarea {
 }
 
 .dark .fi-sidebar {
-    background: var(--tp-abyss) !important;
+    background: #2B2C40 !important;
 }
 
 .dark .fi-topbar {
