@@ -624,12 +624,13 @@ class EditorialChat extends Page
     {
         $manual = Cache::get('user_manual_status:' . $user->id);
         if ($manual === 'busy') return 'busy';
+        if ($manual === 'online') return 'online';
+        if ($manual === 'away') return 'away';
 
         if (!$user->last_seen_at) return 'offline';
 
         $minutesAgo = $user->last_seen_at->diffInMinutes(now());
 
-        if ($manual === 'away') return 'away';
         if ($minutesAgo <= 5) return 'online';
         if ($minutesAgo <= 10) return 'away';
 

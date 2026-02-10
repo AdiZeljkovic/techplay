@@ -592,6 +592,61 @@
             background: rgba(252, 65, 0, 0.06);
         }
 
+        /* Own messages - right aligned bubble */
+        .message-row.own-message {
+            flex-direction: row-reverse;
+        }
+        .message-row.own-message .msg-body {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        .message-row.own-message .msg-header {
+            flex-direction: row-reverse;
+        }
+        .message-row.own-message .msg-text {
+            background: rgba(252, 65, 0, 0.10);
+            border: 1px solid rgba(252, 65, 0, 0.15);
+            padding: 6px 10px;
+            border-radius: 12px 2px 12px 12px;
+            display: inline-block;
+            max-width: 100%;
+        }
+        .message-row.own-message.grouped .msg-text {
+            border-radius: 12px 2px 12px 12px;
+        }
+        .message-row.own-message .reactions-row {
+            justify-content: flex-end;
+        }
+        .message-row.own-message .thread-reply-count {
+            margin-left: auto;
+        }
+        .message-row.own-message .hover-actions {
+            right: auto;
+            left: 20px;
+        }
+        .message-row.own-message .msg-attachment {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .message-row.own-message .og-preview {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        /* Other people messages - subtle bubble */
+        .message-row:not(.own-message) .msg-text {
+            background: var(--tp-surface, #122148);
+            border: 1px solid var(--tp-border-faint, rgba(255,255,255,0.04));
+            padding: 6px 10px;
+            border-radius: 2px 12px 12px 12px;
+            display: inline-block;
+            max-width: 100%;
+        }
+        .message-row.grouped:not(.own-message) .msg-text {
+            border-radius: 2px 12px 12px 12px;
+        }
+
         .msg-avatar {
             width: 32px;
             height: 32px;
@@ -856,7 +911,7 @@
 
         /* ===== INPUT AREA ===== */
         .input-area {
-            padding: 0 16px 16px;
+            padding: 12px 16px 16px;
             flex-shrink: 0;
         }
 
@@ -1919,7 +1974,7 @@
                         </div>
                     @endif
 
-                    <div class="message-row {{ $isGrouped ? 'grouped' : '' }} {{ $this->highlightMessageId == $msg->id ? 'highlight' : '' }}"
+                    <div class="message-row {{ $isGrouped ? 'grouped' : '' }} {{ $isMe ? 'own-message' : '' }} {{ $this->highlightMessageId == $msg->id ? 'highlight' : '' }}"
                          id="msg-{{ $msg->id }}"
                          @if($msg->created_at->diffInSeconds(now()) < 5) data-new @endif>
 
