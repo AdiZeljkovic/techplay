@@ -1693,7 +1693,7 @@
                 localStorage.removeItem('chat_draft_' + key);
                 this.drafts.delete(key);
             },
-            allUsers: @json($this->users->map(fn($u) => ['id' => $u->id, 'name' => $u->name, 'username' => $u->username, 'role' => $this->getUserRoleBadge($u), 'avatar_url' => $u->avatar_url])),
+            allUsers: @json($this->mentionUsersJson),
             hovercardData: null,
             hovercardPos: { x: 0, y: 0 },
             hovercardTimeout: null,
@@ -2441,7 +2441,7 @@
                             s.username.startsWith(q) || s.name.toLowerCase().includes(q)
                         );
 
-                        const users = (typeof allUsers !== 'undefined' ? allUsers : []);
+                        const users = this.allUsers || [];
                         const matchedUsers = users.filter(u =>
                             (u.name && u.name.toLowerCase().includes(q)) ||
                             (u.username && u.username.toLowerCase().includes(q))

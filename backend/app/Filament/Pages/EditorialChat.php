@@ -603,6 +603,17 @@ class EditorialChat extends Page
             ->get();
     }
 
+    public function getMentionUsersJsonProperty(): array
+    {
+        return $this->users->map(fn($u) => [
+            'id' => $u->id,
+            'name' => $u->name,
+            'username' => $u->username,
+            'role' => $this->getUserRoleBadge($u),
+            'avatar_url' => $u->avatar_url,
+        ])->values()->toArray();
+    }
+
     public function getUnreadCountProperty()
     {
         return EditorialMessage::where('recipient_id', auth()->id())
