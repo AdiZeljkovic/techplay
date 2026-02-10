@@ -1714,7 +1714,8 @@
             .message-row:not(.grouped) { padding: 8px 10px; }
             .date-separator { padding: 8px 10px 2px; }
             .msg-avatar, .msg-avatar-spacer { width: 28px; height: 28px; font-size: 0.65rem; }
-            .msg-text { font-size: 0.82rem; }
+            .msg-body { min-width: 0; max-width: calc(100vw - 80px); }
+            .msg-text { font-size: 0.82rem; width: auto; display: block; }
             .msg-attachment img { max-width: 200px; max-height: 150px; }
 
             /* OG preview fit screen */
