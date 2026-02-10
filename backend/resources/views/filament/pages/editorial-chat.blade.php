@@ -3,11 +3,10 @@
         /* ===== FOUNDATION ===== */
         .chat-wrapper {
             display: flex;
-            height: 100vh;
-            margin: -48px -24px -24px -24px;
+            height: calc(100vh - 64px);
             background: var(--tp-deep, #0a1228);
-            border-radius: 0;
-            border: none;
+            border-radius: var(--tp-radius-sm, 8px);
+            border: 1px solid var(--tp-border, rgba(255,255,255,0.08));
             overflow: hidden;
             position: relative;
         }
@@ -1712,10 +1711,8 @@
         /* ===== MOBILE RESPONSIVE (max-width: 768px) ===== */
         @media (max-width: 768px) {
             .chat-wrapper {
-                height: 100vh;
-                margin: -32px -16px -16px -16px;
+                height: calc(100vh - 120px);
                 border-radius: 0;
-                border: none;
                 width: 100%;
                 max-width: 100%;
             }
