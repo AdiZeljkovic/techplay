@@ -1,23 +1,24 @@
 <x-filament-panels::page>
     <style>
-        /* ===== HIDE PAGE HEADER & MAKE FULL SCREEN ===== */
+        /* ===== HIDE PAGE HEADER & MAKE CARD LAYOUT ===== */
         .fi-header {
             display: none !important;
         }
 
         .fi-main {
-            padding: 0 !important;
+            padding: 1rem !important;
             max-width: none !important;
         }
 
         /* ===== FOUNDATION ===== */
         .chat-wrapper {
             display: flex;
-            height: 100vh;
+            height: calc(100vh - 6rem);
             width: 100%;
-            background: var(--tp-deep, #0a1228);
-            border-radius: 0;
-            border: none;
+            background: var(--tp-base, #ffffff);
+            border-radius: var(--tp-radius-lg, 10px);
+            border: 1px solid var(--tp-border, #ebe9f1);
+            box-shadow: var(--tp-shadow-md, 0 0.25rem 1rem rgba(165, 163, 174, 0.2));
             overflow: hidden;
             position: relative;
         }
@@ -25,8 +26,8 @@
         /* ===== SIDEBAR ===== */
         .chat-sidebar {
             width: 260px;
-            background: var(--tp-abyss, #060c1a);
-            border-right: 1px solid var(--tp-border-faint, rgba(255, 255, 255, 0.04));
+            background: var(--tp-base, #ffffff);
+            border-right: 1px solid var(--tp-border, #ebe9f1);
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
@@ -35,7 +36,7 @@
 
         .sidebar-header {
             padding: 12px 16px;
-            border-bottom: 1px solid var(--tp-border-faint, rgba(255, 255, 255, 0.04));
+            border-bottom: 1px solid var(--tp-border, #ebe9f1);
         }
 
         .sidebar-header-top {
@@ -76,8 +77,8 @@
         }
 
         .compose-btn:hover {
-            background: var(--tp-elevated, #182c5a);
-            color: var(--tp-text-bright, #fff);
+            background: var(--tp-elevated, #fafbff);
+            color: var(--tp-text-bright, #3a3541);
         }
 
         .sidebar-user {
@@ -147,7 +148,7 @@
         }
 
         .status-trigger:hover {
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(0, 0, 0, 0.04);
         }
 
         .status-dropdown {
@@ -181,13 +182,13 @@
         }
 
         .status-dropdown button:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.04);
         }
 
         /* Quick Nav */
         .sidebar-nav {
             padding: 8px 0 4px;
-            border-bottom: 1px solid var(--tp-border-faint, rgba(255, 255, 255, 0.04));
+            border-bottom: 1px solid var(--tp-border, #ebe9f1);
         }
 
         .nav-item {
@@ -204,8 +205,8 @@
         }
 
         .nav-item:hover {
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--tp-text-bright, #fff);
+            background: rgba(0, 0, 0, 0.03);
+            color: var(--tp-text-bright, #3a3541);
         }
 
         .nav-item .nav-icon {
@@ -276,7 +277,7 @@
         }
 
         .section-action:hover {
-            color: var(--tp-text-bright, #fff);
+            color: var(--tp-text-bright, #3a3541);
         }
 
         /* Channel items */
@@ -295,19 +296,19 @@
         }
 
         .channel-item:hover {
-            background: rgba(255, 255, 255, 0.04);
-            color: var(--tp-text-bright, #fff);
+            background: rgba(0, 0, 0, 0.03);
+            color: var(--tp-text-bright, #3a3541);
             padding-left: 26px;
         }
 
         .channel-item.active {
-            background: var(--tp-accent-subtle, rgba(252, 65, 0, 0.15));
-            color: var(--tp-text-bright, #fff);
-            border-left-color: var(--tp-accent, #FC4100);
+            background: var(--tp-accent-subtle, rgba(115, 103, 240, 0.12));
+            color: var(--tp-accent, #7367f0);
+            border-left-color: var(--tp-accent, #7367f0);
         }
 
         .channel-item.unread {
-            color: var(--tp-text-bright, #fff);
+            color: var(--tp-text-bright, #3a3541);
             font-weight: 700;
         }
 
@@ -364,15 +365,15 @@
         }
 
         .dm-item:hover {
-            background: rgba(255, 255, 255, 0.04);
-            color: var(--tp-text-bright, #fff);
+            background: rgba(0, 0, 0, 0.03);
+            color: var(--tp-text-bright, #3a3541);
             padding-left: 26px;
         }
 
         .dm-item.active {
-            background: var(--tp-accent-subtle, rgba(252, 65, 0, 0.15));
-            color: var(--tp-text-bright, #fff);
-            border-left-color: var(--tp-accent, #FC4100);
+            background: var(--tp-accent-subtle, rgba(115, 103, 240, 0.12));
+            color: var(--tp-accent, #7367f0);
+            border-left-color: var(--tp-accent, #7367f0);
         }
 
         .dm-avatar {
@@ -396,7 +397,7 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            border: 1.5px solid var(--tp-abyss, #060c1a);
+            border: 1.5px solid var(--tp-base, #ffffff);
         }
 
         .dm-status.online {
@@ -428,18 +429,18 @@
             display: flex;
             flex-direction: column;
             min-width: 0;
-            background: var(--tp-deep, #0a1228);
+            background: var(--tp-void, #f4f5fa);
         }
 
         /* Header */
         .chat-header {
             padding: 0 16px;
             height: 48px;
-            border-bottom: 1px solid var(--tp-border, rgba(255, 255, 255, 0.08));
+            border-bottom: 1px solid var(--tp-border, #ebe9f1);
             display: flex;
             align-items: center;
             gap: 8px;
-            background: var(--tp-deep, #0a1228);
+            background: var(--tp-base, #ffffff);
             flex-shrink: 0;
         }
 
@@ -496,7 +497,7 @@
         .topic-edit-row input {
             flex: 1;
             background: var(--tp-surface, #122148);
-            border: 1px solid var(--tp-border-accent, rgba(252, 65, 0, 0.30));
+            border: 1px solid var(--tp-border-accent, rgba(115, 103, 240, 0.30));
             border-radius: var(--tp-radius-xs, 4px);
             padding: 3px 8px;
             color: var(--tp-text-bright, #fff);
@@ -515,7 +516,7 @@
         }
 
         .topic-edit-btn:hover {
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(0, 0, 0, 0.04);
         }
 
         .header-dm-info {
@@ -3755,7 +3756,8 @@
                                     @endif
                                 @endif
                                 <div class="msg-text" style="font-size: 0.85rem;">
-                                    {!! $this->formatMessageContent($parentMsg->content) !!}</div>
+                                    {!! $this->formatMessageContent($parentMsg->content) !!}
+                                </div>
                             </div>
                         </div>
                     </div>
