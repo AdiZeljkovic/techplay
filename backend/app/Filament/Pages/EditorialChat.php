@@ -14,6 +14,7 @@ use Livewire\WithFileUploads;
 
 use App\Models\EditorialChannel;
 use App\Models\EditorialMessageReaction;
+use App\Jobs\FetchOgData;
 
 class EditorialChat extends Page
 {
@@ -113,6 +114,14 @@ class EditorialChat extends Page
     // User presence
     public $manualStatus = null;
 
+    // Infinite scroll
+    public $messageLimit = 50;
+    public $loadingMore = false;
+
+    // Custom status
+    public $statusText = '';
+    public $statusEmoji = '';
+
     // Computed property for channels
     public function getChannelsProperty()
     {
@@ -149,6 +158,7 @@ class EditorialChat extends Page
         Cache::put($key, now(), now()->addDays(30));
 
         $this->activeThread = null;
+        $this->messageLimit = 50;
         $this->updateLastSeen();
         $this->resetAttachment();
     }
@@ -157,6 +167,7 @@ class EditorialChat extends Page
     {
         $this->activeRecipient = $userId;
         $this->activeChannel = null;
+        $this->messageLimit = 50;
 
         $firstUnread = EditorialMessage::where('recipient_id', auth()->id())
             ->where('user_id', $userId)
@@ -256,6 +267,9 @@ class EditorialChat extends Page
 
         $mentionedIds = $this->parseMentions($this->message);
 
+        // @channel and @here broadcast mentions
+        $mentionedIds = $this->resolveBroadcastMentions($this->message, $mentionedIds);
+
         $attachmentUrl = null;
         if ($this->attachment) {
             $attachmentUrl = $this->attachment->store('editorial-chat', 'public');
@@ -270,6 +284,9 @@ class EditorialChat extends Page
             'attachment_url' => $attachmentUrl,
         ]);
 
+        // Dispatch OG data fetch for URLs in message
+        $this->dispatchOgFetch($message);
+
         broadcast(new \App\Events\EditorialMessageSent($message))->toOthers();
 
         $this->message = '';
@@ -279,6 +296,41 @@ class EditorialChat extends Page
         // Clear typing indicator
         $context = $this->activeChannel ?? 'dm_' . $this->activeRecipient;
         Cache::forget("typing:{$context}:" . auth()->id());
+    }
+
+    protected function resolveBroadcastMentions(string $content, array $existingIds): array
+    {
+        if (!$this->activeChannel) return $existingIds;
+
+        $mentionedIds = $existingIds;
+
+        if (str_contains($content, '@channel')) {
+            $channelUsers = User::whereHas('roles', fn($q) => $q->whereIn('name', $this->editorialRoles))
+                ->where('id', '!=', auth()->id())
+                ->pluck('id')
+                ->toArray();
+            $mentionedIds = array_unique(array_merge($mentionedIds, $channelUsers));
+        } elseif (str_contains($content, '@here')) {
+            $onlineUsers = User::whereHas('roles', fn($q) => $q->whereIn('name', $this->editorialRoles))
+                ->where('id', '!=', auth()->id())
+                ->where('last_seen_at', '>=', now()->subMinutes(5))
+                ->pluck('id')
+                ->toArray();
+            $mentionedIds = array_unique(array_merge($mentionedIds, $onlineUsers));
+        }
+
+        return $mentionedIds;
+    }
+
+    protected function dispatchOgFetch(EditorialMessage $message): void
+    {
+        if (!$message->content) return;
+
+        preg_match('/(https?:\/\/[^\s<>"\')]+)/i', $message->content, $matches);
+
+        if (!empty($matches[1])) {
+            FetchOgData::dispatch($message->id, $matches[1]);
+        }
     }
 
     public function sendThreadReply()
@@ -444,9 +496,35 @@ class EditorialChat extends Page
         return $filters;
     }
 
+    public function loadMoreMessages()
+    {
+        $this->messageLimit += 50;
+    }
+
+    public function getHasMoreMessagesProperty(): bool
+    {
+        $query = EditorialMessage::query();
+
+        if (!$this->search) {
+            $query->whereNull('parent_id');
+        }
+
+        if ($this->activeChannel) {
+            $query->where('channel', $this->activeChannel)->whereNull('recipient_id');
+        } elseif ($this->activeRecipient) {
+            $query->where(function ($q) {
+                $q->where('user_id', auth()->id())->where('recipient_id', $this->activeRecipient);
+            })->orWhere(function ($q) {
+                $q->where('user_id', $this->activeRecipient)->where('recipient_id', auth()->id());
+            });
+        }
+
+        return $query->count() > $this->messageLimit;
+    }
+
     public function getMessagesProperty()
     {
-        $query = EditorialMessage::with(['user.roles', 'reactions.user', 'replies'])->orderBy('created_at', 'desc')->take(100);
+        $query = EditorialMessage::with(['user.roles', 'reactions.user', 'replies'])->orderBy('created_at', 'desc')->take($this->messageLimit);
 
         if ($this->search) {
             $filters = $this->parseSearchFilters($this->search);
@@ -563,6 +641,87 @@ class EditorialChat extends Page
         Cache::put('user_manual_status:' . auth()->id(), $status, now()->addHours(8));
         $this->manualStatus = $status;
         Notification::make()->title('Status updated to ' . ucfirst($status))->success()->send();
+    }
+
+    // === Custom Text Statuses ===
+
+    public function setCustomStatus($emoji, $text, $minutes = 240)
+    {
+        $data = ['emoji' => $emoji, 'text' => $text];
+        Cache::put('user_custom_status:' . auth()->id(), $data, now()->addMinutes($minutes));
+        $this->statusEmoji = $emoji;
+        $this->statusText = $text;
+        Notification::make()->title('Status set: ' . $emoji . ' ' . $text)->success()->send();
+    }
+
+    public function clearCustomStatus()
+    {
+        Cache::forget('user_custom_status:' . auth()->id());
+        $this->statusEmoji = '';
+        $this->statusText = '';
+        Notification::make()->title('Status cleared')->success()->send();
+    }
+
+    public function getCustomStatus(User $user): ?array
+    {
+        return Cache::get('user_custom_status:' . $user->id);
+    }
+
+    // === User Hovercards ===
+
+    public function getUserHovercard($userId): array
+    {
+        $user = User::with('roles')->find($userId);
+        if (!$user) return [];
+
+        $roleBadge = $this->getUserRoleBadge($user);
+        $presence = $this->getUserPresence($user);
+        $customStatus = $this->getCustomStatus($user);
+
+        $messageCount = EditorialMessage::where('user_id', $userId)
+            ->when($this->activeChannel, fn($q) => $q->where('channel', $this->activeChannel))
+            ->count();
+
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'avatar_url' => $user->avatar_url,
+            'role' => $roleBadge,
+            'presence' => $presence,
+            'custom_status' => $customStatus,
+            'last_seen' => $user->last_seen_at?->diffForHumans(),
+            'message_count' => $messageCount,
+        ];
+    }
+
+    // === Away/Offline Warning ===
+
+    public function getRecipientStatusProperty(): ?array
+    {
+        if (!$this->activeRecipient) return null;
+
+        $recipient = User::find($this->activeRecipient);
+        if (!$recipient) return null;
+
+        $presence = $this->getUserPresence($recipient);
+        $customStatus = $this->getCustomStatus($recipient);
+
+        if ($presence === 'offline' || $presence === 'away') {
+            $awayMinutes = $recipient->last_seen_at
+                ? $recipient->last_seen_at->diffInMinutes(now())
+                : 999;
+
+            if ($awayMinutes > 10) {
+                return [
+                    'presence' => $presence,
+                    'name' => $recipient->name,
+                    'last_seen' => $recipient->last_seen_at?->diffForHumans() ?? 'a long time ago',
+                    'custom_status' => $customStatus,
+                ];
+            }
+        }
+
+        return null;
     }
 
     public function getUserRoleBadge(User $user): array
@@ -847,6 +1006,13 @@ class EditorialChat extends Page
             $content
         );
 
+        // Highlight @channel and @here as broadcast mentions
+        $content = preg_replace(
+            '/@(channel|here)\b/',
+            '<span style="background: rgba(252,65,0,0.15); color: #FC4100; padding: 1px 4px; border-radius: 3px; font-weight: 600;">@$1</span>',
+            $content
+        );
+
         // Highlight @mentions
         $content = preg_replace(
             '/@(\w+)/',
@@ -883,5 +1049,127 @@ class EditorialChat extends Page
             'editUrl' => $editUrl,
             'statusColor' => $statusColor
         ])->render();
+    }
+
+    // === Jump to Date ===
+
+    public function jumpToDate($date)
+    {
+        if (!$date) return;
+
+        try {
+            $targetDate = \Carbon\Carbon::parse($date);
+        } catch (\Exception $e) {
+            return;
+        }
+
+        $query = EditorialMessage::query()->whereNull('parent_id');
+
+        if ($this->activeChannel) {
+            $query->where('channel', $this->activeChannel)->whereNull('recipient_id');
+        } elseif ($this->activeRecipient) {
+            $query->where(function ($q) {
+                $q->where('user_id', auth()->id())->where('recipient_id', $this->activeRecipient);
+            })->orWhere(function ($q) {
+                $q->where('user_id', $this->activeRecipient)->where('recipient_id', auth()->id());
+            });
+        }
+
+        // Count messages after target date to set proper limit
+        $messagesAfter = (clone $query)->where('created_at', '>=', $targetDate->startOfDay())->count();
+        $this->messageLimit = max(50, $messagesAfter + 10);
+
+        // Find the first message on that date to highlight
+        $firstMsg = (clone $query)->where('created_at', '>=', $targetDate->startOfDay())
+            ->orderBy('created_at', 'asc')->first();
+
+        if ($firstMsg) {
+            $this->highlightMessageId = $firstMsg->id;
+        }
+    }
+
+    // === Thread Notifications ===
+
+    public function getUnreadThreadRepliesProperty(): int
+    {
+        // Count replies to threads the user participated in, since last seen
+        $userThreadIds = EditorialMessage::where('user_id', auth()->id())
+            ->whereNotNull('parent_id')
+            ->pluck('parent_id')
+            ->merge(
+                EditorialMessage::where('user_id', auth()->id())
+                    ->whereNull('parent_id')
+                    ->has('replies')
+                    ->pluck('id')
+            )
+            ->unique();
+
+        if ($userThreadIds->isEmpty()) return 0;
+
+        $lastSeen = auth()->user()->last_seen_at ?? now()->subDay();
+
+        return EditorialMessage::whereIn('parent_id', $userThreadIds)
+            ->where('user_id', '!=', auth()->id())
+            ->where('created_at', '>', $lastSeen)
+            ->count();
+    }
+
+    public function getUnreadThreadsProperty()
+    {
+        $lastSeen = auth()->user()->last_seen_at ?? now()->subDay();
+
+        // Get parent message IDs of threads user participated in
+        $userThreadIds = EditorialMessage::where('user_id', auth()->id())
+            ->whereNotNull('parent_id')
+            ->pluck('parent_id')
+            ->merge(
+                EditorialMessage::where('user_id', auth()->id())
+                    ->whereNull('parent_id')
+                    ->has('replies')
+                    ->pluck('id')
+            )
+            ->unique();
+
+        if ($userThreadIds->isEmpty()) return collect();
+
+        return EditorialMessage::with(['user', 'replies' => function ($q) use ($lastSeen) {
+                $q->where('created_at', '>', $lastSeen)->where('user_id', '!=', auth()->id());
+            }])
+            ->whereIn('id', $userThreadIds)
+            ->whereHas('replies', function ($q) use ($lastSeen) {
+                $q->where('created_at', '>', $lastSeen)->where('user_id', '!=', auth()->id());
+            })
+            ->latest()
+            ->take(10)
+            ->get();
+    }
+
+    // === Remind Me Later ===
+
+    public function remindMe($messageId, $minutes)
+    {
+        $message = EditorialMessage::find($messageId);
+        if (!$message) return;
+
+        \App\Jobs\SendChatReminder::dispatch(
+            auth()->id(),
+            $messageId,
+            Str::limit($message->content, 100),
+            $message->user->name
+        )->delay(now()->addMinutes($minutes));
+
+        $timeLabel = match(true) {
+            $minutes <= 30 => '30 minutes',
+            $minutes <= 60 => '1 hour',
+            $minutes <= 180 => '3 hours',
+            $minutes <= 1440 => 'tomorrow',
+            default => Str::plural('day', intdiv($minutes, 1440), intdiv($minutes, 1440)),
+        };
+
+        Notification::make()
+            ->title("Reminder set for {$timeLabel}")
+            ->body('You\'ll be notified about this message.')
+            ->success()
+            ->send();
     }
 }

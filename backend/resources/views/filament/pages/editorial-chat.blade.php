@@ -1273,6 +1273,264 @@
         .messages-container::-webkit-scrollbar-thumb:hover,
         .sidebar-content::-webkit-scrollbar-thumb:hover,
         .thread-messages::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.12); }
+
+        /* ===== REAL AVATARS ===== */
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: inherit;
+            display: block;
+        }
+
+        /* ===== MESSAGE ANIMATIONS ===== */
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes glowOnce {
+            0% { background: rgba(252, 65, 0, 0.08); }
+            100% { background: transparent; }
+        }
+
+        .message-row[data-new] {
+            animation: slideInUp 0.15s ease-out both;
+        }
+
+        /* ===== REACTION BOUNCE ===== */
+        @keyframes reactionBounce {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.25); }
+            60% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        .reaction-btn.just-reacted {
+            animation: reactionBounce 0.3s ease-out;
+        }
+
+        /* ===== IMAGE LIGHTBOX ===== */
+        .lightbox-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: zoom-out;
+        }
+
+        .lightbox-overlay img {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: var(--tp-radius-sm, 8px);
+            cursor: default;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+        }
+        .lightbox-close:hover { background: rgba(255, 255, 255, 0.2); }
+
+        /* ===== DRAFT INDICATOR ===== */
+        .draft-indicator {
+            font-size: 0.6rem;
+            color: var(--tp-text-dim, #3D4A66);
+            margin-left: auto;
+            font-style: italic;
+        }
+
+        /* ===== INFINITE SCROLL ===== */
+        .load-more-trigger {
+            display: flex;
+            justify-content: center;
+            padding: 12px;
+        }
+        .load-more-btn {
+            background: var(--tp-surface, #122148);
+            border: 1px solid var(--tp-border, rgba(255,255,255,0.08));
+            color: var(--tp-text-secondary, #9BA8C9);
+            padding: 6px 16px;
+            border-radius: var(--tp-radius-xs, 4px);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .load-more-btn:hover { background: var(--tp-elevated, #182c5a); color: var(--tp-text-bright, #fff); }
+
+        /* ===== OG PREVIEW ===== */
+        .og-preview {
+            margin-top: 6px;
+            border-left: 3px solid var(--tp-accent, #FC4100);
+            padding: 8px 12px;
+            background: var(--tp-void, #04080f);
+            border-radius: 0 6px 6px 0;
+            max-width: 400px;
+            display: flex;
+            gap: 10px;
+        }
+        .og-preview-text { flex: 1; min-width: 0; }
+        .og-preview-site {
+            font-size: 0.65rem;
+            color: var(--tp-text-muted, #5F6E8C);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-weight: 600;
+        }
+        .og-preview-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--tp-blue, #3B82F6);
+            text-decoration: none;
+            display: block;
+            margin: 2px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .og-preview-title:hover { text-decoration: underline; }
+        .og-preview-desc {
+            font-size: 0.72rem;
+            color: var(--tp-text-secondary, #9BA8C9);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.35;
+        }
+        .og-preview-img {
+            width: 70px;
+            height: 70px;
+            border-radius: var(--tp-radius-xs, 4px);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        /* ===== CUSTOM STATUS ===== */
+        .custom-status-emoji { font-size: 0.7rem; }
+        .custom-status-text {
+            font-size: 0.68rem;
+            color: var(--tp-text-muted, #5F6E8C);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+        .status-picker {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 4px;
+            background: var(--tp-base, #0e1a3a);
+            border: 1px solid var(--tp-border-strong, rgba(255,255,255,0.12));
+            border-radius: var(--tp-radius-sm, 8px);
+            padding: 10px;
+            min-width: 260px;
+            box-shadow: var(--tp-shadow-md, 0 8px 30px rgba(0,0,0,0.5));
+            z-index: 100;
+        }
+        .status-emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 2px;
+            margin-bottom: 8px;
+        }
+        .status-emoji-grid button {
+            background: none; border: none;
+            font-size: 1rem; padding: 4px;
+            border-radius: 4px; cursor: pointer;
+        }
+        .status-emoji-grid button:hover { background: rgba(255,255,255,0.08); }
+        .status-picker input {
+            width: 100%;
+            background: var(--tp-surface, #122148);
+            border: 1px solid var(--tp-border, rgba(255,255,255,0.08));
+            border-radius: var(--tp-radius-xs, 4px);
+            padding: 6px 10px;
+            color: var(--tp-text-bright, #fff);
+            font-size: 0.78rem;
+            outline: none;
+            margin-bottom: 8px;
+        }
+        .status-picker input::placeholder { color: var(--tp-text-dim, #3D4A66); }
+        .status-duration-row {
+            display: flex; gap: 4px; flex-wrap: wrap;
+        }
+        .status-duration-btn {
+            background: var(--tp-surface, #122148);
+            border: 1px solid var(--tp-border, rgba(255,255,255,0.08));
+            color: var(--tp-text-secondary, #9BA8C9);
+            padding: 3px 8px;
+            border-radius: var(--tp-radius-xs, 4px);
+            font-size: 0.68rem;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .status-duration-btn:hover { background: var(--tp-elevated, #182c5a); color: var(--tp-text-bright, #fff); }
+
+        /* ===== HOVERCARD ===== */
+        .hovercard {
+            position: fixed;
+            z-index: 200;
+            width: 280px;
+            background: var(--tp-base, #0e1a3a);
+            border: 1px solid var(--tp-border-strong, rgba(255,255,255,0.12));
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            padding: 16px;
+            pointer-events: none;
+        }
+        .hovercard-avatar {
+            width: 48px; height: 48px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1.1rem; color: #fff;
+        }
+        .hovercard-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+        .hovercard-name { font-size: 1rem; font-weight: 800; color: var(--tp-text-bright, #fff); }
+        .hovercard-role {
+            font-size: 0.65rem; font-weight: 600;
+            padding: 2px 6px; border-radius: 3px;
+            display: inline-block;
+        }
+        .hovercard-meta {
+            font-size: 0.72rem;
+            color: var(--tp-text-muted, #5F6E8C);
+            margin-top: 6px;
+        }
+
+        /* ===== AWAY WARNING ===== */
+        .away-warning {
+            padding: 6px 12px;
+            background: rgba(252, 165, 0, 0.08);
+            border: 1px solid rgba(252, 165, 0, 0.15);
+            border-radius: 6px;
+            color: #fca500;
+            font-size: 0.75rem;
+            margin: 0 0 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
     </style>
 
     <div class="chat-wrapper" wire:poll.3s
@@ -1280,9 +1538,48 @@
             notifAudio: null,
             lastMsgId: '{{ $this->messages->first()?->id ?? '' }}',
             lastMsgCount: {{ $this->messages->count() }},
+            lightboxUrl: null,
+            drafts: new Set(),
             init() {
                 this.notifAudio = new Audio('data:audio/wav;base64,UklGRl9vT19teleWQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU' + 'tvT19t');
                 this.notifAudio.volume = 0.3;
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith('chat_draft_') && localStorage.getItem(key)?.trim()) {
+                        this.drafts.add(key.replace('chat_draft_', ''));
+                    }
+                }
+            },
+            saveDraft(key, value) {
+                if (value && value.trim()) {
+                    localStorage.setItem('chat_draft_' + key, value);
+                    this.drafts.add(key);
+                } else {
+                    localStorage.removeItem('chat_draft_' + key);
+                    this.drafts.delete(key);
+                }
+            },
+            getDraft(key) {
+                return localStorage.getItem('chat_draft_' + key) || '';
+            },
+            clearDraft(key) {
+                localStorage.removeItem('chat_draft_' + key);
+                this.drafts.delete(key);
+            },
+            hovercardData: null,
+            hovercardPos: { x: 0, y: 0 },
+            hovercardTimeout: null,
+            async showHovercard(userId, event) {
+                clearTimeout(this.hovercardTimeout);
+                this.hovercardTimeout = setTimeout(async () => {
+                    const rect = event.target.getBoundingClientRect();
+                    this.hovercardPos = { x: rect.left, y: rect.bottom + 8 };
+                    this.hovercardData = await $wire.getUserHovercard(userId);
+                }, 400);
+            },
+            hideHovercard() {
+                clearTimeout(this.hovercardTimeout);
+                setTimeout(() => { this.hovercardData = null; }, 200);
             }
          }"
          x-effect="
@@ -1297,7 +1594,8 @@
             lastMsgId = newId;
             lastMsgCount = newCount;
          "
-         @keydown.window.ctrl.k.prevent="$wire.set('showSearch', true); $nextTick(() => { if ($refs.searchInput) $refs.searchInput.focus(); })">
+         @keydown.window.ctrl.k.prevent="$wire.set('showSearch', true); $nextTick(() => { if ($refs.searchInput) $refs.searchInput.focus(); })"
+         @keydown.window.escape="lightboxUrl = null">
 
         {{-- ===== SIDEBAR ===== --}}
         <div class="chat-sidebar">
@@ -1315,14 +1613,33 @@
                 <div class="sidebar-user">
                     @php $myPresence = $this->getUserPresence(auth()->user()); @endphp
                     <div class="sidebar-user-avatar" style="background: var(--tp-accent);">
-                        {{ substr(auth()->user()->name, 0, 1) }}
+                        @if(auth()->user()->avatar_url)
+                            <img src="{{ auth()->user()->avatar_url }}" class="avatar-img" alt="">
+                        @else
+                            {{ substr(auth()->user()->name, 0, 1) }}
+                        @endif
                     </div>
                     <span class="sidebar-user-name">{{ auth()->user()->name }}</span>
-                    <div class="status-selector" x-data="{ open: false }">
-                        <button @click="open = !open" class="status-trigger" title="Set status">
-                            <span class="status-dot {{ $myPresence }}"></span>
+                    @php $myCustomStatus = $this->getCustomStatus(auth()->user()); @endphp
+                    <div class="status-selector" x-data="{ open: false, showStatusPicker: false, pickerEmoji: '{{ $myCustomStatus['emoji'] ?? '' }}', pickerText: '{{ $myCustomStatus['text'] ?? '' }}' }">
+                        <button @click="open = !open; showStatusPicker = false" class="status-trigger" title="Set status">
+                            @if($myCustomStatus)
+                                <span class="custom-status-emoji">{{ $myCustomStatus['emoji'] }}</span>
+                            @else
+                                <span class="status-dot {{ $myPresence }}"></span>
+                            @endif
                         </button>
                         <div x-show="open" @click.away="open = false" x-transition class="status-dropdown">
+                            @if($myCustomStatus)
+                                <button wire:click="clearCustomStatus" @click="open = false">
+                                    &#10005; Clear "{{ $myCustomStatus['emoji'] }} {{ $myCustomStatus['text'] }}"
+                                </button>
+                                <div style="height: 1px; background: var(--tp-border-faint); margin: 4px 0;"></div>
+                            @endif
+                            <button @click="showStatusPicker = !showStatusPicker">
+                                &#128172; Set a status...
+                            </button>
+                            <div style="height: 1px; background: var(--tp-border-faint); margin: 4px 0;"></div>
                             <button wire:click="setUserStatus('online')" @click="open = false">
                                 <span class="status-dot online"></span> Online
                             </button>
@@ -1332,6 +1649,25 @@
                             <button wire:click="setUserStatus('busy')" @click="open = false">
                                 <span class="status-dot busy"></span> Do Not Disturb
                             </button>
+                        </div>
+                        {{-- Custom status picker --}}
+                        <div x-show="showStatusPicker" @click.away="showStatusPicker = false" x-transition class="status-picker">
+                            <div class="status-emoji-grid">
+                                @foreach(['📝', '🏠', '☕', '🚌', '🤒', '🌴', '🎯', '💬', '🎮', '📞', '🍽️', '🎵', '💤', '🔇', '✈️', '🏃'] as $emoji)
+                                    <button type="button" @click="pickerEmoji = '{{ $emoji }}'">{{ $emoji }}</button>
+                                @endforeach
+                            </div>
+                            <input type="text" x-model="pickerText" placeholder="What's your status?" maxlength="80">
+                            <div class="status-duration-row">
+                                <button type="button" class="status-duration-btn"
+                                    @click="$wire.setCustomStatus(pickerEmoji || '💬', pickerText, 30); open = false; showStatusPicker = false">30m</button>
+                                <button type="button" class="status-duration-btn"
+                                    @click="$wire.setCustomStatus(pickerEmoji || '💬', pickerText, 60); open = false; showStatusPicker = false">1h</button>
+                                <button type="button" class="status-duration-btn"
+                                    @click="$wire.setCustomStatus(pickerEmoji || '💬', pickerText, 240); open = false; showStatusPicker = false">4h</button>
+                                <button type="button" class="status-duration-btn"
+                                    @click="$wire.setCustomStatus(pickerEmoji || '💬', pickerText, 480); open = false; showStatusPicker = false">Today</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1350,6 +1686,9 @@
                 <div class="nav-item">
                     <span class="nav-icon">&#129525;</span>
                     <span>Threads</span>
+                    @if($this->unreadThreadReplies > 0)
+                        <span class="nav-badge">{{ $this->unreadThreadReplies }}</span>
+                    @endif
                 </div>
             </div>
 
@@ -1371,6 +1710,9 @@
                             @if($channel->is_private)
                                 <span class="channel-lock">&#128274;</span>
                             @endif
+                            <template x-if="drafts.has('{{ $channel->slug }}')">
+                                <span class="draft-indicator">draft</span>
+                            </template>
                             @if($channelUnread > 0 && $this->activeChannel !== $channel->slug)
                                 <span class="unread-badge">{{ $channelUnread > 99 ? '99+' : $channelUnread }}</span>
                             @endif
@@ -1394,7 +1736,11 @@
                         <div wire:click="setRecipient({{ $user->id }})"
                             class="dm-item {{ $this->activeRecipient === $user->id ? 'active' : '' }}">
                             <div class="dm-avatar" style="background: {{ $roleBadge['color'] }};">
-                                {{ substr($user->name, 0, 1) }}
+                                @if($user->avatar_url)
+                                    <img src="{{ $user->avatar_url }}" class="avatar-img" alt="">
+                                @else
+                                    {{ substr($user->name, 0, 1) }}
+                                @endif
                                 <div class="dm-status {{ $presence }}"></div>
                             </div>
                             <span class="dm-name">{{ $user->name }}</span>
@@ -1448,7 +1794,11 @@
                     @endphp
                     <div class="header-dm-info">
                         <div class="header-dm-avatar" style="background: {{ $roleBadge['color'] }};">
-                            {{ substr($recipient->name, 0, 1) }}
+                            @if($recipient->avatar_url)
+                                <img src="{{ $recipient->avatar_url }}" class="avatar-img" alt="">
+                            @else
+                                {{ substr($recipient->name, 0, 1) }}
+                            @endif
                             <div class="dm-status {{ $recipientPresence }}"></div>
                         </div>
                         <span class="header-dm-name">{{ $recipient->name }}</span>
@@ -1478,6 +1828,28 @@
                                 @endforeach
                             </div>
                         </div>
+                    @endif
+
+                    {{-- Jump to date --}}
+                    <div x-data="{ showDatePicker: false }" style="position: relative;">
+                        <button @click="showDatePicker = !showDatePicker"
+                            class="header-btn" :class="{ active: showDatePicker }" title="Jump to date">
+                            &#128197;
+                        </button>
+                        <div x-show="showDatePicker" @click.away="showDatePicker = false" x-transition
+                            style="position: absolute; top: 100%; right: 0; margin-top: 4px; z-index: 80;">
+                            <input type="date" @change="$wire.jumpToDate($event.target.value); showDatePicker = false"
+                                style="background: var(--tp-base); border: 1px solid var(--tp-border-strong); border-radius: 6px; padding: 8px 12px; color: var(--tp-text-bright); font-size: 0.8rem; outline: none; color-scheme: dark;">
+                        </div>
+                    </div>
+
+                    {{-- Thread notifications --}}
+                    @if($this->unreadThreadReplies > 0)
+                        <button class="header-btn" style="position: relative;"
+                            wire:click="$set('showSearch', false)" title="Thread notifications">
+                            &#129525;
+                            <span style="position: absolute; top: 2px; right: 2px; background: var(--tp-red); color: #fff; font-size: 0.5rem; font-weight: 700; padding: 1px 4px; border-radius: 8px; min-width: 14px; text-align: center;">{{ $this->unreadThreadReplies }}</span>
+                        </button>
                     @endif
 
                     <button class="header-btn {{ $this->showSearch ? 'active' : '' }}"
@@ -1548,7 +1920,8 @@
                     @endif
 
                     <div class="message-row {{ $isGrouped ? 'grouped' : '' }} {{ $this->highlightMessageId == $msg->id ? 'highlight' : '' }}"
-                         id="msg-{{ $msg->id }}">
+                         id="msg-{{ $msg->id }}"
+                         @if($msg->created_at->diffInSeconds(now()) < 5) data-new @endif>
 
                         @if($isGrouped)
                             {{-- Grouped: show time on hover instead of avatar --}}
@@ -1558,14 +1931,20 @@
                         @else
                             {{-- Full message: show avatar --}}
                             <div class="msg-avatar" style="background: {{ $avatarColor }};">
-                                {{ substr($msg->user->name, 0, 1) }}
+                                @if($msg->user->avatar_url)
+                                    <img src="{{ $msg->user->avatar_url }}" class="avatar-img" alt="">
+                                @else
+                                    {{ substr($msg->user->name, 0, 1) }}
+                                @endif
                             </div>
                         @endif
 
                         <div class="msg-body">
                             @if(!$isGrouped)
                                 <div class="msg-header">
-                                    <span class="msg-author">{{ $msg->user->name }}</span>
+                                    <span class="msg-author"
+                                        @mouseenter="showHovercard({{ $msg->user_id }}, $event)"
+                                        @mouseleave="hideHovercard()">{{ $msg->user->name }}</span>
                                     <span class="msg-role"
                                         style="background: {{ $roleBadge['color'] }}15; color: {{ $roleBadge['color'] }};">
                                         {{ $roleBadge['short'] }}
@@ -1573,6 +1952,10 @@
                                     <span class="msg-time">{{ $msg->created_at->format('H:i') }}</span>
                                     @if($msg->edited_at)
                                         <span class="msg-edited">(edited)</span>
+                                    @endif
+                                    @php $msgUserStatus = $this->getCustomStatus($msg->user); @endphp
+                                    @if($msgUserStatus)
+                                        <span class="custom-status-text">{{ $msgUserStatus['emoji'] }} {{ $msgUserStatus['text'] }}</span>
                                     @endif
                                 </div>
                             @endif
@@ -1587,8 +1970,9 @@
                             @elseif($msg->attachment_url)
                                 <div class="msg-attachment">
                                     @if(Str::endsWith($msg->attachment_url, ['.jpg', '.jpeg', '.png', '.gif', '.webp']) || Str::startsWith($msg->attachment_url, 'http'))
-                                        <a href="{{ Str::startsWith($msg->attachment_url, 'http') ? $msg->attachment_url : asset('storage/' . $msg->attachment_url) }}" target="_blank">
-                                            <img src="{{ Str::startsWith($msg->attachment_url, 'http') ? $msg->attachment_url : asset('storage/' . $msg->attachment_url) }}" alt="Attachment">
+                                        @php $imgUrl = Str::startsWith($msg->attachment_url, 'http') ? $msg->attachment_url : asset('storage/' . $msg->attachment_url); @endphp
+                                        <a href="{{ $imgUrl }}" @click.prevent="lightboxUrl = '{{ $imgUrl }}'">
+                                            <img src="{{ $imgUrl }}" alt="Attachment">
                                         </a>
                                     @else
                                         <a href="{{ asset('storage/' . $msg->attachment_url) }}" target="_blank" class="msg-file-download">
@@ -1602,11 +1986,31 @@
                                 <div class="msg-text">{!! $this->formatMessageContent($msg->content) !!}</div>
                             @endif
 
+                            {{-- OG Preview --}}
+                            @if($msg->og_data && ($msg->og_data['title'] ?? null))
+                                <div class="og-preview">
+                                    <div class="og-preview-text">
+                                        @if($msg->og_data['site_name'] ?? null)
+                                            <div class="og-preview-site">{{ $msg->og_data['site_name'] }}</div>
+                                        @endif
+                                        <a href="{{ $msg->og_data['url'] }}" target="_blank" rel="noopener" class="og-preview-title">{{ $msg->og_data['title'] }}</a>
+                                        @if($msg->og_data['description'] ?? null)
+                                            <div class="og-preview-desc">{{ $msg->og_data['description'] }}</div>
+                                        @endif
+                                    </div>
+                                    @if($msg->og_data['image'] ?? null)
+                                        <img src="{{ $msg->og_data['image'] }}" class="og-preview-img" alt="" loading="lazy">
+                                    @endif
+                                </div>
+                            @endif
+
                             {{-- Reactions --}}
                             @if($msg->reactions->count() > 0)
                                 <div class="reactions-row">
                                     @foreach($msg->reactions->groupBy('emoji') as $emoji => $reactions)
-                                        <button wire:click="toggleReaction({{ $msg->id }}, '{{ $emoji }}')"
+                                        <button x-data="{ bounced: false }"
+                                            @click="bounced = true; setTimeout(() => bounced = false, 300); $wire.toggleReaction({{ $msg->id }}, '{{ $emoji }}')"
+                                            :class="{ 'just-reacted': bounced }"
                                             class="reaction-btn {{ $reactions->where('user_id', auth()->id())->count() > 0 ? 'active' : '' }}">
                                             <span class="reaction-emoji">{{ $emoji }}</span>
                                             <span class="reaction-count">{{ $reactions->count() }}</span>
@@ -1640,6 +2044,29 @@
                             @if($isMe)
                                 <button wire:click="deleteMessage({{ $msg->id }})" title="Delete" style="color: var(--tp-red);">&#128465;</button>
                             @endif
+                            <div class="action-sep"></div>
+                            <div x-data="{ showRemind: false }" style="position: relative;">
+                                <button @click="showRemind = !showRemind" title="Remind me">&#128276;</button>
+                                <div x-show="showRemind" @click.away="showRemind = false" x-transition
+                                    style="position: absolute; top: 100%; right: 0; margin-top: 4px; background: var(--tp-base); border: 1px solid var(--tp-border-strong); border-radius: 8px; padding: 4px; min-width: 140px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 30;">
+                                    <button wire:click="remindMe({{ $msg->id }}, 20)" @click="showRemind = false"
+                                        style="display: block; width: 100%; text-align: left; background: none; border: none; color: var(--tp-text-primary); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;"
+                                        onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">
+                                        &#9201; 20 minutes</button>
+                                    <button wire:click="remindMe({{ $msg->id }}, 60)" @click="showRemind = false"
+                                        style="display: block; width: 100%; text-align: left; background: none; border: none; color: var(--tp-text-primary); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;"
+                                        onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">
+                                        &#128339; 1 hour</button>
+                                    <button wire:click="remindMe({{ $msg->id }}, 180)" @click="showRemind = false"
+                                        style="display: block; width: 100%; text-align: left; background: none; border: none; color: var(--tp-text-primary); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;"
+                                        onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">
+                                        &#128338; 3 hours</button>
+                                    <button wire:click="remindMe({{ $msg->id }}, 1080)" @click="showRemind = false"
+                                        style="display: block; width: 100%; text-align: left; background: none; border: none; color: var(--tp-text-primary); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;"
+                                        onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='none'">
+                                        &#9728;&#65039; Tomorrow 9am</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1680,10 +2107,31 @@
                         @endif
                     </div>
                 @endforelse
+
+                {{-- Load more (shows at top due to column-reverse) --}}
+                @if($this->hasMoreMessages)
+                    <div class="load-more-trigger">
+                        <button wire:click="loadMoreMessages" class="load-more-btn" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="loadMoreMessages">&#8593; Load older messages</span>
+                            <span wire:loading wire:target="loadMoreMessages">Loading...</span>
+                        </button>
+                    </div>
+                @endif
             </div>
 
-            {{-- Typing Indicator --}}
+            {{-- Input Area --}}
             <div class="input-area">
+                {{-- Away warning for DMs --}}
+                @if($this->activeRecipient && $this->recipientStatus)
+                    <div class="away-warning">
+                        <span>&#9888;&#65039;</span>
+                        <span><strong>{{ $this->recipientStatus['name'] }}</strong> is {{ $this->recipientStatus['presence'] }}
+                            (last seen {{ $this->recipientStatus['last_seen'] }}).
+                            They may not see this right away.</span>
+                    </div>
+                @endif
+
+                {{-- Typing Indicator --}}
                 @if(count($this->typingUsers) > 0)
                     <div class="typing-indicator">
                         <span class="typing-dots"><span></span><span></span><span></span></span>
@@ -1701,7 +2149,8 @@
                     </div>
                 @endif
 
-                <form wire:submit="sendMessage" x-data="{
+                @php $draftKey = $this->activeChannel ?? ('dm_' . ($this->activeRecipient ?? 'none')); @endphp
+                <form wire:submit="sendMessage" @submit="clearDraft('{{ $draftKey }}')" x-data="{
                     showEmojis: false,
                     showGifs: false,
                     gifSearch: '',
@@ -1711,6 +2160,29 @@
                     mediaRecorder: null,
                     audioChunks: [],
                     recordingInterval: null,
+
+                    init() {
+                        const draft = getDraft('{{ $draftKey }}');
+                        if (draft) {
+                            $wire.set('message', draft);
+                        }
+                    },
+
+                    handlePaste(event) {
+                        const items = event.clipboardData?.items;
+                        if (items) {
+                            for (let i = 0; i < items.length; i++) {
+                                if (items[i].type.startsWith('image/')) {
+                                    const file = items[i].getAsFile();
+                                    if (file) {
+                                        event.preventDefault();
+                                        $wire.upload('attachment', file);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    },
 
                     wrapSelection(prefix, suffix) {
                         const ta = this.$refs.messageInput;
@@ -1826,7 +2298,9 @@
                         <textarea wire:model="message" x-ref="messageInput"
                             placeholder="Message {{ $this->activeChannel ? '#' . ($this->channels->firstWhere('slug', $this->activeChannel)?->name ?? 'channel') : ($this->activeRecipient ? $this->users->find($this->activeRecipient)?->name ?? 'user' : 'chat') }}..."
                             rows="1"
-                            @keydown.enter.prevent="if (!$event.shiftKey) { $wire.sendMessage(); }"
+                            @keydown.enter.prevent="if (!$event.shiftKey) { clearDraft('{{ $draftKey }}'); $wire.sendMessage(); }"
+                            @paste="handlePaste($event)"
+                            @input.debounce.1000ms="saveDraft('{{ $draftKey }}', $event.target.value)"
                             autocomplete="off"></textarea>
 
                         <div class="input-bottom-bar">
@@ -1863,6 +2337,54 @@
             </div>
         </div>
 
+        {{-- ===== IMAGE LIGHTBOX ===== --}}
+        <div x-show="lightboxUrl" x-transition.opacity.duration.150ms
+             @click="lightboxUrl = null"
+             class="lightbox-overlay" style="display: none;">
+            <img :src="lightboxUrl" @click.stop alt="Full size">
+            <button @click="lightboxUrl = null" class="lightbox-close">&#10005;</button>
+        </div>
+
+        {{-- ===== HOVERCARD ===== --}}
+        <div x-show="hovercardData" x-transition.opacity.duration.100ms
+             class="hovercard" style="display: none;"
+             :style="'left: ' + hovercardPos.x + 'px; top: ' + hovercardPos.y + 'px;'">
+            <template x-if="hovercardData">
+                <div>
+                    <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 10px;">
+                        <div class="hovercard-avatar" :style="'background: ' + (hovercardData.role?.color || '#6b7280')">
+                            <template x-if="hovercardData.avatar_url">
+                                <img :src="hovercardData.avatar_url" alt="">
+                            </template>
+                            <template x-if="!hovercardData.avatar_url">
+                                <span x-text="hovercardData.name?.charAt(0)"></span>
+                            </template>
+                        </div>
+                        <div>
+                            <div class="hovercard-name" x-text="hovercardData.name"></div>
+                            <span class="hovercard-role"
+                                :style="'background: ' + (hovercardData.role?.color || '#6b7280') + '15; color: ' + (hovercardData.role?.color || '#6b7280')"
+                                x-text="hovercardData.role?.short"></span>
+                        </div>
+                    </div>
+                    <template x-if="hovercardData.custom_status">
+                        <div style="font-size: 0.75rem; color: var(--tp-text-secondary); margin-bottom: 6px;">
+                            <span x-text="hovercardData.custom_status.emoji"></span>
+                            <span x-text="hovercardData.custom_status.text"></span>
+                        </div>
+                    </template>
+                    <div class="hovercard-meta">
+                        <div>
+                            <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50; margin-right: 4px;"
+                                :style="'background: ' + ({online: '#22c55e', away: '#eab308', busy: '#ef4444', offline: '#6b7280'}[hovercardData.presence] || '#6b7280')"></span>
+                            <span x-text="hovercardData.presence === 'online' ? 'Active now' : ('Last seen ' + (hovercardData.last_seen || 'unknown'))"></span>
+                        </div>
+                        <div x-text="hovercardData.message_count + ' messages in this channel'" style="margin-top: 2px;"></div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
         {{-- ===== THREAD PANEL ===== --}}
         @if($this->activeThread)
             <div class="thread-panel">
@@ -1880,7 +2402,11 @@
                     <div class="thread-parent">
                         <div style="display: flex; gap: 10px;">
                             <div class="thread-reply-avatar" style="background: {{ $parentColor }}; width: 32px; height: 32px; font-size: 0.7rem; border-radius: 8px;">
-                                {{ substr($parentMsg->user->name, 0, 1) }}
+                                @if($parentMsg->user->avatar_url)
+                                    <img src="{{ $parentMsg->user->avatar_url }}" class="avatar-img" alt="">
+                                @else
+                                    {{ substr($parentMsg->user->name, 0, 1) }}
+                                @endif
                             </div>
                             <div style="flex: 1; min-width: 0;">
                                 <div class="msg-header">
@@ -1890,7 +2416,8 @@
                                 </div>
                                 @if($parentMsg->attachment_url)
                                     @if(Str::endsWith($parentMsg->attachment_url, ['.jpg', '.jpeg', '.png', '.gif', '.webp']) || Str::startsWith($parentMsg->attachment_url, 'http'))
-                                        <img src="{{ Str::startsWith($parentMsg->attachment_url, 'http') ? $parentMsg->attachment_url : asset('storage/' . $parentMsg->attachment_url) }}" alt="" class="thread-parent-img">
+                                        @php $threadImgUrl = Str::startsWith($parentMsg->attachment_url, 'http') ? $parentMsg->attachment_url : asset('storage/' . $parentMsg->attachment_url); @endphp
+                                        <img src="{{ $threadImgUrl }}" alt="" class="thread-parent-img" style="cursor: zoom-in;" @click="lightboxUrl = '{{ $threadImgUrl }}'">
                                     @endif
                                 @endif
                                 <div class="msg-text" style="font-size: 0.85rem;">{!! $this->formatMessageContent($parentMsg->content) !!}</div>
@@ -1913,7 +2440,11 @@
                         @endphp
                         <div class="thread-reply">
                             <div class="thread-reply-avatar" style="background: {{ $replyColor }};">
-                                {{ substr($reply->user->name, 0, 1) }}
+                                @if($reply->user->avatar_url)
+                                    <img src="{{ $reply->user->avatar_url }}" class="avatar-img" alt="">
+                                @else
+                                    {{ substr($reply->user->name, 0, 1) }}
+                                @endif
                             </div>
                             <div class="thread-reply-body">
                                 <div class="thread-reply-meta">

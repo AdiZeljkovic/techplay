@@ -22,6 +22,7 @@ class EditorialMessage extends Model
         'read_at',
         'edited_at',
         'parent_id',
+        'og_data',
     ];
 
     protected $casts = [
@@ -29,6 +30,7 @@ class EditorialMessage extends Model
         'is_pinned' => 'boolean',
         'read_at' => 'datetime',
         'edited_at' => 'datetime',
+        'og_data' => 'array',
     ];
 
     public function user()
