@@ -1693,7 +1693,7 @@
                 localStorage.removeItem('chat_draft_' + key);
                 this.drafts.delete(key);
             },
-            allUsers: @json($this->mentionUsersJson),
+            allUsers: @js($this->mentionUsersJson),
             hovercardData: null,
             hovercardPos: { x: 0, y: 0 },
             hovercardTimeout: null,
