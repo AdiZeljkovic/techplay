@@ -2403,6 +2403,7 @@
                     mentionResults: [],
                     mentionIndex: 0,
                     mentionStart: -1,
+                    mentionJustSelected: false,
 
                     checkMention(event) {
                         const ta = event.target;
@@ -2462,6 +2463,8 @@
                         $wire.set('message', newText);
                         this.showMentions = false;
                         this.mentionQuery = '';
+                        this.mentionJustSelected = true;
+                        setTimeout(() => { this.mentionJustSelected = false; }, 50);
 
                         $nextTick(() => {
                             const newPos = this.mentionStart + insertName.length + 2;
@@ -2575,7 +2578,7 @@
                             placeholder="Message {{ $this->activeChannel ? '#' . ($this->channels->firstWhere('slug', $this->activeChannel)?->name ?? 'channel') : ($this->activeRecipient ? $this->users->find($this->activeRecipient)?->name ?? 'user' : 'chat') }}..."
                             rows="1"
                             @keydown="handleMentionKeydown($event)"
-                            @keydown.enter.prevent="if (!showMentions && !$event.shiftKey) { clearDraft('{{ $draftKey }}'); $wire.sendMessage(); }"
+                            @keydown.enter="if ($event.shiftKey) return; $event.preventDefault(); if (!mentionJustSelected && !showMentions) { clearDraft('{{ $draftKey }}'); $wire.sendMessage(); }"
                             @paste="handlePaste($event)"
                             @input="checkMention($event)"
                             @input.debounce.1000ms="saveDraft('{{ $draftKey }}', $event.target.value)"
