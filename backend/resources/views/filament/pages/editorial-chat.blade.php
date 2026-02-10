@@ -1658,10 +1658,150 @@
             align-items: center;
             gap: 6px;
         }
+        /* ===== MOBILE MENU BUTTON (hidden on desktop) ===== */
+        .mobile-menu-btn {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--tp-text-secondary, #9BA8C9);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        .mobile-menu-btn:hover { background: var(--tp-surface, #122148); }
+
+        /* ===== MOBILE RESPONSIVE (max-width: 768px) ===== */
+        @media (max-width: 768px) {
+            .chat-wrapper {
+                height: calc(100vh - 64px);
+                border-radius: 0;
+                border: none;
+                position: relative;
+            }
+
+            /* Sidebar as overlay */
+            .chat-sidebar {
+                position: absolute;
+                z-index: 40;
+                width: 280px;
+                height: 100%;
+                box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+                left: 0;
+                top: 0;
+            }
+            .sidebar-enter { transition: transform 0.2s ease-out; }
+            .sidebar-leave { transition: transform 0.15s ease-in; }
+
+            /* Show hamburger */
+            .mobile-menu-btn { display: flex; }
+
+            /* Header compact */
+            .chat-header {
+                padding: 0 10px !important;
+                height: 44px;
+                gap: 6px;
+            }
+            .header-topic { display: none; }
+            .header-divider { display: none; }
+            .header-channel-name { font-size: 0.9rem; }
+
+            /* Messages compact */
+            .message-row { padding: 4px 10px; }
+            .message-row:not(.grouped) { padding: 8px 10px; }
+            .date-separator { padding: 8px 10px 2px; }
+            .msg-avatar, .msg-avatar-spacer { width: 28px; height: 28px; font-size: 0.65rem; }
+            .msg-text { font-size: 0.82rem; }
+            .msg-attachment img { max-width: 200px; max-height: 150px; }
+
+            /* OG preview fit screen */
+            .og-preview { max-width: 100% !important; }
+
+            /* Hover actions: always visible on mobile */
+            .hover-actions {
+                position: static !important;
+                display: flex !important;
+                opacity: 0.5;
+                margin-top: 4px;
+                background: transparent !important;
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                gap: 2px;
+            }
+            .hover-actions button {
+                font-size: 0.7rem;
+                padding: 2px 4px;
+                min-width: unset;
+            }
+            .message-row:hover .hover-actions { opacity: 1; }
+
+            /* Input area compact */
+            .input-area { padding: 8px 10px 12px; }
+            .input-box textarea {
+                padding: 8px 10px;
+                font-size: 0.85rem;
+            }
+            .format-group .fmt-btn {
+                padding: 2px 5px;
+                font-size: 0.7rem;
+            }
+
+            /* Thread panel: full-screen overlay */
+            .thread-panel {
+                position: absolute !important;
+                width: 100% !important;
+                left: 0;
+                top: 0;
+                z-index: 50;
+                height: 100%;
+                border-left: none !important;
+            }
+
+            /* Dropdowns: fit viewport */
+            .mention-dropdown { max-height: 200px; }
+            .emoji-picker {
+                left: 0 !important;
+                right: 0 !important;
+                max-width: 100%;
+            }
+            .gif-picker {
+                left: 0 !important;
+                right: 0 !important;
+                width: auto !important;
+                max-width: 100%;
+            }
+            .pinned-dropdown {
+                left: 10px !important;
+                right: 10px !important;
+                min-width: unset !important;
+            }
+
+            /* Disable hovercard on touch */
+            .hovercard { display: none !important; }
+
+            /* Status dropdown */
+            .status-dropdown { min-width: 180px; }
+            .status-picker { min-width: 220px !important; }
+        }
+
+        /* ===== SMALL PHONES (max-width: 480px) ===== */
+        @media (max-width: 480px) {
+            .chat-sidebar { width: 100%; }
+            .msg-avatar, .msg-avatar-spacer { width: 24px; height: 24px; font-size: 0.6rem; }
+            .msg-author { font-size: 0.78rem; }
+            .msg-time { font-size: 0.6rem; }
+            .msg-role { font-size: 0.5rem; }
+            .header-channel-name { font-size: 0.85rem; }
+        }
     </style>
 
     <div class="chat-wrapper" wire:poll.3s
          x-data="{
+            sidebarOpen: window.innerWidth > 768,
             notifAudio: null,
             lastMsgId: '{{ $this->messages->first()?->id ?? '' }}',
             lastMsgCount: {{ $this->messages->count() }},
@@ -1726,7 +1866,8 @@
          @keydown.window.escape="lightboxUrl = null">
 
         {{-- ===== SIDEBAR ===== --}}
-        <div class="chat-sidebar">
+        <div class="chat-sidebar" x-show="sidebarOpen" x-transition:enter="sidebar-enter" x-transition:leave="sidebar-leave"
+            @click.away="if (window.innerWidth <= 768) sidebarOpen = false">
             <div class="sidebar-header">
                 <div class="sidebar-header-top">
                     <div class="workspace-name">
@@ -1885,6 +2026,7 @@
         <div class="chat-main">
             {{-- Header --}}
             <div class="chat-header" style="position: relative;">
+                <button @click="sidebarOpen = !sidebarOpen" class="mobile-menu-btn" title="Menu">&#9776;</button>
                 @if($this->activeChannel)
                     @php $channel = $this->channels->firstWhere('slug', $this->activeChannel); @endphp
                     @if($channel)
