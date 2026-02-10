@@ -6,14 +6,15 @@
         }
 
         .fi-main {
-            padding: 1rem !important;
+            padding: 1.5rem !important;
             max-width: none !important;
         }
 
         /* ===== FOUNDATION ===== */
         .chat-wrapper {
             display: flex;
-            height: calc(100vh - 6rem);
+            height: calc(100vh - 10rem);
+            max-height: 720px;
             width: 100%;
             background: var(--tp-base, #ffffff);
             border-radius: var(--tp-radius-lg, 10px);
