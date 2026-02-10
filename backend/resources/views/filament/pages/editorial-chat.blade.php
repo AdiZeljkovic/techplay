@@ -3,10 +3,10 @@
         /* ===== FOUNDATION ===== */
         .chat-wrapper {
             display: flex;
-            height: calc(100vh - 64px);
+            height: calc(100vh - 90px);
             background: var(--tp-deep, #0a1228);
-            border-radius: var(--tp-radius-sm, 8px);
-            border: 1px solid var(--tp-border, rgba(255,255,255,0.08));
+            border-radius: 0;
+            border: none;
             overflow: hidden;
             position: relative;
         }
