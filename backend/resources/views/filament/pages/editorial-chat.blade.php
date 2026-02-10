@@ -1681,6 +1681,19 @@
                 border-radius: 0;
                 border: none;
                 position: relative;
+                width: 100vw !important;
+            }
+
+            /* Chat main area - full width on mobile */
+            .chat-main {
+                width: 100vw !important;
+                flex: 1 !important;
+                max-width: 100vw !important;
+            }
+
+            .messages-container {
+                width: 100% !important;
+                max-width: 100vw !important;
             }
 
             /* Sidebar as overlay */
@@ -1710,11 +1723,20 @@
             .header-channel-name { font-size: 0.9rem; }
 
             /* Messages compact */
-            .message-row { padding: 4px 10px; }
+            .message-row {
+                padding: 4px 10px;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
             .message-row:not(.grouped) { padding: 8px 10px; }
             .date-separator { padding: 8px 10px 2px; }
-            .msg-avatar, .msg-avatar-spacer { width: 28px; height: 28px; font-size: 0.65rem; }
-            .msg-body { min-width: 0; width: calc(100% - 40px); }
+            .msg-avatar, .msg-avatar-spacer { width: 28px; height: 28px; font-size: 0.65rem; flex-shrink: 0; }
+            .msg-body {
+                min-width: 0;
+                flex: 1 !important;
+                width: auto !important;
+                max-width: calc(100vw - 80px) !important;
+            }
             .msg-text,
             .message-row.own-message .msg-text,
             .message-row:not(.own-message) .msg-text {
