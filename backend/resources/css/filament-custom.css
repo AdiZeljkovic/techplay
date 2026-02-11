@@ -760,6 +760,12 @@
     background: var(--tp-surface) !important;
 }
 
+/* Fix: Make select dropdowns scrollable when many options */
+[role="listbox"] {
+    max-height: 280px !important;
+    overflow-y: auto !important;
+}
+
 .fi-fo-file-upload {
     border: 2px dashed var(--tp-border-strong) !important;
     border-radius: var(--tp-radius-md) !important;
