@@ -161,7 +161,7 @@ export default function WowAnalyzerClient() {
                                 <input
                                     type="text"
                                     placeholder="e.g., Thrall"
-                                    className="w-full px-4 py-3 rounded-lg border-2 transition-all"
+                                    className="w-full px-4 py-3 rounded-lg border-2 transition-all focus:outline-none"
                                     style={{
                                         background: 'linear-gradient(to bottom, #1a1208, #0f0804)',
                                         borderColor: errors.character_name ? '#DC2626' : '#8B7355',
@@ -170,12 +170,20 @@ export default function WowAnalyzerClient() {
                                             ? '0 0 10px rgba(220,38,38,0.3)'
                                             : '0 0 15px rgba(139,115,85,0.2)',
                                     }}
-                                    onFocus={(e) => e.target.style.borderColor = '#D4AF37'}
-                                    onBlur={(e) => e.target.style.borderColor = errors.character_name ? '#DC2626' : '#8B7355'}
+                                    onFocus={(e) => {
+                                        e.target.style.borderColor = '#D4AF37';
+                                        e.target.style.boxShadow = '0 0 20px rgba(212,175,55,0.4)';
+                                    }}
                                     {...register("character_name", {
                                         required: "Character name is required",
                                         minLength: { value: 2, message: "Must be at least 2 characters" },
                                         maxLength: { value: 12, message: "Must be max 12 characters" },
+                                        onBlur: (e) => {
+                                            e.target.style.borderColor = errors.character_name ? '#DC2626' : '#8B7355';
+                                            e.target.style.boxShadow = errors.character_name
+                                                ? '0 0 10px rgba(220,38,38,0.3)'
+                                                : '0 0 15px rgba(139,115,85,0.2)';
+                                        }
                                     })}
                                 />
                                 {errors.character_name && (
