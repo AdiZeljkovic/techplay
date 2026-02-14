@@ -77,237 +77,210 @@ export default function WowAnalyzerClient() {
     };
 
     return (
-        <div className="min-h-screen relative overflow-hidden" style={{
-            background: 'radial-gradient(ellipse at top, #1a0f1a 0%, #0a0604 50%, #000000 100%)'
+        <div className="min-h-screen relative" style={{
+            background: '#1a1208',
+            backgroundImage: `
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px)
+            `
         }}>
-            {/* Animated Void Stars Background */}
-            <div className="absolute inset-0 opacity-30">
-                <div className="absolute top-10 left-10 w-1 h-1 bg-purple-400 rounded-full animate-pulse" />
-                <div className="absolute top-20 right-20 w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
-                <div className="absolute top-40 left-1/3 w-1 h-1 bg-purple-300 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
-                <div className="absolute top-60 right-1/4 w-1 h-1 bg-blue-300 rounded-full animate-pulse" style={{ animationDelay: '1.5s' }} />
-                <div className="absolute bottom-40 left-1/4 w-1 h-1 bg-purple-400 rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
-                <div className="absolute bottom-20 right-1/3 w-1 h-1 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '2.5s' }} />
-            </div>
+            {/* Stone Texture Overlay */}
+            <div className="absolute inset-0 opacity-30 pointer-events-none" style={{
+                backgroundImage: `
+                    radial-gradient(circle at 20% 50%, rgba(139,115,85,0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 50%, rgba(107,83,69,0.1) 0%, transparent 50%)
+                `
+            }} />
 
-            {/* Epic WoW-Style Hero Header */}
-            <div className="relative border-b-4 overflow-hidden"
-                style={{
-                    background: 'linear-gradient(to bottom, rgba(42,31,21,0.95) 0%, rgba(26,18,8,0.98) 100%)',
-                    borderImage: 'linear-gradient(to right, #8B7355, #D4AF37, #8B7355) 1',
-                    boxShadow: 'inset 0 -30px 60px rgba(0,0,0,0.7), 0 10px 50px rgba(0,0,0,0.5)'
-                }}>
+            {/* Classic WoW Stone Header */}
+            <div className="relative overflow-hidden" style={{
+                background: 'linear-gradient(to bottom, #2d2416 0%, #1a1208 100%)',
+                borderBottom: '10px solid',
+                borderImage: 'linear-gradient(to right, #1a1208, #5D4037, #8B6914, #5D4037, #1a1208) 1',
+                boxShadow: `
+                    inset 0 -8px 16px rgba(0,0,0,0.8),
+                    inset 0 2px 2px rgba(139,115,85,0.3),
+                    0 8px 24px rgba(0,0,0,0.9)
+                `
+            }}>
+                {/* Stone Texture */}
+                <div className="absolute inset-0 opacity-20 pointer-events-none" style={{
+                    backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.3) 1px, rgba(0,0,0,0.3) 2px)'
+                }} />
 
-                {/* Top Ornamental Border */}
-                <div className="absolute top-0 left-0 right-0 h-2 overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-60 animate-pulse" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-600 opacity-30" />
-                </div>
-
-                {/* Void Energy Swirls */}
-                <div className="absolute inset-0 opacity-20">
-                    <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
-                    <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s', animationDuration: '4s' }} />
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-500/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s', animationDuration: '3s' }} />
-                </div>
-
-                <div className="relative container mx-auto px-4 py-16 max-w-5xl text-center">
-                    {/* Epic Shield Emblem */}
+                <div className="relative container mx-auto px-4 py-12 max-w-4xl text-center">
+                    {/* Stone Emblem */}
                     <div className="relative inline-block mb-6">
-                        {/* Outer Glow Ring */}
-                        <div className="absolute inset-0 -m-8">
-                            <div className="w-full h-full rounded-full animate-pulse"
-                                style={{
-                                    background: 'radial-gradient(circle, rgba(212,175,55,0.3) 0%, transparent 70%)',
-                                    filter: 'blur(20px)'
-                                }} />
-                        </div>
-
-                        {/* Rotating Background Ring */}
-                        <div className="absolute inset-0 -m-6 animate-spin" style={{ animationDuration: '20s' }}>
-                            <div className="w-full h-full rounded-full border-2 border-yellow-600/20" />
-                        </div>
-
-                        {/* Main Shield */}
-                        <Shield
-                            className="w-28 h-28 text-yellow-500 mx-auto relative z-10 animate-pulse"
-                            style={{
-                                filter: 'drop-shadow(0 0 30px rgba(234, 179, 8, 0.8)) drop-shadow(0 0 10px rgba(255, 215, 0, 0.6))',
-                                animationDuration: '3s'
-                            }}
-                        />
-
-                        {/* Crossed Swords Overlay */}
-                        <Swords className="w-10 h-10 text-orange-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
-                            style={{
-                                filter: 'drop-shadow(0 0 10px rgba(251, 146, 60, 0.8))'
+                        <div className="relative p-4 rounded-sm" style={{
+                            background: 'linear-gradient(135deg, #5D4037 0%, #3E2723 100%)',
+                            border: '6px solid',
+                            borderColor: '#8B7355 #6B5345 #4a3820 #8B7355',
+                            boxShadow: `
+                                inset 2px 2px 4px rgba(139,115,85,0.4),
+                                inset -2px -2px 4px rgba(0,0,0,0.8),
+                                0 4px 12px rgba(0,0,0,0.8)
+                            `
+                        }}>
+                            <Shield className="w-20 h-20 text-yellow-600" style={{
+                                filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.8))'
                             }} />
-
-                        {/* Sparkles */}
-                        <Sparkles className="w-6 h-6 text-yellow-300 absolute -top-2 -right-2 animate-pulse" style={{ animationDelay: '0.5s' }} />
-                        <Sparkles className="w-5 h-5 text-yellow-300 absolute -bottom-1 -left-2 animate-pulse" style={{ animationDelay: '1s' }} />
+                            <Swords className="w-8 h-8 text-yellow-700 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                        </div>
                     </div>
 
-                    {/* Epic Title */}
-                    <h1 className="text-6xl md:text-7xl font-bold mb-4 tracking-wide"
+                    {/* WoW Classic Title */}
+                    <h1 className="text-5xl md:text-6xl font-bold mb-4 uppercase"
                         style={{
-                            color: '#FFD700',
+                            color: '#FFC107',
                             textShadow: `
-                                0 0 40px rgba(255, 215, 0, 0.8),
-                                0 0 20px rgba(255, 215, 0, 0.6),
-                                3px 3px 0 rgba(139, 115, 85, 0.8),
-                                5px 5px 10px rgba(0,0,0,0.9)
+                                3px 3px 0 #5D4037,
+                                4px 4px 0 #3E2723,
+                                6px 6px 12px rgba(0,0,0,0.9)
                             `,
                             fontFamily: 'serif',
-                            letterSpacing: '0.05em'
+                            letterSpacing: '0.1em',
+                            fontWeight: 900
                         }}>
                         Character Analyzer
                     </h1>
 
-                    {/* Decorative Divider */}
-                    <div className="flex items-center justify-center gap-4 mb-4">
-                        <div className="h-px w-24 bg-gradient-to-r from-transparent to-yellow-600" />
-                        <div className="w-2 h-2 rotate-45 bg-yellow-500 shadow-lg shadow-yellow-500/50" />
-                        <div className="h-px w-24 bg-gradient-to-l from-transparent to-yellow-600" />
+                    {/* Classic Separator */}
+                    <div className="flex items-center justify-center gap-3 mb-4">
+                        <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-yellow-700 to-yellow-700" />
+                        <div className="w-1.5 h-1.5 bg-yellow-700 transform rotate-45" />
+                        <div className="w-16 h-0.5 bg-gradient-to-l from-transparent via-yellow-700 to-yellow-700" />
                     </div>
 
-                    {/* Subtitle with Midnight Theme */}
-                    <div className="text-2xl mb-3 font-serif" style={{ color: '#C0A080' }}>
-                        Discover your readiness for{' '}
-                        <span className="text-purple-400 font-bold"
-                            style={{
-                                textShadow: '0 0 15px rgba(168, 85, 247, 0.8), 0 0 5px rgba(168, 85, 247, 0.5)'
-                            }}>
-                            The War Within: Midnight
-                        </span>
+                    {/* Quest Text */}
+                    <div className="text-xl mb-2 font-serif" style={{
+                        color: '#C9B388',
+                        textShadow: '2px 2px 3px rgba(0,0,0,0.9)'
+                    }}>
+                        Prepare for <span className="text-purple-400 font-bold">The War Within: Midnight</span>
                     </div>
 
-                    {/* Lore Flavor Text */}
-                    <div className="text-sm italic mb-4" style={{ color: '#8B7355' }}>
-                        "The void calls... Are you prepared to face the darkness of Quel'Thalas?"
-                    </div>
-
-                    {/* Profesor Buffy Badge */}
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full"
-                        style={{
-                            background: 'linear-gradient(to right, rgba(139, 115, 85, 0.2), rgba(212, 175, 55, 0.2), rgba(139, 115, 85, 0.2))',
-                            border: '1px solid rgba(212, 175, 55, 0.3)',
-                            boxShadow: '0 0 15px rgba(212, 175, 55, 0.2)'
-                        }}>
-                        <Sparkles className="w-4 h-4 text-yellow-500 animate-pulse" />
-                        <span className="text-sm font-semibold" style={{ color: '#D4AF37' }}>
-                            Powered by Profesor Buffy's AI Magic
-                        </span>
-                        <Sparkles className="w-4 h-4 text-yellow-500 animate-pulse" style={{ animationDelay: '1s' }} />
-                    </div>
-                </div>
-
-                {/* Bottom Decorative Border */}
-                <div className="absolute bottom-0 left-0 right-0 h-2 overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-transparent via-[#8B7355] to-transparent opacity-80" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#8B7355] via-[#D4AF37] to-[#8B7355] opacity-40" />
-                </div>
-            </div>
-
-            <div className="container mx-auto px-4 py-16 max-w-5xl">
-                {/* Epic Quest Parchment Form */}
-                <div
-                    className="relative rounded-xl p-10 mb-8 overflow-hidden"
-                    style={{
-                        background: 'linear-gradient(135deg, #2a1f15 0%, #1a1208 50%, #2a1f15 100%)',
-                        border: '3px solid transparent',
-                        backgroundClip: 'padding-box',
-                        boxShadow: `
-                            0 0 60px rgba(0,0,0,0.9),
-                            inset 0 0 40px rgba(139,115,85,0.15),
-                            inset 0 2px 0 rgba(212,175,55,0.1)
-                        `
-                    }}
-                >
-                    {/* Outer Border Glow */}
-                    <div className="absolute inset-0 rounded-xl -z-10" style={{
-                        background: 'linear-gradient(135deg, #8B7355, #D4AF37, #8B7355)',
-                        filter: 'blur(1px)'
-                    }} />
-
-                    {/* Ornate Corner Decorations */}
-                    <div className="absolute top-0 left-0 w-20 h-20">
-                        <div className="absolute top-0 left-0 w-full h-full border-l-4 border-t-4 border-yellow-600/60 rounded-tl-lg" />
-                        <div className="absolute top-2 left-2 w-4 h-4 border-l-2 border-t-2 border-yellow-500/40" />
-                        <div className="absolute top-1 left-1 w-2 h-2 bg-yellow-500/60 rounded-full animate-pulse" style={{ animationDuration: '3s' }} />
-                    </div>
-                    <div className="absolute top-0 right-0 w-20 h-20">
-                        <div className="absolute top-0 right-0 w-full h-full border-r-4 border-t-4 border-yellow-600/60 rounded-tr-lg" />
-                        <div className="absolute top-2 right-2 w-4 h-4 border-r-2 border-t-2 border-yellow-500/40" />
-                        <div className="absolute top-1 right-1 w-2 h-2 bg-yellow-500/60 rounded-full animate-pulse" style={{ animationDuration: '3s', animationDelay: '1s' }} />
-                    </div>
-                    <div className="absolute bottom-0 left-0 w-20 h-20">
-                        <div className="absolute bottom-0 left-0 w-full h-full border-l-4 border-b-4 border-yellow-600/60 rounded-bl-lg" />
-                        <div className="absolute bottom-2 left-2 w-4 h-4 border-l-2 border-b-2 border-yellow-500/40" />
-                        <div className="absolute bottom-1 left-1 w-2 h-2 bg-yellow-500/60 rounded-full animate-pulse" style={{ animationDuration: '3s', animationDelay: '2s' }} />
-                    </div>
-                    <div className="absolute bottom-0 right-0 w-20 h-20">
-                        <div className="absolute bottom-0 right-0 w-full h-full border-r-4 border-b-4 border-yellow-600/60 rounded-br-lg" />
-                        <div className="absolute bottom-2 right-2 w-4 h-4 border-r-2 border-b-2 border-yellow-500/40" />
-                        <div className="absolute bottom-1 right-1 w-2 h-2 bg-yellow-500/60 rounded-full animate-pulse" style={{ animationDuration: '3s', animationDelay: '1.5s' }} />
-                    </div>
-
-                    {/* Inner Ambient Glow */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-900/8 via-transparent via-50% to-purple-900/8 pointer-events-none rounded-xl" />
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_0%,_rgba(0,0,0,0.3)_100%)] pointer-events-none rounded-xl" />
-
-                    {/* Quest Title Header */}
-                    <div className="text-center mb-8 relative">
-                        <div className="inline-block">
-                            <h2 className="text-2xl font-bold mb-2" style={{
-                                color: '#FFD700',
-                                textShadow: '0 0 15px rgba(255, 215, 0, 0.6), 2px 2px 4px rgba(0,0,0,0.8)',
-                                fontFamily: 'serif'
-                            }}>
-                                Begin Your Analysis
-                            </h2>
-                            <div className="h-px bg-gradient-to-r from-transparent via-yellow-600 to-transparent" />
+                    {/* Powered By */}
+                    <div className="inline-block px-4 py-1.5 mt-3" style={{
+                        background: 'linear-gradient(to bottom, #3E2723, #2d1f18)',
+                        border: '3px solid #5D4037',
+                        boxShadow: 'inset 1px 1px 2px rgba(139,115,85,0.3), inset -1px -1px 2px rgba(0,0,0,0.8)'
+                    }}>
+                        <div className="flex items-center gap-2">
+                            <Sparkles className="w-3.5 h-3.5 text-yellow-600" />
+                            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#C9B388' }}>
+                                Powered by AI Magic
+                            </span>
+                            <Sparkles className="w-3.5 h-3.5 text-yellow-600" />
                         </div>
                     </div>
+                </div>
+
+                {/* Bottom Stone Edge */}
+                <div className="absolute bottom-0 left-0 right-0 h-3" style={{
+                    background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.5))'
+                }} />
+            </div>
+
+            <div className="container mx-auto px-4 py-12 max-w-4xl">
+                {/* WoW Classic Quest Window */}
+                <div className="relative mb-8" style={{
+                    background: 'linear-gradient(to bottom, #D4C5A9 0%, #C9B388 50%, #B8A589 100%)',
+                    border: '10px solid',
+                    borderColor: '#5D4037 #3E2723 #2d1f18 #5D4037',
+                    boxShadow: `
+                        inset 3px 3px 6px rgba(255,255,255,0.3),
+                        inset -3px -3px 6px rgba(0,0,0,0.6),
+                        0 10px 30px rgba(0,0,0,0.9),
+                        0 0 0 2px #8B7355
+                    `,
+                    padding: '12px'
+                }}>
+                    {/* Inner Parchment */}
+                    <div className="relative" style={{
+                        background: 'linear-gradient(to bottom, #F4ECD8 0%, #E8DCC4 100%)',
+                        border: '2px solid #B8A589',
+                        boxShadow: 'inset 0 0 20px rgba(139,115,85,0.2)',
+                        padding: '32px'
+                    }}>
+                        {/* Parchment Texture */}
+                        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{
+                            backgroundImage: `
+                                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(107,83,69,0.1) 2px, rgba(107,83,69,0.1) 4px),
+                                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(107,83,69,0.1) 2px, rgba(107,83,69,0.1) 4px)
+                            `
+                        }} />
+
+                        {/* Metal Corner Rivets */}
+                        <div className="absolute top-2 left-2 w-3 h-3 rounded-full bg-gradient-to-br from-yellow-700 to-yellow-900 shadow-lg" style={{
+                            boxShadow: 'inset 1px 1px 2px rgba(255,215,0,0.5), 0 2px 4px rgba(0,0,0,0.8)'
+                        }} />
+                        <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-gradient-to-br from-yellow-700 to-yellow-900 shadow-lg" style={{
+                            boxShadow: 'inset 1px 1px 2px rgba(255,215,0,0.5), 0 2px 4px rgba(0,0,0,0.8)'
+                        }} />
+                        <div className="absolute bottom-2 left-2 w-3 h-3 rounded-full bg-gradient-to-br from-yellow-700 to-yellow-900 shadow-lg" style={{
+                            boxShadow: 'inset 1px 1px 2px rgba(255,215,0,0.5), 0 2px 4px rgba(0,0,0,0.8)'
+                        }} />
+                        <div className="absolute bottom-2 right-2 w-3 h-3 rounded-full bg-gradient-to-br from-yellow-700 to-yellow-900 shadow-lg" style={{
+                            boxShadow: 'inset 1px 1px 2px rgba(255,215,0,0.5), 0 2px 4px rgba(0,0,0,0.8)'
+                        }} />
+
+                        {/* Quest Title */}
+                        <div className="text-center mb-6 relative">
+                            <h2 className="text-2xl font-bold uppercase" style={{
+                                color: '#3E2723',
+                                textShadow: '1px 1px 0 rgba(255,255,255,0.5)',
+                                fontFamily: 'serif',
+                                letterSpacing: '0.1em'
+                            }}>
+                                Character Analysis Quest
+                            </h2>
+                            <div className="mt-2 flex items-center justify-center gap-2">
+                                <div className="w-12 h-0.5 bg-yellow-800" />
+                                <div className="w-1 h-1 bg-yellow-800 transform rotate-45" />
+                                <div className="w-12 h-0.5 bg-yellow-800" />
+                            </div>
+                        </div>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="relative space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* WoW-Themed Character Name Input */}
+                            {/* Character Name Input */}
                             <div>
-                                <label className="block text-sm font-medium mb-2" style={{ color: '#FFD700' }}>
+                                <label className="block text-sm font-bold mb-2 uppercase tracking-wide" style={{
+                                    color: '#3E2723',
+                                    textShadow: '1px 1px 0 rgba(255,255,255,0.5)',
+                                    fontFamily: 'serif'
+                                }}>
                                     <Swords className="w-4 h-4 inline mr-1" />
                                     Character Name
                                 </label>
                                 <input
                                     type="text"
-                                    placeholder="e.g., Thrall"
-                                    className="w-full px-4 py-3 rounded-lg border-2 transition-all focus:outline-none"
+                                    placeholder="Enter character name..."
+                                    className="w-full px-4 py-3 transition-all focus:outline-none"
                                     style={{
-                                        background: 'linear-gradient(to bottom, #1a1208, #0f0804)',
-                                        borderColor: errors.character_name ? '#DC2626' : '#8B7355',
-                                        color: '#FBBF24',
+                                        background: errors.character_name
+                                            ? 'linear-gradient(to bottom, #FFF 0%, #FFE8E8 100%)'
+                                            : 'linear-gradient(to bottom, #FFF 0%, #F5F5F0 100%)',
+                                        border: '3px solid',
+                                        borderColor: errors.character_name ? '#8B0000' : '#8B7355',
+                                        color: '#3E2723',
                                         boxShadow: errors.character_name
-                                            ? '0 0 10px rgba(220,38,38,0.3)'
-                                            : '0 0 15px rgba(139,115,85,0.2)',
-                                    }}
-                                    onFocus={(e) => {
-                                        e.target.style.borderColor = '#D4AF37';
-                                        e.target.style.boxShadow = '0 0 20px rgba(212,175,55,0.4)';
+                                            ? 'inset 1px 1px 3px rgba(139,0,0,0.2), 0 2px 4px rgba(0,0,0,0.3)'
+                                            : 'inset 1px 1px 3px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.3)',
+                                        fontFamily: 'serif',
+                                        fontSize: '16px'
                                     }}
                                     {...register("character_name", {
                                         required: "Character name is required",
                                         minLength: { value: 2, message: "Must be at least 2 characters" },
-                                        maxLength: { value: 12, message: "Must be max 12 characters" },
-                                        onBlur: (e) => {
-                                            e.target.style.borderColor = errors.character_name ? '#DC2626' : '#8B7355';
-                                            e.target.style.boxShadow = errors.character_name
-                                                ? '0 0 10px rgba(220,38,38,0.3)'
-                                                : '0 0 15px rgba(139,115,85,0.2)';
-                                        }
+                                        maxLength: { value: 12, message: "Must be max 12 characters" }
                                     })}
                                 />
                                 {errors.character_name && (
-                                    <p className="mt-1.5 text-sm text-red-400 flex items-center gap-1">
+                                    <p className="mt-1.5 text-sm font-semibold flex items-center gap-1" style={{
+                                        color: '#8B0000',
+                                        textShadow: '1px 1px 0 rgba(255,255,255,0.5)'
+                                    }}>
                                         <span>✖</span> {errors.character_name.message}
                                     </p>
                                 )}
@@ -328,9 +301,13 @@ export default function WowAnalyzerClient() {
                             />
                         </div>
 
-                        {/* WoW-Themed Region Selection */}
+                        {/* Region Selection */}
                         <div>
-                            <label className="block text-sm font-medium mb-3" style={{ color: '#FFD700' }}>
+                            <label className="block text-sm font-bold mb-3 uppercase tracking-wide" style={{
+                                color: '#3E2723',
+                                textShadow: '1px 1px 0 rgba(255,255,255,0.5)',
+                                fontFamily: 'serif'
+                            }}>
                                 <Shield className="w-4 h-4 inline mr-1" />
                                 Region
                             </label>
@@ -338,7 +315,7 @@ export default function WowAnalyzerClient() {
                                 {(["us", "eu", "kr", "tw"] as const).map((region) => (
                                     <label
                                         key={region}
-                                        className="relative cursor-pointer group"
+                                        className="relative cursor-pointer"
                                     >
                                         <input
                                             type="radio"
@@ -347,21 +324,28 @@ export default function WowAnalyzerClient() {
                                             className="sr-only peer"
                                         />
                                         <div
-                                            className="p-3 rounded-lg border-2 text-center transition-all peer-checked:scale-105"
+                                            className="p-3 text-center transition-all"
                                             style={{
                                                 background: selectedRegion === region
-                                                    ? 'linear-gradient(to bottom, #3a2820, #2a1810)'
-                                                    : 'linear-gradient(to bottom, #1a1208, #0f0804)',
-                                                borderColor: selectedRegion === region ? '#D4AF37' : '#8B7355',
+                                                    ? 'linear-gradient(to bottom, #8B6914 0%, #6B5914 100%)'
+                                                    : 'linear-gradient(to bottom, #C9B388 0%, #B8A589 100%)',
+                                                border: '4px solid',
+                                                borderColor: selectedRegion === region
+                                                    ? '#C9B388 #5D4037 #3E2723 #8B7355'
+                                                    : '#8B7355 #5D4037 #3E2723 #8B7355',
                                                 boxShadow: selectedRegion === region
-                                                    ? '0 0 20px rgba(212,175,55,0.4), inset 0 0 15px rgba(212,175,55,0.1)'
-                                                    : '0 0 10px rgba(139,115,85,0.2)',
+                                                    ? 'inset 2px 2px 4px rgba(255,255,255,0.2), inset -2px -2px 4px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.6)'
+                                                    : 'inset 2px 2px 4px rgba(255,255,255,0.3), inset -2px -2px 4px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.4)',
                                             }}
                                         >
                                             <span
-                                                className="text-sm font-bold uppercase"
+                                                className="text-sm font-bold uppercase tracking-wider"
                                                 style={{
-                                                    color: selectedRegion === region ? '#FFD700' : '#8B7355'
+                                                    color: selectedRegion === region ? '#FFF' : '#5D4037',
+                                                    textShadow: selectedRegion === region
+                                                        ? '1px 1px 2px rgba(0,0,0,0.8)'
+                                                        : '1px 1px 0 rgba(255,255,255,0.5)',
+                                                    fontFamily: 'serif'
                                                 }}
                                             >
                                                 {region}
@@ -372,85 +356,66 @@ export default function WowAnalyzerClient() {
                             </div>
                         </div>
 
-                        {/* Legendary Epic Button */}
-                        <div className="relative">
-                            {/* Button Outer Glow */}
-                            <div className="absolute inset-0 rounded-xl animate-pulse" style={{
-                                background: 'radial-gradient(ellipse, rgba(255, 128, 0, 0.3) 0%, transparent 70%)',
-                                filter: 'blur(20px)',
-                                animationDuration: '2s'
-                            }} />
-
-                            <button
-                                type="submit"
-                                disabled={isLoading}
-                                className="relative w-full py-5 rounded-xl font-bold text-xl transition-all overflow-hidden group disabled:cursor-not-allowed"
-                                style={{
-                                    background: isLoading
-                                        ? 'linear-gradient(135deg, #4a3820 0%, #3a2810 100%)'
-                                        : 'linear-gradient(135deg, #8B6914 0%, #D4AF37 50%, #8B6914 100%)',
-                                    border: '3px solid',
-                                    borderImage: isLoading
-                                        ? 'linear-gradient(135deg, #6B5345, #4a3820) 1'
-                                        : 'linear-gradient(135deg, #D4AF37, #FFD700, #D4AF37) 1',
-                                    color: '#FFF',
-                                    textShadow: '0 0 10px rgba(0,0,0,0.8), 3px 3px 6px rgba(0,0,0,0.9)',
-                                    boxShadow: isLoading
-                                        ? '0 0 20px rgba(139,115,85,0.2), inset 0 2px 0 rgba(255,255,255,0.1)'
-                                        : '0 0 40px rgba(255, 128, 0, 0.4), 0 0 20px rgba(212,175,55,0.5), inset 0 3px 0 rgba(255,255,255,0.3), inset 0 -2px 0 rgba(0,0,0,0.3)',
-                                }}
-                            >
-                                {/* Animated Border Shine */}
-                                <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                                    style={{
-                                        background: 'linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
-                                        backgroundSize: '200% 200%',
-                                        animation: 'shimmer 2s infinite'
-                                    }} />
-
-                                {/* Button Shine Effect */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-
-                                {/* Epic Particles on Hover */}
-                                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Sparkles className="absolute top-2 left-4 w-4 h-4 text-yellow-300 animate-pulse" />
-                                    <Sparkles className="absolute top-3 right-6 w-3 h-3 text-yellow-400 animate-pulse" style={{ animationDelay: '0.5s' }} />
-                                    <Sparkles className="absolute bottom-2 left-1/4 w-3 h-3 text-orange-300 animate-pulse" style={{ animationDelay: '1s' }} />
-                                    <Sparkles className="absolute bottom-3 right-1/3 w-4 h-4 text-yellow-300 animate-pulse" style={{ animationDelay: '1.5s' }} />
-                                </div>
-
-                                <div className="relative flex items-center justify-center gap-3">
-                                    {isLoading ? (
-                                        <>
-                                            <div className="w-6 h-6 border-3 border-yellow-200 border-t-transparent rounded-full animate-spin" />
-                                            <span className="tracking-wide">{loadingStage}</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Search className="w-7 h-7" style={{
-                                                filter: 'drop-shadow(0 0 5px rgba(255, 255, 255, 0.5))'
-                                            }} />
-                                            <span className="tracking-wide" style={{
-                                                fontFamily: 'serif',
-                                                letterSpacing: '0.05em'
-                                            }}>
-                                                Begin Analysis
-                                            </span>
-                                            <Shield className="w-6 h-6" style={{
-                                                filter: 'drop-shadow(0 0 5px rgba(255, 255, 255, 0.5))'
-                                            }} />
-                                        </>
-                                    )}
-                                </div>
-                            </button>
-                        </div>
-
-                        <style jsx>{`
-                            @keyframes shimmer {
-                                0%, 100% { background-position: 0% 0%; }
-                                50% { background-position: 100% 100%; }
-                            }
-                        `}</style>
+                        {/* Classic WoW Stone Button */}
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="relative w-full py-4 font-bold text-lg uppercase tracking-wider disabled:cursor-not-allowed transition-all"
+                            style={{
+                                background: isLoading
+                                    ? 'linear-gradient(to bottom, #5D4037 0%, #3E2723 100%)'
+                                    : 'linear-gradient(to bottom, #8B6914 0%, #6B5914 50%, #5D4037 100%)',
+                                border: '6px solid',
+                                borderColor: isLoading
+                                    ? '#3E2723 #2d1f18 #1a1208 #5D4037'
+                                    : '#C9B388 #8B7355 #5D4037 #C9B388',
+                                color: isLoading ? '#8B7355' : '#FFF',
+                                textShadow: isLoading
+                                    ? '1px 1px 2px rgba(0,0,0,0.8)'
+                                    : '2px 2px 0 #3E2723, 3px 3px 6px rgba(0,0,0,0.9)',
+                                boxShadow: isLoading
+                                    ? 'inset 2px 2px 4px rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.6)'
+                                    : `
+                                        inset 3px 3px 6px rgba(255,255,255,0.2),
+                                        inset -2px -2px 4px rgba(0,0,0,0.5),
+                                        0 6px 12px rgba(0,0,0,0.8)
+                                    `,
+                                fontFamily: 'serif',
+                                letterSpacing: '0.15em'
+                            }}
+                            onMouseDown={(e) => {
+                                if (!isLoading) {
+                                    e.currentTarget.style.transform = 'translateY(2px)';
+                                    e.currentTarget.style.boxShadow = 'inset 2px 2px 4px rgba(0,0,0,0.6), 0 2px 4px rgba(0,0,0,0.6)';
+                                }
+                            }}
+                            onMouseUp={(e) => {
+                                e.currentTarget.style.transform = '';
+                                e.currentTarget.style.boxShadow = `
+                                    inset 3px 3px 6px rgba(255,255,255,0.2),
+                                    inset -2px -2px 4px rgba(0,0,0,0.5),
+                                    0 6px 12px rgba(0,0,0,0.8)
+                                `;
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = '';
+                            }}
+                        >
+                            <div className="relative flex items-center justify-center gap-3">
+                                {isLoading ? (
+                                    <>
+                                        <div className="w-5 h-5 border-3 border-yellow-800 border-t-transparent rounded-full animate-spin" />
+                                        <span>{loadingStage}</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Search className="w-6 h-6" />
+                                        <span>Accept Quest</span>
+                                        <Shield className="w-5 h-5" />
+                                    </>
+                                )}
+                            </div>
+                        </button>
                     </form>
                 </div>
 
@@ -461,42 +426,32 @@ export default function WowAnalyzerClient() {
                 {result && <AnalysisResults data={result} />}
             </div>
 
-            {/* Epic Footer Ornament */}
-            <div className="relative mt-16 overflow-hidden" style={{
-                background: 'linear-gradient(to bottom, rgba(26,18,8,0.8) 0%, rgba(10,6,4,0.95) 100%)',
-                borderTop: '3px solid',
-                borderImage: 'linear-gradient(to right, #8B7355, #D4AF37, #8B7355) 1'
+            {/* Classic Stone Footer */}
+            <div className="relative mt-12" style={{
+                background: 'linear-gradient(to bottom, #2d2416 0%, #1a1208 100%)',
+                borderTop: '8px solid',
+                borderColor: '#5D4037',
+                boxShadow: 'inset 0 4px 8px rgba(0,0,0,0.6)'
             }}>
-                {/* Top Decorative Line */}
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-yellow-600 to-transparent opacity-60" />
-
-                <div className="container mx-auto px-4 py-10 text-center relative">
-                    {/* Decorative Ornament */}
-                    <div className="flex items-center justify-center gap-4 mb-4">
-                        <div className="h-px w-32 bg-gradient-to-r from-transparent to-yellow-700/50" />
-                        <div className="relative">
-                            <div className="w-3 h-3 rotate-45 bg-yellow-600/60 shadow-lg shadow-yellow-600/30" />
-                            <div className="absolute inset-0 w-3 h-3 rotate-45 bg-yellow-500/30 blur-sm" />
-                        </div>
-                        <div className="h-px w-32 bg-gradient-to-l from-transparent to-yellow-700/50" />
+                <div className="container mx-auto px-4 py-8 text-center">
+                    <div className="flex items-center justify-center gap-3 mb-2">
+                        <div className="w-16 h-0.5 bg-yellow-800" />
+                        <div className="w-1 h-1 bg-yellow-800 transform rotate-45" />
+                        <div className="w-16 h-0.5 bg-yellow-800" />
                     </div>
 
-                    <p className="text-sm font-serif mb-2" style={{
+                    <p className="text-sm font-serif mb-1 uppercase tracking-wider" style={{
                         color: '#8B7355',
-                        textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
+                        textShadow: '1px 1px 2px rgba(0,0,0,0.9)',
+                        letterSpacing: '0.1em'
                     }}>
-                        Forged in the fires of Azeroth • Powered by AI Magic
+                        Forged in Azeroth • Powered by Magic
                     </p>
 
-                    <div className="flex items-center justify-center gap-2 text-xs" style={{ color: '#6B5345' }}>
-                        <span>Blessed by the Light</span>
-                        <span>•</span>
-                        <span>Empowered by the Void</span>
+                    <div className="text-xs" style={{ color: '#6B5345' }}>
+                        For the Horde • For the Alliance
                     </div>
                 </div>
-
-                {/* Bottom Glow */}
-                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
             </div>
         </div>
     );
