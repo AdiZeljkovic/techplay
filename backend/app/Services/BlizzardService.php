@@ -184,4 +184,37 @@ class BlizzardService
             return null;
         }
     }
+
+    /**
+     * Get character media (avatar, inset, main render)
+     * API: /profile/wow/character/{realmSlug}/{characterName}/character-media
+     */
+    public function getCharacterMedia(string $region, string $realmSlug, string $characterName): ?array
+    {
+        $token = $this->getAccessToken($region);
+        $baseUrl = $this->regionUrls[$region] ?? $this->regionUrls['us'];
+        $namespace = "profile-{$region}";
+
+        try {
+            $response = $this->http(20)
+                ->withToken($token)
+                ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/character-media", [
+                    'namespace' => $namespace,
+                    'locale' => 'en_US',
+                ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::warning('Blizzard Character Media API returned non-200', [
+                'status' => $response->status(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Blizzard Character Media Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
 }

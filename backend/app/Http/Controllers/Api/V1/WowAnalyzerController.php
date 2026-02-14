@@ -65,6 +65,18 @@ class WowAnalyzerController extends Controller
 
             $achievements = $this->blizzardService->getCharacterAchievements($region, $realmSlug, $characterName);
             $mounts = $this->blizzardService->getCharacterMounts($region, $realmSlug, $characterName);
+            $media = $this->blizzardService->getCharacterMedia($region, $realmSlug, $characterName);
+
+            // Extract portrait URL from media
+            $portraitUrl = null;
+            if ($media && isset($media['assets'])) {
+                foreach ($media['assets'] as $asset) {
+                    if ($asset['key'] === 'main-raw' || $asset['key'] === 'avatar') {
+                        $portraitUrl = $asset['value'];
+                        break;
+                    }
+                }
+            }
 
             // Step 2: Transform data
             $payload = $this->transformer->buildAnalysisPayload(
@@ -82,7 +94,9 @@ class WowAnalyzerController extends Controller
 
             // Step 4: Return standardized response
             return $this->success([
-                'character' => $payload['character'],
+                'character' => array_merge($payload['character'], [
+                    'portrait_url' => $portraitUrl,
+                ]),
                 'readiness_score' => $analysis['score'] ?? 0,
                 'ai_advice' => $analysis['advice'] ?? [],
                 'missing_essentials' => $analysis['missing'] ?? [],

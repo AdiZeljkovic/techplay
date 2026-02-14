@@ -194,6 +194,7 @@ export interface WowCharacter {
     race: string;
     faction: string;
     achievement_points: number;
+    portrait_url?: string | null;
 }
 
 export interface WowAnalysisResult {

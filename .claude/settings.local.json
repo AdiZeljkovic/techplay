@@ -19,7 +19,22 @@
       "Bash(set ANALYZE=true)",
       "Bash(npm run analyze:*)",
       "Bash(npm run analyze:turbo:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(npx next build)",
+      "Bash(curl:*)",
+      "WebFetch(domain:techplay.gg)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(git mv:*)",
+      "Bash(node -e:*)",
+      "WebFetch(domain:www.techplay.gg)",
+      "Bash(npm ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git status:*)",
+      "Bash(git checkout:*)",
+      "Bash(php -l:*)",
+      "WebFetch(domain:www.klix.ba)",
+      "WebFetch(domain:benchmark.rs)"
     ]
   }
 }

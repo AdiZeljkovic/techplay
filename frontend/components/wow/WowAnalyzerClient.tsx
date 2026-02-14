@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { Shield, Search } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import RealmDropdown from "@/components/wow/RealmDropdown";
 import AnalysisResults from "@/components/wow/AnalysisResults";
 import AnalysisProgress from "@/components/wow/AnalysisProgress";
 import axios from "@/lib/axios";
@@ -37,11 +38,14 @@ export default function WowAnalyzerClient() {
     const [loadingStage, setLoadingStage] = useState<string>("");
     const [result, setResult] = useState<AnalysisResult | null>(null);
 
-    const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+    const { register, handleSubmit, control, watch, formState: { errors } } = useForm<FormData>({
         defaultValues: {
             region: "us",
+            realm_slug: "",
         },
     });
+
+    const selectedRegion = watch("region");
 
     const onSubmit = async (data: FormData) => {
         setIsLoading(true);
@@ -55,7 +59,7 @@ export default function WowAnalyzerClient() {
 
             const response = await axios.post("/wow/analyze", {
                 character_name: data.character_name.trim(),
-                realm_slug: data.realm_slug.trim().toLowerCase().replace(/\s+/g, '-'),
+                realm_slug: data.realm_slug, // Already in slug format from dropdown
                 region: data.region,
             });
 
@@ -105,14 +109,18 @@ export default function WowAnalyzerClient() {
                                 })}
                             />
 
-                            <Input
-                                label="Realm"
-                                placeholder="e.g., area-52"
-                                helperText="Use realm slug (lowercase, dashes)"
-                                error={errors.realm_slug?.message}
-                                {...register("realm_slug", {
-                                    required: "Realm is required",
-                                })}
+                            <Controller
+                                name="realm_slug"
+                                control={control}
+                                rules={{ required: "Realm is required" }}
+                                render={({ field }) => (
+                                    <RealmDropdown
+                                        region={selectedRegion}
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        error={errors.realm_slug?.message}
+                                    />
+                                )}
                             />
                         </div>
 
