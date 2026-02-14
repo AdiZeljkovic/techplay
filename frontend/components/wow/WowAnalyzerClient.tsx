@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Shield, Search } from "lucide-react";
+import { Shield, Search, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import RealmDropdown from "@/components/wow/RealmDropdown";
@@ -80,16 +80,43 @@ export default function WowAnalyzerClient() {
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
-            {/* Page Hero */}
-            <div className="bg-gradient-to-b from-[var(--bg-secondary)] to-[var(--bg-primary)] border-b border-[var(--border)]">
-                <div className="container mx-auto px-4 py-16 max-w-4xl text-center">
-                    <Shield className="w-16 h-16 text-[var(--accent)] mx-auto mb-4" />
-                    <h1 className="text-4xl md:text-5xl font-bold text-[var(--text-primary)] mb-4">
+            {/* Page Hero with Midnight Theme */}
+            <div className="relative bg-gradient-to-b from-[var(--bg-secondary)] to-[var(--bg-primary)] border-b border-[var(--border)] overflow-hidden">
+                {/* Void-themed Animated Background */}
+                <div className="absolute inset-0 opacity-30">
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-black/40" />
+                    <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
+                    <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+                </div>
+
+                {/* Sparkle Stars Effect */}
+                <div className="absolute inset-0 opacity-20">
+                    {[...Array(20)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="absolute w-1 h-1 bg-white rounded-full animate-pulse"
+                            style={{
+                                top: `${Math.random() * 100}%`,
+                                left: `${Math.random() * 100}%`,
+                                animationDelay: `${Math.random() * 3}s`,
+                                animationDuration: `${2 + Math.random() * 2}s`
+                            }}
+                        />
+                    ))}
+                </div>
+
+                <div className="relative container mx-auto px-4 py-16 max-w-4xl text-center">
+                    <Shield className="w-16 h-16 text-[var(--accent)] mx-auto mb-4 drop-shadow-[0_0_15px_rgba(252,65,0,0.5)]" />
+                    <h1 className="text-4xl md:text-5xl font-bold text-[var(--text-primary)] mb-4 drop-shadow-lg">
                         WoW Character Analyzer
                     </h1>
                     <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto">
-                        Discover your readiness for The War Within: Midnight expansion
+                        Discover your readiness for <span className="text-purple-400 font-semibold">The War Within: Midnight</span> expansion
                     </p>
+                    <div className="mt-4 flex items-center justify-center gap-2 text-sm text-[var(--text-muted)]">
+                        <Sparkles className="w-4 h-4 text-[var(--accent)]" />
+                        <span>Powered by Profesor Buffy's AI Analysis</span>
+                    </div>
                 </div>
             </div>
 
