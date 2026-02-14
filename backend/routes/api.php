@@ -159,6 +159,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/games', [App\Http\Controllers\Api\V1\GameController::class, 'index']);
         Route::get('/games/{slug}', [App\Http\Controllers\Api\V1\GameController::class, 'show']);
 
+        // WoW Character Analyzer (Rate limited to 60 req/min to protect OpenAI costs)
+        Route::middleware('throttle:60,1')->prefix('wow')->group(function () {
+            Route::post('/analyze', [App\Http\Controllers\Api\V1\WowAnalyzerController::class, 'analyze']);
+        });
+
         // Shop
         Route::get('/shop/products', [App\Http\Controllers\Api\V1\ShopController::class, 'index']);
         Route::get('/shop/products/{slug}', [App\Http\Controllers\Api\V1\ShopController::class, 'show']);

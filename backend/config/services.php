@@ -70,5 +70,16 @@ return [
         'guild_id' => env('DISCORD_GUILD_ID'),     // Your Discord server ID
     ],
 
+    'blizzard' => [
+        'client_id' => env('BLIZZARD_CLIENT_ID'),
+        'client_secret' => env('BLIZZARD_CLIENT_SECRET'),
+        'region' => env('BLIZZARD_DEFAULT_REGION', 'us'),
+    ],
+
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+        'model' => env('OPENAI_MODEL', 'gpt-4-turbo'),
+    ],
+
 ];
 

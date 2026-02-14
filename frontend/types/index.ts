@@ -185,3 +185,28 @@ export interface PaginatedResponse<T> {
     prev_page_url?: string;
     next_page_url?: string;
 }
+
+// WoW Character Analyzer Types
+export interface WowCharacter {
+    name: string;
+    level: number;
+    class: string;
+    race: string;
+    faction: string;
+    achievement_points: number;
+}
+
+export interface WowAnalysisResult {
+    character: WowCharacter;
+    readiness_score: number;
+    ai_advice: string[];
+    missing_essentials: string[];
+    void_mounts_count: number;
+    has_void_elf: boolean;
+}
+
+export interface WowAnalysisResponse {
+    success: boolean;
+    data?: WowAnalysisResult;
+    message?: string;
+}
