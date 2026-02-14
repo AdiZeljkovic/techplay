@@ -417,6 +417,7 @@ export default function WowAnalyzerClient() {
                             </div>
                         </button>
                     </form>
+                    </div>
                 </div>
 
                 {/* Loading */}
