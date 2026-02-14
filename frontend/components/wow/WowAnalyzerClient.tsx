@@ -202,12 +202,38 @@ export default function WowAnalyzerClient() {
                         boxShadow: 'inset 0 0 20px rgba(139,115,85,0.2)',
                         padding: '32px'
                     }}>
-                        {/* Parchment Texture */}
+                        {/* Parchment Texture + Aging Effects */}
                         <div className="absolute inset-0 opacity-10 pointer-events-none" style={{
                             backgroundImage: `
                                 repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(107,83,69,0.1) 2px, rgba(107,83,69,0.1) 4px),
                                 repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(107,83,69,0.1) 2px, rgba(107,83,69,0.1) 4px)
                             `
+                        }} />
+
+                        {/* Age Stains */}
+                        <div className="absolute top-10 right-12 w-20 h-20 rounded-full opacity-5 pointer-events-none" style={{
+                            background: 'radial-gradient(circle, #8B7355 0%, transparent 70%)'
+                        }} />
+                        <div className="absolute bottom-16 left-8 w-16 h-16 rounded-full opacity-5 pointer-events-none" style={{
+                            background: 'radial-gradient(circle, #6B5345 0%, transparent 70%)'
+                        }} />
+
+                        {/* Torn Edges Effect */}
+                        <div className="absolute top-0 left-0 right-0 h-2 opacity-20 pointer-events-none" style={{
+                            background: 'linear-gradient(to right, transparent 0%, #8B7355 2%, transparent 4%, #6B5345 6%, transparent 8%, #8B7355 10%, transparent 100%)'
+                        }} />
+                        <div className="absolute bottom-0 left-0 right-0 h-2 opacity-20 pointer-events-none" style={{
+                            background: 'linear-gradient(to right, transparent 0%, #6B5345 3%, transparent 5%, #8B7355 9%, transparent 11%, #6B5345 14%, transparent 100%)'
+                        }} />
+
+                        {/* Paper Creases / Fold Lines */}
+                        <div className="absolute top-1/3 left-0 right-0 h-px opacity-5 pointer-events-none" style={{
+                            background: 'linear-gradient(to right, transparent, #5D4037, transparent)',
+                            transform: 'rotate(0.5deg)'
+                        }} />
+                        <div className="absolute top-2/3 left-0 right-0 h-px opacity-5 pointer-events-none" style={{
+                            background: 'linear-gradient(to right, transparent, #5D4037, transparent)',
+                            transform: 'rotate(-0.3deg)'
                         }} />
 
                         {/* Metal Corner Rivets */}
@@ -224,20 +250,69 @@ export default function WowAnalyzerClient() {
                             boxShadow: 'inset 1px 1px 2px rgba(255,215,0,0.5), 0 2px 4px rgba(0,0,0,0.8)'
                         }} />
 
+                        {/* Wax Seal / Quest Emblem */}
+                        <div className="flex justify-center mb-4">
+                            <div className="relative">
+                                <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{
+                                    background: 'radial-gradient(circle, #8B0000 0%, #5D0000 100%)',
+                                    boxShadow: 'inset 2px 2px 4px rgba(0,0,0,0.6), 0 3px 6px rgba(0,0,0,0.5)',
+                                    border: '3px solid #6B0000'
+                                }}>
+                                    <Shield className="w-8 h-8 text-yellow-600" />
+                                </div>
+                                <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800" style={{
+                                    boxShadow: 'inset 1px 1px 2px rgba(255,215,0,0.5), 0 2px 4px rgba(0,0,0,0.6)'
+                                }} />
+                            </div>
+                        </div>
+
                         {/* Quest Title */}
-                        <div className="text-center mb-6 relative">
-                            <h2 className="text-2xl font-bold uppercase" style={{
+                        <div className="text-center mb-4">
+                            <h2 className="text-3xl font-bold uppercase mb-2" style={{
                                 color: '#3E2723',
-                                textShadow: '1px 1px 0 rgba(255,255,255,0.5)',
+                                textShadow: '2px 2px 0 rgba(255,255,255,0.6)',
                                 fontFamily: 'serif',
-                                letterSpacing: '0.1em'
+                                letterSpacing: '0.15em'
                             }}>
-                                Character Analysis Quest
+                                Character Analysis
                             </h2>
-                            <div className="mt-2 flex items-center justify-center gap-2">
-                                <div className="w-12 h-0.5 bg-yellow-800" />
-                                <div className="w-1 h-1 bg-yellow-800 transform rotate-45" />
-                                <div className="w-12 h-0.5 bg-yellow-800" />
+                            <div className="flex items-center justify-center gap-2 mb-3">
+                                <div className="w-20 h-px bg-yellow-800" />
+                                <div className="w-1.5 h-1.5 bg-yellow-800 transform rotate-45" />
+                                <div className="w-20 h-px bg-yellow-800" />
+                            </div>
+                        </div>
+
+                        {/* Quest Description (Flavor Text) */}
+                        <div className="mb-6 text-center px-8">
+                            <p className="text-base leading-relaxed italic mb-3" style={{
+                                color: '#5D4037',
+                                fontFamily: 'serif',
+                                textShadow: '1px 1px 0 rgba(255,255,255,0.3)'
+                            }}>
+                                Greetings, hero! The shadows of <span className="font-bold not-italic text-purple-700">Midnight</span> loom
+                                over Quel'Thalas. I need your assistance in analyzing a champion's readiness for the trials ahead.
+                            </p>
+                            <p className="text-sm" style={{
+                                color: '#8B7355',
+                                fontFamily: 'serif'
+                            }}>
+                                Provide the details below, and I shall divine their fate through ancient magic...
+                            </p>
+                        </div>
+
+                        {/* Quest Objectives Header */}
+                        <div className="mb-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="w-1 h-6 bg-yellow-800" />
+                                <h3 className="text-lg font-bold uppercase" style={{
+                                    color: '#3E2723',
+                                    fontFamily: 'serif',
+                                    letterSpacing: '0.1em',
+                                    textShadow: '1px 1px 0 rgba(255,255,255,0.5)'
+                                }}>
+                                    Quest Objectives
+                                </h3>
                             </div>
                         </div>
 
@@ -245,13 +320,19 @@ export default function WowAnalyzerClient() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Character Name Input */}
                             <div>
-                                <label className="block text-sm font-bold mb-2 uppercase tracking-wide" style={{
+                                <label className="block text-sm font-bold mb-2 tracking-wide flex items-start gap-2" style={{
                                     color: '#3E2723',
                                     textShadow: '1px 1px 0 rgba(255,255,255,0.5)',
                                     fontFamily: 'serif'
                                 }}>
-                                    <Swords className="w-4 h-4 inline mr-1" />
-                                    Character Name
+                                    <div className="flex-shrink-0 w-5 h-5 rounded-sm mt-0.5 flex items-center justify-center" style={{
+                                        background: 'linear-gradient(135deg, #C9B388 0%, #B8A589 100%)',
+                                        border: '2px solid #8B7355',
+                                        boxShadow: 'inset 1px 1px 2px rgba(255,255,255,0.3)'
+                                    }}>
+                                        <Swords className="w-3 h-3 text-yellow-800" />
+                                    </div>
+                                    <span className="flex-1">Provide Character Name</span>
                                 </label>
                                 <input
                                     type="text"
@@ -303,13 +384,19 @@ export default function WowAnalyzerClient() {
 
                         {/* Region Selection */}
                         <div>
-                            <label className="block text-sm font-bold mb-3 uppercase tracking-wide" style={{
+                            <label className="block text-sm font-bold mb-3 tracking-wide flex items-start gap-2" style={{
                                 color: '#3E2723',
                                 textShadow: '1px 1px 0 rgba(255,255,255,0.5)',
                                 fontFamily: 'serif'
                             }}>
-                                <Shield className="w-4 h-4 inline mr-1" />
-                                Region
+                                <div className="flex-shrink-0 w-5 h-5 rounded-sm mt-0.5 flex items-center justify-center" style={{
+                                    background: 'linear-gradient(135deg, #C9B388 0%, #B8A589 100%)',
+                                    border: '2px solid #8B7355',
+                                    boxShadow: 'inset 1px 1px 2px rgba(255,255,255,0.3)'
+                                }}>
+                                    <Shield className="w-3 h-3 text-yellow-800" />
+                                </div>
+                                <span className="flex-1">Select Character Region</span>
                             </label>
                             <div className="grid grid-cols-4 gap-3">
                                 {(["us", "eu", "kr", "tw"] as const).map((region) => (
@@ -416,6 +503,51 @@ export default function WowAnalyzerClient() {
                                 )}
                             </div>
                         </button>
+
+                        {/* Quest Completion / Signature */}
+                        <div className="mt-8 pt-6 border-t-2 border-yellow-800/30">
+                            <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0">
+                                    <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{
+                                        background: 'linear-gradient(135deg, #6B5914 0%, #5D4037 100%)',
+                                        border: '3px solid #8B7355',
+                                        boxShadow: 'inset 1px 1px 2px rgba(255,255,255,0.2), 0 2px 4px rgba(0,0,0,0.4)'
+                                    }}>
+                                        <Sparkles className="w-6 h-6 text-yellow-400" />
+                                    </div>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm italic mb-2" style={{
+                                        color: '#5D4037',
+                                        fontFamily: 'serif',
+                                        lineHeight: '1.6'
+                                    }}>
+                                        May the Light guide your path through the darkness, champion. The secrets of Midnight await those brave enough to seek them.
+                                    </p>
+                                    <div className="flex items-center gap-2 mt-3">
+                                        <div className="h-px flex-1 bg-gradient-to-r from-yellow-800/50 to-transparent" />
+                                        <p className="text-xs font-bold uppercase tracking-wider" style={{
+                                            color: '#8B7355',
+                                            fontFamily: 'serif'
+                                        }}>
+                                            — Profesor Buffy
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Quest Rewards Preview */}
+                            <div className="mt-4 p-3 rounded" style={{
+                                background: 'linear-gradient(to right, rgba(139,105,20,0.1), rgba(107,83,69,0.1))',
+                                border: '1px solid rgba(139,115,85,0.3)'
+                            }}>
+                                <div className="flex items-center gap-2 text-xs" style={{ color: '#8B7355' }}>
+                                    <Shield className="w-3.5 h-3.5" />
+                                    <span className="font-semibold">Quest Rewards:</span>
+                                    <span>AI-Powered Analysis • Midnight Readiness Score • Strategic Recommendations</span>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                     </div>
                 </div>
