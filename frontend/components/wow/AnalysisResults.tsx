@@ -1,11 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Shield, Sparkles, AlertCircle, Share2, Check, X, ExternalLink } from "lucide-react";
+import { Shield, Sparkles, AlertCircle, Share2, Check, X, ExternalLink, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { getClassColor, getFactionTheme, getScoreQuality } from "@/data/wow-theme";
 import toast from "react-hot-toast";
 import axios from "@/lib/axios";
+import TimelineTracker from "./TimelineTracker";
+import PreparationChecklist from "./PreparationChecklist";
+import HousingReadiness from "./HousingReadiness";
+import DailyPlanner from "./DailyPlanner";
 
 interface AnalysisResultsProps {
     data: {
@@ -22,8 +26,27 @@ interface AnalysisResultsProps {
         readiness_score: number;
         ai_advice: string[];
         missing_essentials: string[];
+        daily_priority?: string[];
         void_mounts_count: number;
         has_void_elf: boolean;
+        housing?: {
+            housing_score: number;
+            mount_count: number;
+            mount_target: number;
+            achievement_count: number;
+            void_mount_count: number;
+            rating: string;
+        };
+        timeline?: {
+            days_until_launch: number;
+            launch_date: string;
+            urgency_level: string;
+            limited_content_available: {
+                royal_voidwing: boolean;
+                faceless_one_title: boolean;
+            };
+        };
+        checklist?: any;
     };
 }
 
@@ -73,8 +96,44 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="space-y-6"
+            className="space-y-8"
         >
+            {/* MIDNIGHT COMMAND CENTER TITLE */}
+            <div className="text-center py-6">
+                <motion.h1
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-5xl font-bold uppercase mb-3"
+                    style={{
+                        background: 'linear-gradient(135deg, #FFD700, #FFA500, #FF8C00)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        textShadow: '0 0 30px rgba(255,215,0,0.5)',
+                        fontFamily: 'serif',
+                        letterSpacing: '0.1em',
+                    }}
+                >
+                    <Trophy className="inline w-12 h-12 mb-2 mr-3" style={{ color: '#FFD700' }} />
+                    MIDNIGHT COMMAND CENTER
+                </motion.h1>
+                <p className="text-xl italic" style={{ color: '#C9B388', fontFamily: 'serif' }}>
+                    Complete Readiness Analysis for {data.character.name}
+                </p>
+            </div>
+
+            {/* TIMELINE TRACKER - Most Critical Section */}
+            {data.timeline && (
+                <TimelineTracker timeline={data.timeline} />
+            )}
+
+            {/* DAILY PLANNER - What to do TODAY */}
+            {data.daily_priority && data.daily_priority.length > 0 && (
+                <DailyPlanner
+                    dailyPriority={data.daily_priority}
+                    daysUntilLaunch={data.timeline?.days_until_launch || 16}
+                />
+            )}
             {/* Character Header with Portrait */}
             <div
                 className="relative bg-[var(--bg-card)] border-2 rounded-2xl p-6 overflow-hidden"
