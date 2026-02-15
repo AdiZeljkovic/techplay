@@ -339,7 +339,7 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
                                 className="flex items-center gap-2 px-4 py-2 rounded-lg"
                                 style={{
                                     background: `linear-gradient(to right, ${factionTheme.gradient})`,
-                                    boxShadow: `0 0 15px rgba(${factionTheme.faction === 'Alliance' ? '0,112,221' : '220,20,60'}, 0.5)`,
+                                    boxShadow: `0 0 15px rgba(${data.character.faction === 'Alliance' ? '0,112,221' : '220,20,60'}, 0.5)`,
                                 }}
                             >
                                 <span className="text-sm font-bold text-white">
