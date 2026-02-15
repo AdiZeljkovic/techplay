@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Clock, AlertTriangle, Calendar, Zap } from "lucide-react";
+import { Clock, AlertTriangle, Calendar, Zap, Sparkles } from "lucide-react";
+import { MidnightTheme, getUrgencyTheme, glassCard } from "@/lib/wow-midnight-theme";
 
 interface TimelineData {
     days_until_launch: number;
@@ -52,77 +53,94 @@ export default function TimelineTracker({ timeline }: TimelineTrackerProps) {
         return () => clearInterval(interval);
     }, [timeline.launch_date]);
 
-    const getUrgencyColor = () => {
-        if (timeLeft.days <= 3) return { bg: '#8B0000', border: '#DC143C', glow: 'rgba(220,20,60,0.6)' };
-        if (timeLeft.days <= 7) return { bg: '#FF6B00', border: '#FF8C00', glow: 'rgba(255,140,0,0.6)' };
-        if (timeLeft.days <= 14) return { bg: '#FFA500', border: '#FFD700', glow: 'rgba(255,215,0,0.6)' };
-        return { bg: '#8B6914', border: '#C9B388', glow: 'rgba(201,179,136,0.6)' };
-    };
-
-    const urgencyColors = getUrgencyColor();
+    const urgencyTheme = getUrgencyTheme(timeLeft.days);
+    const isUrgent = timeLeft.days <= 7;
 
     return (
         <div className="relative">
-            {/* WoW Quest Header with Urgency */}
+            {/* MIDNIGHT COUNTDOWN CONTAINER */}
             <div
-                className="relative mb-6 p-6 rounded-xl overflow-hidden"
+                className="relative p-8 rounded-2xl overflow-hidden"
                 style={{
-                    background: 'linear-gradient(135deg, #2a1810 0%, #1a0f08 100%)',
-                    border: '10px solid',
-                    borderImage: 'linear-gradient(135deg, #5D4037, #3E2723) 1',
-                    boxShadow: `inset 0 0 40px rgba(0,0,0,0.7), 0 8px 20px rgba(0,0,0,0.6), 0 0 30px ${urgencyColors.glow}`,
+                    background: MidnightTheme.backgrounds.void,
+                    border: `3px solid ${urgencyTheme.border}`,
+                    boxShadow: urgencyTheme.shadow,
                 }}
             >
-                {/* Animated Urgency Pulse */}
-                {timeLeft.days <= 7 && (
+                {/* Animated Void Pulse Background */}
+                <motion.div
+                    className="absolute inset-0 opacity-20 pointer-events-none"
+                    animate={{
+                        background: [
+                            `radial-gradient(circle at 30% 50%, ${MidnightTheme.void.primary}, transparent)`,
+                            `radial-gradient(circle at 70% 50%, ${urgencyTheme.text}, transparent)`,
+                            `radial-gradient(circle at 30% 50%, ${MidnightTheme.void.primary}, transparent)`,
+                        ],
+                    }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                />
+
+                {/* Glass Overlay for Premium Look */}
+                <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                        background: MidnightTheme.gradients.glassOverlay,
+                    }}
+                />
+
+                <div className="relative z-10 text-center">
+                    {/* Header Icon */}
                     <motion.div
-                        className="absolute inset-0 opacity-20"
-                        animate={{
-                            background: [
-                                `radial-gradient(circle at 50% 50%, ${urgencyColors.bg}, transparent)`,
-                                `radial-gradient(circle at 50% 50%, transparent, ${urgencyColors.bg})`,
-                            ],
-                        }}
+                        className="flex items-center justify-center gap-3 mb-6"
+                        animate={isUrgent ? { scale: [1, 1.1, 1] } : {}}
                         transition={{ duration: 2, repeat: Infinity }}
-                    />
-                )}
-
-                <div className="relative text-center">
-                    <div className="flex items-center justify-center gap-3 mb-4">
-                        {timeLeft.days <= 7 ? (
-                            <AlertTriangle className="w-10 h-10 text-red-500 animate-pulse" />
+                    >
+                        {isUrgent ? (
+                            <AlertTriangle className="w-12 h-12" style={{ color: urgencyTheme.text }} />
                         ) : (
-                            <Clock className="w-10 h-10 text-yellow-600" />
+                            <Clock className="w-12 h-12" style={{ color: MidnightTheme.void.ethereal }} />
                         )}
-                    </div>
+                        <Sparkles className="w-8 h-8" style={{ color: MidnightTheme.light.primary }} />
+                    </motion.div>
 
-                    <h2
-                        className="text-4xl font-bold uppercase tracking-wider mb-3"
+                    {/* Title */}
+                    <motion.h2
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-4xl md:text-5xl font-bold uppercase tracking-wider mb-3"
                         style={{
-                            color: timeLeft.days <= 7 ? '#FF6B6B' : '#FFD700',
-                            textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(255,215,0,0.5)',
+                            background: isUrgent
+                                ? urgencyTheme.background
+                                : MidnightTheme.gradients.voidToLight,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            textShadow: `0 0 20px ${urgencyTheme.glow}`,
                             fontFamily: 'serif',
+                            letterSpacing: '0.15em',
                         }}
                     >
-                        {timeLeft.days <= 7 ? '⚠️ URGENT ⚠️' : 'Midnight Launch Countdown'}
-                    </h2>
+                        {isUrgent ? '⚠️ CRITICAL COUNTDOWN ⚠️' : '🌌 MIDNIGHT APPROACHES 🌌'}
+                    </motion.h2>
 
-                    {/* Live Countdown Timer */}
-                    <div className="grid grid-cols-4 gap-4 mb-6 max-w-2xl mx-auto">
+                    <p className="text-base md:text-lg mb-8" style={{ color: MidnightTheme.text.void, fontFamily: 'serif' }}>
+                        {isUrgent ? 'Limited-time content expires soon!' : 'The Void invasion draws near...'}
+                    </p>
+
+                    {/* COUNTDOWN TIMER */}
+                    <div className="grid grid-cols-4 gap-3 md:gap-6 mb-8 max-w-3xl mx-auto">
                         {[
-                            { value: timeLeft.days, label: 'DAYS' },
-                            { value: timeLeft.hours, label: 'HOURS' },
-                            { value: timeLeft.minutes, label: 'MINS' },
-                            { value: timeLeft.seconds, label: 'SECS' },
+                            { value: timeLeft.days, label: 'DAYS', gradient: MidnightTheme.gradients.voidToLight },
+                            { value: timeLeft.hours, label: 'HOURS', gradient: MidnightTheme.gradients.voidHorizontal },
+                            { value: timeLeft.minutes, label: 'MINS', gradient: MidnightTheme.gradients.voidHorizontal },
+                            { value: timeLeft.seconds, label: 'SECS', gradient: MidnightTheme.gradients.lightHorizontal },
                         ].map((item, index) => (
                             <motion.div
                                 key={item.label}
-                                className="relative p-4 rounded-lg"
+                                className="relative p-4 md:p-6 rounded-xl"
                                 style={{
-                                    background: 'linear-gradient(to bottom, #2a1810, #1a0f08)',
-                                    border: '4px solid',
-                                    borderColor: urgencyColors.border,
-                                    boxShadow: `inset 1px 1px 3px rgba(255,255,255,0.1), 0 4px 8px rgba(0,0,0,0.6), 0 0 15px ${urgencyColors.glow}`,
+                                    ...glassCard,
+                                    border: `2px solid ${urgencyTheme.border}`,
+                                    boxShadow: `0 0 20px ${urgencyTheme.glow}, ${MidnightTheme.shadows.depth}`,
                                 }}
                                 animate={
                                     item.label === 'SECS'
@@ -130,72 +148,132 @@ export default function TimelineTracker({ timeline }: TimelineTrackerProps) {
                                         : {}
                                 }
                                 transition={{ duration: 1, repeat: Infinity }}
+                                whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
                             >
+                                {/* Inner Glow */}
                                 <div
-                                    className="text-4xl font-bold mb-1"
+                                    className="absolute inset-0 rounded-xl opacity-30"
                                     style={{
-                                        color: urgencyColors.border,
-                                        textShadow: `2px 2px 4px rgba(0,0,0,0.8), 0 0 10px ${urgencyColors.glow}`,
-                                        fontFamily: 'monospace',
+                                        background: `radial-gradient(circle at center, ${urgencyTheme.text}, transparent)`,
                                     }}
-                                >
-                                    {String(item.value).padStart(2, '0')}
-                                </div>
-                                <div
-                                    className="text-xs font-bold uppercase tracking-widest"
-                                    style={{ color: '#8B7355' }}
-                                >
-                                    {item.label}
+                                />
+
+                                <div className="relative z-10">
+                                    <div
+                                        className="text-4xl md:text-5xl font-bold mb-2"
+                                        style={{
+                                            background: item.gradient,
+                                            WebkitBackgroundClip: 'text',
+                                            WebkitTextFillColor: 'transparent',
+                                            fontFamily: 'monospace',
+                                            filter: `drop-shadow(0 0 10px ${urgencyTheme.glow})`,
+                                        }}
+                                    >
+                                        {String(item.value).padStart(2, '0')}
+                                    </div>
+                                    <div
+                                        className="text-xs font-bold uppercase tracking-widest"
+                                        style={{ color: MidnightTheme.text.muted }}
+                                    >
+                                        {item.label}
+                                    </div>
                                 </div>
                             </motion.div>
                         ))}
                     </div>
 
-                    <p className="text-lg italic mb-4" style={{ color: '#C9B388', fontFamily: 'serif' }}>
-                        {timeLeft.days <= 3 && "🔥 FINAL DAYS - Complete limited-time content NOW! 🔥"}
+                    {/* Urgency Message */}
+                    <motion.p
+                        className="text-base md:text-xl font-bold mb-6"
+                        style={{ color: urgencyTheme.text, fontFamily: 'serif' }}
+                        animate={isUrgent ? { opacity: [1, 0.7, 1] } : {}}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                        {timeLeft.days <= 3 && "🔥 FINAL DAYS - Complete limited content NOW! 🔥"}
                         {timeLeft.days > 3 && timeLeft.days <= 7 && "⏰ Less than a week - Prioritize critical tasks!"}
-                        {timeLeft.days > 7 && timeLeft.days <= 14 && "📅 Two weeks remaining - Stay focused!"}
-                        {timeLeft.days > 14 && "✨ Plenty of time - Build your preparation plan!"}
-                    </p>
+                        {timeLeft.days > 7 && timeLeft.days <= 14 && "📅 Two weeks remaining - Stay focused on preparation!"}
+                        {timeLeft.days > 14 && "✨ Plenty of time - Build your readiness systematically!"}
+                    </motion.p>
 
-                    {/* Limited Content Availability */}
-                    <div className="mt-6 p-4 rounded-lg" style={{
-                        background: 'linear-gradient(to right, rgba(139,0,0,0.2), rgba(220,20,60,0.1))',
-                        border: '2px solid rgba(220,20,60,0.5)',
-                    }}>
-                        <div className="flex items-center justify-center gap-2 mb-3">
-                            <Zap className="w-5 h-5 text-red-400" />
-                            <h3 className="text-lg font-bold uppercase tracking-wide" style={{ color: '#FF6B6B' }}>
-                                Limited-Time Content
+                    {/* LIMITED-TIME CONTENT ALERTS */}
+                    <div
+                        className="p-6 rounded-xl"
+                        style={{
+                            ...glassCard,
+                            border: `2px solid ${MidnightTheme.urgency.critical}`,
+                            background: `${MidnightTheme.backgrounds.glassLight}`,
+                        }}
+                    >
+                        <div className="flex items-center justify-center gap-3 mb-4">
+                            <Zap className="w-6 h-6" style={{ color: MidnightTheme.urgency.high }} />
+                            <h3
+                                className="text-lg md:text-xl font-bold uppercase tracking-wide"
+                                style={{ color: MidnightTheme.light.primary }}
+                            >
+                                ⚡ Limited-Time Rewards
                             </h3>
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className={`p-3 rounded-lg ${timeline.limited_content_available.royal_voidwing ? 'bg-green-900/30' : 'bg-red-900/30'}`}>
-                                <div className="flex items-center gap-2 mb-1">
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Royal Voidwing */}
+                            <motion.div
+                                className="p-4 rounded-lg"
+                                style={{
+                                    background: timeline.limited_content_available.royal_voidwing
+                                        ? `linear-gradient(135deg, rgba(147, 112, 219, 0.2), rgba(107, 70, 193, 0.1))`
+                                        : `linear-gradient(135deg, rgba(139, 0, 0, 0.3), rgba(220, 20, 60, 0.2))`,
+                                    border: timeline.limited_content_available.royal_voidwing
+                                        ? `2px solid ${MidnightTheme.void.primary}`
+                                        : `2px solid ${MidnightTheme.urgency.dark}`,
+                                }}
+                                whileHover={{ scale: 1.03 }}
+                            >
+                                <div className="flex items-center gap-3 mb-2">
                                     {timeline.limited_content_available.royal_voidwing ? (
-                                        <span className="text-green-400 text-xl">✅</span>
+                                        <span className="text-2xl">✅</span>
                                     ) : (
-                                        <span className="text-red-400 text-xl">❌</span>
+                                        <span className="text-2xl">❌</span>
                                     )}
-                                    <span className="text-sm font-bold" style={{ color: '#C9B388' }}>Royal Voidwing</span>
+                                    <span className="font-bold" style={{ color: MidnightTheme.void.ethereal }}>
+                                        Royal Voidwing Mount
+                                    </span>
                                 </div>
-                                <p className="text-xs" style={{ color: '#8B7355' }}>
-                                    {timeline.limited_content_available.royal_voidwing ? 'Still available!' : 'No longer obtainable'}
+                                <p className="text-xs" style={{ color: MidnightTheme.text.muted }}>
+                                    {timeline.limited_content_available.royal_voidwing
+                                        ? 'Still available! Complete now!'
+                                        : 'No longer obtainable 😢'}
                                 </p>
-                            </div>
-                            <div className={`p-3 rounded-lg ${timeline.limited_content_available.faceless_one_title ? 'bg-green-900/30' : 'bg-red-900/30'}`}>
-                                <div className="flex items-center gap-2 mb-1">
+                            </motion.div>
+
+                            {/* Faceless One Title */}
+                            <motion.div
+                                className="p-4 rounded-lg"
+                                style={{
+                                    background: timeline.limited_content_available.faceless_one_title
+                                        ? `linear-gradient(135deg, rgba(147, 112, 219, 0.2), rgba(107, 70, 193, 0.1))`
+                                        : `linear-gradient(135deg, rgba(139, 0, 0, 0.3), rgba(220, 20, 60, 0.2))`,
+                                    border: timeline.limited_content_available.faceless_one_title
+                                        ? `2px solid ${MidnightTheme.void.primary}`
+                                        : `2px solid ${MidnightTheme.urgency.dark}`,
+                                }}
+                                whileHover={{ scale: 1.03 }}
+                            >
+                                <div className="flex items-center gap-3 mb-2">
                                     {timeline.limited_content_available.faceless_one_title ? (
-                                        <span className="text-green-400 text-xl">✅</span>
+                                        <span className="text-2xl">✅</span>
                                     ) : (
-                                        <span className="text-red-400 text-xl">❌</span>
+                                        <span className="text-2xl">❌</span>
                                     )}
-                                    <span className="text-sm font-bold" style={{ color: '#C9B388' }}>Faceless One Title</span>
+                                    <span className="font-bold" style={{ color: MidnightTheme.void.ethereal }}>
+                                        "Faceless One" Title
+                                    </span>
                                 </div>
-                                <p className="text-xs" style={{ color: '#8B7355' }}>
-                                    {timeline.limited_content_available.faceless_one_title ? 'Still available!' : 'No longer obtainable'}
+                                <p className="text-xs" style={{ color: MidnightTheme.text.muted }}>
+                                    {timeline.limited_content_available.faceless_one_title
+                                        ? 'Still available! Complete now!'
+                                        : 'No longer obtainable 😢'}
                                 </p>
-                            </div>
+                            </motion.div>
                         </div>
                     </div>
                 </div>

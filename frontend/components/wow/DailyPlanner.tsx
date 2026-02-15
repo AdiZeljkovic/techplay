@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, Zap, Target, CheckCircle2 } from "lucide-react";
+import { Calendar, Zap, Target, CheckCircle2, Sparkles } from "lucide-react";
+import { MidnightTheme, getUrgencyTheme, glassCard } from "@/lib/wow-midnight-theme";
 
 interface DailyPlannerProps {
     dailyPriority: string[];
@@ -16,155 +17,234 @@ export default function DailyPlanner({ dailyPriority, daysUntilLaunch }: DailyPl
         day: 'numeric'
     });
 
+    const urgencyTheme = getUrgencyTheme(daysUntilLaunch);
+    const isUrgent = daysUntilLaunch <= 7;
+
     return (
         <div className="relative">
             <div
-                className="p-6 rounded-xl"
+                className="p-8 rounded-2xl overflow-hidden"
                 style={{
-                    background: 'linear-gradient(135deg, #2a1810 0%, #1a0f08 100%)',
-                    border: '8px solid',
-                    borderImage: 'linear-gradient(135deg, #5D4037, #3E2723) 1',
-                    boxShadow: 'inset 0 0 30px rgba(0,0,0,0.6), 0 6px 15px rgba(0,0,0,0.5)',
+                    background: MidnightTheme.backgrounds.void,
+                    border: `3px solid ${MidnightTheme.void.primary}`,
+                    boxShadow: MidnightTheme.shadows.voidGlow,
                 }}
             >
-                {/* Header */}
-                <div className="text-center mb-6">
-                    <div className="flex items-center justify-center gap-3 mb-3">
-                        <Calendar className="w-8 h-8 text-yellow-600" />
-                    </div>
-                    <h2
-                        className="text-3xl font-bold uppercase tracking-wider mb-2"
-                        style={{
-                            color: '#FFD700',
-                            textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(255,215,0,0.4)',
-                            fontFamily: 'serif',
-                        }}
-                    >
-                        📅 Today's Priority List
-                    </h2>
-                    <p className="text-sm" style={{ color: '#C9B388', fontFamily: 'serif' }}>
-                        {today}
-                    </p>
-                    <div className="mt-2 inline-block px-4 py-1.5 rounded" style={{
-                        background: daysUntilLaunch <= 7
-                            ? 'linear-gradient(to right, #8B0000, #DC143C)'
-                            : 'linear-gradient(to right, #8B6914, #6B5914)',
-                        border: '2px solid',
-                        borderColor: daysUntilLaunch <= 7 ? '#FF6B6B' : '#C9B388',
-                    }}>
-                        <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#FFF' }}>
-                            {daysUntilLaunch} days until Midnight launch
-                        </p>
-                    </div>
-                </div>
+                {/* Animated Background Glow */}
+                <motion.div
+                    className="absolute inset-0 opacity-15 pointer-events-none"
+                    animate={{
+                        background: [
+                            `radial-gradient(circle at 20% 80%, ${MidnightTheme.void.primary}, transparent)`,
+                            `radial-gradient(circle at 80% 20%, ${MidnightTheme.light.primary}, transparent)`,
+                            `radial-gradient(circle at 20% 80%, ${MidnightTheme.void.primary}, transparent)`,
+                        ],
+                    }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                />
 
-                {/* Daily Tasks */}
-                <div className="space-y-4">
-                    {dailyPriority && dailyPriority.length > 0 ? (
-                        dailyPriority.map((task, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className="relative group"
-                            >
-                                <div
-                                    className="p-4 rounded-lg transition-all hover:scale-102"
-                                    style={{
-                                        background: 'linear-gradient(to bottom, #f5f5dc 0%, #e8e0c8 100%)',
-                                        border: '4px solid #8B7355',
-                                        boxShadow: '0 4px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3)',
-                                    }}
+                {/* Glass Overlay */}
+                <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ background: MidnightTheme.gradients.glassOverlay }}
+                />
+
+                <div className="relative z-10">
+                    {/* Header */}
+                    <div className="text-center mb-8">
+                        <motion.div
+                            className="flex items-center justify-center gap-3 mb-4"
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <Calendar className="w-10 h-10" style={{ color: MidnightTheme.light.primary }} />
+                            <Sparkles className="w-8 h-8" style={{ color: MidnightTheme.void.ethereal }} />
+                        </motion.div>
+
+                        <h2
+                            className="text-3xl md:text-4xl font-bold uppercase tracking-wider mb-3"
+                            style={{
+                                background: MidnightTheme.gradients.voidToLight,
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                textShadow: `0 0 20px ${MidnightTheme.void.glow}`,
+                                fontFamily: 'serif',
+                                letterSpacing: '0.12em',
+                            }}
+                        >
+                            📅 TODAY'S PRIORITY MISSIONS
+                        </h2>
+
+                        <p className="text-sm mb-4" style={{ color: MidnightTheme.text.void, fontFamily: 'serif' }}>
+                            {today}
+                        </p>
+
+                        <motion.div
+                            className="inline-block px-5 py-2 rounded-lg"
+                            style={{
+                                background: isUrgent ? urgencyTheme.background : MidnightTheme.gradients.voidHorizontal,
+                                border: `2px solid ${urgencyTheme.border}`,
+                                boxShadow: `0 0 15px ${urgencyTheme.glow}`,
+                            }}
+                            animate={isUrgent ? { scale: [1, 1.05, 1] } : {}}
+                            transition={{ duration: 2, repeat: Infinity }}
+                        >
+                            <p className="text-sm font-bold uppercase tracking-wider" style={{ color: '#FFF' }}>
+                                {daysUntilLaunch} days until Midnight launch
+                            </p>
+                        </motion.div>
+                    </div>
+
+                    {/* Daily Tasks */}
+                    <div className="space-y-5">
+                        {dailyPriority && dailyPriority.length > 0 ? (
+                            dailyPriority.map((task, index) => (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0, x: -30 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.15, type: "spring" }}
+                                    className="relative group"
+                                    whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
                                 >
-                                    <div className="flex items-start gap-4">
-                                        {/* Priority Number Badge */}
+                                    <div
+                                        className="p-5 rounded-xl transition-all"
+                                        style={{
+                                            ...glassCard,
+                                            border: index === 0
+                                                ? `2px solid ${MidnightTheme.light.primary}`
+                                                : `2px solid ${MidnightTheme.void.primary}`,
+                                            boxShadow: index === 0
+                                                ? `0 0 25px ${MidnightTheme.light.glow}, ${MidnightTheme.shadows.depth}`
+                                                : `0 0 20px ${MidnightTheme.void.glow}, ${MidnightTheme.shadows.depth}`,
+                                        }}
+                                    >
+                                        {/* Inner Radial Glow */}
                                         <div
-                                            className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg"
+                                            className="absolute inset-0 rounded-xl opacity-20 pointer-events-none"
                                             style={{
                                                 background: index === 0
-                                                    ? 'linear-gradient(135deg, #FFD700, #DAA520)'
-                                                    : 'linear-gradient(135deg, #8B7355, #6B5345)',
-                                                border: '3px solid',
-                                                borderColor: index === 0 ? '#FFA500' : '#5D4037',
-                                                color: '#FFF',
-                                                textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
-                                                boxShadow: index === 0
-                                                    ? '0 4px 8px rgba(255,215,0,0.5), inset 1px 1px 2px rgba(255,255,255,0.3)'
-                                                    : '0 2px 4px rgba(0,0,0,0.4), inset 1px 1px 2px rgba(255,255,255,0.2)',
+                                                    ? `radial-gradient(circle at top left, ${MidnightTheme.light.primary}, transparent)`
+                                                    : `radial-gradient(circle at top left, ${MidnightTheme.void.primary}, transparent)`,
                                             }}
-                                        >
-                                            {index + 1}
-                                        </div>
+                                        />
 
-                                        {/* Task Content */}
-                                        <div className="flex-1 min-w-0">
-                                            <p
-                                                className="text-base font-semibold leading-relaxed"
+                                        <div className="relative z-10 flex items-start gap-4">
+                                            {/* Priority Badge */}
+                                            <motion.div
+                                                className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl"
                                                 style={{
-                                                    color: '#3E2723',
-                                                    textShadow: '1px 1px 1px rgba(255,255,255,0.5)',
+                                                    background: index === 0
+                                                        ? MidnightTheme.gradients.lightHorizontal
+                                                        : MidnightTheme.gradients.voidHorizontal,
+                                                    border: `3px solid ${index === 0 ? MidnightTheme.light.bright : MidnightTheme.void.ethereal}`,
+                                                    color: index === 0 ? '#000' : '#FFF',
+                                                    textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
+                                                    boxShadow: index === 0
+                                                        ? `0 0 20px ${MidnightTheme.light.glow}, inset 0 2px 4px rgba(255,255,255,0.3)`
+                                                        : `0 0 15px ${MidnightTheme.void.glow}, inset 0 2px 4px rgba(255,255,255,0.1)`,
                                                 }}
+                                                animate={index === 0 ? { rotate: [0, 5, -5, 0] } : {}}
+                                                transition={{ duration: 2, repeat: Infinity }}
                                             >
-                                                {task}
-                                            </p>
-                                        </div>
+                                                {index + 1}
+                                            </motion.div>
 
-                                        {/* Action Icon */}
-                                        <div className="flex-shrink-0">
-                                            {index === 0 ? (
-                                                <Zap className="w-6 h-6 text-yellow-600 animate-pulse" />
-                                            ) : (
-                                                <Target className="w-6 h-6 text-[#8B7355]" />
-                                            )}
+                                            {/* Task Content */}
+                                            <div className="flex-1 min-w-0">
+                                                <p
+                                                    className="text-base md:text-lg font-semibold leading-relaxed"
+                                                    style={{
+                                                        color: index === 0 ? MidnightTheme.light.bright : MidnightTheme.text.bright,
+                                                        textShadow: `0 0 10px ${index === 0 ? MidnightTheme.light.glow : MidnightTheme.void.glow}`,
+                                                    }}
+                                                >
+                                                    {task}
+                                                </p>
+                                            </div>
+
+                                            {/* Action Icon */}
+                                            <motion.div
+                                                className="flex-shrink-0"
+                                                animate={index === 0 ? { scale: [1, 1.2, 1] } : {}}
+                                                transition={{ duration: 1, repeat: Infinity }}
+                                            >
+                                                {index === 0 ? (
+                                                    <Zap className="w-7 h-7" style={{ color: MidnightTheme.light.primary, filter: `drop-shadow(0 0 8px ${MidnightTheme.light.glow})` }} />
+                                                ) : (
+                                                    <Target className="w-7 h-7" style={{ color: MidnightTheme.void.ethereal }} />
+                                                )}
+                                            </motion.div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Urgency Indicator for First Task */}
-                                {index === 0 && daysUntilLaunch <= 7 && (
-                                    <div className="absolute -top-2 -right-2 px-2 py-1 rounded-full text-xs font-bold uppercase" style={{
-                                        background: 'linear-gradient(135deg, #DC143C, #8B0000)',
-                                        color: '#FFF',
-                                        boxShadow: '0 2px 6px rgba(220,20,60,0.5)',
-                                    }}>
-                                        URGENT
-                                    </div>
-                                )}
+                                    {/* Urgency Badge (First Task Only) */}
+                                    {index === 0 && isUrgent && (
+                                        <motion.div
+                                            className="absolute -top-3 -right-3 px-3 py-1.5 rounded-full text-xs font-bold uppercase"
+                                            style={{
+                                                background: MidnightTheme.gradients.urgencyPulse,
+                                                border: `2px solid ${MidnightTheme.urgency.critical}`,
+                                                color: '#FFF',
+                                                boxShadow: `0 0 20px ${MidnightTheme.urgency.glow}`,
+                                            }}
+                                            animate={{ scale: [1, 1.1, 1] }}
+                                            transition={{ duration: 1.5, repeat: Infinity }}
+                                        >
+                                            URGENT
+                                        </motion.div>
+                                    )}
+                                </motion.div>
+                            ))
+                        ) : (
+                            <motion.div
+                                className="text-center py-12 rounded-xl"
+                                style={{
+                                    ...glassCard,
+                                    border: `2px solid ${MidnightTheme.void.primary}`,
+                                }}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                            >
+                                <CheckCircle2 className="w-16 h-16 mx-auto mb-4" style={{ color: MidnightTheme.void.ethereal }} />
+                                <p className="text-xl font-semibold mb-2" style={{ color: MidnightTheme.light.primary }}>
+                                    All Caught Up!
+                                </p>
+                                <p className="text-sm" style={{ color: MidnightTheme.text.muted }}>
+                                    Great work! Check back tomorrow for new priorities.
+                                </p>
                             </motion.div>
-                        ))
-                    ) : (
-                        <div className="text-center py-8">
-                            <CheckCircle2 className="w-12 h-12 mx-auto mb-3 text-green-600" />
-                            <p className="text-lg font-semibold" style={{ color: '#3E2723' }}>
-                                All caught up!
-                            </p>
-                            <p className="text-sm" style={{ color: '#8B7355' }}>
-                                Great job! Keep checking back for new priorities.
-                            </p>
-                        </div>
-                    )}
-                </div>
-
-                {/* Footer Tip */}
-                <div className="mt-6 p-4 rounded-lg" style={{
-                    background: 'linear-gradient(to right, rgba(139,105,20,0.15), rgba(107,83,69,0.1))',
-                    border: '2px solid rgba(139,115,85,0.3)',
-                }}>
-                    <div className="flex items-start gap-2">
-                        <span className="text-lg">💡</span>
-                        <div className="flex-1">
-                            <p className="text-xs font-bold mb-1 uppercase" style={{ color: '#8B7355' }}>
-                                Profesor Buffy's Tip:
-                            </p>
-                            <p className="text-sm italic" style={{ color: '#5D4037' }}>
-                                {daysUntilLaunch <= 3 && "Focus ONLY on critical limited-time content - you can farm gold and mounts after launch!"}
-                                {daysUntilLaunch > 3 && daysUntilLaunch <= 7 && "Prioritize limited-time content this week, then shift to housing prep!"}
-                                {daysUntilLaunch > 7 && daysUntilLaunch <= 14 && "Great timing! Balance limited content with housing preparation."}
-                                {daysUntilLaunch > 14 && "You have time! Focus on Quel'Thalas lore first, then build your collection."}
-                            </p>
-                        </div>
+                        )}
                     </div>
+
+                    {/* Profesor Buffy's Tip */}
+                    <motion.div
+                        className="mt-8 p-5 rounded-xl"
+                        style={{
+                            ...glassCard,
+                            border: `2px solid ${MidnightTheme.void.ethereal}`,
+                            background: `${MidnightTheme.backgrounds.glassLight}`,
+                        }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                    >
+                        <div className="flex items-start gap-3">
+                            <span className="text-2xl">💡</span>
+                            <div className="flex-1">
+                                <p className="text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: MidnightTheme.void.ethereal }}>
+                                    Profesor Buffy's Insight:
+                                </p>
+                                <p className="text-sm italic leading-relaxed" style={{ color: MidnightTheme.text.bright }}>
+                                    {daysUntilLaunch <= 3 && "Focus ONLY on critical limited-time content - you can farm gold and mounts after launch!"}
+                                    {daysUntilLaunch > 3 && daysUntilLaunch <= 7 && "Prioritize limited-time content this week, then shift to housing prep!"}
+                                    {daysUntilLaunch > 7 && daysUntilLaunch <= 14 && "Great timing! Balance limited content with housing preparation."}
+                                    {daysUntilLaunch > 14 && "You have time! Focus on Quel'Thalas lore first, then build your collection."}
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
                 </div>
             </div>
         </div>

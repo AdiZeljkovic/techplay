@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Check, X, AlertCircle, BookOpen, Home, Swords, Target } from "lucide-react";
+import { MidnightTheme, glassCard, QualityColors } from "@/lib/wow-midnight-theme";
 
 interface ChecklistItem {
     name: string;
@@ -40,10 +41,42 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
 
     const getCategoryColor = (category: string) => {
         switch (category) {
-            case 'critical_limited': return { primary: '#DC143C', secondary: '#8B0000', glow: 'rgba(220,20,60,0.4)' };
-            case 'lore_mastery': return { primary: '#9370DB', secondary: '#4B0082', glow: 'rgba(147,112,219,0.4)' };
-            case 'housing_prep': return { primary: '#32CD32', secondary: '#228B22', glow: 'rgba(50,205,50,0.4)' };
-            default: return { primary: '#FFD700', secondary: '#DAA520', glow: 'rgba(255,215,0,0.4)' };
+            case 'critical_limited':
+                return {
+                    gradient: MidnightTheme.gradients.urgencyPulse,
+                    border: MidnightTheme.urgency.critical,
+                    glow: MidnightTheme.urgency.glow,
+                    primary: MidnightTheme.urgency.critical,
+                    secondary: MidnightTheme.urgency.dark,
+                    text: MidnightTheme.urgency.high,
+                };
+            case 'lore_mastery':
+                return {
+                    gradient: MidnightTheme.gradients.voidHorizontal,
+                    border: MidnightTheme.void.primary,
+                    glow: MidnightTheme.void.glow,
+                    primary: MidnightTheme.void.primary,
+                    secondary: MidnightTheme.void.deep,
+                    text: MidnightTheme.void.ethereal,
+                };
+            case 'housing_prep':
+                return {
+                    gradient: MidnightTheme.gradients.lightHorizontal,
+                    border: MidnightTheme.light.primary,
+                    glow: MidnightTheme.light.glow,
+                    primary: MidnightTheme.light.primary,
+                    secondary: MidnightTheme.light.warm,
+                    text: MidnightTheme.light.bright,
+                };
+            default:
+                return {
+                    gradient: MidnightTheme.gradients.voidToLight,
+                    border: MidnightTheme.void.ethereal,
+                    glow: MidnightTheme.void.glow,
+                    primary: MidnightTheme.void.primary,
+                    secondary: MidnightTheme.light.primary,
+                    text: MidnightTheme.text.light,
+                };
         }
     };
 
@@ -61,26 +94,66 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
 
     return (
         <div className="space-y-6">
-            <div className="relative p-6 rounded-xl" style={{
-                background: 'linear-gradient(135deg, #2a1810 0%, #1a0f08 100%)',
-                border: '8px solid',
-                borderImage: 'linear-gradient(135deg, #5D4037, #3E2723) 1',
-                boxShadow: 'inset 0 0 30px rgba(0,0,0,0.6), 0 6px 15px rgba(0,0,0,0.5)',
-            }}>
-                <h2
-                    className="text-3xl font-bold uppercase tracking-wider text-center mb-2"
-                    style={{
-                        color: '#FFD700',
-                        textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(255,215,0,0.4)',
-                        fontFamily: 'serif',
+            {/* HEADER */}
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="relative p-8 rounded-2xl overflow-hidden"
+                style={{
+                    background: MidnightTheme.backgrounds.void,
+                    border: `3px solid ${MidnightTheme.void.primary}`,
+                    boxShadow: MidnightTheme.shadows.voidGlow,
+                }}
+            >
+                {/* Animated Void Background */}
+                <motion.div
+                    className="absolute inset-0 opacity-20 pointer-events-none"
+                    animate={{
+                        background: [
+                            `radial-gradient(circle at 20% 50%, ${MidnightTheme.void.primary}, transparent)`,
+                            `radial-gradient(circle at 80% 50%, ${MidnightTheme.light.primary}, transparent)`,
+                            `radial-gradient(circle at 20% 50%, ${MidnightTheme.void.primary}, transparent)`,
+                        ],
                     }}
-                >
-                    📋 Midnight Preparation Checklist
-                </h2>
-                <p className="text-center text-sm italic mb-4" style={{ color: '#C9B388', fontFamily: 'serif' }}>
-                    Track your readiness across all critical areas
-                </p>
-            </div>
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                />
+
+                {/* Glass Overlay */}
+                <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                        background: MidnightTheme.gradients.glassOverlay,
+                    }}
+                />
+
+                <div className="relative z-10 text-center">
+                    <motion.h2
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2, duration: 0.5 }}
+                        className="text-4xl font-bold uppercase tracking-wider mb-2"
+                        style={{
+                            background: MidnightTheme.gradients.voidToLight,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text',
+                            filter: `drop-shadow(0 0 12px ${MidnightTheme.void.glow})`,
+                        }}
+                    >
+                        Midnight Preparation Checklist
+                    </motion.h2>
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.4, duration: 0.5 }}
+                        className="text-sm uppercase tracking-wide"
+                        style={{ color: MidnightTheme.text.void }}
+                    >
+                        Track your readiness across all critical areas
+                    </motion.p>
+                </div>
+            </motion.div>
 
             {/* Category Cards */}
             {categories.map((category, catIndex) => {
@@ -93,156 +166,237 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                         key={category.key}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: catIndex * 0.1 }}
+                        transition={{ delay: 0.2 + catIndex * 0.15 }}
                         className="relative"
                     >
                         <div
-                            className="p-6 rounded-xl"
+                            className="p-6 rounded-2xl overflow-hidden relative"
                             style={{
-                                background: 'linear-gradient(to bottom, #f5f5dc 0%, #e8e0c8 100%)',
-                                border: '6px solid',
-                                borderColor: colors.primary,
-                                boxShadow: `0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3), 0 0 20px ${colors.glow}`,
+                                ...glassCard,
+                                border: `2px solid ${colors.border}`,
+                                boxShadow: `0 0 30px ${colors.glow}, ${MidnightTheme.shadows.depth}`,
                             }}
                         >
+                            {/* Animated Category Glow Background */}
+                            <motion.div
+                                className="absolute inset-0 opacity-10 pointer-events-none"
+                                animate={{
+                                    background: [
+                                        `radial-gradient(circle at 0% 50%, ${colors.primary}, transparent)`,
+                                        `radial-gradient(circle at 100% 50%, ${colors.secondary}, transparent)`,
+                                        `radial-gradient(circle at 0% 50%, ${colors.primary}, transparent)`,
+                                    ],
+                                }}
+                                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                            />
                             {/* Category Header */}
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-3">
-                                    <div
-                                        className="w-12 h-12 rounded-full flex items-center justify-center"
+                            <div className="flex items-center justify-between mb-6 relative z-10">
+                                <motion.div
+                                    className="flex items-center gap-4"
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.3 + catIndex * 0.15 }}
+                                >
+                                    <motion.div
+                                        className="w-14 h-14 rounded-xl flex items-center justify-center relative"
                                         style={{
-                                            background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
-                                            boxShadow: `0 4px 8px rgba(0,0,0,0.4), inset 1px 1px 3px rgba(255,255,255,0.2), 0 0 15px ${colors.glow}`,
+                                            background: colors.gradient,
+                                            boxShadow: `0 0 20px ${colors.glow}, ${MidnightTheme.shadows.depth}`,
                                         }}
+                                        whileHover={{ scale: 1.1, rotate: 5 }}
+                                        transition={{ type: "spring", stiffness: 400 }}
                                     >
-                                        <Icon className="w-6 h-6 text-white" />
-                                    </div>
+                                        <Icon className="w-7 h-7" style={{ color: MidnightTheme.text.bright }} />
+                                    </motion.div>
                                     <div>
                                         <h3
-                                            className="text-xl font-bold uppercase tracking-wide"
-                                            style={{ color: '#3E2723', textShadow: '1px 1px 2px rgba(255,255,255,0.5)' }}
+                                            className="text-2xl font-bold uppercase tracking-wide mb-1"
+                                            style={{
+                                                color: MidnightTheme.text.bright,
+                                                textShadow: `0 0 10px ${colors.glow}`,
+                                            }}
                                         >
                                             {category.data.label}
                                         </h3>
-                                        <p className="text-xs" style={{ color: '#8B7355' }}>
+                                        <p className="text-xs uppercase tracking-wider" style={{ color: MidnightTheme.text.muted }}>
                                             {category.data.items.length} item{category.data.items.length !== 1 && 's'}
                                         </p>
                                     </div>
-                                </div>
-                                <div className="text-right">
-                                    <div
-                                        className="text-3xl font-bold"
-                                        style={{ color: completion === 100 ? '#228B22' : colors.primary }}
+                                </motion.div>
+                                <motion.div
+                                    className="text-right"
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.4 + catIndex * 0.15 }}
+                                >
+                                    <motion.div
+                                        className="text-4xl font-bold"
+                                        style={{
+                                            color: completion === 100 ? MidnightTheme.light.primary : colors.text,
+                                            textShadow: `0 0 15px ${completion === 100 ? MidnightTheme.light.glow : colors.glow}`,
+                                        }}
+                                        animate={completion === 100 ? { scale: [1, 1.1, 1] } : {}}
+                                        transition={{ duration: 2, repeat: Infinity }}
                                     >
                                         {completion}%
-                                    </div>
-                                    <p className="text-xs font-bold uppercase" style={{ color: '#8B7355' }}>Complete</p>
-                                </div>
+                                    </motion.div>
+                                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: MidnightTheme.text.muted }}>
+                                        Complete
+                                    </p>
+                                </motion.div>
                             </div>
 
                             {/* Progress Bar */}
-                            <div
-                                className="h-3 rounded-full mb-4 overflow-hidden"
-                                style={{
-                                    background: 'linear-gradient(to right, #3E2723, #2a1810)',
-                                    border: '2px solid #8B7355',
-                                }}
-                            >
-                                <motion.div
-                                    className="h-full"
+                            <div className="relative z-10 mb-6">
+                                <div
+                                    className="h-4 rounded-full overflow-hidden relative"
                                     style={{
-                                        background: `linear-gradient(to right, ${colors.primary}, ${colors.secondary})`,
-                                        boxShadow: `0 0 10px ${colors.glow}`,
+                                        background: MidnightTheme.backgrounds.voidDark,
+                                        border: `1px solid ${colors.border}`,
+                                        boxShadow: `inset 0 2px 8px rgba(0, 0, 0, 0.6)`,
                                     }}
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${completion}%` }}
-                                    transition={{ duration: 1, ease: "easeOut" }}
-                                />
+                                >
+                                    <motion.div
+                                        className="h-full relative"
+                                        style={{
+                                            background: colors.gradient,
+                                            boxShadow: `0 0 20px ${colors.glow}`,
+                                        }}
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${completion}%` }}
+                                        transition={{ delay: 0.5 + catIndex * 0.15, duration: 1.5, ease: "easeOut" }}
+                                    >
+                                        {/* Animated Shimmer */}
+                                        <motion.div
+                                            className="absolute inset-0"
+                                            style={{
+                                                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
+                                            }}
+                                            animate={{ x: ['-100%', '200%'] }}
+                                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                        />
+                                    </motion.div>
+                                </div>
                             </div>
 
                             {/* Checklist Items */}
-                            <div className="space-y-3">
+                            <div className="space-y-3 relative z-10">
                                 {category.data.items.length === 0 ? (
-                                    <p className="text-center py-4 text-sm italic" style={{ color: '#8B7355' }}>
+                                    <p className="text-center py-8 text-sm uppercase tracking-wide" style={{ color: MidnightTheme.text.muted }}>
                                         No items in this category
                                     </p>
                                 ) : (
                                     category.data.items.map((item, itemIndex) => (
                                         <motion.div
                                             key={itemIndex}
-                                            initial={{ opacity: 0, x: -10 }}
+                                            initial={{ opacity: 0, x: -20 }}
                                             animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: catIndex * 0.1 + itemIndex * 0.05 }}
-                                            className="flex items-start gap-3 p-3 rounded-lg transition-all"
-                                            style={{
-                                                background: item.completed
-                                                    ? 'linear-gradient(to right, rgba(34,139,34,0.15), rgba(50,205,50,0.1))'
-                                                    : 'linear-gradient(to right, rgba(139,115,85,0.1), rgba(107,83,69,0.05))',
-                                                border: '2px solid',
-                                                borderColor: item.completed ? '#228B22' : '#C9B388',
-                                            }}
+                                            transition={{ delay: 0.6 + catIndex * 0.15 + itemIndex * 0.08 }}
+                                            whileHover={{ scale: 1.02, x: 4 }}
+                                            className="group relative"
                                         >
-                                            {/* Checkbox */}
                                             <div
-                                                className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center"
+                                                className="flex items-start gap-4 p-4 rounded-xl transition-all cursor-pointer relative overflow-hidden"
                                                 style={{
                                                     background: item.completed
-                                                        ? `linear-gradient(135deg, #32CD32, #228B22)`
-                                                        : 'linear-gradient(135deg, #8B7355, #6B5345)',
-                                                    border: '2px solid',
-                                                    borderColor: item.completed ? '#FFD700' : '#5D4037',
+                                                        ? `linear-gradient(135deg, ${MidnightTheme.backgrounds.glass}, ${MidnightTheme.backgrounds.glassLight})`
+                                                        : MidnightTheme.backgrounds.glass,
+                                                    backdropFilter: 'blur(10px)',
+                                                    WebkitBackdropFilter: 'blur(10px)',
+                                                    border: `1px solid ${item.completed ? MidnightTheme.light.primary : colors.border}`,
                                                     boxShadow: item.completed
-                                                        ? '0 0 10px rgba(50,205,50,0.5)'
-                                                        : 'inset 1px 1px 2px rgba(0,0,0,0.4)',
+                                                        ? `0 0 20px ${MidnightTheme.light.glow}, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
+                                                        : `0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)`,
                                                 }}
                                             >
-                                                {item.completed ? (
-                                                    <Check className="w-4 h-4 text-white font-bold" />
-                                                ) : (
-                                                    <X className="w-4 h-4 text-[#C9B388]" />
-                                                )}
-                                            </div>
+                                                {/* Hover Glow Effect */}
+                                                <motion.div
+                                                    className="absolute inset-0 opacity-0 group-hover:opacity-30 pointer-events-none transition-opacity"
+                                                    style={{
+                                                        background: `radial-gradient(circle at center, ${colors.primary}, transparent)`,
+                                                    }}
+                                                />
 
-                                            {/* Item Details */}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between gap-2 mb-1">
-                                                    <h4
-                                                        className={`text-sm font-bold ${item.completed ? 'line-through' : ''}`}
-                                                        style={{
-                                                            color: item.completed ? '#228B22' : '#3E2723',
-                                                            textShadow: '1px 1px 1px rgba(255,255,255,0.3)',
-                                                        }}
-                                                    >
-                                                        {item.name}
-                                                    </h4>
-                                                    {item.progress && (
-                                                        <span
-                                                            className="text-xs font-bold px-2 py-1 rounded"
+                                                {/* Checkbox */}
+                                                <motion.div
+                                                    className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center relative"
+                                                    style={{
+                                                        background: item.completed
+                                                            ? MidnightTheme.gradients.lightHorizontal
+                                                            : MidnightTheme.gradients.voidHorizontal,
+                                                        border: `2px solid ${item.completed ? MidnightTheme.light.primary : MidnightTheme.void.primary}`,
+                                                        boxShadow: item.completed
+                                                            ? `0 0 15px ${MidnightTheme.light.glow}`
+                                                            : `inset 0 2px 4px rgba(0, 0, 0, 0.4)`,
+                                                    }}
+                                                    animate={item.completed ? { scale: [1, 1.1, 1] } : {}}
+                                                    transition={{ duration: 2, repeat: Infinity }}
+                                                    whileHover={{ rotate: 360 }}
+                                                >
+                                                    {item.completed ? (
+                                                        <Check className="w-5 h-5" style={{ color: MidnightTheme.text.bright }} />
+                                                    ) : (
+                                                        <X className="w-5 h-5" style={{ color: MidnightTheme.text.muted }} />
+                                                    )}
+                                                </motion.div>
+
+                                                {/* Item Details */}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-start justify-between gap-3 mb-2">
+                                                        <h4
+                                                            className={`text-base font-bold ${item.completed ? 'line-through' : ''}`}
                                                             style={{
-                                                                background: 'linear-gradient(135deg, #6B5914, #5D4037)',
-                                                                color: '#FFD700',
-                                                                whiteSpace: 'nowrap',
+                                                                color: item.completed ? MidnightTheme.text.muted : MidnightTheme.text.bright,
+                                                                textShadow: item.completed
+                                                                    ? 'none'
+                                                                    : `0 0 8px ${colors.glow}`,
                                                             }}
                                                         >
-                                                            {item.progress}
-                                                        </span>
+                                                            {item.name}
+                                                        </h4>
+                                                        {item.progress && (
+                                                            <motion.span
+                                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                                animate={{ opacity: 1, scale: 1 }}
+                                                                className="text-xs font-bold px-3 py-1 rounded-lg uppercase tracking-wide"
+                                                                style={{
+                                                                    background: colors.gradient,
+                                                                    color: MidnightTheme.text.bright,
+                                                                    whiteSpace: 'nowrap',
+                                                                    boxShadow: `0 0 10px ${colors.glow}`,
+                                                                }}
+                                                            >
+                                                                {item.progress}
+                                                            </motion.span>
+                                                        )}
+                                                    </div>
+                                                    {item.why_important && (
+                                                        <p className="text-sm mb-2 italic leading-relaxed" style={{ color: MidnightTheme.text.void }}>
+                                                            {item.why_important}
+                                                        </p>
                                                     )}
+                                                    <div className="flex flex-wrap gap-3 text-xs">
+                                                        {item.source && (
+                                                            <span
+                                                                className="flex items-center gap-1"
+                                                                style={{ color: MidnightTheme.text.muted }}
+                                                            >
+                                                                <span style={{ color: colors.text }}>📍</span> {item.source}
+                                                            </span>
+                                                        )}
+                                                        {item.deadline && (
+                                                            <span
+                                                                className="flex items-center gap-1 font-bold"
+                                                                style={{
+                                                                    color: MidnightTheme.urgency.high,
+                                                                    textShadow: `0 0 8px ${MidnightTheme.urgency.glow}`,
+                                                                }}
+                                                            >
+                                                                <span>⏰</span> Deadline: {item.deadline}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                {item.why_important && (
-                                                    <p className="text-xs mb-1 italic" style={{ color: '#5D4037' }}>
-                                                        {item.why_important}
-                                                    </p>
-                                                )}
-                                                {item.source && (
-                                                    <p className="text-xs" style={{ color: '#8B7355' }}>
-                                                        📍 {item.source}
-                                                    </p>
-                                                )}
-                                                {item.deadline && (
-                                                    <p className="text-xs font-bold" style={{ color: '#DC143C' }}>
-                                                        ⏰ Deadline: {item.deadline}
-                                                    </p>
-                                                )}
                                             </div>
                                         </motion.div>
                                     ))

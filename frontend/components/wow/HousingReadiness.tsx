@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Home, Package, Users, Sparkles } from "lucide-react";
+import { MidnightTheme, QualityColors, glassCard } from "@/lib/wow-midnight-theme";
 
 interface HousingData {
     housing_score: number;
@@ -18,11 +19,11 @@ interface HousingReadinessProps {
 
 export default function HousingReadiness({ housing }: HousingReadinessProps) {
     const getRatingColor = (score: number) => {
-        if (score >= 90) return { primary: '#FF8000', glow: 'rgba(255,128,0,0.6)' }; // Legendary
-        if (score >= 75) return { primary: '#A335EE', glow: 'rgba(163,53,238,0.6)' }; // Epic
-        if (score >= 60) return { primary: '#0070DD', glow: 'rgba(0,112,221,0.6)' }; // Rare
-        if (score >= 40) return { primary: '#1EFF00', glow: 'rgba(30,255,0,0.6)' }; // Uncommon
-        return { primary: '#FFFFFF', glow: 'rgba(255,255,255,0.6)' }; // Common
+        if (score >= 90) return QualityColors.legendary;
+        if (score >= 75) return QualityColors.epic;
+        if (score >= 60) return QualityColors.rare;
+        if (score >= 40) return QualityColors.uncommon;
+        return QualityColors.common;
     };
 
     const colors = getRatingColor(housing.housing_score);
@@ -33,7 +34,8 @@ export default function HousingReadiness({ housing }: HousingReadinessProps) {
             label: 'Mount Collection',
             current: housing.mount_count,
             target: housing.mount_target,
-            color: '#32CD32',
+            color: QualityColors.uncommon.primary,
+            glow: QualityColors.uncommon.glow,
             description: 'Stable display potential',
         },
         {
@@ -41,7 +43,8 @@ export default function HousingReadiness({ housing }: HousingReadinessProps) {
             label: 'Void Mounts',
             current: housing.void_mount_count,
             target: 10,
-            color: '#9370DB',
+            color: MidnightTheme.void.primary,
+            glow: MidnightTheme.void.glow,
             description: 'Midnight themed',
         },
         {
@@ -49,26 +52,26 @@ export default function HousingReadiness({ housing }: HousingReadinessProps) {
             label: 'Achievements',
             current: housing.achievement_count,
             target: 500,
-            color: '#FFD700',
+            color: MidnightTheme.light.primary,
+            glow: MidnightTheme.light.glow,
             description: 'Trophy unlocks',
         },
     ];
 
     return (
         <div className="relative">
-            {/* Housing Header */}
+            {/* HOUSING HEADER */}
             <div
-                className="relative mb-6 p-6 rounded-xl overflow-hidden"
+                className="relative mb-6 p-8 rounded-2xl overflow-hidden"
                 style={{
-                    background: 'linear-gradient(135deg, #2a1810 0%, #1a0f08 100%)',
-                    border: '8px solid',
-                    borderImage: 'linear-gradient(135deg, #5D4037, #3E2723) 1',
-                    boxShadow: `inset 0 0 30px rgba(0,0,0,0.6), 0 6px 15px rgba(0,0,0,0.5), 0 0 25px ${colors.glow}`,
+                    background: MidnightTheme.backgrounds.void,
+                    border: `3px solid ${colors.primary}`,
+                    boxShadow: `0 0 40px ${colors.glow}, ${MidnightTheme.shadows.depth}`,
                 }}
             >
-                {/* Animated Glow */}
+                {/* Animated Quality Glow */}
                 <motion.div
-                    className="absolute inset-0 opacity-20"
+                    className="absolute inset-0 opacity-25 pointer-events-none"
                     animate={{
                         background: [
                             `radial-gradient(circle at 50% 50%, ${colors.primary}, transparent)`,
@@ -77,80 +80,115 @@ export default function HousingReadiness({ housing }: HousingReadinessProps) {
                             `radial-gradient(circle at 50% 50%, ${colors.primary}, transparent)`,
                         ],
                     }}
-                    transition={{ duration: 4, repeat: Infinity }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                 />
 
-                <div className="relative text-center">
-                    <div className="flex items-center justify-center gap-3 mb-4">
-                        <Home className="w-10 h-10" style={{ color: colors.primary }} />
-                    </div>
+                {/* Glass Overlay */}
+                <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ background: MidnightTheme.gradients.glassOverlay }}
+                />
+
+                <div className="relative z-10 text-center">
+                    <motion.div
+                        className="flex items-center justify-center gap-3 mb-6"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", duration: 0.8 }}
+                    >
+                        <Home className="w-12 h-12" style={{ color: colors.primary, filter: `drop-shadow(0 0 10px ${colors.glow})` }} />
+                        <Sparkles className="w-10 h-10" style={{ color: MidnightTheme.void.ethereal }} />
+                    </motion.div>
 
                     <h2
-                        className="text-3xl font-bold uppercase tracking-wider mb-2"
+                        className="text-3xl md:text-4xl font-bold uppercase tracking-wider mb-6"
                         style={{
                             color: colors.primary,
-                            textShadow: `2px 2px 4px rgba(0,0,0,0.8), 0 0 10px ${colors.glow}`,
+                            textShadow: `0 0 25px ${colors.glow}, 2px 2px 6px rgba(0,0,0,0.9)`,
                             fontFamily: 'serif',
+                            letterSpacing: '0.12em',
                         }}
                     >
-                        🏠 Housing Readiness
+                        🏠 HOUSING READINESS
                     </h2>
 
-                    {/* Score Circle */}
-                    <div className="relative inline-flex items-center justify-center w-48 h-48 mb-4">
-                        <svg className="w-full h-full transform -rotate-90">
+                    {/* SCORE CIRCLE */}
+                    <div className="relative inline-flex items-center justify-center w-56 h-56 mb-6">
+                        {/* Background Circle */}
+                        <svg className="w-full h-full transform -rotate-90 absolute inset-0">
                             <circle
-                                cx="96"
-                                cy="96"
-                                r="88"
-                                stroke="#3E2723"
-                                strokeWidth="12"
+                                cx="112"
+                                cy="112"
+                                r="100"
+                                stroke={MidnightTheme.backgrounds.glassLight}
+                                strokeWidth="14"
                                 fill="none"
                             />
                             <motion.circle
-                                cx="96"
-                                cy="96"
-                                r="88"
+                                cx="112"
+                                cy="112"
+                                r="100"
                                 stroke={colors.primary}
-                                strokeWidth="12"
+                                strokeWidth="14"
                                 fill="none"
                                 strokeLinecap="round"
-                                strokeDasharray={`${2 * Math.PI * 88}`}
-                                initial={{ strokeDashoffset: 2 * Math.PI * 88 }}
-                                animate={{ strokeDashoffset: 2 * Math.PI * 88 * (1 - housing.housing_score / 100) }}
-                                transition={{ duration: 1.5, ease: "easeOut" }}
+                                strokeDasharray={`${2 * Math.PI * 100}`}
+                                initial={{ strokeDashoffset: 2 * Math.PI * 100 }}
+                                animate={{ strokeDashoffset: 2 * Math.PI * 100 * (1 - housing.housing_score / 100) }}
+                                transition={{ duration: 2, ease: "easeOut" }}
                                 style={{
-                                    filter: `drop-shadow(0 0 8px ${colors.primary})`
+                                    filter: `drop-shadow(0 0 12px ${colors.primary})`,
                                 }}
                             />
                         </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+
+                        {/* Inner Radial Glow */}
+                        <motion.div
+                            className="absolute inset-0 rounded-full opacity-40"
+                            style={{
+                                background: `radial-gradient(circle, ${colors.glow}, transparent)`,
+                            }}
+                            animate={{ opacity: [0.3, 0.5, 0.3] }}
+                            transition={{ duration: 3, repeat: Infinity }}
+                        />
+
+                        {/* Score Text */}
+                        <div className="relative z-10 flex flex-col items-center justify-center">
                             <motion.span
                                 initial={{ opacity: 0, scale: 0.5 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.5, duration: 0.5 }}
-                                className="text-5xl font-bold"
-                                style={{ color: colors.primary }}
+                                transition={{ delay: 0.7, duration: 0.6, type: "spring" }}
+                                className="text-6xl font-bold"
+                                style={{
+                                    color: colors.primary,
+                                    textShadow: `0 0 20px ${colors.glow}`,
+                                }}
                             >
                                 {housing.housing_score}%
                             </motion.span>
-                            <span
-                                className="text-sm mt-1 font-bold uppercase tracking-wider"
-                                style={{ color: colors.primary }}
+                            <motion.span
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 1 }}
+                                className="text-sm mt-2 font-bold uppercase tracking-wider"
+                                style={{
+                                    color: colors.primary,
+                                    textShadow: `0 0 10px ${colors.glow}`,
+                                }}
                             >
                                 {housing.rating}
-                            </span>
+                            </motion.span>
                         </div>
                     </div>
 
-                    <p className="text-base italic" style={{ color: '#C9B388', fontFamily: 'serif' }}>
+                    <p className="text-base italic" style={{ color: MidnightTheme.text.void, fontFamily: 'serif' }}>
                         Your home decoration potential for Player Housing
                     </p>
                 </div>
             </div>
 
-            {/* Collection Breakdown */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* COLLECTION BREAKDOWN */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {collectibles.map((item, index) => {
                     const Icon = item.icon;
                     const percentage = Math.min(100, Math.round((item.current / item.target) * 100));
@@ -158,67 +196,91 @@ export default function HousingReadiness({ housing }: HousingReadinessProps) {
                     return (
                         <motion.div
                             key={item.label}
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 + 0.3 }}
-                            className="p-4 rounded-lg"
+                            transition={{ delay: index * 0.15 + 0.4, type: "spring" }}
+                            className="p-5 rounded-xl"
                             style={{
-                                background: 'linear-gradient(to bottom, #f5f5dc 0%, #e8e0c8 100%)',
-                                border: '4px solid',
-                                borderColor: item.color,
-                                boxShadow: `0 4px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3), 0 0 15px ${item.color}40`,
+                                ...glassCard,
+                                border: `2px solid ${item.color}`,
+                                boxShadow: `0 0 20px ${item.glow}, ${MidnightTheme.shadows.depth}`,
                             }}
+                            whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
                         >
-                            <div className="flex items-center gap-3 mb-3">
-                                <div
-                                    className="w-10 h-10 rounded-full flex items-center justify-center"
-                                    style={{
-                                        background: `linear-gradient(135deg, ${item.color}, ${item.color}DD)`,
-                                        boxShadow: `0 2px 6px rgba(0,0,0,0.3), inset 1px 1px 2px rgba(255,255,255,0.2)`,
-                                    }}
-                                >
-                                    <Icon className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <h3
-                                        className="text-sm font-bold uppercase tracking-wide truncate"
-                                        style={{ color: '#3E2723', textShadow: '1px 1px 1px rgba(255,255,255,0.5)' }}
-                                    >
-                                        {item.label}
-                                    </h3>
-                                    <p className="text-xs" style={{ color: '#8B7355' }}>
-                                        {item.description}
-                                    </p>
-                                </div>
-                            </div>
+                            {/* Inner Glow */}
+                            <div
+                                className="absolute inset-0 rounded-xl opacity-15 pointer-events-none"
+                                style={{
+                                    background: `radial-gradient(circle at top left, ${item.color}, transparent)`,
+                                }}
+                            />
 
-                            {/* Progress */}
-                            <div className="mb-2">
-                                <div className="flex items-center justify-between mb-1">
-                                    <span className="text-xs font-bold" style={{ color: '#5D4037' }}>
-                                        {item.current} / {item.target}
-                                    </span>
-                                    <span className="text-xs font-bold" style={{ color: item.color }}>
-                                        {percentage}%
-                                    </span>
-                                </div>
-                                <div
-                                    className="h-2 rounded-full overflow-hidden"
-                                    style={{
-                                        background: 'linear-gradient(to right, #3E2723, #2a1810)',
-                                        border: '1px solid #8B7355',
-                                    }}
-                                >
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-3 mb-4">
                                     <motion.div
-                                        className="h-full"
+                                        className="w-12 h-12 rounded-full flex items-center justify-center"
                                         style={{
-                                            background: `linear-gradient(to right, ${item.color}, ${item.color}CC)`,
-                                            boxShadow: `0 0 8px ${item.color}`,
+                                            background: `linear-gradient(135deg, ${item.color}, ${item.color}DD)`,
+                                            boxShadow: `0 0 15px ${item.glow}, inset 0 2px 4px rgba(255,255,255,0.2)`,
                                         }}
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${percentage}%` }}
-                                        transition={{ duration: 1, delay: index * 0.1 + 0.5, ease: "easeOut" }}
-                                    />
+                                        animate={{ rotate: [0, 360] }}
+                                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                                    >
+                                        <Icon className="w-6 h-6 text-white" />
+                                    </motion.div>
+
+                                    <div className="flex-1 min-w-0">
+                                        <h3
+                                            className="text-sm font-bold uppercase tracking-wide truncate"
+                                            style={{
+                                                color: MidnightTheme.text.bright,
+                                                textShadow: `0 0 8px ${item.glow}`,
+                                            }}
+                                        >
+                                            {item.label}
+                                        </h3>
+                                        <p className="text-xs" style={{ color: MidnightTheme.text.muted }}>
+                                            {item.description}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Progress Stats */}
+                                <div className="mb-3">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm font-bold" style={{ color: MidnightTheme.text.bright }}>
+                                            {item.current.toLocaleString()} / {item.target.toLocaleString()}
+                                        </span>
+                                        <span
+                                            className="text-sm font-bold"
+                                            style={{
+                                                color: item.color,
+                                                textShadow: `0 0 8px ${item.glow}`,
+                                            }}
+                                        >
+                                            {percentage}%
+                                        </span>
+                                    </div>
+
+                                    {/* Progress Bar */}
+                                    <div
+                                        className="h-3 rounded-full overflow-hidden"
+                                        style={{
+                                            background: MidnightTheme.backgrounds.glassLight,
+                                            border: `1px solid ${MidnightTheme.borders.glass}`,
+                                        }}
+                                    >
+                                        <motion.div
+                                            className="h-full"
+                                            style={{
+                                                background: `linear-gradient(to right, ${item.color}, ${item.color}CC)`,
+                                                boxShadow: `0 0 10px ${item.glow}`,
+                                            }}
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${percentage}%` }}
+                                            transition={{ duration: 1.5, delay: index * 0.15 + 0.6, ease: "easeOut" }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>
@@ -226,24 +288,41 @@ export default function HousingReadiness({ housing }: HousingReadinessProps) {
                 })}
             </div>
 
-            {/* Housing Tips */}
-            <div
-                className="mt-6 p-4 rounded-lg"
+            {/* HOUSING PRO TIPS */}
+            <motion.div
+                className="mt-6 p-5 rounded-xl"
                 style={{
-                    background: 'linear-gradient(to right, rgba(139,105,20,0.1), rgba(107,83,69,0.1))',
-                    border: '2px solid rgba(201,179,136,0.4)',
+                    ...glassCard,
+                    border: `2px solid ${MidnightTheme.void.ethereal}`,
+                    background: MidnightTheme.backgrounds.glassLight,
                 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
             >
-                <p className="text-sm font-semibold mb-2" style={{ color: '#5D4037' }}>
-                    💡 Housing Pro Tips:
+                <p className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: MidnightTheme.void.ethereal }}>
+                    <Sparkles className="w-5 h-5" />
+                    Housing Pro Tips:
                 </p>
-                <ul className="text-xs space-y-1" style={{ color: '#8B7355' }}>
-                    <li>• Raid achievements unlock unique trophies and banners</li>
-                    <li>• Mounts can be displayed in your stable - collect rare ones!</li>
-                    <li>• Complete transmog sets unlock mannequin displays</li>
-                    <li>• Pet collection adds life to your home - they roam freely!</li>
+                <ul className="text-sm space-y-2" style={{ color: MidnightTheme.text.bright }}>
+                    <li className="flex items-start gap-2">
+                        <span style={{ color: MidnightTheme.light.primary }}>•</span>
+                        <span>Raid achievements unlock unique trophies and banners</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                        <span style={{ color: MidnightTheme.light.primary }}>•</span>
+                        <span>Mounts can be displayed in your stable - collect rare ones!</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                        <span style={{ color: MidnightTheme.light.primary }}>•</span>
+                        <span>Complete transmog sets unlock mannequin displays</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                        <span style={{ color: MidnightTheme.light.primary }}>•</span>
+                        <span>Pet collection adds life to your home - they roam freely!</span>
+                    </li>
                 </ul>
-            </div>
+            </motion.div>
         </div>
     );
 }
