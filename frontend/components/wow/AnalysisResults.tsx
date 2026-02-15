@@ -5,9 +5,11 @@ import { Shield, Sparkles, AlertCircle, Share2, Check, X, ExternalLink } from "l
 import { Button } from "@/components/ui/Button";
 import { getClassColor, getFactionTheme, getScoreQuality } from "@/data/wow-theme";
 import toast from "react-hot-toast";
+import axios from "@/lib/axios";
 
 interface AnalysisResultsProps {
     data: {
+        id?: number;
         character: {
             name: string;
             level: number;
@@ -42,11 +44,21 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
         const url = window.location.href;
         const text = `My ${data.character.name} has ${data.readiness_score}% readiness for WoW: Midnight!`;
 
+        // Track share event if we have an analysis ID
+        if (data.id) {
+            try {
+                await axios.post(`/wow/analysis/${data.id}/share`);
+            } catch (error) {
+                console.error('Failed to track share:', error);
+            }
+        }
+
         if (navigator.share) {
             try {
                 await navigator.share({ title: "WoW Character Analysis", text, url });
+                toast.success("Shared successfully!");
             } catch (error) {
-                // User cancelled share
+                // User cancelled share - don't show error
             }
         } else {
             await navigator.clipboard.writeText(`${text} ${url}`);

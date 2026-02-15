@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\WowAnalysis;
 use App\Services\BlizzardService;
 use App\Services\BlizzardDataTransformer;
 use App\Services\OpenAIService;
@@ -92,11 +93,35 @@ class WowAnalyzerController extends Controller
                 return $this->error('AI analysis failed. Please try again later.', 503);
             }
 
-            // Step 4: Return standardized response
-            return $this->success([
-                'character' => array_merge($payload['character'], [
+            // Step 4: Store in database
+            $wowAnalysis = WowAnalysis::updateOrCreate(
+                [
+                    'region' => $region,
+                    'realm_slug' => $realmSlug,
+                    'character_name' => $characterName,
+                ],
+                [
+                    'class' => $payload['character']['class'] ?? 'Unknown',
+                    'race' => $payload['character']['race'] ?? 'Unknown',
+                    'faction' => $payload['character']['faction'] ?? 'Unknown',
+                    'level' => $payload['character']['level'] ?? 0,
+                    'achievement_points' => $payload['character']['achievement_points'] ?? 0,
+                    'readiness_score' => $analysis['score'] ?? 0,
+                    'ai_advice' => $analysis['advice'] ?? [],
+                    'missing_essentials' => $analysis['missing'] ?? [],
+                    'void_mounts_count' => $payload['mounts']['void_mount_count'] ?? 0,
+                    'has_void_elf' => $payload['achievements']['has_void_elf'] ?? false,
                     'portrait_url' => $portraitUrl,
-                ]),
+                ]
+            );
+
+            // Step 5: Return standardized response
+            return $this->success([
+                'id' => $wowAnalysis->id,
+                'character' => [
+                    ...$payload['character'],
+                    'portrait_url' => $portraitUrl,
+                ],
                 'readiness_score' => $analysis['score'] ?? 0,
                 'ai_advice' => $analysis['advice'] ?? [],
                 'missing_essentials' => $analysis['missing'] ?? [],
@@ -104,5 +129,96 @@ class WowAnalyzerController extends Controller
                 'has_void_elf' => $payload['achievements']['has_void_elf'] ?? false,
             ], 'Analysis completed successfully');
         });
+    }
+
+    /**
+     * Get leaderboard - top readiness scores
+     *
+     * GET /api/v1/wow/leaderboard
+     */
+    public function leaderboard(Request $request)
+    {
+        $region = $request->query('region', null);
+        $faction = $request->query('faction', null);
+        $limit = min((int) $request->query('limit', 10), 50); // Max 50
+
+        $query = WowAnalysis::query();
+
+        if ($region) {
+            $query->region($region);
+        }
+
+        if ($faction) {
+            $query->faction($faction);
+        }
+
+        $leaderboard = $query->leaderboard($limit)->get();
+
+        return $this->success([
+            'leaderboard' => $leaderboard,
+            'filters' => [
+                'region' => $region,
+                'faction' => $faction,
+                'limit' => $limit,
+            ],
+        ]);
+    }
+
+    /**
+     * Get recent analyses
+     *
+     * GET /api/v1/wow/recent
+     */
+    public function recent(Request $request)
+    {
+        $limit = min((int) $request->query('limit', 20), 50); // Max 50
+
+        $recent = WowAnalysis::recent($limit)->get();
+
+        return $this->success([
+            'recent' => $recent,
+        ]);
+    }
+
+    /**
+     * Get specific analysis by ID
+     *
+     * GET /api/v1/wow/analysis/{id}
+     */
+    public function show(int $id)
+    {
+        $analysis = WowAnalysis::find($id);
+
+        if (!$analysis) {
+            return $this->error('Analysis not found', 404);
+        }
+
+        // Increment view count
+        $analysis->incrementViews();
+
+        return $this->success([
+            'analysis' => $analysis,
+        ]);
+    }
+
+    /**
+     * Track share action
+     *
+     * POST /api/v1/wow/analysis/{id}/share
+     */
+    public function share(int $id)
+    {
+        $analysis = WowAnalysis::find($id);
+
+        if (!$analysis) {
+            return $this->error('Analysis not found', 404);
+        }
+
+        // Increment share count
+        $analysis->incrementShares();
+
+        return $this->success([
+            'share_count' => $analysis->share_count,
+        ], 'Share tracked successfully');
     }
 }

@@ -6,6 +6,8 @@ import { Shield, Search, Sparkles, Swords } from "lucide-react";
 import RealmDropdown from "@/components/wow/RealmDropdown";
 import AnalysisResults from "@/components/wow/AnalysisResults";
 import AnalysisProgress from "@/components/wow/AnalysisProgress";
+import WowLeaderboard from "@/components/wow/WowLeaderboard";
+import WowRecentAnalyses from "@/components/wow/WowRecentAnalyses";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 
@@ -16,6 +18,7 @@ interface FormData {
 }
 
 interface AnalysisResult {
+    id?: number;
     character: {
         name: string;
         level: number;
@@ -557,6 +560,16 @@ export default function WowAnalyzerClient() {
 
                 {/* Results */}
                 {result && <AnalysisResults data={result} />}
+            </div>
+
+            {/* Leaderboard Section */}
+            <div className="container mx-auto px-4 mt-16">
+                <WowLeaderboard initialLimit={10} />
+            </div>
+
+            {/* Recent Analyses Section */}
+            <div className="container mx-auto px-4 mt-16">
+                <WowRecentAnalyses limit={12} />
             </div>
 
             {/* Classic Stone Footer */}

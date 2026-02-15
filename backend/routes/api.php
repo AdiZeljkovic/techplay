@@ -162,6 +162,10 @@ Route::prefix('v1')->group(function () {
         // WoW Character Analyzer (Rate limited to 60 req/min to protect OpenAI costs)
         Route::middleware('throttle:60,1')->prefix('wow')->group(function () {
             Route::post('/analyze', [App\Http\Controllers\Api\V1\WowAnalyzerController::class, 'analyze']);
+            Route::get('/leaderboard', [App\Http\Controllers\Api\V1\WowAnalyzerController::class, 'leaderboard']);
+            Route::get('/recent', [App\Http\Controllers\Api\V1\WowAnalyzerController::class, 'recent']);
+            Route::get('/analysis/{id}', [App\Http\Controllers\Api\V1\WowAnalyzerController::class, 'show']);
+            Route::post('/analysis/{id}/share', [App\Http\Controllers\Api\V1\WowAnalyzerController::class, 'share']);
         });
 
         // Shop
