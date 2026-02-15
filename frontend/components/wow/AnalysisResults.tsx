@@ -65,9 +65,9 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
 
     const handleShare = async () => {
         const url = window.location.href;
-        const text = `My ${data.character.name} has ${data.readiness_score}% readiness for WoW: Midnight!`;
+        const text = `My ${data.character.name} has ${data.readiness_score}% Midnight readiness! 🏆`;
 
-        // Track share event if we have an analysis ID
+        // Track share event
         if (data.id) {
             try {
                 await axios.post(`/wow/analysis/${data.id}/share`);
@@ -78,10 +78,10 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
 
         if (navigator.share) {
             try {
-                await navigator.share({ title: "WoW Character Analysis", text, url });
+                await navigator.share({ title: "WoW Midnight Readiness", text, url });
                 toast.success("Shared successfully!");
             } catch (error) {
-                // User cancelled share - don't show error
+                // User cancelled
             }
         } else {
             await navigator.clipboard.writeText(`${text} ${url}`);
@@ -98,60 +98,56 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
             transition={{ duration: 0.5 }}
             className="space-y-8"
         >
-            {/* MIDNIGHT COMMAND CENTER TITLE */}
+            {/* COMMAND CENTER TITLE */}
             <div className="text-center py-6">
                 <motion.h1
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.2 }}
-                    className="text-5xl font-bold uppercase mb-3"
+                    className="text-4xl md:text-5xl font-bold uppercase mb-3"
                     style={{
                         background: 'linear-gradient(135deg, #FFD700, #FFA500, #FF8C00)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
-                        textShadow: '0 0 30px rgba(255,215,0,0.5)',
                         fontFamily: 'serif',
                         letterSpacing: '0.1em',
                     }}
                 >
-                    <Trophy className="inline w-12 h-12 mb-2 mr-3" style={{ color: '#FFD700' }} />
+                    <Trophy className="inline w-10 h-10 md:w-12 md:h-12 mb-2 mr-3" style={{ color: '#FFD700', WebkitTextFillColor: '#FFD700' }} />
                     MIDNIGHT COMMAND CENTER
                 </motion.h1>
-                <p className="text-xl italic" style={{ color: '#C9B388', fontFamily: 'serif' }}>
+                <p className="text-lg md:text-xl italic" style={{ color: '#C9B388', fontFamily: 'serif' }}>
                     Complete Readiness Analysis for {data.character.name}
                 </p>
             </div>
 
-            {/* TIMELINE TRACKER - Most Critical Section */}
-            {data.timeline && (
-                <TimelineTracker timeline={data.timeline} />
-            )}
+            {/* TIMELINE TRACKER */}
+            {data.timeline && <TimelineTracker timeline={data.timeline} />}
 
-            {/* DAILY PLANNER - What to do TODAY */}
+            {/* DAILY PLANNER */}
             {data.daily_priority && data.daily_priority.length > 0 && (
                 <DailyPlanner
                     dailyPriority={data.daily_priority}
                     daysUntilLaunch={data.timeline?.days_until_launch || 16}
                 />
             )}
-            {/* Character Header with Portrait */}
-            <div
-                className="relative bg-[var(--bg-card)] border-2 rounded-2xl p-6 overflow-hidden"
-                style={{ borderColor: classColor }}
-            >
-                {/* Faction Watermark */}
-                <div className="absolute top-4 right-4 text-6xl opacity-5">
-                    {factionTheme.logo}
-                </div>
 
-                {/* Class Glow Effect */}
+            {/* CHARACTER CARD */}
+            <div
+                className="relative border-2 rounded-2xl p-6 overflow-hidden"
+                style={{
+                    background: 'linear-gradient(to bottom, #f5f5dc 0%, #e8e0c8 100%)',
+                    borderColor: classColor,
+                    boxShadow: `0 8px 20px rgba(0,0,0,0.3), 0 0 30px ${classColor}40`,
+                }}
+            >
+                <div className="absolute top-4 right-4 text-6xl opacity-10">{factionTheme.logo}</div>
                 <div
-                    className="absolute inset-0 opacity-10 blur-3xl"
+                    className="absolute inset-0 opacity-10 blur-3xl pointer-events-none"
                     style={{ background: `radial-gradient(circle at top right, ${classColor}, transparent)` }}
                 />
 
-                <div className="relative flex items-start gap-6">
-                    {/* Character Portrait */}
+                <div className="relative flex items-start gap-6 flex-wrap">
                     {data.character.portrait_url && (
                         <motion.div
                             initial={{ scale: 0, rotate: -10 }}
@@ -160,52 +156,32 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
                             className="relative flex-shrink-0"
                         >
                             <div
-                                className="w-32 h-32 rounded-xl overflow-hidden border-4 shadow-2xl"
-                                style={{
-                                    borderColor: classColor,
-                                    boxShadow: `0 0 30px ${classColor}40`
-                                }}
+                                className="w-24 h-24 md:w-32 md:h-32 rounded-xl overflow-hidden border-4 shadow-2xl"
+                                style={{ borderColor: classColor, boxShadow: `0 0 30px ${classColor}60` }}
                             >
-                                <img
-                                    src={data.character.portrait_url}
-                                    alt={data.character.name}
-                                    className="w-full h-full object-cover"
-                                />
+                                <img src={data.character.portrait_url} alt={data.character.name} className="w-full h-full object-cover" />
                             </div>
-                            {/* Level Badge */}
                             <div
-                                className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 border-[var(--bg-card)]"
-                                style={{
-                                    backgroundColor: classColor,
-                                    color: '#000'
-                                }}
+                                className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2"
+                                style={{ backgroundColor: classColor, color: '#000', borderColor: '#FFF' }}
                             >
                                 {data.character.level}
                             </div>
                         </motion.div>
                     )}
 
-                    {/* Character Info */}
                     <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-start justify-between mb-4 flex-wrap gap-2">
                             <div>
-                                <h2
-                                    className="text-3xl font-bold mb-1"
-                                    style={{ color: classColor }}
-                                >
+                                <h2 className="text-2xl md:text-3xl font-bold mb-1" style={{ color: classColor }}>
                                     {data.character.name}
                                 </h2>
-                                <p className="text-[var(--text-muted)] text-lg">
+                                <p className="text-base md:text-lg" style={{ color: '#5D4037' }}>
                                     {data.character.race} {data.character.class}
                                 </p>
                             </div>
                             <div className="flex gap-2">
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => window.open(armoryUrl, '_blank')}
-                                    size="sm"
-                                    title="View on Armory"
-                                >
+                                <Button variant="ghost" onClick={() => window.open(armoryUrl, '_blank')} size="sm">
                                     <ExternalLink className="w-4 h-4" />
                                 </Button>
                                 <Button variant="ghost" onClick={handleShare} size="sm">
@@ -215,34 +191,28 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
                             </div>
                         </div>
 
-                        <div className="flex gap-4 flex-wrap">
-                            {/* Achievement Points */}
-                            <div className="flex items-center gap-2 bg-[var(--bg-elevated)] px-4 py-2 rounded-lg">
+                        <div className="flex gap-3 flex-wrap">
+                            <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: 'rgba(139,115,85,0.2)' }}>
                                 <Shield className="w-4 h-4" style={{ color: classColor }} />
-                                <span className="text-[var(--text-secondary)] text-sm">
+                                <span className="text-sm font-semibold" style={{ color: '#5D4037' }}>
                                     {data.character.achievement_points.toLocaleString()} Points
                                 </span>
                             </div>
 
-                            {/* Faction Badge */}
-                            <div
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r ${factionTheme.gradient}`}
-                            >
-                                <span className="text-sm font-semibold">
-                                    {factionTheme.logo} {data.character.faction}
-                                </span>
+                            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r ${factionTheme.gradient}`}>
+                                <span className="text-sm font-semibold text-white">{factionTheme.logo} {data.character.faction}</span>
                             </div>
 
-                            {/* Void Elf Badge */}
                             {data.has_void_elf && (
                                 <motion.div
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ delay: 0.3, type: "spring" }}
-                                    className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-lg border border-purple-500/50"
+                                    className="flex items-center gap-2 px-3 py-2 rounded-lg border"
+                                    style={{ background: 'rgba(147,112,219,0.2)', borderColor: '#9370DB' }}
                                 >
-                                    <Check className="w-4 h-4 text-purple-400" />
-                                    <span className="text-purple-300 text-sm font-semibold">Void Elf Ready</span>
+                                    <Check className="w-4 h-4 text-purple-600" />
+                                    <span className="text-sm font-semibold text-purple-700">Void Elf Ready</span>
                                 </motion.div>
                             )}
                         </div>
@@ -250,32 +220,91 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
                 </div>
             </div>
 
-            {/* Readiness Score Card with Legendary Glow */}
-            <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-8 overflow-hidden">
-                {/* Animated Background Glow */}
-                <motion.div
-                    className="absolute inset-0 opacity-20 blur-3xl"
-                    animate={{
-                        background: [
-                            `radial-gradient(circle at 20% 50%, ${scoreColor}, transparent)`,
-                            `radial-gradient(circle at 80% 50%, ${scoreColor}, transparent)`,
-                            `radial-gradient(circle at 20% 50%, ${scoreColor}, transparent)`,
-                        ],
-                    }}
-                    transition={{ duration: 4, repeat: Infinity }}
-                />
+            {/* HOUSING READINESS */}
+            {data.housing && <HousingReadiness housing={data.housing} />}
 
+            {/* PREPARATION CHECKLIST */}
+            {data.checklist && <PreparationChecklist checklist={data.checklist} />}
+
+            {/* AI ADVICE */}
+            <div
+                className="p-6 rounded-2xl"
+                style={{
+                    background: 'linear-gradient(to bottom, #f5f5dc 0%, #e8e0c8 100%)',
+                    border: '6px solid #8B7355',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                }}
+            >
+                <div className="flex items-center gap-3 mb-4">
+                    <div
+                        className="w-12 h-12 rounded-full flex items-center justify-center"
+                        style={{ background: 'linear-gradient(135deg, #FF8C00, #FF6B00)', boxShadow: '0 4px 8px rgba(255,140,0,0.5)' }}
+                    >
+                        <Sparkles className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-bold uppercase" style={{ color: '#3E2723' }}>Profesor Buffy's Tips</h3>
+                        <p className="text-xs italic" style={{ color: '#8B7355' }}>AI-powered Midnight guidance</p>
+                    </div>
+                </div>
+
+                <div className="space-y-3">
+                    {data.ai_advice.map((tip, index) => (
+                        <motion.div
+                            key={index}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                        >
+                            <div className="flex items-start gap-3 p-4 rounded-lg" style={{ background: 'rgba(139,115,85,0.15)', border: '2px solid #C9B388' }}>
+                                <div
+                                    className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
+                                    style={{ background: `linear-gradient(135deg, ${classColor}, ${classColor}DD)`, color: '#FFF' }}
+                                >
+                                    {index + 1}
+                                </div>
+                                <p className="flex-1 font-medium" style={{ color: '#3E2723' }}>{tip}</p>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+
+            {/* MISSING ESSENTIALS */}
+            {data.missing_essentials.length > 0 && (
+                <div
+                    className="p-6 rounded-2xl"
+                    style={{ background: 'linear-gradient(to bottom, #FFF5F5, #FFE8E8)', border: '4px solid rgba(220,20,60,0.5)' }}
+                >
+                    <div className="flex items-center gap-2 mb-4">
+                        <AlertCircle className="w-6 h-6 text-red-600" />
+                        <h3 className="text-xl font-bold uppercase" style={{ color: '#8B0000' }}>Missing Essentials</h3>
+                    </div>
+                    <ul className="space-y-2">
+                        {data.missing_essentials.map((item, index) => (
+                            <li key={index} className="flex items-center gap-3" style={{ color: '#5D4037' }}>
+                                <X className="w-5 h-5 text-red-500" />
+                                <span className="font-medium">{item}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            {/* READINESS SCORE SUMMARY */}
+            <div
+                className="relative p-8 rounded-2xl overflow-hidden"
+                style={{
+                    background: 'linear-gradient(135deg, #2a1810, #1a0f08)',
+                    border: '8px solid',
+                    borderImage: 'linear-gradient(135deg, #5D4037, #3E2723) 1',
+                    boxShadow: `0 8px 20px rgba(0,0,0,0.6), 0 0 30px ${scoreColor}60`,
+                }}
+            >
                 <div className="relative text-center">
-                    <div className="relative inline-flex items-center justify-center w-48 h-48 mb-6">
+                    <div className="relative inline-flex items-center justify-center w-40 h-40 md:w-48 md:h-48 mb-6">
                         <svg className="w-full h-full transform -rotate-90">
-                            <circle
-                                cx="96"
-                                cy="96"
-                                r="88"
-                                stroke="var(--border)"
-                                strokeWidth="12"
-                                fill="none"
-                            />
+                            <circle cx="96" cy="96" r="88" stroke="rgba(255,255,255,0.1)" strokeWidth="12" fill="none" />
                             <motion.circle
                                 cx="96"
                                 cy="96"
@@ -288,135 +317,31 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
                                 initial={{ strokeDashoffset: 2 * Math.PI * 88 }}
                                 animate={{ strokeDashoffset: 2 * Math.PI * 88 * (1 - data.readiness_score / 100) }}
                                 transition={{ duration: 1.5, ease: "easeOut" }}
-                                style={{
-                                    filter: `drop-shadow(0 0 8px ${scoreColor})`
-                                }}
+                                style={{ filter: `drop-shadow(0 0 8px ${scoreColor})` }}
                             />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                             <motion.span
                                 initial={{ opacity: 0, scale: 0.5 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.5, duration: 0.5 }}
-                                className="text-5xl font-bold"
+                                transition={{ delay: 0.5 }}
+                                className="text-4xl md:text-5xl font-bold"
                                 style={{ color: scoreColor }}
                             >
                                 {data.readiness_score}%
                             </motion.span>
-                            <span
-                                className="text-sm mt-1 font-semibold"
-                                style={{ color: scoreColor }}
-                            >
+                            <span className="text-sm mt-1 font-bold uppercase" style={{ color: scoreColor }}>
                                 {getScoreLabel(data.readiness_score)}
                             </span>
                         </div>
                     </div>
 
-                    <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
-                        Midnight Readiness Score
+                    <h3 className="text-2xl md:text-3xl font-bold uppercase mb-2" style={{ color: '#FFD700' }}>
+                        Overall Midnight Readiness
                     </h3>
-                    <p className="text-[var(--text-secondary)]">
-                        Based on achievements, mounts, and Quel'Thalas lore completion
+                    <p className="text-base md:text-lg" style={{ color: '#C9B388' }}>
+                        Based on lore, collections, housing, and Void mastery
                     </p>
-                </div>
-            </div>
-
-            {/* AI Advice - Profesor Buffy's Recommendations */}
-            <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-[var(--accent)]/20 flex items-center justify-center">
-                        <Sparkles className="w-5 h-5 text-[var(--accent)]" />
-                    </div>
-                    <div>
-                        <h3 className="text-xl font-bold text-[var(--text-primary)]">
-                            Profesor Buffy's Recommendations
-                        </h3>
-                        <p className="text-xs text-[var(--text-muted)]">AI-powered analysis for Midnight expansion</p>
-                    </div>
-                </div>
-
-                <div className="space-y-3">
-                    {data.ai_advice.map((tip, index) => (
-                        <motion.div
-                            key={index}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.1 + 0.3 }}
-                            className="group relative"
-                        >
-                            <div className="flex items-start gap-3 bg-[var(--bg-elevated)] p-4 rounded-lg hover:bg-[var(--bg-card)] transition-all">
-                                <div
-                                    className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center font-bold text-sm"
-                                    style={{
-                                        backgroundColor: `${classColor}30`,
-                                        color: classColor,
-                                        border: `2px solid ${classColor}`
-                                    }}
-                                >
-                                    {index + 1}
-                                </div>
-                                <p className="text-[var(--text-primary)] leading-relaxed flex-1">{tip}</p>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Missing Essentials */}
-            {data.missing_essentials.length > 0 && (
-                <div className="bg-[var(--bg-card)] border-2 border-yellow-500/30 rounded-2xl p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                        <AlertCircle className="w-5 h-5 text-yellow-500" />
-                        <h3 className="text-xl font-bold text-[var(--text-primary)]">
-                            Missing Essentials for Midnight
-                        </h3>
-                    </div>
-
-                    <ul className="space-y-2">
-                        {data.missing_essentials.map((item, index) => (
-                            <motion.li
-                                key={index}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.05 }}
-                                className="flex items-center gap-3 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-                            >
-                                <X className="w-4 h-4 text-red-400 flex-shrink-0" />
-                                <span>{item}</span>
-                            </motion.li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-
-            {/* Stats Footer */}
-            <div className="bg-gradient-to-br from-[var(--bg-card)] to-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl p-6">
-                <div className="grid grid-cols-2 gap-6 text-center">
-                    <div>
-                        <motion.p
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ delay: 0.5, type: "spring" }}
-                            className="text-4xl font-bold mb-1"
-                            style={{ color: classColor }}
-                        >
-                            {data.void_mounts_count}
-                        </motion.p>
-                        <p className="text-sm text-[var(--text-muted)]">Void-Themed Mounts</p>
-                        <p className="text-xs text-[var(--text-muted)] mt-1">Ready for Midnight's dark aesthetic</p>
-                    </div>
-                    <div>
-                        <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ delay: 0.6, type: "spring" }}
-                            className={`text-4xl font-bold mb-1 ${factionTheme.textColor}`}
-                        >
-                            {factionTheme.logo}
-                        </motion.div>
-                        <p className="text-sm text-[var(--text-muted)]">{data.character.faction} Loyalty</p>
-                        <p className="text-xs text-[var(--text-muted)] mt-1">Quel'Thalas awaits your arrival</p>
-                    </div>
                 </div>
             </div>
         </motion.div>

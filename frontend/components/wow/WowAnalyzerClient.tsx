@@ -31,8 +31,27 @@ interface AnalysisResult {
     readiness_score: number;
     ai_advice: string[];
     missing_essentials: string[];
+    daily_priority?: string[];
     void_mounts_count: number;
     has_void_elf: boolean;
+    housing?: {
+        housing_score: number;
+        mount_count: number;
+        mount_target: number;
+        achievement_count: number;
+        void_mount_count: number;
+        rating: string;
+    };
+    timeline?: {
+        days_until_launch: number;
+        launch_date: string;
+        urgency_level: string;
+        limited_content_available: {
+            royal_voidwing: boolean;
+            faceless_one_title: boolean;
+        };
+    };
+    checklist?: any;
 }
 
 export default function WowAnalyzerClient() {
