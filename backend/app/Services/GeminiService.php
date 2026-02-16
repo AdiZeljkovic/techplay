@@ -39,7 +39,7 @@ class GeminiService
 
         try {
             $response = $this->http(60)
-                ->post("https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent?key={$this->apiKey}", [
+                ->post("https://generativelanguage.googleapis.com/v1/models/{$this->model}:generateContent?key={$this->apiKey}", [
                     'contents' => [
                         [
                             'parts' => [
