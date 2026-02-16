@@ -49,7 +49,7 @@ class GeminiService
                     ],
                     'generationConfig' => [
                         'temperature' => 0.7,
-                        'maxOutputTokens' => 800,
+                        'maxOutputTokens' => 2048,
                         'topP' => 0.95,
                         'topK' => 40
                     ]
