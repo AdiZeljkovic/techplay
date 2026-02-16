@@ -12,6 +12,7 @@ import WowLeaderboard from "@/components/wow/WowLeaderboard";
 import WowRecentAnalyses from "@/components/wow/WowRecentAnalyses";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
+import { ComprehensiveWowAnalysis } from "@/types";
 
 // TechPlay Design System - Simple animations
 const fadeInUp = {
@@ -33,47 +34,10 @@ interface FormData {
     region: "us" | "eu" | "kr" | "tw";
 }
 
-interface AnalysisResult {
-    id?: number;
-    character: {
-        name: string;
-        level: number;
-        class: string;
-        race: string;
-        faction: string;
-        achievement_points: number;
-        portrait_url?: string | null;
-    };
-    readiness_score: number;
-    ai_advice: string[];
-    missing_essentials: string[];
-    daily_priority?: string[];
-    void_mounts_count: number;
-    has_void_elf: boolean;
-    housing?: {
-        housing_score: number;
-        mount_count: number;
-        mount_target: number;
-        achievement_count: number;
-        void_mount_count: number;
-        rating: string;
-    };
-    timeline?: {
-        days_until_launch: number;
-        launch_date: string;
-        urgency_level: string;
-        limited_content_available: {
-            royal_voidwing: boolean;
-            faceless_one_title: boolean;
-        };
-    };
-    checklist?: any;
-}
-
 export default function WowAnalyzerClient() {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingStage, setLoadingStage] = useState<string>("");
-    const [result, setResult] = useState<AnalysisResult | null>(null);
+    const [result, setResult] = useState<(ComprehensiveWowAnalysis & { id?: number }) | null>(null);
 
     const { register, handleSubmit, control, watch, formState: { errors } } = useForm<FormData>({
         defaultValues: {
