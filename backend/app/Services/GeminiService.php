@@ -66,7 +66,7 @@ class GeminiService
             $data = $response->json();
 
             // DEBUG: Log full Gemini response
-            Log::info('Gemini full response', [
+            Log::warning('Gemini full response', [
                 'finishReason' => $data['candidates'][0]['finishReason'] ?? 'unknown',
                 'usageMetadata' => $data['usageMetadata'] ?? null,
                 'full_data' => $data
@@ -83,7 +83,7 @@ class GeminiService
             $jsonContent = $this->extractJSON($content);
 
             // DEBUG: Log extracted JSON
-            Log::info('Gemini JSON extracted', ['json' => $jsonContent]);
+            Log::warning('Gemini JSON extracted', ['json' => $jsonContent]);
 
             $result = json_decode($jsonContent, true);
 
