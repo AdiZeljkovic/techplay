@@ -42,3 +42,43 @@ Route::get('/{key}.txt', function ($key) {
     abort(404);
 })->where('key', '[a-zA-Z0-9]+');
 
+// DEBUG: Test Gemini API directly (no cache, hardcoded data)
+Route::get('/debug-gemini-test', function () {
+    $geminiService = app(\App\Services\GeminiService::class);
+
+    \Illuminate\Support\Facades\Log::info('=== GEMINI DEBUG TEST STARTED ===');
+
+    $testData = [
+        'character' => [
+            'name' => 'TestChar',
+            'level' => 80,
+            'class' => 'Mage',
+            'race' => 'Human',
+            'faction' => 'Alliance',
+            'achievement_points' => 5000,
+        ],
+        'achievements' => [
+            'total_completed' => 100,
+            'has_void_elf' => false,
+            'midnight_relevant' => 0,
+        ],
+        'mounts' => [
+            'total' => 50,
+            'void_themed' => 2,
+        ],
+        'housing_score' => 30,
+        'midnight_readiness' => 25,
+    ];
+
+    $result = $geminiService->analyzeCharacterReadiness($testData);
+
+    \Illuminate\Support\Facades\Log::info('=== GEMINI DEBUG TEST FINISHED ===', ['result' => $result]);
+
+    return response()->json([
+        'success' => $result !== null,
+        'result' => $result,
+        'message' => $result ? 'Gemini API works!' : 'Gemini failed - check tail -f logs',
+        'check_logs' => 'tail -f storage/logs/laravel.log'
+    ]);
+});
+
