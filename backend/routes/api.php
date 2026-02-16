@@ -244,11 +244,11 @@ Route::prefix('v1')->group(function () {
     // PayPal Webhooks (Signature Verified Internally)
     Route::post('/webhooks/paypal', [App\Http\Controllers\Api\V1\PayPalWebhookController::class, 'handleWebhook']);
 
-    // DEBUG: Test Gemini API directly (no cache, hardcoded data)
-    Route::get('/debug-gemini', function () {
-        $geminiService = app(\App\Services\GeminiService::class);
+    // DEBUG: Test Groq API directly (no cache, hardcoded data)
+    Route::get('/debug-groq', function () {
+        $groqService = app(\App\Services\GroqService::class);
 
-        \Illuminate\Support\Facades\Log::info('=== GEMINI DEBUG TEST STARTED ===');
+        \Illuminate\Support\Facades\Log::warning('=== GROQ DEBUG TEST STARTED ===');
 
         $testData = [
             'character' => [
@@ -272,14 +272,15 @@ Route::prefix('v1')->group(function () {
             'midnight_readiness' => 25,
         ];
 
-        $result = $geminiService->analyzeCharacterReadiness($testData);
+        $result = $groqService->analyzeCharacterReadiness($testData);
 
-        \Illuminate\Support\Facades\Log::info('=== GEMINI DEBUG TEST FINISHED ===', ['result' => $result]);
+        \Illuminate\Support\Facades\Log::warning('=== GROQ DEBUG TEST FINISHED ===', ['result' => $result]);
 
         return response()->json([
             'success' => $result !== null,
             'result' => $result,
-            'message' => $result ? 'Gemini API works!' : 'Gemini failed - check logs',
+            'message' => $result ? 'Groq API works! ✅' : 'Groq failed - check tail -f logs ❌',
+            'check_logs' => 'tail -f storage/logs/laravel.log'
         ]);
     });
 });
