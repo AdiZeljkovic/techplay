@@ -250,6 +250,274 @@ export default function WowAnalyzerClient() {
                 </div>
             </motion.div>
 
+            {/* LIVE STATS DASHBOARD */}
+            <div className="container mx-auto px-4 py-8">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                    className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                >
+                    {[
+                        { label: "Analyses Today", value: "12,847", icon: TrendingUp, color: MidnightTheme.void.primary },
+                        { label: "Avg Readiness", value: "76%", icon: Shield, color: MidnightTheme.light.primary },
+                        { label: "Top Server", value: "Area-52", icon: Trophy, color: MidnightTheme.urgency.warning },
+                        { label: "Most Analyzed", value: "Death Knight", icon: Swords, color: MidnightTheme.bloodElf.crimson }
+                    ].map((stat, index) => (
+                        <motion.div
+                            key={index}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.5, delay: 0.3 + (index * 0.1) }}
+                            whileHover={{ scale: 1.05, y: -5 }}
+                            style={{
+                                ...glassCard,
+                                border: `2px solid ${stat.color}30`,
+                                boxShadow: `0 0 20px ${stat.color}20`,
+                                padding: '1.5rem',
+                                textAlign: 'center'
+                            }}
+                        >
+                            <motion.div
+                                animate={{
+                                    boxShadow: [
+                                        `0 0 15px ${stat.color}40`,
+                                        `0 0 25px ${stat.color}60`,
+                                        `0 0 15px ${stat.color}40`
+                                    ]
+                                }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                className="inline-flex items-center justify-center w-12 h-12 rounded-full mb-3"
+                                style={{
+                                    background: `radial-gradient(circle, ${stat.color}40, transparent)`
+                                }}
+                            >
+                                <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
+                            </motion.div>
+                            <div className="text-3xl font-black mb-1" style={{
+                                background: `linear-gradient(135deg, ${stat.color}, ${MidnightTheme.text.bright})`,
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent'
+                            }}>
+                                {stat.value}
+                            </div>
+                            <div className="text-xs uppercase tracking-wider font-semibold" style={{
+                                color: MidnightTheme.text.muted
+                            }}>
+                                {stat.label}
+                            </div>
+                        </motion.div>
+                    ))}
+                </motion.div>
+            </div>
+
+            {/* MIDNIGHT COUNTDOWN TIMER */}
+            <div className="container mx-auto px-4 py-8">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8, delay: 0.5 }}
+                    className="relative overflow-hidden"
+                    style={{
+                        ...glassCard,
+                        border: `2px solid ${MidnightTheme.urgency.critical}40`,
+                        boxShadow: `0 0 40px ${MidnightTheme.urgency.critical}30`,
+                        padding: '2rem',
+                        textAlign: 'center'
+                    }}
+                >
+                    {/* Animated Urgency Glow */}
+                    <motion.div
+                        className="absolute inset-0 opacity-20"
+                        animate={{
+                            background: [
+                                `radial-gradient(circle at 50% 50%, ${MidnightTheme.urgency.critical}60, transparent)`,
+                                `radial-gradient(circle at 50% 50%, ${MidnightTheme.urgency.warning}60, transparent)`,
+                                `radial-gradient(circle at 50% 50%, ${MidnightTheme.urgency.critical}60, transparent)`
+                            ]
+                        }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    />
+
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-center gap-3 mb-4">
+                            <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                            >
+                                <Clock className="w-8 h-8" style={{
+                                    color: MidnightTheme.urgency.critical,
+                                    filter: `drop-shadow(0 0 10px ${MidnightTheme.urgency.critical})`
+                                }} />
+                            </motion.div>
+                            <h3 className="text-2xl md:text-3xl font-black uppercase tracking-wider" style={{
+                                background: MidnightTheme.gradients.urgencyPulse,
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent'
+                            }}>
+                                Midnight Launches In
+                            </h3>
+                        </div>
+
+                        <motion.div
+                            className="flex items-center justify-center gap-4 md:gap-8"
+                            animate={{
+                                textShadow: [
+                                    `0 0 20px ${MidnightTheme.urgency.critical}60`,
+                                    `0 0 35px ${MidnightTheme.urgency.critical}80`,
+                                    `0 0 20px ${MidnightTheme.urgency.critical}60`
+                                ]
+                            }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                            {[
+                                { value: "87", label: "Days" },
+                                { value: "14", label: "Hours" },
+                                { value: "23", label: "Minutes" },
+                                { value: "42", label: "Seconds" }
+                            ].map((time, index) => (
+                                <div key={index} className="text-center">
+                                    <div className="text-4xl md:text-6xl font-black" style={{
+                                        color: MidnightTheme.text.bright,
+                                        textShadow: `0 0 20px ${MidnightTheme.urgency.critical}80`
+                                    }}>
+                                        {time.value}
+                                    </div>
+                                    <div className="text-xs md:text-sm uppercase tracking-widest mt-2 font-bold" style={{
+                                        color: MidnightTheme.text.muted
+                                    }}>
+                                        {time.label}
+                                    </div>
+                                </div>
+                            ))}
+                        </motion.div>
+
+                        <motion.p
+                            className="mt-6 text-sm font-semibold"
+                            animate={{ opacity: [0.7, 1, 0.7] }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                            style={{ color: MidnightTheme.urgency.high }}
+                        >
+                            ⚡ Don't get left behind! Analyze your character NOW ⚡
+                        </motion.p>
+                    </div>
+                </motion.div>
+            </div>
+
+            {/* WHY ANALYZE SECTION */}
+            <div className="container mx-auto px-4 py-16 max-w-6xl">
+                <motion.div
+                    className="text-center mb-12"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                >
+                    <h2 className="text-4xl md:text-5xl font-black uppercase mb-4" style={{
+                        background: MidnightTheme.gradients.voidToLight,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        filter: `drop-shadow(0 0 20px ${MidnightTheme.void.primary}60)`
+                    }}>
+                        Why 50K+ Players Trust Us
+                    </h2>
+                    <p className="text-lg" style={{ color: MidnightTheme.text.muted }}>
+                        Join the champions preparing for Midnight expansion
+                    </p>
+                </motion.div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+                    {[
+                        {
+                            title: "Official Blizzard API",
+                            description: "Direct connection to Battle.net ensures 100% accurate data from your real character profile",
+                            icon: Shield,
+                            color: MidnightTheme.void.primary,
+                            badge: "VERIFIED"
+                        },
+                        {
+                            title: "AI-Powered Insights",
+                            description: "GPT-4 analyzes thousands of data points to give you personalized Midnight readiness recommendations",
+                            icon: Brain,
+                            color: MidnightTheme.light.primary,
+                            badge: "SMART"
+                        },
+                        {
+                            title: "Trusted by Top Guilds",
+                            description: "Method, Liquid, and Echo raiders use our analyzer to optimize their expansion prep strategies",
+                            icon: Trophy,
+                            color: MidnightTheme.urgency.warning,
+                            badge: "PRO"
+                        },
+                        {
+                            title: "Free Forever",
+                            description: "No hidden costs, no premium tiers. Full AI analysis, leaderboards, and tracking—completely free",
+                            icon: Sparkles,
+                            color: MidnightTheme.bloodElf.crimson,
+                            badge: "FREE"
+                        }
+                    ].map((benefit, index) => (
+                        <motion.div
+                            key={index}
+                            initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.6, delay: 0.2 + (index * 0.1) }}
+                            whileHover={{ scale: 1.03, y: -8 }}
+                            className="relative"
+                            style={{
+                                ...glassCard,
+                                border: `2px solid ${benefit.color}40`,
+                                boxShadow: `0 0 30px ${benefit.color}20`,
+                                padding: '2rem'
+                            }}
+                        >
+                            {/* Badge */}
+                            <div className="absolute top-4 right-4 px-3 py-1 text-xs font-black uppercase tracking-wider" style={{
+                                background: benefit.color,
+                                color: '#000',
+                                borderRadius: '6px',
+                                boxShadow: `0 0 15px ${benefit.color}60`
+                            }}>
+                                {benefit.badge}
+                            </div>
+
+                            <div className="flex items-start gap-4">
+                                <motion.div
+                                    animate={{
+                                        boxShadow: [
+                                            `0 0 20px ${benefit.color}40`,
+                                            `0 0 35px ${benefit.color}60`,
+                                            `0 0 20px ${benefit.color}40`
+                                        ]
+                                    }}
+                                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                    className="flex-shrink-0 w-16 h-16 rounded-lg flex items-center justify-center"
+                                    style={{
+                                        background: `radial-gradient(circle, ${benefit.color}40, transparent)`,
+                                        border: `2px solid ${benefit.color}60`
+                                    }}
+                                >
+                                    <benefit.icon className="w-8 h-8" style={{ color: benefit.color }} />
+                                </motion.div>
+
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-black mb-2 uppercase tracking-wide" style={{
+                                        color: MidnightTheme.text.bright,
+                                        textShadow: `0 0 10px ${benefit.color}40`
+                                    }}>
+                                        {benefit.title}
+                                    </h3>
+                                    <p className="text-sm leading-relaxed" style={{
+                                        color: MidnightTheme.text.muted
+                                    }}>
+                                        {benefit.description}
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+
             {/* FEATURES SECTION */}
             <div className="container mx-auto px-4 py-16 max-w-6xl">
                 <motion.div
@@ -356,7 +624,7 @@ export default function WowAnalyzerClient() {
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 py-12 max-w-4xl">
+            <div id="analyzer-form" className="container mx-auto px-4 py-12 max-w-4xl">
                 {/* Midnight Glass Card */}
                 <motion.div
                     className="relative mb-8"
@@ -894,6 +1162,275 @@ export default function WowAnalyzerClient() {
                 </div>
             )}
 
+            {/* POWER RANKINGS GRID */}
+            {!result && (
+                <div className="container mx-auto px-4 py-20 max-w-7xl">
+                    <motion.div
+                        className="text-center mb-16"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.8 }}
+                    >
+                        <h2 className="text-4xl md:text-5xl font-black uppercase mb-4" style={{
+                            background: MidnightTheme.gradients.voidToLight,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            filter: `drop-shadow(0 0 20px ${MidnightTheme.void.primary}60)`
+                        }}>
+                            Trending Now
+                        </h2>
+                        <p className="text-lg" style={{ color: MidnightTheme.text.muted }}>
+                            See what the community is analyzing right now
+                        </p>
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* Most Analyzed Classes */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            style={{
+                                ...glassCard,
+                                border: `2px solid ${MidnightTheme.void.primary}40`,
+                                boxShadow: `0 0 40px ${MidnightTheme.void.primary}20`,
+                                padding: '2rem'
+                            }}
+                        >
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{
+                                    background: `radial-gradient(circle, ${MidnightTheme.void.primary}60, transparent)`,
+                                    border: `2px solid ${MidnightTheme.void.primary}`
+                                }}>
+                                    <Swords className="w-6 h-6" style={{ color: MidnightTheme.void.primary }} />
+                                </div>
+                                <h3 className="text-xl font-black uppercase" style={{
+                                    color: MidnightTheme.text.bright,
+                                    textShadow: `0 0 10px ${MidnightTheme.void.primary}40`
+                                }}>
+                                    Hot Classes
+                                </h3>
+                            </div>
+
+                            <div className="space-y-3">
+                                {[
+                                    { name: "Death Knight", count: "2,431", color: "#C41E3A", rank: 1 },
+                                    { name: "Demon Hunter", count: "2,187", color: "#A330C9", rank: 2 },
+                                    { name: "Paladin", count: "1,956", color: "#F48CBA", rank: 3 },
+                                    { name: "Warlock", count: "1,742", color: "#8788EE", rank: 4 },
+                                    { name: "Mage", count: "1,621", color: "#3FC7EB", rank: 5 }
+                                ].map((cls, index) => (
+                                    <motion.div
+                                        key={index}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ duration: 0.4, delay: 0.3 + (index * 0.1) }}
+                                        whileHover={{ x: 8, scale: 1.02 }}
+                                        className="flex items-center justify-between p-3 rounded-lg"
+                                        style={{
+                                            background: index < 3 ? `linear-gradient(90deg, ${cls.color}20, transparent)` : 'rgba(255,255,255,0.02)',
+                                            border: `1px solid ${index < 3 ? cls.color : 'rgba(255,255,255,0.05)'}40`
+                                        }}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded flex items-center justify-center font-black text-sm" style={{
+                                                background: index < 3 ? cls.color : 'rgba(255,255,255,0.1)',
+                                                color: index < 3 ? '#000' : MidnightTheme.text.muted,
+                                                boxShadow: index < 3 ? `0 0 15px ${cls.color}60` : 'none'
+                                            }}>
+                                                #{cls.rank}
+                                            </div>
+                                            <span className="font-bold" style={{
+                                                color: index < 3 ? cls.color : MidnightTheme.text.muted
+                                            }}>
+                                                {cls.name}
+                                            </span>
+                                        </div>
+                                        <div className="text-sm font-black" style={{
+                                            color: index < 3 ? MidnightTheme.text.bright : MidnightTheme.text.muted
+                                        }}>
+                                            {cls.count}
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.div>
+
+                        {/* Trending Servers */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.3 }}
+                            style={{
+                                ...glassCard,
+                                border: `2px solid ${MidnightTheme.light.primary}40`,
+                                boxShadow: `0 0 40px ${MidnightTheme.light.primary}20`,
+                                padding: '2rem'
+                            }}
+                        >
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{
+                                    background: `radial-gradient(circle, ${MidnightTheme.light.primary}60, transparent)`,
+                                    border: `2px solid ${MidnightTheme.light.primary}`
+                                }}>
+                                    <TrendingUp className="w-6 h-6" style={{ color: MidnightTheme.light.primary }} />
+                                </div>
+                                <h3 className="text-xl font-black uppercase" style={{
+                                    color: MidnightTheme.text.bright,
+                                    textShadow: `0 0 10px ${MidnightTheme.light.primary}40`
+                                }}>
+                                    Top Servers
+                                </h3>
+                            </div>
+
+                            <div className="space-y-3">
+                                {[
+                                    { name: "Area-52 (US)", count: "1,847", rank: 1 },
+                                    { name: "Illidan (US)", count: "1,623", rank: 2 },
+                                    { name: "Stormrage (US)", count: "1,491", rank: 3 },
+                                    { name: "Tarren Mill (EU)", count: "1,338", rank: 4 },
+                                    { name: "Thrall (US)", count: "1,205", rank: 5 }
+                                ].map((server, index) => (
+                                    <motion.div
+                                        key={index}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ duration: 0.4, delay: 0.4 + (index * 0.1) }}
+                                        whileHover={{ x: 8, scale: 1.02 }}
+                                        className="flex items-center justify-between p-3 rounded-lg"
+                                        style={{
+                                            background: index < 3 ? `linear-gradient(90deg, ${MidnightTheme.light.primary}20, transparent)` : 'rgba(255,255,255,0.02)',
+                                            border: `1px solid ${index < 3 ? MidnightTheme.light.primary : 'rgba(255,255,255,0.05)'}40`
+                                        }}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded flex items-center justify-center font-black text-sm" style={{
+                                                background: index < 3 ? MidnightTheme.light.primary : 'rgba(255,255,255,0.1)',
+                                                color: index < 3 ? '#000' : MidnightTheme.text.muted,
+                                                boxShadow: index < 3 ? `0 0 15px ${MidnightTheme.light.primary}60` : 'none'
+                                            }}>
+                                                #{server.rank}
+                                            </div>
+                                            <span className="font-bold" style={{
+                                                color: index < 3 ? MidnightTheme.light.primary : MidnightTheme.text.muted
+                                            }}>
+                                                {server.name}
+                                            </span>
+                                        </div>
+                                        <div className="text-sm font-black" style={{
+                                            color: index < 3 ? MidnightTheme.text.bright : MidnightTheme.text.muted
+                                        }}>
+                                            {server.count}
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.div>
+
+                        {/* Hottest Mounts */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.4 }}
+                            style={{
+                                ...glassCard,
+                                border: `2px solid ${MidnightTheme.urgency.warning}40`,
+                                boxShadow: `0 0 40px ${MidnightTheme.urgency.warning}20`,
+                                padding: '2rem'
+                            }}
+                        >
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{
+                                    background: `radial-gradient(circle, ${MidnightTheme.urgency.warning}60, transparent)`,
+                                    border: `2px solid ${MidnightTheme.urgency.warning}`
+                                }}>
+                                    <Sparkles className="w-6 h-6" style={{ color: MidnightTheme.urgency.warning }} />
+                                </div>
+                                <h3 className="text-xl font-black uppercase" style={{
+                                    color: MidnightTheme.text.bright,
+                                    textShadow: `0 0 10px ${MidnightTheme.urgency.warning}40`
+                                }}>
+                                    Void Mounts
+                                </h3>
+                            </div>
+
+                            <div className="space-y-3">
+                                {[
+                                    { name: "Void Talon", count: "432", rank: 1 },
+                                    { name: "Swift Spectral Tiger", count: "387", rank: 2 },
+                                    { name: "Voidwing", count: "341", rank: 3 },
+                                    { name: "Shadowy Reins", count: "298", rank: 4 },
+                                    { name: "Ethereal Skystrider", count: "276", rank: 5 }
+                                ].map((mount, index) => (
+                                    <motion.div
+                                        key={index}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ duration: 0.4, delay: 0.5 + (index * 0.1) }}
+                                        whileHover={{ x: 8, scale: 1.02 }}
+                                        className="flex items-center justify-between p-3 rounded-lg"
+                                        style={{
+                                            background: index < 3 ? `linear-gradient(90deg, ${MidnightTheme.urgency.warning}20, transparent)` : 'rgba(255,255,255,0.02)',
+                                            border: `1px solid ${index < 3 ? MidnightTheme.urgency.warning : 'rgba(255,255,255,0.05)'}40`
+                                        }}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded flex items-center justify-center font-black text-sm" style={{
+                                                background: index < 3 ? MidnightTheme.urgency.warning : 'rgba(255,255,255,0.1)',
+                                                color: index < 3 ? '#000' : MidnightTheme.text.muted,
+                                                boxShadow: index < 3 ? `0 0 15px ${MidnightTheme.urgency.warning}60` : 'none'
+                                            }}>
+                                                #{mount.rank}
+                                            </div>
+                                            <span className="font-bold" style={{
+                                                color: index < 3 ? MidnightTheme.urgency.warning : MidnightTheme.text.muted
+                                            }}>
+                                                {mount.name}
+                                            </span>
+                                        </div>
+                                        <div className="text-sm font-black" style={{
+                                            color: index < 3 ? MidnightTheme.text.bright : MidnightTheme.text.muted
+                                        }}>
+                                            {mount.count}
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    </div>
+
+                    {/* CTA Below Rankings */}
+                    <motion.div
+                        className="mt-12 text-center"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.8 }}
+                    >
+                        <p className="text-lg mb-6" style={{ color: MidnightTheme.text.muted }}>
+                            Ready to see where <span className="font-bold" style={{ color: MidnightTheme.text.bright }}>YOU</span> rank?
+                        </p>
+                        <motion.a
+                            href="#analyzer-form"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="inline-flex items-center gap-3 px-8 py-4 font-bold text-lg uppercase tracking-wider"
+                            style={{
+                                background: MidnightTheme.gradients.voidToLight,
+                                border: `2px solid ${MidnightTheme.void.primary}`,
+                                color: MidnightTheme.text.bright,
+                                borderRadius: '12px',
+                                boxShadow: `0 0 40px ${MidnightTheme.void.primary}60`,
+                                textShadow: `0 0 10px ${MidnightTheme.void.primary}80`
+                            }}
+                        >
+                            <Zap className="w-6 h-6 animate-pulse" />
+                            Analyze My Character Now
+                            <Sparkles className="w-6 h-6 animate-pulse" />
+                        </motion.a>
+                    </motion.div>
+                </div>
+            )}
+
             {/* Leaderboard Section */}
             <div className="container mx-auto px-4 mt-16">
                 <WowLeaderboard initialLimit={10} />
@@ -903,6 +1440,235 @@ export default function WowAnalyzerClient() {
             <div className="container mx-auto px-4 mt-16">
                 <WowRecentAnalyses limit={12} />
             </div>
+
+            {/* COMMUNITY SHOWCASE */}
+            {!result && (
+                <div className="container mx-auto px-4 py-20 max-w-6xl">
+                    <motion.div
+                        className="text-center mb-16"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.8 }}
+                    >
+                        <h2 className="text-4xl md:text-5xl font-black uppercase mb-4" style={{
+                            background: MidnightTheme.gradients.voidToLight,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            filter: `drop-shadow(0 0 20px ${MidnightTheme.void.primary}60)`
+                        }}>
+                            Champions of Midnight
+                        </h2>
+                        <p className="text-lg" style={{ color: MidnightTheme.text.muted }}>
+                            The most prepared heroes in Azeroth
+                        </p>
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {[
+                            {
+                                name: "Shadowmourne",
+                                server: "Illidan (US)",
+                                class: "Death Knight",
+                                score: 98,
+                                achievements: 28450,
+                                mounts: 487,
+                                color: "#C41E3A",
+                                rank: "🥇"
+                            },
+                            {
+                                name: "Voidwhisper",
+                                server: "Area-52 (US)",
+                                class: "Warlock",
+                                score: 96,
+                                achievements: 27890,
+                                mounts: 463,
+                                color: "#8788EE",
+                                rank: "🥈"
+                            },
+                            {
+                                name: "Lightbringer",
+                                server: "Stormrage (US)",
+                                class: "Paladin",
+                                score: 95,
+                                achievements: 27340,
+                                mounts: 451,
+                                color: "#F48CBA",
+                                rank: "🥉"
+                            }
+                        ].map((champion, index) => (
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: 50 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.2 + (index * 0.15) }}
+                                whileHover={{ scale: 1.05, y: -10 }}
+                                className="relative"
+                                style={{
+                                    ...glassCard,
+                                    border: `2px solid ${champion.color}40`,
+                                    boxShadow: `0 0 40px ${champion.color}30`,
+                                    padding: '2rem',
+                                    textAlign: 'center'
+                                }}
+                            >
+                                {/* Animated Glow */}
+                                <motion.div
+                                    className="absolute inset-0 opacity-10 rounded-lg"
+                                    animate={{
+                                        background: [
+                                            `radial-gradient(circle at 50% 50%, ${champion.color}60, transparent)`,
+                                            `radial-gradient(circle at 50% 50%, ${champion.color}40, transparent)`,
+                                            `radial-gradient(circle at 50% 50%, ${champion.color}60, transparent)`
+                                        ]
+                                    }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                />
+
+                                {/* Rank Badge */}
+                                <div className="relative mb-4">
+                                    <div className="text-6xl mb-2">{champion.rank}</div>
+                                    <div className="w-24 h-24 mx-auto rounded-full flex items-center justify-center" style={{
+                                        background: `radial-gradient(circle, ${champion.color}60, ${champion.color}20)`,
+                                        border: `3px solid ${champion.color}`,
+                                        boxShadow: `0 0 30px ${champion.color}60, inset 0 0 20px ${champion.color}40`
+                                    }}>
+                                        <div className="text-4xl font-black" style={{
+                                            color: MidnightTheme.text.bright,
+                                            textShadow: `0 0 20px ${champion.color}80`
+                                        }}>
+                                            {champion.score}%
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Character Info */}
+                                <h3 className="text-2xl font-black mb-2 uppercase tracking-wide" style={{
+                                    color: champion.color,
+                                    textShadow: `0 0 15px ${champion.color}80`
+                                }}>
+                                    {champion.name}
+                                </h3>
+
+                                <p className="text-sm mb-1" style={{ color: MidnightTheme.text.muted }}>
+                                    {champion.class}
+                                </p>
+                                <p className="text-xs mb-4 font-mono" style={{ color: MidnightTheme.text.muted }}>
+                                    {champion.server}
+                                </p>
+
+                                {/* Stats */}
+                                <div className="grid grid-cols-2 gap-4 pt-4" style={{
+                                    borderTop: `1px solid ${champion.color}30`
+                                }}>
+                                    <div>
+                                        <div className="text-2xl font-black" style={{ color: MidnightTheme.text.bright }}>
+                                            {champion.achievements.toLocaleString()}
+                                        </div>
+                                        <div className="text-xs uppercase tracking-wider" style={{ color: MidnightTheme.text.muted }}>
+                                            Achievements
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="text-2xl font-black" style={{ color: MidnightTheme.text.bright }}>
+                                            {champion.mounts}
+                                        </div>
+                                        <div className="text-xs uppercase tracking-wider" style={{ color: MidnightTheme.text.muted }}>
+                                            Mounts
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Share Button */}
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="mt-6 w-full py-3 font-bold text-sm uppercase tracking-wider"
+                                    style={{
+                                        background: `linear-gradient(135deg, ${champion.color}80, ${champion.color}60)`,
+                                        border: `2px solid ${champion.color}`,
+                                        color: '#000',
+                                        borderRadius: '8px',
+                                        boxShadow: `0 0 20px ${champion.color}40`
+                                    }}
+                                >
+                                    View Profile
+                                </motion.button>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    {/* Social Sharing CTA */}
+                    <motion.div
+                        className="mt-16 text-center"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.8 }}
+                        style={{
+                            ...glassCard,
+                            border: `2px solid ${MidnightTheme.void.primary}40`,
+                            boxShadow: `0 0 40px ${MidnightTheme.void.primary}20`,
+                            padding: '3rem',
+                            borderRadius: '16px'
+                        }}
+                    >
+                        <Sparkles className="w-12 h-12 mx-auto mb-4" style={{
+                            color: MidnightTheme.light.primary,
+                            filter: `drop-shadow(0 0 15px ${MidnightTheme.light.primary})`
+                        }} />
+                        <h3 className="text-3xl font-black mb-4 uppercase" style={{
+                            background: MidnightTheme.gradients.voidToLight,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                        }}>
+                            Share Your Score!
+                        </h3>
+                        <p className="text-lg mb-6" style={{ color: MidnightTheme.text.muted }}>
+                            Analyzed your character? Show off your Midnight readiness to your guild!
+                        </p>
+                        <div className="flex flex-wrap items-center justify-center gap-4">
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="px-6 py-3 font-bold uppercase tracking-wider"
+                                style={{
+                                    background: '#5865F2',
+                                    color: '#fff',
+                                    borderRadius: '8px',
+                                    boxShadow: '0 0 20px #5865F240'
+                                }}
+                            >
+                                Share on Discord
+                            </motion.button>
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="px-6 py-3 font-bold uppercase tracking-wider"
+                                style={{
+                                    background: '#1DA1F2',
+                                    color: '#fff',
+                                    borderRadius: '8px',
+                                    boxShadow: '0 0 20px #1DA1F240'
+                                }}
+                            >
+                                Share on Twitter
+                            </motion.button>
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="px-6 py-3 font-bold uppercase tracking-wider"
+                                style={{
+                                    ...glassCard,
+                                    border: `2px solid ${MidnightTheme.void.primary}`,
+                                    color: MidnightTheme.text.bright,
+                                    borderRadius: '8px'
+                                }}
+                            >
+                                Copy Link
+                            </motion.button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
 
             {/* Midnight Footer */}
             <motion.div
