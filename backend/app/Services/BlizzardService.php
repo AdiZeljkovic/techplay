@@ -217,4 +217,196 @@ class BlizzardService
             return null;
         }
     }
+
+    /**
+     * Get character equipment (gear with iLvL, enchants, sockets)
+     * API: /profile/wow/character/{realmSlug}/{characterName}/equipment
+     */
+    public function getCharacterEquipment(string $region, string $realmSlug, string $characterName): ?array
+    {
+        $token = $this->getAccessToken($region);
+        $baseUrl = $this->regionUrls[$region] ?? $this->regionUrls['us'];
+        $namespace = "profile-{$region}";
+
+        try {
+            $response = $this->http(20)
+                ->withToken($token)
+                ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/equipment", [
+                    'namespace' => $namespace,
+                    'locale' => 'en_US',
+                ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::warning('Blizzard Equipment API returned non-200', [
+                'status' => $response->status(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Blizzard Equipment Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Get character mythic keystone profile (M+ score, best runs)
+     * API: /profile/wow/character/{realmSlug}/{characterName}/mythic-keystone-profile
+     */
+    public function getCharacterMythicProfile(string $region, string $realmSlug, string $characterName): ?array
+    {
+        $token = $this->getAccessToken($region);
+        $baseUrl = $this->regionUrls[$region] ?? $this->regionUrls['us'];
+        $namespace = "profile-{$region}";
+
+        try {
+            $response = $this->http(20)
+                ->withToken($token)
+                ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/mythic-keystone-profile", [
+                    'namespace' => $namespace,
+                    'locale' => 'en_US',
+                ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::warning('Blizzard Mythic Keystone Profile API returned non-200', [
+                'status' => $response->status(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Blizzard Mythic Keystone Profile Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Get character raid encounters (boss kills per difficulty)
+     * API: /profile/wow/character/{realmSlug}/{characterName}/encounters/raids
+     */
+    public function getCharacterRaids(string $region, string $realmSlug, string $characterName): ?array
+    {
+        $token = $this->getAccessToken($region);
+        $baseUrl = $this->regionUrls[$region] ?? $this->regionUrls['us'];
+        $namespace = "profile-{$region}";
+
+        try {
+            $response = $this->http(20)
+                ->withToken($token)
+                ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/encounters/raids", [
+                    'namespace' => $namespace,
+                    'locale' => 'en_US',
+                ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::warning('Blizzard Raid Encounters API returned non-200', [
+                'status' => $response->status(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Blizzard Raid Encounters Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Fetch all character data in parallel using Http::pool()
+     * Performance: ~1-2s vs 4-8s sequential
+     *
+     * @param string $region Region code (us/eu/kr/tw)
+     * @param string $realmSlug Realm slug (lowercase, dashes)
+     * @param string $characterName Character name (lowercase)
+     * @return array All endpoint responses (null if failed)
+     */
+    public function fetchAllCharacterData(string $region, string $realmSlug, string $characterName): array
+    {
+        $token = $this->getAccessToken($region);
+        $baseUrl = $this->regionUrls[$region] ?? $this->regionUrls['us'];
+        $namespace = "profile-{$region}";
+        $locale = 'en_US';
+
+        try {
+            $responses = Http::pool(function ($pool) use ($token, $baseUrl, $namespace, $locale, $realmSlug, $characterName) {
+                $baseParams = [
+                    'namespace' => $namespace,
+                    'locale' => $locale,
+                ];
+
+                $httpClient = $this->http(30);
+
+                return [
+                    'profile' => $pool->as('profile')
+                        ->withToken($token)
+                        ->timeout(30)
+                        ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}", $baseParams),
+
+                    'achievements' => $pool->as('achievements')
+                        ->withToken($token)
+                        ->timeout(30)
+                        ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/achievements", $baseParams),
+
+                    'mounts' => $pool->as('mounts')
+                        ->withToken($token)
+                        ->timeout(30)
+                        ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/collections/mounts", $baseParams),
+
+                    'media' => $pool->as('media')
+                        ->withToken($token)
+                        ->timeout(30)
+                        ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/character-media", $baseParams),
+
+                    'equipment' => $pool->as('equipment')
+                        ->withToken($token)
+                        ->timeout(30)
+                        ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/equipment", $baseParams),
+
+                    'mythic' => $pool->as('mythic')
+                        ->withToken($token)
+                        ->timeout(30)
+                        ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/mythic-keystone-profile", $baseParams),
+
+                    'raids' => $pool->as('raids')
+                        ->withToken($token)
+                        ->timeout(30)
+                        ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/encounters/raids", $baseParams),
+                ];
+            });
+
+            // Process responses - return null for failed requests
+            return [
+                'profile' => $responses['profile']->successful() ? $responses['profile']->json() : null,
+                'achievements' => $responses['achievements']->successful() ? $responses['achievements']->json() : null,
+                'mounts' => $responses['mounts']->successful() ? $responses['mounts']->json() : null,
+                'media' => $responses['media']->successful() ? $responses['media']->json() : null,
+                'equipment' => $responses['equipment']->successful() ? $responses['equipment']->json() : null,
+                'mythic' => $responses['mythic']->successful() ? $responses['mythic']->json() : null,
+                'raids' => $responses['raids']->successful() ? $responses['raids']->json() : null,
+            ];
+        } catch (\Exception $e) {
+            Log::error('Blizzard Parallel Fetch Exception: ' . $e->getMessage(), [
+                'region' => $region,
+                'realm' => $realmSlug,
+                'character' => $characterName,
+            ]);
+
+            // Return all nulls on exception
+            return [
+                'profile' => null,
+                'achievements' => null,
+                'mounts' => null,
+                'media' => null,
+                'equipment' => null,
+                'mythic' => null,
+                'raids' => null,
+            ];
+        }
+    }
 }

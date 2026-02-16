@@ -211,3 +211,61 @@ export interface WowAnalysisResponse {
     data?: WowAnalysisResult;
     message?: string;
 }
+
+// Equipment & Gear Types
+export interface EquipmentSlot {
+    slot: string;
+    name: string;
+    ilvl: number;
+    quality: string;
+    is_tier: boolean;
+    enchanted: boolean;
+    gem_slots: number;
+    gems_filled: number;
+}
+
+export interface WowEquipment {
+    item_level: number;
+    slots: EquipmentSlot[];
+    tier_pieces: number;
+    missing_enchants: string[];
+    missing_gems: string[];
+}
+
+// Mythic+ Types
+export interface MythicRun {
+    dungeon: string;
+    level: number;
+    completed: boolean;
+    upgrade_level: number; // 0 = failed, 1 = +1, 2 = +2, 3 = +3
+}
+
+export interface WowMythicPlus {
+    score: number;
+    best_runs: MythicRun[];
+    vault_unlocked: boolean;
+}
+
+// Raid Types
+export interface RaidBoss {
+    name: string;
+    normal: boolean;
+    heroic: boolean;
+    mythic: boolean;
+}
+
+export interface WowRaidProgress {
+    current_tier: string;
+    bosses: RaidBoss[];
+    summary: string; // "7/8M, 8/8H"
+}
+
+// Comprehensive Analysis Result (extends base)
+export interface ComprehensiveWowAnalysis extends WowAnalysisResult {
+    equipment: WowEquipment | null;
+    mythic_plus: WowMythicPlus | null;
+    raids: WowRaidProgress | null;
+}
+
+// Tab navigation type
+export type WowTabId = 'overview' | 'gear' | 'mythic' | 'raids';

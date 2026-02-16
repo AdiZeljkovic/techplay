@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\WowAnalysis;
 use App\Services\BlizzardService;
 use App\Services\BlizzardDataTransformer;
+use App\Services\BlizzardDataTransformerV2;
 use App\Services\GroqService;
 use App\Services\CacheService;
 use App\Traits\ApiResponse;
@@ -18,12 +19,12 @@ class WowAnalyzerController extends Controller
     use ApiResponse;
 
     protected BlizzardService $blizzardService;
-    protected BlizzardDataTransformer $transformer;
+    protected BlizzardDataTransformerV2 $transformer;
     protected GroqService $aiService;
 
     public function __construct(
         BlizzardService $blizzardService,
-        BlizzardDataTransformer $transformer,
+        BlizzardDataTransformerV2 $transformer,
         GroqService $aiService
     ) {
         $this->blizzardService = $blizzardService;
@@ -57,21 +58,17 @@ class WowAnalyzerController extends Controller
         $cacheKey = "wow_analysis_{$region}_{$realmSlug}_{$characterName}";
 
         return Cache::remember($cacheKey, CacheService::TTL_DAY, function () use ($region, $realmSlug, $characterName) {
-            // Step 1: Fetch from Blizzard API
-            $profile = $this->blizzardService->getCharacterProfile($region, $realmSlug, $characterName);
+            // Step 1: Fetch ALL data in parallel (4x faster)
+            $data = $this->blizzardService->fetchAllCharacterData($region, $realmSlug, $characterName);
 
-            if (!$profile) {
+            if (!$data['profile']) {
                 return $this->error('Character not found. Check spelling and realm.', 404);
             }
 
-            $achievements = $this->blizzardService->getCharacterAchievements($region, $realmSlug, $characterName);
-            $mounts = $this->blizzardService->getCharacterMounts($region, $realmSlug, $characterName);
-            $media = $this->blizzardService->getCharacterMedia($region, $realmSlug, $characterName);
-
             // Extract portrait URL from media
             $portraitUrl = null;
-            if ($media && isset($media['assets'])) {
-                foreach ($media['assets'] as $asset) {
+            if ($data['media'] && isset($data['media']['assets'])) {
+                foreach ($data['media']['assets'] as $asset) {
                     if ($asset['key'] === 'main-raw' || $asset['key'] === 'avatar') {
                         $portraitUrl = $asset['value'];
                         break;
@@ -79,11 +76,14 @@ class WowAnalyzerController extends Controller
                 }
             }
 
-            // Step 2: Transform data
-            $payload = $this->transformer->buildAnalysisPayload(
-                $profile,
-                $achievements ?? [],
-                $mounts ?? []
+            // Step 2: Transform data (V2 with equipment/M+/raids)
+            $payload = $this->transformer->buildComprehensivePayload(
+                $data['profile'],
+                $data['achievements'] ?? [],
+                $data['mounts'] ?? [],
+                $data['equipment'],
+                $data['mythic'],
+                $data['raids']
             );
 
             // Step 3: Call AI API (Groq - Llama 3.3 70B)
@@ -93,7 +93,7 @@ class WowAnalyzerController extends Controller
                 return $this->error('AI analysis failed. Please try again later.', 503);
             }
 
-            // Step 4: Store in database
+            // Step 4: Store in database (with new columns)
             $wowAnalysis = WowAnalysis::updateOrCreate(
                 [
                     'region' => $region,
@@ -101,32 +101,63 @@ class WowAnalyzerController extends Controller
                     'character_name' => $characterName,
                 ],
                 [
+                    // Character info
                     'class' => $payload['character']['class'] ?? 'Unknown',
                     'race' => $payload['character']['race'] ?? 'Unknown',
                     'faction' => $payload['character']['faction'] ?? 'Unknown',
                     'level' => $payload['character']['level'] ?? 0,
                     'achievement_points' => $payload['character']['achievement_points'] ?? 0,
+
+                    // Midnight readiness
                     'readiness_score' => $analysis['score'] ?? 0,
                     'ai_advice' => $analysis['advice'] ?? [],
                     'missing_essentials' => $analysis['missing'] ?? [],
                     'void_mounts_count' => $payload['mounts']['void_mount_count'] ?? 0,
                     'has_void_elf' => $payload['achievements']['has_void_elf'] ?? false,
                     'portrait_url' => $portraitUrl,
+
+                    // Equipment
+                    'item_level' => $payload['equipment']['item_level'] ?? null,
+                    'equipment' => $payload['equipment']['slots'] ?? null,
+                    'tier_pieces' => $payload['equipment']['tier_pieces'] ?? 0,
+                    'missing_enchants' => $payload['equipment']['missing_enchants'] ?? null,
+                    'missing_gems' => $payload['equipment']['missing_gems'] ?? null,
+
+                    // Mythic+
+                    'mythic_plus_score' => $payload['mythic_plus']['score'] ?? null,
+                    'best_mythic_runs' => $payload['mythic_plus']['best_runs'] ?? null,
+                    'vault_unlocked' => $payload['mythic_plus']['vault_unlocked'] ?? false,
+
+                    // Raids
+                    'raid_tier_name' => $payload['raids']['current_tier'] ?? null,
+                    'raid_progress' => $payload['raids']['summary'] ?? null,
+                    'raid_kills' => $payload['raids']['bosses'] ?? null,
                 ]
             );
 
-            // Step 5: Return standardized response
+            // Step 5: Return comprehensive response (with new data for tabs)
             return $this->success([
                 'id' => $wowAnalysis->id,
                 'character' => [
                     ...$payload['character'],
                     'portrait_url' => $portraitUrl,
                 ],
+
+                // Overview tab (Midnight readiness)
                 'readiness_score' => $analysis['score'] ?? 0,
                 'ai_advice' => $analysis['advice'] ?? [],
                 'missing_essentials' => $analysis['missing'] ?? [],
                 'void_mounts_count' => $payload['mounts']['void_mount_count'] ?? 0,
                 'has_void_elf' => $payload['achievements']['has_void_elf'] ?? false,
+
+                // Equipment tab
+                'equipment' => $payload['equipment'] ?? null,
+
+                // Mythic+ tab
+                'mythic_plus' => $payload['mythic_plus'] ?? null,
+
+                // Raids tab
+                'raids' => $payload['raids'] ?? null,
             ], 'Analysis completed successfully');
         });
     }
