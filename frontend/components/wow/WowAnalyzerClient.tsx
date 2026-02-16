@@ -9,9 +9,44 @@ import AnalysisResults from "@/components/wow/AnalysisResults";
 import AnalysisProgress from "@/components/wow/AnalysisProgress";
 import WowLeaderboard from "@/components/wow/WowLeaderboard";
 import WowRecentAnalyses from "@/components/wow/WowRecentAnalyses";
-import { MidnightTheme, glassCard } from "@/lib/wow-midnight-theme";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
+
+// TechPlay Design System
+const colors = {
+    primary: '#FC4100',
+    primaryHover: '#FF5722',
+    primaryLight: 'rgba(252, 65, 0, 0.3)',
+    secondary: '#8b5cf6',
+    secondaryLight: 'rgba(139, 92, 246, 0.3)',
+    navy: '#001540',
+    navyDark: '#000B25',
+    navyCard: '#00215E',
+    navyElevated: '#002B7A',
+    textPrimary: '#FFFFFF',
+    textSecondary: '#E0E7FF',
+    textMuted: '#94A3B8',
+    danger: '#EF4444',
+    warning: '#F59E0B',
+    success: '#10B981',
+    border: 'rgba(255, 255, 255, 0.1)',
+    borderLight: 'rgba(255, 255, 255, 0.2)',
+};
+
+const gradients = {
+    primary: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryHover} 100%)`,
+    navyPurple: `linear-gradient(135deg, ${colors.navy} 0%, ${colors.secondary} 100%)`,
+    navyOrange: `linear-gradient(135deg, ${colors.navyDark} 0%, ${colors.primary} 100%)`,
+    heroBackground: 'linear-gradient(to br, #1a103c 0%, #0d0725 50%, #000000 100%)',
+};
+
+const glassCard = {
+    background: 'rgba(0, 33, 94, 0.6)',
+    backdropFilter: 'blur(20px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+    border: `1px solid ${colors.border}`,
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+};
 
 interface FormData {
     character_name: string;
@@ -102,16 +137,16 @@ export default function WowAnalyzerClient() {
 
     return (
         <div className="min-h-screen relative overflow-hidden" style={{
-            background: MidnightTheme.backgrounds.void
+            background: colors.navy
         }}>
             {/* Midnight Ethereal Glow */}
             <motion.div
                 className="absolute inset-0 opacity-20 pointer-events-none"
                 animate={{
                     background: [
-                        `radial-gradient(circle at 20% 30%, ${MidnightTheme.void.primary} 0%, transparent 50%)`,
-                        `radial-gradient(circle at 80% 70%, ${MidnightTheme.light.primary} 0%, transparent 50%)`,
-                        `radial-gradient(circle at 20% 30%, ${MidnightTheme.void.primary} 0%, transparent 50%)`,
+                        `radial-gradient(circle at 20% 30%, ${colors.secondary} 0%, transparent 50%)`,
+                        `radial-gradient(circle at 80% 70%, ${colors.primary} 0%, transparent 50%)`,
+                        `radial-gradient(circle at 20% 30%, ${colors.secondary} 0%, transparent 50%)`,
                     ]
                 }}
                 transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
@@ -120,11 +155,11 @@ export default function WowAnalyzerClient() {
             {/* Void Stars */}
             <div className="absolute inset-0 opacity-10 pointer-events-none" style={{
                 backgroundImage: `
-                    radial-gradient(2px 2px at 20% 30%, ${MidnightTheme.void.ethereal}, transparent),
-                    radial-gradient(2px 2px at 60% 70%, ${MidnightTheme.light.warm}, transparent),
+                    radial-gradient(2px 2px at 20% 30%, ${colors.secondaryLight}, transparent),
+                    radial-gradient(2px 2px at 60% 70%, ${colors.primaryHover}, transparent),
                     radial-gradient(1px 1px at 50% 50%, white, transparent),
-                    radial-gradient(1px 1px at 80% 10%, ${MidnightTheme.void.primary}, transparent),
-                    radial-gradient(2px 2px at 90% 60%, ${MidnightTheme.light.primary}, transparent)
+                    radial-gradient(1px 1px at 80% 10%, ${colors.secondary}, transparent),
+                    radial-gradient(2px 2px at 90% 60%, ${colors.primary}, transparent)
                 `,
                 backgroundSize: '200% 200%',
                 backgroundPosition: '50% 50%'
@@ -137,10 +172,10 @@ export default function WowAnalyzerClient() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 style={{
-                    background: `linear-gradient(to bottom, ${MidnightTheme.backgrounds.void}, transparent)`,
+                    background: `linear-gradient(to bottom, ${colors.navy}, transparent)`,
                     borderBottom: '2px solid',
-                    borderImage: `linear-gradient(to right, transparent, ${MidnightTheme.void.primary}, ${MidnightTheme.light.primary}, ${MidnightTheme.void.primary}, transparent) 1`,
-                    boxShadow: `0 0 40px ${MidnightTheme.void.primary}40, inset 0 -1px 20px ${MidnightTheme.void.primary}20`
+                    borderImage: `linear-gradient(to right, transparent, ${colors.secondary}, ${colors.primary}, ${colors.secondary}, transparent) 1`,
+                    boxShadow: `0 0 40px ${colors.secondary}40, inset 0 -1px 20px ${colors.secondary}20`
                 }}
             >
                 <div className="relative container mx-auto px-4 py-16 max-w-4xl text-center">
@@ -153,18 +188,18 @@ export default function WowAnalyzerClient() {
                     >
                         <div className="relative p-5" style={{
                             ...glassCard,
-                            border: `2px solid ${MidnightTheme.void.primary}60`,
+                            border: `2px solid ${colors.secondary}60`,
                             boxShadow: `
-                                0 0 30px ${MidnightTheme.void.primary}50,
-                                inset 0 0 20px ${MidnightTheme.void.primary}20
+                                0 0 30px ${colors.secondary}50,
+                                inset 0 0 20px ${colors.secondary}20
                             `
                         }}>
                             <Shield className="w-20 h-20" style={{
-                                color: MidnightTheme.light.primary,
-                                filter: `drop-shadow(0 0 8px ${MidnightTheme.light.primary})`
+                                color: colors.primary,
+                                filter: `drop-shadow(0 0 8px ${colors.primary})`
                             }} />
                             <Zap className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse"
-                                style={{ color: MidnightTheme.void.primary }}
+                                style={{ color: colors.secondary }}
                             />
                         </div>
                     </motion.div>
@@ -176,11 +211,11 @@ export default function WowAnalyzerClient() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.3 }}
                         style={{
-                            background: MidnightTheme.gradients.voidToLight,
+                            background: gradients.navyOrange,
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
-                            filter: `drop-shadow(0 0 20px ${MidnightTheme.void.primary}60)`,
+                            filter: `drop-shadow(0 0 20px ${colors.secondary}60)`,
                             fontWeight: 900,
                             letterSpacing: '0.05em'
                         }}
@@ -196,14 +231,14 @@ export default function WowAnalyzerClient() {
                         transition={{ duration: 0.6, delay: 0.4 }}
                     >
                         <div className="w-20 h-px" style={{
-                            background: `linear-gradient(to right, transparent, ${MidnightTheme.void.primary}, transparent)`
+                            background: `linear-gradient(to right, transparent, ${colors.secondary}, transparent)`
                         }} />
                         <div className="w-2 h-2 transform rotate-45" style={{
-                            background: MidnightTheme.gradients.voidToLight,
-                            boxShadow: `0 0 10px ${MidnightTheme.void.primary}`
+                            background: gradients.navyOrange,
+                            boxShadow: `0 0 10px ${colors.secondary}`
                         }} />
                         <div className="w-20 h-px" style={{
-                            background: `linear-gradient(to left, transparent, ${MidnightTheme.light.primary}, transparent)`
+                            background: `linear-gradient(to left, transparent, ${colors.primary}, transparent)`
                         }} />
                     </motion.div>
 
@@ -214,12 +249,12 @@ export default function WowAnalyzerClient() {
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.8, delay: 0.5 }}
                         style={{
-                            color: MidnightTheme.text.bright,
-                            textShadow: `0 0 20px ${MidnightTheme.void.primary}60`
+                            color: colors.textPrimary,
+                            textShadow: `0 0 20px ${colors.secondary}60`
                         }}
                     >
                         Prepare for <span className="font-bold" style={{
-                            background: MidnightTheme.gradients.voidHorizontal,
+                            background: gradients.primary,
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent'
                         }}>The War Within: Midnight</span>
@@ -233,18 +268,18 @@ export default function WowAnalyzerClient() {
                         transition={{ duration: 0.6, delay: 0.6 }}
                         style={{
                             ...glassCard,
-                            border: `1px solid ${MidnightTheme.void.primary}60`,
-                            boxShadow: `0 0 20px ${MidnightTheme.void.primary}40`
+                            border: `1px solid ${colors.secondary}60`,
+                            boxShadow: `0 0 20px ${colors.secondary}40`
                         }}
                     >
                         <div className="flex items-center gap-2">
-                            <Sparkles className="w-4 h-4 animate-pulse" style={{ color: MidnightTheme.light.primary }} />
+                            <Sparkles className="w-4 h-4 animate-pulse" style={{ color: colors.primary }} />
                             <span className="text-xs font-bold uppercase tracking-widest" style={{
-                                color: MidnightTheme.text.bright
+                                color: colors.textPrimary
                             }}>
                                 Powered by AI Magic
                             </span>
-                            <Sparkles className="w-4 h-4 animate-pulse" style={{ color: MidnightTheme.void.primary }} />
+                            <Sparkles className="w-4 h-4 animate-pulse" style={{ color: colors.secondary }} />
                         </div>
                     </motion.div>
                 </div>
@@ -259,10 +294,10 @@ export default function WowAnalyzerClient() {
                     className="grid grid-cols-2 md:grid-cols-4 gap-4"
                 >
                     {[
-                        { label: "Analyses Today", value: "12,847", icon: TrendingUp, color: MidnightTheme.void.primary },
-                        { label: "Avg Readiness", value: "76%", icon: Shield, color: MidnightTheme.light.primary },
-                        { label: "Top Server", value: "Area-52", icon: Trophy, color: MidnightTheme.urgency.warning },
-                        { label: "Most Analyzed", value: "Death Knight", icon: Swords, color: MidnightTheme.bloodElf.crimson }
+                        { label: "Analyses Today", value: "12,847", icon: TrendingUp, color: colors.secondary },
+                        { label: "Avg Readiness", value: "76%", icon: Shield, color: colors.primary },
+                        { label: "Top Server", value: "Area-52", icon: Trophy, color: colors.warning },
+                        { label: "Most Analyzed", value: "Death Knight", icon: Swords, color: colors.danger }
                     ].map((stat, index) => (
                         <motion.div
                             key={index}
@@ -295,14 +330,14 @@ export default function WowAnalyzerClient() {
                                 <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
                             </motion.div>
                             <div className="text-3xl font-black mb-1" style={{
-                                background: `linear-gradient(135deg, ${stat.color}, ${MidnightTheme.text.bright})`,
+                                background: `linear-gradient(135deg, ${stat.color}, ${colors.textPrimary})`,
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent'
                             }}>
                                 {stat.value}
                             </div>
                             <div className="text-xs uppercase tracking-wider font-semibold" style={{
-                                color: MidnightTheme.text.muted
+                                color: colors.textMuted
                             }}>
                                 {stat.label}
                             </div>
@@ -320,8 +355,8 @@ export default function WowAnalyzerClient() {
                     className="relative overflow-hidden"
                     style={{
                         ...glassCard,
-                        border: `2px solid ${MidnightTheme.urgency.critical}40`,
-                        boxShadow: `0 0 40px ${MidnightTheme.urgency.critical}30`,
+                        border: `2px solid ${colors.danger}40`,
+                        boxShadow: `0 0 40px ${colors.danger}30`,
                         padding: '2rem',
                         textAlign: 'center'
                     }}
@@ -331,9 +366,9 @@ export default function WowAnalyzerClient() {
                         className="absolute inset-0 opacity-20"
                         animate={{
                             background: [
-                                `radial-gradient(circle at 50% 50%, ${MidnightTheme.urgency.critical}60, transparent)`,
-                                `radial-gradient(circle at 50% 50%, ${MidnightTheme.urgency.warning}60, transparent)`,
-                                `radial-gradient(circle at 50% 50%, ${MidnightTheme.urgency.critical}60, transparent)`
+                                `radial-gradient(circle at 50% 50%, ${colors.danger}60, transparent)`,
+                                `radial-gradient(circle at 50% 50%, ${colors.warning}60, transparent)`,
+                                `radial-gradient(circle at 50% 50%, ${colors.danger}60, transparent)`
                             ]
                         }}
                         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -346,12 +381,12 @@ export default function WowAnalyzerClient() {
                                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                             >
                                 <Clock className="w-8 h-8" style={{
-                                    color: MidnightTheme.urgency.critical,
-                                    filter: `drop-shadow(0 0 10px ${MidnightTheme.urgency.critical})`
+                                    color: colors.danger,
+                                    filter: `drop-shadow(0 0 10px ${colors.danger})`
                                 }} />
                             </motion.div>
                             <h3 className="text-2xl md:text-3xl font-black uppercase tracking-wider" style={{
-                                background: MidnightTheme.gradients.urgencyPulse,
+                                background: `linear-gradient(135deg, ${colors.danger}, ${colors.warning})`,
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent'
                             }}>
@@ -363,9 +398,9 @@ export default function WowAnalyzerClient() {
                             className="flex items-center justify-center gap-4 md:gap-8"
                             animate={{
                                 textShadow: [
-                                    `0 0 20px ${MidnightTheme.urgency.critical}60`,
-                                    `0 0 35px ${MidnightTheme.urgency.critical}80`,
-                                    `0 0 20px ${MidnightTheme.urgency.critical}60`
+                                    `0 0 20px ${colors.danger}60`,
+                                    `0 0 35px ${colors.danger}80`,
+                                    `0 0 20px ${colors.danger}60`
                                 ]
                             }}
                             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -378,13 +413,13 @@ export default function WowAnalyzerClient() {
                             ].map((time, index) => (
                                 <div key={index} className="text-center">
                                     <div className="text-4xl md:text-6xl font-black" style={{
-                                        color: MidnightTheme.text.bright,
-                                        textShadow: `0 0 20px ${MidnightTheme.urgency.critical}80`
+                                        color: colors.textPrimary,
+                                        textShadow: `0 0 20px ${colors.danger}80`
                                     }}>
                                         {time.value}
                                     </div>
                                     <div className="text-xs md:text-sm uppercase tracking-widest mt-2 font-bold" style={{
-                                        color: MidnightTheme.text.muted
+                                        color: colors.textMuted
                                     }}>
                                         {time.label}
                                     </div>
@@ -396,7 +431,7 @@ export default function WowAnalyzerClient() {
                             className="mt-6 text-sm font-semibold"
                             animate={{ opacity: [0.7, 1, 0.7] }}
                             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                            style={{ color: MidnightTheme.urgency.high }}
+                            style={{ color: colors.warning }}
                         >
                             ⚡ Don't get left behind! Analyze your character NOW ⚡
                         </motion.p>
@@ -413,14 +448,14 @@ export default function WowAnalyzerClient() {
                     transition={{ duration: 0.8 }}
                 >
                     <h2 className="text-4xl md:text-5xl font-black uppercase mb-4" style={{
-                        background: MidnightTheme.gradients.voidToLight,
+                        background: gradients.navyOrange,
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
-                        filter: `drop-shadow(0 0 20px ${MidnightTheme.void.primary}60)`
+                        filter: `drop-shadow(0 0 20px ${colors.secondary}60)`
                     }}>
                         Why 50K+ Players Trust Us
                     </h2>
-                    <p className="text-lg" style={{ color: MidnightTheme.text.muted }}>
+                    <p className="text-lg" style={{ color: colors.textMuted }}>
                         Join the champions preparing for Midnight expansion
                     </p>
                 </motion.div>
@@ -431,28 +466,28 @@ export default function WowAnalyzerClient() {
                             title: "Official Blizzard API",
                             description: "Direct connection to Battle.net ensures 100% accurate data from your real character profile",
                             icon: Shield,
-                            color: MidnightTheme.void.primary,
+                            color: colors.secondary,
                             badge: "VERIFIED"
                         },
                         {
                             title: "AI-Powered Insights",
                             description: "GPT-4 analyzes thousands of data points to give you personalized Midnight readiness recommendations",
                             icon: Brain,
-                            color: MidnightTheme.light.primary,
+                            color: colors.primary,
                             badge: "SMART"
                         },
                         {
                             title: "Trusted by Top Guilds",
                             description: "Method, Liquid, and Echo raiders use our analyzer to optimize their expansion prep strategies",
                             icon: Trophy,
-                            color: MidnightTheme.urgency.warning,
+                            color: colors.warning,
                             badge: "PRO"
                         },
                         {
                             title: "Free Forever",
                             description: "No hidden costs, no premium tiers. Full AI analysis, leaderboards, and tracking—completely free",
                             icon: Sparkles,
-                            color: MidnightTheme.bloodElf.crimson,
+                            color: colors.danger,
                             badge: "FREE"
                         }
                     ].map((benefit, index) => (
@@ -501,13 +536,13 @@ export default function WowAnalyzerClient() {
 
                                 <div className="flex-1">
                                     <h3 className="text-xl font-black mb-2 uppercase tracking-wide" style={{
-                                        color: MidnightTheme.text.bright,
+                                        color: colors.textPrimary,
                                         textShadow: `0 0 10px ${benefit.color}40`
                                     }}>
                                         {benefit.title}
                                     </h3>
                                     <p className="text-sm leading-relaxed" style={{
-                                        color: MidnightTheme.text.muted
+                                        color: colors.textMuted
                                     }}>
                                         {benefit.description}
                                     </p>
@@ -527,14 +562,14 @@ export default function WowAnalyzerClient() {
                     transition={{ duration: 0.8, delay: 0.2 }}
                 >
                     <h2 className="text-3xl md:text-4xl font-black uppercase mb-4" style={{
-                        background: MidnightTheme.gradients.voidToLight,
+                        background: gradients.navyOrange,
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
-                        filter: `drop-shadow(0 0 15px ${MidnightTheme.void.primary}60)`
+                        filter: `drop-shadow(0 0 15px ${colors.secondary}60)`
                     }}>
                         Your Midnight Arsenal
                     </h2>
-                    <p className="text-lg" style={{ color: MidnightTheme.text.muted }}>
+                    <p className="text-lg" style={{ color: colors.textMuted }}>
                         Everything you need to dominate the expansion
                     </p>
                 </motion.div>
@@ -545,28 +580,28 @@ export default function WowAnalyzerClient() {
                             icon: Brain,
                             title: "AI-Powered Analysis",
                             description: "Deep learning algorithms analyze your character's strengths, weaknesses, and readiness",
-                            color: MidnightTheme.void.primary,
+                            color: colors.secondary,
                             delay: 0.3
                         },
                         {
                             icon: Clock,
                             title: "Live Timeline Tracker",
                             description: "Real-time countdown with urgency-based alerts for limited-time content",
-                            color: MidnightTheme.urgency.warning,
+                            color: colors.warning,
                             delay: 0.4
                         },
                         {
                             icon: Home,
                             title: "Housing Readiness",
                             description: "Score your mount collection, achievements, and decoration potential",
-                            color: MidnightTheme.light.primary,
+                            color: colors.primary,
                             delay: 0.5
                         },
                         {
                             icon: Target,
                             title: "Priority Tasks",
                             description: "Daily action plan with highest-impact activities ranked by AI",
-                            color: MidnightTheme.bloodElf.crimson,
+                            color: colors.danger,
                             delay: 0.6
                         }
                     ].map((feature, index) => (
@@ -608,14 +643,14 @@ export default function WowAnalyzerClient() {
                             </motion.div>
 
                             <h3 className="text-lg font-bold mb-2 text-center" style={{
-                                color: MidnightTheme.text.bright,
+                                color: colors.textPrimary,
                                 textShadow: `0 0 10px ${feature.color}60`
                             }}>
                                 {feature.title}
                             </h3>
 
                             <p className="text-sm text-center leading-relaxed" style={{
-                                color: MidnightTheme.text.muted
+                                color: colors.textMuted
                             }}>
                                 {feature.description}
                             </p>
@@ -633,10 +668,10 @@ export default function WowAnalyzerClient() {
                     transition={{ duration: 0.8, delay: 0.3 }}
                     style={{
                         ...glassCard,
-                        border: `2px solid ${MidnightTheme.void.primary}40`,
+                        border: `2px solid ${colors.secondary}40`,
                         boxShadow: `
-                            0 0 40px ${MidnightTheme.void.primary}30,
-                            inset 0 0 40px ${MidnightTheme.void.primary}10
+                            0 0 40px ${colors.secondary}30,
+                            inset 0 0 40px ${colors.secondary}10
                         `,
                         padding: '3rem'
                     }}
@@ -646,9 +681,9 @@ export default function WowAnalyzerClient() {
                         className="absolute inset-0 opacity-20 pointer-events-none rounded-lg"
                         animate={{
                             background: [
-                                `radial-gradient(circle at 30% 40%, ${MidnightTheme.void.primary}40, transparent 70%)`,
-                                `radial-gradient(circle at 70% 60%, ${MidnightTheme.light.primary}40, transparent 70%)`,
-                                `radial-gradient(circle at 30% 40%, ${MidnightTheme.void.primary}40, transparent 70%)`,
+                                `radial-gradient(circle at 30% 40%, ${colors.secondary}40, transparent 70%)`,
+                                `radial-gradient(circle at 70% 60%, ${colors.primary}40, transparent 70%)`,
+                                `radial-gradient(circle at 30% 40%, ${colors.secondary}40, transparent 70%)`,
                             ]
                         }}
                         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
@@ -663,25 +698,25 @@ export default function WowAnalyzerClient() {
                     >
                         <div className="relative">
                             <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{
-                                background: `radial-gradient(circle, ${MidnightTheme.void.deep}80, ${MidnightTheme.void.primary}40)`,
+                                background: `radial-gradient(circle, ${colors.navyCard}80, ${colors.secondary}40)`,
                                 boxShadow: `
-                                    0 0 30px ${MidnightTheme.void.primary}60,
-                                    inset 0 0 20px ${MidnightTheme.void.primary}40
+                                    0 0 30px ${colors.secondary}60,
+                                    inset 0 0 20px ${colors.secondary}40
                                 `,
-                                border: `2px solid ${MidnightTheme.void.primary}`
+                                border: `2px solid ${colors.secondary}`
                             }}>
-                                <Shield className="w-10 h-10" style={{ color: MidnightTheme.light.primary }} />
+                                <Shield className="w-10 h-10" style={{ color: colors.primary }} />
                             </div>
                             <motion.div
                                 className="absolute -top-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center"
                                 animate={{ rotate: 360 }}
                                 transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                                 style={{
-                                    background: `radial-gradient(circle, ${MidnightTheme.light.primary}, ${MidnightTheme.light.warm})`,
-                                    boxShadow: `0 0 15px ${MidnightTheme.light.primary}`
+                                    background: `radial-gradient(circle, ${colors.primary}, ${colors.primaryHover})`,
+                                    boxShadow: `0 0 15px ${colors.primary}`
                                 }}
                             >
-                                <Zap className="w-4 h-4" style={{ color: MidnightTheme.void.deep }} />
+                                <Zap className="w-4 h-4" style={{ color: colors.navyCard }} />
                             </motion.div>
                         </div>
                     </motion.div>
@@ -694,23 +729,23 @@ export default function WowAnalyzerClient() {
                         transition={{ duration: 0.8, delay: 0.6 }}
                     >
                         <h2 className="text-4xl font-black uppercase mb-4 tracking-wide" style={{
-                            background: MidnightTheme.gradients.voidToLight,
+                            background: gradients.navyOrange,
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
-                            filter: `drop-shadow(0 0 15px ${MidnightTheme.void.primary}60)`
+                            filter: `drop-shadow(0 0 15px ${colors.secondary}60)`
                         }}>
                             Character Analysis
                         </h2>
                         <div className="flex items-center justify-center gap-3 mb-4">
                             <div className="w-24 h-px" style={{
-                                background: `linear-gradient(to right, transparent, ${MidnightTheme.void.primary}, transparent)`
+                                background: `linear-gradient(to right, transparent, ${colors.secondary}, transparent)`
                             }} />
                             <div className="w-2 h-2 transform rotate-45" style={{
-                                background: MidnightTheme.light.primary,
-                                boxShadow: `0 0 10px ${MidnightTheme.light.primary}`
+                                background: colors.primary,
+                                boxShadow: `0 0 10px ${colors.primary}`
                             }} />
                             <div className="w-24 h-px" style={{
-                                background: `linear-gradient(to left, transparent, ${MidnightTheme.light.primary}, transparent)`
+                                background: `linear-gradient(to left, transparent, ${colors.primary}, transparent)`
                             }} />
                         </div>
                     </motion.div>
@@ -723,17 +758,17 @@ export default function WowAnalyzerClient() {
                         transition={{ duration: 0.8, delay: 0.7 }}
                     >
                         <p className="text-base leading-relaxed mb-3 italic" style={{
-                            color: MidnightTheme.text.bright,
-                            textShadow: `0 0 10px ${MidnightTheme.void.primary}40`
+                            color: colors.textPrimary,
+                            textShadow: `0 0 10px ${colors.secondary}40`
                         }}>
                             Greetings, hero! The shadows of <span className="font-bold not-italic" style={{
-                                background: MidnightTheme.gradients.voidHorizontal,
+                                background: gradients.primary,
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent'
                             }}>Midnight</span> loom over Quel'Thalas. I need your assistance in analyzing a champion's readiness for the trials ahead.
                         </p>
                         <p className="text-sm" style={{
-                            color: MidnightTheme.text.muted,
+                            color: colors.textMuted,
                         }}>
                             Provide the details below, and I shall divine their fate through ancient magic...
                         </p>
@@ -748,12 +783,12 @@ export default function WowAnalyzerClient() {
                     >
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-1 h-8" style={{
-                                background: `linear-gradient(to bottom, ${MidnightTheme.void.dark}, ${MidnightTheme.void.deep}, ${MidnightTheme.void.primary})`,
-                                boxShadow: `0 0 10px ${MidnightTheme.void.primary}60`
+                                background: `linear-gradient(to bottom, ${colors.navyDark}, ${colors.navyCard}, ${colors.secondary})`,
+                                boxShadow: `0 0 10px ${colors.secondary}60`
                             }} />
                             <h3 className="text-lg font-bold uppercase tracking-wider" style={{
-                                color: MidnightTheme.text.bright,
-                                textShadow: `0 0 10px ${MidnightTheme.void.primary}40`
+                                color: colors.textPrimary,
+                                textShadow: `0 0 10px ${colors.secondary}40`
                             }}>
                                 Quest Objectives
                             </h3>
@@ -771,15 +806,15 @@ export default function WowAnalyzerClient() {
                             {/* Character Name Input */}
                             <div>
                                 <label className="block text-sm font-bold mb-3 tracking-wide flex items-center gap-2" style={{
-                                    color: MidnightTheme.text.bright,
-                                    textShadow: `0 0 10px ${MidnightTheme.void.primary}40`
+                                    color: colors.textPrimary,
+                                    textShadow: `0 0 10px ${colors.secondary}40`
                                 }}>
                                     <div className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center" style={{
-                                        background: `linear-gradient(135deg, ${MidnightTheme.void.primary}60, ${MidnightTheme.void.deep}60)`,
-                                        border: `1px solid ${MidnightTheme.void.primary}80`,
-                                        boxShadow: `0 0 10px ${MidnightTheme.void.primary}40`
+                                        background: `linear-gradient(135deg, ${colors.secondary}60, ${colors.navyCard}60)`,
+                                        border: `1px solid ${colors.secondary}80`,
+                                        boxShadow: `0 0 10px ${colors.secondary}40`
                                     }}>
-                                        <Swords className="w-3.5 h-3.5" style={{ color: MidnightTheme.light.primary }} />
+                                        <Swords className="w-3.5 h-3.5" style={{ color: colors.primary }} />
                                     </div>
                                     <span className="flex-1">Character Name</span>
                                 </label>
@@ -789,11 +824,11 @@ export default function WowAnalyzerClient() {
                                     className="w-full px-4 py-3 transition-all focus:outline-none"
                                     style={{
                                         ...glassCard,
-                                        border: `2px solid ${errors.character_name ? MidnightTheme.urgency.critical : MidnightTheme.void.primary}40`,
-                                        color: MidnightTheme.text.bright,
+                                        border: `2px solid ${errors.character_name ? colors.danger : colors.secondary}40`,
+                                        color: colors.textPrimary,
                                         boxShadow: errors.character_name
-                                            ? `0 0 20px ${MidnightTheme.urgency.critical}40, inset 0 0 10px ${MidnightTheme.urgency.critical}10`
-                                            : `0 0 20px ${MidnightTheme.void.primary}20, inset 0 0 10px ${MidnightTheme.void.primary}10`,
+                                            ? `0 0 20px ${colors.danger}40, inset 0 0 10px ${colors.danger}10`
+                                            : `0 0 20px ${colors.secondary}20, inset 0 0 10px ${colors.secondary}10`,
                                         fontSize: '16px'
                                     }}
                                     {...register("character_name", {
@@ -808,8 +843,8 @@ export default function WowAnalyzerClient() {
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         style={{
-                                            color: MidnightTheme.urgency.critical,
-                                            textShadow: `0 0 10px ${MidnightTheme.urgency.critical}60`
+                                            color: colors.danger,
+                                            textShadow: `0 0 10px ${colors.danger}60`
                                         }}
                                     >
                                         <span>✖</span> {errors.character_name.message}
@@ -835,15 +870,15 @@ export default function WowAnalyzerClient() {
                         {/* Region Selection */}
                         <div>
                             <label className="block text-sm font-bold mb-3 tracking-wide flex items-center gap-2" style={{
-                                color: MidnightTheme.text.bright,
-                                textShadow: `0 0 10px ${MidnightTheme.void.primary}40`
+                                color: colors.textPrimary,
+                                textShadow: `0 0 10px ${colors.secondary}40`
                             }}>
                                 <div className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center" style={{
-                                    background: `linear-gradient(135deg, ${MidnightTheme.light.primary}60, ${MidnightTheme.light.warm}60)`,
-                                    border: `1px solid ${MidnightTheme.light.primary}80`,
-                                    boxShadow: `0 0 10px ${MidnightTheme.light.primary}40`
+                                    background: `linear-gradient(135deg, ${colors.primary}60, ${colors.primaryHover}60)`,
+                                    border: `1px solid ${colors.primary}80`,
+                                    boxShadow: `0 0 10px ${colors.primary}40`
                                 }}>
-                                    <Shield className="w-3.5 h-3.5" style={{ color: MidnightTheme.void.deep }} />
+                                    <Shield className="w-3.5 h-3.5" style={{ color: colors.navyCard }} />
                                 </div>
                                 <span className="flex-1">Character Region</span>
                             </label>
@@ -866,20 +901,20 @@ export default function WowAnalyzerClient() {
                                             style={{
                                                 ...glassCard,
                                                 background: selectedRegion === region
-                                                    ? `linear-gradient(135deg, ${MidnightTheme.void.primary}60, ${MidnightTheme.void.deep}60)`
+                                                    ? `linear-gradient(135deg, ${colors.secondary}60, ${colors.navyCard}60)`
                                                     : glassCard.background,
-                                                border: `2px solid ${selectedRegion === region ? MidnightTheme.void.primary : 'rgba(255,255,255,0.1)'}`,
+                                                border: `2px solid ${selectedRegion === region ? colors.secondary : 'rgba(255,255,255,0.1)'}`,
                                                 boxShadow: selectedRegion === region
-                                                    ? `0 0 25px ${MidnightTheme.void.primary}60, inset 0 0 15px ${MidnightTheme.void.primary}30`
-                                                    : `0 0 10px ${MidnightTheme.void.primary}20`
+                                                    ? `0 0 25px ${colors.secondary}60, inset 0 0 15px ${colors.secondary}30`
+                                                    : `0 0 10px ${colors.secondary}20`
                                             }}
                                         >
                                             <span
                                                 className="text-sm font-bold uppercase tracking-wider"
                                                 style={{
-                                                    color: selectedRegion === region ? MidnightTheme.text.bright : MidnightTheme.text.muted,
+                                                    color: selectedRegion === region ? colors.textPrimary : colors.textMuted,
                                                     textShadow: selectedRegion === region
-                                                        ? `0 0 10px ${MidnightTheme.void.primary}60`
+                                                        ? `0 0 10px ${colors.secondary}60`
                                                         : 'none'
                                                 }}
                                             >
@@ -900,17 +935,17 @@ export default function WowAnalyzerClient() {
                             whileTap={!isLoading ? { scale: 0.98 } : {}}
                             style={{
                                 background: isLoading
-                                    ? MidnightTheme.backgrounds.glass
-                                    : MidnightTheme.gradients.voidToLight,
-                                border: `2px solid ${isLoading ? `${MidnightTheme.void.primary}40` : MidnightTheme.void.primary}`,
-                                color: MidnightTheme.text.bright,
-                                textShadow: `0 0 15px ${MidnightTheme.void.primary}80`,
+                                    ? glassCard.background
+                                    : gradients.navyOrange,
+                                border: `2px solid ${isLoading ? `${colors.secondary}40` : colors.secondary}`,
+                                color: colors.textPrimary,
+                                textShadow: `0 0 15px ${colors.secondary}80`,
                                 boxShadow: isLoading
-                                    ? `inset 0 0 20px ${MidnightTheme.void.primary}20`
+                                    ? `inset 0 0 20px ${colors.secondary}20`
                                     : `
-                                        0 0 40px ${MidnightTheme.void.primary}60,
-                                        0 0 20px ${MidnightTheme.light.primary}40,
-                                        inset 0 0 20px ${MidnightTheme.void.primary}20
+                                        0 0 40px ${colors.secondary}60,
+                                        0 0 20px ${colors.primary}40,
+                                        inset 0 0 20px ${colors.secondary}20
                                     `,
                                 backdropFilter: 'blur(20px)',
                                 letterSpacing: '0.15em'
@@ -929,7 +964,7 @@ export default function WowAnalyzerClient() {
                                         ease: "easeInOut"
                                     }}
                                     style={{
-                                        background: `linear-gradient(90deg, transparent, ${MidnightTheme.light.primary}60, transparent)`
+                                        background: `linear-gradient(90deg, transparent, ${colors.primary}60, transparent)`
                                     }}
                                 />
                             )}
@@ -942,7 +977,7 @@ export default function WowAnalyzerClient() {
                                             animate={{ rotate: 360 }}
                                             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                                             style={{
-                                                borderColor: `${MidnightTheme.void.primary} transparent ${MidnightTheme.light.primary} transparent`
+                                                borderColor: `${colors.secondary} transparent ${colors.primary} transparent`
                                             }}
                                         />
                                         <span>{loadingStage}</span>
@@ -964,7 +999,7 @@ export default function WowAnalyzerClient() {
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.8, delay: 1.0 }}
                             style={{
-                                borderTop: `1px solid ${MidnightTheme.void.primary}40`
+                                borderTop: `1px solid ${colors.secondary}40`
                             }}
                         >
                             <div className="flex items-start gap-4">
@@ -974,26 +1009,26 @@ export default function WowAnalyzerClient() {
                                     transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                                 >
                                     <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{
-                                        background: `radial-gradient(circle, ${MidnightTheme.void.primary}80, ${MidnightTheme.void.deep}60)`,
-                                        border: `2px solid ${MidnightTheme.void.primary}`,
-                                        boxShadow: `0 0 20px ${MidnightTheme.void.primary}60, inset 0 0 10px ${MidnightTheme.void.primary}40`
+                                        background: `radial-gradient(circle, ${colors.secondary}80, ${colors.navyCard}60)`,
+                                        border: `2px solid ${colors.secondary}`,
+                                        boxShadow: `0 0 20px ${colors.secondary}60, inset 0 0 10px ${colors.secondary}40`
                                     }}>
-                                        <Sparkles className="w-6 h-6 animate-pulse" style={{ color: MidnightTheme.light.primary }} />
+                                        <Sparkles className="w-6 h-6 animate-pulse" style={{ color: colors.primary }} />
                                     </div>
                                 </motion.div>
                                 <div className="flex-1">
                                     <p className="text-sm italic mb-2 leading-relaxed" style={{
-                                        color: MidnightTheme.text.bright,
-                                        textShadow: `0 0 10px ${MidnightTheme.void.primary}30`
+                                        color: colors.textPrimary,
+                                        textShadow: `0 0 10px ${colors.secondary}30`
                                     }}>
                                         May the Light guide your path through the darkness, champion. The secrets of Midnight await those brave enough to seek them.
                                     </p>
                                     <div className="flex items-center gap-2 mt-3">
                                         <div className="h-px flex-1" style={{
-                                            background: `linear-gradient(to right, ${MidnightTheme.void.primary}60, transparent)`
+                                            background: `linear-gradient(to right, ${colors.secondary}60, transparent)`
                                         }} />
                                         <p className="text-xs font-bold uppercase tracking-wider" style={{
-                                            color: MidnightTheme.text.muted,
+                                            color: colors.textMuted,
                                         }}>
                                             — Profesor Buffy
                                         </p>
@@ -1004,12 +1039,12 @@ export default function WowAnalyzerClient() {
                             {/* Quest Rewards Preview */}
                             <div className="mt-4 p-3" style={{
                                 ...glassCard,
-                                border: `1px solid ${MidnightTheme.void.primary}40`,
-                                boxShadow: `0 0 15px ${MidnightTheme.void.primary}20`
+                                border: `1px solid ${colors.secondary}40`,
+                                boxShadow: `0 0 15px ${colors.secondary}20`
                             }}>
-                                <div className="flex items-center gap-2 text-xs" style={{ color: MidnightTheme.text.muted }}>
-                                    <Shield className="w-3.5 h-3.5" style={{ color: MidnightTheme.light.primary }} />
-                                    <span className="font-semibold" style={{ color: MidnightTheme.text.bright }}>Quest Rewards:</span>
+                                <div className="flex items-center gap-2 text-xs" style={{ color: colors.textMuted }}>
+                                    <Shield className="w-3.5 h-3.5" style={{ color: colors.primary }} />
+                                    <span className="font-semibold" style={{ color: colors.textPrimary }}>Quest Rewards:</span>
                                     <span>AI-Powered Analysis • Midnight Readiness Score • Strategic Recommendations</span>
                                 </div>
                             </div>
@@ -1034,14 +1069,14 @@ export default function WowAnalyzerClient() {
                         transition={{ duration: 0.8 }}
                     >
                         <h2 className="text-4xl md:text-5xl font-black uppercase mb-4" style={{
-                            background: MidnightTheme.gradients.voidToLight,
+                            background: gradients.navyOrange,
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
-                            filter: `drop-shadow(0 0 20px ${MidnightTheme.void.primary}60)`
+                            filter: `drop-shadow(0 0 20px ${colors.secondary}60)`
                         }}>
                             How It Works
                         </h2>
-                        <p className="text-lg" style={{ color: MidnightTheme.text.muted }}>
+                        <p className="text-lg" style={{ color: colors.textMuted }}>
                             Three simple steps to Midnight mastery
                         </p>
                     </motion.div>
@@ -1053,21 +1088,21 @@ export default function WowAnalyzerClient() {
                                 icon: Search,
                                 title: "Enter Character",
                                 description: "Submit your character name, realm, and region to connect with Blizzard's official API",
-                                gradient: MidnightTheme.gradients.voidHorizontal
+                                gradient: gradients.primary
                             },
                             {
                                 step: "02",
                                 icon: Brain,
                                 title: "AI Analysis",
                                 description: "Our AI processes your achievements, mounts, titles, and progress to generate a comprehensive readiness score",
-                                gradient: `linear-gradient(to right, ${MidnightTheme.void.primary}, ${MidnightTheme.light.primary})`
+                                gradient: `linear-gradient(to right, ${colors.secondary}, ${colors.primary})`
                             },
                             {
                                 step: "03",
                                 icon: Trophy,
                                 title: "Get Results",
                                 description: "Receive personalized recommendations, daily priorities, and housing preparation guidance",
-                                gradient: MidnightTheme.gradients.lightHorizontal
+                                gradient: gradients.primary
                             }
                         ].map((item, index) => (
                             <motion.div
@@ -1090,8 +1125,8 @@ export default function WowAnalyzerClient() {
                                     whileHover={{ scale: 1.05, y: -10 }}
                                     style={{
                                         ...glassCard,
-                                        border: `2px solid ${MidnightTheme.void.primary}30`,
-                                        boxShadow: `0 0 40px ${MidnightTheme.void.primary}20`,
+                                        border: `2px solid ${colors.secondary}30`,
+                                        boxShadow: `0 0 40px ${colors.secondary}20`,
                                         padding: '2.5rem',
                                         position: 'relative',
                                         overflow: 'hidden'
@@ -1102,9 +1137,9 @@ export default function WowAnalyzerClient() {
                                         className="absolute inset-0 opacity-10"
                                         animate={{
                                             background: [
-                                                `radial-gradient(circle at 0% 0%, ${MidnightTheme.void.primary}40, transparent 70%)`,
-                                                `radial-gradient(circle at 100% 100%, ${MidnightTheme.light.primary}40, transparent 70%)`,
-                                                `radial-gradient(circle at 0% 0%, ${MidnightTheme.void.primary}40, transparent 70%)`
+                                                `radial-gradient(circle at 0% 0%, ${colors.secondary}40, transparent 70%)`,
+                                                `radial-gradient(circle at 100% 100%, ${colors.primary}40, transparent 70%)`,
+                                                `radial-gradient(circle at 0% 0%, ${colors.secondary}40, transparent 70%)`
                                             ]
                                         }}
                                         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -1118,9 +1153,9 @@ export default function WowAnalyzerClient() {
                                     >
                                         <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center" style={{
                                             background: item.gradient,
-                                            boxShadow: `0 0 30px ${MidnightTheme.void.primary}60`
+                                            boxShadow: `0 0 30px ${colors.secondary}60`
                                         }}>
-                                            <item.icon className="w-10 h-10" style={{ color: MidnightTheme.text.bright }} />
+                                            <item.icon className="w-10 h-10" style={{ color: colors.textPrimary }} />
                                         </div>
                                     </motion.div>
 
@@ -1133,7 +1168,7 @@ export default function WowAnalyzerClient() {
                                     </h3>
 
                                     <p className="text-center leading-relaxed relative" style={{
-                                        color: MidnightTheme.text.muted
+                                        color: colors.textMuted
                                     }}>
                                         {item.description}
                                     </p>
@@ -1147,8 +1182,8 @@ export default function WowAnalyzerClient() {
                                         transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                                     >
                                         <div className="w-8 h-8 flex items-center justify-center" style={{
-                                            color: MidnightTheme.void.primary,
-                                            filter: `drop-shadow(0 0 8px ${MidnightTheme.void.primary})`
+                                            color: colors.secondary,
+                                            filter: `drop-shadow(0 0 8px ${colors.secondary})`
                                         }}>
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1172,14 +1207,14 @@ export default function WowAnalyzerClient() {
                         transition={{ duration: 0.8 }}
                     >
                         <h2 className="text-4xl md:text-5xl font-black uppercase mb-4" style={{
-                            background: MidnightTheme.gradients.voidToLight,
+                            background: gradients.navyOrange,
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
-                            filter: `drop-shadow(0 0 20px ${MidnightTheme.void.primary}60)`
+                            filter: `drop-shadow(0 0 20px ${colors.secondary}60)`
                         }}>
                             Trending Now
                         </h2>
-                        <p className="text-lg" style={{ color: MidnightTheme.text.muted }}>
+                        <p className="text-lg" style={{ color: colors.textMuted }}>
                             See what the community is analyzing right now
                         </p>
                     </motion.div>
@@ -1192,21 +1227,21 @@ export default function WowAnalyzerClient() {
                             transition={{ duration: 0.6, delay: 0.2 }}
                             style={{
                                 ...glassCard,
-                                border: `2px solid ${MidnightTheme.void.primary}40`,
-                                boxShadow: `0 0 40px ${MidnightTheme.void.primary}20`,
+                                border: `2px solid ${colors.secondary}40`,
+                                boxShadow: `0 0 40px ${colors.secondary}20`,
                                 padding: '2rem'
                             }}
                         >
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{
-                                    background: `radial-gradient(circle, ${MidnightTheme.void.primary}60, transparent)`,
-                                    border: `2px solid ${MidnightTheme.void.primary}`
+                                    background: `radial-gradient(circle, ${colors.secondary}60, transparent)`,
+                                    border: `2px solid ${colors.secondary}`
                                 }}>
-                                    <Swords className="w-6 h-6" style={{ color: MidnightTheme.void.primary }} />
+                                    <Swords className="w-6 h-6" style={{ color: colors.secondary }} />
                                 </div>
                                 <h3 className="text-xl font-black uppercase" style={{
-                                    color: MidnightTheme.text.bright,
-                                    textShadow: `0 0 10px ${MidnightTheme.void.primary}40`
+                                    color: colors.textPrimary,
+                                    textShadow: `0 0 10px ${colors.secondary}40`
                                 }}>
                                     Hot Classes
                                 </h3>
@@ -1235,19 +1270,19 @@ export default function WowAnalyzerClient() {
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded flex items-center justify-center font-black text-sm" style={{
                                                 background: index < 3 ? cls.color : 'rgba(255,255,255,0.1)',
-                                                color: index < 3 ? '#000' : MidnightTheme.text.muted,
+                                                color: index < 3 ? '#000' : colors.textMuted,
                                                 boxShadow: index < 3 ? `0 0 15px ${cls.color}60` : 'none'
                                             }}>
                                                 #{cls.rank}
                                             </div>
                                             <span className="font-bold" style={{
-                                                color: index < 3 ? cls.color : MidnightTheme.text.muted
+                                                color: index < 3 ? cls.color : colors.textMuted
                                             }}>
                                                 {cls.name}
                                             </span>
                                         </div>
                                         <div className="text-sm font-black" style={{
-                                            color: index < 3 ? MidnightTheme.text.bright : MidnightTheme.text.muted
+                                            color: index < 3 ? colors.textPrimary : colors.textMuted
                                         }}>
                                             {cls.count}
                                         </div>
@@ -1263,21 +1298,21 @@ export default function WowAnalyzerClient() {
                             transition={{ duration: 0.6, delay: 0.3 }}
                             style={{
                                 ...glassCard,
-                                border: `2px solid ${MidnightTheme.light.primary}40`,
-                                boxShadow: `0 0 40px ${MidnightTheme.light.primary}20`,
+                                border: `2px solid ${colors.primary}40`,
+                                boxShadow: `0 0 40px ${colors.primary}20`,
                                 padding: '2rem'
                             }}
                         >
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{
-                                    background: `radial-gradient(circle, ${MidnightTheme.light.primary}60, transparent)`,
-                                    border: `2px solid ${MidnightTheme.light.primary}`
+                                    background: `radial-gradient(circle, ${colors.primary}60, transparent)`,
+                                    border: `2px solid ${colors.primary}`
                                 }}>
-                                    <TrendingUp className="w-6 h-6" style={{ color: MidnightTheme.light.primary }} />
+                                    <TrendingUp className="w-6 h-6" style={{ color: colors.primary }} />
                                 </div>
                                 <h3 className="text-xl font-black uppercase" style={{
-                                    color: MidnightTheme.text.bright,
-                                    textShadow: `0 0 10px ${MidnightTheme.light.primary}40`
+                                    color: colors.textPrimary,
+                                    textShadow: `0 0 10px ${colors.primary}40`
                                 }}>
                                     Top Servers
                                 </h3>
@@ -1299,26 +1334,26 @@ export default function WowAnalyzerClient() {
                                         whileHover={{ x: 8, scale: 1.02 }}
                                         className="flex items-center justify-between p-3 rounded-lg"
                                         style={{
-                                            background: index < 3 ? `linear-gradient(90deg, ${MidnightTheme.light.primary}20, transparent)` : 'rgba(255,255,255,0.02)',
-                                            border: `1px solid ${index < 3 ? MidnightTheme.light.primary : 'rgba(255,255,255,0.05)'}40`
+                                            background: index < 3 ? `linear-gradient(90deg, ${colors.primary}20, transparent)` : 'rgba(255,255,255,0.02)',
+                                            border: `1px solid ${index < 3 ? colors.primary : 'rgba(255,255,255,0.05)'}40`
                                         }}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded flex items-center justify-center font-black text-sm" style={{
-                                                background: index < 3 ? MidnightTheme.light.primary : 'rgba(255,255,255,0.1)',
-                                                color: index < 3 ? '#000' : MidnightTheme.text.muted,
-                                                boxShadow: index < 3 ? `0 0 15px ${MidnightTheme.light.primary}60` : 'none'
+                                                background: index < 3 ? colors.primary : 'rgba(255,255,255,0.1)',
+                                                color: index < 3 ? '#000' : colors.textMuted,
+                                                boxShadow: index < 3 ? `0 0 15px ${colors.primary}60` : 'none'
                                             }}>
                                                 #{server.rank}
                                             </div>
                                             <span className="font-bold" style={{
-                                                color: index < 3 ? MidnightTheme.light.primary : MidnightTheme.text.muted
+                                                color: index < 3 ? colors.primary : colors.textMuted
                                             }}>
                                                 {server.name}
                                             </span>
                                         </div>
                                         <div className="text-sm font-black" style={{
-                                            color: index < 3 ? MidnightTheme.text.bright : MidnightTheme.text.muted
+                                            color: index < 3 ? colors.textPrimary : colors.textMuted
                                         }}>
                                             {server.count}
                                         </div>
@@ -1334,21 +1369,21 @@ export default function WowAnalyzerClient() {
                             transition={{ duration: 0.6, delay: 0.4 }}
                             style={{
                                 ...glassCard,
-                                border: `2px solid ${MidnightTheme.urgency.warning}40`,
-                                boxShadow: `0 0 40px ${MidnightTheme.urgency.warning}20`,
+                                border: `2px solid ${colors.warning}40`,
+                                boxShadow: `0 0 40px ${colors.warning}20`,
                                 padding: '2rem'
                             }}
                         >
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{
-                                    background: `radial-gradient(circle, ${MidnightTheme.urgency.warning}60, transparent)`,
-                                    border: `2px solid ${MidnightTheme.urgency.warning}`
+                                    background: `radial-gradient(circle, ${colors.warning}60, transparent)`,
+                                    border: `2px solid ${colors.warning}`
                                 }}>
-                                    <Sparkles className="w-6 h-6" style={{ color: MidnightTheme.urgency.warning }} />
+                                    <Sparkles className="w-6 h-6" style={{ color: colors.warning }} />
                                 </div>
                                 <h3 className="text-xl font-black uppercase" style={{
-                                    color: MidnightTheme.text.bright,
-                                    textShadow: `0 0 10px ${MidnightTheme.urgency.warning}40`
+                                    color: colors.textPrimary,
+                                    textShadow: `0 0 10px ${colors.warning}40`
                                 }}>
                                     Void Mounts
                                 </h3>
@@ -1370,26 +1405,26 @@ export default function WowAnalyzerClient() {
                                         whileHover={{ x: 8, scale: 1.02 }}
                                         className="flex items-center justify-between p-3 rounded-lg"
                                         style={{
-                                            background: index < 3 ? `linear-gradient(90deg, ${MidnightTheme.urgency.warning}20, transparent)` : 'rgba(255,255,255,0.02)',
-                                            border: `1px solid ${index < 3 ? MidnightTheme.urgency.warning : 'rgba(255,255,255,0.05)'}40`
+                                            background: index < 3 ? `linear-gradient(90deg, ${colors.warning}20, transparent)` : 'rgba(255,255,255,0.02)',
+                                            border: `1px solid ${index < 3 ? colors.warning : 'rgba(255,255,255,0.05)'}40`
                                         }}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded flex items-center justify-center font-black text-sm" style={{
-                                                background: index < 3 ? MidnightTheme.urgency.warning : 'rgba(255,255,255,0.1)',
-                                                color: index < 3 ? '#000' : MidnightTheme.text.muted,
-                                                boxShadow: index < 3 ? `0 0 15px ${MidnightTheme.urgency.warning}60` : 'none'
+                                                background: index < 3 ? colors.warning : 'rgba(255,255,255,0.1)',
+                                                color: index < 3 ? '#000' : colors.textMuted,
+                                                boxShadow: index < 3 ? `0 0 15px ${colors.warning}60` : 'none'
                                             }}>
                                                 #{mount.rank}
                                             </div>
                                             <span className="font-bold" style={{
-                                                color: index < 3 ? MidnightTheme.urgency.warning : MidnightTheme.text.muted
+                                                color: index < 3 ? colors.warning : colors.textMuted
                                             }}>
                                                 {mount.name}
                                             </span>
                                         </div>
                                         <div className="text-sm font-black" style={{
-                                            color: index < 3 ? MidnightTheme.text.bright : MidnightTheme.text.muted
+                                            color: index < 3 ? colors.textPrimary : colors.textMuted
                                         }}>
                                             {mount.count}
                                         </div>
@@ -1406,8 +1441,8 @@ export default function WowAnalyzerClient() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.8 }}
                     >
-                        <p className="text-lg mb-6" style={{ color: MidnightTheme.text.muted }}>
-                            Ready to see where <span className="font-bold" style={{ color: MidnightTheme.text.bright }}>YOU</span> rank?
+                        <p className="text-lg mb-6" style={{ color: colors.textMuted }}>
+                            Ready to see where <span className="font-bold" style={{ color: colors.textPrimary }}>YOU</span> rank?
                         </p>
                         <motion.a
                             href="#analyzer-form"
@@ -1415,12 +1450,12 @@ export default function WowAnalyzerClient() {
                             whileTap={{ scale: 0.95 }}
                             className="inline-flex items-center gap-3 px-8 py-4 font-bold text-lg uppercase tracking-wider"
                             style={{
-                                background: MidnightTheme.gradients.voidToLight,
-                                border: `2px solid ${MidnightTheme.void.primary}`,
-                                color: MidnightTheme.text.bright,
+                                background: gradients.navyOrange,
+                                border: `2px solid ${colors.secondary}`,
+                                color: colors.textPrimary,
                                 borderRadius: '12px',
-                                boxShadow: `0 0 40px ${MidnightTheme.void.primary}60`,
-                                textShadow: `0 0 10px ${MidnightTheme.void.primary}80`
+                                boxShadow: `0 0 40px ${colors.secondary}60`,
+                                textShadow: `0 0 10px ${colors.secondary}80`
                             }}
                         >
                             <Zap className="w-6 h-6 animate-pulse" />
@@ -1451,14 +1486,14 @@ export default function WowAnalyzerClient() {
                         transition={{ duration: 0.8 }}
                     >
                         <h2 className="text-4xl md:text-5xl font-black uppercase mb-4" style={{
-                            background: MidnightTheme.gradients.voidToLight,
+                            background: gradients.navyOrange,
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
-                            filter: `drop-shadow(0 0 20px ${MidnightTheme.void.primary}60)`
+                            filter: `drop-shadow(0 0 20px ${colors.secondary}60)`
                         }}>
                             Champions of Midnight
                         </h2>
-                        <p className="text-lg" style={{ color: MidnightTheme.text.muted }}>
+                        <p className="text-lg" style={{ color: colors.textMuted }}>
                             The most prepared heroes in Azeroth
                         </p>
                     </motion.div>
@@ -1533,7 +1568,7 @@ export default function WowAnalyzerClient() {
                                         boxShadow: `0 0 30px ${champion.color}60, inset 0 0 20px ${champion.color}40`
                                     }}>
                                         <div className="text-4xl font-black" style={{
-                                            color: MidnightTheme.text.bright,
+                                            color: colors.textPrimary,
                                             textShadow: `0 0 20px ${champion.color}80`
                                         }}>
                                             {champion.score}%
@@ -1549,10 +1584,10 @@ export default function WowAnalyzerClient() {
                                     {champion.name}
                                 </h3>
 
-                                <p className="text-sm mb-1" style={{ color: MidnightTheme.text.muted }}>
+                                <p className="text-sm mb-1" style={{ color: colors.textMuted }}>
                                     {champion.class}
                                 </p>
-                                <p className="text-xs mb-4 font-mono" style={{ color: MidnightTheme.text.muted }}>
+                                <p className="text-xs mb-4 font-mono" style={{ color: colors.textMuted }}>
                                     {champion.server}
                                 </p>
 
@@ -1561,18 +1596,18 @@ export default function WowAnalyzerClient() {
                                     borderTop: `1px solid ${champion.color}30`
                                 }}>
                                     <div>
-                                        <div className="text-2xl font-black" style={{ color: MidnightTheme.text.bright }}>
+                                        <div className="text-2xl font-black" style={{ color: colors.textPrimary }}>
                                             {champion.achievements.toLocaleString()}
                                         </div>
-                                        <div className="text-xs uppercase tracking-wider" style={{ color: MidnightTheme.text.muted }}>
+                                        <div className="text-xs uppercase tracking-wider" style={{ color: colors.textMuted }}>
                                             Achievements
                                         </div>
                                     </div>
                                     <div>
-                                        <div className="text-2xl font-black" style={{ color: MidnightTheme.text.bright }}>
+                                        <div className="text-2xl font-black" style={{ color: colors.textPrimary }}>
                                             {champion.mounts}
                                         </div>
-                                        <div className="text-xs uppercase tracking-wider" style={{ color: MidnightTheme.text.muted }}>
+                                        <div className="text-xs uppercase tracking-wider" style={{ color: colors.textMuted }}>
                                             Mounts
                                         </div>
                                     </div>
@@ -1605,24 +1640,24 @@ export default function WowAnalyzerClient() {
                         transition={{ duration: 0.8, delay: 0.8 }}
                         style={{
                             ...glassCard,
-                            border: `2px solid ${MidnightTheme.void.primary}40`,
-                            boxShadow: `0 0 40px ${MidnightTheme.void.primary}20`,
+                            border: `2px solid ${colors.secondary}40`,
+                            boxShadow: `0 0 40px ${colors.secondary}20`,
                             padding: '3rem',
                             borderRadius: '16px'
                         }}
                     >
                         <Sparkles className="w-12 h-12 mx-auto mb-4" style={{
-                            color: MidnightTheme.light.primary,
-                            filter: `drop-shadow(0 0 15px ${MidnightTheme.light.primary})`
+                            color: colors.primary,
+                            filter: `drop-shadow(0 0 15px ${colors.primary})`
                         }} />
                         <h3 className="text-3xl font-black mb-4 uppercase" style={{
-                            background: MidnightTheme.gradients.voidToLight,
+                            background: gradients.navyOrange,
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent'
                         }}>
                             Share Your Score!
                         </h3>
-                        <p className="text-lg mb-6" style={{ color: MidnightTheme.text.muted }}>
+                        <p className="text-lg mb-6" style={{ color: colors.textMuted }}>
                             Analyzed your character? Show off your Midnight readiness to your guild!
                         </p>
                         <div className="flex flex-wrap items-center justify-center gap-4">
@@ -1658,8 +1693,8 @@ export default function WowAnalyzerClient() {
                                 className="px-6 py-3 font-bold uppercase tracking-wider"
                                 style={{
                                     ...glassCard,
-                                    border: `2px solid ${MidnightTheme.void.primary}`,
-                                    color: MidnightTheme.text.bright,
+                                    border: `2px solid ${colors.secondary}`,
+                                    color: colors.textPrimary,
                                     borderRadius: '8px'
                                 }}
                             >
@@ -1677,10 +1712,10 @@ export default function WowAnalyzerClient() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, delay: 0.5 }}
                 style={{
-                    background: `linear-gradient(to bottom, transparent, ${MidnightTheme.backgrounds.void})`,
+                    background: `linear-gradient(to bottom, transparent, ${colors.navy})`,
                     borderTop: `2px solid`,
-                    borderImage: `linear-gradient(to right, transparent, ${MidnightTheme.void.primary}, ${MidnightTheme.light.primary}, ${MidnightTheme.void.primary}, transparent) 1`,
-                    boxShadow: `inset 0 1px 20px ${MidnightTheme.void.primary}20`
+                    borderImage: `linear-gradient(to right, transparent, ${colors.secondary}, ${colors.primary}, ${colors.secondary}, transparent) 1`,
+                    boxShadow: `inset 0 1px 20px ${colors.secondary}20`
                 }}
             >
                 <div className="container mx-auto px-4 py-12 text-center">
@@ -1691,27 +1726,27 @@ export default function WowAnalyzerClient() {
                         transition={{ duration: 0.6 }}
                     >
                         <div className="w-20 h-px" style={{
-                            background: `linear-gradient(to right, transparent, ${MidnightTheme.void.primary}, transparent)`
+                            background: `linear-gradient(to right, transparent, ${colors.secondary}, transparent)`
                         }} />
                         <div className="w-2 h-2 transform rotate-45" style={{
-                            background: MidnightTheme.light.primary,
-                            boxShadow: `0 0 10px ${MidnightTheme.light.primary}`
+                            background: colors.primary,
+                            boxShadow: `0 0 10px ${colors.primary}`
                         }} />
                         <div className="w-20 h-px" style={{
-                            background: `linear-gradient(to left, transparent, ${MidnightTheme.light.primary}, transparent)`
+                            background: `linear-gradient(to left, transparent, ${colors.primary}, transparent)`
                         }} />
                     </motion.div>
 
                     <p className="text-sm mb-2 uppercase tracking-wider font-bold" style={{
-                        color: MidnightTheme.text.bright,
-                        textShadow: `0 0 15px ${MidnightTheme.void.primary}60`,
+                        color: colors.textPrimary,
+                        textShadow: `0 0 15px ${colors.secondary}60`,
                         letterSpacing: '0.2em'
                     }}>
                         Forged in Azeroth • Powered by Magic
                     </p>
 
                     <div className="text-xs" style={{
-                        color: MidnightTheme.text.muted,
+                        color: colors.textMuted,
                     }}>
                         For the Horde • For the Alliance
                     </div>
