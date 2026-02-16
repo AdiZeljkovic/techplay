@@ -44,10 +44,10 @@ class BlizzardDataTransformer
         if (isset($achievements['achievements'])) {
             foreach ($achievements['achievements'] as $achievement) {
                 $id = $achievement['id'] ?? null;
-                if ($id && array_key_exists($id, self::MIDNIGHT_ACHIEVEMENTS)) {
+                if ($id && array_key_exists($id, MidnightData::QUELTHALAS_ACHIEVEMENTS)) {
                     $midnightAchievements[] = [
                         'id' => $id,
-                        'name' => self::MIDNIGHT_ACHIEVEMENTS[$id],
+                        'name' => MidnightData::QUELTHALAS_ACHIEVEMENTS[$id]['name'],
                         'completed' => isset($achievement['completed_timestamp']),
                     ];
                 }
