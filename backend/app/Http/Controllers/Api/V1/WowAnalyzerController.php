@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\WowAnalysis;
 use App\Services\BlizzardService;
 use App\Services\BlizzardDataTransformer;
-use App\Services\OpenAIService;
+use App\Services\GeminiService;
 use App\Services\CacheService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
@@ -19,16 +19,16 @@ class WowAnalyzerController extends Controller
 
     protected BlizzardService $blizzardService;
     protected BlizzardDataTransformer $transformer;
-    protected OpenAIService $openAIService;
+    protected GeminiService $geminiService;
 
     public function __construct(
         BlizzardService $blizzardService,
         BlizzardDataTransformer $transformer,
-        OpenAIService $openAIService
+        GeminiService $geminiService
     ) {
         $this->blizzardService = $blizzardService;
         $this->transformer = $transformer;
-        $this->openAIService = $openAIService;
+        $this->geminiService = $geminiService;
     }
 
     /**
@@ -86,8 +86,8 @@ class WowAnalyzerController extends Controller
                 $mounts ?? []
             );
 
-            // Step 3: Call OpenAI API
-            $analysis = $this->openAIService->analyzeCharacterReadiness($payload);
+            // Step 3: Call Gemini API
+            $analysis = $this->geminiService->analyzeCharacterReadiness($payload);
 
             if (!$analysis) {
                 return $this->error('AI analysis failed. Please try again later.', 503);
