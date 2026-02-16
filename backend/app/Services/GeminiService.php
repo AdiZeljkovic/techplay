@@ -64,6 +64,14 @@ class GeminiService
             }
 
             $data = $response->json();
+
+            // DEBUG: Log full Gemini response
+            Log::info('Gemini full response', [
+                'finishReason' => $data['candidates'][0]['finishReason'] ?? 'unknown',
+                'usageMetadata' => $data['usageMetadata'] ?? null,
+                'full_data' => $data
+            ]);
+
             $content = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
             if (!$content) {
