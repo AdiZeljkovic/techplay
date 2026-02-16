@@ -67,14 +67,28 @@ class GeminiService
             $content = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
             if (!$content) {
-                Log::error('Gemini returned empty content');
+                Log::error('Gemini returned empty content', ['response' => $data]);
                 return null;
             }
 
             // Extract JSON from Gemini response (it might be wrapped in markdown)
             $jsonContent = $this->extractJSON($content);
 
-            return json_decode($jsonContent, true);
+            // DEBUG: Log extracted JSON
+            Log::info('Gemini JSON extracted', ['json' => $jsonContent]);
+
+            $result = json_decode($jsonContent, true);
+
+            if ($result === null) {
+                Log::error('Gemini JSON decode failed', [
+                    'raw_content' => $content,
+                    'extracted_json' => $jsonContent,
+                    'json_error' => json_last_error_msg()
+                ]);
+                return null;
+            }
+
+            return $result;
         } catch (\Exception $e) {
             Log::error('Gemini Exception: ' . $e->getMessage());
             return null;
