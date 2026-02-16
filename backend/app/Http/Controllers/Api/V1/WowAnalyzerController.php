@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\WowAnalysis;
 use App\Services\BlizzardService;
 use App\Services\BlizzardDataTransformer;
-use App\Services\GeminiService;
+use App\Services\GroqService;
 use App\Services\CacheService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
@@ -19,16 +19,16 @@ class WowAnalyzerController extends Controller
 
     protected BlizzardService $blizzardService;
     protected BlizzardDataTransformer $transformer;
-    protected GeminiService $geminiService;
+    protected GroqService $aiService;
 
     public function __construct(
         BlizzardService $blizzardService,
         BlizzardDataTransformer $transformer,
-        GeminiService $geminiService
+        GroqService $aiService
     ) {
         $this->blizzardService = $blizzardService;
         $this->transformer = $transformer;
-        $this->geminiService = $geminiService;
+        $this->aiService = $aiService;
     }
 
     /**
@@ -86,8 +86,8 @@ class WowAnalyzerController extends Controller
                 $mounts ?? []
             );
 
-            // Step 3: Call Gemini API
-            $analysis = $this->geminiService->analyzeCharacterReadiness($payload);
+            // Step 3: Call AI API (Groq - Llama 3.3 70B)
+            $analysis = $this->aiService->analyzeCharacterReadiness($payload);
 
             if (!$analysis) {
                 return $this->error('AI analysis failed. Please try again later.', 503);
