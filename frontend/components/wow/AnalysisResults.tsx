@@ -10,6 +10,8 @@ import EquipmentView from './EquipmentView';
 import MythicPlusStats from './MythicPlusStats';
 import RaidProgress from './RaidProgress';
 import PvPStats from './PvPStats';
+import CollectionStats from './CollectionStats';
+import ProfessionView from './ProfessionView';
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -32,11 +34,20 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
         data.pvp?.rbg_rating || 0
     );
 
+    const collectionsCount =
+        (data.collections?.pets.unique || 0) +
+        (data.collections?.toys.collected || 0) +
+        (data.collections?.mounts_count || 0);
+
+    const professionCount = (data.professions?.primary.length || 0) + (data.professions?.secondary.length || 0);
+
     const badges = {
         gear: data.equipment?.item_level ? `${data.equipment.item_level}` : undefined,
         mythic: data.mythic_plus?.score ? `${data.mythic_plus.score}` : undefined,
         raids: data.raids?.summary || undefined,
         pvp: pvpHighest > 0 ? `${pvpHighest}` : undefined,
+        collections: collectionsCount > 0 ? `${collectionsCount}` : undefined,
+        professions: professionCount > 0 ? `${professionCount}` : undefined,
     };
 
     return (
@@ -73,6 +84,8 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
                     {activeTab === 'mythic' && <MythicPlusStats mythicPlus={data.mythic_plus} />}
                     {activeTab === 'raids' && <RaidProgress raids={data.raids} />}
                     {activeTab === 'pvp' && <PvPStats pvp={data.pvp} />}
+                    {activeTab === 'collections' && <CollectionStats collections={data.collections} />}
+                    {activeTab === 'professions' && <ProfessionView professions={data.professions} />}
                 </motion.div>
             </AnimatePresence>
         </div>

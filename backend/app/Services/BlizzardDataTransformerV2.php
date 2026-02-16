@@ -406,6 +406,134 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
     }
 
     /**
+     * Transform pets collection data
+     *
+     * @param array|null $pets Raw pets collection API response
+     * @return array Pet statistics (total, unique, max level)
+     */
+    public function transformPets(?array $pets): array
+    {
+        if (!$pets || !isset($pets['pets'])) {
+            return [
+                'total' => 0,
+                'unique' => 0,
+                'max_level' => 0,
+            ];
+        }
+
+        $totalPets = count($pets['pets']);
+        $uniquePets = count(array_unique(array_column($pets['pets'], 'species')));
+        $maxLevelPets = 0;
+
+        foreach ($pets['pets'] as $pet) {
+            if (($pet['level'] ?? 0) === 25) {
+                $maxLevelPets++;
+            }
+        }
+
+        return [
+            'total' => $totalPets,
+            'unique' => $uniquePets,
+            'max_level' => $maxLevelPets,
+        ];
+    }
+
+    /**
+     * Transform toys collection data
+     *
+     * @param array|null $toys Raw toys collection API response
+     * @return array Toy statistics (collected count)
+     */
+    public function transformToys(?array $toys): array
+    {
+        if (!$toys || !isset($toys['toys'])) {
+            return [
+                'collected' => 0,
+            ];
+        }
+
+        return [
+            'collected' => count($toys['toys']),
+        ];
+    }
+
+    /**
+     * Transform transmog appearances data
+     *
+     * @param array|null $appearances Raw appearances API response
+     * @return array Transmog statistics (slots unlocked)
+     */
+    public function transformAppearances(?array $appearances): array
+    {
+        if (!$appearances || !isset($appearances['slots'])) {
+            return [
+                'slots_unlocked' => 0,
+                'total_appearances' => 0,
+            ];
+        }
+
+        $slotsUnlocked = count($appearances['slots']);
+        $totalAppearances = 0;
+
+        foreach ($appearances['slots'] as $slot) {
+            if (isset($slot['appearances'])) {
+                $totalAppearances += count($slot['appearances']);
+            }
+        }
+
+        return [
+            'slots_unlocked' => $slotsUnlocked,
+            'total_appearances' => $totalAppearances,
+        ];
+    }
+
+    /**
+     * Transform professions data
+     *
+     * @param array|null $profs Raw professions API response
+     * @return array Profession skills (primary, secondary)
+     */
+    public function transformProfessions(?array $profs): array
+    {
+        if (!$profs) {
+            return [
+                'primary' => [],
+                'secondary' => [],
+            ];
+        }
+
+        $primary = [];
+        $secondary = [];
+
+        // Primary professions (max 2)
+        if (isset($profs['primaries'])) {
+            foreach ($profs['primaries'] as $prof) {
+                $primary[] = [
+                    'name' => $prof['profession']['name'] ?? 'Unknown',
+                    'skill_level' => $prof['skill_points'] ?? 0,
+                    'max_skill' => $prof['max_skill_points'] ?? 100,
+                ];
+            }
+        }
+
+        // Secondary professions (Cooking, Fishing, Archaeology)
+        if (isset($profs['secondaries'])) {
+            foreach ($profs['secondaries'] as $prof) {
+                $secondary[] = [
+                    'name' => $prof['profession']['name'] ?? 'Unknown',
+                    'skill_level' => $prof['skill_points'] ?? 0,
+                    'max_skill' => $prof['max_skill_points'] ?? 100,
+                ];
+            }
+        }
+
+        return [
+            'primary' => $primary,
+            'secondary' => $secondary,
+        ];
+    }
+
+    /**
      * Build comprehensive analysis payload (V2)
      *
      * Extends V1 payload with equipment, M+, raids, PvP, reputations data
@@ -418,7 +546,11 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
         ?array $mythic,
         ?array $raids,
         ?array $pvp = null,
-        ?array $reputations = null
+        ?array $reputations = null,
+        ?array $pets = null,
+        ?array $toys = null,
+        ?array $appearances = null,
+        ?array $professions = null
     ): array {
         // Get V1 base payload (Midnight readiness)
         $basePayload = $this->buildAnalysisPayload($profile, $achievements, $mounts);
@@ -430,12 +562,25 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
         $pvpData = $this->transformPvP($pvp);
         $repsData = $this->transformReputations($reputations);
 
+        // Add V3 collections data
+        $petsData = $this->transformPets($pets);
+        $toysData = $this->transformToys($toys);
+        $appearancesData = $this->transformAppearances($appearances);
+        $professionsData = $this->transformProfessions($professions);
+
         return array_merge($basePayload, [
             'equipment' => $equipmentData,
             'mythic_plus' => $mythicData,
             'raids' => $raidsData,
             'pvp' => $pvpData,
             'reputations' => $repsData,
+            'collections' => [
+                'pets' => $petsData,
+                'toys' => $toysData,
+                'transmog' => $appearancesData,
+                'mounts_count' => count($mounts['mounts'] ?? []), // Already have mounts from V1
+            ],
+            'professions' => $professionsData,
         ]);
     }
 

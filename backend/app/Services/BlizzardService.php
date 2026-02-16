@@ -384,6 +384,138 @@ class BlizzardService
     }
 
     /**
+     * Get character pets collection
+     * API: /profile/wow/character/{realmSlug}/{characterName}/collections/pets
+     */
+    public function getCharacterPets(string $region, string $realmSlug, string $characterName): ?array
+    {
+        $token = $this->getAccessToken($region);
+        $baseUrl = $this->regionUrls[$region] ?? $this->regionUrls['us'];
+        $namespace = "profile-{$region}";
+
+        try {
+            $response = $this->http(20)
+                ->withToken($token)
+                ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/collections/pets", [
+                    'namespace' => $namespace,
+                    'locale' => 'en_US',
+                ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::warning('Blizzard Pets API returned non-200', [
+                'status' => $response->status(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Blizzard Pets Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Get character toys collection
+     * API: /profile/wow/character/{realmSlug}/{characterName}/collections/toys
+     */
+    public function getCharacterToys(string $region, string $realmSlug, string $characterName): ?array
+    {
+        $token = $this->getAccessToken($region);
+        $baseUrl = $this->regionUrls[$region] ?? $this->regionUrls['us'];
+        $namespace = "profile-{$region}";
+
+        try {
+            $response = $this->http(20)
+                ->withToken($token)
+                ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/collections/toys", [
+                    'namespace' => $namespace,
+                    'locale' => 'en_US',
+                ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::warning('Blizzard Toys API returned non-200', [
+                'status' => $response->status(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Blizzard Toys Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Get character transmog appearances
+     * API: /profile/wow/character/{realmSlug}/{characterName}/appearances
+     */
+    public function getCharacterAppearances(string $region, string $realmSlug, string $characterName): ?array
+    {
+        $token = $this->getAccessToken($region);
+        $baseUrl = $this->regionUrls[$region] ?? $this->regionUrls['us'];
+        $namespace = "profile-{$region}";
+
+        try {
+            $response = $this->http(20)
+                ->withToken($token)
+                ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/appearances", [
+                    'namespace' => $namespace,
+                    'locale' => 'en_US',
+                ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::warning('Blizzard Appearances API returned non-200', [
+                'status' => $response->status(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Blizzard Appearances Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Get character professions (Primary + Secondary skills, specializations)
+     * API: /profile/wow/character/{realmSlug}/{characterName}/professions
+     */
+    public function getCharacterProfessions(string $region, string $realmSlug, string $characterName): ?array
+    {
+        $token = $this->getAccessToken($region);
+        $baseUrl = $this->regionUrls[$region] ?? $this->regionUrls['us'];
+        $namespace = "profile-{$region}";
+
+        try {
+            $response = $this->http(20)
+                ->withToken($token)
+                ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/professions", [
+                    'namespace' => $namespace,
+                    'locale' => 'en_US',
+                ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::warning('Blizzard Professions API returned non-200', [
+                'status' => $response->status(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Blizzard Professions Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Fetch all character data in parallel using Http::pool()
      * Performance: ~1-2s vs 4-8s sequential
      *
@@ -453,6 +585,26 @@ class BlizzardService
                         ->withToken($token)
                         ->timeout(30)
                         ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/reputations", $baseParams),
+
+                    'pets' => $pool->as('pets')
+                        ->withToken($token)
+                        ->timeout(30)
+                        ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/collections/pets", $baseParams),
+
+                    'toys' => $pool->as('toys')
+                        ->withToken($token)
+                        ->timeout(30)
+                        ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/collections/toys", $baseParams),
+
+                    'appearances' => $pool->as('appearances')
+                        ->withToken($token)
+                        ->timeout(30)
+                        ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/appearances", $baseParams),
+
+                    'professions' => $pool->as('professions')
+                        ->withToken($token)
+                        ->timeout(30)
+                        ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/professions", $baseParams),
                 ];
             });
 
@@ -467,6 +619,10 @@ class BlizzardService
                 'raids' => $responses['raids']->successful() ? $responses['raids']->json() : null,
                 'pvp' => $responses['pvp']->successful() ? $responses['pvp']->json() : null,
                 'reputations' => $responses['reputations']->successful() ? $responses['reputations']->json() : null,
+                'pets' => $responses['pets']->successful() ? $responses['pets']->json() : null,
+                'toys' => $responses['toys']->successful() ? $responses['toys']->json() : null,
+                'appearances' => $responses['appearances']->successful() ? $responses['appearances']->json() : null,
+                'professions' => $responses['professions']->successful() ? $responses['professions']->json() : null,
             ];
         } catch (\Exception $e) {
             Log::error('Blizzard Parallel Fetch Exception: ' . $e->getMessage(), [
@@ -486,6 +642,10 @@ class BlizzardService
                 'raids' => null,
                 'pvp' => null,
                 'reputations' => null,
+                'pets' => null,
+                'toys' => null,
+                'appearances' => null,
+                'professions' => null,
             ];
         }
     }

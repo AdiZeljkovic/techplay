@@ -298,6 +298,53 @@ export interface RaiderIOData {
     realm_rank: number | null;
 }
 
+// Collections Types
+export interface WowPetCollection {
+    total: number;
+    unique: number;
+    max_level: number; // Level 25 pets
+}
+
+export interface WowToyCollection {
+    collected: number;
+}
+
+export interface WowTransmogCollection {
+    slots_unlocked: number;
+    total_appearances: number;
+}
+
+export interface WowCollections {
+    pets: WowPetCollection;
+    toys: WowToyCollection;
+    transmog: WowTransmogCollection;
+    mounts_count: number; // Already have mounts from base analysis
+}
+
+// Professions Types
+export interface Profession {
+    name: string;
+    skill_level: number;
+    max_skill: number;
+}
+
+export interface WowProfessions {
+    primary: Profession[]; // Max 2 (e.g., Alchemy, Enchanting)
+    secondary: Profession[]; // Cooking, Fishing, Archaeology
+}
+
+// Historical Progress (for progression charts)
+export interface WowHistoricalSnapshot {
+    analyzed_at: string; // ISO date
+    item_level: number | null;
+    mythic_plus_score: number | null;
+    arena_rating: number | null;
+    readiness_score: number | null;
+    pet_count: number;
+    toy_count: number;
+    exalted_reps: number;
+}
+
 // Comprehensive Analysis Result (extends base)
 export interface ComprehensiveWowAnalysis extends WowAnalysisResult {
     equipment: WowEquipment | null;
@@ -305,7 +352,10 @@ export interface ComprehensiveWowAnalysis extends WowAnalysisResult {
     raids: WowRaidProgress | null;
     pvp: WowPvP | null;
     reputations: WowReputations | null;
+    collections: WowCollections | null;
+    professions: WowProfessions | null;
+    history?: WowHistoricalSnapshot[]; // Optional - loaded separately for charts
 }
 
 // Tab navigation type
-export type WowTabId = 'overview' | 'gear' | 'mythic' | 'raids' | 'pvp';
+export type WowTabId = 'overview' | 'gear' | 'mythic' | 'raids' | 'pvp' | 'collections' | 'professions';

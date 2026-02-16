@@ -84,7 +84,7 @@ class WowAnalyzerController extends Controller
             $rioData = $this->rioService->getCharacterMythicPlusProfile($region, $realmSlug, $characterName);
             $rioTransformed = $this->rioService->transformMythicPlusData($rioData);
 
-            // Step 3: Transform data (V2 with equipment/M+/raids/PvP/reps)
+            // Step 3: Transform data (V3 with equipment/M+/raids/PvP/reps/collections/professions)
             $payload = $this->transformer->buildComprehensivePayload(
                 $data['profile'],
                 $data['achievements'] ?? [],
@@ -93,7 +93,11 @@ class WowAnalyzerController extends Controller
                 $data['mythic'],
                 $data['raids'],
                 $data['pvp'],
-                $data['reputations']
+                $data['reputations'],
+                $data['pets'],
+                $data['toys'],
+                $data['appearances'],
+                $data['professions']
             );
 
             // Step 4: Call AI API (Groq - Llama 3.3 70B)
@@ -153,6 +157,17 @@ class WowAnalyzerController extends Controller
                     'exalted_reps' => $payload['reputations']['exalted_count'] ?? 0,
                     'midnight_factions' => $payload['reputations']['midnight_factions'] ?? null,
 
+                    // Collections
+                    'pet_count' => $payload['collections']['pets']['total'] ?? 0,
+                    'pet_unique' => $payload['collections']['pets']['unique'] ?? 0,
+                    'pet_max_level' => $payload['collections']['pets']['max_level'] ?? 0,
+                    'toy_count' => $payload['collections']['toys']['collected'] ?? 0,
+                    'transmog_slots' => $payload['collections']['transmog']['slots_unlocked'] ?? 0,
+                    'transmog_appearances' => $payload['collections']['transmog']['total_appearances'] ?? 0,
+
+                    // Professions
+                    'professions' => $payload['professions'] ?? null,
+
                     // Raider.IO Integration
                     'rio_score' => $rioTransformed['rio_score'] ?? null,
                     'rio_color' => $rioTransformed['rio_color'] ?? null,
@@ -162,7 +177,29 @@ class WowAnalyzerController extends Controller
                 ]
             );
 
-            // Step 6: Return comprehensive response (with ALL new data for tabs)
+            // Step 6: Create historical snapshot for progression tracking
+            \DB::table('wow_analysis_history')->insert([
+                'wow_analysis_id' => $wowAnalysis->id,
+                'character_name' => $characterName,
+                'realm_slug' => $realmSlug,
+                'region' => $region,
+                'item_level' => $payload['equipment']['item_level'] ?? null,
+                'mythic_plus_score' => $payload['mythic_plus']['score'] ?? null,
+                'arena_rating' => max(
+                    $payload['pvp']['arena_2v2'] ?? 0,
+                    $payload['pvp']['arena_3v3'] ?? 0,
+                    $payload['pvp']['rbg_rating'] ?? 0
+                ),
+                'readiness_score' => $analysis['score'] ?? null,
+                'pet_count' => $payload['collections']['pets']['total'] ?? 0,
+                'toy_count' => $payload['collections']['toys']['collected'] ?? 0,
+                'exalted_reps' => $payload['reputations']['exalted_count'] ?? 0,
+                'analyzed_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Step 7: Return comprehensive response (with ALL new data for tabs)
             return $this->success([
                 'id' => $wowAnalysis->id,
                 'character' => [
@@ -200,6 +237,12 @@ class WowAnalyzerController extends Controller
 
                 // Reputations (for Overview tab - Midnight critical)
                 'reputations' => $payload['reputations'] ?? null,
+
+                // Collections tab
+                'collections' => $payload['collections'] ?? null,
+
+                // Professions tab
+                'professions' => $payload['professions'] ?? null,
             ], 'Analysis completed successfully');
         });
     }
