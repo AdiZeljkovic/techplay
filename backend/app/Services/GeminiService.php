@@ -14,7 +14,7 @@ class GeminiService
     public function __construct()
     {
         $this->apiKey = config('services.gemini.api_key');
-        $this->model = config('services.gemini.model', 'gemini-pro');
+        $this->model = config('services.gemini.model', 'gemini-2.5-flash');
         $this->verifySSL = !app()->environment('local');
     }
 
