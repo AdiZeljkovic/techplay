@@ -131,68 +131,24 @@ class GeminiService
         $daysUntilLaunch = max(0, (int) ((strtotime('2026-03-02 15:00:00') - time()) / 86400));
 
         return <<<PROMPT
-You are Profesor Buffy, a WoW Midnight expansion expert. You're witty, direct, and urgent.
+Analyze WoW character for Midnight expansion (launches March 2, 2026 - {$daysUntilLaunch} days left).
 
-TODAY: February 16, 2026
-MIDNIGHT LAUNCH: March 2, 2026 (in {$daysUntilLaunch} days!)
+KEY FACTORS:
+- Royal Voidwing mount (ends at launch, NEVER returns)
+- Void Elves (core to Midnight story)
+- Quel'Thalas lore (Sunwell raid)
+- Housing collections (mounts, achievements)
 
-CRITICAL INTEL:
-- Royal Voidwing mount = LAST CHANCE (ends at launch, NEVER again)
-- Void Elves = CORE to Midnight story (Xal'atath invasion)
-- Sunwell = expansion epicenter (know the lore!)
-- Player housing = collections matter (mounts, pets, transmog)
-- Pre-patch = Twilight Ascension event (gear up NOW)
-
-ANALYSIS RULES:
-1. Readiness Score (0-100%):
-   - Void Elf unlock = 20%
-   - Quel'Thalas lore = 30%
-   - Housing prep (mounts/achievements) = 30%
-   - Void mounts = 20%
-
-2. AI Advice (4-6 tips, PRIORITY ORDER):
-   - Use urgency if <7 days left
-   - Be SPECIFIC: locations, time estimates, exact quests
-   - Class-relevant when possible
-   - Examples:
-     ✅ "Farm Voidtalon in Draenor's Edge of Reality portal (RNG, 1-10 hours)"
-     ❌ "Get void mounts"
-
-3. Missing Essentials (3-5 items):
-   - Limited-time first
-   - WHY it matters for Midnight
-   - Be honest but encouraging
-
-4. Daily Priority (2-3 tasks for TODAY):
-   - Highest impact, time-sensitive
-   - Realistic for casual players
-
-CHARACTER DATA:
+CHARACTER:
 {$this->formatCharacterData($characterData)}
 
-Return VALID JSON (no markdown, just pure JSON):
+Return ONLY this JSON (no markdown, no extra text):
 {
-  "score": 65,
-  "advice": [
-    "URGENT: Royal Voidwing quest ends in {$daysUntilLaunch} days! Start the Twilight Ascension questline in Orgrimmar/Stormwind NOW.",
-    "Unlock Void Elf race - critical for understanding Midnight's storyline with Xal'atath",
-    "Clear Sunwell Plateau raid for essential lore context (25-man, soloable at max level)",
-    "Farm Void mounts like Voidtalon of the Dark Star (Draenor portals, RNG-based)",
-    "Collect 300+ mounts for housing decoration options"
-  ],
-  "missing": [
-    "Royal Voidwing mount (limited-time pre-patch exclusive!)",
-    "Void Elf race unlock (Allied Races achievement)",
-    "Sunwell Plateau completion (Quel'Thalas lore foundation)"
-  ],
-  "daily_priority": [
-    "Complete Royal Voidwing quest chain ASAP (2-3 hours)",
-    "Start Void Elf unlock questline in Telogrus Rift",
-    "Run Twilight Ascension event for pre-patch gear"
-  ]
+  "score": [0-100 readiness %],
+  "advice": ["tip 1", "tip 2", "tip 3"],
+  "missing": ["item 1", "item 2"],
+  "daily_priority": ["task 1", "task 2"]
 }
-
-Be witty, be urgent, and remember: time's ticking!
 PROMPT;
     }
 
