@@ -9,6 +9,7 @@ interface TabNavigationProps {
         gear?: string;
         mythic?: string;
         raids?: string;
+        pvp?: string;
     };
 }
 
@@ -18,6 +19,7 @@ export default function TabNavigation({ activeTab, setActiveTab, badges }: TabNa
         { id: 'gear', label: 'Gear', badge: badges?.gear },
         { id: 'mythic', label: 'M+ Dungeons', badge: badges?.mythic },
         { id: 'raids', label: 'Raids', badge: badges?.raids },
+        { id: 'pvp', label: 'PvP', badge: badges?.pvp },
     ];
 
     return (

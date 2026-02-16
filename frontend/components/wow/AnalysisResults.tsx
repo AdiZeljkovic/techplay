@@ -9,6 +9,7 @@ import OverviewTab from './OverviewTab';
 import EquipmentView from './EquipmentView';
 import MythicPlusStats from './MythicPlusStats';
 import RaidProgress from './RaidProgress';
+import PvPStats from './PvPStats';
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -25,10 +26,17 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
     const [activeTab, setActiveTab] = useState<WowTabId>('overview');
 
     // Calculate tab badges
+    const pvpHighest = Math.max(
+        data.pvp?.arena_2v2 || 0,
+        data.pvp?.arena_3v3 || 0,
+        data.pvp?.rbg_rating || 0
+    );
+
     const badges = {
         gear: data.equipment?.item_level ? `${data.equipment.item_level}` : undefined,
         mythic: data.mythic_plus?.score ? `${data.mythic_plus.score}` : undefined,
         raids: data.raids?.summary || undefined,
+        pvp: pvpHighest > 0 ? `${pvpHighest}` : undefined,
     };
 
     return (
@@ -57,12 +65,14 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
                                 equipment: data.equipment,
                                 mythic_plus: data.mythic_plus,
                                 raids: data.raids,
+                                reputations: data.reputations,
                             }}
                         />
                     )}
                     {activeTab === 'gear' && <EquipmentView equipment={data.equipment} />}
                     {activeTab === 'mythic' && <MythicPlusStats mythicPlus={data.mythic_plus} />}
                     {activeTab === 'raids' && <RaidProgress raids={data.raids} />}
+                    {activeTab === 'pvp' && <PvPStats pvp={data.pvp} />}
                 </motion.div>
             </AnimatePresence>
         </div>

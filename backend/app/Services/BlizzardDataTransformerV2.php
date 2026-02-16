@@ -277,9 +277,138 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
     }
 
     /**
+     * Transform PvP summary data
+     *
+     * @param array|null $pvp Raw pvp-summary API response
+     * @return array Arena ratings, Honor level, seasonal ranking
+     */
+    public function transformPvP(?array $pvp): array
+    {
+        if (!$pvp) {
+            return [
+                'honor_level' => 0,
+                'arena_2v2' => null,
+                'arena_3v3' => null,
+                'rbg_rating' => null,
+            ];
+        }
+
+        $honorLevel = $pvp['honor_level'] ?? 0;
+
+        // Extract bracket ratings (2v2, 3v3, RBG)
+        $brackets = $pvp['pvp_brackets'] ?? [];
+        $arena2v2 = null;
+        $arena3v3 = null;
+        $rbg = null;
+
+        foreach ($brackets as $bracket) {
+            $type = $bracket['bracket']['type'] ?? '';
+            $rating = $bracket['rating'] ?? 0;
+
+            if ($type === 'ARENA_2v2') {
+                $arena2v2 = $rating;
+            } elseif ($type === 'ARENA_3v3') {
+                $arena3v3 = $rating;
+            } elseif ($type === 'BATTLEGROUNDS') {
+                $rbg = $rating;
+            }
+        }
+
+        return [
+            'honor_level' => $honorLevel,
+            'arena_2v2' => $arena2v2,
+            'arena_3v3' => $arena3v3,
+            'rbg_rating' => $rbg,
+        ];
+    }
+
+    /**
+     * Transform reputations data
+     *
+     * @param array|null $reps Raw reputations API response
+     * @return array Quel'Thalas factions (Midnight critical), exalted count
+     */
+    public function transformReputations(?array $reps): array
+    {
+        if (!$reps || !isset($reps['reputations'])) {
+            return [
+                'exalted_count' => 0,
+                'midnight_factions' => [],
+                'top_factions' => [],
+            ];
+        }
+
+        // Midnight-critical Quel'Thalas factions
+        $midnightFactionNames = [
+            'Sunreaver Onslaught',
+            'The Silver Covenant',
+            'The Sunreavers',
+            'Kirin Tor',
+            'The Kirin Tor',
+            'Shado-Pan',
+        ];
+
+        $exaltedCount = 0;
+        $midnightFactions = [];
+        $topFactions = [];
+
+        foreach ($reps['reputations'] as $rep) {
+            $factionName = $rep['faction']['name'] ?? 'Unknown';
+            $standing = $rep['standing']['name'] ?? 'Neutral';
+            $raw = $rep['standing']['raw'] ?? 0;
+            $max = $rep['standing']['max'] ?? 1;
+            $tier = $rep['standing']['tier'] ?? 0; // 0=Hated, 1=Hostile, 2=Unfriendly, 3=Neutral, 4=Friendly, 5=Honored, 6=Revered, 7=Exalted
+
+            if ($tier === 7) { // Exalted
+                $exaltedCount++;
+            }
+
+            // Check if Midnight-critical faction
+            $isMidnightFaction = false;
+            foreach ($midnightFactionNames as $midnightFaction) {
+                if (str_contains($factionName, $midnightFaction)) {
+                    $isMidnightFaction = true;
+                    break;
+                }
+            }
+
+            if ($isMidnightFaction) {
+                $midnightFactions[] = [
+                    'name' => $factionName,
+                    'standing' => $standing,
+                    'tier' => $tier, // 0-7
+                    'progress' => [
+                        'current' => $raw,
+                        'max' => $max,
+                    ],
+                ];
+            }
+
+            // Track top 5 highest reps (for display)
+            if ($tier >= 5) { // Honored or higher
+                $topFactions[] = [
+                    'name' => $factionName,
+                    'standing' => $standing,
+                    'tier' => $tier,
+                ];
+            }
+        }
+
+        // Sort top factions by tier desc
+        usort($topFactions, fn($a, $b) => $b['tier'] <=> $a['tier']);
+        $topFactions = array_slice($topFactions, 0, 5);
+
+        return [
+            'exalted_count' => $exaltedCount,
+            'midnight_factions' => $midnightFactions,
+            'top_factions' => $topFactions,
+        ];
+    }
+
+    /**
      * Build comprehensive analysis payload (V2)
      *
-     * Extends V1 payload with equipment, M+, raids data
+     * Extends V1 payload with equipment, M+, raids, PvP, reputations data
      */
     public function buildComprehensivePayload(
         array $profile,
@@ -287,7 +416,9 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
         array $mounts,
         ?array $equipment,
         ?array $mythic,
-        ?array $raids
+        ?array $raids,
+        ?array $pvp = null,
+        ?array $reputations = null
     ): array {
         // Get V1 base payload (Midnight readiness)
         $basePayload = $this->buildAnalysisPayload($profile, $achievements, $mounts);
@@ -296,11 +427,15 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
         $equipmentData = $this->transformEquipment($equipment);
         $mythicData = $this->transformMythicPlus($mythic);
         $raidsData = $this->transformRaids($raids);
+        $pvpData = $this->transformPvP($pvp);
+        $repsData = $this->transformReputations($reputations);
 
         return array_merge($basePayload, [
             'equipment' => $equipmentData,
             'mythic_plus' => $mythicData,
             'raids' => $raidsData,
+            'pvp' => $pvpData,
+            'reputations' => $repsData,
         ]);
     }
 

@@ -318,6 +318,72 @@ class BlizzardService
     }
 
     /**
+     * Get character PvP summary (Arena/RBG ratings, Honor level)
+     * API: /profile/wow/character/{realmSlug}/{characterName}/pvp-summary
+     */
+    public function getCharacterPvPSummary(string $region, string $realmSlug, string $characterName): ?array
+    {
+        $token = $this->getAccessToken($region);
+        $baseUrl = $this->regionUrls[$region] ?? $this->regionUrls['us'];
+        $namespace = "profile-{$region}";
+
+        try {
+            $response = $this->http(20)
+                ->withToken($token)
+                ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/pvp-summary", [
+                    'namespace' => $namespace,
+                    'locale' => 'en_US',
+                ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::warning('Blizzard PvP Summary API returned non-200', [
+                'status' => $response->status(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Blizzard PvP Summary Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Get character reputations (all faction standings)
+     * API: /profile/wow/character/{realmSlug}/{characterName}/reputations
+     */
+    public function getCharacterReputations(string $region, string $realmSlug, string $characterName): ?array
+    {
+        $token = $this->getAccessToken($region);
+        $baseUrl = $this->regionUrls[$region] ?? $this->regionUrls['us'];
+        $namespace = "profile-{$region}";
+
+        try {
+            $response = $this->http(20)
+                ->withToken($token)
+                ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/reputations", [
+                    'namespace' => $namespace,
+                    'locale' => 'en_US',
+                ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::warning('Blizzard Reputations API returned non-200', [
+                'status' => $response->status(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Blizzard Reputations Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Fetch all character data in parallel using Http::pool()
      * Performance: ~1-2s vs 4-8s sequential
      *
@@ -377,6 +443,16 @@ class BlizzardService
                         ->withToken($token)
                         ->timeout(30)
                         ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/encounters/raids", $baseParams),
+
+                    'pvp' => $pool->as('pvp')
+                        ->withToken($token)
+                        ->timeout(30)
+                        ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/pvp-summary", $baseParams),
+
+                    'reputations' => $pool->as('reputations')
+                        ->withToken($token)
+                        ->timeout(30)
+                        ->get("{$baseUrl}/profile/wow/character/{$realmSlug}/{$characterName}/reputations", $baseParams),
                 ];
             });
 
@@ -389,6 +465,8 @@ class BlizzardService
                 'equipment' => $responses['equipment']->successful() ? $responses['equipment']->json() : null,
                 'mythic' => $responses['mythic']->successful() ? $responses['mythic']->json() : null,
                 'raids' => $responses['raids']->successful() ? $responses['raids']->json() : null,
+                'pvp' => $responses['pvp']->successful() ? $responses['pvp']->json() : null,
+                'reputations' => $responses['reputations']->successful() ? $responses['reputations']->json() : null,
             ];
         } catch (\Exception $e) {
             Log::error('Blizzard Parallel Fetch Exception: ' . $e->getMessage(), [
@@ -406,6 +484,8 @@ class BlizzardService
                 'equipment' => null,
                 'mythic' => null,
                 'raids' => null,
+                'pvp' => null,
+                'reputations' => null,
             ];
         }
     }

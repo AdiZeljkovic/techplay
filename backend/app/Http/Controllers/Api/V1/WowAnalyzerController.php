@@ -7,6 +7,7 @@ use App\Models\WowAnalysis;
 use App\Services\BlizzardService;
 use App\Services\BlizzardDataTransformer;
 use App\Services\BlizzardDataTransformerV2;
+use App\Services\RaiderIOService;
 use App\Services\GroqService;
 use App\Services\CacheService;
 use App\Traits\ApiResponse;
@@ -20,15 +21,18 @@ class WowAnalyzerController extends Controller
 
     protected BlizzardService $blizzardService;
     protected BlizzardDataTransformerV2 $transformer;
+    protected RaiderIOService $rioService;
     protected GroqService $aiService;
 
     public function __construct(
         BlizzardService $blizzardService,
         BlizzardDataTransformerV2 $transformer,
+        RaiderIOService $rioService,
         GroqService $aiService
     ) {
         $this->blizzardService = $blizzardService;
         $this->transformer = $transformer;
+        $this->rioService = $rioService;
         $this->aiService = $aiService;
     }
 
@@ -76,24 +80,30 @@ class WowAnalyzerController extends Controller
                 }
             }
 
-            // Step 2: Transform data (V2 with equipment/M+/raids)
+            // Step 2: Fetch Raider.IO data (real M+ score)
+            $rioData = $this->rioService->getCharacterMythicPlusProfile($region, $realmSlug, $characterName);
+            $rioTransformed = $this->rioService->transformMythicPlusData($rioData);
+
+            // Step 3: Transform data (V2 with equipment/M+/raids/PvP/reps)
             $payload = $this->transformer->buildComprehensivePayload(
                 $data['profile'],
                 $data['achievements'] ?? [],
                 $data['mounts'] ?? [],
                 $data['equipment'],
                 $data['mythic'],
-                $data['raids']
+                $data['raids'],
+                $data['pvp'],
+                $data['reputations']
             );
 
-            // Step 3: Call AI API (Groq - Llama 3.3 70B)
+            // Step 4: Call AI API (Groq - Llama 3.3 70B)
             $analysis = $this->aiService->analyzeCharacterReadiness($payload);
 
             if (!$analysis) {
                 return $this->error('AI analysis failed. Please try again later.', 503);
             }
 
-            // Step 4: Store in database (with new columns)
+            // Step 5: Store in database (with ALL new columns)
             $wowAnalysis = WowAnalysis::updateOrCreate(
                 [
                     'region' => $region,
@@ -132,10 +142,27 @@ class WowAnalyzerController extends Controller
                     'raid_tier_name' => $payload['raids']['current_tier'] ?? null,
                     'raid_progress' => $payload['raids']['summary'] ?? null,
                     'raid_kills' => $payload['raids']['bosses'] ?? null,
+
+                    // PvP
+                    'honor_level' => $payload['pvp']['honor_level'] ?? null,
+                    'arena_2v2' => $payload['pvp']['arena_2v2'] ?? null,
+                    'arena_3v3' => $payload['pvp']['arena_3v3'] ?? null,
+                    'rbg_rating' => $payload['pvp']['rbg_rating'] ?? null,
+
+                    // Reputations (Midnight critical)
+                    'exalted_reps' => $payload['reputations']['exalted_count'] ?? 0,
+                    'midnight_factions' => $payload['reputations']['midnight_factions'] ?? null,
+
+                    // Raider.IO Integration
+                    'rio_score' => $rioTransformed['rio_score'] ?? null,
+                    'rio_color' => $rioTransformed['rio_color'] ?? null,
+                    'world_rank' => $rioTransformed['world_rank'] ?? null,
+                    'region_rank' => $rioTransformed['region_rank'] ?? null,
+                    'realm_rank' => $rioTransformed['realm_rank'] ?? null,
                 ]
             );
 
-            // Step 5: Return comprehensive response (with new data for tabs)
+            // Step 6: Return comprehensive response (with ALL new data for tabs)
             return $this->success([
                 'id' => $wowAnalysis->id,
                 'character' => [
@@ -153,11 +180,26 @@ class WowAnalyzerController extends Controller
                 // Equipment tab
                 'equipment' => $payload['equipment'] ?? null,
 
-                // Mythic+ tab
-                'mythic_plus' => $payload['mythic_plus'] ?? null,
+                // Mythic+ tab (with Raider.IO integration)
+                'mythic_plus' => array_merge(
+                    $payload['mythic_plus'] ?? [],
+                    [
+                        'rio_score' => $rioTransformed['rio_score'],
+                        'rio_color' => $rioTransformed['rio_color'],
+                        'world_rank' => $rioTransformed['world_rank'],
+                        'region_rank' => $rioTransformed['region_rank'],
+                        'realm_rank' => $rioTransformed['realm_rank'],
+                    ]
+                ),
 
                 // Raids tab
                 'raids' => $payload['raids'] ?? null,
+
+                // PvP tab
+                'pvp' => $payload['pvp'] ?? null,
+
+                // Reputations (for Overview tab - Midnight critical)
+                'reputations' => $payload['reputations'] ?? null,
             ], 'Analysis completed successfully');
         });
     }

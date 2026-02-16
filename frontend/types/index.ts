@@ -260,12 +260,52 @@ export interface WowRaidProgress {
     summary: string; // "7/8M, 8/8H"
 }
 
+// PvP Types
+export interface WowPvP {
+    honor_level: number;
+    arena_2v2: number | null;
+    arena_3v3: number | null;
+    rbg_rating: number | null;
+}
+
+// Reputation Types
+export interface MidnightFaction {
+    name: string;
+    standing: string; // "Neutral", "Friendly", "Honored", "Revered", "Exalted"
+    tier: number; // 0-7
+    progress: {
+        current: number;
+        max: number;
+    };
+}
+
+export interface WowReputations {
+    exalted_count: number;
+    midnight_factions: MidnightFaction[];
+    top_factions: Array<{
+        name: string;
+        standing: string;
+        tier: number;
+    }>;
+}
+
+// Raider.IO Data (embedded in mythic_plus)
+export interface RaiderIOData {
+    rio_score: number | null;
+    rio_color: string | null;
+    world_rank: number | null;
+    region_rank: number | null;
+    realm_rank: number | null;
+}
+
 // Comprehensive Analysis Result (extends base)
 export interface ComprehensiveWowAnalysis extends WowAnalysisResult {
     equipment: WowEquipment | null;
-    mythic_plus: WowMythicPlus | null;
+    mythic_plus: (WowMythicPlus & Partial<RaiderIOData>) | null;
     raids: WowRaidProgress | null;
+    pvp: WowPvP | null;
+    reputations: WowReputations | null;
 }
 
 // Tab navigation type
-export type WowTabId = 'overview' | 'gear' | 'mythic' | 'raids';
+export type WowTabId = 'overview' | 'gear' | 'mythic' | 'raids' | 'pvp';

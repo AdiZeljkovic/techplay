@@ -8,6 +8,8 @@ const fadeInUp = {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
+import { MidnightFaction } from '@/types';
+
 interface OverviewTabProps {
     data: {
         readiness_score: number;
@@ -24,6 +26,9 @@ interface OverviewTabProps {
         } | null;
         raids?: {
             summary: string;
+        } | null;
+        reputations?: {
+            midnight_factions: MidnightFaction[];
         } | null;
     };
 }
@@ -99,6 +104,52 @@ export default function OverviewTab({ data }: OverviewTabProps) {
                 </div>
 
                 <div className="space-y-4">
+                    {/* CRITICAL: Midnight Factions (Housing Access!) */}
+                    {data.reputations?.midnight_factions && data.reputations.midnight_factions.some(f => f.tier < 7) && (
+                        <div className="p-5 rounded-xl bg-red-500/10 border-2 border-red-500/30 animate-pulse">
+                            <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/30 flex items-center justify-center">
+                                    <AlertCircle className="w-5 h-5 text-red-400" />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <h4 className="font-bold text-red-400 uppercase text-sm">CRITICAL: Midnight Housing</h4>
+                                        <span className="px-2 py-0.5 text-xs rounded-full bg-red-500/30 text-red-300 font-semibold">
+                                            REQUIRED FOR MIDNIGHT!
+                                        </span>
+                                    </div>
+                                    <p className="text-[var(--text-primary)] font-semibold mb-3">
+                                        Quel'Thalas Reputation Required
+                                    </p>
+                                    {data.reputations.midnight_factions.filter(f => f.tier < 7).map((faction, idx) => (
+                                        <div key={idx} className="mb-2 last:mb-0">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <span className="text-sm font-semibold text-[var(--text-primary)]">
+                                                    {faction.name}
+                                                </span>
+                                                <span className="text-xs text-red-400 font-semibold">
+                                                    {faction.standing} ({faction.tier}/7)
+                                                </span>
+                                            </div>
+                                            <div className="w-full bg-[var(--bg-secondary)] rounded-full h-1.5">
+                                                <div
+                                                    className="bg-red-500 h-1.5 rounded-full transition-all duration-300"
+                                                    style={{ width: `${(faction.progress.current / faction.progress.max) * 100}%` }}
+                                                />
+                                            </div>
+                                            <p className="text-xs text-[var(--text-secondary)] mt-1">
+                                                {faction.progress.max - faction.progress.current} rep to {faction.tier === 6 ? 'Exalted' : 'next level'}
+                                            </p>
+                                        </div>
+                                    ))}
+                                    <p className="text-xs text-red-300 mt-3 font-semibold">
+                                        💡 Exalted with Quel'Thalas factions is REQUIRED for Midnight housing access!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Critical: Equipment Optimization */}
                     {data.equipment && (data.equipment.missing_enchants.length > 0 || data.equipment.missing_gems.length > 0) && (
                         <div className="p-5 rounded-xl bg-red-500/5 border border-red-500/20">
