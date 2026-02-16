@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Shield, Search, Sparkles, Swords, Zap } from "lucide-react";
+import { Shield, Search, Sparkles, Swords, Zap, Brain, Clock, Home, Target, Trophy, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import RealmDropdown from "@/components/wow/RealmDropdown";
 import AnalysisResults from "@/components/wow/AnalysisResults";
@@ -249,6 +249,112 @@ export default function WowAnalyzerClient() {
                     </motion.div>
                 </div>
             </motion.div>
+
+            {/* FEATURES SECTION */}
+            <div className="container mx-auto px-4 py-16 max-w-6xl">
+                <motion.div
+                    className="text-center mb-12"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                >
+                    <h2 className="text-3xl md:text-4xl font-black uppercase mb-4" style={{
+                        background: MidnightTheme.gradients.voidToLight,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        filter: `drop-shadow(0 0 15px ${MidnightTheme.void.primary}60)`
+                    }}>
+                        Your Midnight Arsenal
+                    </h2>
+                    <p className="text-lg" style={{ color: MidnightTheme.text.muted }}>
+                        Everything you need to dominate the expansion
+                    </p>
+                </motion.div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {[
+                        {
+                            icon: Brain,
+                            title: "AI-Powered Analysis",
+                            description: "Deep learning algorithms analyze your character's strengths, weaknesses, and readiness",
+                            color: MidnightTheme.void.primary,
+                            delay: 0.3
+                        },
+                        {
+                            icon: Clock,
+                            title: "Live Timeline Tracker",
+                            description: "Real-time countdown with urgency-based alerts for limited-time content",
+                            color: MidnightTheme.urgency.warning,
+                            delay: 0.4
+                        },
+                        {
+                            icon: Home,
+                            title: "Housing Readiness",
+                            description: "Score your mount collection, achievements, and decoration potential",
+                            color: MidnightTheme.light.primary,
+                            delay: 0.5
+                        },
+                        {
+                            icon: Target,
+                            title: "Priority Tasks",
+                            description: "Daily action plan with highest-impact activities ranked by AI",
+                            color: MidnightTheme.bloodElf.crimson,
+                            delay: 0.6
+                        }
+                    ].map((feature, index) => (
+                        <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: feature.delay }}
+                            whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                            style={{
+                                ...glassCard,
+                                border: `2px solid ${feature.color}40`,
+                                boxShadow: `0 0 30px ${feature.color}20, inset 0 0 20px ${feature.color}10`,
+                                padding: '2rem'
+                            }}
+                        >
+                            <motion.div
+                                className="mb-4"
+                                animate={{
+                                    boxShadow: [
+                                        `0 0 20px ${feature.color}40`,
+                                        `0 0 40px ${feature.color}60`,
+                                        `0 0 20px ${feature.color}40`
+                                    ]
+                                }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                style={{
+                                    width: '64px',
+                                    height: '64px',
+                                    background: `radial-gradient(circle, ${feature.color}40, transparent)`,
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    margin: '0 auto'
+                                }}
+                            >
+                                <feature.icon className="w-8 h-8" style={{ color: feature.color }} />
+                            </motion.div>
+
+                            <h3 className="text-lg font-bold mb-2 text-center" style={{
+                                color: MidnightTheme.text.bright,
+                                textShadow: `0 0 10px ${feature.color}60`
+                            }}>
+                                {feature.title}
+                            </h3>
+
+                            <p className="text-sm text-center leading-relaxed" style={{
+                                color: MidnightTheme.text.muted
+                            }}>
+                                {feature.description}
+                            </p>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
 
             <div className="container mx-auto px-4 py-12 max-w-4xl">
                 {/* Midnight Glass Card */}
@@ -649,6 +755,144 @@ export default function WowAnalyzerClient() {
                 {/* Results */}
                 {result && <AnalysisResults data={result} />}
             </div>
+
+            {/* HOW IT WORKS SECTION */}
+            {!result && (
+                <div className="container mx-auto px-4 py-20 max-w-6xl">
+                    <motion.div
+                        className="text-center mb-16"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.8 }}
+                    >
+                        <h2 className="text-4xl md:text-5xl font-black uppercase mb-4" style={{
+                            background: MidnightTheme.gradients.voidToLight,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            filter: `drop-shadow(0 0 20px ${MidnightTheme.void.primary}60)`
+                        }}>
+                            How It Works
+                        </h2>
+                        <p className="text-lg" style={{ color: MidnightTheme.text.muted }}>
+                            Three simple steps to Midnight mastery
+                        </p>
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {[
+                            {
+                                step: "01",
+                                icon: Search,
+                                title: "Enter Character",
+                                description: "Submit your character name, realm, and region to connect with Blizzard's official API",
+                                gradient: MidnightTheme.gradients.voidHorizontal
+                            },
+                            {
+                                step: "02",
+                                icon: Brain,
+                                title: "AI Analysis",
+                                description: "Our AI processes your achievements, mounts, titles, and progress to generate a comprehensive readiness score",
+                                gradient: `linear-gradient(to right, ${MidnightTheme.void.primary}, ${MidnightTheme.light.primary})`
+                            },
+                            {
+                                step: "03",
+                                icon: Trophy,
+                                title: "Get Results",
+                                description: "Receive personalized recommendations, daily priorities, and housing preparation guidance",
+                                gradient: MidnightTheme.gradients.lightHorizontal
+                            }
+                        ].map((item, index) => (
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, x: -50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.6, delay: 0.2 + (index * 0.2) }}
+                                className="relative"
+                            >
+                                {/* Step Number */}
+                                <div className="absolute -top-4 -left-4 text-8xl font-black opacity-10" style={{
+                                    background: item.gradient,
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent'
+                                }}>
+                                    {item.step}
+                                </div>
+
+                                <motion.div
+                                    whileHover={{ scale: 1.05, y: -10 }}
+                                    style={{
+                                        ...glassCard,
+                                        border: `2px solid ${MidnightTheme.void.primary}30`,
+                                        boxShadow: `0 0 40px ${MidnightTheme.void.primary}20`,
+                                        padding: '2.5rem',
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}
+                                >
+                                    {/* Animated Background Gradient */}
+                                    <motion.div
+                                        className="absolute inset-0 opacity-10"
+                                        animate={{
+                                            background: [
+                                                `radial-gradient(circle at 0% 0%, ${MidnightTheme.void.primary}40, transparent 70%)`,
+                                                `radial-gradient(circle at 100% 100%, ${MidnightTheme.light.primary}40, transparent 70%)`,
+                                                `radial-gradient(circle at 0% 0%, ${MidnightTheme.void.primary}40, transparent 70%)`
+                                            ]
+                                        }}
+                                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                                    />
+
+                                    {/* Icon */}
+                                    <motion.div
+                                        className="mb-6 relative"
+                                        animate={{ rotate: [0, 5, -5, 0] }}
+                                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                                    >
+                                        <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center" style={{
+                                            background: item.gradient,
+                                            boxShadow: `0 0 30px ${MidnightTheme.void.primary}60`
+                                        }}>
+                                            <item.icon className="w-10 h-10" style={{ color: MidnightTheme.text.bright }} />
+                                        </div>
+                                    </motion.div>
+
+                                    <h3 className="text-2xl font-bold mb-3 text-center relative" style={{
+                                        background: item.gradient,
+                                        WebkitBackgroundClip: 'text',
+                                        WebkitTextFillColor: 'transparent'
+                                    }}>
+                                        {item.title}
+                                    </h3>
+
+                                    <p className="text-center leading-relaxed relative" style={{
+                                        color: MidnightTheme.text.muted
+                                    }}>
+                                        {item.description}
+                                    </p>
+                                </motion.div>
+
+                                {/* Connector Arrow (except last) */}
+                                {index < 2 && (
+                                    <motion.div
+                                        className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10"
+                                        animate={{ x: [0, 8, 0] }}
+                                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                    >
+                                        <div className="w-8 h-8 flex items-center justify-center" style={{
+                                            color: MidnightTheme.void.primary,
+                                            filter: `drop-shadow(0 0 8px ${MidnightTheme.void.primary})`
+                                        }}>
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            </svg>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Leaderboard Section */}
             <div className="container mx-auto px-4 mt-16">

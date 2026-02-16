@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Trophy, Crown, Sword, Shield, ChevronDown } from "lucide-react";
 import axios from "@/lib/axios";
 import { getClassColor, getFactionTheme } from "@/data/wow-theme";
+import { MidnightTheme, glassCard } from "@/lib/wow-midnight-theme";
 import Link from "next/link";
 
 interface LeaderboardEntry {
@@ -95,153 +96,264 @@ export default function WowLeaderboard({ initialLimit = 10 }: WowLeaderboardProp
     };
 
     return (
-        <div className="relative">
-            {/* WoW Quest Header - Stone Frame */}
-            <div
-                className="relative mb-6 p-6 rounded-xl overflow-hidden"
+        <motion.div
+            className="relative"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+        >
+            {/* Midnight Glass Header */}
+            <motion.div
+                className="relative mb-6 p-8 rounded-xl overflow-hidden"
                 style={{
-                    background: 'linear-gradient(135deg, #2a1810 0%, #1a0f08 100%)',
-                    border: '10px solid',
-                    borderImage: 'linear-gradient(135deg, #5D4037, #3E2723) 1',
-                    boxShadow: 'inset 0 0 40px rgba(0,0,0,0.7), 0 8px 20px rgba(0,0,0,0.6)',
+                    ...glassCard,
+                    border: `2px solid ${MidnightTheme.void.primary}40`,
+                    boxShadow: `
+                        0 0 50px ${MidnightTheme.void.primary}30,
+                        inset 0 0 50px ${MidnightTheme.void.primary}10
+                    `
                 }}
             >
-                {/* Decorative Metal Corners */}
+                {/* Animated Background Glow */}
+                <motion.div
+                    className="absolute inset-0 opacity-20 pointer-events-none"
+                    animate={{
+                        background: [
+                            `radial-gradient(circle at 30% 50%, ${MidnightTheme.void.primary}40, transparent 70%)`,
+                            `radial-gradient(circle at 70% 50%, ${MidnightTheme.light.primary}40, transparent 70%)`,
+                            `radial-gradient(circle at 30% 50%, ${MidnightTheme.void.primary}40, transparent 70%)`
+                        ]
+                    }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                />
+
+                {/* Void Corner Accents */}
                 {[0, 1, 2, 3].map((corner) => (
-                    <div
+                    <motion.div
                         key={corner}
-                        className="absolute w-6 h-6 rounded-full"
+                        className="absolute w-3 h-3"
+                        animate={{
+                            boxShadow: [
+                                `0 0 10px ${MidnightTheme.void.primary}60`,
+                                `0 0 20px ${MidnightTheme.light.primary}60`,
+                                `0 0 10px ${MidnightTheme.void.primary}60`
+                            ]
+                        }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                         style={{
-                            background: 'radial-gradient(circle, #8B7355 0%, #5D4037 100%)',
-                            boxShadow: 'inset 1px 1px 3px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.5)',
-                            top: corner < 2 ? '8px' : 'auto',
-                            bottom: corner >= 2 ? '8px' : 'auto',
-                            left: corner % 2 === 0 ? '8px' : 'auto',
-                            right: corner % 2 === 1 ? '8px' : 'auto',
+                            background: MidnightTheme.gradients.voidToLight,
+                            transform: 'rotate(45deg)',
+                            top: corner < 2 ? '12px' : 'auto',
+                            bottom: corner >= 2 ? '12px' : 'auto',
+                            left: corner % 2 === 0 ? '12px' : 'auto',
+                            right: corner % 2 === 1 ? '12px' : 'auto',
                         }}
                     />
                 ))}
 
                 {/* Title */}
-                <div className="text-center mb-6">
+                <div className="text-center mb-8 relative">
+                    <motion.div
+                        className="inline-block mb-4"
+                        animate={{ rotate: [0, 5, -5, 0] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                        <Trophy className="w-12 h-12" style={{
+                            color: MidnightTheme.light.primary,
+                            filter: `drop-shadow(0 0 15px ${MidnightTheme.light.primary})`
+                        }} />
+                    </motion.div>
+
                     <h2
-                        className="text-4xl font-bold uppercase tracking-wider mb-2"
+                        className="text-4xl md:text-5xl font-black uppercase tracking-wider mb-3"
                         style={{
-                            color: '#FFD700',
-                            textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(255,215,0,0.5)',
-                            fontFamily: 'serif',
+                            background: MidnightTheme.gradients.voidToLight,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            filter: `drop-shadow(0 0 20px ${MidnightTheme.void.primary}60)`
                         }}
                     >
-                        <Trophy className="w-8 h-8 inline mr-3 mb-1" />
                         Hall of Champions
                     </h2>
-                    <p className="text-base italic" style={{ color: '#C9B388', fontFamily: 'serif' }}>
+                    <p className="text-base" style={{
+                        color: MidnightTheme.text.muted,
+                        textShadow: `0 0 10px ${MidnightTheme.void.primary}40`
+                    }}>
                         The mightiest heroes prepared for Midnight's arrival
                     </p>
                 </div>
 
-                {/* Filters - Quest Objective Style */}
-                <div className="flex gap-4 justify-center flex-wrap mb-4">
+                {/* Midnight Filters */}
+                <div className="flex gap-4 justify-center flex-wrap relative">
                     {/* Region Filter */}
                     <div className="flex gap-2">
                         {['us', 'eu', 'kr', 'tw'].map((region) => (
-                            <button
+                            <motion.button
                                 key={region}
                                 onClick={() => setRegionFilter(regionFilter === region ? null : region)}
-                                className="px-4 py-2 rounded-lg uppercase font-bold text-sm transition-all"
+                                className="px-5 py-2.5 rounded-lg uppercase font-bold text-sm transition-all"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                                 style={{
+                                    ...glassCard,
                                     background: regionFilter === region
-                                        ? 'linear-gradient(135deg, #8B7355 0%, #6B5345 100%)'
-                                        : 'linear-gradient(135deg, #2a1810 0%, #1a0f08 100%)',
-                                    border: '2px solid #8B7355',
-                                    color: regionFilter === region ? '#FFD700' : '#C9B388',
+                                        ? `linear-gradient(135deg, ${MidnightTheme.void.primary}60, ${MidnightTheme.void.deep}60)`
+                                        : glassCard.background,
+                                    border: `2px solid ${regionFilter === region ? MidnightTheme.void.primary : 'rgba(255,255,255,0.1)'}`,
+                                    color: regionFilter === region ? MidnightTheme.text.bright : MidnightTheme.text.muted,
                                     boxShadow: regionFilter === region
-                                        ? 'inset 1px 1px 3px rgba(0,0,0,0.6), 0 0 10px rgba(139,115,85,0.4)'
-                                        : 'inset 1px 1px 2px rgba(255,255,255,0.1)',
+                                        ? `0 0 25px ${MidnightTheme.void.primary}60, inset 0 0 15px ${MidnightTheme.void.primary}30`
+                                        : `0 0 10px ${MidnightTheme.void.primary}20`,
+                                    textShadow: regionFilter === region ? `0 0 10px ${MidnightTheme.void.primary}60` : 'none'
                                 }}
                             >
                                 {region}
-                            </button>
+                            </motion.button>
                         ))}
                     </div>
 
                     {/* Faction Filter */}
                     <div className="flex gap-2">
                         {['Alliance', 'Horde'].map((faction) => (
-                            <button
+                            <motion.button
                                 key={faction}
                                 onClick={() => setFactionFilter(factionFilter === faction ? null : faction)}
-                                className="px-4 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2"
+                                className="px-5 py-2.5 rounded-lg font-bold text-sm transition-all flex items-center gap-2"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                                 style={{
+                                    ...glassCard,
                                     background: factionFilter === faction
                                         ? faction === 'Alliance'
-                                            ? 'linear-gradient(135deg, #0078FF 0%, #0052CC 100%)'
-                                            : 'linear-gradient(135deg, #B30000 0%, #8B0000 100%)'
-                                        : 'linear-gradient(135deg, #2a1810 0%, #1a0f08 100%)',
-                                    border: '2px solid #8B7355',
-                                    color: factionFilter === faction ? '#FFF' : '#C9B388',
+                                            ? `linear-gradient(135deg, rgba(0, 112, 221, 0.6), rgba(0, 82, 204, 0.6))`
+                                            : `linear-gradient(135deg, rgba(220, 20, 60, 0.6), rgba(139, 0, 0, 0.6))`
+                                        : glassCard.background,
+                                    border: `2px solid ${factionFilter === faction
+                                        ? (faction === 'Alliance' ? '#0070DD' : '#DC143C')
+                                        : 'rgba(255,255,255,0.1)'}`,
+                                    color: factionFilter === faction ? MidnightTheme.text.bright : MidnightTheme.text.muted,
                                     boxShadow: factionFilter === faction
-                                        ? '0 0 15px rgba(139,115,85,0.6)'
-                                        : 'none',
+                                        ? `0 0 25px ${faction === 'Alliance' ? 'rgba(0,112,221,0.6)' : 'rgba(220,20,60,0.6)'}`
+                                        : `0 0 10px ${MidnightTheme.void.primary}20`,
                                 }}
                             >
-                                {faction === 'Alliance' ? '🛡️' : '⚔️'} {faction}
-                            </button>
+                                {faction === 'Alliance' ? <Shield className="w-4 h-4" /> : <Sword className="w-4 h-4" />}
+                                {faction}
+                            </motion.button>
                         ))}
                     </div>
                 </div>
-            </div>
+            </motion.div>
 
-            {/* Leaderboard Entries - Parchment Scroll */}
-            <div className="space-y-3">
+            {/* Leaderboard Entries - Midnight Glass Cards */}
+            <div className="space-y-4">
                 {loading ? (
-                    <div className="text-center py-12">
-                        <div className="animate-spin w-12 h-12 border-4 border-[#8B7355] border-t-[#FFD700] rounded-full mx-auto" />
-                        <p className="mt-4 text-[#C9B388] italic">Loading champions...</p>
-                    </div>
+                    <motion.div
+                        className="text-center py-16"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                    >
+                        <motion.div
+                            className="w-16 h-16 border-4 rounded-full mx-auto"
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            style={{
+                                borderColor: `${MidnightTheme.void.primary} transparent ${MidnightTheme.light.primary} transparent`,
+                                filter: `drop-shadow(0 0 10px ${MidnightTheme.void.primary})`
+                            }}
+                        />
+                        <p className="mt-6" style={{ color: MidnightTheme.text.muted }}>Loading champions...</p>
+                    </motion.div>
                 ) : leaderboard.length === 0 ? (
-                    <div className="text-center py-12">
-                        <Shield className="w-16 h-16 mx-auto mb-4 text-[#8B7355] opacity-30" />
-                        <p className="text-[#C9B388] italic">No champions found with these filters</p>
-                    </div>
+                    <motion.div
+                        className="text-center py-16"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        style={{
+                            ...glassCard,
+                            padding: '3rem'
+                        }}
+                    >
+                        <Shield className="w-20 h-20 mx-auto mb-4 opacity-20" style={{ color: MidnightTheme.void.primary }} />
+                        <p style={{ color: MidnightTheme.text.muted }}>No champions found with these filters</p>
+                    </motion.div>
                 ) : (
                     leaderboard.map((entry, index) => {
                         const rank = index + 1;
                         const classColor = getClassColor(entry.class);
                         const factionTheme = getFactionTheme(entry.faction);
 
+                        const rankColor = rank === 1 ? MidnightTheme.light.primary :
+                                           rank === 2 ? '#C0C0C0' :
+                                           rank === 3 ? '#CD7F32' :
+                                           MidnightTheme.void.primary;
+
                         return (
                             <motion.div
                                 key={entry.id}
-                                initial={{ opacity: 0, x: -20 }}
+                                initial={{ opacity: 0, x: -30 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.05 }}
+                                transition={{ delay: index * 0.06, type: "spring" }}
+                                whileHover={{ scale: 1.02, y: -4 }}
                                 className="relative group"
                             >
-                                <div
-                                    className="relative p-4 rounded-lg transition-all cursor-pointer"
+                                <motion.div
+                                    className="relative p-5 rounded-xl transition-all cursor-pointer overflow-hidden"
                                     style={{
-                                        background: rank <= 3
-                                            ? 'linear-gradient(135deg, #F4ECD8 0%, #E8DCC8 100%)'
-                                            : 'linear-gradient(135deg, #f5f5dc 0%, #e8e0c8 100%)',
-                                        border: `4px solid ${rank <= 3 ? '#8B7355' : '#C9B388'}`,
+                                        ...glassCard,
+                                        border: `2px solid ${rank <= 3 ? rankColor : MidnightTheme.void.primary}40`,
                                         boxShadow: rank <= 3
-                                            ? '0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3)'
-                                            : '0 2px 6px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)',
+                                            ? `0 0 30px ${rankColor}40, inset 0 0 20px ${rankColor}10`
+                                            : `0 0 20px ${MidnightTheme.void.primary}20, inset 0 0 15px ${MidnightTheme.void.primary}10`
                                     }}
                                 >
-                                    <div className="flex items-center gap-4">
-                                        {/* Rank Badge */}
-                                        <div
-                                            className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center font-bold"
-                                            style={getRankBadgeStyle(rank)}
+                                    {/* Animated Glow for Top 3 */}
+                                    {rank <= 3 && (
+                                        <motion.div
+                                            className="absolute inset-0 opacity-10 pointer-events-none"
+                                            animate={{
+                                                background: [
+                                                    `radial-gradient(circle at 50% 50%, ${rankColor}60, transparent 70%)`,
+                                                    `radial-gradient(circle at 30% 50%, ${rankColor}40, transparent 70%)`,
+                                                    `radial-gradient(circle at 70% 50%, ${rankColor}60, transparent 70%)`,
+                                                    `radial-gradient(circle at 50% 50%, ${rankColor}60, transparent 70%)`
+                                                ]
+                                            }}
+                                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                                        />
+                                    )}
+                                    <div className="flex items-center gap-5 relative">
+                                        {/* Rank Badge - Midnight Style */}
+                                        <motion.div
+                                            className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center font-bold relative"
+                                            animate={rank <= 3 ? {
+                                                boxShadow: [
+                                                    `0 0 20px ${rankColor}60`,
+                                                    `0 0 35px ${rankColor}80`,
+                                                    `0 0 20px ${rankColor}60`
+                                                ]
+                                            } : {}}
+                                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                            style={{
+                                                background: rank <= 3
+                                                    ? `radial-gradient(circle, ${rankColor}80, ${rankColor}40)`
+                                                    : `radial-gradient(circle, ${MidnightTheme.void.primary}60, ${MidnightTheme.void.deep}40)`,
+                                                border: `2px solid ${rankColor}`,
+                                                boxShadow: `0 0 20px ${rankColor}60, inset 0 0 15px ${rankColor}30`
+                                            }}
                                         >
                                             {rank <= 3 ? (
                                                 getMedalIcon(rank)
                                             ) : (
-                                                <span style={{ color: '#F4ECD8', fontSize: '1.25rem' }}>#{rank}</span>
+                                                <span style={{
+                                                    color: MidnightTheme.text.bright,
+                                                    fontSize: '1.25rem',
+                                                    textShadow: `0 0 10px ${MidnightTheme.void.primary}`
+                                                }}>
+                                                    #{rank}
+                                                </span>
                                             )}
-                                        </div>
+                                        </motion.div>
 
                                         {/* Character Portrait */}
                                         {entry.portrait_url && (
@@ -261,57 +373,72 @@ export default function WowLeaderboard({ initialLimit = 10 }: WowLeaderboardProp
                                         )}
 
                                         {/* Character Info */}
-                                        <div className="flex-1 min-w-0">
+                                        <div className="flex-1 min-w-0 relative">
                                             <h3
-                                                className="text-xl font-bold truncate"
-                                                style={{ color: classColor, textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}
+                                                className="text-xl font-bold truncate mb-1"
+                                                style={{
+                                                    color: classColor,
+                                                    textShadow: `0 0 15px ${classColor}80, 2px 2px 4px rgba(0,0,0,0.5)`
+                                                }}
                                             >
                                                 {entry.character_name}
                                             </h3>
-                                            <p className="text-sm" style={{ color: '#5D4037' }}>
+                                            <p className="text-sm" style={{ color: MidnightTheme.text.muted }}>
                                                 <span className="font-semibold">{entry.race} {entry.class}</span>
                                                 {' • '}
                                                 <span className="uppercase">{entry.region}</span>-{entry.realm_slug}
                                             </p>
                                         </div>
 
-                                        {/* Readiness Score - Large & Glowing */}
-                                        <div className="flex-shrink-0 text-right">
-                                            <div
-                                                className="text-4xl font-bold"
+                                        {/* Readiness Score - Midnight Glow */}
+                                        <div className="flex-shrink-0 text-right relative">
+                                            <motion.div
+                                                className="text-5xl font-black"
+                                                animate={{
+                                                    textShadow: [
+                                                        `0 0 20px ${entry.readiness_score >= 90 ? '#FF8000' : entry.readiness_score >= 75 ? '#A335EE' : '#0070DD'}60`,
+                                                        `0 0 35px ${entry.readiness_score >= 90 ? '#FF8000' : entry.readiness_score >= 75 ? '#A335EE' : '#0070DD'}80`,
+                                                        `0 0 20px ${entry.readiness_score >= 90 ? '#FF8000' : entry.readiness_score >= 75 ? '#A335EE' : '#0070DD'}60`
+                                                    ]
+                                                }}
+                                                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                                                 style={{
                                                     color: entry.readiness_score >= 90 ? '#FF8000' :
                                                            entry.readiness_score >= 75 ? '#A335EE' :
                                                            entry.readiness_score >= 50 ? '#0070DD' : '#1EFF00',
-                                                    textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
                                                 }}
                                             >
                                                 {entry.readiness_score}%
-                                            </div>
-                                            <p className="text-xs uppercase font-bold tracking-wide" style={{ color: '#8B7355' }}>
+                                            </motion.div>
+                                            <p className="text-xs uppercase font-bold tracking-widest" style={{
+                                                color: MidnightTheme.text.muted
+                                            }}>
                                                 Readiness
                                             </p>
                                         </div>
 
-                                        {/* Faction Badge */}
-                                        <div
-                                            className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-lg"
+                                        {/* Faction Badge - Midnight Style */}
+                                        <motion.div
+                                            className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-xl"
+                                            whileHover={{ rotate: 360, scale: 1.2 }}
+                                            transition={{ duration: 0.6 }}
                                             style={{
                                                 background: entry.faction === 'Alliance'
-                                                    ? 'linear-gradient(135deg, #0078FF, #0052CC)'
-                                                    : 'linear-gradient(135deg, #B30000, #8B0000)',
-                                                boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+                                                    ? `radial-gradient(circle, rgba(0, 112, 221, 0.8), rgba(0, 82, 204, 0.6))`
+                                                    : `radial-gradient(circle, rgba(220, 20, 60, 0.8), rgba(139, 0, 0, 0.6))`,
+                                                border: `2px solid ${entry.faction === 'Alliance' ? '#0070DD' : '#DC143C'}`,
+                                                boxShadow: `0 0 20px ${entry.faction === 'Alliance' ? 'rgba(0,112,221,0.6)' : 'rgba(220,20,60,0.6)'}`,
                                             }}
                                         >
                                             {factionTheme.logo}
-                                        </div>
+                                        </motion.div>
                                     </div>
-                                </div>
+                                </motion.div>
                             </motion.div>
                         );
                     })
                 )}
             </div>
-        </div>
+        </motion.div>
     );
 }
