@@ -144,15 +144,38 @@ export default function RaidProgress({ raids }: RaidProgressProps) {
                 )}
             </div>
 
-            {/* Progress Summary */}
+            {/* Progress Summary & Next Steps */}
             <div className="bg-[var(--bg-secondary)] border border-[var(--border)] p-6 rounded-3xl">
                 <h4 className="text-sm font-semibold text-[var(--text-primary)] uppercase mb-3">
                     Overall Progress
                 </h4>
                 <p className="text-xl font-bold text-[var(--text-primary)]">{raids.summary}</p>
-                <p className="text-sm text-[var(--text-secondary)] mt-2">
+                <p className="text-sm text-[var(--text-secondary)] mt-2 mb-4">
                     Complete boss encounters to unlock better loot and advance through raid tiers
                 </p>
+
+                {/* What's Next */}
+                <div className="pt-4 border-t border-[var(--border)] space-y-2">
+                    <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase">What's Next?</p>
+                    {mythicKills < totalBosses && (
+                        <p className="text-sm text-[var(--text-primary)]">
+                            • Push Mythic difficulty - {totalBosses - mythicKills} bosses remaining
+                        </p>
+                    )}
+                    {heroicKills < totalBosses && mythicKills === 0 && (
+                        <p className="text-sm text-[var(--text-primary)]">
+                            • Complete Heroic - {totalBosses - heroicKills} bosses to go
+                        </p>
+                    )}
+                    {normalKills === totalBosses && heroicKills < totalBosses && (
+                        <p className="text-sm text-[var(--text-primary)]">
+                            • Start Heroic progression for better item level gear (630+)
+                        </p>
+                    )}
+                    <p className="text-xs text-[var(--text-secondary)] mt-2">
+                        💡 Raid experience prepares you for Midnight launch raids
+                    </p>
+                </div>
             </div>
         </div>
     );

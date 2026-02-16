@@ -48,7 +48,18 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
                     exit="hidden"
                     variants={fadeInUp}
                 >
-                    {activeTab === 'overview' && <OverviewTab data={data} />}
+                    {activeTab === 'overview' && (
+                        <OverviewTab
+                            data={{
+                                readiness_score: data.readiness_score,
+                                ai_advice: data.ai_advice,
+                                missing_essentials: data.missing_essentials,
+                                equipment: data.equipment,
+                                mythic_plus: data.mythic_plus,
+                                raids: data.raids,
+                            }}
+                        />
+                    )}
                     {activeTab === 'gear' && <EquipmentView equipment={data.equipment} />}
                     {activeTab === 'mythic' && <MythicPlusStats mythicPlus={data.mythic_plus} />}
                     {activeTab === 'raids' && <RaidProgress raids={data.raids} />}

@@ -33,6 +33,25 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
 
     const tierProgress = (equipment.tier_pieces / 5) * 100;
 
+    const getIlvlRating = (ilvl: number): { label: string; color: string } => {
+        if (ilvl >= 640) return { label: 'Mythic Raider', color: 'text-purple-500' };
+        if (ilvl >= 630) return { label: 'Heroic Raider', color: 'text-blue-500' };
+        if (ilvl >= 620) return { label: 'Normal Raider', color: 'text-green-500' };
+        if (ilvl >= 600) return { label: 'Mythic+ Ready', color: 'text-yellow-500' };
+        return { label: 'Gearing Up', color: 'text-[var(--text-secondary)]' };
+    };
+
+    const getNextIlvlMilestone = (ilvl: number): number | null => {
+        if (ilvl < 600) return 600;
+        if (ilvl < 620) return 620;
+        if (ilvl < 630) return 630;
+        if (ilvl < 640) return 640;
+        return null;
+    };
+
+    const ilvlRating = getIlvlRating(equipment.item_level);
+    const nextIlvl = getNextIlvlMilestone(equipment.item_level);
+
     return (
         <div className="space-y-6">
             {/* Header Stats */}
@@ -46,6 +65,19 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
                         </h3>
                     </div>
                     <p className="text-4xl font-bold text-[var(--text-primary)]">{equipment.item_level}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                        <span className={`text-sm font-semibold ${ilvlRating.color}`}>
+                            {ilvlRating.label}
+                        </span>
+                        {nextIlvl && (
+                            <>
+                                <span className="text-[var(--border)]">•</span>
+                                <span className="text-xs text-[var(--text-secondary)]">
+                                    Next: {nextIlvl} (+{nextIlvl - equipment.item_level})
+                                </span>
+                            </>
+                        )}
+                    </div>
                 </div>
 
                 {/* Tier Set Progress */}
@@ -143,20 +175,20 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
                 </div>
             </div>
 
-            {/* Warnings */}
-            {(equipment.missing_enchants.length > 0 || equipment.missing_gems.length > 0) && (
+            {/* Optimization Recommendations */}
+            {(equipment.missing_enchants.length > 0 || equipment.missing_gems.length > 0 || equipment.tier_pieces < 4) && (
                 <div className="bg-[var(--accent)]/5 border border-[var(--accent)]/20 p-6 rounded-3xl">
                     <h4 className="text-lg font-bold text-[var(--accent)] mb-4 flex items-center gap-2">
                         <AlertCircle className="w-5 h-5" />
-                        Optimization Needed
+                        Optimization Recommendations
                     </h4>
 
                     {equipment.missing_enchants.length > 0 && (
-                        <div className="mb-3">
+                        <div className="mb-4">
                             <p className="text-sm font-semibold text-[var(--text-primary)] mb-2">
-                                Missing Enchants:
+                                Missing Enchants ({equipment.missing_enchants.length} slots):
                             </p>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2 mb-2">
                                 {equipment.missing_enchants.map((slot, idx) => (
                                     <span
                                         key={idx}
@@ -166,15 +198,18 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
                                     </span>
                                 ))}
                             </div>
+                            <p className="text-xs text-[var(--text-secondary)] mt-2">
+                                💡 Enchants typically provide 2-3% performance increase. Visit the Auction House or ask a guild enchanter.
+                            </p>
                         </div>
                     )}
 
                     {equipment.missing_gems.length > 0 && (
-                        <div>
+                        <div className="mb-4">
                             <p className="text-sm font-semibold text-[var(--text-primary)] mb-2">
-                                Missing Gems:
+                                Empty Gem Slots ({equipment.missing_gems.length} sockets):
                             </p>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2 mb-2">
                                 {equipment.missing_gems.map((slot, idx) => (
                                     <span
                                         key={idx}
@@ -184,6 +219,20 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
                                     </span>
                                 ))}
                             </div>
+                            <p className="text-xs text-[var(--text-secondary)] mt-2">
+                                💡 Gems add valuable secondary stats. Check your class guide for optimal gem choices.
+                            </p>
+                        </div>
+                    )}
+
+                    {equipment.tier_pieces < 4 && (
+                        <div>
+                            <p className="text-sm font-semibold text-[var(--text-primary)] mb-2">
+                                Tier Set Incomplete ({equipment.tier_pieces}/5 pieces):
+                            </p>
+                            <p className="text-xs text-[var(--text-secondary)]">
+                                💡 Get {4 - equipment.tier_pieces} more tier pieces for the powerful 4-piece set bonus. Farm current raid on any difficulty or use Great Vault rewards.
+                            </p>
                         </div>
                     )}
                 </div>

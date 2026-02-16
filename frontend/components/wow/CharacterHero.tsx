@@ -1,15 +1,50 @@
 'use client';
 
 import { ComprehensiveWowAnalysis } from '@/types';
-import { Shield, Trophy, Skull, Star } from 'lucide-react';
+import { Shield, Trophy, Skull, Star, RefreshCw, Share2, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 interface CharacterHeroProps {
     data: ComprehensiveWowAnalysis;
+    onRefresh?: () => void;
 }
 
-export default function CharacterHero({ data }: CharacterHeroProps) {
+export default function CharacterHero({ data, onRefresh }: CharacterHeroProps) {
     const { character, readiness_score, equipment, mythic_plus, raids } = data;
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const handleShare = async () => {
+        const shareUrl = window.location.href;
+        const shareText = `Check out my ${character.name} on TechPlay WoW Analyzer! Midnight Readiness: ${readiness_score}%`;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: shareText, url: shareUrl });
+                toast.success('Shared successfully!');
+            } catch (err) {
+                // User cancelled share
+            }
+        } else {
+            // Fallback: Copy to clipboard
+            navigator.clipboard.writeText(shareUrl);
+            toast.success('Profile link copied to clipboard!');
+        }
+    };
+
+    const handleRefresh = async () => {
+        if (!onRefresh) return;
+        setIsRefreshing(true);
+        await onRefresh();
+        setIsRefreshing(false);
+    };
+
+    const openArmory = () => {
+        const region = character.faction ? 'eu' : 'us'; // This should come from data
+        const armoryUrl = `https://worldofwarcraft.blizzard.com/en-${region}/character/${region}/${character.name?.toLowerCase()}/${character.name}`;
+        window.open(armoryUrl, '_blank');
+    };
 
     const metrics = [
         {
@@ -68,9 +103,43 @@ export default function CharacterHero({ data }: CharacterHeroProps) {
 
                     {/* Character Details */}
                     <div className="flex-1">
-                        <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-2">
-                            {character.name}
-                        </h2>
+                        <div className="flex items-start justify-between gap-4 mb-2">
+                            <h2 className="text-3xl font-bold text-[var(--text-primary)]">
+                                {character.name}
+                            </h2>
+
+                            {/* Action Buttons */}
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={handleShare}
+                                    className="p-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] hover:border-[var(--accent)] transition-colors group"
+                                    title="Share profile"
+                                >
+                                    <Share2 className="w-5 h-5 text-[var(--text-secondary)] group-hover:text-[var(--accent)]" />
+                                </button>
+
+                                {onRefresh && (
+                                    <button
+                                        onClick={handleRefresh}
+                                        disabled={isRefreshing}
+                                        className="p-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] hover:border-[var(--accent)] transition-colors group disabled:opacity-50"
+                                        title="Refresh data"
+                                    >
+                                        <RefreshCw className={`w-5 h-5 text-[var(--text-secondary)] group-hover:text-[var(--accent)] ${isRefreshing ? 'animate-spin' : ''}`} />
+                                    </button>
+                                )}
+
+                                <button
+                                    onClick={openArmory}
+                                    className="px-4 py-2 rounded-xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 hover:bg-[var(--accent)]/20 transition-colors flex items-center gap-2"
+                                    title="View on Armory"
+                                >
+                                    <span className="text-sm font-semibold text-[var(--accent)]">Armory</span>
+                                    <ExternalLink className="w-4 h-4 text-[var(--accent)]" />
+                                </button>
+                            </div>
+                        </div>
+
                         <div className="flex flex-wrap items-center gap-4 text-[var(--text-secondary)]">
                             <span className="font-semibold">
                                 Level <span className="text-[var(--text-primary)]">{character.level}</span>
