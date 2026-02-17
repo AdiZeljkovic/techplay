@@ -571,10 +571,7 @@ export default function WowAnalyzerClient() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                         >
-                            <AnalysisResults
-                                result={result}
-                                analysisId={result.id}
-                            />
+                            <AnalysisResults data={result} />
                         </motion.div>
                     )}
                 </AnimatePresence>
