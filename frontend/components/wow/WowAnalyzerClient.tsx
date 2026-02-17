@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Shield, Search, Sparkles, Swords, Zap, Brain, Clock, Home, Target, Trophy, TrendingUp, Users, Globe, Gamepad2 } from "lucide-react";
+import { Shield, Search, Sparkles, Swords, Zap, Brain, Clock, Home, Target, Trophy, TrendingUp, Users, Globe, Gamepad2, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import PageHero from "@/components/ui/PageHero";
 import RealmDropdown from "@/components/wow/RealmDropdown";
@@ -10,9 +10,10 @@ import AnalysisResults from "@/components/wow/AnalysisResults";
 import AnalysisProgress from "@/components/wow/AnalysisProgress";
 import WowLeaderboard from "@/components/wow/WowLeaderboard";
 import WowRecentAnalyses from "@/components/wow/WowRecentAnalyses";
+import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { ComprehensiveWowAnalysis } from "@/types";
+import { ComprehensiveWowAnalysis, UserWowCharacter } from "@/types";
 
 // TechPlay Design System - Simple animations
 const fadeInUp = {
@@ -38,8 +39,11 @@ export default function WowAnalyzerClient() {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingStage, setLoadingStage] = useState<string>("");
     const [result, setResult] = useState<(ComprehensiveWowAnalysis & { id?: number }) | null>(null);
+    const [myCharacters, setMyCharacters] = useState<UserWowCharacter[]>([]);
 
-    const { register, handleSubmit, control, watch, formState: { errors } } = useForm<FormData>({
+    const { isAuthenticated } = useAuth({ middleware: 'guest' });
+
+    const { register, handleSubmit, control, watch, setValue, formState: { errors } } = useForm<FormData>({
         defaultValues: {
             character_name: "",
             realm_slug: "",
@@ -48,6 +52,19 @@ export default function WowAnalyzerClient() {
     });
 
     const selectedRegion = watch("region");
+
+    // Fetch user's WoW characters if authenticated
+    useEffect(() => {
+        if (isAuthenticated) {
+            axios.get('/user/wow-characters')
+                .then((res) => {
+                    setMyCharacters(res.data.data || []);
+                })
+                .catch((err) => {
+                    console.error('Failed to fetch characters', err);
+                });
+        }
+    }, [isAuthenticated]);
 
     const onSubmit = async (data: FormData) => {
         setIsLoading(true);
@@ -273,6 +290,42 @@ export default function WowAnalyzerClient() {
                         </div>
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                            {/* Quick Select - My Characters */}
+                            {isAuthenticated && myCharacters.length > 0 && (
+                                <div className="mb-6 p-4 bg-gradient-to-br from-purple-500/5 to-[var(--accent)]/5 border border-purple-500/20 rounded-2xl">
+                                    <label className="block text-sm font-bold mb-3 text-purple-400 uppercase flex items-center gap-2">
+                                        <Star className="w-4 h-4" />
+                                        Quick Select (Your Characters)
+                                    </label>
+                                    <select
+                                        onChange={(e) => {
+                                            const charId = parseInt(e.target.value);
+                                            const char = myCharacters.find(c => c.id === charId);
+                                            if (char) {
+                                                setValue('character_name', char.character_name);
+                                                setValue('realm_slug', char.realm_slug);
+                                                setValue('region', char.region as "us" | "eu" | "kr" | "tw");
+                                                toast.success(`Selected ${char.character_name}`);
+                                            }
+                                        }}
+                                        className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] transition-colors cursor-pointer"
+                                        defaultValue=""
+                                    >
+                                        <option value="">-- Select a character --</option>
+                                        {myCharacters.map((char) => (
+                                            <option key={char.id} value={char.id}>
+                                                {char.character_name} - {char.realm_slug} ({char.region.toUpperCase()})
+                                                {char.is_main ? ' ⭐ Main' : ''}
+                                                {char.item_level ? ` - ${char.item_level} iLvL` : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <p className="text-xs text-[var(--text-secondary)] mt-2">
+                                        💡 Select a character to auto-fill the form below
+                                    </p>
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Character Name */}
                                 <div>

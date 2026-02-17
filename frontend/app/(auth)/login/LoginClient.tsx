@@ -264,6 +264,16 @@ export default function LoginClient() {
                             </svg>
                             Continue with Discord
                         </Button>
+
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full relative hover:bg-blue-600/10 hover:border-blue-600 hover:text-blue-600 transition-colors mt-3"
+                            onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/battlenet/redirect?region=eu`}
+                        >
+                            <Shield className="w-5 h-5 mr-2" />
+                            Continue with Battle.net
+                        </Button>
                     </form>
 
                     <div className="mt-4 flex items-center justify-center gap-2 text-xs text-[var(--text-muted)]">

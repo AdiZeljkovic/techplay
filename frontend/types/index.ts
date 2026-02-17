@@ -197,6 +197,24 @@ export interface WowCharacter {
     portrait_url?: string | null;
 }
 
+// User's linked WoW character (from user_wow_characters table)
+export interface UserWowCharacter {
+    id: number;
+    user_id: number;
+    character_name: string;
+    realm_slug: string;
+    region: string;
+    character_class: string | null;
+    faction: string | null;
+    level: number;
+    item_level: number | null;
+    avatar_url: string | null;
+    is_main: boolean;
+    last_analyzed_at: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface WowAnalysisResult {
     character: WowCharacter;
     readiness_score: number;
