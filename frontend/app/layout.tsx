@@ -122,6 +122,18 @@ export default function RootLayout({
           `}
         </Script>
 
+        {/* Wowhead Tooltips - for WoW Character Analyzer */}
+        <Script src="https://wow.zamimg.com/widgets/power.js" strategy="afterInteractive" />
+        <Script id="wowhead-config" strategy="afterInteractive">
+          {`
+            var whTooltips = {
+              colorLinks: true,
+              iconizeLinks: true,
+              renameLinks: true
+            };
+          `}
+        </Script>
+
         {/* Matomo Analytics */}
         <Script id="matomo-analytics" strategy="lazyOnload">
           {`

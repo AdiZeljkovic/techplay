@@ -93,33 +93,108 @@ class GroqService
     protected function buildPrompt(array $characterData): string
     {
         $daysUntilLaunch = max(0, (int) ((strtotime('2026-03-02 15:00:00') - time()) / 86400));
+        $characterClass = $characterData['character']['class'] ?? 'Unknown';
+        $itemLevel = $characterData['equipment']['item_level'] ?? 0;
 
         return <<<PROMPT
-Analyze WoW character for Midnight expansion (launches March 2, 2026 - {$daysUntilLaunch} days left).
+You are an expert World of Warcraft analyst. Analyze this {$characterClass} character for Midnight expansion (launches March 2, 2026 - {$daysUntilLaunch} days left).
 
-KEY FACTORS:
+PROVIDE SPEC-SPECIFIC ANALYSIS:
+- {$characterClass}-specific rotation tips
+- Best stat priorities for {$characterClass}
+- Recommended talent builds for M+ and raids
+- Optimal gear upgrades for current iLvL ({$itemLevel})
+
+KEY MIDNIGHT FACTORS:
 - Royal Voidwing mount (ends at launch, NEVER returns)
 - Void Elves (core to Midnight story)
-- Quel'Thalas lore (Sunwell raid)
-- Housing collections (mounts, achievements)
+- Quel'Thalas lore (Sunwell raid, Silvermoon)
+- Housing collections (mounts, pets, toys, transmog)
+- Profession readiness (crafting high-level gear day 1)
 
-CHARACTER:
+CURRENT MYTHIC+ SEASON AFFIXES (provide affix-specific strategies):
+- Tyrannical/Fortified rotation
+- Xal'atath's Guile (avoid voidzones)
+- Shardborne (collect shards for damage buff)
+
+CHARACTER DATA:
 {$this->formatCharacterData($characterData)}
 
 Return ONLY valid JSON with this exact structure:
 {
   "score": [0-100 readiness percentage],
-  "advice": ["specific tip 1", "specific tip 2", "specific tip 3"],
-  "missing": ["missing item 1", "missing item 2"],
-  "daily_priority": ["priority task 1", "priority task 2"]
+  "advice": [
+    "{$characterClass}-specific rotation tip",
+    "Gear upgrade priority (BiS item suggestion)",
+    "Mythic+ affix strategy for this week",
+    "Midnight collection tip",
+    "Profession tip (if applicable)"
+  ],
+  "missing": ["critical missing item 1", "critical missing item 2"],
+  "daily_priority": ["priority task 1 (specific to {$characterClass})", "priority task 2"]
 }
+
+IMPORTANT: Make advice ACTIONABLE and SPECIFIC to this {$characterClass} character. No generic tips!
 PROMPT;
     }
 
     protected function formatCharacterData(array $data): string
     {
         return json_encode([
-            'character' => $data['character'] ?? [],
+            'character' => [
+                'name' => $data['character']['name'] ?? 'Unknown',
+                'class' => $data['character']['class'] ?? 'Unknown',
+                'race' => $data['character']['race'] ?? 'Unknown',
+                'level' => $data['character']['level'] ?? 80,
+                'faction' => $data['character']['faction'] ?? 'Unknown',
+            ],
+            'equipment' => [
+                'item_level' => $data['equipment']['item_level'] ?? 0,
+                'tier_pieces' => $data['equipment']['tier_pieces'] ?? 0,
+                'missing_enchants' => count($data['equipment']['missing_enchants'] ?? []),
+                'missing_gems' => count($data['equipment']['missing_gems'] ?? []),
+            ],
+            'mythic_plus' => [
+                'score' => $data['mythic_plus']['score'] ?? 0,
+                'completed_runs' => count($data['mythic_plus']['best_runs'] ?? []),
+                'vault_unlocked' => $data['mythic_plus']['vault_unlocked'] ?? false,
+            ],
+            'raids' => [
+                'current_tier' => $data['raids']['current_tier'] ?? 'Unknown',
+                'summary' => $data['raids']['summary'] ?? '0/8',
+            ],
+            'pvp' => [
+                'honor_level' => $data['pvp']['honor_level'] ?? 0,
+                'highest_rating' => max(
+                    $data['pvp']['arena_2v2'] ?? 0,
+                    $data['pvp']['arena_3v3'] ?? 0,
+                    $data['pvp']['rbg_rating'] ?? 0
+                ),
+            ],
+            'reputations' => [
+                'exalted_count' => $data['reputations']['exalted_count'] ?? 0,
+                'midnight_factions_ready' => count(array_filter(
+                    $data['reputations']['midnight_factions'] ?? [],
+                    fn($f) => $f['tier'] >= 7 // Exalted
+                )),
+            ],
+            'collections' => [
+                'pets' => $data['collections']['pets']['unique'] ?? 0,
+                'toys' => $data['collections']['toys']['collected'] ?? 0,
+                'mounts' => $data['collections']['mounts_count'] ?? 0,
+                'transmog_appearances' => $data['collections']['transmog']['total_appearances'] ?? 0,
+            ],
+            'professions' => [
+                'primary_count' => count($data['professions']['primary'] ?? []),
+                'secondary_count' => count($data['professions']['secondary'] ?? []),
+                'maxed_professions' => count(array_filter(
+                    array_merge(
+                        $data['professions']['primary'] ?? [],
+                        $data['professions']['secondary'] ?? []
+                    ),
+                    fn($p) => $p['skill_level'] >= $p['max_skill']
+                )),
+            ],
             'achievements' => [
                 'total_completed' => $data['achievements']['total_completed'] ?? 0,
                 'has_void_elf' => $data['achievements']['has_void_elf'] ?? false,
