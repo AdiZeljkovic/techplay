@@ -130,9 +130,15 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
     {
         $stats = [];
 
+        // DEBUG: Log the item structure to see what Blizzard returns
+        \Log::info('Item structure:', ['item_keys' => array_keys($item)]);
+
+        // Try direct stats path first
+        $statsSource = $item['stats'] ?? ($item['item']['stats'] ?? null);
+
         // Extract stats from the item
-        if (isset($item['stats']) && is_array($item['stats'])) {
-            foreach ($item['stats'] as $stat) {
+        if ($statsSource && is_array($statsSource)) {
+            foreach ($statsSource as $stat) {
                 $statType = $stat['type']['type'] ?? null;
                 $statValue = $stat['value'] ?? 0;
 
@@ -148,10 +154,14 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
             }
         }
 
-        // Extract armor value (separate field)
-        if (isset($item['armor']['value'])) {
-            $stats['armor'] = $item['armor']['value'];
+        // Extract armor value (try both paths)
+        $armorValue = $item['armor']['value'] ?? ($item['item']['armor']['value'] ?? null);
+        if ($armorValue) {
+            $stats['armor'] = $armorValue;
         }
+
+        // DEBUG: Log extracted stats
+        \Log::info('Extracted stats:', ['stats' => $stats, 'item_name' => $item['name'] ?? 'Unknown']);
 
         return $stats;
     }
