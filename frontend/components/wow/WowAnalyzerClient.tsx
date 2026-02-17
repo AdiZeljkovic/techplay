@@ -114,7 +114,7 @@ export default function WowAnalyzerClient() {
             {/* ═══════════════════════════════════════════════════════════ */}
             {/* HERO SECTION - Immediate Impact */}
             {/* ═══════════════════════════════════════════════════════════ */}
-            <section className="relative overflow-hidden border-b border-[var(--border)]">
+            <section className="relative overflow-hidden min-h-screen flex items-center justify-center">
                 {/* Background Wallpaper */}
                 <div
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -130,14 +130,14 @@ export default function WowAnalyzerClient() {
                 <div className="absolute top-0 left-0 w-96 h-96 bg-[var(--accent)] rounded-full blur-[150px] opacity-[0.15]" />
                 <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500 rounded-full blur-[150px] opacity-[0.12]" />
 
-                <div className="relative container mx-auto px-4 py-20 md:py-32 max-w-5xl">
+                <div className="relative container mx-auto px-4 py-12 max-w-5xl">
                     <div className="text-center">
                         {/* Badge */}
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-black/40 backdrop-blur-md border border-[var(--accent)]/30 rounded-full mb-8"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-black/40 backdrop-blur-md border border-[var(--accent)]/30 rounded-full mb-6"
                         >
                             <Sparkles className="w-4 h-4 text-[var(--accent)]" />
                             <span className="text-sm font-bold text-[var(--accent)]">
@@ -150,7 +150,7 @@ export default function WowAnalyzerClient() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="text-6xl md:text-7xl lg:text-8xl font-black mb-8 leading-[1.05]"
+                            className="text-6xl md:text-7xl lg:text-8xl font-black mb-6 leading-[1.05]"
                         >
                             <span className="text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">Ready for</span>
                             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-purple-400 to-purple-500 drop-shadow-[0_4px_30px_rgba(252,65,0,0.6)]">
@@ -163,7 +163,7 @@ export default function WowAnalyzerClient() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3 }}
-                            className="text-xl md:text-2xl text-gray-200 mb-10 leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] max-w-3xl mx-auto"
+                            className="text-xl md:text-2xl text-gray-200 mb-8 leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] max-w-3xl mx-auto"
                         >
                             Get your instant readiness score and personalized roadmap for <strong className="text-white font-bold">World of Warcraft: Midnight</strong> expansion.
                         </motion.p>
@@ -173,7 +173,7 @@ export default function WowAnalyzerClient() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.4 }}
-                            className="flex flex-wrap items-center justify-center gap-8 mb-12"
+                            className="flex flex-wrap items-center justify-center gap-8 mb-10"
                         >
                             <div className="flex items-center gap-3">
                                 <div className="flex -space-x-2">
