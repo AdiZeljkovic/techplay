@@ -145,27 +145,27 @@ export default function WowAnalyzerClient() {
                             </span>
                         </motion.div>
 
-                        {/* Headline */}
+                        {/* Headline - SEO Optimized H1 */}
                         <motion.h1
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
                             className="text-6xl md:text-7xl lg:text-8xl font-black mb-6 leading-[1.05]"
                         >
-                            <span className="text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">Ready for</span>
+                            <span className="text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">Free WoW Character Analyzer - </span>
                             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-purple-400 to-purple-500 drop-shadow-[0_4px_30px_rgba(252,65,0,0.6)]">
-                                Midnight expansion?
+                                Midnight Expansion Readiness
                             </span>
                         </motion.h1>
 
-                        {/* Description */}
+                        {/* Description - Keyword Rich */}
                         <motion.p
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3 }}
                             className="text-xl md:text-2xl text-gray-200 mb-8 leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] max-w-3xl mx-auto"
                         >
-                            Get your instant readiness score and personalized roadmap for <strong className="text-white font-bold">World of Warcraft: Midnight</strong> expansion.
+                            Instantly analyze your <strong className="text-white font-bold">World of Warcraft character</strong> for Midnight expansion. Check gear, Mythic+ score, raid progress & get AI-powered recommendations. <strong className="text-white font-bold">100% Free - No Login Required!</strong>
                         </motion.p>
 
                         {/* Trust Stats */}
@@ -249,10 +249,10 @@ export default function WowAnalyzerClient() {
                                 </span>
                             </motion.div>
                             <h2 className="text-5xl md:text-6xl font-black text-[var(--text-primary)] mb-5">
-                                Enter Your Character
+                                WoW Character Analyzer - Free Instant Analysis
                             </h2>
                             <p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto">
-                                Get instant analysis with detailed recommendations
+                                Check your WoW character's gear, M+ rating, raid progress & collections in seconds
                             </p>
                         </div>
 
@@ -481,10 +481,10 @@ export default function WowAnalyzerClient() {
                             className="text-center mb-16"
                         >
                             <h2 className="text-4xl md:text-5xl font-black text-[var(--text-primary)] mb-4">
-                                How It Works
+                                How Our WoW Character Analyzer Works
                             </h2>
                             <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto">
-                                Smart analysis powered by real-time Blizzard data
+                                AI-powered World of Warcraft character analysis using real-time Blizzard API data
                             </p>
                         </motion.div>
 
@@ -561,10 +561,10 @@ export default function WowAnalyzerClient() {
                         >
                             <Clock className="w-16 h-16 text-[var(--accent)] mx-auto mb-6" />
                             <h2 className="text-4xl md:text-5xl font-black text-[var(--text-primary)] mb-4">
-                                Midnight Launches March 2, 2026
+                                WoW Midnight Expansion - Are You Ready?
                             </h2>
                             <p className="text-xl text-[var(--text-secondary)] mb-8 max-w-2xl mx-auto">
-                                Don't get caught unprepared. Check your character now and get a personalized roadmap to be expansion-ready.
+                                Midnight launches March 2, 2026. Analyze your WoW character now and get a personalized roadmap to be expansion-ready. Free character checker with instant results!
                             </p>
                             <button
                                 onClick={() => document.getElementById('analyzer-form')?.scrollIntoView({ behavior: 'smooth' })}
