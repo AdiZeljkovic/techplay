@@ -395,10 +395,10 @@ export default function OverviewTab({ data }: OverviewTabProps) {
                             </svg>
 
                             <div className="relative z-10 flex flex-col items-center justify-center px-4">
-                                <span className={`text-6xl md:text-8xl lg:text-9xl font-black ${getScoreColor(data.readiness_score)} drop-shadow-2xl`}>
+                                <span className={`text-5xl md:text-7xl lg:text-8xl font-black ${getScoreColor(data.readiness_score)} drop-shadow-2xl`}>
                                     {data.readiness_score}%
                                 </span>
-                                <span className="text-base md:text-xl mt-3 md:mt-4 font-black uppercase tracking-widest text-[var(--accent)] px-4 md:px-6 py-1.5 md:py-2 bg-[var(--accent)]/10 rounded-full border-2 border-[var(--accent)]/30">
+                                <span className="text-sm md:text-lg mt-3 md:mt-4 font-black uppercase tracking-widest text-[var(--accent)] px-3 md:px-5 py-1 md:py-1.5 bg-[var(--accent)]/10 rounded-full border-2 border-[var(--accent)]/30">
                                     {getScoreLabel(data.readiness_score)}
                                 </span>
                             </div>
