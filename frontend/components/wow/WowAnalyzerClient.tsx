@@ -228,31 +228,40 @@ export default function WowAnalyzerClient() {
             {/* ═══════════════════════════════════════════════════════════ */}
             {/* ANALYZER FORM - The Main Event */}
             {/* ═══════════════════════════════════════════════════════════ */}
-            <section id="analyzer-form" className="py-20 scroll-mt-20">
-                <div className="container mx-auto px-4 max-w-4xl">
+            <section id="analyzer-form" className="py-20 scroll-mt-20 bg-[var(--bg-secondary)]">
+                <div className="container mx-auto px-4 max-w-5xl">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                     >
                         {/* Form Header */}
-                        <div className="text-center mb-12">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-full mb-6">
-                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                <span className="text-sm font-semibold text-[var(--text-secondary)]">
+                        <div className="text-center mb-10">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                whileInView={{ opacity: 1, scale: 1 }}
+                                viewport={{ once: true }}
+                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--bg-card)] border border-[var(--accent)]/20 rounded-full mb-6"
+                            >
+                                <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-lg shadow-green-500/50" />
+                                <span className="text-sm font-bold text-[var(--accent)]">
                                     Ready to analyze • Powered by Blizzard API
                                 </span>
-                            </div>
-                            <h2 className="text-4xl md:text-5xl font-black text-[var(--text-primary)] mb-4">
+                            </motion.div>
+                            <h2 className="text-5xl md:text-6xl font-black text-[var(--text-primary)] mb-5">
                                 Enter Your Character
                             </h2>
-                            <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto">
-                                We'll fetch your data from Blizzard and give you a comprehensive readiness report in seconds
+                            <p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto">
+                                Get instant analysis with detailed recommendations
                             </p>
                         </div>
 
                         {/* Main Form Card */}
-                        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-8 md:p-12 shadow-xl">
+                        <div className="relative">
+                            {/* Glow Effect */}
+                            <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent)] via-purple-500 to-[var(--accent)] rounded-3xl blur-xl opacity-20" />
+
+                            <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] rounded-3xl p-6 md:p-10 shadow-2xl">
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                                 {/* Quick Select - My Characters */}
                                 {isAuthenticated && myCharacters.length > 0 && (
@@ -297,31 +306,34 @@ export default function WowAnalyzerClient() {
 
                                 {/* Region Selection - Radio Cards */}
                                 <div>
-                                    <label className="block text-sm font-bold mb-4 text-[var(--text-primary)] uppercase tracking-wide">
-                                        Select Region
+                                    <label className="block text-base font-bold mb-4 text-[var(--text-primary)] flex items-center gap-2">
+                                        <Globe className="w-4 h-4 text-[var(--accent)]" />
+                                        SELECT REGION
                                     </label>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         {(["us", "eu", "kr", "tw"] as const).map((region) => (
-                                            <label key={region} className="relative cursor-pointer">
+                                            <label key={region} className="relative cursor-pointer group">
                                                 <input
                                                     type="radio"
                                                     value={region}
                                                     {...register("region")}
                                                     className="sr-only peer"
                                                 />
-                                                <div className={`p-4 text-center rounded-xl border-2 transition-all ${
+                                                <div className={`relative p-5 text-center rounded-2xl border-2 transition-all duration-300 ${
                                                     selectedRegion === region
-                                                        ? 'border-[var(--accent)] bg-[var(--accent)]/10 shadow-lg shadow-[var(--accent)]/20'
-                                                        : 'border-[var(--border)] bg-[var(--bg-secondary)] hover:border-[var(--accent)]/50'
+                                                        ? 'border-[var(--accent)] bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 shadow-lg shadow-[var(--accent)]/30 scale-105'
+                                                        : 'border-[var(--border)] bg-[var(--bg-elevated)] hover:border-[var(--accent)]/60 hover:scale-102'
                                                 }`}>
-                                                    <div className="flex items-center justify-center gap-2">
-                                                        <Globe className={`w-4 h-4 ${selectedRegion === region ? 'text-[var(--accent)]' : 'text-[var(--text-secondary)]'}`} />
-                                                        <span className={`font-bold uppercase ${
-                                                            selectedRegion === region ? 'text-[var(--accent)]' : 'text-[var(--text-secondary)]'
-                                                        }`}>
-                                                            {region}
-                                                        </span>
-                                                    </div>
+                                                    {selectedRegion === region && (
+                                                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-[var(--accent)] rounded-full flex items-center justify-center shadow-lg">
+                                                            <CheckCircle2 className="w-4 h-4 text-white" />
+                                                        </div>
+                                                    )}
+                                                    <span className={`font-black text-xl uppercase tracking-wide ${
+                                                        selectedRegion === region ? 'text-[var(--accent)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
+                                                    }`}>
+                                                        {region}
+                                                    </span>
                                                 </div>
                                             </label>
                                         ))}
@@ -332,13 +344,13 @@ export default function WowAnalyzerClient() {
                                 <div className="grid md:grid-cols-2 gap-6">
                                     {/* Character Name */}
                                     <div>
-                                        <label className="block text-sm font-bold mb-3 text-[var(--text-primary)] uppercase tracking-wide">
-                                            Character Name
+                                        <label className="block text-base font-bold mb-3 text-[var(--text-primary)]">
+                                            CHARACTER NAME
                                         </label>
                                         <input
                                             type="text"
-                                            placeholder="e.g., Garamel"
-                                            className="w-full px-5 py-4 bg-[var(--bg-elevated)] border-2 border-[var(--border)] rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent)] transition-all font-medium text-lg"
+                                            placeholder="Enter your character name"
+                                            className="w-full px-5 py-4 bg-[var(--bg-elevated)] border-2 border-[var(--border)] rounded-2xl text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/60 focus:outline-none focus:border-[var(--accent)] focus:bg-[var(--bg-card)] focus:shadow-lg focus:shadow-[var(--accent)]/20 transition-all font-medium text-lg"
                                             {...register("character_name", {
                                                 required: "Character name is required",
                                                 minLength: { value: 2, message: "Must be at least 2 characters" },
@@ -364,8 +376,8 @@ export default function WowAnalyzerClient() {
                                         rules={{ required: "Realm is required" }}
                                         render={({ field }) => (
                                             <div>
-                                                <label className="block text-sm font-bold mb-3 text-[var(--text-primary)] uppercase tracking-wide">
-                                                    Realm
+                                                <label className="block text-base font-bold mb-3 text-[var(--text-primary)]">
+                                                    REALM
                                                 </label>
                                                 <RealmDropdown
                                                     region={selectedRegion}
@@ -384,43 +396,44 @@ export default function WowAnalyzerClient() {
                                     disabled={isLoading}
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
-                                    className="group relative w-full px-8 py-5 bg-gradient-to-r from-[var(--accent)] to-purple-600 hover:from-[var(--accent)]/90 hover:to-purple-600/90 text-white rounded-2xl font-bold text-lg shadow-2xl shadow-[var(--accent)]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                                    className="group relative w-full px-8 py-6 bg-gradient-to-r from-[var(--accent)] via-orange-600 to-purple-600 hover:from-[var(--accent)]/90 hover:via-orange-600/90 hover:to-purple-600/90 text-white rounded-2xl font-black text-xl shadow-2xl shadow-[var(--accent)]/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
                                 >
-                                    {/* Shine Effect */}
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+                                    {/* Animated Glow */}
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
 
-                                    <span className="relative flex items-center justify-center gap-3">
+                                    <span className="relative flex items-center justify-center gap-3 text-shadow-lg">
                                         {isLoading ? (
                                             <>
-                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
                                                 Analyzing Character...
                                             </>
                                         ) : (
                                             <>
-                                                <Rocket className="w-5 h-5" />
+                                                <Rocket className="w-6 h-6 group-hover:scale-110 transition-transform" />
                                                 Analyze Character Now
-                                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                                <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
                                             </>
                                         )}
                                     </span>
                                 </motion.button>
 
                                 {/* Trust Line */}
-                                <div className="flex items-center justify-center gap-6 pt-4 border-t border-[var(--border)]">
-                                    <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        Free Forever
+                                <div className="flex flex-wrap items-center justify-center gap-6 pt-6 mt-2">
+                                    <div className="flex items-center gap-2.5 px-4 py-2 bg-green-500/10 rounded-full">
+                                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                        <span className="text-sm font-semibold text-green-400">Free Forever</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        No Account Required
+                                    <div className="flex items-center gap-2.5 px-4 py-2 bg-blue-500/10 rounded-full">
+                                        <CheckCircle2 className="w-5 h-5 text-blue-500" />
+                                        <span className="text-sm font-semibold text-blue-400">No Account Required</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-                                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        {'< 5 Seconds'}
+                                    <div className="flex items-center gap-2.5 px-4 py-2 bg-purple-500/10 rounded-full">
+                                        <Zap className="w-5 h-5 text-purple-500" />
+                                        <span className="text-sm font-semibold text-purple-400">{'< 5 Seconds'}</span>
                                     </div>
                                 </div>
                             </form>
+                            </div>
                         </div>
                     </motion.div>
                 </div>
