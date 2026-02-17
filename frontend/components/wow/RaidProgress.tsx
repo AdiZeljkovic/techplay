@@ -42,11 +42,11 @@ export default function RaidProgress({ raids }: RaidProgressProps) {
     return (
         <div className="space-y-6">
             {/* Header Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-stretch">
                 {/* Raid Name */}
-                <div className="relative">
+                <div className="relative h-full">
                     <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent)] to-red-500 rounded-3xl blur-xl opacity-20" />
-                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-6 rounded-3xl shadow-2xl hover:border-[var(--accent)] transition-all">
+                    <div className="relative h-full bg-[var(--bg-card)] border-2 border-[var(--border)] p-6 rounded-3xl shadow-2xl hover:border-[var(--accent)] transition-all flex flex-col">
                         <div className="flex items-center gap-3 mb-3">
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent)] to-red-500 flex items-center justify-center shadow-lg shadow-[var(--accent)]/30">
                                 <Skull className="w-5 h-5 text-white" />
@@ -60,9 +60,9 @@ export default function RaidProgress({ raids }: RaidProgressProps) {
                 </div>
 
                 {/* Normal Progress */}
-                <div className="relative">
+                <div className="relative h-full">
                     <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-3xl blur-xl opacity-20" />
-                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-6 rounded-3xl shadow-2xl hover:border-blue-500 transition-all">
+                    <div className="relative h-full bg-[var(--bg-card)] border-2 border-[var(--border)] p-6 rounded-3xl shadow-2xl hover:border-blue-500 transition-all flex flex-col">
                         <div className="flex items-center gap-2 mb-3">
                             <div className="w-2 h-2 rounded-full bg-blue-500" />
                             <h3 className="text-xs font-black text-blue-500 uppercase tracking-wider">Normal</h3>
@@ -74,9 +74,9 @@ export default function RaidProgress({ raids }: RaidProgressProps) {
                 </div>
 
                 {/* Heroic Progress */}
-                <div className="relative">
+                <div className="relative h-full">
                     <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl blur-xl opacity-20" />
-                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-6 rounded-3xl shadow-2xl hover:border-purple-500 transition-all">
+                    <div className="relative h-full bg-[var(--bg-card)] border-2 border-[var(--border)] p-6 rounded-3xl shadow-2xl hover:border-purple-500 transition-all flex flex-col">
                         <div className="flex items-center gap-2 mb-3">
                             <div className="w-2 h-2 rounded-full bg-purple-500" />
                             <h3 className="text-xs font-black text-purple-500 uppercase tracking-wider">Heroic</h3>
@@ -88,9 +88,9 @@ export default function RaidProgress({ raids }: RaidProgressProps) {
                 </div>
 
                 {/* Mythic Progress */}
-                <div className="relative">
+                <div className="relative h-full">
                     <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent)] to-orange-500 rounded-3xl blur-xl opacity-25" />
-                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-6 rounded-3xl shadow-2xl hover:border-[var(--accent)] transition-all">
+                    <div className="relative h-full bg-[var(--bg-card)] border-2 border-[var(--border)] p-6 rounded-3xl shadow-2xl hover:border-[var(--accent)] transition-all flex flex-col">
                         <div className="flex items-center gap-2 mb-3">
                             <div className="w-2 h-2 rounded-full bg-[var(--accent)]" />
                             <h3 className="text-xs font-black text-[var(--accent)] uppercase tracking-wider">Mythic</h3>

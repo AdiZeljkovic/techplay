@@ -50,11 +50,11 @@ export default function CollectionStats({ collections }: CollectionStatsProps) {
     return (
         <div className="space-y-6">
             {/* Collections Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
                 {/* Battle Pets */}
-                <div className="relative">
+                <div className="relative h-full">
                     <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 to-rose-500 rounded-3xl blur-xl opacity-20" />
-                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-pink-500 transition-all">
+                    <div className="relative h-full bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-pink-500 transition-all flex flex-col">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-500/30">
                                 <Heart className="w-6 h-6 text-white" />
@@ -99,9 +99,9 @@ export default function CollectionStats({ collections }: CollectionStatsProps) {
                 </div>
 
                 {/* Toys */}
-                <div className="relative">
+                <div className="relative h-full">
                     <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-3xl blur-xl opacity-20" />
-                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-purple-500 transition-all">
+                    <div className="relative h-full bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-purple-500 transition-all flex flex-col">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
                                 <Gift className="w-6 h-6 text-white" />
@@ -140,9 +140,9 @@ export default function CollectionStats({ collections }: CollectionStatsProps) {
                 </div>
 
                 {/* Transmog */}
-                <div className="relative">
+                <div className="relative h-full">
                     <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-3xl blur-xl opacity-20" />
-                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-cyan-500 transition-all">
+                    <div className="relative h-full bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-cyan-500 transition-all flex flex-col">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/30">
                                 <Sparkles className="w-6 h-6 text-white" />
@@ -179,9 +179,9 @@ export default function CollectionStats({ collections }: CollectionStatsProps) {
                 </div>
 
                 {/* Mounts */}
-                <div className="relative">
+                <div className="relative h-full">
                     <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl blur-xl opacity-20" />
-                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-emerald-500 transition-all">
+                    <div className="relative h-full bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-emerald-500 transition-all flex flex-col">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
                                 <CircleDot className="w-6 h-6 text-white" />

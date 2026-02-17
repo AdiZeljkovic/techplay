@@ -71,11 +71,11 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
     return (
         <div className="space-y-6">
             {/* Header Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
                 {/* Average iLvL */}
-                <div className="relative">
+                <div className="relative h-full">
                     <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent)] to-orange-500 rounded-3xl blur-xl opacity-20" />
-                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-[var(--accent)] transition-all">
+                    <div className="relative h-full bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-[var(--accent)] transition-all flex flex-col">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--accent)] to-orange-500 flex items-center justify-center shadow-lg shadow-[var(--accent)]/30">
                                 <Shield className="w-6 h-6 text-white" />
@@ -102,9 +102,9 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
                 </div>
 
                 {/* Tier Set Progress */}
-                <div className="relative">
+                <div className="relative h-full">
                     <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl blur-xl opacity-20" />
-                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-purple-500 transition-all">
+                    <div className="relative h-full bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-purple-500 transition-all flex flex-col">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
                                 <Sparkles className="w-6 h-6 text-white" />
@@ -126,9 +126,9 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
                 </div>
 
                 {/* Issues */}
-                <div className="relative">
+                <div className="relative h-full">
                     <div className="absolute -inset-1 bg-gradient-to-r from-yellow-500 to-red-500 rounded-3xl blur-xl opacity-20" />
-                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-yellow-500 transition-all">
+                    <div className="relative h-full bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-yellow-500 transition-all flex flex-col">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-red-500 flex items-center justify-center shadow-lg shadow-yellow-500/30">
                                 <AlertCircle className="w-6 h-6 text-white" />

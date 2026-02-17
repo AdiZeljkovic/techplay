@@ -83,11 +83,11 @@ export default function PvPStats({ pvp }: PvPStatsProps) {
             </div>
 
             {/* Arena Ratings */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
                 {/* 2v2 Arena */}
-                <div className="relative">
+                <div className="relative h-full">
                     <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-3xl blur-xl opacity-20" />
-                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-blue-500 transition-all">
+                    <div className="relative h-full bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-blue-500 transition-all flex flex-col">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
                                 <Trophy className="w-5 h-5 text-white" />
@@ -112,9 +112,9 @@ export default function PvPStats({ pvp }: PvPStatsProps) {
                 </div>
 
                 {/* 3v3 Arena */}
-                <div className="relative">
+                <div className="relative h-full">
                     <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl blur-xl opacity-20" />
-                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-purple-500 transition-all">
+                    <div className="relative h-full bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-purple-500 transition-all flex flex-col">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
                                 <Trophy className="w-5 h-5 text-white" />
