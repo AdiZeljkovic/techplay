@@ -130,121 +130,97 @@ export default function WowAnalyzerClient() {
                 <div className="absolute top-0 left-0 w-96 h-96 bg-[var(--accent)] rounded-full blur-[150px] opacity-[0.15]" />
                 <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500 rounded-full blur-[150px] opacity-[0.12]" />
 
-                <div className="relative container mx-auto px-4 py-20 md:py-32 max-w-7xl">
-                    <div className="grid lg:grid-cols-2 gap-12 items-center">
-                        {/* Left: Copy */}
+                <div className="relative container mx-auto px-4 py-20 md:py-32 max-w-5xl">
+                    <div className="text-center">
+                        {/* Badge */}
                         <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.6 }}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-black/40 backdrop-blur-md border border-[var(--accent)]/30 rounded-full mb-8"
                         >
-                            {/* Badge */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 }}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent)]/10 border border-[var(--accent)]/20 rounded-full mb-6"
-                            >
-                                <Sparkles className="w-4 h-4 text-[var(--accent)]" />
-                                <span className="text-sm font-semibold text-[var(--accent)]">
-                                    Instant Analysis • Free Forever
-                                </span>
-                            </motion.div>
-
-                            {/* Headline */}
-                            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-[1.1]">
-                                <span className="text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">Ready for</span>
-                                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-purple-400 to-purple-500 drop-shadow-[0_2px_20px_rgba(252,65,0,0.5)]">
-                                    Midnight expansion?
-                                </span>
-                            </h1>
-
-                            {/* Description */}
-                            <p className="text-xl text-gray-200 mb-8 leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                                Get your instant readiness score and personalized roadmap for <strong className="text-white">World of Warcraft: Midnight</strong> expansion.
-                            </p>
-
-                            {/* Trust Stats */}
-                            <div className="flex flex-wrap items-center gap-6 mb-8">
-                                <div className="flex items-center gap-2">
-                                    <div className="flex -space-x-2">
-                                        {[1, 2, 3, 4].map((i) => (
-                                            <div key={i} className="w-8 h-8 rounded-full border-2 border-black/50 bg-gradient-to-br from-purple-400 to-[var(--accent)] flex items-center justify-center text-xs font-bold text-white shadow-lg">
-                                                {i}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <span className="text-sm text-gray-300 drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
-                                        <strong className="text-white">50K+</strong> players analyzed
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="flex items-center">
-                                        {[1, 2, 3, 4, 5].map((i) => (
-                                            <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400 drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]" />
-                                        ))}
-                                    </div>
-                                    <span className="text-sm text-gray-300 drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
-                                        4.9/5 rating
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* CTA Scroll */}
-                            <button
-                                onClick={() => document.getElementById('analyzer-form')?.scrollIntoView({ behavior: 'smooth' })}
-                                className="group inline-flex items-center gap-3 px-8 py-4 bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white rounded-2xl font-bold text-lg transition-all hover:scale-105 hover:shadow-2xl hover:shadow-[var(--accent)]/20"
-                            >
-                                Analyze My Character
-                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </button>
-
-                            <p className="text-xs text-gray-300 mt-4 drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
-                                ⚡ Takes 5 seconds • No account required • 100% free
-                            </p>
+                            <Sparkles className="w-4 h-4 text-[var(--accent)]" />
+                            <span className="text-sm font-bold text-[var(--accent)]">
+                                Instant Analysis • Free Forever
+                            </span>
                         </motion.div>
 
-                        {/* Right: Live Stats */}
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.6, delay: 0.2 }}
-                            className="hidden lg:block"
+                        {/* Headline */}
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="text-6xl md:text-7xl lg:text-8xl font-black mb-8 leading-[1.05]"
                         >
-                            <div className="grid grid-cols-2 gap-4">
-                                {[
-                                    { label: "Analyses Today", value: "12.8K", icon: TrendingUp, color: "from-blue-500 to-cyan-500" },
-                                    { label: "Avg Readiness", value: "76%", icon: Target, color: "from-purple-500 to-pink-500" },
-                                    { label: "Success Rate", value: "99.9%", icon: CheckCircle2, color: "from-green-500 to-emerald-500" },
-                                    { label: "Response Time", value: "< 5s", icon: Zap, color: "from-orange-500 to-red-500" }
-                                ].map((stat, i) => (
-                                    <motion.div
-                                        key={i}
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: 0.3 + i * 0.1 }}
-                                        className="relative group"
-                                    >
-                                        {/* Glow Effect */}
-                                        <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-20 rounded-2xl transition-opacity blur-xl"
-                                             style={{ background: `linear-gradient(to bottom right, var(--accent), purple)` }} />
+                            <span className="text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">Ready for</span>
+                            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-purple-400 to-purple-500 drop-shadow-[0_4px_30px_rgba(252,65,0,0.6)]">
+                                Midnight expansion?
+                            </span>
+                        </motion.h1>
 
-                                        {/* Card with Backdrop Blur */}
-                                        <div className="relative bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:border-[var(--accent)]/60 hover:bg-black/50 transition-all shadow-2xl">
-                                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-4 shadow-lg`}>
-                                                <stat.icon className="w-6 h-6 text-white" />
-                                            </div>
-                                            <div className="text-3xl font-black text-white mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-                                                {stat.value}
-                                            </div>
-                                            <div className="text-sm text-gray-300 drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
-                                                {stat.label}
-                                            </div>
+                        {/* Description */}
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-xl md:text-2xl text-gray-200 mb-10 leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] max-w-3xl mx-auto"
+                        >
+                            Get your instant readiness score and personalized roadmap for <strong className="text-white font-bold">World of Warcraft: Midnight</strong> expansion.
+                        </motion.p>
+
+                        {/* Trust Stats */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 }}
+                            className="flex flex-wrap items-center justify-center gap-8 mb-12"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="flex -space-x-2">
+                                    {[1, 2, 3, 4].map((i) => (
+                                        <div key={i} className="w-10 h-10 rounded-full border-2 border-black/50 bg-gradient-to-br from-purple-400 to-[var(--accent)] flex items-center justify-center text-sm font-bold text-white shadow-xl">
+                                            {i}
                                         </div>
-                                    </motion.div>
-                                ))}
+                                    ))}
+                                </div>
+                                <span className="text-base text-gray-200 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+                                    <strong className="text-white font-bold">50K+</strong> players analyzed
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center">
+                                    {[1, 2, 3, 4, 5].map((i) => (
+                                        <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]" />
+                                    ))}
+                                </div>
+                                <span className="text-base text-gray-200 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+                                    4.9/5 rating
+                                </span>
                             </div>
                         </motion.div>
+
+                        {/* CTA Button */}
+                        <motion.button
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                            onClick={() => document.getElementById('analyzer-form')?.scrollIntoView({ behavior: 'smooth' })}
+                            className="group inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-[var(--accent)] to-orange-600 hover:from-[var(--accent)]/90 hover:to-orange-600/90 text-white rounded-2xl font-bold text-xl transition-all hover:scale-105 hover:shadow-2xl hover:shadow-[var(--accent)]/30 mb-6"
+                        >
+                            <Rocket className="w-6 h-6" />
+                            Analyze My Character
+                            <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                        </motion.button>
+
+                        {/* Small Trust Line */}
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.6 }}
+                            className="text-sm text-gray-300 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]"
+                        >
+                            ⚡ Takes 5 seconds • No account required • 100% free
+                        </motion.p>
                     </div>
                 </div>
             </section>
