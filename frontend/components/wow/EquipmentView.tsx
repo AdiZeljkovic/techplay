@@ -1,16 +1,13 @@
 'use client';
 
-import { WowEquipment, EquipmentSlot } from '@/types';
+import { WowEquipment } from '@/types';
 import { Shield, Sparkles, AlertCircle } from 'lucide-react';
-import { useState } from 'react';
 
 interface EquipmentViewProps {
     equipment: WowEquipment | null;
 }
 
 export default function EquipmentView({ equipment }: EquipmentViewProps) {
-    const [hoveredSlot, setHoveredSlot] = useState<string | null>(null);
-
     if (!equipment) {
         return (
             <div className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl text-center">
@@ -54,112 +51,6 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
 
     const ilvlRating = getIlvlRating(equipment.item_level);
     const nextIlvl = getNextIlvlMilestone(equipment.item_level);
-
-    // Map slots to equipment items
-    const getSlotItem = (slotName: string): EquipmentSlot | null => {
-        return equipment.slots.find((s) => s.slot.toUpperCase() === slotName.toUpperCase()) || null;
-    };
-
-    // Paperdoll slot component
-    const PaperdollSlot = ({ slotName, label }: { slotName: string; label?: string }) => {
-        const item = getSlotItem(slotName);
-        const displayLabel = label || slotName.replace('_', ' ');
-
-        return (
-            <div
-                className="relative group"
-                onMouseEnter={() => setHoveredSlot(slotName)}
-                onMouseLeave={() => setHoveredSlot(null)}
-            >
-                <div
-                    className={`
-                        w-14 h-14 rounded-xl border-2 flex items-center justify-center text-xs font-bold
-                        transition-all duration-200 cursor-pointer
-                        ${
-                            item
-                                ? 'border-[var(--accent)] bg-[var(--bg-card)] hover:scale-110 hover:border-[var(--accent)] hover:shadow-lg hover:shadow-[var(--accent)]/20'
-                                : 'border-[var(--border)] bg-[var(--bg-secondary)] opacity-40'
-                        }
-                    `}
-                    style={{
-                        borderColor: item ? getQualityColor(item.quality) : undefined,
-                    }}
-                >
-                    {item ? (
-                        <span className="text-[var(--text-primary)]">{item.ilvl}</span>
-                    ) : (
-                        <span className="text-[var(--text-secondary)] text-[10px]">---</span>
-                    )}
-                </div>
-
-                {/* Hover Tooltip */}
-                {item && hoveredSlot === slotName && (
-                    <div className="absolute z-50 top-full mt-2 left-1/2 -translate-x-1/2 w-64 p-4 bg-[var(--bg-card)] border-2 rounded-xl shadow-2xl pointer-events-none"
-                        style={{ borderColor: getQualityColor(item.quality) }}
-                    >
-                        <div className="space-y-2">
-                            <div>
-                                <p className="text-[10px] font-semibold text-[var(--text-secondary)] uppercase">
-                                    {displayLabel}
-                                </p>
-                                <p
-                                    className="font-bold text-sm"
-                                    style={{ color: getQualityColor(item.quality) }}
-                                >
-                                    {item.name}
-                                </p>
-                            </div>
-
-                            <div className="pt-2 border-t border-[var(--border)] space-y-1">
-                                <div className="flex justify-between text-xs">
-                                    <span className="text-[var(--text-secondary)]">Item Level:</span>
-                                    <span className="text-[var(--text-primary)] font-semibold">{item.ilvl}</span>
-                                </div>
-
-                                {item.is_tier && (
-                                    <div className="flex items-center gap-2">
-                                        <span className="px-2 py-0.5 text-[10px] rounded-full bg-[var(--accent)]/10 text-[var(--accent)] font-semibold">
-                                            TIER SET
-                                        </span>
-                                    </div>
-                                )}
-
-                                <div className="flex items-center gap-2 text-xs">
-                                    <span
-                                        className={`${
-                                            item.enchanted ? 'text-green-500' : 'text-red-500'
-                                        } font-semibold`}
-                                    >
-                                        {item.enchanted ? '✓ Enchanted' : '✗ No Enchant'}
-                                    </span>
-                                </div>
-
-                                {item.gem_slots > 0 && (
-                                    <div className="flex items-center gap-2 text-xs">
-                                        <span className="text-[var(--text-secondary)]">Gems:</span>
-                                        <span
-                                            className={`font-semibold ${
-                                                item.gems_filled === item.gem_slots
-                                                    ? 'text-green-500'
-                                                    : 'text-red-500'
-                                            }`}
-                                        >
-                                            {item.gems_filled}/{item.gem_slots}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Slot Label (below) */}
-                <p className="text-[9px] text-center text-[var(--text-secondary)] mt-1 uppercase font-semibold">
-                    {displayLabel.split('_').join(' ').substring(0, 6)}
-                </p>
-            </div>
-        );
-    };
 
     return (
         <div className="space-y-6">
@@ -216,109 +107,76 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
                     </div>
                     <div className="space-y-1">
                         <p className="text-sm text-[var(--text-secondary)]">
-                            Missing Enchants:{' '}
-                            <span className="text-[var(--text-primary)] font-semibold">
-                                {equipment.missing_enchants.length}
-                            </span>
+                            Missing Enchants: <span className="text-[var(--text-primary)] font-semibold">{equipment.missing_enchants.length}</span>
                         </p>
                         <p className="text-sm text-[var(--text-secondary)]">
-                            Missing Gems:{' '}
-                            <span className="text-[var(--text-primary)] font-semibold">
-                                {equipment.missing_gems.length}
-                            </span>
+                            Missing Gems: <span className="text-[var(--text-primary)] font-semibold">{equipment.missing_gems.length}</span>
                         </p>
                     </div>
                 </div>
             </div>
 
-            {/* 2D Paperdoll Layout */}
+            {/* Equipment List */}
             <div className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl">
-                <h3 className="text-xl font-bold text-[var(--text-primary)] uppercase mb-6 text-center">
-                    Character Equipment
-                </h3>
+                <h3 className="text-xl font-bold text-[var(--text-primary)] uppercase mb-6">Equipment</h3>
 
-                <div className="flex items-center justify-center">
-                    {/* Paperdoll Grid */}
-                    <div className="relative">
-                        {/* HEAD */}
-                        <div className="flex justify-center mb-3">
-                            <PaperdollSlot slotName="HEAD" label="Head" />
-                        </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {equipment.slots.map((slot, index) => (
+                        <div
+                            key={index}
+                            className="bg-[var(--bg-secondary)] border border-[var(--border)] p-4 rounded-xl hover:border-[var(--accent)] transition-colors"
+                        >
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase">
+                                            {slot.slot.replace('_', ' ')}
+                                        </span>
+                                        {slot.is_tier && (
+                                            <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--accent)]/10 text-[var(--accent)] font-semibold">
+                                                TIER
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p
+                                        className="font-semibold mb-2"
+                                        style={{ color: getQualityColor(slot.quality) }}
+                                    >
+                                        {slot.name}
+                                    </p>
 
-                        {/* NECK */}
-                        <div className="flex justify-center mb-3">
-                            <PaperdollSlot slotName="NECK" label="Neck" />
-                        </div>
+                                    <div className="flex items-center gap-3 text-xs">
+                                        <span className="text-[var(--text-secondary)]">
+                                            iLvL: <span className="text-[var(--text-primary)] font-semibold">{slot.ilvl}</span>
+                                        </span>
 
-                        {/* SHOULDERS */}
-                        <div className="flex justify-center gap-20 mb-3">
-                            <PaperdollSlot slotName="SHOULDER" label="Shoulder" />
-                            <div className="w-14"></div>
-                            <PaperdollSlot slotName="SHOULDER" label="Shoulder" />
-                        </div>
+                                        {slot.gem_slots > 0 && (
+                                            <span className="text-[var(--text-secondary)]">
+                                                Gems: <span className={slot.gems_filled === slot.gem_slots ? 'text-green-500' : 'text-[var(--accent)]'}>
+                                                    {slot.gems_filled}/{slot.gem_slots}
+                                                </span>
+                                            </span>
+                                        )}
 
-                        {/* BACK */}
-                        <div className="flex justify-center mb-3">
-                            <PaperdollSlot slotName="BACK" label="Back" />
-                        </div>
+                                        <span className={slot.enchanted ? 'text-green-500' : 'text-[var(--accent)]'}>
+                                            {slot.enchanted ? '✓ Enchanted' : '✗ No Enchant'}
+                                        </span>
+                                    </div>
+                                </div>
 
-                        {/* CHEST */}
-                        <div className="flex justify-center mb-3">
-                            <PaperdollSlot slotName="CHEST" label="Chest" />
+                                <div className="text-right">
+                                    <div className="text-2xl font-bold text-[var(--text-primary)]">
+                                        {slot.ilvl}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-
-                        {/* WRISTS */}
-                        <div className="flex justify-center gap-20 mb-3">
-                            <PaperdollSlot slotName="WRIST" label="Wrist" />
-                            <div className="w-14"></div>
-                            <PaperdollSlot slotName="WRIST" label="Wrist" />
-                        </div>
-
-                        {/* HANDS & WAIST */}
-                        <div className="flex justify-center items-center gap-4 mb-3">
-                            <PaperdollSlot slotName="HANDS" label="Hands" />
-                            <PaperdollSlot slotName="WAIST" label="Waist" />
-                        </div>
-
-                        {/* LEGS */}
-                        <div className="flex justify-center mb-3">
-                            <PaperdollSlot slotName="LEGS" label="Legs" />
-                        </div>
-
-                        {/* FEET */}
-                        <div className="flex justify-center mb-3">
-                            <PaperdollSlot slotName="FEET" label="Feet" />
-                        </div>
-
-                        {/* RINGS */}
-                        <div className="flex justify-center gap-4 mb-3">
-                            <PaperdollSlot slotName="FINGER_1" label="Ring 1" />
-                            <PaperdollSlot slotName="FINGER_2" label="Ring 2" />
-                        </div>
-
-                        {/* TRINKETS */}
-                        <div className="flex justify-center gap-4 mb-3">
-                            <PaperdollSlot slotName="TRINKET_1" label="Trinket 1" />
-                            <PaperdollSlot slotName="TRINKET_2" label="Trinket 2" />
-                        </div>
-
-                        {/* WEAPONS */}
-                        <div className="flex justify-center gap-4">
-                            <PaperdollSlot slotName="MAIN_HAND" label="Main Hand" />
-                            <PaperdollSlot slotName="OFF_HAND" label="Off Hand" />
-                        </div>
-                    </div>
+                    ))}
                 </div>
-
-                <p className="text-xs text-center text-[var(--text-secondary)] mt-6">
-                    💡 Hover over items to see details
-                </p>
             </div>
 
             {/* Optimization Recommendations */}
-            {(equipment.missing_enchants.length > 0 ||
-                equipment.missing_gems.length > 0 ||
-                equipment.tier_pieces < 4) && (
+            {(equipment.missing_enchants.length > 0 || equipment.missing_gems.length > 0 || equipment.tier_pieces < 4) && (
                 <div className="bg-[var(--accent)]/5 border border-[var(--accent)]/20 p-6 rounded-3xl">
                     <h4 className="text-lg font-bold text-[var(--accent)] mb-4 flex items-center gap-2">
                         <AlertCircle className="w-5 h-5" />
@@ -341,8 +199,7 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
                                 ))}
                             </div>
                             <p className="text-xs text-[var(--text-secondary)] mt-2">
-                                💡 Enchants typically provide 2-3% performance increase. Visit the Auction House or
-                                ask a guild enchanter.
+                                💡 Enchants typically provide 2-3% performance increase. Visit the Auction House or ask a guild enchanter.
                             </p>
                         </div>
                     )}
@@ -374,8 +231,7 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
                                 Tier Set Incomplete ({equipment.tier_pieces}/5 pieces):
                             </p>
                             <p className="text-xs text-[var(--text-secondary)]">
-                                💡 Get {4 - equipment.tier_pieces} more tier pieces for the powerful 4-piece set
-                                bonus. Farm current raid on any difficulty or use Great Vault rewards.
+                                💡 Get {4 - equipment.tier_pieces} more tier pieces for the powerful 4-piece set bonus. Farm current raid on any difficulty or use Great Vault rewards.
                             </p>
                         </div>
                     )}
