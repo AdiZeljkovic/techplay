@@ -1,16 +1,13 @@
 'use client';
 
-import { useState } from 'react';
 import { WowEquipment } from '@/types';
-import { Shield, Sparkles, AlertCircle, ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Shield, Sparkles, AlertCircle } from 'lucide-react';
 
 interface EquipmentViewProps {
     equipment: WowEquipment | null;
 }
 
 export default function EquipmentView({ equipment }: EquipmentViewProps) {
-    const [expandedSlot, setExpandedSlot] = useState<number | null>(null);
 
     if (!equipment) {
         return (
@@ -69,10 +66,6 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
             armor: 'Armor',
         };
         return names[statKey] || statKey;
-    };
-
-    const toggleSlot = (index: number) => {
-        setExpandedSlot(expandedSlot === index ? null : index);
     };
 
     return (
@@ -145,20 +138,14 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {equipment.slots.map((slot, index) => {
-                        const isExpanded = expandedSlot === index;
                         const hasStats = slot.stats && Object.keys(slot.stats).length > 0;
 
                         return (
-                            <motion.div
+                            <div
                                 key={index}
-                                layout
                                 className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl hover:border-[var(--accent)] transition-colors overflow-hidden"
                             >
-                                <button
-                                    onClick={() => hasStats && toggleSlot(index)}
-                                    className="w-full p-4 text-left transition-colors"
-                                    disabled={!hasStats}
-                                >
+                                <div className="p-4">
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-1">
@@ -169,13 +156,6 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
                                                     <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--accent)]/10 text-[var(--accent)] font-semibold">
                                                         TIER
                                                     </span>
-                                                )}
-                                                {hasStats && (
-                                                    <ChevronDown
-                                                        className={`w-4 h-4 text-[var(--accent)] transition-transform duration-200 ${
-                                                            isExpanded ? 'rotate-180' : ''
-                                                        }`}
-                                                    />
                                                 )}
                                             </div>
                                             <p
@@ -210,43 +190,33 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
                                             </div>
                                         </div>
                                     </div>
-                                </button>
+                                </div>
 
-                                {/* Expandable Stats Section */}
-                                <AnimatePresence>
-                                    {isExpanded && hasStats && (
-                                        <motion.div
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: 'auto', opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
-                                            transition={{ duration: 0.2 }}
-                                            className="border-t border-[var(--border)]"
-                                        >
-                                            <div className="p-4 pt-3 bg-[var(--bg-elevated)]">
-                                                <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase mb-3 flex items-center gap-2">
-                                                    <Sparkles className="w-3 h-3 text-[var(--accent)]" />
-                                                    Item Stats
-                                                </h4>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {Object.entries(slot.stats!).map(([statKey, statValue]) => (
-                                                        <div
-                                                            key={statKey}
-                                                            className="flex items-center justify-between px-3 py-2 bg-[var(--bg-secondary)] rounded-lg"
-                                                        >
-                                                            <span className="text-xs text-[var(--text-secondary)]">
-                                                                {formatStatName(statKey)}
-                                                            </span>
-                                                            <span className="text-sm font-bold text-[var(--text-primary)]">
-                                                                {statValue}
-                                                            </span>
-                                                        </div>
-                                                    ))}
+                                {/* Stats Section - Always Visible */}
+                                {hasStats && (
+                                    <div className="border-t border-[var(--border)] bg-[var(--bg-elevated)] p-4 pt-3">
+                                        <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase mb-3 flex items-center gap-2">
+                                            <Sparkles className="w-3 h-3 text-[var(--accent)]" />
+                                            Item Stats
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {Object.entries(slot.stats!).map(([statKey, statValue]) => (
+                                                <div
+                                                    key={statKey}
+                                                    className="flex items-center justify-between px-3 py-2 bg-[var(--bg-secondary)] rounded-lg"
+                                                >
+                                                    <span className="text-xs text-[var(--text-secondary)]">
+                                                        {formatStatName(statKey)}
+                                                    </span>
+                                                    <span className="text-sm font-bold text-[var(--text-primary)]">
+                                                        {statValue}
+                                                    </span>
                                                 </div>
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </motion.div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         );
                     })}
                 </div>
