@@ -231,6 +231,19 @@ export interface WowAnalysisResponse {
 }
 
 // Equipment & Gear Types
+export interface ItemStats {
+    strength?: number;
+    agility?: number;
+    intellect?: number;
+    stamina?: number;
+    critical_strike?: number;
+    haste?: number;
+    mastery?: number;
+    versatility?: number;
+    armor?: number;
+    [key: string]: number | undefined; // Allow for other stats
+}
+
 export interface EquipmentSlot {
     slot: string;
     name: string;
@@ -240,6 +253,7 @@ export interface EquipmentSlot {
     enchanted: boolean;
     gem_slots: number;
     gems_filled: number;
+    stats?: ItemStats; // Optional detailed stats
 }
 
 export interface WowEquipment {

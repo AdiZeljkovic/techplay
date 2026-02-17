@@ -1,13 +1,17 @@
 'use client';
 
+import { useState } from 'react';
 import { WowEquipment } from '@/types';
-import { Shield, Sparkles, AlertCircle } from 'lucide-react';
+import { Shield, Sparkles, AlertCircle, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface EquipmentViewProps {
     equipment: WowEquipment | null;
 }
 
 export default function EquipmentView({ equipment }: EquipmentViewProps) {
+    const [expandedSlot, setExpandedSlot] = useState<number | null>(null);
+
     if (!equipment) {
         return (
             <div className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl text-center">
@@ -51,6 +55,25 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
 
     const ilvlRating = getIlvlRating(equipment.item_level);
     const nextIlvl = getNextIlvlMilestone(equipment.item_level);
+
+    const formatStatName = (statKey: string): string => {
+        const names: Record<string, string> = {
+            strength: 'Strength',
+            agility: 'Agility',
+            intellect: 'Intellect',
+            stamina: 'Stamina',
+            critical_strike: 'Critical Strike',
+            haste: 'Haste',
+            mastery: 'Mastery',
+            versatility: 'Versatility',
+            armor: 'Armor',
+        };
+        return names[statKey] || statKey;
+    };
+
+    const toggleSlot = (index: number) => {
+        setExpandedSlot(expandedSlot === index ? null : index);
+    };
 
     return (
         <div className="space-y-6">
@@ -121,57 +144,111 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
                 <h3 className="text-xl font-bold text-[var(--text-primary)] uppercase mb-6">Equipment</h3>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {equipment.slots.map((slot, index) => (
-                        <div
-                            key={index}
-                            className="bg-[var(--bg-secondary)] border border-[var(--border)] p-4 rounded-xl hover:border-[var(--accent)] transition-colors"
-                        >
-                            <div className="flex items-start justify-between gap-3">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase">
-                                            {slot.slot.replace('_', ' ')}
-                                        </span>
-                                        {slot.is_tier && (
-                                            <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--accent)]/10 text-[var(--accent)] font-semibold">
-                                                TIER
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p
-                                        className="font-semibold mb-2"
-                                        style={{ color: getQualityColor(slot.quality) }}
-                                    >
-                                        {slot.name}
-                                    </p>
+                    {equipment.slots.map((slot, index) => {
+                        const isExpanded = expandedSlot === index;
+                        const hasStats = slot.stats && Object.keys(slot.stats).length > 0;
 
-                                    <div className="flex items-center gap-3 text-xs">
-                                        <span className="text-[var(--text-secondary)]">
-                                            iLvL: <span className="text-[var(--text-primary)] font-semibold">{slot.ilvl}</span>
-                                        </span>
-
-                                        {slot.gem_slots > 0 && (
-                                            <span className="text-[var(--text-secondary)]">
-                                                Gems: <span className={slot.gems_filled === slot.gem_slots ? 'text-green-500' : 'text-[var(--accent)]'}>
-                                                    {slot.gems_filled}/{slot.gem_slots}
+                        return (
+                            <motion.div
+                                key={index}
+                                layout
+                                className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl hover:border-[var(--accent)] transition-colors overflow-hidden"
+                            >
+                                <button
+                                    onClick={() => hasStats && toggleSlot(index)}
+                                    className="w-full p-4 text-left transition-colors"
+                                    disabled={!hasStats}
+                                >
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase">
+                                                    {slot.slot.replace('_', ' ')}
                                                 </span>
-                                            </span>
-                                        )}
+                                                {slot.is_tier && (
+                                                    <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--accent)]/10 text-[var(--accent)] font-semibold">
+                                                        TIER
+                                                    </span>
+                                                )}
+                                                {hasStats && (
+                                                    <ChevronDown
+                                                        className={`w-4 h-4 text-[var(--accent)] transition-transform duration-200 ${
+                                                            isExpanded ? 'rotate-180' : ''
+                                                        }`}
+                                                    />
+                                                )}
+                                            </div>
+                                            <p
+                                                className="font-semibold mb-2"
+                                                style={{ color: getQualityColor(slot.quality) }}
+                                            >
+                                                {slot.name}
+                                            </p>
 
-                                        <span className={slot.enchanted ? 'text-green-500' : 'text-[var(--accent)]'}>
-                                            {slot.enchanted ? '✓ Enchanted' : '✗ No Enchant'}
-                                        </span>
-                                    </div>
-                                </div>
+                                            <div className="flex items-center gap-3 text-xs">
+                                                <span className="text-[var(--text-secondary)]">
+                                                    iLvL: <span className="text-[var(--text-primary)] font-semibold">{slot.ilvl}</span>
+                                                </span>
 
-                                <div className="text-right">
-                                    <div className="text-2xl font-bold text-[var(--text-primary)]">
-                                        {slot.ilvl}
+                                                {slot.gem_slots > 0 && (
+                                                    <span className="text-[var(--text-secondary)]">
+                                                        Gems: <span className={slot.gems_filled === slot.gem_slots ? 'text-green-500' : 'text-[var(--accent)]'}>
+                                                            {slot.gems_filled}/{slot.gem_slots}
+                                                        </span>
+                                                    </span>
+                                                )}
+
+                                                <span className={slot.enchanted ? 'text-green-500' : 'text-[var(--accent)]'}>
+                                                    {slot.enchanted ? '✓ Enchanted' : '✗ No Enchant'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="text-right">
+                                            <div className="text-2xl font-bold text-[var(--text-primary)]">
+                                                {slot.ilvl}
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                                </button>
+
+                                {/* Expandable Stats Section */}
+                                <AnimatePresence>
+                                    {isExpanded && hasStats && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="border-t border-[var(--border)]"
+                                        >
+                                            <div className="p-4 pt-3 bg-[var(--bg-elevated)]">
+                                                <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase mb-3 flex items-center gap-2">
+                                                    <Sparkles className="w-3 h-3 text-[var(--accent)]" />
+                                                    Item Stats
+                                                </h4>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {Object.entries(slot.stats!).map(([statKey, statValue]) => (
+                                                        <div
+                                                            key={statKey}
+                                                            className="flex items-center justify-between px-3 py-2 bg-[var(--bg-secondary)] rounded-lg"
+                                                        >
+                                                            <span className="text-xs text-[var(--text-secondary)]">
+                                                                {formatStatName(statKey)}
+                                                            </span>
+                                                            <span className="text-sm font-bold text-[var(--text-primary)]">
+                                                                {statValue}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </div>
 

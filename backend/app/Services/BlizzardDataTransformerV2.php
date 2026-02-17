@@ -92,6 +92,9 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
                 }
             }
 
+            // Extract item stats
+            $stats = $this->extractItemStats($item);
+
             // Build compact slot data
             $slots[] = [
                 'slot' => $slotType,
@@ -102,6 +105,7 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
                 'enchanted' => $hasEnchant,
                 'gem_slots' => count($sockets),
                 'gems_filled' => $this->countFilledSockets($sockets),
+                'stats' => $stats, // Add detailed stats
             ];
         }
 
@@ -114,6 +118,65 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
             'missing_enchants' => array_unique($missingEnchants),
             'missing_gems' => array_unique($missingGems),
         ];
+    }
+
+    /**
+     * Extract item stats from Blizzard API item data
+     *
+     * @param array $item Raw item data from equipment API
+     * @return array Item stats (strength, agility, stamina, etc.)
+     */
+    protected function extractItemStats(array $item): array
+    {
+        $stats = [];
+
+        // Extract stats from the item
+        if (isset($item['stats']) && is_array($item['stats'])) {
+            foreach ($item['stats'] as $stat) {
+                $statType = $stat['type']['type'] ?? null;
+                $statValue = $stat['value'] ?? 0;
+
+                if (!$statType || $statValue === 0) {
+                    continue;
+                }
+
+                // Map Blizzard stat types to our format
+                $mappedStat = $this->mapStatType($statType);
+                if ($mappedStat) {
+                    $stats[$mappedStat] = $statValue;
+                }
+            }
+        }
+
+        // Extract armor value (separate field)
+        if (isset($item['armor']['value'])) {
+            $stats['armor'] = $item['armor']['value'];
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Map Blizzard API stat type to our format
+     *
+     * @param string $blizzardType Blizzard stat type (e.g., "STRENGTH", "CRIT_RATING")
+     * @return string|null Our stat key (e.g., "strength", "critical_strike")
+     */
+    protected function mapStatType(string $blizzardType): ?string
+    {
+        $mapping = [
+            'STRENGTH' => 'strength',
+            'AGILITY' => 'agility',
+            'INTELLECT' => 'intellect',
+            'STAMINA' => 'stamina',
+            'CRIT_RATING' => 'critical_strike',
+            'HASTE_RATING' => 'haste',
+            'MASTERY_RATING' => 'mastery',
+            'VERSATILITY' => 'versatility',
+            'VERSATILITY_DAMAGE_DONE_BONUS' => 'versatility',
+        ];
+
+        return $mapping[$blizzardType] ?? null;
     }
 
     /**
