@@ -92,37 +92,43 @@ export default function OverviewTab({ data }: OverviewTabProps) {
             {/* Character Improvement Roadmap */}
             <motion.div
                 variants={fadeInUp}
-                className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl hover:border-[var(--accent)] transition-colors"
+                className="relative"
             >
-                <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-[var(--accent)] flex items-center justify-center">
-                        <TrendingUp className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                        <h3 className="text-2xl font-bold text-[var(--text-primary)] uppercase">
-                            Improvement Roadmap
-                        </h3>
-                        <p className="text-sm text-[var(--text-secondary)]">
-                            Prioritized actions to optimize your character
-                        </p>
-                    </div>
-                </div>
+                {/* Glow effect */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-[var(--accent)] to-purple-500 rounded-3xl blur-xl opacity-20" />
 
-                <div className="space-y-4">
-                    {/* CRITICAL: Midnight Factions (Housing Access!) */}
-                    {data.reputations?.midnight_factions && data.reputations.midnight_factions.some(f => f.tier < 7) && (
-                        <div className="p-5 rounded-xl bg-red-500/10 border-2 border-red-500/30 animate-pulse">
-                            <div className="flex items-start gap-4">
-                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/30 flex items-center justify-center">
-                                    <AlertCircle className="w-5 h-5 text-red-400" />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <h4 className="font-bold text-red-400 uppercase text-sm">CRITICAL: Midnight Housing</h4>
-                                        <span className="px-2 py-0.5 text-xs rounded-full bg-red-500/30 text-red-300 font-semibold">
-                                            REQUIRED FOR MIDNIGHT!
-                                        </span>
-                                    </div>
+                <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl hover:border-[var(--accent)] transition-all shadow-2xl">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-[var(--accent)] flex items-center justify-center shadow-lg shadow-purple-500/40">
+                            <TrendingUp className="w-7 h-7 text-white" />
+                        </div>
+                        <div>
+                            <h3 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tight">
+                                Improvement Roadmap
+                            </h3>
+                            <p className="text-sm font-semibold text-[var(--text-secondary)]">
+                                Prioritized actions to optimize your character
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        {/* CRITICAL: Midnight Factions (Housing Access!) */}
+                        {data.reputations?.midnight_factions && data.reputations.midnight_factions.some(f => f.tier < 7) && (
+                            <div className="relative group">
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity" />
+                                <div className="relative p-6 rounded-2xl bg-gradient-to-br from-red-500/15 to-orange-500/10 border-2 border-red-500/40 shadow-lg shadow-red-500/20">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-lg shadow-red-500/40">
+                                            <AlertCircle className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <h4 className="font-black text-red-400 uppercase text-base tracking-wide">CRITICAL: Midnight Housing</h4>
+                                                <span className="px-3 py-1 text-xs rounded-full bg-red-500/30 text-red-200 font-black border border-red-500/40 animate-pulse">
+                                                    REQUIRED FOR MIDNIGHT!
+                                                </span>
+                                            </div>
                                     <p className="text-[var(--text-primary)] font-semibold mb-3">
                                         Quel'Thalas Reputation Required
                                     </p>
@@ -147,104 +153,124 @@ export default function OverviewTab({ data }: OverviewTabProps) {
                                             </p>
                                         </div>
                                     ))}
-                                    <p className="text-xs text-red-300 mt-3 font-semibold">
-                                        💡 Exalted with Quel'Thalas factions is REQUIRED for Midnight housing access!
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Critical: Equipment Optimization */}
-                    {data.equipment && (data.equipment.missing_enchants.length > 0 || data.equipment.missing_gems.length > 0) && (
-                        <div className="p-5 rounded-xl bg-red-500/5 border border-red-500/20">
-                            <div className="flex items-start gap-4">
-                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
-                                    <Shield className="w-5 h-5 text-red-400" />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <h4 className="font-bold text-red-400 uppercase text-sm">Critical Priority</h4>
-                                        <span className="px-2 py-0.5 text-xs rounded-full bg-red-500/20 text-red-400 font-semibold">
-                                            URGENT
-                                        </span>
+                                            <p className="text-sm text-red-200 mt-3 font-bold bg-red-500/10 px-4 py-2 rounded-xl border border-red-500/20">
+                                                💡 Exalted with Quel'Thalas factions is REQUIRED for Midnight housing access!
+                                            </p>
+                                        </div>
                                     </div>
-                                    <p className="text-[var(--text-primary)] font-semibold mb-2">Optimize Equipment</p>
-                                    <ul className="space-y-1 text-sm text-[var(--text-secondary)]">
-                                        {data.equipment.missing_enchants.length > 0 && (
-                                            <li>• Add enchants to {data.equipment.missing_enchants.length} items (+2-3% performance)</li>
-                                        )}
-                                        {data.equipment.missing_gems.length > 0 && (
-                                            <li>• Socket gems in {data.equipment.missing_gems.length} slots (+1-2% stats)</li>
-                                        )}
-                                    </ul>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* High: Tier Set Progress */}
-                    {data.equipment && data.equipment.tier_pieces < 4 && (
-                        <div className="p-5 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
-                            <div className="flex items-start gap-4">
-                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                                    <Sparkles className="w-5 h-5 text-yellow-400" />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <h4 className="font-bold text-yellow-400 uppercase text-sm">High Priority</h4>
+                        {/* Critical: Equipment Optimization */}
+                        {data.equipment && (data.equipment.missing_enchants.length > 0 || data.equipment.missing_gems.length > 0) && (
+                            <div className="relative group">
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition-opacity" />
+                                <div className="relative p-6 rounded-2xl bg-gradient-to-br from-red-500/10 to-orange-500/5 border-2 border-red-500/30 shadow-lg">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-lg shadow-red-500/30">
+                                            <Shield className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <h4 className="font-black text-red-400 uppercase text-base tracking-wide">Critical Priority</h4>
+                                                <span className="px-3 py-1 text-xs rounded-full bg-red-500/30 text-red-200 font-black border border-red-500/40">
+                                                    URGENT
+                                                </span>
+                                            </div>
+                                            <p className="text-[var(--text-primary)] font-bold text-lg mb-3">Optimize Equipment</p>
+                                            <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
+                                                {data.equipment.missing_enchants.length > 0 && (
+                                                    <li className="flex items-center gap-2 font-medium">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                                                        Add enchants to {data.equipment.missing_enchants.length} items (+2-3% performance)
+                                                    </li>
+                                                )}
+                                                {data.equipment.missing_gems.length > 0 && (
+                                                    <li className="flex items-center gap-2 font-medium">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                                                        Socket gems in {data.equipment.missing_gems.length} slots (+1-2% stats)
+                                                    </li>
+                                                )}
+                                            </ul>
+                                        </div>
                                     </div>
-                                    <p className="text-[var(--text-primary)] font-semibold mb-2">Complete Tier Set</p>
-                                    <p className="text-sm text-[var(--text-secondary)]">
-                                        You have {data.equipment.tier_pieces}/5 tier pieces. Get {4 - data.equipment.tier_pieces} more for 4-piece bonus (+15-20% performance boost)
-                                    </p>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Medium: Mythic+ Score */}
-                    {data.mythic_plus && data.mythic_plus.score < 2500 && (
-                        <div className="p-5 rounded-xl bg-blue-500/5 border border-blue-500/20">
-                            <div className="flex items-start gap-4">
-                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                                    <Trophy className="w-5 h-5 text-blue-400" />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <h4 className="font-bold text-blue-400 uppercase text-sm">Medium Priority</h4>
+                        {/* High: Tier Set Progress */}
+                        {data.equipment && data.equipment.tier_pieces < 4 && (
+                            <div className="relative group">
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl blur opacity-20 group-hover:opacity-35 transition-opacity" />
+                                <div className="relative p-6 rounded-2xl bg-gradient-to-br from-yellow-500/10 to-orange-500/5 border-2 border-yellow-500/30 shadow-lg">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center shadow-lg shadow-yellow-500/30">
+                                            <Sparkles className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <h4 className="font-black text-yellow-400 uppercase text-base tracking-wide">High Priority</h4>
+                                            </div>
+                                            <p className="text-[var(--text-primary)] font-bold text-lg mb-3">Complete Tier Set</p>
+                                            <p className="text-sm text-[var(--text-secondary)] font-medium">
+                                                You have {data.equipment.tier_pieces}/5 tier pieces. Get {4 - data.equipment.tier_pieces} more for 4-piece bonus (+15-20% performance boost)
+                                            </p>
+                                        </div>
                                     </div>
-                                    <p className="text-[var(--text-primary)] font-semibold mb-2">Push Mythic+ Rating</p>
-                                    <p className="text-sm text-[var(--text-secondary)]">
-                                        {data.mythic_plus.score < 2000
-                                            ? `Current score: ${data.mythic_plus.score}. Push +10s or higher in all dungeons to reach 2000+ (Advanced tier)`
-                                            : `Current score: ${data.mythic_plus.score}. Time all +15s to reach 2500+ (Expert tier)`
-                                        }
-                                    </p>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Raid Progression */}
-                    {data.raids && !data.raids.summary.includes('8/8') && (
-                        <div className="p-5 rounded-xl bg-purple-500/5 border border-purple-500/20">
-                            <div className="flex items-start gap-4">
-                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                                    <Swords className="w-5 h-5 text-purple-400" />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <h4 className="font-bold text-purple-400 uppercase text-sm">Progression</h4>
+                        {/* Medium: Mythic+ Score */}
+                        {data.mythic_plus && data.mythic_plus.score < 2500 && (
+                            <div className="relative group">
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur opacity-15 group-hover:opacity-30 transition-opacity" />
+                                <div className="relative p-6 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/5 border-2 border-blue-500/30 shadow-lg">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                                            <Trophy className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <h4 className="font-black text-blue-400 uppercase text-base tracking-wide">Medium Priority</h4>
+                                            </div>
+                                            <p className="text-[var(--text-primary)] font-bold text-lg mb-3">Push Mythic+ Rating</p>
+                                            <p className="text-sm text-[var(--text-secondary)] font-medium">
+                                                {data.mythic_plus.score < 2000
+                                                    ? `Current score: ${data.mythic_plus.score}. Push +10s or higher in all dungeons to reach 2000+ (Advanced tier)`
+                                                    : `Current score: ${data.mythic_plus.score}. Time all +15s to reach 2500+ (Expert tier)`
+                                                }
+                                            </p>
+                                        </div>
                                     </div>
-                                    <p className="text-[var(--text-primary)] font-semibold mb-2">Continue Raid Progression</p>
-                                    <p className="text-sm text-[var(--text-secondary)]">
-                                        Current: {data.raids.summary}. Push higher difficulties for better loot and Midnight preparation
-                                    </p>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+
+                        {/* Raid Progression */}
+                        {data.raids && !data.raids.summary.includes('8/8') && (
+                            <div className="relative group">
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur opacity-15 group-hover:opacity-30 transition-opacity" />
+                                <div className="relative p-6 rounded-2xl bg-gradient-to-br from-purple-500/10 to-pink-500/5 border-2 border-purple-500/30 shadow-lg">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                                            <Swords className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <h4 className="font-black text-purple-400 uppercase text-base tracking-wide">Progression</h4>
+                                            </div>
+                                            <p className="text-[var(--text-primary)] font-bold text-lg mb-3">Continue Raid Progression</p>
+                                            <p className="text-sm text-[var(--text-secondary)] font-medium">
+                                                Current: {data.raids.summary}. Push higher difficulties for better loot and Midnight preparation
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </motion.div>
 
@@ -252,24 +278,32 @@ export default function OverviewTab({ data }: OverviewTabProps) {
             {data.missing_essentials.length > 0 && (
                 <motion.div
                     variants={fadeInUp}
-                    className="bg-[var(--bg-card)] border border-red-500/30 p-8 rounded-3xl"
+                    className="relative"
                 >
-                    <div className="flex items-center gap-3 mb-6">
-                        <AlertCircle className="w-8 h-8 text-red-400" />
-                        <h3 className="text-2xl font-bold text-red-400 uppercase">Missing Essentials</h3>
-                    </div>
+                    <div className="absolute -inset-1 bg-gradient-to-r from-red-500 to-orange-500 rounded-3xl blur-xl opacity-25" />
 
-                    <ul className="space-y-3">
-                        {data.missing_essentials.map((item, index) => (
-                            <li
-                                key={index}
-                                className="flex items-center gap-4 p-4 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)]"
-                            >
-                                <X className="w-6 h-6 text-red-400" />
-                                <span className="text-[var(--text-primary)]">{item}</span>
-                            </li>
-                        ))}
-                    </ul>
+                    <div className="relative bg-[var(--bg-card)] border-2 border-red-500/40 p-8 rounded-3xl shadow-2xl">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-lg shadow-red-500/40">
+                                <AlertCircle className="w-6 h-6 text-white" />
+                            </div>
+                            <h3 className="text-2xl font-black text-red-400 uppercase tracking-tight">Missing Essentials</h3>
+                        </div>
+
+                        <ul className="space-y-3">
+                            {data.missing_essentials.map((item, index) => (
+                                <li
+                                    key={index}
+                                    className="group flex items-center gap-4 p-5 rounded-xl bg-gradient-to-br from-[var(--bg-elevated)] to-[var(--bg-secondary)] border-2 border-[var(--border)] hover:border-red-500/30 transition-all"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <X className="w-5 h-5 text-red-400" />
+                                    </div>
+                                    <span className="text-[var(--text-primary)] font-medium">{item}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </motion.div>
             )}
 
