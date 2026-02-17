@@ -71,121 +71,140 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
     return (
         <div className="space-y-6">
             {/* Header Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Average iLvL */}
-                <div className="bg-[var(--bg-card)] border border-[var(--border)] p-6 rounded-3xl">
-                    <div className="flex items-center gap-3 mb-2">
-                        <Shield className="w-5 h-5 text-[var(--accent)]" />
-                        <h3 className="text-sm font-semibold text-[var(--text-secondary)] uppercase">
-                            Item Level
-                        </h3>
-                    </div>
-                    <p className="text-4xl font-bold text-[var(--text-primary)]">{equipment.item_level}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                        <span className={`text-sm font-semibold ${ilvlRating.color}`}>
-                            {ilvlRating.label}
-                        </span>
-                        {nextIlvl && (
-                            <>
-                                <span className="text-[var(--border)]">•</span>
-                                <span className="text-xs text-[var(--text-secondary)]">
-                                    Next: {nextIlvl} (+{nextIlvl - equipment.item_level})
-                                </span>
-                            </>
-                        )}
+                <div className="relative">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent)] to-orange-500 rounded-3xl blur-xl opacity-20" />
+                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-[var(--accent)] transition-all">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--accent)] to-orange-500 flex items-center justify-center shadow-lg shadow-[var(--accent)]/30">
+                                <Shield className="w-6 h-6 text-white" />
+                            </div>
+                            <h3 className="text-sm font-black text-[var(--text-secondary)] uppercase tracking-wider">
+                                Item Level
+                            </h3>
+                        </div>
+                        <p className="text-5xl font-black text-[var(--text-primary)] mb-3">{equipment.item_level}</p>
+                        <div className="flex items-center gap-2">
+                            <span className={`text-sm font-bold ${ilvlRating.color}`}>
+                                {ilvlRating.label}
+                            </span>
+                            {nextIlvl && (
+                                <>
+                                    <span className="text-[var(--border)]">•</span>
+                                    <span className="text-xs text-[var(--text-secondary)] font-semibold">
+                                        Next: {nextIlvl} (+{nextIlvl - equipment.item_level})
+                                    </span>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 {/* Tier Set Progress */}
-                <div className="bg-[var(--bg-card)] border border-[var(--border)] p-6 rounded-3xl">
-                    <div className="flex items-center gap-3 mb-2">
-                        <Sparkles className="w-5 h-5 text-[var(--accent)]" />
-                        <h3 className="text-sm font-semibold text-[var(--text-secondary)] uppercase">
-                            Tier Set
-                        </h3>
-                    </div>
-                    <p className="text-4xl font-bold text-[var(--text-primary)]">
-                        {equipment.tier_pieces}/5
-                    </p>
-                    <div className="mt-3 w-full bg-[var(--bg-secondary)] rounded-full h-2">
-                        <div
-                            className="bg-[var(--accent)] h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${tierProgress}%` }}
-                        />
+                <div className="relative">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl blur-xl opacity-20" />
+                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-purple-500 transition-all">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                                <Sparkles className="w-6 h-6 text-white" />
+                            </div>
+                            <h3 className="text-sm font-black text-[var(--text-secondary)] uppercase tracking-wider">
+                                Tier Set
+                            </h3>
+                        </div>
+                        <p className="text-5xl font-black text-[var(--text-primary)] mb-4">
+                            {equipment.tier_pieces}/5
+                        </p>
+                        <div className="w-full bg-[var(--bg-secondary)] rounded-full h-3">
+                            <div
+                                className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-300 shadow-lg shadow-purple-500/30"
+                                style={{ width: `${tierProgress}%` }}
+                            />
+                        </div>
                     </div>
                 </div>
 
                 {/* Issues */}
-                <div className="bg-[var(--bg-card)] border border-[var(--border)] p-6 rounded-3xl">
-                    <div className="flex items-center gap-3 mb-2">
-                        <AlertCircle className="w-5 h-5 text-[var(--accent)]" />
-                        <h3 className="text-sm font-semibold text-[var(--text-secondary)] uppercase">Issues</h3>
-                    </div>
-                    <div className="space-y-1">
-                        <p className="text-sm text-[var(--text-secondary)]">
-                            Missing Enchants: <span className="text-[var(--text-primary)] font-semibold">{equipment.missing_enchants.length}</span>
-                        </p>
-                        <p className="text-sm text-[var(--text-secondary)]">
-                            Missing Gems: <span className="text-[var(--text-primary)] font-semibold">{equipment.missing_gems.length}</span>
-                        </p>
+                <div className="relative">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-yellow-500 to-red-500 rounded-3xl blur-xl opacity-20" />
+                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-yellow-500 transition-all">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-red-500 flex items-center justify-center shadow-lg shadow-yellow-500/30">
+                                <AlertCircle className="w-6 h-6 text-white" />
+                            </div>
+                            <h3 className="text-sm font-black text-[var(--text-secondary)] uppercase tracking-wider">Issues</h3>
+                        </div>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm text-[var(--text-secondary)] font-semibold">Missing Enchants:</span>
+                                <span className="text-2xl font-black text-[var(--text-primary)]">{equipment.missing_enchants.length}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm text-[var(--text-secondary)] font-semibold">Missing Gems:</span>
+                                <span className="text-2xl font-black text-[var(--text-primary)]">{equipment.missing_gems.length}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Equipment List */}
-            <div className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl">
-                <h3 className="text-xl font-bold text-[var(--text-primary)] uppercase mb-6">Equipment</h3>
+            <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-3xl blur-xl opacity-30" />
+                <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl">
+                    <h3 className="text-2xl font-black text-[var(--text-primary)] uppercase mb-6 tracking-wide">Equipment</h3>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {equipment.slots.map((slot, index) => {
                         const hasStats = slot.stats && Object.keys(slot.stats).length > 0;
 
                         return (
                             <div
                                 key={index}
-                                className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl hover:border-[var(--accent)] transition-colors overflow-hidden"
+                                className="group relative bg-[var(--bg-secondary)] border-2 border-[var(--border)] rounded-2xl hover:border-[var(--accent)] hover:shadow-lg hover:shadow-[var(--accent)]/20 transition-all overflow-hidden"
                             >
-                                <div className="p-4">
+                                <div className="p-5">
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-xs font-black text-[var(--text-secondary)] uppercase tracking-wider">
                                                     {slot.slot.replace('_', ' ')}
                                                 </span>
                                                 {slot.is_tier && (
-                                                    <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--accent)]/10 text-[var(--accent)] font-semibold">
+                                                    <span className="px-2.5 py-1 text-xs rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-black shadow-lg shadow-purple-500/30">
                                                         TIER
                                                     </span>
                                                 )}
                                             </div>
                                             <p
-                                                className="font-semibold mb-2"
+                                                className="font-bold mb-3 text-lg"
                                                 style={{ color: getQualityColor(slot.quality) }}
                                             >
                                                 {slot.name}
                                             </p>
 
                                             <div className="flex items-center gap-3 text-xs">
-                                                <span className="text-[var(--text-secondary)]">
-                                                    iLvL: <span className="text-[var(--text-primary)] font-semibold">{slot.ilvl}</span>
+                                                <span className="text-[var(--text-secondary)] font-semibold">
+                                                    iLvL: <span className="text-[var(--text-primary)] font-bold">{slot.ilvl}</span>
                                                 </span>
 
                                                 {slot.gem_slots > 0 && (
-                                                    <span className="text-[var(--text-secondary)]">
-                                                        Gems: <span className={slot.gems_filled === slot.gem_slots ? 'text-green-500' : 'text-[var(--accent)]'}>
+                                                    <span className="text-[var(--text-secondary)] font-semibold">
+                                                        Gems: <span className={slot.gems_filled === slot.gem_slots ? 'text-green-500 font-bold' : 'text-[var(--accent)] font-bold'}>
                                                             {slot.gems_filled}/{slot.gem_slots}
                                                         </span>
                                                     </span>
                                                 )}
 
-                                                <span className={slot.enchanted ? 'text-green-500' : 'text-[var(--accent)]'}>
+                                                <span className={`font-bold ${slot.enchanted ? 'text-green-500' : 'text-[var(--accent)]'}`}>
                                                     {slot.enchanted ? '✓ Enchanted' : '✗ No Enchant'}
                                                 </span>
                                             </div>
                                         </div>
 
                                         <div className="text-right">
-                                            <div className="text-2xl font-bold text-[var(--text-primary)]">
+                                            <div className="text-3xl font-black text-[var(--text-primary)] group-hover:scale-110 transition-transform">
                                                 {slot.ilvl}
                                             </div>
                                         </div>
@@ -194,21 +213,21 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
 
                                 {/* Stats Section - Always Visible */}
                                 {hasStats && (
-                                    <div className="border-t border-[var(--border)] bg-[var(--bg-elevated)] p-4 pt-3">
-                                        <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase mb-3 flex items-center gap-2">
-                                            <Sparkles className="w-3 h-3 text-[var(--accent)]" />
+                                    <div className="border-t-2 border-[var(--border)] bg-[var(--bg-elevated)] p-4 pt-4">
+                                        <h4 className="text-xs font-black text-[var(--text-primary)] uppercase mb-3 flex items-center gap-2 tracking-wider">
+                                            <Sparkles className="w-4 h-4 text-[var(--accent)]" />
                                             Item Stats
                                         </h4>
                                         <div className="grid grid-cols-2 gap-2">
                                             {Object.entries(slot.stats!).map(([statKey, statValue]) => (
                                                 <div
                                                     key={statKey}
-                                                    className="flex items-center justify-between px-3 py-2 bg-[var(--bg-secondary)] rounded-lg"
+                                                    className="flex items-center justify-between px-3 py-2 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border)] hover:border-[var(--accent)]/30 transition-colors"
                                                 >
-                                                    <span className="text-xs text-[var(--text-secondary)]">
+                                                    <span className="text-xs text-[var(--text-secondary)] font-semibold">
                                                         {formatStatName(statKey)}
                                                     </span>
-                                                    <span className="text-sm font-bold text-[var(--text-primary)]">
+                                                    <span className="text-sm font-black text-[var(--text-primary)]">
                                                         {statValue}
                                                     </span>
                                                 </div>
@@ -220,53 +239,58 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
                         );
                     })}
                 </div>
+                </div>
             </div>
 
             {/* Optimization Recommendations */}
             {(equipment.missing_enchants.length > 0 || equipment.missing_gems.length > 0 || equipment.tier_pieces < 4) && (
-                <div className="bg-[var(--accent)]/5 border border-[var(--accent)]/20 p-6 rounded-3xl">
-                    <h4 className="text-lg font-bold text-[var(--accent)] mb-4 flex items-center gap-2">
-                        <AlertCircle className="w-5 h-5" />
-                        Optimization Recommendations
-                    </h4>
+                <div className="relative">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent)] to-yellow-500 rounded-3xl blur-xl opacity-20" />
+                    <div className="relative bg-[var(--accent)]/5 border-2 border-[var(--accent)]/30 p-8 rounded-3xl shadow-2xl">
+                        <h4 className="text-xl font-black text-[var(--accent)] mb-6 flex items-center gap-3 tracking-wide">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent)] to-yellow-500 flex items-center justify-center shadow-lg shadow-[var(--accent)]/30">
+                                <AlertCircle className="w-6 h-6 text-white" />
+                            </div>
+                            Optimization Recommendations
+                        </h4>
 
                     {equipment.missing_enchants.length > 0 && (
-                        <div className="mb-4">
-                            <p className="text-sm font-semibold text-[var(--text-primary)] mb-2">
+                        <div className="mb-6">
+                            <p className="text-base font-black text-[var(--text-primary)] mb-3">
                                 Missing Enchants ({equipment.missing_enchants.length} slots):
                             </p>
-                            <div className="flex flex-wrap gap-2 mb-2">
+                            <div className="flex flex-wrap gap-2 mb-3">
                                 {equipment.missing_enchants.map((slot, idx) => (
                                     <span
                                         key={idx}
-                                        className="px-3 py-1 text-xs rounded-full bg-[var(--accent)]/10 text-[var(--accent)]"
+                                        className="px-3 py-1.5 text-xs font-bold rounded-full bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/30"
                                     >
                                         {slot}
                                     </span>
                                 ))}
                             </div>
-                            <p className="text-xs text-[var(--text-secondary)] mt-2">
+                            <p className="text-sm text-[var(--text-secondary)] mt-2 font-semibold">
                                 💡 Enchants typically provide 2-3% performance increase. Visit the Auction House or ask a guild enchanter.
                             </p>
                         </div>
                     )}
 
                     {equipment.missing_gems.length > 0 && (
-                        <div className="mb-4">
-                            <p className="text-sm font-semibold text-[var(--text-primary)] mb-2">
+                        <div className="mb-6">
+                            <p className="text-base font-black text-[var(--text-primary)] mb-3">
                                 Empty Gem Slots ({equipment.missing_gems.length} sockets):
                             </p>
-                            <div className="flex flex-wrap gap-2 mb-2">
+                            <div className="flex flex-wrap gap-2 mb-3">
                                 {equipment.missing_gems.map((slot, idx) => (
                                     <span
                                         key={idx}
-                                        className="px-3 py-1 text-xs rounded-full bg-[var(--accent)]/10 text-[var(--accent)]"
+                                        className="px-3 py-1.5 text-xs font-bold rounded-full bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/30"
                                     >
                                         {slot}
                                     </span>
                                 ))}
                             </div>
-                            <p className="text-xs text-[var(--text-secondary)] mt-2">
+                            <p className="text-sm text-[var(--text-secondary)] mt-2 font-semibold">
                                 💡 Gems add valuable secondary stats. Check your class guide for optimal gem choices.
                             </p>
                         </div>
@@ -274,14 +298,15 @@ export default function EquipmentView({ equipment }: EquipmentViewProps) {
 
                     {equipment.tier_pieces < 4 && (
                         <div>
-                            <p className="text-sm font-semibold text-[var(--text-primary)] mb-2">
+                            <p className="text-base font-black text-[var(--text-primary)] mb-3">
                                 Tier Set Incomplete ({equipment.tier_pieces}/5 pieces):
                             </p>
-                            <p className="text-xs text-[var(--text-secondary)]">
+                            <p className="text-sm text-[var(--text-secondary)] font-semibold">
                                 💡 Get {4 - equipment.tier_pieces} more tier pieces for the powerful 4-piece set bonus. Farm current raid on any difficulty or use Great Vault rewards.
                             </p>
                         </div>
                     )}
+                    </div>
                 </div>
             )}
         </div>
