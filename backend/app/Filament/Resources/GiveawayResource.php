@@ -355,28 +355,33 @@ class GiveawayResource extends Resource
                         'x-on:click' => "navigator.clipboard.writeText('" . $record->getPublicUrl() . "'); \$tooltip('Copied!')",
                     ]),
 
-                Action::make('pickWinner')
-                    ->label('Pick Winner')
-                    ->icon('heroicon-o-trophy')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->modalHeading('Pick a Winner')
-                    ->modalDescription('Review all participants below. Clicking "Confirm" will randomly select a winner based on point weights. This action cannot be undone.')
-                    ->modalContent(function (Giveaway $record) {
-                        $entries = $record->entries()
+                Action::make('viewParticipants')
+                    ->label('View Participants')
+                    ->icon('heroicon-o-users')
+                    ->color('info')
+                    ->modalHeading('Giveaway Participants')
+                    ->modalDescription(fn(Giveaway $record) => 'Total participants: ' . $record->entries()->where('total_points', '>', 0)->count() . ' | Total points pool: ' . number_format($record->getTotalEntryPool()))
+                    ->modalContent(fn(Giveaway $record) => view('filament.resources.giveaway.modals.participants-list', [
+                        'entries' => $record->entries()
                             ->with('user')
                             ->where('total_points', '>', 0)
                             ->orderBy('total_points', 'desc')
-                            ->get();
-
-                        $totalPool = $record->getTotalEntryPool();
-
-                        return view('filament.resources.giveaway.modals.participants-list', [
-                            'entries' => $entries,
-                            'totalPool' => $totalPool,
-                        ]);
-                    })
+                            ->get(),
+                        'totalPool' => $record->getTotalEntryPool(),
+                    ]))
                     ->modalWidth('7xl')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Close')
+                    ->visible(fn(Giveaway $record) => $record->entries()->where('total_points', '>', 0)->count() > 0),
+
+                Action::make('pickWinner')
+                    ->label('Auto Pick Winner')
+                    ->icon('heroicon-o-trophy')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Auto Pick a Winner')
+                    ->modalDescription('This will automatically select a winner using weighted random algorithm based on points. This action cannot be undone.')
+                    ->modalWidth('md')
                     ->visible(fn(Giveaway $record) => $record->hasEnded() && !$record->winner_id && !$record->hasTiers())
                     ->action(function (Giveaway $record) {
                         $winner = $record->pickWinner();
@@ -393,6 +398,45 @@ class GiveawayResource extends Resource
                                 ->warning()
                                 ->send();
                         }
+                    }),
+
+                Action::make('manualWinner')
+                    ->label('Manual Winner')
+                    ->icon('heroicon-o-hand-raised')
+                    ->color('warning')
+                    ->form([
+                        Forms\Components\Select::make('winner_id')
+                            ->label('Select Winner')
+                            ->options(function (Giveaway $record) {
+                                return $record->entries()
+                                    ->with('user')
+                                    ->where('total_points', '>', 0)
+                                    ->get()
+                                    ->mapWithKeys(function ($entry) {
+                                        $user = $entry->user;
+                                        return [
+                                            $user->id => "{$user->username} ({$user->email}) - {$entry->total_points} points"
+                                        ];
+                                    });
+                            })
+                            ->searchable()
+                            ->required()
+                            ->helperText('You will need to manually send them an email.'),
+                    ])
+                    ->visible(fn(Giveaway $record) => $record->hasEnded() && !$record->winner_id && !$record->hasTiers())
+                    ->action(function (Giveaway $record, array $data) {
+                        $record->update([
+                            'winner_id' => $data['winner_id'],
+                            'status' => 'ended',
+                            'winner_announced_at' => now(),
+                        ]);
+
+                        $winner = User::find($data['winner_id']);
+                        Notification::make()
+                            ->title('Winner Set!')
+                            ->body("✅ {$winner->username} ({$winner->email}) marked as winner. Please send them an email manually.")
+                            ->success()
+                            ->send();
                     }),
 
                 Action::make('pickWinnersByTiers')

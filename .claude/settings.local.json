@@ -35,7 +35,8 @@
       "Bash(php -l:*)",
       "WebFetch(domain:www.klix.ba)",
       "WebFetch(domain:benchmark.rs)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(ls:*)"
     ]
   }
 }
