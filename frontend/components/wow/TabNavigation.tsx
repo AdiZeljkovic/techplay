@@ -28,48 +28,63 @@ export default function TabNavigation({ activeTab, setActiveTab, badges }: TabNa
     ];
 
     return (
-        <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] rounded-3xl p-2 overflow-x-auto shadow-xl">
-            <div className="flex gap-2 min-w-max">
-                {tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    const isActive = activeTab === tab.id;
+        <div className="relative">
+            {/* Glow effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent)] via-purple-500 to-[var(--accent)] rounded-3xl blur-xl opacity-20" />
 
-                    return (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`
-                                group relative px-5 py-3 rounded-2xl font-bold text-sm uppercase tracking-wider
-                                transition-all duration-300 flex items-center gap-3
-                                ${
-                                    isActive
-                                        ? 'bg-gradient-to-r from-[var(--accent)] to-orange-600 text-white shadow-lg shadow-[var(--accent)]/40 scale-105'
-                                        : 'bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] hover:scale-102 border border-[var(--border)] hover:border-[var(--accent)]/30'
-                                }
-                            `}
-                        >
-                            <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-[var(--accent)] group-hover:scale-110'} transition-transform`} />
+            <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] rounded-3xl p-3 shadow-2xl">
+                {/* Grid layout: 2 cols on mobile, 4 on tablet, 7 on desktop */}
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                    {tabs.map((tab) => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
 
-                            <span className="flex items-center gap-2">
-                                {tab.label}
-                                {tab.badge && (
-                                    <span className={`px-2.5 py-0.5 text-xs rounded-full font-bold ${
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`
+                                    group relative px-4 py-4 rounded-2xl font-black text-xs uppercase tracking-wider
+                                    transition-all duration-300 flex flex-col items-center justify-center gap-2
+                                    ${
                                         isActive
-                                            ? 'bg-white/20 text-white'
-                                            : 'bg-[var(--accent)]/10 text-[var(--accent)]'
+                                            ? 'bg-gradient-to-br from-[var(--accent)] to-orange-600 text-white shadow-lg shadow-[var(--accent)]/50 scale-105'
+                                            : 'bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:bg-gradient-to-br hover:from-[var(--bg-secondary)] hover:to-[var(--bg-elevated)] hover:text-[var(--text-primary)] hover:scale-105 border-2 border-[var(--border)] hover:border-[var(--accent)]/40'
+                                    }
+                                `}
+                            >
+                                {/* Icon */}
+                                <div className={`relative ${isActive ? 'scale-110' : 'group-hover:scale-110'} transition-transform`}>
+                                    {isActive && (
+                                        <div className="absolute -inset-2 bg-white/20 rounded-full blur-md" />
+                                    )}
+                                    <Icon className={`relative w-6 h-6 ${isActive ? 'text-white' : 'text-[var(--accent)]'}`} />
+                                </div>
+
+                                {/* Label */}
+                                <span className={`text-center leading-tight ${isActive ? 'text-white' : ''}`}>
+                                    {tab.label}
+                                </span>
+
+                                {/* Badge */}
+                                {tab.badge && (
+                                    <span className={`absolute -top-1 -right-1 px-2 py-0.5 text-xs rounded-full font-black shadow-lg ${
+                                        isActive
+                                            ? 'bg-white text-[var(--accent)] shadow-white/30'
+                                            : 'bg-[var(--accent)] text-white shadow-[var(--accent)]/40'
                                     }`}>
                                         {tab.badge}
                                     </span>
                                 )}
-                            </span>
 
-                            {/* Active indicator */}
-                            {isActive && (
-                                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-white rounded-full" />
-                            )}
-                        </button>
-                    );
-                })}
+                                {/* Bottom glow for active tab */}
+                                {isActive && (
+                                    <div className="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-white rounded-full blur-sm" />
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );
