@@ -109,14 +109,14 @@ export default function RaidProgress({ raids }: RaidProgressProps) {
                     <h3 className="text-2xl font-black text-[var(--text-primary)] uppercase mb-6 tracking-tight">Boss Kills</h3>
 
                     {raids.bosses.length > 0 ? (
-                        <div className="overflow-x-auto">
+                        <div>
                             <table className="w-full">
                                 <thead>
                                     <tr className="border-b-2 border-[var(--border)]">
                                         <th className="text-left py-4 px-4 text-sm font-black text-[var(--text-secondary)] uppercase tracking-wider">
                                             Boss Name
                                         </th>
-                                        <th className="text-center py-4 px-4 text-sm font-black text-blue-500 uppercase tracking-wider">
+                                        <th className="hidden md:table-cell text-center py-4 px-4 text-sm font-black text-blue-500 uppercase tracking-wider">
                                             Normal
                                         </th>
                                         <th className="text-center py-4 px-4 text-sm font-black text-purple-500 uppercase tracking-wider">
@@ -136,7 +136,7 @@ export default function RaidProgress({ raids }: RaidProgressProps) {
                                             <td className="py-5 px-4 text-[var(--text-primary)] font-bold group-hover:text-[var(--accent)] transition-colors">
                                                 {boss.name}
                                             </td>
-                                            <td className="py-5 px-4 text-center">
+                                            <td className="hidden md:table-cell py-5 px-4 text-center">
                                                 {boss.normal ? (
                                                     <div className="flex items-center justify-center">
                                                         <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">

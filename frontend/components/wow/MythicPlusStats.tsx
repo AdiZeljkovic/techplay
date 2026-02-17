@@ -158,7 +158,7 @@ export default function MythicPlusStats({ mythicPlus }: MythicPlusStatsProps) {
                     <h3 className="text-2xl font-black text-[var(--text-primary)] uppercase mb-6 tracking-tight">Best Runs</h3>
 
                     {mythicPlus.best_runs.length > 0 ? (
-                        <div className="overflow-x-auto">
+                        <div>
                             <table className="w-full">
                                 <thead>
                                     <tr className="border-b-2 border-[var(--border)]">
@@ -168,10 +168,10 @@ export default function MythicPlusStats({ mythicPlus }: MythicPlusStatsProps) {
                                         <th className="text-center py-4 px-4 text-sm font-black text-[var(--text-secondary)] uppercase tracking-wider">
                                             Level
                                         </th>
-                                        <th className="text-center py-4 px-4 text-sm font-black text-[var(--text-secondary)] uppercase tracking-wider">
+                                        <th className="hidden md:table-cell text-center py-4 px-4 text-sm font-black text-[var(--text-secondary)] uppercase tracking-wider">
                                             Status
                                         </th>
-                                        <th className="text-center py-4 px-4 text-sm font-black text-[var(--text-secondary)] uppercase tracking-wider">
+                                        <th className="hidden md:table-cell text-center py-4 px-4 text-sm font-black text-[var(--text-secondary)] uppercase tracking-wider">
                                             Upgrade
                                         </th>
                                     </tr>
@@ -192,7 +192,7 @@ export default function MythicPlusStats({ mythicPlus }: MythicPlusStatsProps) {
                                                         +{run.level}
                                                     </span>
                                                 </td>
-                                            <td className="py-4 px-4 text-center">
+                                            <td className="hidden md:table-cell py-4 px-4 text-center">
                                                 {run.completed ? (
                                                     <span className="flex items-center justify-center gap-2 text-green-500">
                                                         <Check className="w-4 h-4" />
@@ -205,7 +205,7 @@ export default function MythicPlusStats({ mythicPlus }: MythicPlusStatsProps) {
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="py-4 px-4 text-center">
+                                            <td className="hidden md:table-cell py-4 px-4 text-center">
                                                 <span className={`font-semibold ${upgrade.color}`}>
                                                     {upgrade.text}
                                                 </span>
