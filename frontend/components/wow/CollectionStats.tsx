@@ -50,153 +50,173 @@ export default function CollectionStats({ collections }: CollectionStatsProps) {
     return (
         <div className="space-y-6">
             {/* Collections Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Battle Pets */}
-                <div className="bg-[var(--bg-card)] border border-[var(--border)] p-6 rounded-3xl">
-                    <div className="flex items-center gap-3 mb-4">
-                        <Heart className="w-5 h-5 text-[var(--accent)]" />
-                        <h3 className="text-sm font-semibold text-[var(--text-secondary)] uppercase">
-                            Battle Pets
-                        </h3>
-                    </div>
-
-                    <div className="space-y-3">
-                        <div>
-                            <p className="text-3xl font-bold text-[var(--text-primary)]">
-                                {collections.pets.total}
-                            </p>
-                            <p className="text-sm text-[var(--text-secondary)]">Total Pets Collected</p>
-                        </div>
-
-                        <div className="pt-3 border-t border-[var(--border)] space-y-2">
-                            <div className="flex justify-between items-center">
-                                <span className="text-xs text-[var(--text-secondary)]">Unique Species:</span>
-                                <span className="text-sm font-semibold text-[var(--text-primary)]">
-                                    {collections.pets.unique}
-                                </span>
+                <div className="relative">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 to-rose-500 rounded-3xl blur-xl opacity-20" />
+                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-pink-500 transition-all">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-500/30">
+                                <Heart className="w-6 h-6 text-white" />
                             </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-xs text-[var(--text-secondary)]">Max Level (25):</span>
-                                <span className="text-sm font-semibold text-[var(--accent)]">
-                                    {collections.pets.max_level}
-                                </span>
+                            <h3 className="text-sm font-black text-[var(--text-secondary)] uppercase tracking-wider">
+                                Battle Pets
+                            </h3>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <p className="text-5xl font-black text-[var(--text-primary)]">
+                                    {collections.pets.total}
+                                </p>
+                                <p className="text-sm text-[var(--text-secondary)] font-semibold mt-1">Total Pets Collected</p>
+                            </div>
+
+                            <div className="pt-4 border-t-2 border-[var(--border)] space-y-3">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-[var(--text-secondary)] font-semibold">Unique Species:</span>
+                                    <span className="text-lg font-black text-[var(--text-primary)]">
+                                        {collections.pets.unique}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-[var(--text-secondary)] font-semibold">Max Level (25):</span>
+                                    <span className="text-lg font-black text-[var(--accent)]">
+                                        {collections.pets.max_level}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {collections.pets.max_level < 10 && collections.pets.total > 0 && (
-                        <div className="mt-4 p-3 bg-[var(--accent)]/5 border border-[var(--accent)]/20 rounded-xl">
-                            <p className="text-xs text-[var(--text-secondary)]">
-                                💡 Level your battle pets to 25 for better performance in pet battles
-                            </p>
-                        </div>
-                    )}
+                        {collections.pets.max_level < 10 && collections.pets.total > 0 && (
+                            <div className="mt-4 p-4 bg-pink-500/10 border border-pink-500/30 rounded-xl">
+                                <p className="text-xs text-[var(--text-secondary)] font-semibold">
+                                    💡 Level your battle pets to 25 for better performance in pet battles
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Toys */}
-                <div className="bg-[var(--bg-card)] border border-[var(--border)] p-6 rounded-3xl">
-                    <div className="flex items-center gap-3 mb-4">
-                        <Gift className="w-5 h-5 text-[var(--accent)]" />
-                        <h3 className="text-sm font-semibold text-[var(--text-secondary)] uppercase">
-                            Toy Collection
-                        </h3>
-                    </div>
-
-                    <div className="space-y-3">
-                        <div>
-                            <p className="text-3xl font-bold text-[var(--text-primary)]">
-                                {collections.toys.collected}
-                            </p>
-                            <p className="text-sm text-[var(--text-secondary)]">Toys Collected</p>
+                <div className="relative">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-3xl blur-xl opacity-20" />
+                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-purple-500 transition-all">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                                <Gift className="w-6 h-6 text-white" />
+                            </div>
+                            <h3 className="text-sm font-black text-[var(--text-secondary)] uppercase tracking-wider">
+                                Toy Collection
+                            </h3>
                         </div>
 
-                        <div className="pt-3 border-t border-[var(--border)]">
-                            <p className="text-xs text-[var(--text-secondary)] mb-2">Progress:</p>
-                            <div className="w-full bg-[var(--bg-secondary)] rounded-full h-2">
-                                <div
-                                    className="bg-[var(--accent)] h-2 rounded-full transition-all duration-300"
-                                    style={{
-                                        width: `${Math.min((collections.toys.collected / 500) * 100, 100)}%`,
-                                    }}
-                                />
+                        <div className="space-y-4">
+                            <div>
+                                <p className="text-5xl font-black text-[var(--text-primary)]">
+                                    {collections.toys.collected}
+                                </p>
+                                <p className="text-sm text-[var(--text-secondary)] font-semibold mt-1">Toys Collected</p>
                             </div>
-                            <p className="text-xs text-[var(--text-secondary)] mt-1">
-                                {collections.toys.collected < 500
-                                    ? `${500 - collections.toys.collected} toys to reach 500 milestone`
-                                    : 'Impressive collection! 🎉'}
-                            </p>
+
+                            <div className="pt-4 border-t-2 border-[var(--border)]">
+                                <p className="text-xs text-[var(--text-secondary)] font-black uppercase tracking-wider mb-3">Progress:</p>
+                                <div className="w-full bg-[var(--bg-secondary)] rounded-full h-3">
+                                    <div
+                                        className="bg-gradient-to-r from-purple-500 to-fuchsia-500 h-3 rounded-full transition-all duration-300 shadow-lg shadow-purple-500/30"
+                                        style={{
+                                            width: `${Math.min((collections.toys.collected / 500) * 100, 100)}%`,
+                                        }}
+                                    />
+                                </div>
+                                <p className="text-xs text-[var(--text-secondary)] font-semibold mt-2">
+                                    {collections.toys.collected < 500
+                                        ? `${500 - collections.toys.collected} toys to reach 500 milestone`
+                                        : 'Impressive collection! 🎉'}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Transmog */}
-                <div className="bg-[var(--bg-card)] border border-[var(--border)] p-6 rounded-3xl">
-                    <div className="flex items-center gap-3 mb-4">
-                        <Sparkles className="w-5 h-5 text-[var(--accent)]" />
-                        <h3 className="text-sm font-semibold text-[var(--text-secondary)] uppercase">
-                            Transmog Collection
-                        </h3>
-                    </div>
-
-                    <div className="space-y-3">
-                        <div>
-                            <p className="text-3xl font-bold text-[var(--text-primary)]">
-                                {collections.transmog.total_appearances}
-                            </p>
-                            <p className="text-sm text-[var(--text-secondary)]">Appearances Unlocked</p>
+                <div className="relative">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-3xl blur-xl opacity-20" />
+                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-cyan-500 transition-all">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                                <Sparkles className="w-6 h-6 text-white" />
+                            </div>
+                            <h3 className="text-sm font-black text-[var(--text-secondary)] uppercase tracking-wider">
+                                Transmog Collection
+                            </h3>
                         </div>
 
-                        <div className="pt-3 border-t border-[var(--border)]">
-                            <div className="flex justify-between items-center">
-                                <span className="text-xs text-[var(--text-secondary)]">Armor Slots:</span>
-                                <span className="text-sm font-semibold text-[var(--text-primary)]">
-                                    {collections.transmog.slots_unlocked} slots
-                                </span>
+                        <div className="space-y-4">
+                            <div>
+                                <p className="text-5xl font-black text-[var(--text-primary)]">
+                                    {collections.transmog.total_appearances}
+                                </p>
+                                <p className="text-sm text-[var(--text-secondary)] font-semibold mt-1">Appearances Unlocked</p>
+                            </div>
+
+                            <div className="pt-4 border-t-2 border-[var(--border)]">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-[var(--text-secondary)] font-semibold">Armor Slots:</span>
+                                    <span className="text-lg font-black text-[var(--text-primary)]">
+                                        {collections.transmog.slots_unlocked} slots
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="mt-4 p-3 bg-gradient-to-br from-purple-500/5 to-[var(--accent)]/5 border border-purple-500/20 rounded-xl">
-                        <p className="text-xs text-[var(--text-secondary)]">
-                            💡 Run old raids and dungeons to unlock more transmog appearances
-                        </p>
+                        <div className="mt-4 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl">
+                            <p className="text-xs text-[var(--text-secondary)] font-semibold">
+                                💡 Run old raids and dungeons to unlock more transmog appearances
+                            </p>
+                        </div>
                     </div>
                 </div>
 
                 {/* Mounts */}
-                <div className="bg-[var(--bg-card)] border border-[var(--border)] p-6 rounded-3xl">
-                    <div className="flex items-center gap-3 mb-4">
-                        <CircleDot className="w-5 h-5 text-[var(--accent)]" />
-                        <h3 className="text-sm font-semibold text-[var(--text-secondary)] uppercase">
-                            Mount Collection
-                        </h3>
-                    </div>
-
-                    <div className="space-y-3">
-                        <div>
-                            <p className="text-3xl font-bold text-[var(--text-primary)]">
-                                {collections.mounts_count}
-                            </p>
-                            <p className="text-sm text-[var(--text-secondary)]">Mounts Collected</p>
+                <div className="relative">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl blur-xl opacity-20" />
+                    <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl shadow-2xl hover:border-emerald-500 transition-all">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                                <CircleDot className="w-6 h-6 text-white" />
+                            </div>
+                            <h3 className="text-sm font-black text-[var(--text-secondary)] uppercase tracking-wider">
+                                Mount Collection
+                            </h3>
                         </div>
 
-                        <div className="pt-3 border-t border-[var(--border)]">
-                            <p className="text-xs text-[var(--text-secondary)] mb-2">Milestones:</p>
-                            <div className="space-y-1">
-                                {collections.mounts_count >= 400 ? (
-                                    <p className="text-xs text-green-500">✓ Lord of the Reins (400)</p>
-                                ) : (
-                                    <p className="text-xs text-[var(--text-secondary)]">
-                                        ○ Lord of the Reins: {400 - collections.mounts_count} to go
-                                    </p>
-                                )}
-                                {collections.mounts_count >= 500 ? (
-                                    <p className="text-xs text-green-500">✓ Mount Collector (500)</p>
-                                ) : (
-                                    <p className="text-xs text-[var(--text-secondary)]">
-                                        ○ Mount Collector: {500 - collections.mounts_count} to go
-                                    </p>
-                                )}
+                        <div className="space-y-4">
+                            <div>
+                                <p className="text-5xl font-black text-[var(--text-primary)]">
+                                    {collections.mounts_count}
+                                </p>
+                                <p className="text-sm text-[var(--text-secondary)] font-semibold mt-1">Mounts Collected</p>
+                            </div>
+
+                            <div className="pt-4 border-t-2 border-[var(--border)]">
+                                <p className="text-xs text-[var(--text-secondary)] font-black uppercase tracking-wider mb-3">Milestones:</p>
+                                <div className="space-y-2">
+                                    {collections.mounts_count >= 400 ? (
+                                        <p className="text-sm text-green-500 font-bold">✓ Lord of the Reins (400)</p>
+                                    ) : (
+                                        <p className="text-sm text-[var(--text-secondary)] font-semibold">
+                                            ○ Lord of the Reins: {400 - collections.mounts_count} to go
+                                        </p>
+                                    )}
+                                    {collections.mounts_count >= 500 ? (
+                                        <p className="text-sm text-green-500 font-bold">✓ Mount Collector (500)</p>
+                                    ) : (
+                                        <p className="text-sm text-[var(--text-secondary)] font-semibold">
+                                            ○ Mount Collector: {500 - collections.mounts_count} to go
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -204,36 +224,39 @@ export default function CollectionStats({ collections }: CollectionStatsProps) {
             </div>
 
             {/* Collection Progress Summary */}
-            <div className="bg-gradient-to-br from-purple-500/5 to-[var(--accent)]/5 border border-purple-500/20 p-6 rounded-3xl">
-                <h4 className="text-sm font-semibold text-purple-400 uppercase mb-3 flex items-center gap-2">
-                    <Trophy className="w-4 h-4" />
-                    Overall Collection Progress
-                </h4>
+            <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-pink-500 to-[var(--accent)] rounded-3xl blur-xl opacity-20" />
+                <div className="relative bg-gradient-to-br from-purple-500/10 to-[var(--accent)]/5 border-2 border-purple-500/30 p-8 rounded-3xl shadow-2xl">
+                    <h4 className="text-sm font-black text-purple-400 uppercase mb-6 tracking-wider flex items-center gap-2">
+                        <Trophy className="w-5 h-5" />
+                        Overall Collection Progress
+                    </h4>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="text-center">
-                        <p className="text-2xl font-bold text-[var(--accent)]">{collections.pets.unique}</p>
-                        <p className="text-xs text-[var(--text-secondary)]">Unique Pets</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div className="text-center p-4 bg-[var(--bg-card)] border border-pink-500/30 rounded-2xl hover:scale-105 transition-transform">
+                            <p className="text-3xl font-black text-pink-500">{collections.pets.unique}</p>
+                            <p className="text-xs text-[var(--text-secondary)] font-bold uppercase tracking-wider mt-2">Unique Pets</p>
+                        </div>
+                        <div className="text-center p-4 bg-[var(--bg-card)] border border-purple-500/30 rounded-2xl hover:scale-105 transition-transform">
+                            <p className="text-3xl font-black text-purple-500">{collections.toys.collected}</p>
+                            <p className="text-xs text-[var(--text-secondary)] font-bold uppercase tracking-wider mt-2">Toys</p>
+                        </div>
+                        <div className="text-center p-4 bg-[var(--bg-card)] border border-cyan-500/30 rounded-2xl hover:scale-105 transition-transform">
+                            <p className="text-3xl font-black text-cyan-500">
+                                {collections.transmog.total_appearances}
+                            </p>
+                            <p className="text-xs text-[var(--text-secondary)] font-bold uppercase tracking-wider mt-2">Transmogs</p>
+                        </div>
+                        <div className="text-center p-4 bg-[var(--bg-card)] border border-emerald-500/30 rounded-2xl hover:scale-105 transition-transform">
+                            <p className="text-3xl font-black text-emerald-500">{collections.mounts_count}</p>
+                            <p className="text-xs text-[var(--text-secondary)] font-bold uppercase tracking-wider mt-2">Mounts</p>
+                        </div>
                     </div>
-                    <div className="text-center">
-                        <p className="text-2xl font-bold text-[var(--accent)]">{collections.toys.collected}</p>
-                        <p className="text-xs text-[var(--text-secondary)]">Toys</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-2xl font-bold text-[var(--accent)]">
-                            {collections.transmog.total_appearances}
-                        </p>
-                        <p className="text-xs text-[var(--text-secondary)]">Transmogs</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-2xl font-bold text-[var(--accent)]">{collections.mounts_count}</p>
-                        <p className="text-xs text-[var(--text-secondary)]">Mounts</p>
-                    </div>
+
+                    <p className="text-sm text-purple-300 bg-purple-500/10 px-4 py-3 rounded-xl font-bold mt-6 text-center">
+                        🎯 Collecting is a core part of the Midnight expansion - keep going!
+                    </p>
                 </div>
-
-                <p className="text-xs text-[var(--text-secondary)] mt-4 text-center">
-                    Collecting is a core part of the Midnight expansion - keep going! 🎯
-                </p>
             </div>
         </div>
     );
