@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'api/v1/webhooks/paypal',
             'api/v1/contact',
+            'api/v1/newsletter/*',
         ]);
 
         // SECURITY: Stateful API domains for Sanctum CSRF protection
