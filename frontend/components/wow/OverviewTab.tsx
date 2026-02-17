@@ -49,7 +49,7 @@ export default function OverviewTab({ data }: OverviewTabProps) {
     };
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 pb-12">
             {/* Profesor Buffy's AI Tips */}
             <motion.div
                 variants={fadeInUp}
@@ -318,38 +318,39 @@ export default function OverviewTab({ data }: OverviewTabProps) {
                 <div className="relative bg-gradient-to-br from-[var(--bg-card)] via-[var(--bg-secondary)] to-[var(--bg-card)] border-2 border-[var(--border)] p-10 md:p-12 rounded-3xl hover:border-[var(--accent)] transition-all shadow-2xl">
                     <div className="text-center">
                         {/* Score Circle */}
-                        <div className="relative inline-flex items-center justify-center w-64 h-64 md:w-80 md:h-80 mb-8">
+                        <div className="relative inline-flex items-center justify-center w-72 h-72 md:w-96 md:h-96 mb-8">
                             {/* Background glow */}
                             <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/10 to-purple-500/10 rounded-full blur-2xl" />
 
-                            <svg className="w-full h-full transform -rotate-90 absolute inset-0">
+                            {/* Mobile SVG (w-72 = 288px, center = 144, radius = 120) */}
+                            <svg className="w-full h-full transform -rotate-90 absolute inset-0 md:hidden" viewBox="0 0 288 288">
                                 <circle
-                                    cx="160"
-                                    cy="160"
-                                    r="140"
+                                    cx="144"
+                                    cy="144"
+                                    r="120"
                                     stroke="var(--border)"
                                     strokeWidth="20"
                                     fill="none"
                                     opacity="0.3"
                                 />
                                 <motion.circle
-                                    cx="160"
-                                    cy="160"
-                                    r="140"
-                                    stroke="url(#scoreGradient)"
+                                    cx="144"
+                                    cy="144"
+                                    r="120"
+                                    stroke="url(#scoreGradientMobile)"
                                     strokeWidth="20"
                                     fill="none"
                                     strokeLinecap="round"
-                                    strokeDasharray={`${2 * Math.PI * 140}`}
-                                    initial={{ strokeDashoffset: 2 * Math.PI * 140 }}
+                                    strokeDasharray={`${2 * Math.PI * 120}`}
+                                    initial={{ strokeDashoffset: 2 * Math.PI * 120 }}
                                     animate={{
-                                        strokeDashoffset: 2 * Math.PI * 140 * (1 - data.readiness_score / 100),
+                                        strokeDashoffset: 2 * Math.PI * 120 * (1 - data.readiness_score / 100),
                                     }}
                                     transition={{ duration: 2, ease: 'easeOut' }}
                                     filter="drop-shadow(0 0 10px var(--accent))"
                                 />
                                 <defs>
-                                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <linearGradient id="scoreGradientMobile" x1="0%" y1="0%" x2="100%" y2="100%">
                                         <stop offset="0%" stopColor="var(--accent)" />
                                         <stop offset="50%" stopColor="#a855f7" />
                                         <stop offset="100%" stopColor="var(--accent)" />
@@ -357,11 +358,47 @@ export default function OverviewTab({ data }: OverviewTabProps) {
                                 </defs>
                             </svg>
 
-                            <div className="relative z-10 flex flex-col items-center justify-center">
-                                <span className={`text-7xl md:text-9xl font-black ${getScoreColor(data.readiness_score)} drop-shadow-2xl`}>
+                            {/* Desktop SVG (w-96 = 384px, center = 192, radius = 160) */}
+                            <svg className="w-full h-full transform -rotate-90 absolute inset-0 hidden md:block" viewBox="0 0 384 384">
+                                <circle
+                                    cx="192"
+                                    cy="192"
+                                    r="160"
+                                    stroke="var(--border)"
+                                    strokeWidth="24"
+                                    fill="none"
+                                    opacity="0.3"
+                                />
+                                <motion.circle
+                                    cx="192"
+                                    cy="192"
+                                    r="160"
+                                    stroke="url(#scoreGradientDesktop)"
+                                    strokeWidth="24"
+                                    fill="none"
+                                    strokeLinecap="round"
+                                    strokeDasharray={`${2 * Math.PI * 160}`}
+                                    initial={{ strokeDashoffset: 2 * Math.PI * 160 }}
+                                    animate={{
+                                        strokeDashoffset: 2 * Math.PI * 160 * (1 - data.readiness_score / 100),
+                                    }}
+                                    transition={{ duration: 2, ease: 'easeOut' }}
+                                    filter="drop-shadow(0 0 12px var(--accent))"
+                                />
+                                <defs>
+                                    <linearGradient id="scoreGradientDesktop" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stopColor="var(--accent)" />
+                                        <stop offset="50%" stopColor="#a855f7" />
+                                        <stop offset="100%" stopColor="var(--accent)" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+
+                            <div className="relative z-10 flex flex-col items-center justify-center px-4">
+                                <span className={`text-6xl md:text-8xl lg:text-9xl font-black ${getScoreColor(data.readiness_score)} drop-shadow-2xl`}>
                                     {data.readiness_score}%
                                 </span>
-                                <span className="text-xl mt-4 font-black uppercase tracking-widest text-[var(--accent)] px-6 py-2 bg-[var(--accent)]/10 rounded-full border-2 border-[var(--accent)]/30">
+                                <span className="text-base md:text-xl mt-3 md:mt-4 font-black uppercase tracking-widest text-[var(--accent)] px-4 md:px-6 py-1.5 md:py-2 bg-[var(--accent)]/10 rounded-full border-2 border-[var(--accent)]/30">
                                     {getScoreLabel(data.readiness_score)}
                                 </span>
                             </div>
