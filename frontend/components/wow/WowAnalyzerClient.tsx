@@ -141,7 +141,7 @@ export default function WowAnalyzerClient() {
                         >
                             <Sparkles className="w-4 h-4 text-[var(--accent)]" />
                             <span className="text-sm font-bold text-[var(--accent)]">
-                                Instant Analysis • Free Forever
+                                Instant analysis • Free forever
                             </span>
                         </motion.div>
 
@@ -152,9 +152,9 @@ export default function WowAnalyzerClient() {
                             transition={{ delay: 0.2 }}
                             className="text-6xl md:text-7xl lg:text-8xl font-black mb-6 leading-[1.05]"
                         >
-                            <span className="text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">Free WoW Character Analyzer - </span>
+                            <span className="text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">WoW character analyzer</span>
                             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-purple-400 to-purple-500 drop-shadow-[0_4px_30px_rgba(252,65,0,0.6)]">
-                                Midnight Expansion Readiness
+                                Midnight expansion checker
                             </span>
                         </motion.h1>
 
@@ -208,7 +208,7 @@ export default function WowAnalyzerClient() {
                             className="group inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-[var(--accent)] to-orange-600 hover:from-[var(--accent)]/90 hover:to-orange-600/90 text-white rounded-2xl font-bold text-xl transition-all hover:scale-105 hover:shadow-2xl hover:shadow-[var(--accent)]/30 mb-6"
                         >
                             <Rocket className="w-6 h-6" />
-                            Analyze My Character
+                            Analyze my character
                             <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                         </motion.button>
 
@@ -249,7 +249,7 @@ export default function WowAnalyzerClient() {
                                 </span>
                             </motion.div>
                             <h2 className="text-5xl md:text-6xl font-black text-[var(--text-primary)] mb-5">
-                                WoW Character Analyzer - Free Instant Analysis
+                                WoW character analyzer - Free instant analysis
                             </h2>
                             <p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto">
                                 Check your WoW character's gear, M+ rating, raid progress & collections in seconds
@@ -272,7 +272,7 @@ export default function WowAnalyzerClient() {
                                     >
                                         <label className="block text-sm font-bold mb-3 text-purple-400 uppercase flex items-center gap-2">
                                             <Star className="w-4 h-4" />
-                                            Quick Select (Your Characters)
+                                            Quick select (your characters)
                                         </label>
                                         <select
                                             onChange={(e) => {
@@ -308,7 +308,7 @@ export default function WowAnalyzerClient() {
                                 <div>
                                     <label className="block text-base font-bold mb-4 text-[var(--text-primary)] flex items-center gap-2">
                                         <Globe className="w-4 h-4 text-[var(--accent)]" />
-                                        SELECT REGION
+                                        Select region
                                     </label>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         {(["us", "eu", "kr", "tw"] as const).map((region) => (
@@ -345,7 +345,7 @@ export default function WowAnalyzerClient() {
                                     {/* Character Name */}
                                     <div>
                                         <label className="block text-base font-bold mb-3 text-[var(--text-primary)]">
-                                            CHARACTER NAME
+                                            Character name
                                         </label>
                                         <input
                                             type="text"
@@ -377,7 +377,7 @@ export default function WowAnalyzerClient() {
                                         render={({ field }) => (
                                             <div>
                                                 <label className="block text-base font-bold mb-3 text-[var(--text-primary)]">
-                                                    REALM
+                                                    Realm
                                                 </label>
                                                 <RealmDropdown
                                                     region={selectedRegion}
@@ -410,7 +410,7 @@ export default function WowAnalyzerClient() {
                                         ) : (
                                             <>
                                                 <Rocket className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                                                Analyze Character Now
+                                                Analyze character now
                                                 <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
                                             </>
                                         )}
@@ -421,11 +421,11 @@ export default function WowAnalyzerClient() {
                                 <div className="flex flex-wrap items-center justify-center gap-6 pt-6 mt-2">
                                     <div className="flex items-center gap-2.5 px-4 py-2 bg-green-500/10 rounded-full">
                                         <CheckCircle2 className="w-5 h-5 text-green-500" />
-                                        <span className="text-sm font-semibold text-green-400">Free Forever</span>
+                                        <span className="text-sm font-semibold text-green-400">Free forever</span>
                                     </div>
                                     <div className="flex items-center gap-2.5 px-4 py-2 bg-blue-500/10 rounded-full">
                                         <CheckCircle2 className="w-5 h-5 text-blue-500" />
-                                        <span className="text-sm font-semibold text-blue-400">No Account Required</span>
+                                        <span className="text-sm font-semibold text-blue-400">No account required</span>
                                     </div>
                                     <div className="flex items-center gap-2.5 px-4 py-2 bg-purple-500/10 rounded-full">
                                         <Zap className="w-5 h-5 text-purple-500" />
@@ -481,7 +481,7 @@ export default function WowAnalyzerClient() {
                             className="text-center mb-16"
                         >
                             <h2 className="text-4xl md:text-5xl font-black text-[var(--text-primary)] mb-4">
-                                How Our WoW Character Analyzer Works
+                                How our WoW character analyzer works
                             </h2>
                             <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto">
                                 AI-powered World of Warcraft character analysis using real-time Blizzard API data
@@ -493,19 +493,19 @@ export default function WowAnalyzerClient() {
                                 {
                                     step: "01",
                                     icon: Globe,
-                                    title: "Fetch Character Data",
+                                    title: "Fetch character data",
                                     description: "We connect to Blizzard API to pull your character's achievements, gear, M+ score, raid progress, and collections"
                                 },
                                 {
                                     step: "02",
                                     icon: Brain,
-                                    title: "Smart Analysis",
+                                    title: "Smart analysis",
                                     description: "Our system analyzes 50+ data points including Midnight-specific achievements, Void Elf unlocks, and housing readiness"
                                 },
                                 {
                                     step: "03",
                                     icon: Rocket,
-                                    title: "Actionable Report",
+                                    title: "Actionable report",
                                     description: "Get personalized recommendations, daily priorities, and a readiness score from 0-100 to maximize your Midnight launch"
                                 }
                             ].map((item, i) => (
@@ -561,7 +561,7 @@ export default function WowAnalyzerClient() {
                         >
                             <Clock className="w-16 h-16 text-[var(--accent)] mx-auto mb-6" />
                             <h2 className="text-4xl md:text-5xl font-black text-[var(--text-primary)] mb-4">
-                                WoW Midnight Expansion - Are You Ready?
+                                WoW Midnight expansion - Are you ready?
                             </h2>
                             <p className="text-xl text-[var(--text-secondary)] mb-8 max-w-2xl mx-auto">
                                 Midnight launches March 2, 2026. Analyze your WoW character now and get a personalized roadmap to be expansion-ready. Free character checker with instant results!
@@ -570,7 +570,7 @@ export default function WowAnalyzerClient() {
                                 onClick={() => document.getElementById('analyzer-form')?.scrollIntoView({ behavior: 'smooth' })}
                                 className="group inline-flex items-center gap-3 px-10 py-5 bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white rounded-2xl font-bold text-xl transition-all hover:scale-105 shadow-2xl shadow-[var(--accent)]/30"
                             >
-                                Analyze My Character
+                                Analyze my character
                                 <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                             </button>
                         </motion.div>
