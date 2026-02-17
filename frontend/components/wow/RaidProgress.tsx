@@ -180,6 +180,7 @@ export default function RaidProgress({ raids }: RaidProgressProps) {
                             <p className="text-[var(--text-secondary)] font-medium">No raid encounters recorded</p>
                         </div>
                     )}
+                </div>
             </div>
 
             {/* Progress Summary & Next Steps */}
