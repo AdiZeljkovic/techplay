@@ -422,7 +422,11 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
         }
 
         $totalPets = count($pets['pets']);
-        $uniquePets = count(array_unique(array_column($pets['pets'], 'species')));
+
+        // Extract species IDs (not the entire species object)
+        $speciesIds = array_map(fn($pet) => $pet['species']['id'] ?? 0, $pets['pets']);
+        $uniquePets = count(array_unique($speciesIds));
+
         $maxLevelPets = 0;
 
         foreach ($pets['pets'] as $pet) {
