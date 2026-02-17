@@ -84,22 +84,26 @@ export default function CharacterHero({ data, onRefresh }: CharacterHeroProps) {
     };
 
     return (
-        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl overflow-hidden">
-            {/* Header with character info */}
-            <div className="p-8 border-b border-[var(--border)]">
-                <div className="flex items-start gap-6">
-                    {/* Character Portrait */}
-                    {character.portrait_url && (
-                        <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-[var(--accent)] shrink-0">
-                            <Image
-                                src={character.portrait_url}
-                                alt={character.name}
-                                fill
-                                className="object-cover"
-                                unoptimized
-                            />
-                        </div>
-                    )}
+        <div className="relative">
+            {/* Glow Effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent)] via-purple-500 to-[var(--accent)] rounded-3xl blur-xl opacity-20" />
+
+            <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] rounded-3xl overflow-hidden shadow-2xl">
+                {/* Header with character info */}
+                <div className="p-8 border-b border-[var(--border)] bg-gradient-to-br from-[var(--bg-card)] to-[var(--bg-secondary)]">
+                    <div className="flex items-start gap-6">
+                        {/* Character Portrait */}
+                        {character.portrait_url && (
+                            <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-4 border-[var(--accent)] shrink-0 shadow-lg shadow-[var(--accent)]/30">
+                                <Image
+                                    src={character.portrait_url}
+                                    alt={character.name}
+                                    fill
+                                    className="object-cover"
+                                    unoptimized
+                                />
+                            </div>
+                        )}
 
                     {/* Character Details */}
                     <div className="flex-1">
@@ -109,33 +113,33 @@ export default function CharacterHero({ data, onRefresh }: CharacterHeroProps) {
                             </h2>
 
                             {/* Action Buttons */}
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-3">
                                 <button
                                     onClick={handleShare}
-                                    className="p-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] hover:border-[var(--accent)] transition-colors group"
+                                    className="p-3 rounded-xl bg-[var(--bg-elevated)] border-2 border-[var(--border)] hover:border-[var(--accent)] hover:shadow-lg hover:shadow-[var(--accent)]/20 hover:scale-105 transition-all group"
                                     title="Share profile"
                                 >
-                                    <Share2 className="w-5 h-5 text-[var(--text-secondary)] group-hover:text-[var(--accent)]" />
+                                    <Share2 className="w-5 h-5 text-[var(--text-secondary)] group-hover:text-[var(--accent)] transition-colors" />
                                 </button>
 
                                 {onRefresh && (
                                     <button
                                         onClick={handleRefresh}
                                         disabled={isRefreshing}
-                                        className="p-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] hover:border-[var(--accent)] transition-colors group disabled:opacity-50"
+                                        className="p-3 rounded-xl bg-[var(--bg-elevated)] border-2 border-[var(--border)] hover:border-[var(--accent)] hover:shadow-lg hover:shadow-[var(--accent)]/20 hover:scale-105 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
                                         title="Refresh data"
                                     >
-                                        <RefreshCw className={`w-5 h-5 text-[var(--text-secondary)] group-hover:text-[var(--accent)] ${isRefreshing ? 'animate-spin' : ''}`} />
+                                        <RefreshCw className={`w-5 h-5 text-[var(--text-secondary)] group-hover:text-[var(--accent)] transition-colors ${isRefreshing ? 'animate-spin' : ''}`} />
                                     </button>
                                 )}
 
                                 <button
                                     onClick={openArmory}
-                                    className="px-4 py-2 rounded-xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 hover:bg-[var(--accent)]/20 transition-colors flex items-center gap-2"
+                                    className="px-5 py-3 rounded-xl bg-gradient-to-r from-[var(--accent)]/10 to-purple-500/10 border-2 border-[var(--accent)]/30 hover:from-[var(--accent)]/20 hover:to-purple-500/20 hover:border-[var(--accent)] hover:shadow-lg hover:shadow-[var(--accent)]/30 hover:scale-105 transition-all flex items-center gap-2 group"
                                     title="View on Armory"
                                 >
-                                    <span className="text-sm font-semibold text-[var(--accent)]">Armory</span>
-                                    <ExternalLink className="w-4 h-4 text-[var(--accent)]" />
+                                    <span className="text-sm font-bold text-[var(--accent)]">Armory</span>
+                                    <ExternalLink className="w-4 h-4 text-[var(--accent)] group-hover:translate-x-1 transition-transform" />
                                 </button>
                             </div>
                         </div>
@@ -165,31 +169,34 @@ export default function CharacterHero({ data, onRefresh }: CharacterHeroProps) {
                 </div>
             </div>
 
-            {/* 4-Metric Snapshot */}
-            <div className="grid grid-cols-2 md:grid-cols-4">
-                {metrics.map((metric, index) => (
-                    <div
-                        key={index}
-                        className={`p-6 text-center ${
-                            index < metrics.length - 1 ? 'border-r border-[var(--border)]' : ''
-                        } ${index < 2 ? 'border-b md:border-b-0' : ''} border-[var(--border)]`}
-                    >
-                        <div className="flex justify-center mb-3">
-                            <metric.icon className={`w-6 h-6 ${metric.color}`} />
+                {/* 4-Metric Snapshot */}
+                <div className="grid grid-cols-2 md:grid-cols-4 bg-gradient-to-r from-[var(--bg-secondary)] via-[var(--bg-card)] to-[var(--bg-secondary)]">
+                    {metrics.map((metric, index) => (
+                        <div
+                            key={index}
+                            className={`p-6 text-center group hover:bg-[var(--bg-elevated)] transition-all ${
+                                index < metrics.length - 1 ? 'border-r border-[var(--border)]' : ''
+                            } ${index < 2 ? 'border-b md:border-b-0' : ''} border-[var(--border)]`}
+                        >
+                            <div className="flex justify-center mb-3">
+                                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${metric.color === 'text-blue-500' ? 'from-blue-500/10 to-blue-500/5' : metric.color === 'text-purple-500' ? 'from-purple-500/10 to-purple-500/5' : metric.color === 'text-green-500' ? 'from-green-500/10 to-green-500/5' : 'from-[var(--accent)]/10 to-[var(--accent)]/5'} flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg ${metric.color === 'text-blue-500' ? 'shadow-blue-500/20' : metric.color === 'text-purple-500' ? 'shadow-purple-500/20' : metric.color === 'text-green-500' ? 'shadow-green-500/20' : 'shadow-[var(--accent)]/20'}`}>
+                                    <metric.icon className={`w-6 h-6 ${metric.color}`} />
+                                </div>
+                            </div>
+                            <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+                                {metric.label}
+                            </p>
+                            <p className={`text-3xl font-black ${metric.color} group-hover:scale-105 transition-transform`}>
+                                {metric.value}
+                                {metric.suffix && (
+                                    <span className="text-sm ml-1 text-[var(--text-secondary)] font-semibold">
+                                        {metric.suffix}
+                                    </span>
+                                )}
+                            </p>
                         </div>
-                        <p className="text-xs font-semibold text-[var(--text-secondary)] uppercase mb-2">
-                            {metric.label}
-                        </p>
-                        <p className={`text-2xl font-bold ${metric.color}`}>
-                            {metric.value}
-                            {metric.suffix && (
-                                <span className="text-sm ml-1 text-[var(--text-secondary)]">
-                                    {metric.suffix}
-                                </span>
-                            )}
-                        </p>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
         </div>
     );

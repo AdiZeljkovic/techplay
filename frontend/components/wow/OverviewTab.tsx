@@ -53,34 +53,39 @@ export default function OverviewTab({ data }: OverviewTabProps) {
             {/* Profesor Buffy's AI Tips */}
             <motion.div
                 variants={fadeInUp}
-                className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl hover:border-[var(--accent)] transition-colors"
+                className="relative"
             >
-                <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-[var(--accent)] flex items-center justify-center">
-                        <Sparkles className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                        <h3 className="text-2xl font-bold text-[var(--text-primary)] uppercase">
-                            Profesor Buffy's Tips
-                        </h3>
-                        <p className="text-sm text-[var(--text-secondary)]">
-                            AI-powered Midnight expansion guidance
-                        </p>
-                    </div>
-                </div>
+                {/* Glow effect */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent)] via-purple-500 to-[var(--accent)] rounded-3xl blur-xl opacity-20" />
 
-                <div className="space-y-4">
-                    {data.ai_advice.map((tip, index) => (
-                        <div
-                            key={index}
-                            className="flex items-start gap-4 p-5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)]"
-                        >
-                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center font-bold text-white">
-                                {index + 1}
-                            </div>
-                            <p className="flex-1 text-[var(--text-primary)] leading-relaxed">{tip}</p>
+                <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] p-8 rounded-3xl hover:border-[var(--accent)] transition-all shadow-2xl">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--accent)] to-orange-600 flex items-center justify-center shadow-lg shadow-[var(--accent)]/40">
+                            <Sparkles className="w-7 h-7 text-white" />
                         </div>
-                    ))}
+                        <div>
+                            <h3 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tight">
+                                Profesor Buffy's Tips
+                            </h3>
+                            <p className="text-sm font-semibold text-[var(--text-secondary)]">
+                                AI-powered Midnight expansion guidance
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        {data.ai_advice.map((tip, index) => (
+                            <div
+                                key={index}
+                                className="group flex items-start gap-4 p-5 rounded-2xl bg-gradient-to-br from-[var(--bg-elevated)] to-[var(--bg-secondary)] border-2 border-[var(--border)] hover:border-[var(--accent)]/30 hover:shadow-lg transition-all"
+                            >
+                                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-[var(--accent)] to-orange-600 flex items-center justify-center font-black text-white shadow-lg group-hover:scale-110 transition-transform">
+                                    {index + 1}
+                                </div>
+                                <p className="flex-1 text-[var(--text-primary)] leading-relaxed font-medium">{tip}</p>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </motion.div>
 
@@ -271,53 +276,70 @@ export default function OverviewTab({ data }: OverviewTabProps) {
             {/* Overall Readiness Score */}
             <motion.div
                 variants={fadeInUp}
-                className="bg-[var(--bg-card)] border border-[var(--border)] p-10 rounded-3xl hover:border-[var(--accent)] transition-colors"
+                className="relative"
             >
-                <div className="text-center">
-                    {/* Score Circle */}
-                    <div className="relative inline-flex items-center justify-center w-60 h-60 md:w-72 md:h-72 mb-8">
-                        <svg className="w-full h-full transform -rotate-90 absolute inset-0">
-                            <circle
-                                cx="144"
-                                cy="144"
-                                r="130"
-                                stroke="var(--border)"
-                                strokeWidth="16"
-                                fill="none"
-                            />
-                            <motion.circle
-                                cx="144"
-                                cy="144"
-                                r="130"
-                                stroke="var(--accent)"
-                                strokeWidth="16"
-                                fill="none"
-                                strokeLinecap="round"
-                                strokeDasharray={`${2 * Math.PI * 130}`}
-                                initial={{ strokeDashoffset: 2 * Math.PI * 130 }}
-                                animate={{
-                                    strokeDashoffset: 2 * Math.PI * 130 * (1 - data.readiness_score / 100),
-                                }}
-                                transition={{ duration: 2, ease: 'easeOut' }}
-                            />
-                        </svg>
+                {/* Glow effect */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-green-500 via-[var(--accent)] to-purple-500 rounded-3xl blur-2xl opacity-25" />
 
-                        <div className="relative z-10 flex flex-col items-center justify-center">
-                            <span className={`text-7xl md:text-8xl font-bold ${getScoreColor(data.readiness_score)}`}>
-                                {data.readiness_score}%
-                            </span>
-                            <span className="text-lg mt-3 font-bold uppercase tracking-wider text-[var(--text-secondary)]">
-                                {getScoreLabel(data.readiness_score)}
-                            </span>
+                <div className="relative bg-gradient-to-br from-[var(--bg-card)] via-[var(--bg-secondary)] to-[var(--bg-card)] border-2 border-[var(--border)] p-10 md:p-12 rounded-3xl hover:border-[var(--accent)] transition-all shadow-2xl">
+                    <div className="text-center">
+                        {/* Score Circle */}
+                        <div className="relative inline-flex items-center justify-center w-64 h-64 md:w-80 md:h-80 mb-8">
+                            {/* Background glow */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/10 to-purple-500/10 rounded-full blur-2xl" />
+
+                            <svg className="w-full h-full transform -rotate-90 absolute inset-0">
+                                <circle
+                                    cx="160"
+                                    cy="160"
+                                    r="140"
+                                    stroke="var(--border)"
+                                    strokeWidth="20"
+                                    fill="none"
+                                    opacity="0.3"
+                                />
+                                <motion.circle
+                                    cx="160"
+                                    cy="160"
+                                    r="140"
+                                    stroke="url(#scoreGradient)"
+                                    strokeWidth="20"
+                                    fill="none"
+                                    strokeLinecap="round"
+                                    strokeDasharray={`${2 * Math.PI * 140}`}
+                                    initial={{ strokeDashoffset: 2 * Math.PI * 140 }}
+                                    animate={{
+                                        strokeDashoffset: 2 * Math.PI * 140 * (1 - data.readiness_score / 100),
+                                    }}
+                                    transition={{ duration: 2, ease: 'easeOut' }}
+                                    filter="drop-shadow(0 0 10px var(--accent))"
+                                />
+                                <defs>
+                                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stopColor="var(--accent)" />
+                                        <stop offset="50%" stopColor="#a855f7" />
+                                        <stop offset="100%" stopColor="var(--accent)" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+
+                            <div className="relative z-10 flex flex-col items-center justify-center">
+                                <span className={`text-7xl md:text-9xl font-black ${getScoreColor(data.readiness_score)} drop-shadow-2xl`}>
+                                    {data.readiness_score}%
+                                </span>
+                                <span className="text-xl mt-4 font-black uppercase tracking-widest text-[var(--accent)] px-6 py-2 bg-[var(--accent)]/10 rounded-full border-2 border-[var(--accent)]/30">
+                                    {getScoreLabel(data.readiness_score)}
+                                </span>
+                            </div>
                         </div>
-                    </div>
 
-                    <h3 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] uppercase mb-3">
-                        Overall Midnight Readiness
-                    </h3>
-                    <p className="text-base md:text-lg text-[var(--text-secondary)]">
-                        Based on lore mastery, collections, housing prep, and Void affinity
-                    </p>
+                        <h3 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[var(--text-primary)] via-[var(--accent)] to-purple-500 uppercase mb-4 tracking-tight">
+                            Overall Midnight Readiness
+                        </h3>
+                        <p className="text-lg md:text-xl text-[var(--text-secondary)] font-medium max-w-2xl mx-auto">
+                            Based on lore mastery, collections, housing prep, and Void affinity
+                        </p>
+                    </div>
                 </div>
             </motion.div>
         </div>
