@@ -154,7 +154,7 @@ export default function WowAnalyzerClient() {
                         >
                             <span className="text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">WoW character analyzer</span>
                             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-purple-400 to-purple-500 drop-shadow-[0_4px_30px_rgba(252,65,0,0.6)]">
-                                Midnight expansion checker
+                                Ready for Midnight expansion?
                             </span>
                         </motion.h1>
 

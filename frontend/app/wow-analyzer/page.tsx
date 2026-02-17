@@ -124,7 +124,7 @@ export const metadata: Metadata = {
 
     // Open Graph (Facebook, LinkedIn, Discord)
     openGraph: {
-        title: "🎮 WoW Character Analyzer - Free Midnight Readiness Score",
+        title: "WoW Character Analyzer - Free Midnight Readiness Score",
         description: "Analyze your World of Warcraft character instantly! Check gear, M+ rating, raid progress & get AI recommendations. 100% Free - No login required!",
         type: "website",
         url: "https://techplay.gg/wow-analyzer",
@@ -143,7 +143,7 @@ export const metadata: Metadata = {
     // Twitter Card
     twitter: {
         card: "summary_large_image",
-        title: "🎮 WoW Character Analyzer - Free Midnight Readiness Score",
+        title: "WoW Character Analyzer - Free Midnight Readiness Score",
         description: "Analyze your WoW character instantly! Gear check, M+ score, raid progress & AI tips. 100% Free!",
         images: ["/WoW Analyzer.png"],
         creator: "@TechPlayGG",
