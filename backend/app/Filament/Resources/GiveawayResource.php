@@ -361,7 +361,22 @@ class GiveawayResource extends Resource
                     ->color('success')
                     ->requiresConfirmation()
                     ->modalHeading('Pick a Winner')
-                    ->modalDescription('This will randomly select a winner based on point weights. This action cannot be undone.')
+                    ->modalDescription('Review all participants below. Clicking "Confirm" will randomly select a winner based on point weights. This action cannot be undone.')
+                    ->modalContent(function (Giveaway $record) {
+                        $entries = $record->entries()
+                            ->with('user')
+                            ->where('total_points', '>', 0)
+                            ->orderBy('total_points', 'desc')
+                            ->get();
+
+                        $totalPool = $record->getTotalEntryPool();
+
+                        return view('filament.resources.giveaway.modals.participants-list', [
+                            'entries' => $entries,
+                            'totalPool' => $totalPool,
+                        ]);
+                    })
+                    ->modalWidth('7xl')
                     ->visible(fn(Giveaway $record) => $record->hasEnded() && !$record->winner_id && !$record->hasTiers())
                     ->action(function (Giveaway $record) {
                         $winner = $record->pickWinner();
