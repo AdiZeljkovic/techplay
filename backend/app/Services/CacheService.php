@@ -19,6 +19,7 @@ class CacheService
     const TTL_MEDIUM = 300;        // 5 minutes
     const TTL_LONG = 3600;         // 1 hour
     const TTL_DAY = 86400;         // 24 hours
+    const TTL_WEEK = 604800;       // 7 days (for realm list, rarely changes)
 
     // Cache key prefixes
     const PREFIX_API = 'api:';
