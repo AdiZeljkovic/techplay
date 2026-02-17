@@ -107,9 +107,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/email/verify/{id}/{hash}', [App\Http\Controllers\Api\V1\VerificationController::class, 'verify'])
             ->name('verification.verify');
 
-        // Newsletter (CRITICAL: Strict rate limit to prevent email bombing)
-        // 1 subscribe per 10 minutes per IP to prevent spam attacks
-        Route::middleware('throttle:1,10')->group(function () {
+        // Newsletter (Rate limited to prevent email bombing)
+        // 5 subscribes per 10 minutes per IP
+        Route::middleware('throttle:5,10')->group(function () {
             Route::post('/newsletter/subscribe', [App\Http\Controllers\Api\V1\NewsletterController::class, 'subscribe']);
         });
 
