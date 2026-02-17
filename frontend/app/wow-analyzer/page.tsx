@@ -51,7 +51,75 @@ export const metadata: Metadata = {
         "World of Warcraft",
         "WoW",
         "Blizzard",
-        "MMORPG character analyzer"
+        "MMORPG character analyzer",
+
+        // Regional variations (high volume in different regions)
+        "wow character analyzer eu",
+        "wow character checker us",
+        "wow analyzer europe",
+        "wow character lookup us",
+
+        // Class-specific (long-tail, high intent)
+        "wow demon hunter analyzer",
+        "wow paladin gear checker",
+        "wow priest character check",
+        "wow warrior analyzer",
+
+        // Activity-specific
+        "wow pvp character checker",
+        "wow pve analyzer",
+        "wow raiding character audit",
+        "wow m+ character checker",
+
+        // Problem-solving keywords (question-based)
+        "how to check wow character",
+        "how to analyze wow character",
+        "wow character progress tracker",
+        "how to prepare for midnight expansion",
+        "is my wow character ready",
+        "am i ready for wow midnight",
+
+        // Comparison keywords (competitive)
+        "better than raider.io",
+        "raider io vs wow analyzer",
+        "wowprogress alternative free",
+        "simcraft alternative",
+        "raidbots alternative",
+
+        // Mobile & accessibility
+        "wow mobile character checker",
+        "check wow character on phone",
+        "wow analyzer app",
+
+        // Specific feature keywords
+        "wow enchant checker",
+        "wow gem checker",
+        "wow tier set tracker",
+        "wow achievement tracker",
+        "wow mount tracker",
+        "wow collection checker",
+
+        // Time-based & expansion-specific
+        "wow character analyzer 2026",
+        "midnight expansion analyzer",
+        "wow the war within analyzer",
+        "wow 11.1 character checker",
+
+        // Problem + solution keywords
+        "check if wow character ready for midnight",
+        "wow character optimization tool",
+        "wow gear optimizer",
+        "wow character audit free",
+
+        // Voice search keywords (natural language)
+        "check my world of warcraft character",
+        "analyze my wow character free",
+        "is my wow character ready for expansion",
+
+        // Negative keywords (people searching for alternatives)
+        "not raider.io",
+        "free alternative to wowprogress",
+        "no login wow checker"
     ],
 
     // Open Graph (Facebook, LinkedIn, Discord)
@@ -63,10 +131,10 @@ export const metadata: Metadata = {
         siteName: "TechPlay",
         images: [
             {
-                url: "/WoW_Midnight_DarknessDevours_Wallpaper_1920x1080-579529d5e24ee9365714.jpg",
+                url: "/WoW Analyzer.png",
                 width: 1920,
                 height: 1080,
-                alt: "WoW Midnight Expansion Character Analyzer",
+                alt: "WoW Character Analyzer - Free Midnight Readiness Score & Gear Check",
             },
         ],
         locale: "en_US",
@@ -77,7 +145,7 @@ export const metadata: Metadata = {
         card: "summary_large_image",
         title: "🎮 WoW Character Analyzer - Free Midnight Readiness Score",
         description: "Analyze your WoW character instantly! Gear check, M+ score, raid progress & AI tips. 100% Free!",
-        images: ["/WoW_Midnight_DarknessDevours_Wallpaper_1920x1080-579529d5e24ee9365714.jpg"],
+        images: ["/WoW Analyzer.png"],
         creator: "@TechPlayGG",
         site: "@TechPlayGG",
     },
@@ -116,7 +184,7 @@ export default function WowAnalyzerPage() {
         },
         "description": "Free World of Warcraft character analyzer for Midnight expansion. Instantly check gear, Mythic+ score, raid progress, collections, and get AI-powered recommendations.",
         "url": "https://techplay.gg/wow-analyzer",
-        "image": "https://techplay.gg/WoW_Midnight_DarknessDevours_Wallpaper_1920x1080-579529d5e24ee9365714.jpg",
+        "image": "https://techplay.gg/WoW%20Analyzer.png",
         "publisher": {
             "@type": "Organization",
             "name": "TechPlay",
@@ -153,7 +221,7 @@ export default function WowAnalyzerPage() {
             "100% free - no account required",
             "Real-time Blizzard API data"
         ],
-        "screenshot": "https://techplay.gg/WoW_Midnight_DarknessDevours_Wallpaper_1920x1080-579529d5e24ee9365714.jpg"
+        "screenshot": "https://techplay.gg/WoW%20Analyzer.png"
     };
 
     // Breadcrumb Structured Data
