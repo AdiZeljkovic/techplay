@@ -539,7 +539,7 @@ export default function WowAnalyzerClient() {
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                                         <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                        < 5 Seconds
+                                        {'< 5 Seconds'}
                                     </div>
                                 </div>
                             </form>
