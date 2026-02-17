@@ -114,18 +114,21 @@ export default function WowAnalyzerClient() {
             {/* ═══════════════════════════════════════════════════════════ */}
             {/* HERO SECTION - Immediate Impact */}
             {/* ═══════════════════════════════════════════════════════════ */}
-            <section className="relative overflow-hidden bg-gradient-to-b from-[var(--bg-secondary)] to-[var(--bg-primary)] border-b border-[var(--border)]">
-                {/* Animated Background Grid */}
-                <div className="absolute inset-0 opacity-[0.015]">
-                    <div className="absolute inset-0" style={{
-                        backgroundImage: `linear-gradient(var(--accent) 1px, transparent 1px), linear-gradient(90deg, var(--accent) 1px, transparent 1px)`,
-                        backgroundSize: '50px 50px'
-                    }} />
-                </div>
+            <section className="relative overflow-hidden border-b border-[var(--border)]">
+                {/* Background Wallpaper */}
+                <div
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                    style={{
+                        backgroundImage: `url('/WoW_Midnight_DarknessDevours_Wallpaper_1920x1080-579529d5e24ee9365714.jpg')`
+                    }}
+                />
 
-                {/* Gradient Orbs */}
-                <div className="absolute top-0 left-1/4 w-96 h-96 bg-[var(--accent)] rounded-full blur-[120px] opacity-[0.06]" />
-                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500 rounded-full blur-[120px] opacity-[0.06]" />
+                {/* Dark Overlay for Text Readability */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 to-black/60" />
+
+                {/* Accent Glow Effects */}
+                <div className="absolute top-0 left-0 w-96 h-96 bg-[var(--accent)] rounded-full blur-[150px] opacity-[0.15]" />
+                <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500 rounded-full blur-[150px] opacity-[0.12]" />
 
                 <div className="relative container mx-auto px-4 py-20 md:py-32 max-w-7xl">
                     <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -149,16 +152,16 @@ export default function WowAnalyzerClient() {
                             </motion.div>
 
                             {/* Headline */}
-                            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-[var(--text-primary)] mb-6 leading-[1.1]">
-                                Ready for
-                                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] to-purple-500">
+                            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-[1.1]">
+                                <span className="text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">Ready for</span>
+                                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-purple-400 to-purple-500 drop-shadow-[0_2px_20px_rgba(252,65,0,0.5)]">
                                     Midnight expansion?
                                 </span>
                             </h1>
 
                             {/* Description */}
-                            <p className="text-xl text-[var(--text-secondary)] mb-8 leading-relaxed">
-                                Get your instant readiness score and personalized roadmap for <strong className="text-[var(--text-primary)]">World of Warcraft: Midnight</strong> expansion.
+                            <p className="text-xl text-gray-200 mb-8 leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                                Get your instant readiness score and personalized roadmap for <strong className="text-white">World of Warcraft: Midnight</strong> expansion.
                             </p>
 
                             {/* Trust Stats */}
@@ -166,22 +169,22 @@ export default function WowAnalyzerClient() {
                                 <div className="flex items-center gap-2">
                                     <div className="flex -space-x-2">
                                         {[1, 2, 3, 4].map((i) => (
-                                            <div key={i} className="w-8 h-8 rounded-full border-2 border-[var(--bg-secondary)] bg-gradient-to-br from-purple-400 to-[var(--accent)] flex items-center justify-center text-xs font-bold text-white">
+                                            <div key={i} className="w-8 h-8 rounded-full border-2 border-black/50 bg-gradient-to-br from-purple-400 to-[var(--accent)] flex items-center justify-center text-xs font-bold text-white shadow-lg">
                                                 {i}
                                             </div>
                                         ))}
                                     </div>
-                                    <span className="text-sm text-[var(--text-secondary)]">
-                                        <strong className="text-[var(--text-primary)]">50K+</strong> players analyzed
+                                    <span className="text-sm text-gray-300 drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
+                                        <strong className="text-white">50K+</strong> players analyzed
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <div className="flex items-center">
                                         {[1, 2, 3, 4, 5].map((i) => (
-                                            <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                                            <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400 drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]" />
                                         ))}
                                     </div>
-                                    <span className="text-sm text-[var(--text-secondary)]">
+                                    <span className="text-sm text-gray-300 drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
                                         4.9/5 rating
                                     </span>
                                 </div>
@@ -196,7 +199,7 @@ export default function WowAnalyzerClient() {
                                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                             </button>
 
-                            <p className="text-xs text-[var(--text-secondary)] mt-4">
+                            <p className="text-xs text-gray-300 mt-4 drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
                                 ⚡ Takes 5 seconds • No account required • 100% free
                             </p>
                         </motion.div>
@@ -222,17 +225,19 @@ export default function WowAnalyzerClient() {
                                         transition={{ delay: 0.3 + i * 0.1 }}
                                         className="relative group"
                                     >
-                                        <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity blur-xl"
+                                        {/* Glow Effect */}
+                                        <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-20 rounded-2xl transition-opacity blur-xl"
                                              style={{ background: `linear-gradient(to bottom right, var(--accent), purple)` }} />
 
-                                        <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 hover:border-[var(--accent)] transition-all">
-                                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-4`}>
+                                        {/* Card with Backdrop Blur */}
+                                        <div className="relative bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:border-[var(--accent)]/60 hover:bg-black/50 transition-all shadow-2xl">
+                                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-4 shadow-lg`}>
                                                 <stat.icon className="w-6 h-6 text-white" />
                                             </div>
-                                            <div className="text-3xl font-black text-[var(--text-primary)] mb-1">
+                                            <div className="text-3xl font-black text-white mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                                                 {stat.value}
                                             </div>
-                                            <div className="text-sm text-[var(--text-secondary)]">
+                                            <div className="text-sm text-gray-300 drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
                                                 {stat.label}
                                             </div>
                                         </div>
