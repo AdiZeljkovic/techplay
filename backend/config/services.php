@@ -70,6 +70,12 @@ return [
         'guild_id' => env('DISCORD_GUILD_ID'),     // Your Discord server ID
     ],
 
+    'battlenet' => [
+        'client_id' => env('BATTLENET_CLIENT_ID'),
+        'client_secret' => env('BATTLENET_CLIENT_SECRET'),
+        'redirect' => env('BATTLENET_REDIRECT_URI', 'https://techplay.gg/auth/callback'),
+    ],
+
     'blizzard' => [
         'client_id' => env('BLIZZARD_CLIENT_ID'),
         'client_secret' => env('BLIZZARD_CLIENT_SECRET'),

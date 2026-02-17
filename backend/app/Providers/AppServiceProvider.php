@@ -19,6 +19,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register custom Socialite providers
+        $this->bootSocialite();
+
         // Force HTTPS in production/staging and fix URL generation
         if ($this->app->environment('production') || $this->app->environment('staging') || request()->getHost() !== 'localhost') {
             \Illuminate\Support\Facades\URL::forceScheme('https');
@@ -70,6 +73,19 @@ class AppServiceProvider extends ServiceProvider
             // Let's allow if user has 'admin' role.
             $user = $user ?? auth()->user();
             return $user && in_array($user->role, ['admin', 'super_admin']);
+        });
+    }
+
+    /**
+     * Register custom Socialite providers
+     */
+    protected function bootSocialite(): void
+    {
+        $socialite = $this->app->make(\Laravel\Socialite\Contracts\Factory::class);
+
+        $socialite->extend('battlenet', function ($app) use ($socialite) {
+            $config = config('services.battlenet');
+            return $socialite->buildProvider(\App\Services\Socialite\BattleNetProvider::class, $config);
         });
     }
 }

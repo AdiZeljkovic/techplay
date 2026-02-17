@@ -16,6 +16,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/auth/discord/redirect', [App\Http\Controllers\Api\V1\SocialAuthController::class, 'redirect']);
         Route::get('/auth/discord/callback', [App\Http\Controllers\Api\V1\SocialAuthController::class, 'callback']);
 
+        // Social Auth (Battle.net)
+        Route::get('/auth/battlenet/redirect', [App\Http\Controllers\Api\V1\BattleNetAuthController::class, 'redirect']);
+        Route::get('/auth/battlenet/callback', [App\Http\Controllers\Api\V1\BattleNetAuthController::class, 'callback']);
+
         // Internal Webhooks (Secured by app logic/middleware typically, or local only)
         Route::post('/webhooks/discord/notify', [App\Http\Controllers\Api\V1\WebhookController::class, 'notify']);
     });
@@ -53,6 +57,11 @@ Route::prefix('v1')->group(function () {
         Route::put('/user/preferences', [App\Http\Controllers\Api\V1\AuthController::class, 'updatePreferences']);
         Route::put('/user/password', [App\Http\Controllers\Api\V1\AuthController::class, 'changePassword']);
         Route::get('/user/notifications/counts', [App\Http\Controllers\Api\V1\NotificationController::class, 'counts']);
+
+        // User WoW Characters
+        Route::get('/user/wow-characters', [App\Http\Controllers\Api\V1\UserWowCharactersController::class, 'index']);
+        Route::post('/user/wow-characters/{id}/set-main', [App\Http\Controllers\Api\V1\UserWowCharactersController::class, 'setMain']);
+        Route::delete('/user/wow-characters/{id}', [App\Http\Controllers\Api\V1\UserWowCharactersController::class, 'destroy']);
 
         // Friends
         Route::get('/friends', [App\Http\Controllers\Api\V1\FriendController::class, 'index']);
