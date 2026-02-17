@@ -337,4 +337,58 @@ class WowAnalyzerController extends Controller
             'share_count' => $analysis->share_count,
         ], 'Share tracked successfully');
     }
+
+    /**
+     * Get all realms for a region (dynamic from Blizzard API)
+     * Replaces static wow-realms.ts with complete realm list
+     *
+     * GET /api/v1/wow/realms/{region}
+     */
+    public function getRealms(string $region)
+    {
+        // Validate region
+        if (!in_array($region, ['us', 'eu', 'kr', 'tw'])) {
+            return $this->error('Invalid region. Must be us, eu, kr, or tw.', 400);
+        }
+
+        // Cache for 7 days (realms rarely change)
+        $cacheKey = "wow_realms_{$region}";
+
+        return Cache::remember($cacheKey, CacheService::TTL_WEEK, function () use ($region) {
+            $data = $this->blizzardService->getRealmIndex($region);
+
+            if (!$data || !isset($data['realms'])) {
+                return $this->error('Failed to fetch realms from Blizzard API', 503);
+            }
+
+            // Transform to frontend-friendly format (match wow-realms.ts structure)
+            $realms = collect($data['realms'])->map(function ($realm) use ($region) {
+                return [
+                    'name' => $realm['name'] ?? 'Unknown',
+                    'slug' => $realm['slug'] ?? '',
+                    'locale' => $this->getLocaleForRegion($region),
+                ];
+            })->sortBy('name')->values()->all();
+
+            return $this->success([
+                'region' => $region,
+                'count' => count($realms),
+                'realms' => $realms,
+            ], "Retrieved {$region} realms successfully");
+        });
+    }
+
+    /**
+     * Helper: Get default locale for region
+     */
+    protected function getLocaleForRegion(string $region): string
+    {
+        return match ($region) {
+            'us' => 'en_US',
+            'eu' => 'en_GB',
+            'kr' => 'ko_KR',
+            'tw' => 'zh_TW',
+            default => 'en_US',
+        };
+    }
 }

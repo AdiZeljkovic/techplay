@@ -1,9 +1,15 @@
 "use client";
 
 import { useState, useEffect, useRef, forwardRef } from "react";
-import { ChevronDown, Search, Check, Globe, AlertCircle } from "lucide-react";
-import { searchRealms, getRealmsByRegion, WowRealm } from "@/data/wow-realms";
+import { ChevronDown, Search, Check, Globe, AlertCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import axios from "@/lib/axios";
+
+interface WowRealm {
+    name: string;
+    slug: string;
+    locale: string;
+}
 
 interface RealmDropdownProps {
     region: string;
@@ -17,16 +23,50 @@ const RealmDropdown = forwardRef<HTMLInputElement, RealmDropdownProps>(
         const [isOpen, setIsOpen] = useState(false);
         const [search, setSearch] = useState("");
         const [selectedRealm, setSelectedRealm] = useState<WowRealm | null>(null);
+        const [allRealms, setAllRealms] = useState<WowRealm[]>([]);
+        const [loading, setLoading] = useState(false);
+        const [fetchError, setFetchError] = useState<string | null>(null);
         const dropdownRef = useRef<HTMLDivElement>(null);
 
-        const realms = searchRealms(region, search);
+        // Fetch realms from API when region changes
+        useEffect(() => {
+            const fetchRealms = async () => {
+                if (!region) return;
+
+                setLoading(true);
+                setFetchError(null);
+
+                try {
+                    const response = await axios.get(`/wow/realms/${region}`);
+                    if (response.data.success) {
+                        setAllRealms(response.data.data.realms || []);
+                    } else {
+                        setFetchError('Failed to load realms');
+                        setAllRealms([]);
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch realms:', err);
+                    setFetchError('Failed to load realms. Please try again.');
+                    setAllRealms([]);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            fetchRealms();
+        }, [region]);
+
+        // Filter realms based on search query
+        const filteredRealms = allRealms.filter(realm =>
+            realm.name.toLowerCase().includes(search.toLowerCase()) ||
+            realm.slug.includes(search.toLowerCase())
+        );
 
         // Update selected realm when value changes
         useEffect(() => {
-            const allRealms = getRealmsByRegion(region);
             const realm = allRealms.find(r => r.slug === value);
             setSelectedRealm(realm || null);
-        }, [value, region]);
+        }, [value, allRealms]);
 
         // Close dropdown when clicking outside
         useEffect(() => {
@@ -62,21 +102,27 @@ const RealmDropdown = forwardRef<HTMLInputElement, RealmDropdownProps>(
                 <button
                     type="button"
                     onClick={() => setIsOpen(!isOpen)}
+                    disabled={loading}
                     className={cn(
                         "w-full px-5 py-4 bg-[var(--bg-elevated)] border-2 rounded-2xl text-left transition-all duration-200 flex items-center justify-between group font-medium text-lg",
                         error
                             ? "border-red-400 focus:border-red-400"
                             : "border-[var(--border)] hover:border-[var(--accent)]/60",
-                        isOpen && "border-[var(--accent)] bg-[var(--bg-card)] shadow-lg shadow-[var(--accent)]/20"
+                        isOpen && "border-[var(--accent)] bg-[var(--bg-card)] shadow-lg shadow-[var(--accent)]/20",
+                        loading && "opacity-60 cursor-wait"
                     )}
                 >
                     <span className={selectedRealm ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]/60"}>
-                        {selectedRealm ? selectedRealm.name : "Select a realm..."}
+                        {loading ? "Loading realms..." : selectedRealm ? selectedRealm.name : "Select a realm..."}
                     </span>
-                    <ChevronDown className={cn(
-                        "w-5 h-5 text-[var(--accent)] transition-transform duration-200",
-                        isOpen && "transform rotate-180"
-                    )} />
+                    {loading ? (
+                        <Loader2 className="w-5 h-5 text-[var(--accent)] animate-spin" />
+                    ) : (
+                        <ChevronDown className={cn(
+                            "w-5 h-5 text-[var(--accent)] transition-transform duration-200",
+                            isOpen && "transform rotate-180"
+                        )} />
+                    )}
                 </button>
 
                 {/* Dropdown Menu */}
@@ -101,8 +147,19 @@ const RealmDropdown = forwardRef<HTMLInputElement, RealmDropdownProps>(
 
                         {/* Realm List */}
                         <div className="overflow-y-auto max-h-72 custom-scrollbar">
-                            {realms.length > 0 ? (
-                                realms.map((realm) => (
+                            {fetchError ? (
+                                <div className="px-5 py-12 text-center text-red-400">
+                                    <AlertCircle className="w-10 h-10 mx-auto mb-3" />
+                                    <p className="text-sm font-medium">{fetchError}</p>
+                                    <p className="text-xs mt-1 opacity-60">Please refresh and try again</p>
+                                </div>
+                            ) : loading ? (
+                                <div className="px-5 py-12 text-center text-[var(--text-secondary)]">
+                                    <Loader2 className="w-10 h-10 mx-auto mb-3 text-[var(--accent)] animate-spin" />
+                                    <p className="text-sm font-medium">Loading realms...</p>
+                                </div>
+                            ) : filteredRealms.length > 0 ? (
+                                filteredRealms.map((realm) => (
                                     <button
                                         key={realm.slug}
                                         type="button"
@@ -144,14 +201,16 @@ const RealmDropdown = forwardRef<HTMLInputElement, RealmDropdownProps>(
                         </div>
 
                         {/* Footer */}
-                        <div className="px-5 py-3 border-t border-[var(--border)] flex items-center justify-center gap-2 bg-[var(--bg-elevated)]">
-                            <Globe className="w-3.5 h-3.5 text-[var(--accent)]" />
-                            <span className="text-xs font-bold">
-                                <span className="text-[var(--accent)]">{realms.length}</span>
-                                <span className="text-[var(--text-secondary)]"> realm{realms.length !== 1 && 's'} in </span>
-                                <span className="text-[var(--accent)] uppercase">{region}</span>
-                            </span>
-                        </div>
+                        {!loading && !fetchError && (
+                            <div className="px-5 py-3 border-t border-[var(--border)] flex items-center justify-center gap-2 bg-[var(--bg-elevated)]">
+                                <Globe className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                <span className="text-xs font-bold">
+                                    <span className="text-[var(--accent)]">{filteredRealms.length}</span>
+                                    <span className="text-[var(--text-secondary)]"> realm{filteredRealms.length !== 1 && 's'} in </span>
+                                    <span className="text-[var(--accent)] uppercase">{region}</span>
+                                </span>
+                            </div>
+                        )}
                     </div>
                 )}
 

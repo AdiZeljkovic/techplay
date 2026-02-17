@@ -175,6 +175,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/recent', [App\Http\Controllers\Api\V1\WowAnalyzerController::class, 'recent']);
             Route::get('/analysis/{id}', [App\Http\Controllers\Api\V1\WowAnalyzerController::class, 'show']);
             Route::post('/analysis/{id}/share', [App\Http\Controllers\Api\V1\WowAnalyzerController::class, 'share']);
+            Route::get('/realms/{region}', [App\Http\Controllers\Api\V1\WowAnalyzerController::class, 'getRealms']);
         });
 
         // Shop

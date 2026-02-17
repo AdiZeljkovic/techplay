@@ -516,6 +516,41 @@ class BlizzardService
     }
 
     /**
+     * Get realm index (all realms for a region)
+     * API: /data/wow/realm/index
+     * Returns ~250 EU realms, ~240 US realms, ~40 KR realms, ~20 TW realms
+     */
+    public function getRealmIndex(string $region): ?array
+    {
+        $token = $this->getAccessToken($region);
+        $baseUrl = $this->regionUrls[$region] ?? $this->regionUrls['us'];
+        $namespace = "dynamic-{$region}"; // Game data namespace, not profile
+
+        try {
+            $response = $this->http(20)
+                ->withToken($token)
+                ->get("{$baseUrl}/data/wow/realm/index", [
+                    'namespace' => $namespace,
+                    'locale' => 'en_US',
+                ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::warning('Blizzard Realm Index API returned non-200', [
+                'region' => $region,
+                'status' => $response->status(),
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Blizzard Realm Index Exception: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Fetch all character data in parallel using Http::pool()
      * Performance: ~1-2s vs 4-8s sequential
      *
