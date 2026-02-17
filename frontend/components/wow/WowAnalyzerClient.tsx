@@ -152,7 +152,7 @@ export default function WowAnalyzerClient() {
                             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-[var(--text-primary)] mb-6 leading-[1.1]">
                                 Ready for
                                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] to-purple-500">
-                                    Midnight?
+                                    Midnight expansion?
                                 </span>
                             </h1>
 
@@ -201,146 +201,45 @@ export default function WowAnalyzerClient() {
                             </p>
                         </motion.div>
 
-                        {/* Right: Visual Preview */}
+                        {/* Right: Live Stats */}
                         <motion.div
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.6, delay: 0.2 }}
-                            className="relative hidden lg:block"
+                            className="hidden lg:block"
                         >
-                            {/* Preview Card - Mockup of analysis result */}
-                            <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-8 shadow-2xl">
-                                {/* Glow Effect */}
-                                <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent)] to-purple-500 rounded-3xl blur opacity-20" />
+                            <div className="grid grid-cols-2 gap-4">
+                                {[
+                                    { label: "Analyses Today", value: "12.8K", icon: TrendingUp, color: "from-blue-500 to-cyan-500" },
+                                    { label: "Avg Readiness", value: "76%", icon: Target, color: "from-purple-500 to-pink-500" },
+                                    { label: "Success Rate", value: "99.9%", icon: CheckCircle2, color: "from-green-500 to-emerald-500" },
+                                    { label: "Response Time", value: "< 5s", icon: Zap, color: "from-orange-500 to-red-500" }
+                                ].map((stat, i) => (
+                                    <motion.div
+                                        key={i}
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ delay: 0.3 + i * 0.1 }}
+                                        className="relative group"
+                                    >
+                                        <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity blur-xl"
+                                             style={{ background: `linear-gradient(to bottom right, var(--accent), purple)` }} />
 
-                                <div className="relative">
-                                    {/* Score Circle */}
-                                    <div className="flex items-center justify-center mb-6">
-                                        <div className="relative">
-                                            <svg className="w-32 h-32 transform -rotate-90">
-                                                <circle cx="64" cy="64" r="56" stroke="var(--border)" strokeWidth="8" fill="none" />
-                                                <circle
-                                                    cx="64"
-                                                    cy="64"
-                                                    r="56"
-                                                    stroke="var(--accent)"
-                                                    strokeWidth="8"
-                                                    fill="none"
-                                                    strokeDasharray="351.86"
-                                                    strokeDashoffset="70.37"
-                                                    strokeLinecap="round"
-                                                />
-                                            </svg>
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <div className="text-center">
-                                                    <div className="text-4xl font-black text-[var(--accent)]">82</div>
-                                                    <div className="text-xs text-[var(--text-secondary)]">Ready</div>
-                                                </div>
+                                        <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 hover:border-[var(--accent)] transition-all">
+                                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-4`}>
+                                                <stat.icon className="w-6 h-6 text-white" />
+                                            </div>
+                                            <div className="text-3xl font-black text-[var(--text-primary)] mb-1">
+                                                {stat.value}
+                                            </div>
+                                            <div className="text-sm text-[var(--text-secondary)]">
+                                                {stat.label}
                                             </div>
                                         </div>
-                                    </div>
-
-                                    {/* Character Info */}
-                                    <div className="text-center mb-6">
-                                        <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
-                                            Your Character
-                                        </h3>
-                                        <p className="text-sm text-[var(--text-secondary)]">
-                                            Detailed Analysis • Personalized Tips
-                                        </p>
-                                    </div>
-
-                                    {/* Quick Stats */}
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {[
-                                            { label: "M+ Score", value: "2,847", icon: Trophy },
-                                            { label: "Achievements", value: "15,200", icon: Star },
-                                            { label: "Tier Set", value: "4/5", icon: Shield },
-                                            { label: "Item Level", value: "635", icon: Zap }
-                                        ].map((stat, i) => (
-                                            <div key={i} className="bg-[var(--bg-secondary)] rounded-xl p-3">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <stat.icon className="w-3 h-3 text-[var(--accent)]" />
-                                                    <span className="text-xs text-[var(--text-secondary)]">{stat.label}</span>
-                                                </div>
-                                                <div className="text-lg font-bold text-[var(--text-primary)]">{stat.value}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Data Badge */}
-                                    <div className="mt-6 flex items-center justify-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full">
-                                        <Globe className="w-4 h-4 text-purple-400" />
-                                        <span className="text-xs font-semibold text-purple-400">
-                                            Powered by Blizzard API
-                                        </span>
-                                    </div>
-                                </div>
+                                    </motion.div>
+                                ))}
                             </div>
-
-                            {/* Floating Icons */}
-                            <motion.div
-                                animate={{ y: [0, -10, 0] }}
-                                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                                className="absolute -top-4 -right-4 w-16 h-16 bg-[var(--accent)] rounded-2xl flex items-center justify-center shadow-lg"
-                            >
-                                <Rocket className="w-8 h-8 text-white" />
-                            </motion.div>
                         </motion.div>
-                    </div>
-
-                    {/* Scroll Indicator */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 1 }}
-                        className="flex justify-center mt-12"
-                    >
-                        <button
-                            onClick={() => document.getElementById('analyzer-form')?.scrollIntoView({ behavior: 'smooth' })}
-                            className="flex flex-col items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors"
-                        >
-                            <span className="text-xs uppercase tracking-wider font-semibold">Analyze Now</span>
-                            <motion.div
-                                animate={{ y: [0, 5, 0] }}
-                                transition={{ duration: 1.5, repeat: Infinity }}
-                            >
-                                <ChevronDown className="w-5 h-5" />
-                            </motion.div>
-                        </button>
-                    </motion.div>
-                </div>
-            </section>
-
-            {/* ═══════════════════════════════════════════════════════════ */}
-            {/* LIVE STATS BAR - Trust Signals */}
-            {/* ═══════════════════════════════════════════════════════════ */}
-            <section className="py-6 bg-[var(--bg-elevated)] border-b border-[var(--border)]">
-                <div className="container mx-auto px-4 max-w-7xl">
-                    <div className="flex items-center justify-center gap-8 md:gap-12 flex-wrap">
-                        {[
-                            { label: "Analyses Today", value: "12.8K", icon: TrendingUp },
-                            { label: "Avg Readiness", value: "76%", icon: Target },
-                            { label: "Success Rate", value: "99.9%", icon: CheckCircle2 },
-                            { label: "Response Time", value: "< 5s", icon: Zap }
-                        ].map((stat, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: 10 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: i * 0.1 }}
-                                className="flex items-center gap-3"
-                            >
-                                <div className="w-10 h-10 rounded-xl bg-[var(--accent)]/10 flex items-center justify-center">
-                                    <stat.icon className="w-5 h-5 text-[var(--accent)]" />
-                                </div>
-                                <div>
-                                    <div className="text-xl font-black text-[var(--text-primary)]">{stat.value}</div>
-                                    <div className="text-xs text-[var(--text-secondary)]">{stat.label}</div>
-                                </div>
-                            </motion.div>
-                        ))}
                     </div>
                 </div>
             </section>
