@@ -257,17 +257,17 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                     prose-a:text-[var(--accent)] prose-a:underline prose-a:decoration-[var(--accent)]/40 prose-a:underline-offset-2 hover:prose-a:decoration-[var(--accent)] hover:prose-a:text-[var(--accent-hover)] prose-a:transition-all
                                     prose-strong:text-white prose-strong:font-semibold
                                     prose-em:text-[var(--text-secondary)] prose-em:italic prose-em:font-normal
-                                    prose-img:rounded-2xl prose-img:shadow-xl prose-img:border prose-img:border-[var(--border)] prose-img:my-4
+                                    prose-img:rounded-2xl prose-img:shadow-xl prose-img:border prose-img:border-[var(--border)] prose-img:my-3
                                     prose-blockquote:border-l-4 prose-blockquote:border-[var(--accent)] prose-blockquote:pl-6 prose-blockquote:my-5 prose-blockquote:italic prose-blockquote:text-[var(--text-primary)] prose-blockquote:font-medium prose-blockquote:bg-[var(--bg-elevated)]/30 prose-blockquote:py-4 prose-blockquote:pr-4 prose-blockquote:rounded-r-lg
                                     prose-code:bg-[var(--bg-elevated)] prose-code:text-[var(--accent)] prose-code:px-2 prose-code:py-0.5 prose-code:rounded-md prose-code:font-mono prose-code:text-sm
                                     prose-ul:list-disc prose-ul:pl-6 prose-ul:my-4 prose-ul:text-[var(--text-secondary)]
                                     prose-ol:list-decimal prose-ol:pl-6 prose-ol:my-4 prose-ol:text-[var(--text-secondary)]
                                     prose-li:mb-1.5
                                     prose-hr:border-[var(--border)] prose-hr:my-6
-                                    [&_p:has(>img:only-child)]:mb-0
-                                    [&_iframe]:w-full [&_iframe]:min-h-[400px] [&_iframe]:max-w-full [&_iframe]:rounded-2xl [&_iframe]:shadow-xl [&_iframe]:border [&_iframe]:border-[var(--border)] [&_iframe]:my-4
-                                    [&_p:has(>iframe:only-child)]:mb-0
-                                    [&_figure]:my-4 [&_figure]:text-center [&_figcaption]:text-sm [&_figcaption]:text-[var(--text-secondary)] [&_figcaption]:mt-2
+                                    [&_p:has(img)]:mb-0 [&_p:has(img)]:leading-none
+                                    [&_iframe]:w-full [&_iframe]:min-h-[400px] [&_iframe]:max-w-full [&_iframe]:rounded-2xl [&_iframe]:shadow-xl [&_iframe]:border [&_iframe]:border-[var(--border)] [&_iframe]:my-3
+                                    [&_p:has(iframe)]:mb-0 [&_p:has(iframe)]:leading-none
+                                    [&_figure]:my-3 [&_figure]:text-center [&_figcaption]:text-sm [&_figcaption]:text-[var(--text-secondary)] [&_figcaption]:mt-2
                                 "
                                 dangerouslySetInnerHTML={{ __html: processedContent }}
                             />
