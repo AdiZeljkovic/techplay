@@ -230,19 +230,23 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
 
                         <div className="prose prose-lg md:prose-xl max-w-none
                                 prose-headings:text-[var(--text-primary)] prose-headings:font-bold prose-headings:tracking-tight
-                                prose-h2:text-2xl prose-h2:md:text-3xl prose-h2:mt-12 prose-h2:mb-4 prose-h2:first:mt-0
-                                prose-h3:text-xl prose-h3:md:text-2xl prose-h3:mt-8 prose-h3:mb-3
+                                prose-h2:text-2xl prose-h2:md:text-3xl prose-h2:mt-8 prose-h2:mb-3 prose-h2:first:mt-0
+                                prose-h3:text-xl prose-h3:md:text-2xl prose-h3:mt-6 prose-h3:mb-2
                                 prose-p:text-[var(--text-secondary)] prose-p:leading-8 prose-p:mb-4
                                 prose-a:text-[var(--accent)] prose-a:underline prose-a:decoration-[var(--accent)]/40 prose-a:underline-offset-2 hover:prose-a:decoration-[var(--accent)] hover:prose-a:text-[var(--accent-hover)] prose-a:transition-all
                                 prose-strong:text-white prose-strong:font-semibold
                                 prose-em:text-[var(--text-secondary)] prose-em:italic prose-em:font-normal
-                                prose-img:rounded-2xl prose-img:shadow-xl prose-img:border prose-img:border-[var(--border)] prose-img:my-6
-                                prose-blockquote:border-l-4 prose-blockquote:border-[var(--accent)] prose-blockquote:pl-6 prose-blockquote:my-6 prose-blockquote:italic prose-blockquote:text-[var(--text-primary)] prose-blockquote:bg-[var(--bg-elevated)]/30 prose-blockquote:py-4 prose-blockquote:rounded-r-lg
+                                prose-img:rounded-2xl prose-img:shadow-xl prose-img:border prose-img:border-[var(--border)] prose-img:my-4
+                                prose-blockquote:border-l-4 prose-blockquote:border-[var(--accent)] prose-blockquote:pl-6 prose-blockquote:my-5 prose-blockquote:italic prose-blockquote:text-[var(--text-primary)] prose-blockquote:bg-[var(--bg-elevated)]/30 prose-blockquote:py-4 prose-blockquote:rounded-r-lg
                                 prose-code:bg-[var(--bg-elevated)] prose-code:text-[var(--accent)] prose-code:px-2 prose-code:rounded-md
                                 prose-ul:list-disc prose-ul:pl-6 prose-ul:my-4 prose-ul:text-[var(--text-secondary)]
                                 prose-ol:list-decimal prose-ol:pl-6 prose-ol:my-4 prose-ol:text-[var(--text-secondary)]
-                                prose-li:mb-2
-                                prose-hr:border-[var(--border)] prose-hr:my-8
+                                prose-li:mb-1.5
+                                prose-hr:border-[var(--border)] prose-hr:my-6
+                                [&_p:has(>img:only-child)]:mb-0
+                                [&_iframe]:w-full [&_iframe]:min-h-[400px] [&_iframe]:max-w-full [&_iframe]:rounded-2xl [&_iframe]:shadow-xl [&_iframe]:border [&_iframe]:border-[var(--border)] [&_iframe]:my-4
+                                [&_p:has(>iframe:only-child)]:mb-0
+                                [&_figure]:my-4 [&_figure]:text-center [&_figcaption]:text-sm [&_figcaption]:text-[var(--text-secondary)] [&_figcaption]:mt-2
                             "
                             dangerouslySetInnerHTML={{ __html: processedContent }}
                         />
