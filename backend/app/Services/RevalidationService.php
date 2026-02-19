@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Log;
 
 class RevalidationService
 {
-    protected string $frontendUrl;
-    protected string $revalidateToken;
+    protected ?string $frontendUrl;
+    protected ?string $revalidateToken;
 
     public function __construct()
     {
