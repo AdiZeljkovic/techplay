@@ -100,11 +100,11 @@ class WowAnalyzerController extends Controller
                 $data['professions']
             );
 
-            // Step 4: Call AI API (Groq - Llama 3.3 70B)
+            // Step 4: Call Analysis Service (Groq - Llama 3.3 70B)
             $analysis = $this->aiService->analyzeCharacterReadiness($payload);
 
             if (!$analysis) {
-                return $this->error('AI analysis failed. Please try again later.', 503);
+                return $this->error('Professor Buffy is currently unavailable. Please try again in a moment!', 503);
             }
 
             // Step 5: Store in database (with ALL new columns)

@@ -68,7 +68,7 @@ export default function OverviewTab({ data }: OverviewTabProps) {
                                 Profesor Buffy's Tips
                             </h3>
                             <p className="text-sm font-semibold text-[var(--text-secondary)]">
-                                AI-powered Midnight expansion guidance
+                                Expert Midnight expansion guidance
                             </p>
                         </div>
                     </div>

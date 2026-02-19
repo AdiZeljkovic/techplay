@@ -3,7 +3,7 @@ import WowAnalyzerClient from "@/components/wow/WowAnalyzerClient";
 
 export const metadata: Metadata = {
     title: "WoW Character Analyzer - Free Midnight Readiness Score & Gear Check | TechPlay",
-    description: "Instantly analyze your World of Warcraft character for Midnight expansion. Check gear, M+ score, raid progress, collections, and get AI-powered tips from Profesor Buffy. Free WoW analyzer tool - no login required!",
+    description: "Instantly analyze your World of Warcraft character for Midnight expansion. Check gear, M+ score, raid progress, collections, and get expert tips from Profesor Buffy. Free WoW analyzer tool - no login required!",
     keywords: [
         // Primary keywords (high volume)
         "wow character analyzer",
@@ -125,7 +125,7 @@ export const metadata: Metadata = {
     // Open Graph (Facebook, LinkedIn, Discord)
     openGraph: {
         title: "WoW Character Analyzer - Free Midnight Readiness Score",
-        description: "Analyze your World of Warcraft character instantly! Check gear, M+ rating, raid progress & get AI recommendations. 100% Free - No login required!",
+        description: "Analyze your World of Warcraft character instantly! Check gear, M+ rating, raid progress & get expert recommendations. 100% Free - No login required!",
         type: "website",
         url: "https://techplay.gg/wow-analyzer",
         siteName: "TechPlay",
@@ -144,7 +144,7 @@ export const metadata: Metadata = {
     twitter: {
         card: "summary_large_image",
         title: "WoW Character Analyzer - Free Midnight Readiness Score",
-        description: "Analyze your WoW character instantly! Gear check, M+ score, raid progress & AI tips. 100% Free!",
+        description: "Analyze your WoW character instantly! Gear check, M+ score, raid progress & expert tips. 100% Free!",
         images: ["/WoW Analyzer.png"],
         creator: "@TechPlayGG",
         site: "@TechPlayGG",
@@ -182,7 +182,7 @@ export default function WowAnalyzerPage() {
             "price": "0",
             "priceCurrency": "USD"
         },
-        "description": "Free World of Warcraft character analyzer for Midnight expansion. Instantly check gear, Mythic+ score, raid progress, collections, and get AI-powered recommendations.",
+        "description": "Free World of Warcraft character analyzer for Midnight expansion. Instantly check gear, Mythic+ score, raid progress, collections, and get expert recommendations.",
         "url": "https://techplay.gg/wow-analyzer",
         "image": "https://techplay.gg/WoW%20Analyzer.png",
         "publisher": {
@@ -216,7 +216,7 @@ export default function WowAnalyzerPage() {
             "Mythic+ score calculator",
             "Raid progress tracker",
             "Collection statistics",
-            "AI-powered recommendations by Profesor Buffy",
+            "expert recommendations by Profesor Buffy",
             "Midnight expansion readiness score",
             "100% free - no account required",
             "Real-time Blizzard API data"
@@ -254,7 +254,7 @@ export default function WowAnalyzerPage() {
                 "name": "How does the WoW Character Analyzer work?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "The WoW Character Analyzer connects to Blizzard's official API to fetch your character data including gear, Mythic+ score, raid progress, achievements, and collections. It then analyzes 50+ data points using AI to give you a Midnight expansion readiness score and personalized recommendations."
+                    "text": "The WoW Character Analyzer connects to Blizzard's official API to fetch your character data including gear, Mythic+ score, raid progress, achievements, and collections. It then analyzes 50+ data points to give you a Midnight expansion readiness score and personalized recommendations."
                 }
             },
             {
@@ -286,7 +286,7 @@ export default function WowAnalyzerPage() {
                 "name": "What data does the analyzer check?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "The analyzer checks your character's item level, gear optimization (enchants/gems), tier set progress, Mythic+ score, raid progression, PvP ratings, mount/pet/toy/transmog collections, reputations (especially Midnight factions), and achievements. It then provides AI-powered tips from Profesor Buffy."
+                    "text": "The analyzer checks your character's item level, gear optimization (enchants/gems), tier set progress, Mythic+ score, raid progression, PvP ratings, mount/pet/toy/transmog collections, reputations (especially Midnight factions), and achievements. It then provides expert tips from Profesor Buffy."
                 }
             }
         ]

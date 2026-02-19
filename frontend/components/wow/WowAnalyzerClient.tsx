@@ -164,7 +164,7 @@ export default function WowAnalyzerClient() {
                             transition={{ delay: 0.3 }}
                             className="text-xl md:text-2xl text-gray-200 mb-8 leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] max-w-3xl mx-auto"
                         >
-                            Instantly analyze your <strong className="text-white font-bold">World of Warcraft character</strong> for Midnight expansion. Check gear, Mythic+ score, raid progress & get AI-powered recommendations. <strong className="text-white font-bold">100% Free - No Login Required!</strong>
+                            Instantly analyze your <strong className="text-white font-bold">World of Warcraft character</strong> for Midnight expansion. Check gear, Mythic+ score, raid progress & get expert recommendations from Professor Buffy. <strong className="text-white font-bold">100% Free - No Login Required!</strong>
                         </motion.p>
 
                         {/* Trust Stats */}
@@ -483,7 +483,7 @@ export default function WowAnalyzerClient() {
                                 How our WoW character analyzer works
                             </h2>
                             <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto">
-                                AI-powered World of Warcraft character analysis using real-time Blizzard API data
+                                Advanced World of Warcraft character analysis using real-time Blizzard API data
                             </p>
                         </motion.div>
 
