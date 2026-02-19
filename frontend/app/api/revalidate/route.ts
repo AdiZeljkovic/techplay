@@ -1,4 +1,4 @@
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -59,15 +59,10 @@ export async function POST(request: NextRequest) {
                 // Revalidate homepage (in case article is featured)
                 revalidatePath('/');
 
-                // Revalidate by tag (if using tag-based caching)
-                revalidateTag(category);
-                revalidateTag(`${category}-${slug}`);
-
                 return NextResponse.json({
                     success: true,
                     revalidated: true,
                     paths: [`/${category}/${slug}`, `/${category}`, '/'],
-                    tags: [category, `${category}-${slug}`],
                     timestamp: new Date().toISOString(),
                 });
 
