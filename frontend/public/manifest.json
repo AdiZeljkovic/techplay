@@ -1,0 +1,48 @@
+{
+  "name": "TechPlay - Gaming Portal",
+  "short_name": "TechPlay",
+  "description": "Your source for gaming news, reviews, hardware analysis, and community discussions",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#001540",
+  "theme_color": "#001540",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["gaming", "news", "entertainment"],
+  "shortcuts": [
+    {
+      "name": "Latest News",
+      "short_name": "News",
+      "description": "View latest gaming news",
+      "url": "/news",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Game Reviews",
+      "short_name": "Reviews",
+      "description": "Read game reviews",
+      "url": "/reviews",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Game Database",
+      "short_name": "Database",
+      "description": "Browse games database",
+      "url": "/games",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
