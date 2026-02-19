@@ -97,5 +97,9 @@ return [
         'model' => env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
     ],
 
+    'revalidate' => [
+        'secret_token' => env('REVALIDATE_SECRET_TOKEN'),
+    ],
+
 ];
 
