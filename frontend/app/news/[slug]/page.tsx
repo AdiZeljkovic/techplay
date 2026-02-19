@@ -5,9 +5,9 @@ import NewsCategoryView from "@/components/news/NewsCategoryView";
 import ArticleDetailView from "@/components/news/ArticleDetailView";
 import { NEWS_CATEGORIES } from "@/lib/categories";
 
-// ISR enabled with on-demand revalidation
-// Backend triggers revalidation via /api/revalidate when content changes
-export const revalidate = 300; // 5 minutes baseline, but can be revalidated on-demand
+// On-demand ISR - no automatic revalidation, only manual via /api/revalidate
+// Backend triggers revalidation when content is updated
+export const revalidate = false; // Disable automatic revalidation - only on-demand
 
 async function getArticle(slug: string): Promise<Article | null> {
     let apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -19,8 +19,8 @@ async function getArticle(slug: string): Promise<Article | null> {
 
     try {
         const res = await fetch(`${apiUrl}/news/${slug}`, {
+            cache: 'force-cache', // Cache until manually revalidated
             next: {
-                revalidate: 300,
                 tags: ['news', `news-${slug}`]
             }
         });

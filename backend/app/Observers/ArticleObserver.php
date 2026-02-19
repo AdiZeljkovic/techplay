@@ -22,19 +22,41 @@ class ArticleObserver
      */
     public function saved(Article $article)
     {
+        \Log::info('ArticleObserver::saved fired', [
+            'id' => $article->id,
+            'slug' => $article->slug,
+            'status' => $article->status,
+            'has_category' => isset($article->category),
+        ]);
+
         // Only revalidate if article is published
-        if ($article->status === 'published' && $article->slug && $article->category) {
-            // Determine category path based on category type
-            $categoryPath = $this->getCategoryPath($article->category->type);
+        if ($article->status === 'published' && $article->slug) {
+            // Load category if not already loaded
+            if (!$article->relationLoaded('category')) {
+                $article->load('category');
+            }
 
-            if ($categoryPath) {
-                // Revalidate article page
-                $this->revalidationService->revalidateArticle($article->slug, $categoryPath);
+            if ($article->category) {
+                // Determine category path based on category type
+                $categoryPath = $this->getCategoryPath($article->category->type);
 
-                // Revalidate homepage if article is featured
-                if ($article->is_featured_in_hero) {
-                    $this->revalidationService->revalidateHomepage();
+                \Log::info('Triggering revalidation', [
+                    'slug' => $article->slug,
+                    'category_type' => $article->category->type,
+                    'category_path' => $categoryPath,
+                ]);
+
+                if ($categoryPath) {
+                    // Revalidate article page
+                    $this->revalidationService->revalidateArticle($article->slug, $categoryPath);
+
+                    // Revalidate homepage if article is featured
+                    if ($article->is_featured_in_hero) {
+                        $this->revalidationService->revalidateHomepage();
+                    }
                 }
+            } else {
+                \Log::warning('Article has no category', ['id' => $article->id]);
             }
         }
     }

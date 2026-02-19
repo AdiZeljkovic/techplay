@@ -4,7 +4,7 @@ import axios from "@/lib/axios";
 import { Metadata } from "next";
 
 // ISR enabled with on-demand revalidation
-export const revalidate = 900; // 15 minutes (guides are more evergreen content)
+export const revalidate = false; // 15 minutes (guides are more evergreen content)
 
 async function getGuide(slug: string) {
     let apiUrl = process.env.NEXT_PUBLIC_API_URL;

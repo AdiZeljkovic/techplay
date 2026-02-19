@@ -6,7 +6,7 @@ import ReviewDetailView from "@/components/reviews/ReviewDetailView";
 import { REVIEW_CATEGORIES } from "@/lib/categories";
 
 // ISR enabled with on-demand revalidation
-export const revalidate = 600; // 10 minutes (reviews change less frequently than news)
+export const revalidate = false; // 10 minutes (reviews change less frequently than news)
 
 async function getReview(slug: string): Promise<Review | null> {
     let apiUrl = process.env.NEXT_PUBLIC_API_URL;
