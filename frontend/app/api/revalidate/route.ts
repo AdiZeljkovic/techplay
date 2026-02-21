@@ -1,4 +1,4 @@
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -50,19 +50,25 @@ export async function POST(request: NextRequest) {
                     );
                 }
 
-                // Revalidate specific article page
+                // Revalidate cache tags (critical for data fetching)
+                // Map category to tag format (some use singular form)
+                const tagPrefix = category === 'reviews' ? 'review'
+                                : category === 'guides' ? 'guide'
+                                : category; // news/tech use plural
+
+                revalidateTag(`${tagPrefix}-${slug}`);
+                revalidateTag(category);
+
+                // Also revalidate paths (for page-level cache)
                 revalidatePath(`/${category}/${slug}`);
-
-                // Revalidate category listing
                 revalidatePath(`/${category}`);
-
-                // Revalidate homepage (in case article is featured)
                 revalidatePath('/');
 
                 return NextResponse.json({
                     success: true,
                     revalidated: true,
                     paths: [`/${category}/${slug}`, `/${category}`, '/'],
+                    tags: [`${category}-${slug}`, category],
                     timestamp: new Date().toISOString(),
                 });
 
