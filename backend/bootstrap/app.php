@@ -17,10 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // SECURITY: Exclude routes from CSRF verification
         // - PayPal webhook: verified by PayPal signature
         // - Contact form: public endpoint, protected by rate limiting (3/10min)
+        // - Article view tracking: public endpoint, protected by fingerprint throttling (30min)
         $middleware->validateCsrfTokens(except: [
             'api/v1/webhooks/paypal',
             'api/v1/contact',
             'api/v1/newsletter/*',
+            'api/v1/articles/*/view',
         ]);
 
         // SECURITY: Stateful API domains for Sanctum CSRF protection
