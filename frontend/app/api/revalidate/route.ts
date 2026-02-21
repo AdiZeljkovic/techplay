@@ -56,8 +56,10 @@ export async function POST(request: NextRequest) {
                                 : category === 'guides' ? 'guide'
                                 : category; // news/tech use plural
 
-                revalidateTag(`${tagPrefix}-${slug}`);
-                revalidateTag(category);
+                // Next.js 15: revalidateTag requires profile parameter
+                // 'max' = stale-while-revalidate (serves stale while fetching fresh)
+                revalidateTag(`${tagPrefix}-${slug}`, 'max');
+                revalidateTag(category, 'max');
 
                 // Also revalidate paths (for page-level cache)
                 revalidatePath(`/${category}/${slug}`);
