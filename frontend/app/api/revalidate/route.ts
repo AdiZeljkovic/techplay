@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
                     success: true,
                     revalidated: true,
                     paths: [`/${category}/${slug}`, `/${category}`, '/'],
-                    tags: [`${category}-${slug}`, category],
+                    tags: [`${tagPrefix}-${slug}`, category],
                     timestamp: new Date().toISOString(),
                 });
 
