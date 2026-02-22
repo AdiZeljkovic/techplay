@@ -69,6 +69,32 @@ export async function POST(request: NextRequest) {
                 revalidatePath(`/${pathPrefix}`);
                 revalidatePath('/');
 
+                // Purge Cloudflare cache for updated pages
+                const cloudflareToken = process.env.CLOUDFLARE_API_TOKEN;
+                const cloudflareZoneId = process.env.CLOUDFLARE_ZONE_ID;
+
+                if (cloudflareToken && cloudflareZoneId) {
+                    try {
+                        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg';
+                        const urlsToPurge = [
+                            `${baseUrl}/${pathPrefix}/${slug}`,
+                            `${baseUrl}/${pathPrefix}`,
+                        ];
+
+                        await fetch(`https://api.cloudflare.com/client/v4/zones/${cloudflareZoneId}/purge_cache`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${cloudflareToken}`,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ files: urlsToPurge }),
+                        });
+                    } catch (error) {
+                        console.error('Cloudflare cache purge failed:', error);
+                        // Don't fail revalidation if Cloudflare purge fails
+                    }
+                }
+
                 return NextResponse.json({
                     success: true,
                     revalidated: true,
