@@ -209,6 +209,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/comments/{type}/{id}', [App\Http\Controllers\Api\V1\CommentController::class, 'index']);
 
         // Tracking
+        Route::get('/articles/{slug}/views', [App\Http\Controllers\Api\V1\TrackingController::class, 'getViews']);
         Route::post('/articles/{slug}/view', [App\Http\Controllers\Api\V1\TrackingController::class, 'recordView']);
     });
 

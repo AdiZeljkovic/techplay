@@ -19,6 +19,35 @@ class TrackingController extends Controller
         $this->revalidationService = $revalidationService;
     }
 
+    /**
+     * Get current view count without incrementing
+     * Fast, cache-friendly endpoint for real-time view display
+     */
+    public function getViews($slug)
+    {
+        try {
+            $article = Article::where('slug', $slug)->first();
+
+            if (!$article) {
+                $article = \App\Models\Guide::where('slug', $slug)->first();
+            }
+
+            if (!$article) {
+                $article = \App\Models\Review::where('slug', $slug)->first();
+            }
+
+            if (!$article) {
+                return $this->error('Article not found', 404);
+            }
+
+            return $this->success([
+                'views' => $article->views ?? 0
+            ]);
+        } catch (\Exception $e) {
+            return $this->success(['views' => 0]);
+        }
+    }
+
     public function recordView(Request $request, $slug)
     {
         try {
