@@ -287,7 +287,6 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF }: { contactE
                         />
                     </motion.div>
                 </motion.div>
-            </div>
 
             {/* Decorative corner accents */}
             <div className="absolute top-0 left-0 w-32 h-32 border-t-4 border-l-4 border-[var(--accent)]/30 rounded-tl-3xl" />
