@@ -6,9 +6,9 @@ use App\Filament\Resources\MediaKitSettingResource\Pages;
 use App\Models\MediaKitSetting;
 use App\Services\MediaKitService;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -28,12 +28,12 @@ class MediaKitSettingResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Media Kit Settings';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Forms\Components\Section::make('Basic Information')
-                    ->schema([
+                    ->components([
                         Forms\Components\TextInput::make('key')
                             ->required()
                             ->unique(ignoreRecord: true)
@@ -68,7 +68,7 @@ class MediaKitSettingResource extends Resource
                     ->columns(3),
 
                 Forms\Components\Section::make('Value')
-                    ->schema([
+                    ->components([
                         // Textarea for text/json
                         Forms\Components\Textarea::make('value')
                             ->label('Value')
@@ -96,7 +96,7 @@ class MediaKitSettingResource extends Resource
                     ]),
 
                 Forms\Components\Section::make('Display Settings')
-                    ->schema([
+                    ->components([
                         Forms\Components\TextInput::make('order')
                             ->numeric()
                             ->default(0)
