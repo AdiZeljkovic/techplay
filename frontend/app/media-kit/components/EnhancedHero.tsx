@@ -128,12 +128,12 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: Enh
                             transition={{ duration: 0.8, delay: 0.15 }}
                             className="text-5xl md:text-6xl lg:text-7xl font-black leading-[0.95] mb-6 tracking-tight"
                         >
-                            <span className="text-white">Dominate the</span>
+                            <span className="text-white">Reach Gamers Who</span>
                             <br />
                             <span className="relative">
                                 <span className="bg-gradient-to-r from-[var(--accent)] via-orange-400 to-[var(--accent)]
                                                bg-clip-text text-transparent">
-                                    Balkan Gaming Market
+                                    Actually Buy Stuff
                                 </span>
                                 {/* Glow underline */}
                                 <motion.span
@@ -153,8 +153,8 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: Enh
                             transition={{ delay: 0.4, duration: 0.8 }}
                             className="text-lg md:text-xl text-white/60 mb-10 max-w-xl leading-relaxed font-light"
                         >
-                            Where <span className="text-white font-medium">50,000+ tech enthusiasts discover their next purchase</span> every month.
-                            Turn engaged gamers into loyal customers with premium placements on the region's most trusted gaming authority.
+                            Over <span className="text-white font-medium">50,000 monthly readers</span> who trust our reviews when making tech purchases.
+                            No bots, no fake traffic — just real people who genuinely care about gaming hardware and tech.
                         </motion.p>
 
                         {/* CTA buttons */}
@@ -183,7 +183,7 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: Enh
                                     transition={{ duration: 0.7, ease: "easeInOut" }}
                                 />
                                 <Mail className="w-5 h-5 relative z-10" />
-                                <span className="relative z-10 text-lg">Start Your Campaign</span>
+                                <span className="relative z-10 text-lg">Let's Talk</span>
                             </motion.a>
 
                             {/* Secondary CTA */}
@@ -198,7 +198,7 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: Enh
                                 whileTap={{ scale: 0.98 }}
                             >
                                 <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform duration-300" />
-                                <span className="text-lg">Get Full Media Kit</span>
+                                <span className="text-lg">Download Media Kit</span>
                             </motion.button>
                         </motion.div>
 
@@ -207,19 +207,19 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: Enh
                             <TrustBadge
                                 icon={Newspaper}
                                 value={stats?.totalContent ? `${Math.floor(stats.totalContent / 100) * 100}+` : "200+"}
-                                label="Expert Reviews Trusted by Gamers"
+                                label="In-Depth Reviews"
                                 delay={0.7}
                             />
                             <TrustBadge
                                 icon={Users}
                                 value={stats?.monthlyVisitors ? `${Math.floor(stats.monthlyVisitors / 1000)}K+` : "50K+"}
-                                label="Monthly Active Buyers"
+                                label="Monthly Readers"
                                 delay={0.85}
                             />
                             <TrustBadge
                                 icon={BarChart3}
                                 value={stats?.socialReach ? `${Math.floor(stats.socialReach / 1000)}K+` : "12K+"}
-                                label="Engaged Community Members"
+                                label="Social Following"
                                 delay={1.0}
                             />
                         </div>

@@ -360,9 +360,9 @@ export default function MediaKitClient() {
                 {/* ═══ PLATFORM STATISTICS ═══ */}
                 <Section id="stats">
                     <SectionHeader
-                        overline="Real Numbers. Real Results."
-                        title="The Metrics That Matter to Your Bottom Line"
-                        description="Forget vanity metrics. Here's the data that proves why leading brands choose TechPlay for their gaming marketing campaigns."
+                        overline="The Numbers"
+                        title="Here's What We're Working With"
+                        description="Real stats from our platform. No fluff, just the actual data you'd want to know before running ads here."
                     />
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
                         <StatCard
@@ -409,9 +409,9 @@ export default function MediaKitClient() {
                 {/* ═══ AUDIENCE DEMOGRAPHICS ═══ */}
                 <Section id="audience">
                     <SectionHeader
-                        overline="Know Your Customer"
-                        title="Precision Targeting Meets Premium Engagement"
-                        description="Stop wasting ad spend on unqualified traffic. TechPlay delivers laser-focused access to verified tech buyers with proven purchasing power."
+                        overline="Who's Reading"
+                        title="Our Audience Breakdown"
+                        description="Mostly 18-34 year olds who actually read tech reviews before buying stuff. You know, the kind of people who care about specs."
                     />
                     <div className="grid lg:grid-cols-3 gap-6">
                         {/* Age Distribution */}
@@ -522,9 +522,9 @@ export default function MediaKitClient() {
                 {/* ═══ SUCCESS STORIES ═══ */}
                 <Section id="success">
                     <SectionHeader
-                        overline="Proven Track Record"
-                        title="Real Brands. Real Results. Real ROI."
-                        description="Don't take our word for it. See how leading tech brands achieved 3X+ ROI and dominated the Balkan gaming market with TechPlay campaigns."
+                        overline="Case Studies"
+                        title="Brands That Worked With Us"
+                        description="Here's what happened when some gaming brands ran campaigns on TechPlay. Spoiler: it worked pretty well."
                     />
                     <SuccessStories />
                 </Section>
@@ -532,9 +532,9 @@ export default function MediaKitClient() {
                 {/* ═══ WHY CHOOSE TECHPLAY ═══ */}
                 <Section id="why-choose">
                     <SectionHeader
-                        overline="The TechPlay Difference"
-                        title="Why Smart Brands Choose TechPlay Over Generic Ad Networks"
-                        description="Compare TechPlay's premium gaming audience against generic ad networks. The choice is clear: higher engagement, better conversions, superior ROI."
+                        overline="Why TechPlay?"
+                        title="What Makes Us Different"
+                        description="We're not Google Ads. Our readers actually care about gaming tech, which means they're more likely to click and buy."
                     />
                     <WhyChooseTechPlay />
                 </Section>
@@ -542,9 +542,9 @@ export default function MediaKitClient() {
                 {/* ═══ ADVERTISING TIERS ═══ */}
                 <Section id="pricing">
                     <SectionHeader
-                        overline="Flexible Solutions"
-                        title="Choose Your Path to Market Dominance"
-                        description="Whether you're launching a new product or scaling an existing campaign, we have the perfect solution. All packages include real-time analytics, dedicated support, and guaranteed results."
+                        overline="Pricing"
+                        title="How We Charge for Ads"
+                        description="Pick what works for your budget. Whether you want CPM, CPC, or fixed placements, we've got options."
                     />
                     <div className="grid lg:grid-cols-3 gap-6">
                         {standardFeatures.length > 0 && (
@@ -586,9 +586,9 @@ export default function MediaKitClient() {
                 {/* ═══ SOCIAL MEDIA REACH ═══ */}
                 <Section id="social">
                     <SectionHeader
-                        overline="Multi-Channel Domination"
-                        title="Your Brand, Everywhere Your Customers Are"
-                        description="Amplify your message across TechPlay's entire ecosystem. From Facebook to TikTok, we meet your audience where they already are."
+                        overline="Social Media"
+                        title="We're on All the Platforms"
+                        description="We post on Facebook, Instagram, YouTube, and TikTok. Here's how many people follow us on each."
                     />
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
                         <SocialCard
@@ -744,13 +744,13 @@ export default function MediaKitClient() {
                                 transition={{ duration: 0.6 }}
                             >
                                 <span className="text-[var(--accent)] text-sm font-semibold uppercase tracking-widest mb-4 block">
-                                    Ready to Win?
+                                    Interested?
                                 </span>
                                 <h2 className="text-4xl md:text-5xl font-black text-white mb-5 tracking-tight">
-                                    Let's Build Your Winning Campaign
+                                    Let's Talk About Your Campaign
                                 </h2>
                                 <p className="text-lg text-white/50 mb-10 max-w-2xl mx-auto leading-relaxed">
-                                    Get a custom media plan tailored to your goals, budget, and timeline. Our team responds within 2 hours with a detailed proposal and projected ROI.
+                                    Send us an email and we'll get back to you with pricing and options. Usually within a few hours.
                                 </p>
                                 <div className="flex flex-wrap gap-4 justify-center">
                                     <motion.a
