@@ -4,19 +4,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo } from "react";
 import { Calculator, TrendingUp, DollarSign, Eye, Users, Target, ArrowRight, Sparkles } from "lucide-react";
 
+// Real pricing and realistic CTR for global gaming tech portal
 const adFormats = [
-    { id: "billboard", name: "Desktop Billboard", cpm: 12, avgCTR: 4.2 },
-    { id: "leaderboard", name: "Leaderboard", cpm: 10, avgCTR: 3.8 },
-    { id: "sidebar", name: "Sidebar", cpm: 8, avgCTR: 3.2 },
-    { id: "native", name: "Native Ads", cpm: 15, avgCTR: 5.5 },
-    { id: "sponsored", name: "Sponsored Content", cpm: 25, avgCTR: 6.8 },
+    { id: "leaderboard", name: "Desktop Leaderboard", cpm: 1.00, avgCTR: 2.8 },
+    { id: "billboard", name: "Desktop Billboard", cpm: 1.50, avgCTR: 3.2 },
+    { id: "rectangle", name: "Medium Rectangle", cpm: 1.20, avgCTR: 2.5 },
+    { id: "halfpage", name: "Half Page", cpm: 2.00, avgCTR: 3.5 },
+    { id: "native", name: "In-Article Native", cpm: 2.00, avgCTR: 4.2 },
 ];
 
 export default function ROICalculator() {
-    const [budget, setBudget] = useState(5000);
+    const [budget, setBudget] = useState(2000);
     const [selectedFormat, setSelectedFormat] = useState(adFormats[0]);
-    const [conversionRate, setConversionRate] = useState(2.5);
-    const [avgOrderValue, setAvgOrderValue] = useState(150);
+    const [conversionRate, setConversionRate] = useState(2.0);
+    const [avgOrderValue, setAvgOrderValue] = useState(120);
 
     // Calculations
     const results = useMemo(() => {
@@ -72,8 +73,8 @@ export default function ROICalculator() {
                                 Calculate Your ROI
                             </h2>
                             <p className="text-white/60 max-w-2xl mx-auto">
-                                Estimate the potential return on your advertising investment with TechPlay.
-                                Adjust the parameters below to see real-time projections.
+                                See how your ad budget performs with our competitive global rates and engaged gaming audience.
+                                Adjust parameters below for real-time ROI projections.
                             </p>
                         </div>
 
@@ -93,9 +94,9 @@ export default function ROICalculator() {
                                     </div>
                                     <input
                                         type="range"
-                                        min="1000"
-                                        max="50000"
-                                        step="500"
+                                        min="500"
+                                        max="20000"
+                                        step="250"
                                         value={budget}
                                         onChange={(e) => setBudget(Number(e.target.value))}
                                         className="w-full h-2 bg-white/[0.06] rounded-full appearance-none cursor-pointer
@@ -108,8 +109,8 @@ export default function ROICalculator() {
                                                  [&::-webkit-slider-thumb]:hover:scale-110"
                                     />
                                     <div className="flex justify-between text-xs text-white/40 mt-2">
-                                        <span>$1,000</span>
-                                        <span>$50,000</span>
+                                        <span>$500</span>
+                                        <span>$20,000</span>
                                     </div>
                                 </div>
 
