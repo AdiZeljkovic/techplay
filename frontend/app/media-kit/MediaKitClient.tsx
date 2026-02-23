@@ -1,10 +1,11 @@
 "use client";
 
 import { useMediaKit } from "@/hooks/useMediaKit";
-import { FileText, TrendingUp, Users, Globe, Mail, Download, Sparkles } from "lucide-react";
+import { FileText, TrendingUp, Users, Globe, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import AnimatedCounter from "./components/AnimatedCounter";
 import TrafficChart from "./components/TrafficChart";
+import EnhancedHero from "./components/EnhancedHero";
 
 // Loading skeleton
 function MediaKitSkeleton() {
@@ -93,78 +94,14 @@ export default function MediaKitClient() {
     };
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] pb-20">
+        <div className="min-h-screen bg-[var(--bg-primary)]">
             {/* Enhanced Hero Section */}
-            <section className="relative h-[70vh] bg-gradient-to-b from-[var(--bg-elevated)] to-[var(--bg-primary)] overflow-hidden flex items-center justify-center">
-                <div className="container mx-auto px-4 text-center z-10">
-                    <motion.div
-                        initial={{ opacity: 0, y: -30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8 }}
-                    >
-                        <h1 className="text-5xl md:text-7xl font-black text-[var(--text-primary)] mb-6">
-                            Advertising on <span className="text-[var(--accent)] relative inline-block">
-                                TechPlay
-                                <motion.div
-                                    className="absolute -top-6 -right-6"
-                                    animate={{ rotate: [0, 10, 0] }}
-                                    transition={{ repeat: Infinity, duration: 2 }}
-                                >
-                                    <Sparkles className="w-6 h-6 text-[var(--accent)]" />
-                                </motion.div>
-                            </span>
-                        </h1>
-                    </motion.div>
+            <EnhancedHero
+                contactEmail={data.about?.contact_email}
+                onDownloadPDF={handleDownloadPDF}
+            />
 
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.3, duration: 0.8 }}
-                        className="text-xl text-[var(--text-secondary)] mb-8 max-w-2xl mx-auto"
-                    >
-                        Reach engaged gaming & tech enthusiasts worldwide with premium ad placements
-                    </motion.p>
-
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6, duration: 0.8 }}
-                        className="flex flex-col md:flex-row gap-4 justify-center items-center"
-                    >
-                        <a
-                            href={`mailto:${data.about?.contact_email || 'advertising@techplay.gg'}`}
-                            className="group inline-flex items-center gap-2 px-8 py-4 bg-[var(--accent)] text-white font-bold rounded-xl
-                                     hover:opacity-90 hover:scale-105 transition-all duration-300 shadow-lg shadow-[var(--accent)]/30"
-                        >
-                            <Mail className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                            Get in Touch
-                        </a>
-                        <button
-                            onClick={handleDownloadPDF}
-                            className="group inline-flex items-center gap-2 px-8 py-4 bg-[var(--bg-card)] border-2 border-[var(--border)]
-                                     text-[var(--text-primary)] font-bold rounded-xl hover:border-[var(--accent)]
-                                     hover:scale-105 transition-all duration-300"
-                        >
-                            <Download className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
-                            Download PDF
-                        </button>
-                    </motion.div>
-                </div>
-
-                {/* Animated gradient blobs */}
-                <motion.div
-                    className="absolute top-0 right-0 w-[600px] h-[600px] bg-[var(--accent)]/10 rounded-full blur-[150px] pointer-events-none"
-                    animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-                    transition={{ repeat: Infinity, duration: 8 }}
-                />
-                <motion.div
-                    className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"
-                    animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
-                    transition={{ repeat: Infinity, duration: 10, delay: 1 }}
-                />
-            </section>
-
-            <div className="container mx-auto px-4 space-y-16 py-12">
+            <div className="container mx-auto px-4 space-y-16 py-20">
                 {/* About Section */}
                 <motion.section
                     initial={{ opacity: 0, y: 20 }}
@@ -459,26 +396,14 @@ export default function MediaKitClient() {
                         <p className="text-lg text-[var(--text-secondary)] mb-8 max-w-2xl mx-auto">
                             Get in touch to discuss your advertising needs and receive a custom media kit tailored to your campaign goals.
                         </p>
-                        <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
-                            <a
-                                href={`mailto:${data.about?.contact_email || 'advertising@techplay.gg'}`}
-                                className="group inline-flex items-center gap-2 px-8 py-4 bg-[var(--accent)] text-white
-                                         font-bold rounded-xl hover:opacity-90 hover:scale-105 transition-all duration-300
-                                         shadow-lg shadow-[var(--accent)]/30"
-                            >
-                                <Mail className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                                {data.about?.contact_email || 'advertising@techplay.gg'}
-                            </a>
-                            <button
-                                onClick={handleDownloadPDF}
-                                className="group inline-flex items-center gap-2 px-8 py-4 bg-[var(--bg-card)]
-                                         border-2 border-[var(--accent)] text-[var(--text-primary)] font-bold rounded-xl
-                                         hover:bg-[var(--accent)] hover:text-white hover:scale-105 transition-all duration-300"
-                            >
-                                <Download className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
-                                Download Full Media Kit
-                            </button>
-                        </div>
+                        <a
+                            href={`mailto:${data.about?.contact_email || 'advertising@techplay.gg'}`}
+                            className="inline-flex items-center gap-2 px-8 py-4 bg-[var(--accent)] text-white
+                                     font-bold rounded-xl hover:opacity-90 hover:scale-105 transition-all duration-300
+                                     shadow-lg shadow-[var(--accent)]/30"
+                        >
+                            {data.about?.contact_email || 'advertising@techplay.gg'}
+                        </a>
                     </div>
 
                     {/* Decorative animated circle */}
