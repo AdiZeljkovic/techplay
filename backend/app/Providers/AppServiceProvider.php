@@ -48,6 +48,7 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\Category::observe(\App\Observers\CategoryObserver::class);
         \App\Models\SiteSetting::observe(\App\Observers\SiteSettingObserver::class);
         \App\Models\PageSeo::observe(\App\Observers\PageSeoObserver::class);
+        \App\Models\MediaKitSetting::observe(\App\Observers\MediaKitSettingObserver::class);
 
         // Prevent N+1 queries in non-production environments
         \Illuminate\Database\Eloquent\Model::preventLazyLoading(!app()->isProduction());

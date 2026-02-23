@@ -129,6 +129,9 @@ Route::prefix('v1')->group(function () {
         // Home
         Route::get('/home', [App\Http\Controllers\Api\V1\HomeController::class, 'index']);
 
+        // Media Kit
+        Route::get('/media-kit', [App\Http\Controllers\Api\V1\MediaKitController::class, 'index']);
+
         // Search
         Route::get('/search/articles', [App\Http\Controllers\Api\V1\SearchController::class, 'articles']);
 
