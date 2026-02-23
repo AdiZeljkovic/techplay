@@ -43,7 +43,7 @@ Message:
 ${formData.message}
         `.trim();
 
-        window.location.href = `mailto:${contactEmail || 'advertising@techplay.gg'}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = `mailto:${contactEmail || 'marketing@techplay.gg'}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
         setIsSubmitting(false);
         setSubmitted(true);

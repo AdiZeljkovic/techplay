@@ -153,8 +153,8 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: Enh
                             transition={{ delay: 0.4, duration: 0.8 }}
                             className="text-lg md:text-xl text-white/60 mb-10 max-w-xl leading-relaxed font-light"
                         >
-                            Over <span className="text-white font-medium">50,000 monthly readers</span> who trust our reviews when making tech purchases.
-                            No bots, no fake traffic — just real people who genuinely care about gaming hardware and tech.
+                            Over <span className="text-white font-medium">20,000 monthly readers</span> who trust our reviews when making tech purchases.
+                            No bots, no fake traffic — just real people who genuinely care about gaming and tech.
                         </motion.p>
 
                         {/* CTA buttons */}
@@ -166,7 +166,7 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: Enh
                         >
                             {/* Primary CTA */}
                             <motion.a
-                                href={`mailto:${contactEmail || 'advertising@techplay.gg'}`}
+                                href={`mailto:${contactEmail || 'marketing@techplay.gg'}`}
                                 className="group relative inline-flex items-center gap-3 px-8 py-4
                                          bg-gradient-to-r from-[var(--accent)] to-orange-600
                                          text-white font-bold rounded-2xl overflow-hidden
@@ -212,13 +212,13 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: Enh
                             />
                             <TrustBadge
                                 icon={Users}
-                                value={stats?.monthlyVisitors ? `${Math.floor(stats.monthlyVisitors / 1000)}K+` : "50K+"}
+                                value={stats?.monthlyVisitors ? `${Math.floor(stats.monthlyVisitors / 1000)}K+` : "20K+"}
                                 label="Monthly Readers"
                                 delay={0.85}
                             />
                             <TrustBadge
                                 icon={BarChart3}
-                                value={stats?.socialReach ? `${Math.floor(stats.socialReach / 1000)}K+` : "12K+"}
+                                value={stats?.socialReach ? `${Math.floor(stats.socialReach / 1000)}K+` : "2K+"}
                                 label="Social Following"
                                 delay={1.0}
                             />

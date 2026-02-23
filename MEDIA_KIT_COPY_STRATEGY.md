@@ -198,7 +198,7 @@ Use active verbs: Discover, Unlock, Transform, Dominate, Capture
 "Get a custom media plan tailored to your goals, budget, and timeline. Our team responds within 2 hours with a detailed proposal and projected ROI."
 
 **CTA:**
-"advertising@techplay.gg" → "Get Your Custom Plan in 2 Hours"
+"marketing@techplay.gg" → "Get Your Custom Plan in 2 Hours"
 
 ---
 

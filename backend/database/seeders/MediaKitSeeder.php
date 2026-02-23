@@ -261,12 +261,12 @@ class MediaKitSeeder extends Seeder
             [
                 'key' => 'ad_formats_standard',
                 'value' => json_encode([
-                    ['name' => 'Desktop Leaderboard', 'dimensions' => '728x90', 'cpm' => '$5.00', 'monthly' => '$500'],
-                    ['name' => 'Mobile Leaderboard', 'dimensions' => '320x50', 'cpm' => '$4.00', 'monthly' => '$400'],
-                    ['name' => 'Desktop Billboard', 'dimensions' => '970x250', 'cpm' => '$8.00', 'monthly' => '$800'],
-                    ['name' => 'Medium Rectangle', 'dimensions' => '300x250', 'cpm' => '$6.00', 'monthly' => '$600'],
-                    ['name' => 'Half Page', 'dimensions' => '300x600', 'cpm' => '$10.00', 'monthly' => '$1,000'],
-                    ['name' => 'Mobile Sticky', 'dimensions' => '320x100', 'cpm' => '$7.00', 'monthly' => '$700'],
+                    ['name' => 'Desktop Leaderboard', 'dimensions' => '728x90', 'cpm' => '$1.00', 'monthly' => '$100'],
+                    ['name' => 'Mobile Leaderboard', 'dimensions' => '320x50', 'cpm' => '$0.80', 'monthly' => '$80'],
+                    ['name' => 'Desktop Billboard', 'dimensions' => '970x250', 'cpm' => '$1.50', 'monthly' => '$150'],
+                    ['name' => 'Medium Rectangle', 'dimensions' => '300x250', 'cpm' => '$1.20', 'monthly' => '$120'],
+                    ['name' => 'Half Page', 'dimensions' => '300x600', 'cpm' => '$2.00', 'monthly' => '$200'],
+                    ['name' => 'Mobile Sticky', 'dimensions' => '320x100', 'cpm' => '$1.40', 'monthly' => '$140'],
                 ]),
                 'type' => 'json',
                 'section' => 'content',
@@ -278,9 +278,9 @@ class MediaKitSeeder extends Seeder
             [
                 'key' => 'ad_formats_flexible',
                 'value' => json_encode([
-                    ['name' => 'In-Article Native Ad', 'format' => 'Responsive', 'cpc' => '$0.50', 'monthly' => 'From $300'],
-                    ['name' => 'Sidebar Widget', 'format' => 'Responsive', 'cpc' => '$0.40', 'monthly' => 'From $250'],
-                    ['name' => 'Homepage Feature', 'format' => 'Custom', 'cpc' => '$0.75', 'monthly' => 'From $500'],
+                    ['name' => 'In-Article Native Ad', 'format' => 'Responsive', 'cpc' => '$0.10', 'monthly' => 'From $60'],
+                    ['name' => 'Sidebar Widget', 'format' => 'Responsive', 'cpc' => '$0.08', 'monthly' => 'From $50'],
+                    ['name' => 'Homepage Feature', 'format' => 'Custom', 'cpc' => '$0.15', 'monthly' => 'From $100'],
                 ]),
                 'type' => 'json',
                 'section' => 'content',
@@ -292,10 +292,10 @@ class MediaKitSeeder extends Seeder
             [
                 'key' => 'ad_formats_fixed',
                 'value' => json_encode([
-                    ['name' => 'Homepage Takeover', 'duration' => '24 hours', 'price' => '$2,500'],
-                    ['name' => 'Newsletter Sponsor', 'subscribers' => '12,000+', 'price' => '$1,200/send'],
-                    ['name' => 'Category Exclusive', 'duration' => '1 week', 'price' => '$1,500'],
-                    ['name' => 'Article Sponsorship', 'format' => 'Branded', 'price' => '$800/article'],
+                    ['name' => 'Homepage Takeover', 'duration' => '24 hours', 'price' => '$500'],
+                    ['name' => 'Newsletter Sponsor', 'subscribers' => '12,000+', 'price' => '$250/send'],
+                    ['name' => 'Category Exclusive', 'duration' => '1 week', 'price' => '$300'],
+                    ['name' => 'Article Sponsorship', 'format' => 'Branded', 'price' => '$150/article'],
                 ]),
                 'type' => 'json',
                 'section' => 'content',
@@ -309,7 +309,7 @@ class MediaKitSeeder extends Seeder
                 'value' => json_encode([
                     'description' => 'Native advertising with custom editorial content written by our expert team',
                     'features' => ['Custom article writing', 'SEO optimized', 'Social media promotion', 'Analytics reporting'],
-                    'pricing' => 'From $500/article',
+                    'pricing' => 'From $100/article',
                 ]),
                 'type' => 'json',
                 'section' => 'content',
@@ -321,7 +321,7 @@ class MediaKitSeeder extends Seeder
                 'value' => json_encode([
                     'description' => 'Short-form video content for YouTube, TikTok, and Instagram integration',
                     'features' => ['Professional production', 'Multi-platform distribution', 'Engagement tracking', 'Creator partnerships'],
-                    'pricing' => 'From $1,000/video',
+                    'pricing' => 'From $200/video',
                 ]),
                 'type' => 'json',
                 'section' => 'content',
@@ -333,7 +333,7 @@ class MediaKitSeeder extends Seeder
                 'value' => json_encode([
                     'description' => 'Product launches and brand awareness through exclusive giveaways',
                     'features' => ['Full campaign management', 'Entry tracking', 'Winner selection', 'Legal compliance'],
-                    'pricing' => 'From $750/campaign',
+                    'pricing' => 'From $150/campaign',
                 ]),
                 'type' => 'json',
                 'section' => 'content',
@@ -344,7 +344,7 @@ class MediaKitSeeder extends Seeder
             // Contact Information
             [
                 'key' => 'contact_email',
-                'value' => 'advertising@techplay.gg',
+                'value' => 'marketing@techplay.gg',
                 'type' => 'text',
                 'section' => 'about',
                 'order' => 10,

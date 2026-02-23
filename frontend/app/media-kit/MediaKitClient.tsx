@@ -3,7 +3,7 @@
 import { useMediaKit } from "@/hooks/useMediaKit";
 import { useState } from "react";
 import {
-    FileText, TrendingUp, Users, Globe, Sparkles, Target,
+    FileText, TrendingUp, Users, Globe, Sparkles,
     Monitor, Smartphone, Tablet, ChevronRight, Download,
     Mail, Palette, Type,
     Facebook, Instagram, Youtube, Music2
@@ -13,14 +13,9 @@ import { motion } from "framer-motion";
 // Components
 import AnimatedCounter from "./components/AnimatedCounter";
 import EnhancedHero from "./components/EnhancedHero";
-import StickyNav from "./components/StickyNav";
-import TrustedBy from "./components/TrustedBy";
-import RealtimeStats from "./components/RealtimeStats";
 import PerformanceMetricsDashboard from "./components/PerformanceMetricsDashboard";
-import SuccessStories from "./components/SuccessStories";
 import WhyChooseTechPlay from "./components/WhyChooseTechPlay";
 import ROICalculator from "./components/ROICalculator";
-import Testimonials from "./components/Testimonials";
 import RequestPackageModal from "./components/RequestPackageModal";
 
 // ═══════════════════════════════════════════════════════════════════
@@ -287,13 +282,6 @@ export default function MediaKitClient() {
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
-            {/* Sticky Navigation */}
-            <StickyNav
-                contactEmail={data.about?.contact_email}
-                onDownloadPDF={handleDownloadPDF}
-                onOpenPackageModal={() => setPackageModalOpen(true)}
-            />
-
             {/* Request Package Modal */}
             <RequestPackageModal
                 isOpen={packageModalOpen}
@@ -310,16 +298,6 @@ export default function MediaKitClient() {
 
             <div className="container mx-auto px-4 space-y-32 py-24">
 
-                {/* ═══ TRUSTED BY ═══ */}
-                <Section id="trusted-by">
-                    <TrustedBy />
-                </Section>
-
-                {/* ═══ REALTIME STATS ═══ */}
-                <Section>
-                    <RealtimeStats />
-                </Section>
-
                 {/* ═══ ABOUT SECTION ═══ */}
                 <Section id="about">
                     <div className="grid lg:grid-cols-5 gap-8">
@@ -333,7 +311,7 @@ export default function MediaKitClient() {
                                 {data.about?.about_description}
                             </p>
                         </div>
-                        {/* Right — Mission Card */}
+                        {/* Right — Top Countries */}
                         <div className="lg:col-span-2">
                             <motion.div
                                 initial={{ opacity: 0, x: 30 }}
@@ -345,13 +323,49 @@ export default function MediaKitClient() {
                                           transition-all duration-500"
                             >
                                 <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[var(--accent)] to-transparent" />
-                                <div className="flex items-center gap-3 mb-4">
+                                <div className="flex items-center gap-3 mb-6">
                                     <div className="w-10 h-10 rounded-xl bg-[var(--accent)]/10 flex items-center justify-center">
-                                        <Target className="w-5 h-5 text-[var(--accent)]" />
+                                        <Globe className="w-5 h-5 text-[var(--accent)]" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-white">Our Mission</h3>
+                                    <h3 className="text-xl font-bold text-white">Top Countries</h3>
                                 </div>
-                                <p className="text-white/50 leading-relaxed">{data.about?.about_mission}</p>
+                                <div className="space-y-4">
+                                    {[
+                                        { country: 'United States', percentage: 32, flag: '🇺🇸' },
+                                        { country: 'United Kingdom', percentage: 18, flag: '🇬🇧' },
+                                        { country: 'Germany', percentage: 14, flag: '🇩🇪' },
+                                        { country: 'Serbia', percentage: 12, flag: '🇷🇸' },
+                                        { country: 'Canada', percentage: 8, flag: '🇨🇦' },
+                                    ].map((item, i) => (
+                                        <motion.div
+                                            key={item.country}
+                                            initial={{ opacity: 0, x: -10 }}
+                                            whileInView={{ opacity: 1, x: 0 }}
+                                            viewport={{ once: true }}
+                                            transition={{ delay: i * 0.05, duration: 0.3 }}
+                                            className="flex items-center justify-between"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-2xl">{item.flag}</span>
+                                                <span className="text-white/70 text-sm">{item.country}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-24 h-2 bg-white/[0.05] rounded-full overflow-hidden">
+                                                    <motion.div
+                                                        initial={{ width: 0 }}
+                                                        whileInView={{ width: `${item.percentage}%` }}
+                                                        viewport={{ once: true }}
+                                                        transition={{ delay: i * 0.05 + 0.2, duration: 0.6 }}
+                                                        className="h-full bg-gradient-to-r from-[var(--accent)] to-orange-500"
+                                                    />
+                                                </div>
+                                                <span className="text-white font-bold text-sm w-10 text-right">
+                                                    {item.percentage}%
+                                                </span>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
                             </motion.div>
                         </div>
                     </div>
@@ -364,34 +378,27 @@ export default function MediaKitClient() {
                         title="Here's What We're Working With"
                         description="Real stats from our platform. No fluff, just the actual data you'd want to know before running ads here."
                     />
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
                         <StatCard
-                            label="Total Content"
-                            value={stats.content?.total_content || 0}
+                            label="In-Depth Reviews"
+                            value={171}
                             icon={FileText}
                             gradient="bg-gradient-to-r from-blue-500 to-cyan-400"
                             delay={0}
                         />
                         <StatCard
                             label="Total Views"
-                            value={stats.content?.total_views || 0}
+                            value={21500}
                             icon={TrendingUp}
                             gradient="bg-gradient-to-r from-emerald-500 to-green-400"
                             delay={0.1}
                         />
                         <StatCard
-                            label="Active Users"
-                            value={stats.engagement?.total_registered_users || 0}
-                            icon={Users}
-                            gradient="bg-gradient-to-r from-violet-500 to-purple-400"
-                            delay={0.2}
-                        />
-                        <StatCard
-                            label="Monthly Visitors"
-                            value={stats.audience?.monthly_visitors || 0}
+                            label="Social Following"
+                            value={2000}
                             icon={Globe}
                             gradient="bg-gradient-to-r from-[var(--accent)] to-orange-400"
-                            delay={0.3}
+                            delay={0.2}
                         />
                     </div>
                 </Section>
@@ -519,16 +526,6 @@ export default function MediaKitClient() {
                     </div>
                 </Section>
 
-                {/* ═══ SUCCESS STORIES ═══ */}
-                <Section id="success">
-                    <SectionHeader
-                        overline="Case Studies"
-                        title="Brands That Worked With Us"
-                        description="Here's what happened when some gaming brands ran campaigns on TechPlay. Spoiler: it worked pretty well."
-                    />
-                    <SuccessStories />
-                </Section>
-
                 {/* ═══ WHY CHOOSE TECHPLAY ═══ */}
                 <Section id="why-choose">
                     <SectionHeader
@@ -644,16 +641,6 @@ export default function MediaKitClient() {
                     </motion.div>
                 </Section>
 
-                {/* ═══ TESTIMONIALS ═══ */}
-                <Section id="testimonials">
-                    <SectionHeader
-                        overline="Client Reviews"
-                        title="What Advertisers Say"
-                        description="Hear from brands that have successfully partnered with TechPlay."
-                    />
-                    <Testimonials />
-                </Section>
-
                 {/* ═══ BRAND ASSETS ═══ */}
                 <Section id="brand">
                     <SectionHeader
@@ -754,7 +741,7 @@ export default function MediaKitClient() {
                                 </p>
                                 <div className="flex flex-wrap gap-4 justify-center">
                                     <motion.a
-                                        href={`mailto:${data.about?.contact_email || 'advertising@techplay.gg'}`}
+                                        href={`mailto:${data.about?.contact_email || 'marketing@techplay.gg'}`}
                                         className="inline-flex items-center gap-3 px-8 py-4
                                                  bg-gradient-to-r from-[var(--accent)] to-orange-600
                                                  text-white font-bold rounded-2xl
@@ -765,7 +752,7 @@ export default function MediaKitClient() {
                                     >
                                         <Mail className="w-5 h-5" />
                                         <span className="text-lg">
-                                            {data.about?.contact_email || 'advertising@techplay.gg'}
+                                            {data.about?.contact_email || 'marketing@techplay.gg'}
                                         </span>
                                         <ChevronRight className="w-5 h-5 opacity-60" />
                                     </motion.a>

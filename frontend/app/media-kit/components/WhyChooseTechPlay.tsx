@@ -8,30 +8,30 @@ const features = [
         category: "Audience Quality",
         icon: Target,
         items: [
-            { feature: "Tech-Savvy Audience", techplay: true, others: "partial", description: "98% tech enthusiasts" },
-            { feature: "Gaming Focus", techplay: true, others: false, description: "Dedicated gaming coverage" },
-            { feature: "Purchase Intent", techplay: "92%", others: "60%", description: "High conversion potential" },
+            { feature: "Tech-Savvy Audience", techplay: true, others: "partial", description: "Gaming & tech enthusiasts" },
+            { feature: "Global Reach", techplay: true, others: false, description: "US (32%), UK (18%), EU (26%)" },
+            { feature: "Desktop Users", techplay: "62%", others: "45%", description: "High-value traffic" },
             { feature: "Age 18-34", techplay: "77%", others: "45%", description: "Prime demographic" },
         ]
     },
     {
-        category: "Ad Performance",
+        category: "Performance Metrics",
         icon: TrendingUp,
         items: [
-            { feature: "Average CTR", techplay: "4.2%", others: "1.8%", description: "Industry-leading engagement" },
-            { feature: "Viewability Rate", techplay: "95%", others: "72%", description: "Premium placements" },
-            { feature: "Ad Fraud Protection", techplay: true, others: "partial", description: "Verified traffic only" },
-            { feature: "Brand Safety", techplay: true, others: true, description: "Strict content guidelines" },
+            { feature: "Monthly Growth", techplay: "12.4%", others: "3-5%", description: "Rapid organic growth" },
+            { feature: "Page Views/User", techplay: "1.8", others: "1.2", description: "High engagement" },
+            { feature: "Quality Content", techplay: "171+", others: "50-100", description: "In-depth reviews" },
+            { feature: "Social Following", techplay: "2K+", others: "500-1K", description: "Engaged community" },
         ]
     },
     {
         category: "Service & Support",
         icon: Award,
         items: [
-            { feature: "Dedicated Account Manager", techplay: true, others: false, description: "Personal support" },
-            { feature: "Real-Time Analytics", techplay: true, others: "partial", description: "Live dashboard access" },
-            { feature: "Custom Integrations", techplay: true, others: false, description: "Tailored solutions" },
-            { feature: "24/7 Support", techplay: true, others: "partial", description: "Always available" },
+            { feature: "Direct Communication", techplay: true, others: false, description: "Personal support" },
+            { feature: "Custom Packages", techplay: true, others: "partial", description: "Flexible solutions" },
+            { feature: "Fast Response", techplay: "< 2h", others: "24-48h", description: "Quick turnaround" },
+            { feature: "Performance Reports", techplay: true, others: "partial", description: "Detailed analytics" },
         ]
     },
 ];
@@ -73,10 +73,10 @@ export default function WhyChooseTechPlay() {
                 {/* Top stats cards */}
                 <div className="grid md:grid-cols-4 gap-4">
                     {[
-                        { icon: Zap, value: "2.3x", label: "Higher Engagement", color: "from-yellow-500 to-orange-500" },
-                        { icon: Target, value: "4.2%", label: "Average CTR", color: "from-blue-500 to-cyan-500" },
-                        { icon: Shield, value: "99.8%", label: "Traffic Quality", color: "from-green-500 to-emerald-500" },
-                        { icon: Clock, value: "3:45", label: "Avg. Session Time", color: "from-purple-500 to-pink-500" },
+                        { icon: Zap, value: "20K+", label: "Monthly Users", color: "from-yellow-500 to-orange-500" },
+                        { icon: Target, value: "62%", label: "Desktop Traffic", color: "from-blue-500 to-cyan-500" },
+                        { icon: Shield, value: "12.4%", label: "Monthly Growth", color: "from-green-500 to-emerald-500" },
+                        { icon: Clock, value: "171+", label: "In-Depth Reviews", color: "from-purple-500 to-pink-500" },
                     ].map((stat, i) => (
                         <motion.div
                             key={stat.label}
@@ -183,45 +183,6 @@ export default function WhyChooseTechPlay() {
                         </motion.div>
                     ))}
                 </div>
-
-                {/* Bottom CTA */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.6, duration: 0.6 }}
-                    className="relative rounded-2xl overflow-hidden p-8 text-center"
-                    style={{
-                        background: "linear-gradient(135deg, rgba(252, 65, 0, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%)"
-                    }}
-                >
-                    <div className="absolute inset-0 border border-white/[0.08] rounded-2xl pointer-events-none" />
-                    <div className="relative z-10">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full
-                                      bg-[var(--accent)]/10 border border-[var(--accent)]/20 mb-4">
-                            <Award className="w-4 h-4 text-[var(--accent)]" />
-                            <span className="text-[var(--accent)] text-sm font-bold">Premium Partner Tier</span>
-                        </div>
-                        <h3 className="text-2xl md:text-3xl font-black text-white mb-3">
-                            Experience The Difference
-                        </h3>
-                        <p className="text-white/60 max-w-2xl mx-auto mb-6">
-                            Join leading brands that trust TechPlay for their gaming & tech marketing campaigns.
-                        </p>
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="inline-flex items-center gap-3 px-8 py-4
-                                     bg-gradient-to-r from-[var(--accent)] to-orange-600
-                                     text-white font-bold rounded-2xl shadow-lg shadow-[var(--accent)]/25
-                                     hover:shadow-xl hover:shadow-[var(--accent)]/40
-                                     transition-shadow duration-500"
-                        >
-                            Get Your Custom Media Plan
-                            <Zap className="w-5 h-5" />
-                        </motion.button>
-                    </div>
-                </motion.div>
             </div>
         </section>
     );

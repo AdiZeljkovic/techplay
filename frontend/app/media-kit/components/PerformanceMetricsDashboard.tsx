@@ -2,22 +2,27 @@
 
 import { motion } from "framer-motion";
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
-import { TrendingUp, Users, Clock, Globe } from "lucide-react";
+import { TrendingUp, Users, Activity, Globe } from "lucide-react";
 
-// Generate realistic data
-const trafficData = Array.from({ length: 12 }, (_, i) => {
-    const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i];
-    const baseVisitors = 35000;
-    const growth = i * 3000;
-    const variance = Math.random() * 5000;
-
-    return {
-        month,
-        visitors: Math.round(baseVisitors + growth + variance),
-        pageViews: Math.round((baseVisitors + growth + variance) * 4.2),
-        sessions: Math.round((baseVisitors + growth + variance) * 1.3),
-    };
-});
+// Generate realistic data - Started Jan 26, 2026 (live for 1 month)
+// Matches KPI cards: 20K+ users, 36.5K+ pageviews
+const trafficData = [
+    // Jan 26-31 (partial month - launch week)
+    { month: 'Jan 26-31', visitors: 2800, pageViews: 6200 },
+    // Feb (actual data - first full month) - matches KPI cards
+    { month: 'Feb', visitors: 20000, pageViews: 36500 },
+    // Projected growth for rest of 2026
+    { month: 'Mar', visitors: 25000, pageViews: 48000 },
+    { month: 'Apr', visitors: 30000, pageViews: 58000 },
+    { month: 'May', visitors: 35000, pageViews: 68000 },
+    { month: 'Jun', visitors: 40000, pageViews: 78000 },
+    { month: 'Jul', visitors: 45000, pageViews: 88000 },
+    { month: 'Aug', visitors: 50000, pageViews: 98000 },
+    { month: 'Sep', visitors: 55000, pageViews: 108000 },
+    { month: 'Oct', visitors: 60000, pageViews: 118000 },
+    { month: 'Nov', visitors: 65000, pageViews: 128000 },
+    { month: 'Dec', visitors: 70000, pageViews: 138000 },
+];
 
 const deviceData = [
     { name: 'Desktop', value: 62, color: '#3B82F6' },
@@ -26,20 +31,21 @@ const deviceData = [
 ];
 
 const contentPerformance = [
-    { category: 'Reviews', articles: 145, avgViews: 8500, engagement: 92 },
-    { category: 'Guides', articles: 98, avgViews: 12000, engagement: 88 },
-    { category: 'News', articles: 312, avgViews: 6200, engagement: 85 },
-    { category: 'Features', articles: 67, avgViews: 15000, engagement: 95 },
+    { category: 'Reviews', articles: 85, avgViews: 125, engagement: 92 },
+    { category: 'Tech', articles: 42, avgViews: 180, engagement: 88 },
+    { category: 'News', articles: 28, avgViews: 95, engagement: 85 },
+    { category: 'Opinions', articles: 16, avgViews: 220, engagement: 95 },
 ];
 
+// Realistic hourly traffic for 20K monthly users (~667 daily visitors)
 const timeData = [
-    { hour: '00:00', visitors: 1200 },
-    { hour: '04:00', visitors: 800 },
-    { hour: '08:00', visitors: 3500 },
-    { hour: '12:00', visitors: 5200 },
-    { hour: '16:00', visitors: 6800 },
-    { hour: '20:00', visitors: 7500 },
-    { hour: '23:00', visitors: 4200 },
+    { hour: '00:00', visitors: 18 },
+    { hour: '04:00', visitors: 12 },
+    { hour: '08:00', visitors: 32 },
+    { hour: '12:00', visitors: 45 },
+    { hour: '16:00', visitors: 62 },
+    { hour: '20:00', visitors: 68 },
+    { hour: '23:00', visitors: 38 },
 ];
 
 const CustomTooltip = ({ active, payload }: any) => {
@@ -66,10 +72,10 @@ export default function PerformanceMetricsDashboard() {
             {/* Top KPIs */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                    { icon: Users, label: "Avg Monthly Visitors", value: "52.4K", change: "+18.2%", color: "from-blue-500 to-cyan-500" },
+                    { icon: Users, label: "Average Monthly Users", value: "20K+", change: "+285%", color: "from-blue-500 to-cyan-500" },
                     { icon: TrendingUp, label: "Growth Rate", value: "12.4%", change: "+3.1%", color: "from-green-500 to-emerald-500" },
-                    { icon: Clock, label: "Avg Session", value: "4:23", change: "+24s", color: "from-purple-500 to-pink-500" },
-                    { icon: Globe, label: "Page Views", value: "218K", change: "+22.8%", color: "from-orange-500 to-red-500" },
+                    { icon: Activity, label: "Bounce Rate", value: "68.3%", change: "-2.1%", color: "from-purple-500 to-pink-500" },
+                    { icon: Globe, label: "Page Views", value: "36.5K+", change: "+270%", color: "from-orange-500 to-red-500" },
                 ].map((kpi, i) => (
                     <motion.div
                         key={kpi.label}
