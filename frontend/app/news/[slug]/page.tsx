@@ -104,11 +104,14 @@ export async function generateMetadata(
         openGraph: {
             title: title,
             description: description,
+            url: article.canonical_url || `${process.env.NEXT_PUBLIC_APP_URL}/news/${slug}`,
+            siteName: 'TechPlay',
             type: 'article',
             publishedTime: article.published_at || article.created_at,
             modifiedTime: article.updated_at,
             authors: [article.author?.display_name || article.author?.username || 'TechPlay'],
             images: images,
+            locale: 'en_US',
         },
         twitter: {
             card: 'summary_large_image',

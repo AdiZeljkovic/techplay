@@ -43,14 +43,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
 
     const { guide } = data;
+
+    const images = guide.featured_image_url ? [guide.featured_image_url] : [];
+
     return {
         title: `${guide.title} - TechPlay Guides`,
         description: guide.excerpt || `Read our guide on ${guide.title}`,
         openGraph: {
             title: guide.title,
-            description: guide.excerpt,
-            images: guide.featured_image_url ? [guide.featured_image_url] : []
-        }
+            description: guide.excerpt || `Read our guide on ${guide.title}`,
+            url: `${process.env.NEXT_PUBLIC_APP_URL}/guides/${slug}`,
+            siteName: 'TechPlay',
+            type: 'article',
+            publishedTime: guide.published_at || guide.created_at,
+            modifiedTime: guide.updated_at,
+            images: images,
+            locale: 'en_US',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: guide.title,
+            description: guide.excerpt || `Read our guide on ${guide.title}`,
+            images: images,
+        },
+        alternates: {
+            canonical: `${process.env.NEXT_PUBLIC_APP_URL}/guides/${slug}`,
+        },
     };
 }
 

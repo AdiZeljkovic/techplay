@@ -47,7 +47,8 @@
       "Bash(redis-cli:*)",
       "Bash(powershell:*)",
       "Bash(ssh:*)",
-      "Bash(pm2 delete:*)"
+      "Bash(pm2 delete:*)",
+      "WebFetch(domain:developers.facebook.com)"
     ]
   }
 }

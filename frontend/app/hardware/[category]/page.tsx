@@ -83,10 +83,38 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const title = article.seo_title || article.title;
     const description = article.seo_description || article.excerpt || "Read more on TechPlay.";
 
+    let imageUrl = article.featured_image_url;
+    if (imageUrl && !imageUrl.startsWith('http')) {
+        const storageUrl = process.env.NEXT_PUBLIC_STORAGE_URL?.replace(/\/$/, '') || '';
+        const path = imageUrl.replace(/^\//, '');
+        imageUrl = `${storageUrl}/${path}`;
+    }
+    const images = imageUrl ? [imageUrl] : [];
+
     return {
         title,
         description,
-        openGraph: { title, description, type: 'article' },
+        openGraph: {
+            title,
+            description,
+            url: `${process.env.NEXT_PUBLIC_APP_URL}/hardware/${slug}`,
+            siteName: 'TechPlay',
+            type: 'article',
+            publishedTime: article.published_at || article.created_at,
+            modifiedTime: article.updated_at,
+            authors: [article.author?.display_name || article.author?.username || 'TechPlay'],
+            images: images,
+            locale: 'en_US',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title,
+            description,
+            images: images,
+        },
+        alternates: {
+            canonical: article.canonical_url || `${process.env.NEXT_PUBLIC_APP_URL}/hardware/${slug}`,
+        },
     };
 }
 

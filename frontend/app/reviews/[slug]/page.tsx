@@ -81,12 +81,14 @@ export async function generateMetadata(
         openGraph: {
             title: title,
             description: description,
+            url: review.canonical_url || `${process.env.NEXT_PUBLIC_APP_URL}/reviews/${slug}`,
+            siteName: 'TechPlay',
             type: 'article',
             publishedTime: review.published_at || review.created_at,
             modifiedTime: review.updated_at,
             authors: [review.author?.display_name || review.author?.username || 'TechPlay'],
             images: images,
-            // Custom properties if needed, but 'article' type covers mostly
+            locale: 'en_US',
         },
         twitter: {
             card: 'summary_large_image',
@@ -100,7 +102,6 @@ export async function generateMetadata(
         robots: {
             index: !review.is_noindex,
             follow: !review.is_noindex,
-            // Snippet preview control could be here too
         }
     };
 }
