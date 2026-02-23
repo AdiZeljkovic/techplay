@@ -4,26 +4,6 @@ import { motion } from "framer-motion";
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
 import { TrendingUp, Users, Activity, Globe } from "lucide-react";
 
-// Generate realistic data - Started Jan 26, 2026 (live for 1 month)
-// Matches KPI cards: 20K+ users, 36.5K+ pageviews
-const trafficData = [
-    // Jan 26-31 (partial month - launch week)
-    { month: 'Jan 26-31', visitors: 2800, pageViews: 6200 },
-    // Feb (actual data - first full month) - matches KPI cards
-    { month: 'Feb', visitors: 20000, pageViews: 36500 },
-    // Projected growth for rest of 2026
-    { month: 'Mar', visitors: 25000, pageViews: 48000 },
-    { month: 'Apr', visitors: 30000, pageViews: 58000 },
-    { month: 'May', visitors: 35000, pageViews: 68000 },
-    { month: 'Jun', visitors: 40000, pageViews: 78000 },
-    { month: 'Jul', visitors: 45000, pageViews: 88000 },
-    { month: 'Aug', visitors: 50000, pageViews: 98000 },
-    { month: 'Sep', visitors: 55000, pageViews: 108000 },
-    { month: 'Oct', visitors: 60000, pageViews: 118000 },
-    { month: 'Nov', visitors: 65000, pageViews: 128000 },
-    { month: 'Dec', visitors: 70000, pageViews: 138000 },
-];
-
 const deviceData = [
     { name: 'Desktop', value: 62, color: '#3B82F6' },
     { name: 'Mobile', value: 31, color: '#FC4100' },
@@ -98,64 +78,6 @@ export default function PerformanceMetricsDashboard() {
                     </motion.div>
                 ))}
             </div>
-
-            {/* Traffic Trend */}
-            <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="p-8 rounded-2xl bg-white/[0.02] border border-white/[0.06]"
-            >
-                <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-[var(--accent)]" />
-                    Traffic Growth Trend
-                </h3>
-                <ResponsiveContainer width="100%" height={300}>
-                    <AreaChart data={trafficData}>
-                        <defs>
-                            <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#FC4100" stopOpacity={0.3} />
-                                <stop offset="100%" stopColor="#FC4100" stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="colorPageViews" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.3} />
-                                <stop offset="100%" stopColor="#3B82F6" stopOpacity={0} />
-                            </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                        <XAxis
-                            dataKey="month"
-                            stroke="rgba(255,255,255,0.3)"
-                            style={{ fontSize: '12px', fill: 'rgba(255,255,255,0.5)' }}
-                        />
-                        <YAxis
-                            stroke="rgba(255,255,255,0.3)"
-                            style={{ fontSize: '12px', fill: 'rgba(255,255,255,0.5)' }}
-                        />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Legend
-                            wrapperStyle={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}
-                        />
-                        <Area
-                            type="monotone"
-                            dataKey="visitors"
-                            name="Visitors"
-                            stroke="#FC4100"
-                            strokeWidth={2}
-                            fill="url(#colorVisitors)"
-                        />
-                        <Area
-                            type="monotone"
-                            dataKey="pageViews"
-                            name="Page Views"
-                            stroke="#3B82F6"
-                            strokeWidth={2}
-                            fill="url(#colorPageViews)"
-                        />
-                    </AreaChart>
-                </ResponsiveContainer>
-            </motion.div>
 
             <div className="grid lg:grid-cols-2 gap-8">
                 {/* Device Distribution */}
