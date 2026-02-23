@@ -2,13 +2,11 @@
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-// Fake monthly traffic data showing growth
 const generateTrafficData = () => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const baseTraffic = 25000;
 
     return months.map((month, index) => {
-        // Simulate realistic growth with some variance
         const growth = 1 + (index * 0.15) + (Math.random() * 0.1 - 0.05);
         return {
             month,
@@ -24,16 +22,20 @@ export default function TrafficChart() {
     const CustomTooltip = ({ active, payload }: any) => {
         if (active && payload && payload.length) {
             return (
-                <div className="bg-[var(--bg-card)] border border-[var(--border)] p-3 rounded-lg shadow-lg">
-                    <p className="text-sm font-bold text-[var(--text-primary)] mb-1">
-                        {payload[0].payload.month}
-                    </p>
-                    <p className="text-xs text-[var(--accent)]">
-                        Visitors: {payload[0].value.toLocaleString()}
-                    </p>
-                    <p className="text-xs text-blue-400">
-                        Page Views: {payload[1].value.toLocaleString()}
-                    </p>
+                <div className="bg-[#0d1220] border border-white/[0.08] p-4 rounded-xl shadow-2xl backdrop-blur-xl">
+                    <p className="text-sm font-bold text-white mb-2">{payload[0].payload.month} 2026</p>
+                    <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-[var(--accent)]" />
+                            <span className="text-xs text-white/50">Visitors:</span>
+                            <span className="text-xs font-bold text-white">{payload[0].value.toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-blue-400" />
+                            <span className="text-xs text-white/50">Page Views:</span>
+                            <span className="text-xs font-bold text-white">{payload[1].value.toLocaleString()}</span>
+                        </div>
+                    </div>
                 </div>
             );
         }
@@ -41,58 +43,76 @@ export default function TrafficChart() {
     };
 
     return (
-        <div className="w-full h-[400px] bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-8">
-            <div className="mb-6">
-                <h3 className="text-2xl font-black text-[var(--text-primary)] mb-2">
-                    Traffic Growth Trend
-                </h3>
-                <p className="text-sm text-[var(--text-secondary)]">
-                    Monthly visitors and page views over the past year
-                </p>
+        <div className="w-full bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-2xl overflow-hidden">
+            {/* Header */}
+            <div className="p-7 pb-0">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div>
+                        <h3 className="text-xl font-bold text-white mb-1">Traffic Growth</h3>
+                        <p className="text-sm text-white/40">Jan — Dec 2026</p>
+                    </div>
+                    <div className="flex items-center gap-5">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[var(--accent)]" />
+                            <span className="text-xs text-white/50 font-medium">Visitors</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-blue-400" />
+                            <span className="text-xs text-white/50 font-medium">Page Views</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <ResponsiveContainer width="100%" height="85%">
-                <AreaChart data={data}>
-                    <defs>
-                        <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#FC4100" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#FC4100" stopOpacity={0}/>
-                        </linearGradient>
-                        <linearGradient id="colorPageViews" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
-                        </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis
-                        dataKey="month"
-                        stroke="rgba(255,255,255,0.3)"
-                        style={{ fontSize: '12px' }}
-                    />
-                    <YAxis
-                        stroke="rgba(255,255,255,0.3)"
-                        style={{ fontSize: '12px' }}
-                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Area
-                        type="monotone"
-                        dataKey="visitors"
-                        stroke="#FC4100"
-                        strokeWidth={2}
-                        fillOpacity={1}
-                        fill="url(#colorVisitors)"
-                    />
-                    <Area
-                        type="monotone"
-                        dataKey="pageViews"
-                        stroke="#3B82F6"
-                        strokeWidth={2}
-                        fillOpacity={1}
-                        fill="url(#colorPageViews)"
-                    />
-                </AreaChart>
-            </ResponsiveContainer>
+            {/* Chart */}
+            <div className="h-[320px] px-4 pb-6">
+                <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={data}>
+                        <defs>
+                            <linearGradient id="colorVisitors" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#FC4100" stopOpacity={0.25} />
+                                <stop offset="95%" stopColor="#FC4100" stopOpacity={0} />
+                            </linearGradient>
+                            <linearGradient id="colorPageViews" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#60A5FA" stopOpacity={0.2} />
+                                <stop offset="95%" stopColor="#60A5FA" stopOpacity={0} />
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                        <XAxis
+                            dataKey="month"
+                            stroke="rgba(255,255,255,0.15)"
+                            style={{ fontSize: '11px', fontWeight: 500 }}
+                            tickLine={false}
+                            axisLine={false}
+                        />
+                        <YAxis
+                            stroke="rgba(255,255,255,0.15)"
+                            style={{ fontSize: '11px', fontWeight: 500 }}
+                            tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
+                            tickLine={false}
+                            axisLine={false}
+                        />
+                        <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.06)' }} />
+                        <Area
+                            type="monotone"
+                            dataKey="visitors"
+                            stroke="#FC4100"
+                            strokeWidth={2.5}
+                            fillOpacity={1}
+                            fill="url(#colorVisitors)"
+                        />
+                        <Area
+                            type="monotone"
+                            dataKey="pageViews"
+                            stroke="#60A5FA"
+                            strokeWidth={2}
+                            fillOpacity={1}
+                            fill="url(#colorPageViews)"
+                        />
+                    </AreaChart>
+                </ResponsiveContainer>
+            </div>
         </div>
     );
 }
