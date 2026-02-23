@@ -18,7 +18,7 @@ class MediaKitSettingResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-chart-bar';
 
-    protected static ?string $navigationGroup = 'Marketing & Branding';
+    protected static \UnitEnum|string|null $navigationGroup = 'Marketing & Branding';
 
     protected static ?int $navigationSort = 10;
 
