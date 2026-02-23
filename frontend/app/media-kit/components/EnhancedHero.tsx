@@ -3,6 +3,7 @@
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Mail, Download, Sparkles, TrendingUp, Users, Eye } from "lucide-react";
 import { useEffect, useState } from "react";
+import DeviceMockups from "./DeviceMockups";
 
 interface Particle {
     id: number;
@@ -162,70 +163,25 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF }: { contactE
                 }}
             />
 
-            {/* Floating Stats */}
-            <FloatingStat
-                icon={TrendingUp}
-                value="150K+"
-                label="Monthly Views"
-                delay={0}
-                x="15%"
-                y="20%"
-            />
-            <FloatingStat
-                icon={Users}
-                value="50K+"
-                label="Active Users"
-                delay={1.5}
-                x="80%"
-                y="30%"
-            />
-            <FloatingStat
-                icon={Eye}
-                value="4.2min"
-                label="Avg. Session"
-                delay={3}
-                x="10%"
-                y="70%"
-            />
-            <FloatingStat
-                icon={Sparkles}
-                value="300+"
-                label="Articles"
-                delay={4.5}
-                x="85%"
-                y="65%"
-            />
 
-            {/* Main Content */}
-            <div className="container mx-auto px-4 text-center z-10 relative">
-                {/* Animated Title */}
-                <motion.div
-                    initial={{ opacity: 0, y: -50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                >
-                    <h1 className="text-6xl md:text-8xl font-black text-[var(--text-primary)] mb-6 leading-tight">
-                        Advertising on{" "}
-                        <span className="relative inline-block">
-                            <motion.span
-                                className="text-[var(--accent)]"
-                                animate={{
-                                    textShadow: [
-                                        "0 0 20px rgba(252, 65, 0, 0.5)",
-                                        "0 0 40px rgba(252, 65, 0, 0.8)",
-                                        "0 0 20px rgba(252, 65, 0, 0.5)",
-                                    ],
-                                }}
-                                transition={{
-                                    duration: 2,
-                                    repeat: Infinity,
-                                    ease: "easeInOut",
-                                }}
-                            >
-                                TechPlay
-                            </motion.span>
+            {/* Device Mockups - Top Section */}
+            <div className="absolute top-[10%] left-0 right-0 z-20 h-[60%]">
+                <DeviceMockups />
+            </div>
+
+            {/* Main Content - Bottom Section */}
+            <div className="absolute bottom-[5%] left-0 right-0 z-30">
+                <div className="container mx-auto px-4 text-center">
+                    {/* Logo/Title */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.8 }}
+                        className="mb-6"
+                    >
+                        <div className="inline-flex items-center gap-3 bg-[var(--bg-card)]/90 backdrop-blur-md
+                                      border border-[var(--accent)]/30 rounded-2xl px-8 py-4 shadow-2xl">
                             <motion.div
-                                className="absolute -top-8 -right-8"
                                 animate={{
                                     rotate: [0, 360],
                                     scale: [1, 1.2, 1],
@@ -237,35 +193,50 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF }: { contactE
                             >
                                 <Sparkles className="w-8 h-8 text-[var(--accent)]" />
                             </motion.div>
-                        </span>
-                    </h1>
-                </motion.div>
+                            <h1 className="text-4xl md:text-5xl font-black">
+                                <span className="text-[var(--text-primary)]">Advertising on </span>
+                                <motion.span
+                                    className="text-[var(--accent)]"
+                                    animate={{
+                                        textShadow: [
+                                            "0 0 20px rgba(252, 65, 0, 0.5)",
+                                            "0 0 40px rgba(252, 65, 0, 0.8)",
+                                            "0 0 20px rgba(252, 65, 0, 0.5)",
+                                        ],
+                                    }}
+                                    transition={{
+                                        duration: 2,
+                                        repeat: Infinity,
+                                        ease: "easeInOut",
+                                    }}
+                                >
+                                    TechPlay
+                                </motion.span>
+                            </h1>
+                        </div>
+                    </motion.div>
 
-                {/* Subtitle */}
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4, duration: 1 }}
-                    className="text-xl md:text-2xl text-[var(--text-secondary)] mb-12 max-w-3xl mx-auto leading-relaxed"
-                >
-                    Reach{" "}
-                    <motion.span
-                        className="text-[var(--accent)] font-bold"
-                        animate={{ opacity: [0.7, 1, 0.7] }}
-                        transition={{ duration: 2, repeat: Infinity }}
+                    {/* Description */}
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1, duration: 0.8 }}
+                        className="text-lg md:text-xl text-[var(--text-secondary)] mb-8 max-w-3xl mx-auto leading-relaxed"
                     >
-                        engaged gaming & tech enthusiasts
-                    </motion.span>
-                    {" "}worldwide with premium ad placements
-                </motion.p>
+                        Reach{" "}
+                        <span className="text-[var(--accent)] font-bold">
+                            engaged gaming & tech enthusiasts
+                        </span>
+                        {" "}worldwide with premium ad placements
+                    </motion.p>
 
-                {/* CTA Buttons */}
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8, duration: 0.8 }}
-                    className="flex flex-col md:flex-row gap-4 justify-center items-center"
-                >
+                    {/* CTA Buttons */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1.2, duration: 0.8 }}
+                        className="flex flex-col md:flex-row gap-4 justify-center items-center"
+                    >
                     <motion.a
                         href={`mailto:${contactEmail || 'advertising@techplay.gg'}`}
                         className="group relative inline-flex items-center gap-2 px-10 py-5 bg-[var(--accent)]
@@ -293,15 +264,17 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF }: { contactE
                         <Download className="w-6 h-6 group-hover:translate-y-1 transition-transform" />
                         <span className="text-lg">Download Media Kit</span>
                     </motion.button>
-                </motion.div>
+                    </motion.div>
+                </div>
+            </div>
 
-                {/* Scroll Indicator */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 1.5 }}
-                    className="absolute bottom-12 left-1/2 -translate-x-1/2"
-                >
+            {/* Scroll Indicator */}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.8 }}
+                className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40"
+            >
                     <motion.div
                         animate={{ y: [0, 10, 0] }}
                         transition={{ duration: 1.5, repeat: Infinity }}
