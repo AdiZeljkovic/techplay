@@ -4,9 +4,8 @@ import { useMediaKit } from "@/hooks/useMediaKit";
 import { useState } from "react";
 import {
     FileText, TrendingUp, Users, Globe, Sparkles,
-    Monitor, Smartphone, Tablet, ChevronRight, Download,
-    Mail, Palette, Type,
-    Facebook, Instagram, Youtube, Music2
+    Monitor, Smartphone, Tablet, ChevronRight,
+    Mail
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -113,32 +112,6 @@ function StatCard({ label, value, icon: Icon, gradient, delay }: {
     );
 }
 
-function SocialCard({ platform, followers, icon: Icon, color, bgColor, delay }: {
-    platform: string; followers: number; icon: any; color: string; bgColor: string; delay: number;
-}) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay, duration: 0.4 }}
-            whileHover={{ y: -4, scale: 1.02 }}
-            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-2xl p-6
-                       hover:bg-white/[0.06] hover:border-white/[0.12]
-                       transition-all duration-500 cursor-default group"
-        >
-            <div className={`w-11 h-11 rounded-xl ${bgColor} flex items-center justify-center mb-4
-                            group-hover:scale-110 transition-transform duration-500`}>
-                <Icon className={`w-5 h-5 ${color}`} />
-            </div>
-            <p className="text-2xl font-black text-white mb-1">
-                <AnimatedCounter value={followers} />
-            </p>
-            <p className="text-sm text-white/40 font-medium">{platform}</p>
-        </motion.div>
-    );
-}
-
 function PricingTierCard({ title, subtitle, description, features, isPopular, delay }: {
     title: string; subtitle: string; description: string;
     features: { name: string; detail: string; price: string }[];
@@ -220,20 +193,6 @@ function DemoBar({ label, percentage, delay }: { label: string; percentage: numb
                 />
             </div>
         </motion.div>
-    );
-}
-
-function ColorSwatch({ color, name, hex }: { color: string; name: string; hex: string }) {
-    return (
-        <div className="group cursor-default">
-            <div
-                className="w-full aspect-square rounded-2xl mb-3 border border-white/[0.06]
-                          group-hover:scale-105 group-hover:shadow-xl transition-all duration-300"
-                style={{ backgroundColor: color }}
-            />
-            <p className="text-sm font-semibold text-white/80">{name}</p>
-            <p className="text-xs text-white/40 font-mono">{hex}</p>
-        </div>
     );
 }
 
@@ -578,141 +537,6 @@ export default function MediaKitClient() {
                 {/* ═══ ROI CALCULATOR ═══ */}
                 <Section id="calculator">
                     <ROICalculator />
-                </Section>
-
-                {/* ═══ SOCIAL MEDIA REACH ═══ */}
-                <Section id="social">
-                    <SectionHeader
-                        overline="Social Media"
-                        title="We're on All the Platforms"
-                        description="We post on Facebook, Instagram, YouTube, and TikTok. Here's how many people follow us on each."
-                    />
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-                        <SocialCard
-                            platform="Facebook"
-                            followers={stats.social?.facebook_followers || 0}
-                            icon={Facebook}
-                            color="text-blue-400"
-                            bgColor="bg-blue-500/10"
-                            delay={0}
-                        />
-                        <SocialCard
-                            platform="Instagram"
-                            followers={stats.social?.instagram_followers || 0}
-                            icon={Instagram}
-                            color="text-pink-400"
-                            bgColor="bg-pink-500/10"
-                            delay={0.1}
-                        />
-                        <SocialCard
-                            platform="YouTube"
-                            followers={stats.social?.youtube_subscribers || 0}
-                            icon={Youtube}
-                            color="text-red-400"
-                            bgColor="bg-red-500/10"
-                            delay={0.2}
-                        />
-                        <SocialCard
-                            platform="TikTok"
-                            followers={stats.social?.tiktok_followers || 0}
-                            icon={Music2}
-                            color="text-white"
-                            bgColor="bg-white/[0.06]"
-                            delay={0.3}
-                        />
-                    </div>
-
-                    {/* Total Reach Banner */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.4, duration: 0.6 }}
-                        className="relative bg-gradient-to-r from-[var(--accent)]/[0.08] via-white/[0.02] to-blue-500/[0.08]
-                                 border border-white/[0.08] rounded-2xl p-8 text-center overflow-hidden"
-                    >
-                        <p className="text-sm text-white/40 mb-2 font-medium uppercase tracking-wider">Total Social Reach</p>
-                        <p className="text-5xl md:text-6xl font-black text-white">
-                            <AnimatedCounter value={stats.social?.total_social_reach || 0} />
-                        </p>
-                        {/* Ambient glow */}
-                        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-[300px] h-[80px]
-                                       bg-[var(--accent)]/20 rounded-full blur-[60px] pointer-events-none" />
-                    </motion.div>
-                </Section>
-
-                {/* ═══ BRAND ASSETS ═══ */}
-                <Section id="brand">
-                    <SectionHeader
-                        overline="Brand"
-                        title="Brand Assets"
-                        description="Download our official brand assets for use in press releases, articles, and partnerships."
-                    />
-                    <div className="grid lg:grid-cols-2 gap-6">
-                        {/* Logo & Colors */}
-                        <motion.div
-                            initial={{ opacity: 0, x: -30 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.6 }}
-                            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-2xl p-8"
-                        >
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-xl bg-[var(--accent)]/10 flex items-center justify-center">
-                                    <Palette className="w-5 h-5 text-[var(--accent)]" />
-                                </div>
-                                <h3 className="text-lg font-bold text-white">Brand Colors</h3>
-                            </div>
-                            <div className="grid grid-cols-4 gap-4">
-                                <ColorSwatch color="#FC4100" name="Accent" hex="#FC4100" />
-                                <ColorSwatch color="#001540" name="Navy" hex="#001540" />
-                                <ColorSwatch color="#FFFFFF" name="White" hex="#FFFFFF" />
-                                <ColorSwatch color="#00215E" name="Card" hex="#00215E" />
-                            </div>
-                        </motion.div>
-
-                        {/* Typography & Downloads */}
-                        <motion.div
-                            initial={{ opacity: 0, x: 30 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.6 }}
-                            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-2xl p-8 flex flex-col"
-                        >
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-xl bg-[var(--accent)]/10 flex items-center justify-center">
-                                    <Type className="w-5 h-5 text-[var(--accent)]" />
-                                </div>
-                                <h3 className="text-lg font-bold text-white">Typography & Assets</h3>
-                            </div>
-                            <div className="space-y-3 mb-8 flex-1">
-                                <div className="flex items-center justify-between py-3 border-b border-white/[0.04]">
-                                    <span className="text-sm text-white/60">Primary Font</span>
-                                    <span className="text-sm font-bold text-white">Be Vietnam Pro</span>
-                                </div>
-                                <div className="flex items-center justify-between py-3 border-b border-white/[0.04]">
-                                    <span className="text-sm text-white/60">Weights Used</span>
-                                    <span className="text-sm font-bold text-white">400, 600, 700, 900</span>
-                                </div>
-                                <div className="flex items-center justify-between py-3">
-                                    <span className="text-sm text-white/60">Logo Formats</span>
-                                    <span className="text-sm font-bold text-white">SVG, PNG</span>
-                                </div>
-                            </div>
-                            <motion.button
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="w-full flex items-center justify-center gap-2 py-3.5
-                                         bg-white/[0.04] border border-white/[0.08] rounded-xl
-                                         text-white/70 font-semibold text-sm
-                                         hover:bg-white/[0.08] hover:border-white/[0.15]
-                                         transition-all duration-300"
-                            >
-                                <Download className="w-4 h-4" />
-                                Download Brand Kit
-                            </motion.button>
-                        </motion.div>
-                    </div>
                 </Section>
 
                 {/* ═══ CONTACT CTA ═══ */}
