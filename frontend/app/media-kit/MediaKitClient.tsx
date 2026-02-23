@@ -232,12 +232,6 @@ export default function MediaKitClient() {
         price: f.price || '',
     }));
 
-    // Hero stats for trust badges
-    const heroStats = {
-        totalContent: stats.content?.total_content || 0,
-        monthlyVisitors: stats.audience?.monthly_visitors || 0,
-        socialReach: stats.social?.total_social_reach || 0,
-    };
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
@@ -252,7 +246,6 @@ export default function MediaKitClient() {
             <EnhancedHero
                 contactEmail={data.about?.contact_email}
                 onDownloadPDF={handleDownloadPDF}
-                stats={heroStats}
             />
 
             <div className="container mx-auto px-4 space-y-32 py-24">

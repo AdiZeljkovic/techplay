@@ -8,11 +8,6 @@ import DeviceMockupsReal from "./DeviceMockupsReal";
 interface EnhancedHeroProps {
     contactEmail?: string;
     onDownloadPDF: () => void;
-    stats?: {
-        totalContent?: number;
-        monthlyVisitors?: number;
-        socialReach?: number;
-    };
 }
 
 // Trust metric badge
@@ -39,7 +34,7 @@ function TrustBadge({ icon: Icon, value, label, delay }: { icon: any; value: str
     );
 }
 
-export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: EnhancedHeroProps) {
+export default function EnhancedHero({ contactEmail, onDownloadPDF }: EnhancedHeroProps) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -206,19 +201,19 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: Enh
                         <div className="flex flex-wrap gap-3">
                             <TrustBadge
                                 icon={Newspaper}
-                                value={stats?.totalContent ? `${Math.floor(stats.totalContent / 100) * 100}+` : "200+"}
+                                value="171+"
                                 label="In-Depth Reviews"
                                 delay={0.7}
                             />
                             <TrustBadge
                                 icon={Users}
-                                value={stats?.monthlyVisitors ? `${Math.floor(stats.monthlyVisitors / 1000)}K+` : "20K+"}
+                                value="20K+"
                                 label="Monthly Readers"
                                 delay={0.85}
                             />
                             <TrustBadge
                                 icon={BarChart3}
-                                value={stats?.socialReach ? `${Math.floor(stats.socialReach / 1000)}K+` : "2K+"}
+                                value="2K+"
                                 label="Social Following"
                                 delay={1.0}
                             />
