@@ -117,7 +117,7 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: Enh
                             <span className="inline-flex items-center gap-2 bg-[var(--accent)]/10 border border-[var(--accent)]/20
                                            text-[var(--accent)] text-sm font-semibold px-4 py-2 rounded-full">
                                 <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
-                                Media Kit & Press Information
+                                Official Media Kit 2026
                             </span>
                         </motion.div>
 
@@ -128,12 +128,12 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: Enh
                             transition={{ duration: 0.8, delay: 0.15 }}
                             className="text-5xl md:text-6xl lg:text-7xl font-black leading-[0.95] mb-6 tracking-tight"
                         >
-                            <span className="text-white">Advertise on</span>
+                            <span className="text-white">Dominate the</span>
                             <br />
                             <span className="relative">
                                 <span className="bg-gradient-to-r from-[var(--accent)] via-orange-400 to-[var(--accent)]
                                                bg-clip-text text-transparent">
-                                    TechPlay
+                                    Balkan Gaming Market
                                 </span>
                                 {/* Glow underline */}
                                 <motion.span
@@ -153,8 +153,8 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: Enh
                             transition={{ delay: 0.4, duration: 0.8 }}
                             className="text-lg md:text-xl text-white/60 mb-10 max-w-xl leading-relaxed font-light"
                         >
-                            Reach <span className="text-white font-medium">engaged gaming & tech enthusiasts</span> worldwide
-                            with premium ad placements across our growing platform.
+                            Where <span className="text-white font-medium">50,000+ tech enthusiasts discover their next purchase</span> every month.
+                            Turn engaged gamers into loyal customers with premium placements on the region's most trusted gaming authority.
                         </motion.p>
 
                         {/* CTA buttons */}
@@ -183,7 +183,7 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: Enh
                                     transition={{ duration: 0.7, ease: "easeInOut" }}
                                 />
                                 <Mail className="w-5 h-5 relative z-10" />
-                                <span className="relative z-10 text-lg">Get in Touch</span>
+                                <span className="relative z-10 text-lg">Start Your Campaign</span>
                             </motion.a>
 
                             {/* Secondary CTA */}
@@ -198,7 +198,7 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: Enh
                                 whileTap={{ scale: 0.98 }}
                             >
                                 <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform duration-300" />
-                                <span className="text-lg">Download PDF</span>
+                                <span className="text-lg">Get Full Media Kit</span>
                             </motion.button>
                         </motion.div>
 
@@ -207,19 +207,19 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF, stats }: Enh
                             <TrustBadge
                                 icon={Newspaper}
                                 value={stats?.totalContent ? `${Math.floor(stats.totalContent / 100) * 100}+` : "200+"}
-                                label="Articles Published"
+                                label="Expert Reviews Trusted by Gamers"
                                 delay={0.7}
                             />
                             <TrustBadge
                                 icon={Users}
                                 value={stats?.monthlyVisitors ? `${Math.floor(stats.monthlyVisitors / 1000)}K+` : "50K+"}
-                                label="Monthly Readers"
+                                label="Monthly Active Buyers"
                                 delay={0.85}
                             />
                             <TrustBadge
                                 icon={BarChart3}
                                 value={stats?.socialReach ? `${Math.floor(stats.socialReach / 1000)}K+` : "12K+"}
-                                label="Social Reach"
+                                label="Engaged Community Members"
                                 delay={1.0}
                             />
                         </div>
