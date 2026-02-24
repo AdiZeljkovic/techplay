@@ -54,40 +54,40 @@ export default function ROICalculator() {
                     <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/[0.08] via-transparent to-blue-500/[0.08]" />
                     <div className="absolute inset-0 border border-white/[0.08] rounded-3xl pointer-events-none" />
 
-                    <div className="relative z-10 p-8 md:p-12">
+                    <div className="relative z-10 p-6 md:p-8 lg:p-12">
                         {/* Header */}
-                        <div className="text-center mb-12">
+                        <div className="text-center mb-8 md:mb-12">
                             <motion.div
                                 initial={{ scale: 0 }}
                                 whileInView={{ scale: 1 }}
                                 viewport={{ once: true }}
                                 transition={{ type: "spring", duration: 0.6 }}
-                                className="inline-flex items-center gap-3 mb-6"
+                                className="inline-flex items-center gap-3 mb-4 md:mb-6"
                             >
-                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--accent)] to-orange-600
+                                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-[var(--accent)] to-orange-600
                                                flex items-center justify-center shadow-lg shadow-[var(--accent)]/25">
-                                    <Calculator className="w-7 h-7 text-white" />
+                                    <Calculator className="w-6 h-6 md:w-7 md:h-7 text-white" />
                                 </div>
                             </motion.div>
-                            <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
+                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-3 md:mb-4 px-4">
                                 Calculate Your ROI
                             </h2>
-                            <p className="text-white/60 max-w-2xl mx-auto">
+                            <p className="text-sm md:text-base text-white/60 max-w-2xl mx-auto px-4">
                                 See how your ad budget performs with our competitive global rates and engaged gaming audience.
                                 Adjust parameters below for real-time ROI projections.
                             </p>
                         </div>
 
-                        <div className="grid lg:grid-cols-2 gap-8">
+                        <div className="grid md:grid-cols-2 gap-6 md:gap-8">
                             {/* Left — Input controls */}
-                            <div className="space-y-6">
+                            <div className="space-y-4 md:space-y-6">
                                 {/* Budget slider */}
-                                <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <label className="text-sm font-bold text-white/80">Campaign Budget</label>
+                                <div className="p-4 md:p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                                        <label className="text-xs sm:text-sm font-bold text-white/80">Campaign Budget</label>
                                         <div className="flex items-center gap-2">
                                             <DollarSign className="w-4 h-4 text-[var(--accent)]" />
-                                            <span className="text-2xl font-black text-white">
+                                            <span className="text-xl sm:text-2xl font-black text-white">
                                                 ${budget.toLocaleString()}
                                             </span>
                                         </div>
@@ -115,8 +115,8 @@ export default function ROICalculator() {
                                 </div>
 
                                 {/* Ad format selector */}
-                                <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
-                                    <label className="text-sm font-bold text-white/80 mb-4 block">Ad Format</label>
+                                <div className="p-4 md:p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
+                                    <label className="text-xs sm:text-sm font-bold text-white/80 mb-3 md:mb-4 block">Ad Format</label>
                                     <div className="grid grid-cols-1 gap-2">
                                         {adFormats.map((format) => (
                                             <motion.button
@@ -124,16 +124,16 @@ export default function ROICalculator() {
                                                 whileHover={{ x: 4 }}
                                                 whileTap={{ scale: 0.98 }}
                                                 onClick={() => setSelectedFormat(format)}
-                                                className={`relative p-4 rounded-xl text-left transition-all duration-300
+                                                className={`relative p-3 md:p-4 rounded-xl text-left transition-all duration-300
                                                           ${selectedFormat.id === format.id
                                                         ? 'bg-[var(--accent)]/10 border-2 border-[var(--accent)]'
                                                         : 'bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04]'
                                                     }`}
                                             >
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <div className="font-bold text-white text-sm mb-1">{format.name}</div>
-                                                        <div className="text-xs text-white/50">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="font-bold text-white text-xs sm:text-sm mb-1 truncate">{format.name}</div>
+                                                        <div className="text-[10px] sm:text-xs text-white/50">
                                                             ${format.cpm} CPM • {format.avgCTR}% avg CTR
                                                         </div>
                                                     </div>
@@ -153,14 +153,14 @@ export default function ROICalculator() {
                                 </div>
 
                                 {/* Advanced settings */}
-                                <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] space-y-4">
-                                    <label className="text-sm font-bold text-white/80 block">Advanced Settings</label>
+                                <div className="p-4 md:p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] space-y-4">
+                                    <label className="text-xs sm:text-sm font-bold text-white/80 block">Advanced Settings</label>
 
                                     {/* Conversion rate */}
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-xs text-white/60">Conversion Rate</span>
-                                            <span className="text-sm font-bold text-white">{conversionRate}%</span>
+                                            <span className="text-[10px] sm:text-xs text-white/60">Conversion Rate</span>
+                                            <span className="text-xs sm:text-sm font-bold text-white">{conversionRate}%</span>
                                         </div>
                                         <input
                                             type="range"
@@ -179,8 +179,8 @@ export default function ROICalculator() {
                                     {/* Average order value */}
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-xs text-white/60">Avg Order Value</span>
-                                            <span className="text-sm font-bold text-white">${avgOrderValue}</span>
+                                            <span className="text-[10px] sm:text-xs text-white/60">Avg Order Value</span>
+                                            <span className="text-xs sm:text-sm font-bold text-white">${avgOrderValue}</span>
                                         </div>
                                         <input
                                             type="range"
@@ -208,23 +208,23 @@ export default function ROICalculator() {
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.9 }}
                                         transition={{ duration: 0.3 }}
-                                        className="relative p-8 rounded-2xl overflow-hidden"
+                                        className="relative p-6 md:p-8 rounded-2xl overflow-hidden"
                                         style={{
                                             background: "linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)"
                                         }}
                                     >
                                         <div className="absolute inset-0 border-2 border-green-500/20 rounded-2xl pointer-events-none" />
                                         <div className="text-center">
-                                            <div className="text-sm text-white/50 font-semibold uppercase tracking-wider mb-3">
+                                            <div className="text-xs sm:text-sm text-white/50 font-semibold uppercase tracking-wider mb-2 md:mb-3">
                                                 Estimated ROI
                                             </div>
-                                            <div className="flex items-center justify-center gap-3 mb-2">
-                                                <TrendingUp className="w-8 h-8 text-green-400" />
-                                                <div className="text-6xl font-black text-white">
+                                            <div className="flex items-center justify-center gap-2 md:gap-3 mb-2">
+                                                <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-green-400" />
+                                                <div className="text-4xl sm:text-5xl md:text-6xl font-black text-white">
                                                     {results.roi}%
                                                 </div>
                                             </div>
-                                            <div className="text-sm text-green-400 font-bold">
+                                            <div className="text-xs sm:text-sm text-green-400 font-bold">
                                                 ${results.revenue.toLocaleString()} projected revenue
                                             </div>
                                         </div>
@@ -232,7 +232,7 @@ export default function ROICalculator() {
                                 </AnimatePresence>
 
                                 {/* Metrics grid */}
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-3 md:gap-4">
                                     {[
                                         { icon: Eye, label: "Impressions", value: results.impressions.toLocaleString(), color: "from-blue-500 to-cyan-500" },
                                         { icon: Users, label: "Clicks", value: results.clicks.toLocaleString(), color: "from-purple-500 to-pink-500" },
@@ -244,16 +244,16 @@ export default function ROICalculator() {
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: i * 0.1, duration: 0.4 }}
-                                            className="p-5 rounded-xl bg-white/[0.02] border border-white/[0.06]"
+                                            className="p-3 md:p-5 rounded-xl bg-white/[0.02] border border-white/[0.06]"
                                         >
-                                            <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${metric.color} mb-3
+                                            <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg bg-gradient-to-br ${metric.color} mb-2 md:mb-3
                                                           flex items-center justify-center shadow-lg`}>
-                                                <metric.icon className="w-5 h-5 text-white" />
+                                                <metric.icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
                                             </div>
-                                            <div className="text-2xl font-black text-white mb-1">
+                                            <div className="text-lg sm:text-xl md:text-2xl font-black text-white mb-1 break-all">
                                                 {metric.value}
                                             </div>
-                                            <div className="text-xs text-white/50 font-medium">
+                                            <div className="text-[10px] sm:text-xs text-white/50 font-medium">
                                                 {metric.label}
                                             </div>
                                         </motion.div>
@@ -264,18 +264,21 @@ export default function ROICalculator() {
                                 <motion.button
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
-                                    className="w-full flex items-center justify-center gap-3 p-5 rounded-2xl
+                                    className="w-full flex items-center justify-center gap-2 md:gap-3 p-4 md:p-5 rounded-2xl
                                              bg-gradient-to-r from-[var(--accent)] to-orange-600
                                              text-white font-bold shadow-lg shadow-[var(--accent)]/25
                                              hover:shadow-xl hover:shadow-[var(--accent)]/40
                                              transition-shadow duration-500"
                                 >
-                                    <span className="text-lg">Get This Campaign Started</span>
-                                    <ArrowRight className="w-5 h-5" />
+                                    <span className="text-sm md:text-base lg:text-lg">
+                                        <span className="hidden sm:inline">Get This Campaign Started</span>
+                                        <span className="sm:hidden">Start Campaign</span>
+                                    </span>
+                                    <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
                                 </motion.button>
 
                                 {/* Disclaimer */}
-                                <p className="text-xs text-white/30 text-center leading-relaxed">
+                                <p className="text-[10px] sm:text-xs text-white/30 text-center leading-relaxed px-2">
                                     * Estimates based on historical data and industry benchmarks.
                                     Actual results may vary based on creative quality, targeting, and market conditions.
                                 </p>
