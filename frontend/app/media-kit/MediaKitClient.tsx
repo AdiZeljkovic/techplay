@@ -256,7 +256,7 @@ export default function MediaKitClient() {
                         {/* Left — Text */}
                         <div className="lg:col-span-3">
                             <SectionHeader
-                                overline="About Us"
+                                overline="About us"
                                 title={data.about?.about_title || 'About TechPlay'}
                             />
                             <p className="text-lg text-white/50 leading-relaxed">
@@ -279,7 +279,7 @@ export default function MediaKitClient() {
                                     <div className="w-10 h-10 rounded-xl bg-[var(--accent)]/10 flex items-center justify-center">
                                         <Globe className="w-5 h-5 text-[var(--accent)]" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-white">Top Countries</h3>
+                                    <h3 className="text-xl font-bold text-white">Top countries</h3>
                                 </div>
                                 <div className="space-y-4">
                                     {[
@@ -326,27 +326,27 @@ export default function MediaKitClient() {
                 {/* ═══ PLATFORM STATISTICS ═══ */}
                 <Section id="stats">
                     <SectionHeader
-                        overline="The Numbers"
-                        title="Here's What We're Working With"
+                        overline="The numbers"
+                        title="Here's what we're working with"
                         description="Real stats from our platform. No fluff, just the actual data you'd want to know before running ads here."
                     />
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
                         <StatCard
-                            label="In-Depth Reviews"
+                            label="In-depth reviews"
                             value={171}
                             icon={FileText}
                             gradient="bg-gradient-to-r from-blue-500 to-cyan-400"
                             delay={0}
                         />
                         <StatCard
-                            label="Total Views"
+                            label="Total views"
                             value={21500}
                             icon={TrendingUp}
                             gradient="bg-gradient-to-r from-emerald-500 to-green-400"
                             delay={0.1}
                         />
                         <StatCard
-                            label="Social Following"
+                            label="Social following"
                             value={2000}
                             icon={Globe}
                             gradient="bg-gradient-to-r from-[var(--accent)] to-orange-400"
@@ -359,7 +359,7 @@ export default function MediaKitClient() {
                 <Section id="performance">
                     <SectionHeader
                         overline="Analytics"
-                        title="Performance Metrics"
+                        title="Performance metrics"
                         description="Deep dive into our traffic patterns, audience behavior, and content performance."
                     />
                     <PerformanceMetricsDashboard />
@@ -368,8 +368,8 @@ export default function MediaKitClient() {
                 {/* ═══ AUDIENCE DEMOGRAPHICS ═══ */}
                 <Section id="audience">
                     <SectionHeader
-                        overline="Who's Reading"
-                        title="Our Audience Breakdown"
+                        overline="Who's reading"
+                        title="Our audience breakdown"
                         description="Mostly 18-34 year olds who actually read tech reviews before buying stuff. You know, the kind of people who care about specs."
                     />
                     <div className="grid lg:grid-cols-3 gap-6">
@@ -482,7 +482,7 @@ export default function MediaKitClient() {
                 <Section id="why-choose">
                     <SectionHeader
                         overline="Why TechPlay?"
-                        title="What Makes Us Different"
+                        title="What makes us different"
                         description="We're not Google Ads. Our readers actually care about gaming tech, which means they're more likely to click and buy."
                     />
                     <WhyChooseTechPlay />
@@ -492,14 +492,14 @@ export default function MediaKitClient() {
                 <Section id="pricing">
                     <SectionHeader
                         overline="Pricing"
-                        title="How We Charge for Ads"
+                        title="How we charge for ads"
                         description="Pick what works for your budget. Whether you want CPM, CPC, or fixed placements, we've got options."
                     />
                     <div className="grid lg:grid-cols-3 gap-6">
                         {standardFeatures.length > 0 && (
                             <PricingTierCard
                                 title="Standard"
-                                subtitle="CPM — Cost Per Mille"
+                                subtitle="CPM — Cost per mille"
                                 description="IAB-standard display advertising with guaranteed impressions and viewability tracking."
                                 features={standardFeatures}
                                 delay={0}
@@ -508,7 +508,7 @@ export default function MediaKitClient() {
                         {fixedFeatures.length > 0 && (
                             <PricingTierCard
                                 title="Premium"
-                                subtitle="Fixed Positioning"
+                                subtitle="Fixed positioning"
                                 description="High-impact placements with guaranteed visibility and exclusive positioning."
                                 features={fixedFeatures}
                                 isPopular
@@ -518,7 +518,7 @@ export default function MediaKitClient() {
                         {flexibleFeatures.length > 0 && (
                             <PricingTierCard
                                 title="Performance"
-                                subtitle="CPC — Cost Per Click"
+                                subtitle="CPC — Cost per click"
                                 description="Performance-based advertising with pay-per-click pricing model."
                                 features={flexibleFeatures}
                                 delay={0.3}

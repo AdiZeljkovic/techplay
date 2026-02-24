@@ -88,7 +88,7 @@ export default function PerformanceMetricsDashboard() {
                     transition={{ duration: 0.6 }}
                     className="p-8 rounded-2xl bg-white/[0.02] border border-white/[0.06]"
                 >
-                    <h3 className="text-lg font-bold text-white mb-6">Device Distribution</h3>
+                    <h3 className="text-lg font-bold text-white mb-6">Device distribution</h3>
                     <ResponsiveContainer width="100%" height={250}>
                         <PieChart>
                             <Pie
@@ -127,7 +127,7 @@ export default function PerformanceMetricsDashboard() {
                     transition={{ duration: 0.6 }}
                     className="p-8 rounded-2xl bg-white/[0.02] border border-white/[0.06]"
                 >
-                    <h3 className="text-lg font-bold text-white mb-6">Content Performance</h3>
+                    <h3 className="text-lg font-bold text-white mb-6">Content performance</h3>
                     <ResponsiveContainer width="100%" height={250}>
                         <BarChart data={contentPerformance}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />

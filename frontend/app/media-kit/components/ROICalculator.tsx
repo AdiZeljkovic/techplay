@@ -70,7 +70,7 @@ export default function ROICalculator() {
                                 </div>
                             </motion.div>
                             <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-3 md:mb-4 px-4">
-                                Calculate Your ROI
+                                Calculate your ROI
                             </h2>
                             <p className="text-sm md:text-base text-white/60 max-w-2xl mx-auto px-4">
                                 See how your ad budget performs with our competitive global rates and engaged gaming audience.
@@ -84,7 +84,7 @@ export default function ROICalculator() {
                                 {/* Budget slider */}
                                 <div className="p-4 md:p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
                                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-                                        <label className="text-xs sm:text-sm font-bold text-white/80">Campaign Budget</label>
+                                        <label className="text-xs sm:text-sm font-bold text-white/80">Campaign budget</label>
                                         <div className="flex items-center gap-2">
                                             <DollarSign className="w-4 h-4 text-[var(--accent)]" />
                                             <span className="text-xl sm:text-2xl font-black text-white">
@@ -116,7 +116,7 @@ export default function ROICalculator() {
 
                                 {/* Ad format selector */}
                                 <div className="p-4 md:p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
-                                    <label className="text-xs sm:text-sm font-bold text-white/80 mb-3 md:mb-4 block">Ad Format</label>
+                                    <label className="text-xs sm:text-sm font-bold text-white/80 mb-3 md:mb-4 block">Ad format</label>
                                     <div className="grid grid-cols-1 gap-2">
                                         {adFormats.map((format) => (
                                             <motion.button
@@ -154,12 +154,12 @@ export default function ROICalculator() {
 
                                 {/* Advanced settings */}
                                 <div className="p-4 md:p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] space-y-4">
-                                    <label className="text-xs sm:text-sm font-bold text-white/80 block">Advanced Settings</label>
+                                    <label className="text-xs sm:text-sm font-bold text-white/80 block">Advanced settings</label>
 
                                     {/* Conversion rate */}
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-[10px] sm:text-xs text-white/60">Conversion Rate</span>
+                                            <span className="text-[10px] sm:text-xs text-white/60">Conversion rate</span>
                                             <span className="text-xs sm:text-sm font-bold text-white">{conversionRate}%</span>
                                         </div>
                                         <input
@@ -179,7 +179,7 @@ export default function ROICalculator() {
                                     {/* Average order value */}
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-[10px] sm:text-xs text-white/60">Avg Order Value</span>
+                                            <span className="text-[10px] sm:text-xs text-white/60">Avg order value</span>
                                             <span className="text-xs sm:text-sm font-bold text-white">${avgOrderValue}</span>
                                         </div>
                                         <input
@@ -271,8 +271,8 @@ export default function ROICalculator() {
                                              transition-shadow duration-500"
                                 >
                                     <span className="text-sm md:text-base lg:text-lg">
-                                        <span className="hidden sm:inline">Get This Campaign Started</span>
-                                        <span className="sm:hidden">Start Campaign</span>
+                                        <span className="hidden sm:inline">Get this campaign started</span>
+                                        <span className="sm:hidden">Start campaign</span>
                                     </span>
                                     <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
                                 </motion.button>

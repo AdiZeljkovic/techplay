@@ -193,7 +193,7 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF }: EnhancedHe
                                 whileTap={{ scale: 0.98 }}
                             >
                                 <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform duration-300" />
-                                <span className="text-lg">Download Media Kit</span>
+                                <span className="text-lg">Download media kit</span>
                             </motion.button>
                         </motion.div>
 
@@ -202,19 +202,19 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF }: EnhancedHe
                             <TrustBadge
                                 icon={Newspaper}
                                 value="171+"
-                                label="In-Depth Reviews"
+                                label="In-depth reviews"
                                 delay={0.7}
                             />
                             <TrustBadge
                                 icon={Users}
                                 value="20K+"
-                                label="Monthly Readers"
+                                label="Monthly readers"
                                 delay={0.85}
                             />
                             <TrustBadge
                                 icon={BarChart3}
                                 value="2K+"
-                                label="Social Following"
+                                label="Social following"
                                 delay={1.0}
                             />
                         </div>

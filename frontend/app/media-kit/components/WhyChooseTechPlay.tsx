@@ -5,33 +5,33 @@ import { Check, X, Zap, Target, TrendingUp, Shield, Clock, Award } from "lucide-
 
 const features = [
     {
-        category: "Audience Quality",
+        category: "Audience quality",
         icon: Target,
         items: [
-            { feature: "Tech-Savvy Audience", techplay: true, others: "partial", description: "Gaming & tech enthusiasts" },
-            { feature: "Global Reach", techplay: true, others: false, description: "US (32%), UK (18%), EU (26%)" },
-            { feature: "Desktop Users", techplay: "62%", others: "45%", description: "High-value traffic" },
+            { feature: "Tech-savvy audience", techplay: true, others: "partial", description: "Gaming & tech enthusiasts" },
+            { feature: "Global reach", techplay: true, others: false, description: "US (32%), UK (18%), EU (26%)" },
+            { feature: "Desktop users", techplay: "62%", others: "45%", description: "High-value traffic" },
             { feature: "Age 18-34", techplay: "77%", others: "45%", description: "Prime demographic" },
         ]
     },
     {
-        category: "Performance Metrics",
+        category: "Performance metrics",
         icon: TrendingUp,
         items: [
-            { feature: "Monthly Growth", techplay: "12.4%", others: "3-5%", description: "Rapid organic growth" },
-            { feature: "Page Views/User", techplay: "1.8", others: "1.2", description: "High engagement" },
-            { feature: "Quality Content", techplay: "171+", others: "50-100", description: "In-depth reviews" },
-            { feature: "Social Following", techplay: "2K+", others: "500-1K", description: "Engaged community" },
+            { feature: "Monthly growth", techplay: "12.4%", others: "3-5%", description: "Rapid organic growth" },
+            { feature: "Page views/user", techplay: "1.8", others: "1.2", description: "High engagement" },
+            { feature: "Quality content", techplay: "171+", others: "50-100", description: "In-depth reviews" },
+            { feature: "Social following", techplay: "2K+", others: "500-1K", description: "Engaged community" },
         ]
     },
     {
-        category: "Service & Support",
+        category: "Service & support",
         icon: Award,
         items: [
-            { feature: "Direct Communication", techplay: true, others: false, description: "Personal support" },
-            { feature: "Custom Packages", techplay: true, others: "partial", description: "Flexible solutions" },
-            { feature: "Fast Response", techplay: "< 2h", others: "24-48h", description: "Quick turnaround" },
-            { feature: "Performance Reports", techplay: true, others: "partial", description: "Detailed analytics" },
+            { feature: "Direct communication", techplay: true, others: false, description: "Personal support" },
+            { feature: "Custom packages", techplay: true, others: "partial", description: "Flexible solutions" },
+            { feature: "Fast response", techplay: "< 2h", others: "24-48h", description: "Quick turnaround" },
+            { feature: "Performance reports", techplay: true, others: "partial", description: "Detailed analytics" },
         ]
     },
 ];
