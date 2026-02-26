@@ -12,12 +12,10 @@ use RuntimeException;
 
 class PriveeGiveawayController extends Controller
 {
-    public function __construct(private readonly PriveeService $priveeService) {}
-
     /**
      * Authenticate with Privee email/password and enter giveaway.
      */
-    public function login(Request $request, string $slug): JsonResponse
+    public function login(Request $request, string $slug, PriveeService $priveeService): JsonResponse
     {
         $request->validate([
             'email'    => ['required', 'email'],
@@ -27,7 +25,7 @@ class PriveeGiveawayController extends Controller
         $giveaway = $this->getActivePriveeGiveaway($slug);
 
         try {
-            $priveeData = $this->priveeService->login(
+            $priveeData = $priveeService->login(
                 $request->input('email'),
                 $request->input('password')
             );
@@ -41,7 +39,7 @@ class PriveeGiveawayController extends Controller
     /**
      * Authenticate with Google token and enter giveaway.
      */
-    public function googleLogin(Request $request, string $slug): JsonResponse
+    public function googleLogin(Request $request, string $slug, PriveeService $priveeService): JsonResponse
     {
         $request->validate([
             'google_token' => ['required', 'string'],
@@ -50,7 +48,7 @@ class PriveeGiveawayController extends Controller
         $giveaway = $this->getActivePriveeGiveaway($slug);
 
         try {
-            $priveeData = $this->priveeService->googleLogin(
+            $priveeData = $priveeService->googleLogin(
                 $request->input('google_token')
             );
         } catch (RuntimeException $e) {

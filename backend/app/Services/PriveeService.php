@@ -14,7 +14,7 @@ class PriveeService
     public function __construct()
     {
         $this->baseUrl = rtrim(config('services.privee.base_url', 'https://38wzs9wt1a.execute-api.eu-central-1.amazonaws.com/'), '/');
-        $this->apiKey  = config('services.privee.api_key', '');
+        $this->apiKey  = config('services.privee.api_key') ?? '';
     }
 
     /**
