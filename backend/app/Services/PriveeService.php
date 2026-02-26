@@ -33,7 +33,9 @@ class PriveeService
             'password' => $password,
         ]);
 
-        return $this->parseResponse($response, 'email login');
+        $data = $this->parseResponse($response, 'email login');
+        $data['email'] = $email; // Include submitted email for entry creation (API doesn't return user info)
+        return $data;
     }
 
     /**
@@ -69,19 +71,25 @@ class PriveeService
             throw new RuntimeException('Authentication failed. Please check your credentials and try again.');
         }
 
-        $data = $response->json();
+        $body = $response->json();
 
-        if (empty($data['success'])) {
-            $message = $data['message'] ?? 'Invalid credentials.';
+        // Privee wraps responses: { data: { success: bool, data: { accessToken, ... } } }
+        $outer = $body['data'] ?? $body;
+
+        if (empty($outer['success'])) {
+            $message = $outer['error'] ?? $outer['message'] ?? 'Invalid credentials.';
             Log::info("Privee API {$context} returned success=false", ['message' => $message]);
             throw new RuntimeException($message);
         }
 
-        if (empty($data['accessToken'])) {
-            Log::error("Privee API {$context} missing accessToken", ['data' => $data]);
+        $inner = $outer['data'] ?? [];
+
+        if (empty($inner['accessToken'])) {
+            Log::error("Privee API {$context} missing accessToken", ['body' => $body]);
             throw new RuntimeException('Unexpected response from authentication service.');
         }
 
-        return $data;
+        // Flatten: tokens from inner, metadata from outer
+        return array_merge($outer, $inner);
     }
 }
