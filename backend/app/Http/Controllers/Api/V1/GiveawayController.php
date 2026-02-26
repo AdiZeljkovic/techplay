@@ -162,6 +162,7 @@ class GiveawayController extends Controller
                 ] : null,
 
                 'status' => $giveaway->status,
+                'requires_privee_auth' => (bool) $giveaway->requires_privee_auth,
             ],
         ]);
     }

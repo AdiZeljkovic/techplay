@@ -21,34 +21,46 @@ type Tab = "email" | "google";
 
 const GOOGLE_CLIENT_ID = "626931165892-9d30nhqljoc52782ifibgeg5jqb64a3f.apps.googleusercontent.com";
 
+// Step indicator
+function StepBadge({ number, label, active }: { number: number; label: string; active: boolean }) {
+    return (
+        <div className={`flex items-center gap-2 transition-opacity duration-300 ${active ? "opacity-100" : "opacity-40"}`}>
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shrink-0
+                            ${active
+                    ? "bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/40"
+                    : "bg-white/[0.08] text-white/60"
+                }`}>
+                {number}
+            </div>
+            <span className={`text-xs font-semibold ${active ? "text-white" : "text-white/50"}`}>{label}</span>
+        </div>
+    );
+}
+
 export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProps) {
-    const [tab, setTab]         = useState<Tab>("email");
-    const [email, setEmail]     = useState("");
-    const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [error, setError]     = useState<string | null>(null);
-    const [gsiReady, setGsiReady] = useState(false);
+    const [tab, setTab]             = useState<Tab>("email");
+    const [email, setEmail]         = useState("");
+    const [password, setPassword]   = useState("");
+    const [loading, setLoading]     = useState(false);
+    const [error, setError]         = useState<string | null>(null);
+    const [gsiReady, setGsiReady]   = useState(false);
     const googleBtnRef = useRef<HTMLDivElement>(null);
 
-    // Initialize Google Identity Services once the script is loaded
+    // Initialize Google Identity Services once script loads
     const initGoogle = () => {
         if (typeof window === "undefined" || !(window as any).google) return;
-
         (window as any).google.accounts.id.initialize({
             client_id: GOOGLE_CLIENT_ID,
             callback: handleGoogleCredential,
             auto_select: false,
         });
-
         setGsiReady(true);
     };
 
-    // Render the Google button when tab switches to "google" and GIS is ready
+    // Render Google button when tab is "google" and GIS is ready
     useEffect(() => {
         if (tab !== "google" || !gsiReady || !googleBtnRef.current) return;
-
         googleBtnRef.current.innerHTML = "";
-
         (window as any).google.accounts.id.renderButton(googleBtnRef.current, {
             type: "standard",
             shape: "rectangular",
@@ -94,54 +106,116 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
 
     return (
         <>
-            {/* Load Google Identity Services */}
             <Script
                 src="https://accounts.google.com/gsi/client"
                 strategy="lazyOnload"
                 onLoad={initGoogle}
             />
 
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="w-full max-w-md mx-auto"
-            >
-                {/* Privee branding header */}
-                <div className="text-center mb-6">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full
-                                    bg-[var(--accent)]/10 border border-[var(--accent)]/30 mb-4">
-                        <span className="text-xs font-semibold text-[var(--accent)] uppercase tracking-widest">
-                            Privee account required
-                        </span>
+            <div className="w-full space-y-5">
+
+                {/* ── STEP 1: Download the app ── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="rounded-2xl bg-white/[0.03] border border-white/[0.08] p-5"
+                >
+                    <div className="flex items-start gap-3 mb-4">
+                        <StepBadge number={1} label="Download Privee" active={true} />
                     </div>
-                    <p className="text-white/50 text-sm leading-relaxed">
-                        To enter this giveaway you need a Privee account.{" "}
+
+                    <p className="text-white/50 text-xs leading-relaxed mb-4">
+                        Don&apos;t have Privee yet? Download the app, create a free account, and come back here to enter.
+                    </p>
+
+                    {/* Store buttons */}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        {/* App Store */}
                         <a
-                            href="https://privee.app"
+                            href="https://apps.apple.com/app/privee"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[var(--accent)] hover:underline"
+                            className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl
+                                       bg-white/[0.05] border border-white/[0.10]
+                                       hover:bg-white/[0.08] hover:border-white/[0.18]
+                                       transition-all duration-200 group"
                         >
-                            Download the app
+                            {/* Apple logo */}
+                            <svg className="w-7 h-7 text-white shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                            </svg>
+                            <div>
+                                <div className="text-[10px] text-white/40 leading-none">Download on the</div>
+                                <div className="text-sm font-bold text-white leading-tight">App Store</div>
+                            </div>
                         </a>
-                        , register, then log in below.
-                    </p>
-                </div>
 
-                {/* Card */}
-                <div className="rounded-2xl bg-white/[0.03] border border-white/[0.08] overflow-hidden">
+                        {/* Google Play */}
+                        <a
+                            href="https://play.google.com/store/apps/details?id=app.privee"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl
+                                       bg-white/[0.05] border border-white/[0.10]
+                                       hover:bg-white/[0.08] hover:border-white/[0.18]
+                                       transition-all duration-200 group"
+                        >
+                            {/* Google Play logo */}
+                            <svg className="w-7 h-7 shrink-0" viewBox="0 0 24 24" fill="none">
+                                <path d="M3.18 23.76c.3.17.65.17.96.02l13.5-7.5-2.93-2.93-11.53 10.41z" fill="#EA4335"/>
+                                <path d="M22.24 9.6L19.14 7.86 15.85 11l3.27 3.27 3.14-1.74c.9-.5.9-1.93-.02-2.93z" fill="#FBBC04"/>
+                                <path d="M3.18.24C2.87.4 2.67.72 2.67 1.1v21.8c0 .38.2.7.51.86l12.3-11.06L3.18.24z" fill="#4285F4"/>
+                                <path d="M4.14.26L17.64 7.76 14.67 10.7 3.18.26C3.48.09 3.83.09 4.14.26z" fill="#34A853"/>
+                            </svg>
+                            <div>
+                                <div className="text-[10px] text-white/40 leading-none">Get it on</div>
+                                <div className="text-sm font-bold text-white leading-tight">Google Play</div>
+                            </div>
+                        </a>
+                    </div>
+                </motion.div>
+
+                {/* ── STEP 2: Register ── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.08 }}
+                    className="rounded-2xl bg-white/[0.03] border border-white/[0.08] p-5"
+                >
+                    <div className="flex items-start gap-3 mb-2">
+                        <StepBadge number={2} label="Create a Privee account" active={true} />
+                    </div>
+                    <p className="text-white/40 text-xs leading-relaxed pl-8">
+                        Open the app and register with your email or Google account. It&apos;s free.
+                    </p>
+                </motion.div>
+
+                {/* ── STEP 3: Log in here ── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.16 }}
+                    className="rounded-2xl bg-white/[0.04] border border-[var(--accent)]/25 overflow-hidden"
+                >
+                    {/* Step header */}
+                    <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
+                        <StepBadge number={3} label="Log in with your Privee account" active={true} />
+                        <p className="text-white/40 text-xs leading-relaxed mt-2 pl-8">
+                            Already have a Privee account? Sign in below to verify and enter the giveaway.
+                        </p>
+                    </div>
 
                     {/* Tabs */}
-                    <div className="flex border-b border-white/[0.08]">
+                    <div className="flex border-b border-white/[0.06]">
                         {(["email", "google"] as Tab[]).map((t) => (
                             <button
                                 key={t}
                                 onClick={() => { setTab(t); setError(null); }}
-                                className={`flex-1 py-3.5 text-sm font-semibold transition-colors duration-200
+                                className={`flex-1 py-3 text-xs font-bold transition-colors duration-200
                                             ${tab === t
                                     ? "text-white border-b-2 border-[var(--accent)] bg-[var(--accent)]/5"
-                                    : "text-white/40 hover:text-white/70"
+                                    : "text-white/35 hover:text-white/60"
                                 }`}
                             >
                                 {t === "email" ? "Email login" : "Google login"}
@@ -149,62 +223,50 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
                         ))}
                     </div>
 
-                    <div className="p-6">
+                    <div className="p-5">
                         <AnimatePresence mode="wait">
 
                             {/* Email tab */}
                             {tab === "email" && (
                                 <motion.form
                                     key="email"
-                                    initial={{ opacity: 0, x: -10 }}
+                                    initial={{ opacity: 0, x: -8 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: 10 }}
-                                    transition={{ duration: 0.2 }}
+                                    exit={{ opacity: 0, x: 8 }}
+                                    transition={{ duration: 0.15 }}
                                     onSubmit={handleEmailLogin}
-                                    className="space-y-4"
+                                    className="space-y-3"
                                 >
-                                    <div>
-                                        <label className="block text-xs font-semibold text-white/60 mb-1.5">
-                                            Privee email
-                                        </label>
-                                        <input
-                                            type="email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            required
-                                            autoComplete="email"
-                                            placeholder="you@example.com"
-                                            className="w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/[0.10]
-                                                       text-white placeholder-white/25 text-sm outline-none
-                                                       focus:border-[var(--accent)]/60 focus:bg-white/[0.07]
-                                                       transition-colors duration-200"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-semibold text-white/60 mb-1.5">
-                                            Password
-                                        </label>
-                                        <input
-                                            type="password"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            required
-                                            autoComplete="current-password"
-                                            placeholder="••••••••"
-                                            className="w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/[0.10]
-                                                       text-white placeholder-white/25 text-sm outline-none
-                                                       focus:border-[var(--accent)]/60 focus:bg-white/[0.07]
-                                                       transition-colors duration-200"
-                                        />
-                                    </div>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                        autoComplete="email"
+                                        placeholder="Privee email"
+                                        className="w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/[0.10]
+                                                   text-white placeholder-white/25 text-sm outline-none
+                                                   focus:border-[var(--accent)]/60 focus:bg-white/[0.07]
+                                                   transition-colors duration-200"
+                                    />
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        autoComplete="current-password"
+                                        placeholder="Password"
+                                        className="w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/[0.10]
+                                                   text-white placeholder-white/25 text-sm outline-none
+                                                   focus:border-[var(--accent)]/60 focus:bg-white/[0.07]
+                                                   transition-colors duration-200"
+                                    />
 
                                     {error && (
                                         <motion.p
-                                            initial={{ opacity: 0, y: -4 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="text-red-400 text-xs font-medium bg-red-500/10
-                                                       border border-red-500/20 rounded-lg px-3 py-2"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2"
                                         >
                                             {error}
                                         </motion.p>
@@ -217,10 +279,9 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
                                         whileTap={{ scale: 0.99 }}
                                         className="w-full py-3.5 rounded-xl font-bold text-white text-sm
                                                    bg-gradient-to-r from-[var(--accent)] to-orange-600
-                                                   shadow-lg shadow-[var(--accent)]/25
-                                                   hover:shadow-[var(--accent)]/40
+                                                   shadow-lg shadow-[var(--accent)]/20
                                                    disabled:opacity-50 disabled:cursor-not-allowed
-                                                   transition-all duration-300"
+                                                   transition-all duration-200"
                                     >
                                         {loading ? (
                                             <span className="flex items-center justify-center gap-2">
@@ -230,9 +291,7 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
                                                 </svg>
                                                 Verifying...
                                             </span>
-                                        ) : (
-                                            "Log in with Privee & enter giveaway"
-                                        )}
+                                        ) : "Log in & enter giveaway"}
                                     </motion.button>
                                 </motion.form>
                             )}
@@ -241,13 +300,13 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
                             {tab === "google" && (
                                 <motion.div
                                     key="google"
-                                    initial={{ opacity: 0, x: 10 }}
+                                    initial={{ opacity: 0, x: 8 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -10 }}
-                                    transition={{ duration: 0.2 }}
-                                    className="space-y-4"
+                                    exit={{ opacity: 0, x: -8 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="space-y-3"
                                 >
-                                    <p className="text-white/50 text-sm text-center">
+                                    <p className="text-white/40 text-xs text-center">
                                         Sign in with the Google account linked to your Privee account.
                                     </p>
 
@@ -255,14 +314,12 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
                                         <motion.p
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
-                                            className="text-red-400 text-xs font-medium bg-red-500/10
-                                                       border border-red-500/20 rounded-lg px-3 py-2 text-center"
+                                            className="text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 text-center"
                                         >
                                             {error}
                                         </motion.p>
                                     )}
 
-                                    {/* Google Sign-In button rendered by GIS SDK */}
                                     <div className="flex justify-center">
                                         {gsiReady ? (
                                             <div ref={googleBtnRef} className="w-full" />
@@ -272,7 +329,7 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
                                     </div>
 
                                     {loading && (
-                                        <p className="text-white/40 text-xs text-center animate-pulse">
+                                        <p className="text-white/30 text-xs text-center animate-pulse">
                                             Verifying with Privee...
                                         </p>
                                     )}
@@ -281,21 +338,9 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
 
                         </AnimatePresence>
                     </div>
-                </div>
+                </motion.div>
 
-                <p className="text-center text-white/25 text-xs mt-4">
-                    Don&apos;t have Privee?{" "}
-                    <a
-                        href="https://privee.app"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-white/50 hover:text-white/80 underline transition-colors"
-                    >
-                        Download the app
-                    </a>{" "}
-                    and register first.
-                </p>
-            </motion.div>
+            </div>
         </>
     );
 }
