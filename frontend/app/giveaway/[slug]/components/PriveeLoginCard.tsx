@@ -133,7 +133,7 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
                     <div className="flex flex-col sm:flex-row gap-3">
                         {/* App Store */}
                         <a
-                            href="https://apps.apple.com/app/privee"
+                            href="https://apps.apple.com/pl/app/privee-world/id1629866639"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl
@@ -153,7 +153,7 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
 
                         {/* Google Play */}
                         <a
-                            href="https://play.google.com/store/apps/details?id=app.privee"
+                            href="https://play.google.com/store/apps/details?id=com.privee.privee_mobile"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl
