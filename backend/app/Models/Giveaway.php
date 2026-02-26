@@ -130,6 +130,9 @@ class Giveaway extends Model
 
     public function getEntryCount(): int
     {
+        if ($this->requires_privee_auth) {
+            return $this->priveeEntries()->count();
+        }
         return $this->entries()->count();
     }
 

@@ -22,7 +22,7 @@ class GiveawayController extends Controller
         $query = Giveaway::query()
             ->where('is_public', true)
             ->with(['winner:id,username,avatar'])
-            ->withCount('entries');
+            ->withCount(['entries', 'priveeEntries']);
 
         // Filter by status
         $status = $request->input('status'); // 'active', 'ended', 'all'
@@ -70,7 +70,9 @@ class GiveawayController extends Controller
                 ],
 
                 'stats' => [
-                    'total_entries' => $giveaway->entries_count,
+                    'total_entries' => $giveaway->requires_privee_auth
+                        ? $giveaway->privee_entries_count
+                        : $giveaway->entries_count,
                 ],
 
                 'winner' => $giveaway->winner ? [
@@ -340,16 +342,29 @@ class GiveawayController extends Controller
         $cacheTtl = config('giveaway.cache.leaderboard_ttl', 60);
 
         $leaders = Cache::remember($cacheKey, $cacheTtl, function () use ($giveaway) {
+            if ($giveaway->requires_privee_auth) {
+                return $giveaway->priveeEntries()
+                    ->orderBy('created_at')
+                    ->limit(10)
+                    ->get()
+                    ->map(fn($entry, $index) => [
+                        'rank'     => $index + 1,
+                        'username' => $entry->privee_display_name ?? $entry->privee_email,
+                        'avatar'   => null,
+                        'points'   => null,
+                    ]);
+            }
+
             return $giveaway->entries()
                 ->with('user:id,username,avatar')
                 ->orderByDesc('total_points')
                 ->limit(10)
                 ->get()
                 ->map(fn($entry, $index) => [
-                    'rank' => $index + 1,
+                    'rank'     => $index + 1,
                     'username' => $entry->user->username,
-                    'avatar' => $entry->user->avatar_url,
-                    'points' => $entry->total_points,
+                    'avatar'   => $entry->user->avatar_url,
+                    'points'   => $entry->total_points,
                 ]);
         });
 

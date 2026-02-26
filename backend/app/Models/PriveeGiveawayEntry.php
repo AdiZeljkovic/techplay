@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Cache;
 
 class PriveeGiveawayEntry extends Model
 {
@@ -27,6 +28,15 @@ class PriveeGiveawayEntry extends Model
         'access_token',
         'refresh_token',
     ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::created(function (self $entry) {
+            Cache::forget("giveaway:{$entry->giveaway_id}:leaderboard");
+        });
+    }
 
     public function giveaway(): BelongsTo
     {
