@@ -251,6 +251,13 @@ Route::prefix('v1')->group(function () {
         Route::get('/giveaways/{slug}/my-entry', [App\Http\Controllers\Api\V1\GiveawayController::class, 'myEntry']);
     });
 
+    // Privee giveaway auth — separate from TechPlay auth (no sanctum required)
+    Route::middleware('throttle:20,1')->prefix('giveaways/{slug}/privee')->group(function () {
+        Route::post('/login', [App\Http\Controllers\Api\V1\PriveeGiveawayController::class, 'login']);
+        Route::post('/google-login', [App\Http\Controllers\Api\V1\PriveeGiveawayController::class, 'googleLogin']);
+        Route::get('/entry', [App\Http\Controllers\Api\V1\PriveeGiveawayController::class, 'myEntry']);
+    });
+
     // ═══════════════════════════════════════════════════════════════════════
     // WEBHOOKS (No Auth Required - External Services)
     // ═══════════════════════════════════════════════════════════════════════

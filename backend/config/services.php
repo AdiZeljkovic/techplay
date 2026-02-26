@@ -101,5 +101,10 @@ return [
         'secret_token' => env('REVALIDATE_SECRET_TOKEN'),
     ],
 
+    'privee' => [
+        'api_key'  => env('PRIVEE_API_KEY'),
+        'base_url' => env('PRIVEE_BASE_URL', 'https://38wzs9wt1a.execute-api.eu-central-1.amazonaws.com/'),
+    ],
+
 ];
 

@@ -9,6 +9,7 @@ import { Gift, Clock, Users, Trophy, Check, ExternalLink, Share2, Copy, Loader2,
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import Leaderboard from "@/components/giveaway/Leaderboard";
+import PriveeLoginCard from "./components/PriveeLoginCard";
 
 interface Task {
     id: number;
@@ -61,6 +62,14 @@ interface Giveaway {
         avatar: string | null;
     } | null;
     status: string;
+    requires_privee_auth: boolean;
+}
+
+interface PriveeEntry {
+    id: number;
+    privee_email: string | null;
+    privee_display_name: string | null;
+    entered_at: string;
 }
 
 interface Entry {
@@ -89,6 +98,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     const { user, isAuthenticated } = useAuth();
     const [giveaway, setGiveaway] = useState<Giveaway | null>(null);
     const [entry, setEntry] = useState<Entry | null>(null);
+    const [priveeEntry, setPriveeEntry] = useState<PriveeEntry | null>(null);
     const [loading, setLoading] = useState(true);
     const [entering, setEntering] = useState(false);
     const [completingTask, setCompletingTask] = useState<number | null>(null);
@@ -118,8 +128,24 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
         }
     }, [slug, isAuthenticated]);
 
+    const fetchPriveeEntry = useCallback(async () => {
+        try {
+            const res = await axios.get(`/giveaways/${slug}/privee/entry`);
+            setPriveeEntry(res.data.entry);
+        } catch (error) {
+            // No session — user hasn't logged in with Privee yet
+        }
+    }, [slug]);
+
     useEffect(() => { fetchGiveaway(); }, [fetchGiveaway]);
-    useEffect(() => { fetchEntry(); }, [fetchEntry]);
+    useEffect(() => {
+        if (!giveaway) return;
+        if (giveaway.requires_privee_auth) {
+            fetchPriveeEntry();
+        } else {
+            fetchEntry();
+        }
+    }, [giveaway, fetchEntry, fetchPriveeEntry]);
 
     useEffect(() => {
         if (giveaway?.winner) {
@@ -421,49 +447,78 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                 <div className="grid lg:grid-cols-3 gap-8">
                     {/* Left Column */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Entry CTA */}
-                        {!isAuthenticated ? (
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="glow-card rounded-2xl bg-[var(--bg-card)] border border-white/[0.06] p-6 text-center"
-                            >
-                                <Gift className="w-12 h-12 text-[var(--accent)] mx-auto mb-3" />
-                                <h2 className="text-xl font-bold mb-2">Ready to Win?</h2>
-                                <p className="text-sm text-[var(--text-secondary)] mb-4 max-w-md mx-auto">
-                                    Sign in to participate and complete tasks to boost your chances!
-                                </p>
-                                <Link
-                                    href="/login"
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--accent)] to-orange-600 text-white font-bold rounded-lg hover:shadow-[0_0_20px_rgba(252,65,0,0.4)] transition-all duration-300"
+                        {/* Entry CTA — Privee giveaway */}
+                        {giveaway.requires_privee_auth && giveaway.timing.is_active && (
+                            priveeEntry ? (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="glow-card rounded-2xl bg-[var(--bg-card)] border border-green-500/30 p-6 text-center"
                                 >
-                                    Login / Register
-                                </Link>
-                            </motion.div>
-                        ) : !isEntered && giveaway.timing.is_active ? (
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="glow-card rounded-2xl bg-[var(--bg-card)] border border-white/[0.06] p-6 text-center"
-                            >
-                                <Zap className="w-12 h-12 text-[var(--accent)] mx-auto mb-3" />
-                                <h2 className="text-xl font-bold mb-2">Join the Giveaway</h2>
-                                <p className="text-sm text-[var(--text-secondary)] mb-4 max-w-md mx-auto">
-                                    Click below to enter and start earning points by completing tasks!
-                                </p>
-                                <button
-                                    onClick={handleEnter}
-                                    disabled={entering}
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--accent)] to-orange-600 text-white font-bold rounded-lg hover:shadow-[0_0_20px_rgba(252,65,0,0.4)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    <div className="w-14 h-14 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center mx-auto mb-3">
+                                        <Check className="w-7 h-7 text-green-400" />
+                                    </div>
+                                    <h2 className="text-xl font-bold mb-1 text-green-400">You&apos;re in!</h2>
+                                    <p className="text-sm text-white/50">
+                                        Entered as <span className="text-white font-semibold">{priveeEntry.privee_display_name || priveeEntry.privee_email}</span>
+                                    </p>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="glow-card rounded-2xl bg-[var(--bg-card)] border border-white/[0.06] p-6"
                                 >
-                                    {entering ? (
-                                        <><Loader2 className="w-5 h-5 animate-spin" /> Entering...</>
-                                    ) : (
-                                        <><Gift className="w-5 h-5" /> Enter Giveaway</>
-                                    )}
-                                </button>
-                            </motion.div>
-                        ) : null}
+                                    <PriveeLoginCard slug={slug} onSuccess={setPriveeEntry} />
+                                </motion.div>
+                            )
+                        )}
+
+                        {/* Entry CTA — Standard TechPlay giveaway */}
+                        {!giveaway.requires_privee_auth && (
+                            !isAuthenticated ? (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="glow-card rounded-2xl bg-[var(--bg-card)] border border-white/[0.06] p-6 text-center"
+                                >
+                                    <Gift className="w-12 h-12 text-[var(--accent)] mx-auto mb-3" />
+                                    <h2 className="text-xl font-bold mb-2">Ready to win?</h2>
+                                    <p className="text-sm text-[var(--text-secondary)] mb-4 max-w-md mx-auto">
+                                        Sign in to participate and complete tasks to boost your chances!
+                                    </p>
+                                    <Link
+                                        href="/login"
+                                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--accent)] to-orange-600 text-white font-bold rounded-lg hover:shadow-[0_0_20px_rgba(252,65,0,0.4)] transition-all duration-300"
+                                    >
+                                        Login / Register
+                                    </Link>
+                                </motion.div>
+                            ) : !isEntered && giveaway.timing.is_active ? (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="glow-card rounded-2xl bg-[var(--bg-card)] border border-white/[0.06] p-6 text-center"
+                                >
+                                    <Zap className="w-12 h-12 text-[var(--accent)] mx-auto mb-3" />
+                                    <h2 className="text-xl font-bold mb-2">Join the giveaway</h2>
+                                    <p className="text-sm text-[var(--text-secondary)] mb-4 max-w-md mx-auto">
+                                        Click below to enter and start earning points by completing tasks!
+                                    </p>
+                                    <button
+                                        onClick={handleEnter}
+                                        disabled={entering}
+                                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[var(--accent)] to-orange-600 text-white font-bold rounded-lg hover:shadow-[0_0_20px_rgba(252,65,0,0.4)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {entering ? (
+                                            <><Loader2 className="w-5 h-5 animate-spin" /> Entering...</>
+                                        ) : (
+                                            <><Gift className="w-5 h-5" /> Enter giveaway</>
+                                        )}
+                                    </button>
+                                </motion.div>
+                            ) : null
+                        )}
 
                         {/* Tasks Section */}
                         {giveaway.tasks.length > 0 && (

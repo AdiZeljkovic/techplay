@@ -25,6 +25,7 @@ class Giveaway extends Model
         'status',
         'is_public',
         'max_entries_per_user',
+        'requires_privee_auth',
         'winner_id',
         'created_by',
     ];
@@ -34,6 +35,7 @@ class Giveaway extends Model
         'ends_at' => 'datetime',
         'winner_announced_at' => 'datetime',
         'is_public' => 'boolean',
+        'requires_privee_auth' => 'boolean',
         'prize_value' => 'decimal:2',
     ];
 
@@ -75,6 +77,11 @@ class Giveaway extends Model
     public function prizeTiers(): HasMany
     {
         return $this->hasMany(GiveawayPrizeTier::class)->orderBy('sort_order');
+    }
+
+    public function priveeEntries(): HasMany
+    {
+        return $this->hasMany(PriveeGiveawayEntry::class);
     }
 
     // ─────────────────────────────────────────────────────────────
