@@ -122,11 +122,11 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
                     className="rounded-2xl bg-white/[0.03] border border-white/[0.08] p-5"
                 >
                     <div className="flex items-start gap-3 mb-4">
-                        <StepBadge number={1} label="Download Privee" active={true} />
+                        <StepBadge number={1} label="Get the Privee app" active={true} />
                     </div>
 
                     <p className="text-white/50 text-xs leading-relaxed mb-4">
-                        Don&apos;t have Privee yet? Download the app, create a free account, and come back here to enter.
+                        This giveaway runs through Privee. Download the app, create a free account, and come back here to continue.
                     </p>
 
                     {/* Store buttons */}
@@ -184,10 +184,10 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
                     className="rounded-2xl bg-white/[0.03] border border-white/[0.08] p-5"
                 >
                     <div className="flex items-start gap-3 mb-2">
-                        <StepBadge number={2} label="Create a Privee account" active={true} />
+                        <StepBadge number={2} label="Create your account" active={true} />
                     </div>
                     <p className="text-white/40 text-xs leading-relaxed pl-8">
-                        Open the app and register with your email or Google account. It&apos;s free.
+                        Register with your email or Google — takes less than a minute and it&apos;s completely free. Already have one? Skip to step 3.
                     </p>
                 </motion.div>
 
@@ -200,9 +200,9 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
                 >
                     {/* Step header */}
                     <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
-                        <StepBadge number={3} label="Log in with your Privee account" active={true} />
+                        <StepBadge number={3} label="Sign in to enter" active={true} />
                         <p className="text-white/40 text-xs leading-relaxed mt-2 pl-8">
-                            Already have a Privee account? Sign in below to verify and enter the giveaway.
+                            All set on Privee? Sign in below — that&apos;s it, you&apos;re in the draw.
                         </p>
                     </div>
 
@@ -289,9 +289,9 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                                                 </svg>
-                                                Verifying...
+                                                Entering...
                                             </span>
-                                        ) : "Log in & enter giveaway"}
+                                        ) : "Enter the giveaway"}
                                     </motion.button>
                                 </motion.form>
                             )}
@@ -307,7 +307,7 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
                                     className="space-y-3"
                                 >
                                     <p className="text-white/40 text-xs text-center">
-                                        Sign in with the Google account linked to your Privee account.
+                                        Use the Google account you signed up with on Privee.
                                     </p>
 
                                     {error && (
@@ -330,7 +330,7 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
 
                                     {loading && (
                                         <p className="text-white/30 text-xs text-center animate-pulse">
-                                            Verifying with Privee...
+                                            Signing you in...
                                         </p>
                                     )}
                                 </motion.div>
