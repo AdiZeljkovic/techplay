@@ -137,6 +137,9 @@ export default function RootLayout({
           `}
         </Script>
 
+        {/* Google Identity Services - for Privee giveaway Google login */}
+        <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
+
         {/* Wowhead Tooltips - for WoW Character Analyzer */}
         <Script src="https://wow.zamimg.com/widgets/power.js" strategy="afterInteractive" />
         <Script id="wowhead-config" strategy="afterInteractive">
