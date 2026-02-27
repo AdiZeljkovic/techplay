@@ -50,7 +50,7 @@ class PriveeService
             'Content-Type' => 'application/json',
             'Accept'       => 'application/json',
         ])->timeout(15)->post("{$this->baseUrl}/auth/google-login", [
-            'token' => $googleToken,
+            'googleIdToken' => $googleToken,
         ]);
 
         return $this->parseResponse($response, 'google login');
