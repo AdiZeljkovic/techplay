@@ -574,7 +574,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                 </h2>
                                 <div className="inline-flex items-center gap-3 bg-white/[0.05] px-6 py-3 rounded-xl border border-yellow-500/20">
                                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center text-white font-black text-xl shadow-lg">
-                                        {giveaway.winner.username[0].toUpperCase()}
+                                        {giveaway.winner.username?.[0]?.toUpperCase() ?? "?"}
                                     </div>
                                     <div className="text-left">
                                         <div className="text-[10px] text-white/40 uppercase tracking-widest">Winner</div>
