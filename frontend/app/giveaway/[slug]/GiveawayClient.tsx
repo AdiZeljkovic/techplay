@@ -381,7 +381,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                             fill
                             priority
                             className="object-cover"
-                            style={{ filter: 'blur(16px)', transform: 'scale(1.08)' }}
+                            style={{ filter: 'blur(4px)', transform: 'scale(1.08)' }}
                         />
                     </div>
                 )}
