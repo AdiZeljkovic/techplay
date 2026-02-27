@@ -18,7 +18,7 @@ interface PriveeLoginCardProps {
 
 type Tab = "email" | "google";
 
-const GOOGLE_CLIENT_ID = "626931165892-9d30nhqljoc52782ifibgeg5jqb64a3f.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "379996762070-hdm4v349etg7i1s3o41118ahsrpalsc4.apps.googleusercontent.com";
 
 // Step indicator
 function StepBadge({ number, label, active }: { number: number; label: string; active: boolean }) {
