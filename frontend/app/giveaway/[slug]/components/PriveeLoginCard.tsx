@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Script from "next/script";
 import axios from "@/lib/axios";
 
 interface PriveeEntry {
@@ -46,7 +45,7 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
     const [gsiReady, setGsiReady]   = useState(false);
     const googleBtnRef = useRef<HTMLDivElement>(null);
 
-    // Initialize Google Identity Services once script loads
+    // Initialize Google Identity Services
     const initGoogle = () => {
         if (typeof window === "undefined" || !(window as any).google) return;
         (window as any).google.accounts.id.initialize({
@@ -56,6 +55,33 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
         });
         setGsiReady(true);
     };
+
+    // Load Google GSI script manually (more reliable than Next.js Script component)
+    useEffect(() => {
+        const GSI_SRC = "https://accounts.google.com/gsi/client";
+
+        // Already loaded (e.g., back navigation)
+        if ((window as any).google?.accounts) {
+            initGoogle();
+            return;
+        }
+
+        // Script tag already in DOM
+        const existing = document.querySelector<HTMLScriptElement>(`script[src="${GSI_SRC}"]`);
+        if (existing) {
+            existing.addEventListener("load", initGoogle);
+            return () => existing.removeEventListener("load", initGoogle);
+        }
+
+        // Inject script
+        const script = document.createElement("script");
+        script.src = GSI_SRC;
+        script.async = true;
+        script.onload = initGoogle;
+        document.head.appendChild(script);
+
+        return () => { script.onload = null; };
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Render Google button when tab is "google" and GIS is ready
     useEffect(() => {
@@ -106,12 +132,6 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
 
     return (
         <>
-            <Script
-                src="https://accounts.google.com/gsi/client"
-                strategy="afterInteractive"
-                onLoad={initGoogle}
-            />
-
             <div className="w-full space-y-5">
 
                 {/* ── STEP 1: Download the app ── */}
