@@ -331,7 +331,7 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
 
                                     <div className="flex justify-center">
                                         {gsiReady ? (
-                                            <div ref={googleBtnCallback} className="w-full" />
+                                            <div ref={googleBtnCallback} />
                                         ) : (
                                             <div className="h-10 w-full rounded-lg bg-white/[0.05] animate-pulse" />
                                         )}
