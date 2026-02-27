@@ -105,7 +105,7 @@ export default function Leaderboard({ slug }: LeaderboardProps) {
                 <div className="space-y-3">
                     {entries.map((entry, index) => (
                         <motion.div
-                            key={entry.username}
+                            key={entry.rank}
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.05 }}
@@ -142,7 +142,7 @@ export default function Leaderboard({ slug }: LeaderboardProps) {
                                         entry.rank === 3 ? 'bg-gradient-to-br from-orange-400 to-red-500' :
                                         'bg-gradient-to-br from-[var(--accent)] to-orange-600'
                                     }`}>
-                                        {entry.username[0].toUpperCase()}
+                                        {entry.username?.[0]?.toUpperCase() ?? "?"}
                                     </div>
 
                                     {/* Username */}
