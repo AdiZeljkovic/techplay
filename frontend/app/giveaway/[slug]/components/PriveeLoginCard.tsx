@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "@/lib/axios";
 
@@ -43,7 +43,20 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
     const [loading, setLoading]     = useState(false);
     const [error, setError]         = useState<string | null>(null);
     const [gsiReady, setGsiReady]   = useState(false);
-    const googleBtnRef = useRef<HTMLDivElement>(null);
+
+    const googleBtnCallback = (node: HTMLDivElement | null) => {
+        if (!node || !gsiReady) return;
+        node.innerHTML = "";
+        (window as any).google.accounts.id.renderButton(node, {
+            type: "standard",
+            shape: "rectangular",
+            theme: "filled_black",
+            text: "signin_with",
+            size: "large",
+            width: 320,
+            logo_alignment: "left",
+        });
+    };
 
     // Wait for Google GSI script (loaded in layout.tsx) to become available
     useEffect(() => {
@@ -73,52 +86,6 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
         return () => { cancelled = true; };
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Render Google button when tab is "google" and GIS is ready
-    useEffect(() => {
-        console.log("[GSI render] tab:", tab, "| gsiReady:", gsiReady, "| ref:", googleBtnRef.current);
-
-        if (tab !== "google") {
-            console.log("[GSI render] skipped — tab is not 'google'");
-            return;
-        }
-        if (!gsiReady) {
-            console.log("[GSI render] skipped — gsiReady is false");
-            return;
-        }
-        if (!googleBtnRef.current) {
-            console.log("[GSI render] skipped — googleBtnRef.current is NULL (div not mounted yet)");
-            return;
-        }
-
-        const container = googleBtnRef.current;
-        console.log("[GSI render] container dimensions:", container.offsetWidth, "x", container.offsetHeight);
-        console.log("[GSI render] container visible:", container.offsetParent !== null);
-        console.log("[GSI render] container in DOM:", document.body.contains(container));
-
-        try {
-            container.innerHTML = "";
-            (window as any).google.accounts.id.renderButton(container, {
-                type: "standard",
-                shape: "rectangular",
-                theme: "filled_black",
-                text: "signin_with",
-                size: "large",
-                width: 320,
-                logo_alignment: "left",
-            });
-            console.log("[GSI render] renderButton() called successfully");
-
-            // Check if Google actually created the iframe
-            setTimeout(() => {
-                const iframe = container.querySelector("iframe");
-                const div = container.querySelector("div");
-                console.log("[GSI render] after render — iframe found:", !!iframe, "| child div found:", !!div);
-                console.log("[GSI render] container innerHTML:", container.innerHTML.substring(0, 200));
-            }, 500);
-        } catch (err) {
-            console.error("[GSI render] renderButton() threw:", err);
-        }
-    }, [tab, gsiReady]);
 
     const handleGoogleCredential = async (response: { credential: string }) => {
         setLoading(true);
@@ -364,7 +331,7 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
 
                                     <div className="flex justify-center">
                                         {gsiReady ? (
-                                            <div ref={googleBtnRef} className="w-full" />
+                                            <div ref={googleBtnCallback} className="w-full" />
                                         ) : (
                                             <div className="h-10 w-full rounded-lg bg-white/[0.05] animate-pulse" />
                                         )}
