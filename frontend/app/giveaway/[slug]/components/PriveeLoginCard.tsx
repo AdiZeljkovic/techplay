@@ -108,7 +108,7 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
         <>
             <Script
                 src="https://accounts.google.com/gsi/client"
-                strategy="lazyOnload"
+                strategy="afterInteractive"
                 onLoad={initGoogle}
             />
 
