@@ -5,10 +5,9 @@ import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
-import { Gift, Clock, Users, Trophy, Check, ExternalLink, Share2, Copy, Loader2, Zap, Award, Star, Flame, CalendarDays, ChevronDown } from "lucide-react";
+import { Gift, Users, Trophy, Check, ExternalLink, Share2, Loader2, Zap, Award, Star, CalendarDays, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
-import Leaderboard from "@/components/giveaway/Leaderboard";
 import PriveeLoginCard from "./components/PriveeLoginCard";
 
 interface Task {
@@ -590,11 +589,8 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
             {/* ══════════════════════════════════════════════════════════════
                 MAIN CONTENT GRID
             ══════════════════════════════════════════════════════════════ */}
-            <div className="max-w-6xl mx-auto px-4 pt-8 pb-20">
-                <div className="grid lg:grid-cols-3 gap-8">
-
-                    {/* ── LEFT COLUMN (2/3) ──────────────────────────────── */}
-                    <div className="lg:col-span-2 space-y-6">
+            <div className="max-w-3xl mx-auto px-4 pt-8 pb-20">
+                <div className="space-y-6">
 
                         {/* Entry CTA — Privee giveaway */}
                         {giveaway.requires_privee_auth && giveaway.timing.is_active && (
@@ -887,179 +883,6 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                         )}
                     </div>
 
-                    {/* ── RIGHT COLUMN ────────────────────────────────────── */}
-                    <div className="space-y-5">
-
-                        {/* Entry card */}
-                        {entry && (
-                            <motion.div
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.5 }}
-                                className="rounded-2xl bg-[var(--bg-card)] border border-white/[0.06] sticky top-[140px] overflow-hidden shadow-2xl"
-                            >
-                                {/* Header */}
-                                <div className="px-5 py-4 bg-gradient-to-r from-[var(--accent)]/8 to-transparent border-b border-white/[0.05] flex items-center gap-2">
-                                    <Zap className="w-4 h-4 text-[var(--accent)]" />
-                                    <span className="font-black text-xs uppercase tracking-widest text-white">Your Entry</span>
-                                </div>
-
-                                {/* Points */}
-                                <div className="px-5 pt-6 pb-5 text-center">
-                                    <motion.div
-                                        key={entry.total_points}
-                                        initial={{ scale: 1.05 }}
-                                        animate={{ scale: 1 }}
-                                        transition={{ duration: 0.3 }}
-                                        className="text-6xl font-black bg-gradient-to-r from-[var(--accent)] to-orange-400 bg-clip-text text-transparent leading-none"
-                                    >
-                                        {entry.total_points.toLocaleString()}
-                                    </motion.div>
-                                    <div className="text-[10px] text-white/25 uppercase tracking-[0.2em] mt-2 font-bold">Total Points</div>
-                                </div>
-
-                                {/* Win Chance + Streak — 2 col */}
-                                <div className="grid grid-cols-2 border-t border-white/[0.05]">
-                                    {/* Win Chance */}
-                                    <div className="px-4 py-5 border-r border-white/[0.05] flex flex-col items-center gap-2">
-                                        <div className="relative w-20 h-20">
-                                            <svg className="w-full h-full -rotate-90" viewBox="0 0 60 60">
-                                                <circle cx="30" cy="30" r={RING_RADIUS} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="5" />
-                                                <motion.circle
-                                                    cx="30" cy="30" r={RING_RADIUS} fill="none"
-                                                    stroke="var(--accent)"
-                                                    strokeWidth="5"
-                                                    strokeLinecap="round"
-                                                    strokeDasharray={RING_CIRCUMFERENCE}
-                                                    initial={{ strokeDashoffset: RING_CIRCUMFERENCE }}
-                                                    animate={{ strokeDashoffset: RING_CIRCUMFERENCE * (1 - Math.min(entry.win_chance, 100) / 100) }}
-                                                    transition={{ duration: 1.2, ease: "easeOut" }}
-                                                    style={{ filter: 'drop-shadow(0 0 5px rgba(252,65,0,0.5))' }}
-                                                />
-                                            </svg>
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <span className="text-xs font-black text-[var(--accent)]">{entry.win_chance.toFixed(1)}%</span>
-                                            </div>
-                                        </div>
-                                        <div className="text-xs font-bold text-white text-center">Win Chance</div>
-                                        <div className="text-[10px] text-white/25 text-center">vs points pool</div>
-                                    </div>
-
-                                    {/* Streak */}
-                                    <div className="px-4 py-5 flex flex-col items-center gap-2">
-                                        <div className="flex items-center gap-1">
-                                            <Flame
-                                                className="w-6 h-6 text-orange-400"
-                                                style={{ filter: 'drop-shadow(0 0 6px rgba(249,115,22,0.6))' }}
-                                            />
-                                            <span className="text-3xl font-black text-orange-400">{entry.streak_days}</span>
-                                        </div>
-                                        <div className="text-xs font-bold text-white text-center">Day Streak</div>
-                                        {nextMilestone && (
-                                            <div className="w-full space-y-1">
-                                                <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
-                                                    <motion.div
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${streakProgress}%` }}
-                                                        transition={{ duration: 0.8, ease: 'easeOut' }}
-                                                        className="h-full bg-gradient-to-r from-orange-500 to-yellow-400 rounded-full"
-                                                    />
-                                                </div>
-                                                <div className="text-[9px] text-white/25 text-center">{nextMilestone}d = +{STREAK_MILESTONES[nextMilestone]}pts</div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Daily Bonus */}
-                                {giveaway.timing.is_active && (
-                                    <div className="px-5 py-4 border-t border-white/[0.05]">
-                                        <motion.button
-                                            whileHover={{ scale: entry.can_claim_daily_bonus ? 1.02 : 1 }}
-                                            whileTap={{ scale: entry.can_claim_daily_bonus ? 0.98 : 1 }}
-                                            onClick={handleClaimDailyBonus}
-                                            disabled={!entry.can_claim_daily_bonus || claimingBonus}
-                                            className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all duration-300 ${
-                                                entry.can_claim_daily_bonus
-                                                    ? 'bg-gradient-to-r from-orange-500 to-yellow-400 text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30'
-                                                    : 'bg-white/[0.03] text-white/25 cursor-default'
-                                            }`}
-                                        >
-                                            {claimingBonus ? (
-                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                            ) : entry.can_claim_daily_bonus ? (
-                                                <><Flame className="w-4 h-4" /> Claim Daily Bonus</>
-                                            ) : (
-                                                <><Check className="w-4 h-4" /> Claimed Today</>
-                                            )}
-                                        </motion.button>
-                                    </div>
-                                )}
-
-                                {/* Referral */}
-                                <div className="px-5 py-4 border-t border-white/[0.05]">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center gap-2">
-                                            <Share2 className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                            <span className="text-xs font-black text-white uppercase tracking-wider">Invite Friends</span>
-                                        </div>
-                                        {entry.referral_count > 0 && (
-                                            <span className="text-xs bg-[var(--accent)]/10 text-[var(--accent)] px-2.5 py-0.5 rounded-full font-bold">
-                                                {entry.referral_count} referred
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="text-[11px] text-white/25 mb-3 leading-relaxed">Share your link to earn bonus points</p>
-                                    <motion.button
-                                        whileHover={{ scale: 1.01 }}
-                                        whileTap={{ scale: 0.99 }}
-                                        onClick={handleCopyReferral}
-                                        className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold border transition-all duration-300 ${
-                                            copied
-                                                ? 'border-green-500/30 bg-green-500/8 text-green-400'
-                                                : 'border-white/[0.06] bg-white/[0.02] text-white/60 hover:border-white/[0.12] hover:text-white'
-                                        }`}
-                                    >
-                                        {copied
-                                            ? <><Check className="w-3.5 h-3.5" /> Copied!</>
-                                            : <><Copy className="w-3.5 h-3.5" /> Copy Referral Link</>
-                                        }
-                                    </motion.button>
-                                </div>
-
-                                {/* Social Share */}
-                                <div className="px-5 py-4 border-t border-white/[0.05]">
-                                    <div className="flex gap-2">
-                                        <a
-                                            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I just entered to win ${giveaway.prize.name} on TechPlay! 🎮`)}&url=${encodeURIComponent(entry.referral_url)}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex-1 flex items-center justify-center py-2 rounded-xl text-xs font-semibold border border-white/[0.06] bg-white/[0.02] text-white/50 hover:border-white/[0.12] hover:text-white transition-all"
-                                        >
-                                            𝕏 Twitter
-                                        </a>
-                                        <a
-                                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(entry.referral_url)}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex-1 flex items-center justify-center py-2 rounded-xl text-xs font-semibold border border-white/[0.06] bg-white/[0.02] text-white/50 hover:border-white/[0.12] hover:text-white transition-all"
-                                        >
-                                            Facebook
-                                        </a>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {/* Leaderboard */}
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.1, duration: 0.5 }}
-                        >
-                            <Leaderboard slug={slug} />
-                        </motion.div>
-                    </div>
                 </div>
             </div>
         </div>
