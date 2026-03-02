@@ -881,7 +881,6 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                 </AnimatePresence>
                             </motion.div>
                         )}
-                    </div>
 
                 </div>
             </div>
