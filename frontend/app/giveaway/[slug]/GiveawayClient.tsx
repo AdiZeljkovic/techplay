@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
-import { Gift, Users, Trophy, Check, ExternalLink, Share2, Loader2, Zap, Award, Star, CalendarDays, ChevronDown } from "lucide-react";
+import { Gift, Clock, Users, Trophy, Check, ExternalLink, Share2, Loader2, Zap, Award, Star, CalendarDays, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import PriveeLoginCard from "./components/PriveeLoginCard";
