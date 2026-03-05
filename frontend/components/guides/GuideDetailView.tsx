@@ -23,6 +23,7 @@ interface Guide {
     title: string;
     slug: string;
     content: string;
+    excerpt?: string;
     difficulty: 'beginner' | 'intermediate' | 'advanced';
     featured_image_url?: string;
     created_at: string;
@@ -228,6 +229,14 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
 
                     <div className="lg:col-span-8 bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 md:p-10 lg:p-12 shadow-2xl relative overflow-hidden backdrop-blur-3xl bg-opacity-90">
                         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[var(--accent)]/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
+
+                        {guide.excerpt && (
+                            <blockquote className="border-l-4 border-[var(--accent)] pl-6 py-4 mb-8 bg-[var(--bg-elevated)]/30 rounded-r-lg">
+                                <p className="text-lg italic text-[var(--text-primary)] leading-relaxed m-0">
+                                    &ldquo;{guide.excerpt}&rdquo;
+                                </p>
+                            </blockquote>
+                        )}
 
                         <div className="prose prose-lg md:prose-xl max-w-none
                                 prose-headings:text-[var(--text-primary)] prose-headings:font-bold prose-headings:tracking-tight
