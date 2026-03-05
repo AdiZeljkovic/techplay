@@ -338,6 +338,11 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                         <div className="my-12 lg:hidden">
                             <AdUnit position="article_mid" />
                         </div>
+
+                        {/* Comments */}
+                        <div className="mt-12 border-t border-[var(--border)] pt-12">
+                            <CommentsSection commentableId={guide.id} commentableType="guide" />
+                        </div>
                     </div>
 
                     <aside className="lg:col-span-3 space-y-8 mt-12 lg:mt-0">
@@ -355,10 +360,6 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                             <AdUnit position="sidebar_bottom" />
                         </div>
                     </aside>
-                </div>
-
-                <div className="mt-20 border-t border-[var(--border)] pt-12">
-                    <CommentsSection commentableId={guide.id} commentableType="guide" />
                 </div>
             </div>
         </article>
