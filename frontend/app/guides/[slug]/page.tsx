@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import GuideDetailView from "@/components/guides/GuideDetailView";
-import axios from "@/lib/axios";
 import { Metadata } from "next";
 
 // ISR enabled with on-demand revalidation
@@ -44,7 +43,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const { guide } = data;
 
-    const images = guide.featured_image_url ? [guide.featured_image_url] : [];
+    let imageUrl = guide.featured_image_url;
+    if (imageUrl) {
+        if (imageUrl.includes('localhost') || imageUrl.includes('127.0.0.1')) {
+            try {
+                const urlObj = new URL(imageUrl);
+                imageUrl = `${process.env.NEXT_PUBLIC_STORAGE_URL}${urlObj.pathname}`;
+            } catch (e) {
+                imageUrl = imageUrl.replace(/http:\/\/localhost:\d+/, process.env.NEXT_PUBLIC_STORAGE_URL || '');
+            }
+        } else if (!imageUrl.startsWith('http')) {
+            const storageUrl = process.env.NEXT_PUBLIC_STORAGE_URL?.replace(/\/$/, '') || '';
+            const path = imageUrl.replace(/^\//, '');
+            imageUrl = `${storageUrl}/${path}`;
+        }
+    }
+    const images = imageUrl ? [imageUrl] : [];
 
     return {
         title: `${guide.title} - TechPlay Guides`,
