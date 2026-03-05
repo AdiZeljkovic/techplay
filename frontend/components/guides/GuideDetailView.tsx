@@ -29,6 +29,7 @@ interface Guide {
     updated_at: string;
     author: {
         username: string;
+        display_name?: string;
         avatar_url?: string;
         name?: string;
         bio?: string;
@@ -105,7 +106,7 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
         "step": [], // Could parse steps if structured
         "author": {
             "@type": "Person",
-            "name": guide.author?.username
+            "name": guide.author?.display_name || guide.author?.username
         }
     };
 
@@ -175,7 +176,7 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                                 </div>
                                 <div className="group-hover:text-[var(--accent)] transition-colors">
                                     <p className="text-sm font-bold text-white group-hover:text-[var(--accent)] transition-colors">
-                                        {guide.author?.username}
+                                        {guide.author?.display_name || guide.author?.username}
                                     </p>
                                 </div>
                             </Link>
