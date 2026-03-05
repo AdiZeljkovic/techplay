@@ -102,5 +102,10 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
         return `<div class="embed-container flex justify-center my-8"><iframe src="https://www.facebook.com/plugins/post.php?href=${encodedUrl}&show_text=true&width=500" width="500" height="600" style="border:none;overflow:hidden;max-width:100%;border-radius:12px;" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe></div>`;
     });
 
+    // Step 7: Wrap tables in a scrollable container for mobile responsiveness
+    processedContent = processedContent
+        .replace(/<table\b/gi, '<div class="overflow-x-auto w-full my-6 rounded-xl"><table')
+        .replace(/<\/table>/gi, '</table></div>');
+
     return { content: processedContent, toc };
 }
