@@ -47,11 +47,12 @@ class NewsletterSubscriberResource extends Resource
                 Tables\Columns\TextColumn::make('email')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('email_verified_at')
-                    ->label('Verified')
-                    ->boolean()
+                Tables\Columns\TextColumn::make('email_verified_at')
+                    ->label('Verified At')
                     ->sortable()
-                    ->getStateUsing(fn($record) => $record->email_verified_at !== null),
+                    ->dateTime('d.m.Y')
+                    ->placeholder('Not verified')
+                    ->color(fn($state): string => $state ? 'success' : 'danger'),
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean()
                     ->sortable(),

@@ -75,6 +75,31 @@ class CategoryResource extends Resource
                                 Forms\Components\Textarea::make('description')
                                     ->rows(3),
                             ]),
+                        \Filament\Schemas\Components\Tabs\Tab::make('SEO')
+                            ->icon('heroicon-o-magnifying-glass')
+                            ->schema([
+                                Forms\Components\TextInput::make('seo_title')
+                                    ->label('SEO Title')
+                                    ->maxLength(60)
+                                    ->helperText('Optimalno 50–60 znakova')
+                                    ->columnSpanFull(),
+                                Forms\Components\Textarea::make('seo_description')
+                                    ->label('Meta Description')
+                                    ->maxLength(160)
+                                    ->rows(3)
+                                    ->helperText('Optimalno 120–160 znakova')
+                                    ->columnSpanFull(),
+                                Forms\Components\TextInput::make('focus_keyword')
+                                    ->label('Focus Keyword')
+                                    ->maxLength(255),
+                                Forms\Components\TextInput::make('canonical_url')
+                                    ->label('Canonical URL')
+                                    ->url()
+                                    ->maxLength(500),
+                                Forms\Components\Toggle::make('is_noindex')
+                                    ->label('NoIndex')
+                                    ->helperText('Sakrij stranicu od pretraživača'),
+                            ]),
                     ])->columnSpanFull(),
             ]);
     }

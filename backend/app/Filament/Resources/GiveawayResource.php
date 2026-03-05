@@ -18,6 +18,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Notifications\Notification;
+use App\Models\User;
 use Illuminate\Support\Str;
 
 class GiveawayResource extends Resource

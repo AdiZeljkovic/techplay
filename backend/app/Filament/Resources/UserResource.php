@@ -87,6 +87,23 @@ class UserResource extends Resource
                     ->columnSpanFull(),
                 Forms\Components\KeyValue::make('settings')
                     ->columnSpanFull(),
+                \Filament\Schemas\Components\Section::make('Ban Management')
+                    ->icon('heroicon-o-no-symbol')
+                    ->collapsible()
+                    ->collapsed()
+                    ->schema([
+                        Forms\Components\Toggle::make('is_banned')
+                            ->label('Banned')
+                            ->live()
+                            ->helperText('Zabranjuje korisniku pristup platformi'),
+                        Forms\Components\Textarea::make('ban_reason')
+                            ->label('Ban Reason')
+                            ->rows(2)
+                            ->visible(fn($get) => $get('is_banned'))
+                            ->placeholder('Razlog bana...')
+                            ->columnSpanFull(),
+                    ])
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -111,6 +128,13 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('xp')
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\IconColumn::make('is_banned')
+                    ->label('Banned')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-no-symbol')
+                    ->falseIcon('heroicon-o-check-circle')
+                    ->trueColor('danger')
+                    ->falseColor('success'),
                 Tables\Columns\TextColumn::make('discord_id')
                     ->label('Discord ID')
                     ->toggleable()
@@ -122,7 +146,10 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\TernaryFilter::make('is_banned')
+                    ->label('Ban Status')
+                    ->trueLabel('Banned only')
+                    ->falseLabel('Active only'),
             ])
             ->actions([
                 EditAction::make(),

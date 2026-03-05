@@ -3,12 +3,14 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserSupportResource\Pages;
+use App\Models\SupportTier;
 use App\Models\UserSupport;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
@@ -32,6 +34,7 @@ class UserSupportResource extends Resource
             ->components([
                     Forms\Components\Select::make('user_id')
                         ->relationship('user', 'username')
+                        ->searchable()
                         ->required(),
                     Forms\Components\Select::make('support_tier_id')
                         ->relationship('tier', 'name')
@@ -56,13 +59,15 @@ class UserSupportResource extends Resource
         return $table
             ->columns([
                     Tables\Columns\TextColumn::make('user.username')
-                        ->numeric()
+                        ->searchable()
                         ->sortable(),
                     Tables\Columns\TextColumn::make('tier.name')
-                        ->numeric()
-                        ->sortable(),
+                        ->searchable()
+                        ->sortable()
+                        ->badge()
+                        ->color('info'),
                     Tables\Columns\TextColumn::make('amount')
-                        ->numeric()
+                        ->money('USD')
                         ->sortable(),
                     Tables\Columns\TextColumn::make('status')
                         ->badge()
@@ -71,13 +76,26 @@ class UserSupportResource extends Resource
                             'expired' => 'warning',
                             'cancelled' => 'danger',
                         }),
+                    Tables\Columns\TextColumn::make('expires_at')
+                        ->label('Expires')
+                        ->dateTime('d.m.Y')
+                        ->sortable()
+                        ->color(fn($record): string => $record->expires_at && $record->expires_at->isPast() ? 'danger' : 'success'),
                     Tables\Columns\TextColumn::make('created_at')
                         ->dateTime()
                         ->sortable()
                         ->toggleable(isToggledHiddenByDefault: true),
                 ])
             ->filters([
-                    //
+                    SelectFilter::make('status')
+                        ->options([
+                            'active' => 'Active',
+                            'expired' => 'Expired',
+                            'cancelled' => 'Cancelled',
+                        ]),
+                    SelectFilter::make('support_tier_id')
+                        ->label('Tier')
+                        ->relationship('tier', 'name'),
                 ])
             ->actions([
                     EditAction::make(),

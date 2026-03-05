@@ -87,6 +87,20 @@ class CommentResource extends Resource
                     ->formatStateUsing(fn(string $state): string => class_basename($state))
                     ->color('gray')
                     ->label('On'),
+                TextColumn::make('commentable.title')
+                    ->label('Content Title')
+                    ->limit(40)
+                    ->placeholder('—')
+                    ->url(fn(Comment $record): ?string => match ($record->commentable_type) {
+                        'App\\Models\\Article' => $record->commentable_id
+                            ? route('filament.admin.resources.news.edit', $record->commentable_id)
+                            : null,
+                        'App\\Models\\Video' => $record->commentable_id
+                            ? route('filament.admin.resources.videos.edit', $record->commentable_id)
+                            : null,
+                        default => null,
+                    })
+                    ->openUrlInNewTab(),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {

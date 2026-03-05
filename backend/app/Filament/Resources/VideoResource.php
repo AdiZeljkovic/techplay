@@ -73,6 +73,13 @@ class VideoResource extends Resource
     {
         return $table
             ->columns([
+                    ImageColumn::make('thumbnail')
+                        ->label('Thumbnail')
+                        ->getStateUsing(fn(Video $record): string => $record->thumbnail_url
+                            ?: 'https://img.youtube.com/vi/' . $record->youtube_id . '/mqdefault.jpg')
+                        ->width(120)
+                        ->height(68)
+                        ->extraImgAttributes(['class' => 'rounded-md object-cover']),
                     TextColumn::make('title')
                         ->searchable()
                         ->sortable()

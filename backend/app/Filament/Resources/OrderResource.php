@@ -3,11 +3,13 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
+use App\Filament\Resources\OrderResource\RelationManagers\OrderItemsRelationManager;
 use App\Models\Order;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
@@ -47,6 +49,14 @@ class OrderResource extends Resource
                         ->disabled(), // Auto-calculated usually
                     Forms\Components\TextInput::make('payment_method')
                         ->disabled(),
+                    Forms\Components\Select::make('payment_status')
+                        ->options([
+                            'pending' => 'Pending',
+                            'paid' => 'Paid',
+                            'failed' => 'Failed',
+                            'refunded' => 'Refunded',
+                        ])
+                        ->default('pending'),
                     Forms\Components\Textarea::make('shipping_address')
                         ->rows(3),
                     Forms\Components\Textarea::make('notes')
@@ -71,13 +81,38 @@ class OrderResource extends Resource
                     Tables\Columns\TextColumn::make('total_price')
                         ->formatStateUsing(fn($state) => number_format($state, 2) . ' KM')
                         ->sortable(),
-                    Tables\Columns\TextColumn::make('payment_method'),
+                    Tables\Columns\TextColumn::make('payment_method')
+                        ->toggleable(isToggledHiddenByDefault: true),
+                    Tables\Columns\TextColumn::make('payment_status')
+                        ->label('Payment')
+                        ->badge()
+                        ->color(fn(?string $state): string => match ($state) {
+                            'paid' => 'success',
+                            'pending' => 'warning',
+                            'failed' => 'danger',
+                            'refunded' => 'gray',
+                            default => 'gray',
+                        }),
                     Tables\Columns\TextColumn::make('created_at')
                         ->dateTime()
                         ->sortable(),
                 ])
             ->filters([
-                    //
+                    SelectFilter::make('status')
+                        ->options([
+                            'pending' => 'Pending',
+                            'processing' => 'Processing',
+                            'completed' => 'Completed',
+                            'cancelled' => 'Cancelled',
+                        ]),
+                    SelectFilter::make('payment_status')
+                        ->label('Payment Status')
+                        ->options([
+                            'pending' => 'Pending',
+                            'paid' => 'Paid',
+                            'failed' => 'Failed',
+                            'refunded' => 'Refunded',
+                        ]),
                 ])
             ->actions([
                     EditAction::make(),
@@ -93,7 +128,7 @@ class OrderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            OrderItemsRelationManager::class,
         ];
     }
 

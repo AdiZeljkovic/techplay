@@ -1,7 +1,7 @@
 /*
- * TechPlay Admin Panel — Materio Redesign
- * Clean, card-based, Bootstrap 5 inspired professional theme
- * Purple accent (#7367f0), light backgrounds, subtle shadows
+ * TechPlay Admin Panel — Premium Dark
+ * Deep space palette, glassmorphism, violet glow accent
+ * Dark mode default, professional SaaS aesthetic
  */
 
 /* ============================================
@@ -9,22 +9,22 @@
    ============================================ */
 
 :root {
-    /* Background layers */
-    --tp-void: #f4f5fa;
+    /* Background layers — refined light */
+    --tp-void: #f1f3f8;
     --tp-abyss: #ffffff;
-    --tp-deep: #f4f5fa;
+    --tp-deep: #f1f3f8;
     --tp-base: #ffffff;
-    --tp-surface: #f8f9fc;
+    --tp-surface: #f7f8fc;
     --tp-elevated: #fafbff;
     --tp-highlight: #eeedfd;
 
-    /* Accent — Materio purple */
-    --tp-accent: #7367f0;
-    --tp-accent-bright: #9e95f5;
-    --tp-accent-dim: #5e50ee;
-    --tp-accent-glow: rgba(115, 103, 240, 0.25);
-    --tp-accent-subtle: rgba(115, 103, 240, 0.12);
-    --tp-accent-faint: rgba(115, 103, 240, 0.06);
+    /* Accent — deeper for light mode contrast */
+    --tp-accent: #6d5cf0;
+    --tp-accent-bright: #8a7af5;
+    --tp-accent-dim: #5848cc;
+    --tp-accent-glow: rgba(109, 92, 240, 0.20);
+    --tp-accent-subtle: rgba(109, 92, 240, 0.10);
+    --tp-accent-faint: rgba(109, 92, 240, 0.05);
 
     /* Secondary colors */
     --tp-blue: #00cfe8;
@@ -33,23 +33,23 @@
     --tp-red: #ea5455;
 
     /* Text hierarchy */
-    --tp-text-bright: #3a3541;
-    --tp-text-primary: #3a3541;
+    --tp-text-bright: #1a1a2e;
+    --tp-text-primary: #2d2d4a;
     --tp-text-secondary: #5e5873;
     --tp-text-muted: #82868b;
     --tp-text-dim: #b9b9c3;
 
     /* Borders */
-    --tp-border-strong: #d8d6de;
-    --tp-border: #ebe9f1;
-    --tp-border-faint: #f0f0f3;
-    --tp-border-accent: rgba(115, 103, 240, 0.30);
+    --tp-border-strong: #d0d0e0;
+    --tp-border: #e8e8f0;
+    --tp-border-faint: #f0f0f8;
+    --tp-border-accent: rgba(109, 92, 240, 0.30);
 
-    /* Shadows — clean Bootstrap style */
-    --tp-shadow-sm: 0 0.125rem 0.25rem rgba(165, 163, 174, 0.3);
-    --tp-shadow-md: 0 0.25rem 1rem rgba(165, 163, 174, 0.2);
-    --tp-shadow-lg: 0 0.5rem 1.5rem rgba(165, 163, 174, 0.25);
-    --tp-shadow-glow: 0 0.125rem 0.5rem rgba(115, 103, 240, 0.15);
+    /* Shadows */
+    --tp-shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.08);
+    --tp-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.10);
+    --tp-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+    --tp-shadow-glow: 0 0 20px rgba(109, 92, 240, 0.15);
 
     /* Radii */
     --tp-radius-xs: 4px;
@@ -62,25 +62,45 @@
     --tp-ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Dark mode overrides */
+/* ============================================
+   PREMIUM DARK MODE TOKENS — Deep Space Palette
+   ============================================ */
 .dark {
-    --tp-void: #161d31;
-    --tp-abyss: #283046;
-    --tp-deep: #161d31;
-    --tp-base: #283046;
-    --tp-surface: #2f3a52;
-    --tp-elevated: #34405a;
-    --tp-highlight: #3b3570;
+    /* Backgrounds */
+    --tp-void: #09090f;
+    --tp-abyss: #0d0d18;
+    --tp-deep: #0f0f1e;
+    --tp-base: #12122a;
+    --tp-surface: #18183a;
+    --tp-elevated: #1e1e45;
+    --tp-highlight: #24244d;
 
-    --tp-text-bright: #d0d2d6;
-    --tp-text-primary: #d0d2d6;
-    --tp-text-secondary: #b4b7bd;
-    --tp-text-muted: #82868b;
-    --tp-text-dim: #6e6b7b;
+    /* Accent — vibrant violet with glow */
+    --tp-accent: #7c6ef5;
+    --tp-accent-bright: #9d8ff5;
+    --tp-accent-dim: #6357d4;
+    --tp-accent-glow: rgba(124, 110, 245, 0.40);
+    --tp-accent-subtle: rgba(124, 110, 245, 0.15);
+    --tp-accent-faint: rgba(124, 110, 245, 0.07);
 
-    --tp-border-strong: rgba(255, 255, 255, 0.14);
-    --tp-border: rgba(255, 255, 255, 0.08);
-    --tp-border-faint: rgba(255, 255, 255, 0.05);
+    /* Text hierarchy */
+    --tp-text-bright: #f0f0f8;
+    --tp-text-primary: #e2e2ef;
+    --tp-text-secondary: #a8b0cc;
+    --tp-text-muted: #6b7280;
+    --tp-text-dim: #4b5563;
+
+    /* Borders — glassmorphism opacity */
+    --tp-border-strong: rgba(255, 255, 255, 0.12);
+    --tp-border: rgba(255, 255, 255, 0.07);
+    --tp-border-faint: rgba(255, 255, 255, 0.04);
+    --tp-border-accent: rgba(124, 110, 245, 0.40);
+
+    /* Shadows — deep */
+    --tp-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.50);
+    --tp-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.60);
+    --tp-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.70);
+    --tp-shadow-glow: 0 0 24px rgba(124, 110, 245, 0.25);
 }
 
 
@@ -861,13 +881,19 @@
 
 .fi-btn-primary:hover {
     background: var(--tp-accent-dim) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: var(--tp-shadow-sm) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--tp-shadow-md) !important;
 }
 
 .fi-btn-primary:active {
     transform: translateY(0) !important;
     box-shadow: none !important;
+}
+
+.fi-btn-primary:focus-visible {
+    outline: 2px solid var(--tp-accent) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 4px var(--tp-accent-subtle) !important;
 }
 
 .fi-btn-gray {
@@ -889,9 +915,15 @@
 }
 
 .fi-btn-danger:hover {
-    transform: translateY(-1px) !important;
-    box-shadow: var(--tp-shadow-sm) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--tp-shadow-md) !important;
     filter: brightness(0.9);
+}
+
+.fi-btn-danger:focus-visible {
+    outline: 2px solid var(--tp-red) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 4px rgba(234, 84, 85, 0.15) !important;
 }
 
 .fi-icon-btn {
@@ -1601,33 +1633,601 @@ textarea {
 
 
 /* ============================================
-   27. DARK MODE FILAMENT OVERRIDES
+   27. PREMIUM DARK MODE — COMPONENT OVERRIDES
    ============================================ */
 
-.dark .fi-body {
-    background: var(--tp-deep) !important;
-}
-
-.dark .fi-sidebar {
-    background: #2B2C40 !important;
-}
-
-.dark .fi-topbar {
+/* --- Base Layout --- */
+.dark .fi-body,
+.dark body {
     background: var(--tp-abyss) !important;
 }
 
+.dark .fi-main {
+    background: var(--tp-abyss) !important;
+}
+
+.dark .fi-page-header,
+.dark .fi-simple-page-header {
+    background: transparent !important;
+    border-bottom: 1px solid var(--tp-border) !important;
+}
+
+.dark .fi-header-heading {
+    color: var(--tp-text-bright) !important;
+}
+
+/* --- Sidebar — Glass Dark Panel --- */
+.dark .fi-sidebar {
+    background: rgba(9, 9, 15, 0.97) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-right: 1px solid var(--tp-border) !important;
+    box-shadow: none !important;
+}
+
+.dark .fi-sidebar-nav {
+    background: transparent !important;
+}
+
+.dark .fi-sidebar-group-label {
+    color: var(--tp-text-dim) !important;
+    font-size: 0.6875rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.08em !important;
+}
+
+.dark .fi-sidebar-group+.fi-sidebar-group::before {
+    background: var(--tp-border-faint) !important;
+}
+
+/* Active nav item — accent left border + gradient glow bg */
+.dark .fi-sidebar-item.fi-active>.fi-sidebar-item-btn {
+    background: linear-gradient(90deg, rgba(124, 110, 245, 0.20) 0%, rgba(124, 110, 245, 0.06) 100%) !important;
+    border-left: 2px solid var(--tp-accent) !important;
+    box-shadow: none !important;
+    border-radius: 0 var(--tp-radius-sm) var(--tp-radius-sm) 0 !important;
+}
+
+.dark .fi-sidebar-item.fi-active .fi-sidebar-item-label {
+    color: #c9c3f8 !important;
+    font-weight: 500 !important;
+}
+
+.dark .fi-sidebar-item.fi-active .fi-sidebar-item-icon {
+    color: var(--tp-accent-bright) !important;
+}
+
+.dark .fi-sidebar-item-btn:not(.fi-active .fi-sidebar-item-btn):hover {
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.dark .fi-sidebar-item-label {
+    color: rgba(230, 228, 252, 0.65) !important;
+}
+
+.dark .fi-sidebar-item-btn:hover .fi-sidebar-item-label {
+    color: var(--tp-text-primary) !important;
+}
+
+.dark .fi-sidebar-item-icon,
+.dark .fi-sidebar-item-btn svg:first-child {
+    color: rgba(230, 228, 252, 0.40) !important;
+}
+
+.dark .fi-sidebar-item-btn:hover .fi-sidebar-item-icon,
+.dark .fi-sidebar-item-btn:hover svg:first-child {
+    color: rgba(230, 228, 252, 0.75) !important;
+}
+
+.dark .fi-sidebar-footer {
+    border-top: 1px solid var(--tp-border) !important;
+}
+
+/* --- Topbar — Dark Frosted Glass --- */
+.dark .fi-topbar {
+    background: rgba(9, 9, 15, 0.92) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid var(--tp-border) !important;
+    box-shadow: none !important;
+}
+
+.dark .fi-global-search-field input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--tp-border-strong) !important;
+    color: var(--tp-text-primary) !important;
+}
+
+.dark .fi-global-search-field input:focus {
+    background: rgba(124, 110, 245, 0.05) !important;
+    border-color: var(--tp-accent) !important;
+    box-shadow: 0 0 0 3px var(--tp-accent-subtle) !important;
+}
+
+.dark .fi-global-search-results {
+    background: rgba(18, 18, 42, 0.98) !important;
+    border: 1px solid var(--tp-border-strong) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.70) !important;
+    backdrop-filter: blur(16px) !important;
+}
+
+/* --- Cards & Sections — Glassmorphism --- */
 .dark .fi-section {
-    background: var(--tp-base) !important;
+    background: rgba(18, 18, 42, 0.80) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid var(--tp-border) !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
 }
 
-.dark .fi-ta-ctn {
-    background: var(--tp-base) !important;
+.dark .fi-section:hover {
+    border-color: var(--tp-border-strong) !important;
+    box-shadow: 0 6px 32px rgba(0, 0, 0, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
 
+.dark .fi-section-header {
+    background: rgba(255, 255, 255, 0.025) !important;
+    border-bottom: 1px solid var(--tp-border-faint) !important;
+}
+
+.dark .fi-section-header-heading {
+    color: var(--tp-text-bright) !important;
+}
+
+/* --- Stat Widgets — Glowing Cards --- */
 .dark .fi-wi-stats-overview-stat {
-    background: var(--tp-base) !important;
+    background: linear-gradient(135deg, rgba(18, 18, 42, 0.92), rgba(24, 24, 58, 0.82)) !important;
+    border: 1px solid rgba(124, 110, 245, 0.15) !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.40), 0 0 0 1px rgba(124, 110, 245, 0.06) !important;
 }
 
+.dark .fi-wi-stats-overview-stat:hover {
+    transform: translateY(-3px) !important;
+    border-color: rgba(124, 110, 245, 0.35) !important;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.55), 0 0 28px rgba(124, 110, 245, 0.18) !important;
+}
+
+.dark .fi-wi-stats-overview-stat-value {
+    color: var(--tp-text-bright) !important;
+    font-weight: 700 !important;
+}
+
+.dark .fi-wi-stats-overview-stat-label {
+    color: var(--tp-text-secondary) !important;
+}
+
+/* --- Tables --- */
+.dark .fi-ta-ctn {
+    background: rgba(18, 18, 42, 0.80) !important;
+    border: 1px solid var(--tp-border) !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+.dark .fi-ta-header-cell {
+    background: rgba(18, 18, 42, 0.60) !important;
+    color: var(--tp-text-muted) !important;
+    border-bottom: 1px solid var(--tp-border) !important;
+}
+
+.dark .fi-ta-row {
+    border-bottom: 1px solid var(--tp-border-faint) !important;
+}
+
+.dark .fi-ta-row:nth-child(even) {
+    background: rgba(255, 255, 255, 0.015) !important;
+}
+
+.dark .fi-ta-row:hover {
+    background: rgba(124, 110, 245, 0.06) !important;
+}
+
+.dark .fi-ta-row:hover .fi-ta-cell {
+    color: var(--tp-text-primary) !important;
+}
+
+.dark .fi-ta-cell {
+    color: var(--tp-text-secondary) !important;
+}
+
+.dark .fi-ta-header-toolbar {
+    background: rgba(18, 18, 42, 0.60) !important;
+    border-bottom: 1px solid var(--tp-border) !important;
+}
+
+.dark .fi-ta-filters-form {
+    background: rgba(15, 15, 30, 0.90) !important;
+}
+
+.dark .fi-ta-search-field input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: var(--tp-border-strong) !important;
+    color: var(--tp-text-primary) !important;
+}
+
+/* --- Forms & Inputs --- */
+.dark .fi-input-wrp {
+    background: rgba(12, 12, 28, 0.80) !important;
+    border: 1px solid var(--tp-border-strong) !important;
+}
+
+.dark .fi-input-wrp:focus-within {
+    border-color: var(--tp-accent) !important;
+    background: rgba(124, 110, 245, 0.06) !important;
+    box-shadow: 0 0 0 3px var(--tp-accent-subtle), inset 0 1px 0 rgba(124, 110, 245, 0.08) !important;
+}
+
+.dark .fi-input,
+.dark .fi-textarea {
+    background: transparent !important;
+    color: var(--tp-text-primary) !important;
+    border-color: var(--tp-border-strong) !important;
+}
+
+.dark .fi-input:focus,
+.dark .fi-textarea:focus {
+    border-color: var(--tp-accent) !important;
+    box-shadow: 0 0 0 3px var(--tp-accent-subtle) !important;
+}
+
+.dark .fi-select-trigger {
+    background: rgba(12, 12, 28, 0.80) !important;
+    border-color: var(--tp-border-strong) !important;
+    color: var(--tp-text-primary) !important;
+}
+
+.dark .fi-select-option:hover {
+    background: rgba(124, 110, 245, 0.10) !important;
+}
+
+.dark .fi-fo-file-upload {
+    background: rgba(12, 12, 28, 0.60) !important;
+    border-color: var(--tp-border-strong) !important;
+}
+
+.dark .fi-fo-file-upload:hover {
+    background: rgba(124, 110, 245, 0.07) !important;
+    border-color: var(--tp-accent) !important;
+}
+
+.dark .fi-checkbox-input {
+    background: rgba(12, 12, 28, 0.80) !important;
+    border-color: var(--tp-border-strong) !important;
+}
+
+.dark .fi-radio-input {
+    background: rgba(12, 12, 28, 0.80) !important;
+    border-color: var(--tp-border-strong) !important;
+}
+
+.dark .fi-fieldset {
+    border-color: var(--tp-border) !important;
+}
+
+.dark .fi-fieldset-label {
+    background: var(--tp-base) !important;
+    color: var(--tp-text-muted) !important;
+}
+
+.dark .fi-fo-key-value {
+    border-color: var(--tp-border) !important;
+}
+
+/* --- Buttons — Glow Effects --- */
+.dark .fi-btn-primary {
+    background: linear-gradient(135deg, #7c6ef5 0%, #6357d4 100%) !important;
+    border: 1px solid rgba(124, 110, 245, 0.30) !important;
+    box-shadow: 0 4px 16px rgba(124, 110, 245, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+.dark .fi-btn-primary:hover {
+    background: linear-gradient(135deg, #8d80f5 0%, #7469e0 100%) !important;
+    box-shadow: 0 6px 28px rgba(124, 110, 245, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.20) !important;
+    transform: translateY(-2px) !important;
+}
+
+.dark .fi-btn-primary:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(124, 110, 245, 0.25) !important;
+}
+
+.dark .fi-btn-gray {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid var(--tp-border-strong) !important;
+    color: var(--tp-text-secondary) !important;
+}
+
+.dark .fi-btn-gray:hover {
+    background: rgba(255, 255, 255, 0.10) !important;
+    color: var(--tp-text-primary) !important;
+    transform: translateY(-1px) !important;
+}
+
+.dark .fi-btn-danger {
+    background: linear-gradient(135deg, #ea5455 0%, #c73b3c 100%) !important;
+    border: 1px solid rgba(234, 84, 85, 0.30) !important;
+    box-shadow: 0 4px 16px rgba(234, 84, 85, 0.30) !important;
+}
+
+.dark .fi-btn-danger:hover {
+    box-shadow: 0 6px 24px rgba(234, 84, 85, 0.50) !important;
+    transform: translateY(-2px) !important;
+}
+
+.dark .fi-icon-btn {
+    color: var(--tp-text-muted) !important;
+}
+
+.dark .fi-icon-btn:hover {
+    color: var(--tp-accent) !important;
+    background: var(--tp-accent-faint) !important;
+}
+
+.dark .fi-header-actions .fi-btn {
+    box-shadow: none !important;
+}
+
+/* --- Badges — Glowing Status Pills --- */
+.dark .fi-badge-success,
+.dark .fi-badge[style*="--c-50: var(--success"] {
+    background: rgba(40, 199, 111, 0.15) !important;
+    color: #39d07e !important;
+    border: 1px solid rgba(40, 199, 111, 0.25) !important;
+}
+
+.dark .fi-badge-warning,
+.dark .fi-badge[style*="--c-50: var(--warning"] {
+    background: rgba(255, 159, 67, 0.15) !important;
+    color: #ffb347 !important;
+    border: 1px solid rgba(255, 159, 67, 0.25) !important;
+}
+
+.dark .fi-badge-danger,
+.dark .fi-badge[style*="--c-50: var(--danger"] {
+    background: rgba(234, 84, 85, 0.15) !important;
+    color: #f07171 !important;
+    border: 1px solid rgba(234, 84, 85, 0.25) !important;
+}
+
+.dark .fi-badge-info {
+    background: rgba(0, 207, 232, 0.15) !important;
+    color: #00d8ef !important;
+    border: 1px solid rgba(0, 207, 232, 0.25) !important;
+}
+
+/* Primary badge (purple) */
+.dark .fi-badge-primary {
+    background: rgba(124, 110, 245, 0.15) !important;
+    color: #b0a6f5 !important;
+    border: 1px solid rgba(124, 110, 245, 0.25) !important;
+}
+
+/* --- Tabs --- */
+.dark .fi-tabs-list {
+    border-bottom: 1px solid var(--tp-border) !important;
+}
+
+.dark .fi-tabs-tab {
+    color: var(--tp-text-muted) !important;
+}
+
+.dark .fi-tabs-tab:hover {
+    color: var(--tp-text-primary) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.dark .fi-tabs-tab[aria-selected="true"] {
+    color: var(--tp-accent) !important;
+    border-bottom-color: var(--tp-accent) !important;
+    background: transparent !important;
+}
+
+/* --- Pagination --- */
+.dark .fi-pagination-item-btn {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid var(--tp-border) !important;
+    color: var(--tp-text-secondary) !important;
+}
+
+.dark .fi-pagination-item-btn:hover {
+    background: rgba(124, 110, 245, 0.12) !important;
+    color: var(--tp-accent) !important;
+    border-color: rgba(124, 110, 245, 0.35) !important;
+}
+
+.dark .fi-pagination-item-btn[aria-current="page"] {
+    background: linear-gradient(135deg, #7c6ef5, #6357d4) !important;
+    border-color: transparent !important;
+    color: white !important;
+    box-shadow: 0 2px 12px rgba(124, 110, 245, 0.40) !important;
+    font-weight: 600 !important;
+}
+
+.dark .fi-ta-page-trigger {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: var(--tp-border) !important;
+}
+
+/* --- Modals — Dark Glass Dialogs --- */
+.dark .fi-modal-close-overlay {
+    background: rgba(0, 0, 0, 0.70) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.dark .fi-modal-content {
+    background: rgba(13, 13, 24, 0.97) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    border: 1px solid var(--tp-border-strong) !important;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(124, 110, 245, 0.10) !important;
+}
+
+.dark .fi-modal-header {
+    border-bottom: 1px solid var(--tp-border) !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.dark .fi-modal-footer {
+    border-top: 1px solid var(--tp-border) !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* --- Notifications — Glass Toasts --- */
+.dark .fi-notification {
+    background: rgba(24, 24, 58, 0.96) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid var(--tp-border-strong) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.60) !important;
+}
+
+/* --- Dropdowns & Menus --- */
+.dark .fi-dropdown-panel {
+    background: rgba(18, 18, 42, 0.98) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid var(--tp-border-strong) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.70), 0 0 0 1px rgba(255, 255, 255, 0.03) !important;
+}
+
+.dark .fi-dropdown-list-item-button:hover {
+    background: rgba(124, 110, 245, 0.10) !important;
+}
+
+/* --- Rich Editor (TipTap) --- */
+.dark .fi-fo-rich-editor {
+    background: rgba(12, 12, 28, 0.80) !important;
+    border: 1px solid var(--tp-border-strong) !important;
+}
+
+.dark .fi-fo-rich-editor:focus-within {
+    border-color: var(--tp-accent) !important;
+    box-shadow: 0 0 0 3px var(--tp-accent-subtle) !important;
+}
+
+.dark .fi-fo-rich-editor .tiptap-toolbar {
+    background: rgba(18, 18, 42, 0.90) !important;
+    border-bottom: 1px solid var(--tp-border) !important;
+}
+
+.dark .fi-fo-rich-editor .tiptap-toolbar button {
+    color: var(--tp-text-muted) !important;
+}
+
+.dark .fi-fo-rich-editor .tiptap-toolbar button:hover {
+    background: var(--tp-accent-faint) !important;
+    color: var(--tp-accent) !important;
+}
+
+.dark .fi-fo-rich-editor .tiptap-toolbar button.is-active {
+    background: var(--tp-accent-subtle) !important;
+    color: var(--tp-accent) !important;
+}
+
+.dark .fi-fo-rich-editor .ProseMirror {
+    color: var(--tp-text-primary) !important;
+}
+
+/* --- Login Page — Dramatic Dark --- */
+.dark .fi-simple-layout {
+    background: radial-gradient(ellipse at 30% 20%, rgba(124, 110, 245, 0.18) 0%, #09090f 55%),
+                radial-gradient(ellipse at 75% 85%, rgba(99, 87, 212, 0.12) 0%, transparent 50%) !important;
+}
+
+.dark .fi-simple-main {
+    background: rgba(18, 18, 42, 0.88) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    border: 1px solid rgba(124, 110, 245, 0.22) !important;
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.85), 0 0 60px rgba(124, 110, 245, 0.08) !important;
+}
+
+/* --- Dashboard Welcome Banner --- */
+.dark .tp-welcome-banner {
+    background: linear-gradient(135deg,
+        rgba(124, 110, 245, 0.22) 0%,
+        rgba(99, 87, 212, 0.12) 40%,
+        rgba(9, 9, 15, 0.60) 100%) !important;
+    border: 1px solid rgba(124, 110, 245, 0.25) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 24px rgba(0, 0, 0, 0.40) !important;
+}
+
+.dark .tp-welcome-title {
+    color: var(--tp-text-bright) !important;
+}
+
+.dark .tp-welcome-subtitle {
+    color: var(--tp-text-secondary) !important;
+}
+
+.dark .tp-quick-stat {
+    background: rgba(18, 18, 42, 0.70) !important;
+    border: 1px solid var(--tp-border) !important;
+}
+
+.dark .tp-quick-stat:hover {
+    border-color: rgba(124, 110, 245, 0.40) !important;
+    background: rgba(124, 110, 245, 0.08) !important;
+    box-shadow: 0 4px 20px rgba(124, 110, 245, 0.15) !important;
+}
+
+.dark .tp-quick-action {
+    background: rgba(18, 18, 42, 0.70) !important;
+    border: 1px solid var(--tp-border) !important;
+}
+
+.dark .tp-quick-action:hover {
+    background: rgba(124, 110, 245, 0.10) !important;
+    border-color: rgba(124, 110, 245, 0.40) !important;
+    box-shadow: 0 4px 20px rgba(124, 110, 245, 0.15) !important;
+}
+
+/* --- Widget containers --- */
+.dark .fi-wi-table {
+    background: rgba(18, 18, 42, 0.80) !important;
+    border: 1px solid var(--tp-border) !important;
+}
+
+.dark .fi-wi-header {
+    border-bottom: 1px solid var(--tp-border) !important;
+}
+
+/* --- Infolist --- */
+.dark .fi-in-entry {
+    border-bottom: 1px solid var(--tp-border-faint) !important;
+}
+
+/* --- Relation Managers --- */
+.dark .fi-resource-relation-manager {
+    background: rgba(18, 18, 42, 0.80) !important;
+    border: 1px solid var(--tp-border) !important;
+}
+
+/* --- Date/Time Picker --- */
+.dark .fi-fo-date-time-picker {
+    background: rgba(18, 18, 42, 0.98) !important;
+    border: 1px solid var(--tp-border-strong) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.70) !important;
+    backdrop-filter: blur(16px) !important;
+}
+
+/* --- Scrollbars — Purple accent --- */
+.dark ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: rgba(124, 110, 245, 0.30);
+    border-radius: 3px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(124, 110, 245, 0.55);
+}
+
+/* Sidebar item label / group label override reset */
 .dark .fi-sidebar-item-label,
 .dark .fi-sidebar-group-label {
     color: inherit !important;
@@ -1769,4 +2369,84 @@ textarea {
 .fi-ta-reorder-handle:active {
     cursor: grabbing !important;
     color: var(--tp-accent) !important;
+}
+
+
+/* ============================================
+   ACCESSIBILITY — FOCUS STATES
+   ============================================ */
+
+/* Icon buttons */
+.fi-icon-btn:focus-visible {
+    outline: 2px solid var(--tp-accent) !important;
+    outline-offset: 2px !important;
+    background: var(--tp-accent-faint) !important;
+}
+
+/* Sidebar nav items */
+.fi-sidebar-item-btn:focus-visible {
+    outline: 2px solid var(--tp-accent) !important;
+    outline-offset: -2px !important;
+    border-radius: var(--tp-radius-md) !important;
+}
+
+/* Gray/secondary buttons */
+.fi-btn-gray:focus-visible {
+    outline: 2px solid var(--tp-border-strong) !important;
+    outline-offset: 2px !important;
+}
+
+/* Pagination buttons */
+.fi-pagination-item a:focus-visible,
+.fi-pagination-item button:focus-visible {
+    outline: 2px solid var(--tp-accent) !important;
+    outline-offset: 2px !important;
+    border-radius: var(--tp-radius-sm) !important;
+}
+
+/* Table row checkboxes */
+.fi-ta-record-checkbox:focus-visible {
+    outline: 2px solid var(--tp-accent) !important;
+    outline-offset: 2px !important;
+}
+
+/* Form inputs */
+.fi-input:focus-visible,
+.fi-textarea:focus-visible {
+    outline: 2px solid var(--tp-accent) !important;
+    outline-offset: 0 !important;
+}
+
+/* Dropdown trigger */
+.fi-select-trigger:focus-visible {
+    outline: 2px solid var(--tp-accent) !important;
+    outline-offset: 0 !important;
+}
+
+
+/* ============================================
+   BREADCRUMB SEPARATOR
+   ============================================ */
+
+.fi-breadcrumbs-item + .fi-breadcrumbs-item::before {
+    content: '' !important;
+    display: inline-block !important;
+    width: 14px !important;
+    height: 14px !important;
+    background-color: var(--tp-text-dim) !important;
+    margin: 0 4px !important;
+    vertical-align: -2px !important;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5'%3E%3Cpath d='M9 18l6-6-6-6'/%3E%3C/svg%3E") !important;
+    -webkit-mask-repeat: no-repeat !important;
+    -webkit-mask-position: center !important;
+    -webkit-mask-size: contain !important;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5'%3E%3Cpath d='M9 18l6-6-6-6'/%3E%3C/svg%3E") !important;
+    mask-repeat: no-repeat !important;
+    mask-position: center !important;
+    mask-size: contain !important;
+}
+
+/* dashboard welcome banner hover - standardize to -2px */
+.tp-quick-action:hover {
+    transform: translateY(-2px) !important;
 }

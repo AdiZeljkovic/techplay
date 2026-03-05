@@ -19,13 +19,12 @@ class AdCampaignStats extends BaseWidget
         // Calculate overall CTR
         $overallCtr = $totalViews > 0 ? round(($totalClicks / $totalViews) * 100, 2) : 0;
 
-        // Calculate total estimated revenue
-        $totalRevenue = AdCampaign::all()->sum(function ($ad) {
-            if (!$ad->cpm_price || $ad->view_count == 0) {
-                return 0;
-            }
-            return ($ad->view_count / 1000) * $ad->cpm_price;
-        });
+        // Calculate total estimated revenue (DB aggregate — avoids loading all models into memory)
+        $totalRevenue = AdCampaign::whereNotNull('cpm_price')
+            ->where('cpm_price', '>', 0)
+            ->where('view_count', '>', 0)
+            ->selectRaw('SUM(view_count / 1000.0 * cpm_price) as total')
+            ->value('total') ?? 0;
 
         // Get views trend (last 7 active campaigns)
         $viewsTrend = AdCampaign::active()

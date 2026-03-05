@@ -11,7 +11,6 @@ use App\Models\Article;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
 class ArticleResource extends Resource
@@ -20,7 +19,7 @@ class ArticleResource extends Resource
 
     protected static ?string $modelPolicy = \App\Policies\ArticlePolicy::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?string $recordTitleAttribute = 'title';
 

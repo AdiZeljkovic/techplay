@@ -33,6 +33,10 @@ class SupportTierResource extends Resource
                     Forms\Components\TextInput::make('name')
                         ->required()
                         ->maxLength(255),
+                    Forms\Components\Textarea::make('description')
+                        ->rows(2)
+                        ->placeholder('Kratki opis tier-a vidljiv korisnicima')
+                        ->columnSpanFull(),
                     Forms\Components\TextInput::make('price')
                         ->required()
                         ->numeric()
@@ -41,10 +45,16 @@ class SupportTierResource extends Resource
                         ->required()
                         ->default('USD')
                         ->maxLength(3),
+                    Forms\Components\TextInput::make('paypal_plan_id')
+                        ->label('PayPal Plan ID')
+                        ->placeholder('P-XXXXXXXXXXXXXXXXXXXXXXXXXX')
+                        ->maxLength(255)
+                        ->helperText('ID PayPal subscription plana'),
                     Forms\Components\Repeater::make('features')
                         ->simple(
                             Forms\Components\TextInput::make('feature')->required(),
-                        ),
+                        )
+                        ->columnSpanFull(),
                     Forms\Components\ColorPicker::make('color'),
                     Forms\Components\Toggle::make('is_active')
                         ->required(),
