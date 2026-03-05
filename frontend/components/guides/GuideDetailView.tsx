@@ -114,6 +114,7 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
     };
 
     return (
+        <>
         <article className="min-h-screen bg-[var(--bg-primary)] pb-20">
             <Script
                 id="guide-schema"
@@ -388,5 +389,6 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                 </div>
             </div>
         </Dialog>
+        </>
     );
 }
