@@ -49,7 +49,7 @@ class GuideController extends Controller
         // Cache the Guide data itself
         $guide = Cache::remember("guide.show.v2.{$slug}", CacheService::TTL_LONG, function () use ($slug) {
             return Guide::where('slug', $slug)
-                ->with(['author:id,username,display_name,avatar_url'])
+                ->with(['author:id,username,display_name,avatar_url,bio'])
                 ->withCount([
                     'votes as helpful_count' => function ($query) {
                         $query->where('is_helpful', true);
