@@ -127,8 +127,8 @@ export default function WowAnalyzerClient() {
                 <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 to-black/60" />
 
                 {/* Accent Glow Effects */}
-                <div className="absolute top-0 left-0 w-96 h-96 bg-[var(--accent)] rounded-full blur-[150px] opacity-[0.15]" />
-                <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500 rounded-full blur-[150px] opacity-[0.12]" />
+                <div className="absolute top-0 left-0 w-96 h-96 bg-amber-500 rounded-full blur-[150px] opacity-[0.12]" />
+                <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-950 rounded-full blur-[150px] opacity-[0.30]" />
 
                 <div className="relative container mx-auto px-4 py-12 max-w-5xl">
                     <div className="text-center">

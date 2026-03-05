@@ -289,6 +289,51 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                             </div>
                         </div>
 
+                        {/* Tags */}
+                        <div className="mt-12 pt-8 border-t border-[var(--border)] flex flex-wrap gap-2 items-center">
+                            <span className="text-sm font-semibold text-[var(--text-primary)] mr-2">Tags:</span>
+                            <span className={`px-3 py-1 text-sm rounded-lg border capitalize ${difficultyColors[guide.difficulty]}`}>
+                                {guide.difficulty}
+                            </span>
+                        </div>
+
+                        {/* About Author */}
+                        <div className="mt-8 bg-[var(--bg-elevated)]/30 border border-[var(--border)] rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-left">
+                            <Link href={`/profile/${guide.author?.username}`} className="w-20 h-20 shrink-0 rounded-full border-2 border-[var(--accent)] p-1 hover:scale-105 transition-transform cursor-pointer">
+                                <div className="w-full h-full rounded-full overflow-hidden bg-[var(--bg-card)]">
+                                    {guide.author?.avatar_url ? (
+                                        <Image
+                                            src={guide.author.avatar_url}
+                                            alt={guide.author.username}
+                                            width={80}
+                                            height={80}
+                                            className="object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-xl font-bold text-[var(--text-primary)]">
+                                            {guide.author?.username?.charAt(0)?.toUpperCase() || '?'}
+                                        </div>
+                                    )}
+                                </div>
+                            </Link>
+                            <div className="flex-1">
+                                <Link href={`/profile/${guide.author?.username}`} className="inline-block group">
+                                    <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--accent)] transition-colors">
+                                        About {decodeHtml(guide.author?.display_name || guide.author?.username || "The Author")}
+                                    </h3>
+                                </Link>
+                                <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-4">
+                                    {decodeHtml(guide.author?.bio || "") || "TechPlay editor and gaming enthusiast. Covering the latest in technology, esports, and hardware reviews."}
+                                </p>
+                                <Link
+                                    href={`/profile/${guide.author?.username}`}
+                                    className="inline-flex items-center gap-2 text-[var(--accent)] font-semibold text-sm hover:underline"
+                                >
+                                    View Full Profile <ArrowLeft className="w-4 h-4 rotate-180" />
+                                </Link>
+                            </div>
+                        </div>
+
                         <div className="my-12 lg:hidden">
                             <AdUnit position="article_mid" />
                         </div>
