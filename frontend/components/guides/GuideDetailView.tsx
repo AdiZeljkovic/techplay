@@ -17,6 +17,7 @@ import DOMPurify from "isomorphic-dompurify";
 import LiveViewCount from "@/components/tracking/LiveViewCount";
 import ArticleFooterMessage from "@/components/ui/ArticleFooterMessage";
 import { decodeHtml } from "@/lib/decode";
+import { Dialog } from "@/components/ui/Dialog";
 
 interface Guide {
     id: number;
@@ -46,6 +47,7 @@ interface GuideDetailViewProps {
 
 export default function GuideDetailView({ guide, userVote: initialVote }: GuideDetailViewProps) {
     const [isScrolled, setIsScrolled] = useState(false);
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const { user } = useAuth();
     useEmbedScripts();
     const [voteState, setVoteState] = useState<'helpful' | 'not_helpful' | null>(
@@ -71,7 +73,7 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
 
     const handleVote = async (isHelpful: boolean) => {
         if (!user) {
-            alert("Please login to vote.");
+            setShowLoginPrompt(true);
             return;
         }
 
@@ -314,5 +316,32 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                 </div>
             </div>
         </article>
+
+        <Dialog open={showLoginPrompt} onOpenChange={setShowLoginPrompt}>
+            <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
+                <div className="w-14 h-14 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center mx-auto mb-4">
+                    <ThumbsUp className="w-6 h-6 text-[var(--accent)]" />
+                </div>
+                <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Login to vote</h3>
+                <p className="text-[var(--text-secondary)] text-sm mb-6">
+                    Create a free account to rate guides and help the community find the best content.
+                </p>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => setShowLoginPrompt(false)}
+                        className="flex-1 py-2.5 px-4 rounded-lg border border-[var(--border)] text-[var(--text-secondary)] text-sm font-medium hover:bg-[var(--bg-elevated)] transition-colors"
+                    >
+                        Maybe later
+                    </button>
+                    <Link
+                        href="/login"
+                        className="flex-1 py-2.5 px-4 rounded-lg bg-[var(--accent)] text-white text-sm font-semibold hover:bg-[var(--accent-hover)] transition-colors text-center"
+                        onClick={() => setShowLoginPrompt(false)}
+                    >
+                        Login
+                    </Link>
+                </div>
+            </div>
+        </Dialog>
     );
 }
