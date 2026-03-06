@@ -87,28 +87,28 @@
         /* --- Message bubbles: others --- */
         .message-row:not(.own-message) .msg-text {
             background: #f8fafc !important;
-            border: 2px solid #000 !important;
-            box-shadow: 3px 3px 0 0 #000 !important;
+            border: 1.5px solid rgba(0,0,0,0.12) !important;
+            box-shadow: 2px 2px 0 0 rgba(0,0,0,0.07) !important;
             border-radius: 2px 12px 12px 12px !important;
         }
         .dark .message-row:not(.own-message) .msg-text {
             background: var(--tp-elevated, #27273a) !important;
-            border-color: rgba(255,255,255,0.2) !important;
-            box-shadow: 3px 3px 0 0 rgba(255,255,255,0.15) !important;
+            border-color: rgba(255,255,255,0.1) !important;
+            box-shadow: 2px 2px 0 0 rgba(255,255,255,0.05) !important;
         }
 
         /* --- Message bubbles: own --- */
         .message-row.own-message .msg-text {
             background: #7367f0 !important;
             background-image: none !important;
-            border: 2px solid #000 !important;
-            box-shadow: 3px 3px 0 0 #000 !important;
+            border: 1.5px solid rgba(90,70,200,0.5) !important;
+            box-shadow: 2px 2px 0 0 rgba(90,70,200,0.35) !important;
             border-radius: 12px 2px 12px 12px !important;
             color: #fff !important;
         }
         .dark .message-row.own-message .msg-text {
-            border-color: rgba(255,255,255,0.3) !important;
-            box-shadow: 3px 3px 0 0 rgba(255,255,255,0.2) !important;
+            border-color: rgba(115,103,240,0.6) !important;
+            box-shadow: 2px 2px 0 0 rgba(115,103,240,0.4) !important;
         }
 
         /* --- Input box --- */
@@ -143,14 +143,14 @@
 
         /* --- Hover actions bar --- */
         .hover-actions {
-            border: 2px solid #000 !important;
-            box-shadow: 3px 3px 0 0 #000 !important;
-            border-radius: 8px !important;
+            border: 1.5px solid #000 !important;
+            box-shadow: 2px 2px 0 0 #000 !important;
+            border-radius: 50px !important;
             background: #fff !important;
         }
         .dark .hover-actions {
-            border-color: rgba(255,255,255,0.2) !important;
-            box-shadow: 3px 3px 0 0 rgba(255,255,255,0.1) !important;
+            border-color: rgba(255,255,255,0.25) !important;
+            box-shadow: 2px 2px 0 0 rgba(255,255,255,0.12) !important;
             background: var(--tp-elevated, #27273a) !important;
         }
 
@@ -622,14 +622,23 @@
         }
 
         /* --- Improved message grouping --- */
-        .message-row.grouped .msg-avatar {
-            visibility: hidden;
-        }
-        .message-row.grouped .msg-header {
-            display: none;
-        }
         .message-row.grouped {
             padding-top: 2px !important;
+        }
+        /* Hover-time in grouped messages: hidden by default, appears on row hover */
+        .msg-hover-time {
+            display: none;
+            font-size: 0.6875rem;
+            color: #9ca3af;
+            line-height: 1;
+            white-space: nowrap;
+            user-select: none;
+        }
+        .message-row.grouped:hover .msg-hover-time {
+            display: block;
+        }
+        .dark .msg-hover-time {
+            color: #6b7280;
         }
 
         /* Remove soft Gaussian shadows from avatars */
