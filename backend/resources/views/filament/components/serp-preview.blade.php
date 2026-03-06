@@ -1,28 +1,27 @@
-<div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 max-w-xl">
-    {{-- Google SERP Preview --}}
-    <div class="space-y-1">
+<div style="background: #fff; border: 2px solid #000; border-radius: 0.625rem; box-shadow: 3px 3px 0 0 #000; padding: 1rem; max-width: 36rem;">
+    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
         {{-- Title --}}
-        <div class="text-[#1a0dab] dark:text-blue-400 text-lg font-medium hover:underline cursor-pointer truncate">
+        <div style="color: #1a0dab; font-size: 1.125rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;">
             {{ Str::limit($title ?? 'Page Title', 60) }}
         </div>
 
         {{-- URL --}}
-        <div class="text-[#006621] dark:text-green-400 text-sm truncate">
+        <div style="color: #006621; font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             {{ $url ?? 'https://techplay.gg/example' }}
         </div>
 
         {{-- Description --}}
-        <div class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+        <div style="color: #4d5156; font-size: 0.875rem; line-height: 1.5;">
             {{ Str::limit($description ?? 'Meta description will appear here...', 160) }}
         </div>
     </div>
 
     {{-- Character counts --}}
-    <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex gap-4 text-xs">
-        <span class="{{ strlen($title ?? '') > 60 ? 'text-orange-500' : 'text-gray-500' }}">
+    <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e5e7eb; display: flex; gap: 1rem; font-size: 0.75rem; font-weight: 600;">
+        <span style="color: {{ strlen($title ?? '') > 60 ? '#f97316' : '#6b7280' }};">
             Title: {{ strlen($title ?? '') }}/60
         </span>
-        <span class="{{ strlen($description ?? '') > 160 ? 'text-orange-500' : 'text-gray-500' }}">
+        <span style="color: {{ strlen($description ?? '') > 160 ? '#f97316' : '#6b7280' }};">
             Desc: {{ strlen($description ?? '') }}/160
         </span>
     </div>
