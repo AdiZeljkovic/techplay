@@ -143,8 +143,16 @@
 .msg-time { font-size: 0.6875rem; color: var(--ec-text-dim); font-weight: 400; }
 .msg-edited { font-size: 0.6875rem; color: var(--ec-text-dim); }
 .msg-text { font-size: 0.875rem; line-height: 1.55; color: var(--ec-text); background: var(--ec-surface); border: 1px solid var(--ec-border); border-radius: 2px 10px 10px 10px; padding: 6px 10px; display: inline-block; max-width: 680px; word-break: break-word; }
-.own-message .msg-text { background: var(--ec-accent-light); border-color: rgba(115,103,240,0.2); }
+/* Own messages — right side (iMessage/WhatsApp style) */
+.own-message { flex-direction: row-reverse; }
+.own-message .msg-body { align-items: flex-end; display: flex; flex-direction: column; }
+.own-message .msg-header { flex-direction: row-reverse; }
+.own-message .msg-text { background: var(--ec-accent-light); border-color: rgba(115,103,240,0.2); border-radius: 10px 2px 10px 10px; }
 .dark .own-message .msg-text { background: rgba(115,103,240,0.15); border-color: rgba(115,103,240,0.3); color: var(--ec-text); }
+.own-message .reactions-row { justify-content: flex-end; }
+.own-message .thread-reply-count { align-self: flex-end; }
+.own-message .hover-actions { right: auto; left: 12px; }
+.own-message .msg-avatar-spacer { justify-content: flex-start; }
 .quoted-message { border-left: 3px solid var(--ec-accent); padding: 4px 8px; background: var(--ec-surface-2); border-radius: 0 6px 6px 0; margin-bottom: 4px; font-size: 0.8rem; color: var(--ec-text-muted); }
 .quoted-author { font-weight: 700; font-size: 0.75rem; color: var(--ec-accent); margin-bottom: 2px; }
 .msg-text strong { font-weight: 800; } .msg-text em { font-style: italic; } .msg-text del { text-decoration: line-through; opacity: 0.7; }
