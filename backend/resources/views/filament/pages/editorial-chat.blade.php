@@ -1135,27 +1135,6 @@ textarea:focus-visible {
             </div>
 
             {{-- Quick Nav --}}
-            <div class="sidebar-nav">
-                @php $totalUnread = $this->unreadCount; @endphp
-                <div class="nav-item">
-                    <span class="nav-icon">&#128172;</span>
-                    <span>All Unreads</span>
-                    @if($totalUnread > 0)
-                        <span class="nav-badge">{{ $totalUnread }}</span>
-                    @endif
-                </div>
-                <div class="nav-item">
-                    <span class="nav-icon">&#129525;</span>
-                    <span>Threads</span>
-                    @if($this->unreadThreadReplies > 0)
-                        <span class="nav-badge">{{ $this->unreadThreadReplies }}</span>
-                    @endif
-                </div>
-                <div class="nav-item" @click="showBookmarks = !showBookmarks; showMembers = false" :style="showBookmarks ? 'background:#ede9fe;border:2px solid #7367f0;box-shadow:2px 2px 0 0 #7367f0;border-radius:6px;' : ''">
-                    <span class="nav-icon">&#128278;</span>
-                    <span>Saved</span>
-                </div>
-            </div>
 
             <div class="sidebar-content">
                 {{-- Channels --}}
