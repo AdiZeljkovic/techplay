@@ -3044,7 +3044,7 @@
 
                         @if($this->editingTopic)
                             <div class="topic-edit-row">
-                                <input type="text" wire:model="topicContent" placeholder="Add a topic..." autofocus
+                                <input type="text" wire:model.live="topicContent" placeholder="Add a topic..." autofocus
                                     @keydown.enter.prevent="$wire.saveTopic()" @keydown.escape="$wire.cancelEditTopic()">
                                 <button wire:click="saveTopic" class="topic-edit-btn" style="color: #22c55e;">&#10003;</button>
                                 <button wire:click="cancelEditTopic" class="topic-edit-btn"
