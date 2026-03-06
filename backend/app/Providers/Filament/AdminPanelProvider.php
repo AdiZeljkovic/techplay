@@ -18,6 +18,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 use Filament\Support\Enums\Width;
+use Caresome\FilamentNeobrutalism\NeobrutalismeTheme;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -32,7 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->darkMode(true)
             ->defaultThemeMode(ThemeMode::Dark)
             ->colors([
-                'primary' => '#7367f0', // Materio Purple
+                'primary' => '#7367f0',
                 'gray' => Color::Slate,
             ])
             ->font('Inter')
@@ -40,10 +41,11 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('3rem')
             ->sidebarCollapsibleOnDesktop()
             ->collapsedSidebarWidth('9rem')
-            ->renderHook(
-                'panels::head.end',
-                fn() => view('filament.custom-styles')
-            )
+            ->plugin(NeobrutalismeTheme::make())
+            // ->renderHook(
+            //     'panels::head.end',
+            //     fn() => view('filament.custom-styles')
+            // )
             ->maxContentWidth(Width::Full)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
