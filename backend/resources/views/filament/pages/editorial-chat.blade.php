@@ -312,6 +312,326 @@
             letter-spacing: 0.08em !important;
         }
 
+        /* --- Load More Button --- */
+        .load-more-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            color: #374151;
+            background: #fff;
+            border: 2px solid #000 !important;
+            border-radius: 6px;
+            box-shadow: 2px 2px 0 0 #000 !important;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+        .load-more-btn:hover {
+            box-shadow: none !important;
+            transform: translate(2px, 2px);
+        }
+        .dark .load-more-btn {
+            color: #e2e8f0;
+            background: var(--tp-elevated, #27273a);
+            border-color: rgba(255,255,255,0.2) !important;
+            box-shadow: 2px 2px 0 0 rgba(255,255,255,0.1) !important;
+        }
+
+        /* --- Bookmarks Panel --- */
+        .bookmarks-panel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 340px;
+            height: 100%;
+            background: #fff;
+            border-left: 2px solid #000;
+            box-shadow: -4px 0 0 0 #000;
+            display: flex;
+            flex-direction: column;
+            z-index: 40;
+        }
+        .dark .bookmarks-panel {
+            background: var(--tp-base, #1e1e2e);
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: -4px 0 0 0 rgba(255,255,255,0.1);
+        }
+        .bookmarks-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            border-bottom: 2px solid #000;
+            font-weight: 900;
+            font-size: 0.9375rem;
+        }
+        .dark .bookmarks-header {
+            border-color: rgba(255,255,255,0.1);
+        }
+        .bookmarks-close {
+            width: 28px;
+            height: 28px;
+            border: 2px solid #000;
+            border-radius: 4px;
+            background: #fff;
+            box-shadow: 2px 2px 0 0 #000;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            transition: all 0.1s ease;
+        }
+        .bookmarks-close:hover {
+            box-shadow: none;
+            transform: translate(2px, 2px);
+        }
+        .dark .bookmarks-close {
+            background: var(--tp-elevated);
+            border-color: rgba(255,255,255,0.2);
+            box-shadow: 2px 2px 0 0 rgba(255,255,255,0.1);
+        }
+        .bookmark-item {
+            padding: 0.875rem 1.25rem;
+            border-bottom: 1px solid var(--tp-border);
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .bookmark-item:hover {
+            background: #f8fafc;
+        }
+        .dark .bookmark-item:hover {
+            background: rgba(255,255,255,0.04);
+        }
+        .bookmark-item-author {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--tp-text-bright);
+            margin-bottom: 0.25rem;
+        }
+        .bookmark-item-text {
+            font-size: 0.8125rem;
+            color: var(--tp-text-secondary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .bookmark-item-time {
+            font-size: 0.7rem;
+            color: var(--tp-text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* --- Members Panel --- */
+        .members-panel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 280px;
+            height: 100%;
+            background: #fff;
+            border-left: 2px solid #000;
+            box-shadow: -4px 0 0 0 #000;
+            display: flex;
+            flex-direction: column;
+            z-index: 40;
+        }
+        .dark .members-panel {
+            background: var(--tp-base, #1e1e2e);
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: -4px 0 0 0 rgba(255,255,255,0.1);
+        }
+        .members-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            border-bottom: 2px solid #000;
+            font-weight: 900;
+            font-size: 0.9375rem;
+        }
+        .dark .members-header {
+            border-color: rgba(255,255,255,0.1);
+        }
+        .member-item {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            padding: 0.625rem 1.25rem;
+        }
+        .member-item-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 2px solid #000;
+            position: relative;
+            flex-shrink: 0;
+            overflow: hidden;
+            background: #7367f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .dark .member-item-avatar {
+            border-color: rgba(255,255,255,0.2);
+        }
+        .member-item-name {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--tp-text-bright);
+        }
+        .member-item-status {
+            font-size: 0.75rem;
+            color: var(--tp-text-muted);
+        }
+        .member-presence-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            position: absolute;
+            bottom: -1px;
+            right: -1px;
+        }
+        .member-presence-dot.online { background: #28c76f; }
+        .member-presence-dot.away { background: #ff9f43; }
+        .member-presence-dot.busy { background: #ea5455; }
+        .member-presence-dot.offline { background: #a8aaae; }
+        .members-group-title {
+            padding: 0.5rem 1.25rem 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--tp-text-muted);
+        }
+
+        /* --- Slash Command Dropdown --- */
+        .slash-dropdown {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 2px solid #000;
+            border-radius: 10px;
+            box-shadow: 4px 4px 0 0 #000;
+            z-index: 90;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+        .dark .slash-dropdown {
+            background: var(--tp-elevated, #27273a);
+            border-color: rgba(255,255,255,0.2);
+            box-shadow: 4px 4px 0 0 rgba(255,255,255,0.15);
+        }
+        .slash-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 1rem;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .slash-item:hover,
+        .slash-item.active {
+            background: #ede9fe;
+        }
+        .dark .slash-item:hover,
+        .dark .slash-item.active {
+            background: rgba(115,103,240,0.2);
+        }
+        .slash-item-name {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #5b4ccf;
+        }
+        .slash-item-desc {
+            font-size: 0.8rem;
+            color: var(--tp-text-muted);
+        }
+
+        /* --- Format toolbar better look --- */
+        .fmt-btn, .act-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            color: var(--tp-text-secondary);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        /* --- Notification permission banner --- */
+        .notif-banner {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 1rem;
+            background: #ede9fe;
+            border-bottom: 2px solid #000;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #4c3d99;
+        }
+        .notif-banner button {
+            padding: 0.25rem 0.75rem;
+            background: #7367f0;
+            color: #fff;
+            border: 2px solid #000;
+            border-radius: 4px;
+            box-shadow: 2px 2px 0 0 #000;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+        .notif-banner button:hover {
+            box-shadow: none;
+            transform: translate(2px, 2px);
+        }
+        .notif-banner-dismiss {
+            background: transparent !important;
+            color: #6b7280 !important;
+            border: none !important;
+            box-shadow: none !important;
+            font-size: 1rem !important;
+        }
+        .notif-banner-dismiss:hover {
+            transform: none !important;
+        }
+
+        /* --- Filament widget card inside chat (Active Users etc.) --- */
+        .fi-wi-stats-overview-stat,
+        .fi-wi-stats-overview {
+            border: 2px solid #000 !important;
+            box-shadow: 3px 3px 0 0 #000 !important;
+            border-radius: 10px !important;
+        }
+
+        /* --- Improved message grouping --- */
+        .message-row.grouped .msg-avatar {
+            visibility: hidden;
+        }
+        .message-row.grouped .msg-header {
+            display: none;
+        }
+        .message-row.grouped {
+            padding-top: 2px !important;
+        }
+
         /* Remove soft Gaussian shadows from avatars */
         .msg-avatar,
         .dm-avatar,
@@ -3053,6 +3373,13 @@
     <div class="chat-wrapper" wire:poll.3s @touchstart="handleTouchStart($event)" @touchmove="handleTouchMove($event)"
         x-data="{
             sidebarOpen: window.innerWidth > 768,
+            showBookmarks: false,
+            showMembers: false,
+            showSlashCommands: false,
+            slashSuggestions: [],
+            slashIndex: 0,
+            showNotifBanner: (typeof Notification !== 'undefined' && Notification.permission === 'default'),
+            notifSoundEnabled: true,
             mobileTab: 'chat',
             compactView: localStorage.getItem('chat_compact_view') === 'true',
             touchStartX: 0,
@@ -3086,6 +3413,7 @@
                         }, 2000);
                     }
                 });
+                this.initKeyboardShortcuts();
             },
             saveDraft(key, value) {
                 if (value && value.trim()) {
@@ -3284,6 +3612,10 @@
                         <span class="nav-badge">{{ $this->unreadThreadReplies }}</span>
                     @endif
                 </div>
+                <div class="nav-item" @click="showBookmarks = !showBookmarks; showMembers = false" :style="showBookmarks ? 'background:#ede9fe;border:2px solid #7367f0;box-shadow:2px 2px 0 0 #7367f0;border-radius:6px;' : ''">
+                    <span class="nav-icon">&#128278;</span>
+                    <span>Saved</span>
+                </div>
             </div>
 
             <div class="sidebar-content">
@@ -3452,7 +3784,19 @@
                         wire:click="$toggle('showSearch')" title="Search (Ctrl+K)">
                         &#128269;
                     </button>
+                    @if($this->activeChannel)
+                    <button class="header-btn" @click="showMembers = !showMembers; showBookmarks = false" :class="{ active: showMembers }" title="Members">
+                        &#128101;
+                    </button>
+                    @endif
                 </div>
+            </div>
+
+            {{-- Notification Permission Banner --}}
+            <div class="notif-banner" x-show="showNotifBanner" x-transition>
+                <span>🔔 Enable notifications to get alerts when you're mentioned</span>
+                <button @click="requestNotifications()">Enable</button>
+                <button class="notif-banner-dismiss" @click="showNotifBanner = false">✕</button>
             </div>
 
             {{-- Search Bar --}}
@@ -3952,6 +4296,150 @@
                         });
                     },
 
+                    // === Keyboard Shortcuts ===
+                    initKeyboardShortcuts() {
+                        document.addEventListener('keydown', (e) => {
+                            // Ctrl+K = focus search
+                            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                                e.preventDefault();
+                                $wire.set('showSearch', true);
+                                setTimeout(() => document.querySelector('.search-bar input')?.focus(), 100);
+                            }
+                            // Ctrl+Enter = send message
+                            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                                const ta = this.$refs.messageInput;
+                                if (document.activeElement === ta && ta?.value?.trim()) {
+                                    $wire.call('sendMessage');
+                                }
+                            }
+                            // Escape = cancel edit or close panels
+                            if (e.key === 'Escape') {
+                                if ($wire.editingMessageId) { $wire.call('cancelEdit'); return; }
+                                if (this.showBookmarks) { this.showBookmarks = false; return; }
+                                if (this.showMembers) { this.showMembers = false; return; }
+                                if (this.showSlashCommands) { this.showSlashCommands = false; return; }
+                            }
+                            // Up arrow = edit last own message
+                            if (e.key === 'ArrowUp') {
+                                const ta = this.$refs.messageInput;
+                                if (document.activeElement === ta && !ta?.value?.trim()) {
+                                    e.preventDefault();
+                                    // Find last own message and start editing
+                                    const ownMessages = document.querySelectorAll('.message-row.own-message');
+                                    if (ownMessages.length) {
+                                        const last = ownMessages[ownMessages.length - 1];
+                                        const msgId = last.getAttribute('data-msg-id');
+                                        if (msgId) $wire.call('startEditMessage', parseInt(msgId));
+                                    }
+                                }
+                            }
+                        });
+                    },
+
+                    // === Text Formatting (wrap selected) ===
+                    wrapText(prefix, suffix = null) {
+                        const ta = this.$refs.messageInput;
+                        if (!ta) return;
+                        const start = ta.selectionStart;
+                        const end = ta.selectionEnd;
+                        const selected = ta.value.substring(start, end);
+                        const sfx = suffix || prefix;
+                        const wrapped = prefix + selected + sfx;
+                        const newVal = ta.value.substring(0, start) + wrapped + ta.value.substring(end);
+                        $wire.set('message', newVal);
+                        setTimeout(() => {
+                            ta.selectionStart = start + prefix.length;
+                            ta.selectionEnd = end + prefix.length;
+                            ta.focus();
+                        }, 30);
+                    },
+
+                    // === Slash Commands ===
+                    checkSlashCommand(value) {
+                        if (!value.startsWith('/') || value.includes(' ')) {
+                            this.showSlashCommands = false;
+                            return;
+                        }
+                        const query = value.slice(1).toLowerCase();
+                        const commands = [
+                            { name: '/giphy', desc: 'Search and send a GIF', icon: '🎬' },
+                            { name: '/status', desc: 'Set your status (e.g. /status 🎮 Gaming)', icon: '💬' },
+                            { name: '/remind', desc: 'Remind yourself (e.g. /remind 30m)', icon: '⏰' },
+                            { name: '/link', desc: 'Share article preview (e.g. /link 42)', icon: '📰' },
+                            { name: '/clear', desc: 'Clear message input', icon: '🗑️' },
+                        ];
+                        this.slashSuggestions = commands.filter(c => c.name.includes(query) || !query);
+                        this.showSlashCommands = this.slashSuggestions.length > 0;
+                        this.slashIndex = 0;
+                    },
+
+                    executeSlash(command) {
+                        this.showSlashCommands = false;
+                        if (command === '/giphy') {
+                            $wire.set('message', '');
+                            $wire.set('showGiphy', true);
+                        } else if (command === '/clear') {
+                            $wire.set('message', '');
+                        } else {
+                            $wire.set('message', command + ' ');
+                            setTimeout(() => this.$refs.messageInput?.focus(), 30);
+                        }
+                    },
+
+                    handleSlashKeydown(event) {
+                        if (!this.showSlashCommands) return;
+                        if (event.key === 'ArrowDown') {
+                            event.preventDefault();
+                            this.slashIndex = Math.min(this.slashIndex + 1, this.slashSuggestions.length - 1);
+                        } else if (event.key === 'ArrowUp') {
+                            event.preventDefault();
+                            this.slashIndex = Math.max(this.slashIndex - 1, 0);
+                        } else if (event.key === 'Tab' || event.key === 'Enter') {
+                            event.preventDefault();
+                            this.executeSlash(this.slashSuggestions[this.slashIndex].name);
+                        } else if (event.key === 'Escape') {
+                            this.showSlashCommands = false;
+                        }
+                    },
+
+                    // === Notification Sound ===
+                    playNotificationSound() {
+                        if (!this.notifSoundEnabled) return;
+                        try {
+                            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                            const osc = ctx.createOscillator();
+                            const gain = ctx.createGain();
+                            osc.connect(gain);
+                            gain.connect(ctx.destination);
+                            osc.frequency.setValueAtTime(880, ctx.currentTime);
+                            osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.05);
+                            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+                            osc.start(ctx.currentTime);
+                            osc.stop(ctx.currentTime + 0.2);
+                        } catch(e) {}
+                    },
+
+                    // === Push Notifications ===
+                    requestNotifications() {
+                        if (typeof Notification === 'undefined') return;
+                        Notification.requestPermission().then(perm => {
+                            this.showNotifBanner = false;
+                            if (perm === 'granted') {
+                                new Notification('TechPlay Editorial Chat', {
+                                    body: 'Notifications enabled! You\'ll be notified of @mentions.',
+                                    icon: '/favicon.ico'
+                                });
+                            }
+                        });
+                    },
+
+                    sendPushNotification(title, body) {
+                        if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+                        if (document.hasFocus()) return; // Only notify when tab is not focused
+                        new Notification(title, { body, icon: '/favicon.ico' });
+                    },
+
                     handleMentionKeydown(event) {
                         if (!this.showMentions) return;
 
@@ -3972,6 +4460,19 @@
                         }
                     }
                 }" style="position: relative;">
+
+                    {{-- Slash Command Dropdown --}}
+                    <div x-show="showSlashCommands" @click.away="showSlashCommands = false" class="slash-dropdown">
+                        <template x-for="(cmd, idx) in slashSuggestions" :key="cmd.name">
+                            <div class="slash-item" :class="{ active: idx === slashIndex }" @click="executeSlash(cmd.name)">
+                                <span style="font-size:1.25rem;" x-text="cmd.icon"></span>
+                                <div>
+                                    <div class="slash-item-name" x-text="cmd.name"></div>
+                                    <div class="slash-item-desc" x-text="cmd.desc"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
 
                     {{-- Emoji Picker --}}
                     <div x-show="showEmojis" @click.away="showEmojis = false" x-transition class="emoji-picker">
@@ -4056,23 +4557,23 @@
                     <div class="input-box">
                         <textarea wire:model="message" x-ref="messageInput"
                             placeholder="Message {{ $this->activeChannel ? '#' . ($this->channels->firstWhere('slug', $this->activeChannel)?->name ?? 'channel') : ($this->activeRecipient ? $this->users->find($this->activeRecipient)?->name ?? 'user' : 'chat') }}..."
-                            rows="1" @keydown="handleMentionKeydown($event)"
+                            rows="1" @keydown="handleMentionKeydown($event); handleSlashKeydown($event)"
                             @keydown.enter="if ($event.shiftKey) return; $event.preventDefault(); if (!mentionJustSelected && !showMentions) { clearDraft('{{ $draftKey }}'); $wire.sendMessage(); }"
-                            @paste="handlePaste($event)" @input="checkMention($event)"
+                            @paste="handlePaste($event)" @input="checkMention($event); checkSlashCommand($event.target.value)"
                             @input.debounce.1000ms="saveDraft('{{ $draftKey }}', $event.target.value)"
                             autocomplete="off"></textarea>
 
                         <div class="input-bottom-bar">
                             <div class="format-group">
-                                <button type="button" @click="wrapSelection('**', '**')" class="fmt-btn"
+                                <button type="button" @click="wrapText('**')" class="fmt-btn"
                                     title="Bold"><strong>B</strong></button>
-                                <button type="button" @click="wrapSelection('*', '*')" class="fmt-btn"
+                                <button type="button" @click="wrapText('_')" class="fmt-btn"
                                     title="Italic"><em>I</em></button>
-                                <button type="button" @click="wrapSelection('~~', '~~')" class="fmt-btn"
+                                <button type="button" @click="wrapText('~~')" class="fmt-btn"
                                     title="Strikethrough"><del>S</del></button>
-                                <button type="button" @click="wrapSelection('`', '`')" class="fmt-btn"
+                                <button type="button" @click="wrapText('\`')" class="fmt-btn"
                                     title="Inline code" style="font-family: monospace;">&lt;/&gt;</button>
-                                <button type="button" @click="wrapSelection('```\n', '\n```')" class="fmt-btn"
+                                <button type="button" @click="wrapText('```\n', '\n```')" class="fmt-btn"
                                     title="Code block" style="font-family: monospace;">{ }</button>
                             </div>
 
@@ -4150,6 +4651,88 @@
                     </div>
                 </div>
             </template>
+        </div>
+
+        {{-- Bookmarks Panel --}}
+        <div class="bookmarks-panel" x-show="showBookmarks" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+            <div class="bookmarks-header">
+                <span>🔖 Saved Messages</span>
+                <button class="bookmarks-close" @click="showBookmarks = false">✕</button>
+            </div>
+            <div style="flex: 1; overflow-y: auto;">
+                @forelse($this->bookmarks as $bm)
+                    <div class="bookmark-item" wire:click="setChannel('{{ $bm->channel }}')">
+                        <div class="bookmark-item-author">{{ $bm->user->name }}
+                            @if($bm->channel) <span style="font-weight:400;color:var(--tp-text-muted)">#{{ $bm->channel }}</span> @endif
+                        </div>
+                        @if($bm->content)
+                            <div class="bookmark-item-text">{!! $this->formatMessageContent($bm->content) !!}</div>
+                        @else
+                            <div class="bookmark-item-text" style="font-style:italic;color:var(--tp-text-muted)">Attachment</div>
+                        @endif
+                        <div class="bookmark-item-time">{{ $bm->created_at->diffForHumans() }}</div>
+                    </div>
+                @empty
+                    <div style="padding:2rem;text-align:center;color:var(--tp-text-muted);font-size:0.875rem;">
+                        <div style="font-size:2rem;margin-bottom:0.5rem;">🔖</div>
+                        No saved messages yet.<br>
+                        <span style="font-size:0.8rem;">Hover a message and click the bookmark icon.</span>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- Members Panel --}}
+        <div class="members-panel" x-show="showMembers" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+            <div class="members-header">
+                <span>👥 Members</span>
+                <button class="bookmarks-close" @click="showMembers = false">✕</button>
+            </div>
+            <div style="flex: 1; overflow-y: auto;">
+                @php
+                    $members = $this->channelMembers;
+                    $online = array_filter($members, fn($m) => $m['presence'] !== 'offline');
+                    $offline = array_filter($members, fn($m) => $m['presence'] === 'offline');
+                @endphp
+                @if(count($online) > 0)
+                    <div class="members-group-title">Online — {{ count($online) }}</div>
+                    @foreach($online as $member)
+                        <div class="member-item">
+                            <div class="member-item-avatar" style="position:relative;">
+                                @if($member['avatar_url'])
+                                    <img src="{{ $member['avatar_url'] }}" style="width:100%;height:100%;object-fit:cover;" alt="">
+                                @else
+                                    {{ strtoupper(substr($member['name'], 0, 2)) }}
+                                @endif
+                                <span class="member-presence-dot {{ $member['presence'] }}"></span>
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <div class="member-item-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $member['name'] }}</div>
+                                @if(!empty($member['custom_status']))
+                                    <div class="member-item-status">{{ $member['custom_status']['emoji'] ?? '' }} {{ $member['custom_status']['text'] ?? '' }}</div>
+                                @endif
+                            </div>
+                            <span style="font-size:0.65rem;font-weight:800;padding:1px 5px;border-radius:3px;background:{{ $member['role']['color'] ?? '#6b7280' }}20;color:{{ $member['role']['color'] ?? '#6b7280' }};border:1px solid {{ $member['role']['color'] ?? '#6b7280' }};">{{ $member['role']['short'] ?? '?' }}</span>
+                        </div>
+                    @endforeach
+                @endif
+                @if(count($offline) > 0)
+                    <div class="members-group-title">Offline — {{ count($offline) }}</div>
+                    @foreach($offline as $member)
+                        <div class="member-item" style="opacity:0.5;">
+                            <div class="member-item-avatar" style="position:relative;">
+                                @if($member['avatar_url'])
+                                    <img src="{{ $member['avatar_url'] }}" style="width:100%;height:100%;object-fit:cover;" alt="">
+                                @else
+                                    {{ strtoupper(substr($member['name'], 0, 2)) }}
+                                @endif
+                                <span class="member-presence-dot offline"></span>
+                            </div>
+                            <div class="member-item-name">{{ $member['name'] }}</div>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
         </div>
 
         {{-- ===== THREAD PANEL ===== --}}

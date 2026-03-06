@@ -1201,4 +1201,33 @@ class EditorialChat extends Page
             ->success()
             ->send();
     }
+
+    // === Bookmarks ===
+
+    public function getBookmarksProperty()
+    {
+        $user = auth()->user();
+        return EditorialMessage::with(['user.roles', 'reactions.user'])
+            ->whereHas('bookmarks', fn($q) => $q->where('user_id', $user->id))
+            ->latest()
+            ->take(50)
+            ->get();
+    }
+
+    // === Channel Members ===
+
+    public function getChannelMembersProperty()
+    {
+        return $this->users->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'avatar_url' => $user->avatar_url,
+                'presence' => $this->getUserPresence($user),
+                'role' => $this->getUserRoleBadge($user),
+                'custom_status' => $this->getCustomStatus($user),
+            ];
+        })->sortBy(fn($u) => $u['presence'] === 'offline' ? 1 : 0)->values()->toArray();
+    }
 }
