@@ -2,12 +2,12 @@
     use App\Services\SeoAnalyzerService;
 
     $formData = $getState() ?? [];
-    
+
     // Get record and merge data safely
     $record = $getRecord();
     $livewire = $getLivewire();
     $allData = method_exists($livewire, 'getState') ? $livewire->getState() : [];
-    
+
     $data = array_merge([
         'title' => $allData['title'] ?? $record?->title ?? '',
         'slug' => $allData['slug'] ?? $record?->slug ?? '',
@@ -32,46 +32,145 @@
     };
 
     $colorHex = match ($scoreColor) {
-        'success' => '#10b981', // emerald-500
-        'warning' => '#f59e0b', // amber-500
-        'danger' => '#ef4444', // red-500
+        'success' => '#10b981',
+        'warning' => '#f59e0b',
+        'danger' => '#ef4444',
     };
-    
+
     $bgHex = match ($scoreColor) {
-        'success' => 'rgba(16, 185, 129, 0.1)',
-        'warning' => 'rgba(245, 158, 11, 0.1)',
-        'danger' => 'rgba(239, 68, 68, 0.1)',
+        'success' => 'rgba(16, 185, 129, 0.12)',
+        'warning' => 'rgba(245, 158, 11, 0.12)',
+        'danger' => 'rgba(239, 68, 68, 0.12)',
     };
 @endphp
 
-<div style="background-color: rgba(30, 41, 59, 0.5); border: 1px solid rgba(71, 85, 105, 0.5); border-radius: 0.75rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
-    
+<style>
+    .seo-score-wrap {
+        border: 2px solid #000;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        background: #fff;
+        box-shadow: 3px 3px 0 0 #000;
+    }
+    .dark .seo-score-wrap {
+        background: #1e293b;
+        border-color: #475569;
+        box-shadow: 3px 3px 0 0 rgba(255,255,255,0.15);
+    }
+    .seo-score-check {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+    }
+    .dark .seo-score-check {
+        background: rgba(30, 41, 59, 0.5);
+        border-color: rgba(71, 85, 105, 0.5);
+    }
+    .seo-score-check-text {
+        font-size: 0.875rem;
+        color: #475569;
+        line-height: 1.4;
+    }
+    .dark .seo-score-check-text {
+        color: #cbd5e1;
+    }
+    .seo-score-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+    }
+    .dark .seo-score-title {
+        color: #f1f5f9;
+    }
+    .seo-score-subtitle {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin: 0;
+        line-height: 1.4;
+    }
+    .dark .seo-score-subtitle {
+        color: #94a3b8;
+    }
+    .seo-score-num {
+        font-size: 1.5rem;
+        font-weight: 900;
+        line-height: 1;
+    }
+    .seo-score-label-sm {
+        font-size: 0.65rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+    }
+    .seo-rec-wrap {
+        margin-top: 0.25rem;
+        padding: 1rem;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        border-radius: 0.5rem;
+        background: rgba(245, 158, 11, 0.06);
+    }
+    .dark .seo-rec-wrap {
+        background: rgba(245, 158, 11, 0.05);
+        border-color: rgba(245, 158, 11, 0.2);
+    }
+    .seo-rec-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #d97706;
+        margin-bottom: 0.75rem;
+        margin-top: 0;
+    }
+    .seo-rec-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+    .dark .seo-rec-item {
+        color: #94a3b8;
+    }
+</style>
+
+<div class="seo-score-wrap">
+
     <!-- Top Section: Score & Summary -->
     <div style="display: flex; align-items: center; gap: 1.5rem;">
         <!-- Gauge -->
         <div style="position: relative; width: 80px; height: 80px; flex-shrink: 0;">
             <svg style="transform: rotate(-90deg); width: 100%; height: 100%;" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="45" fill="none" stroke="#334155" stroke-width="8" />
+                <circle cx="50" cy="50" r="45" fill="none" stroke="#e2e8f0" stroke-width="8" />
                 <circle cx="50" cy="50" r="45" fill="none" stroke="{{ $colorHex }}" stroke-width="8"
-                    stroke-dasharray="{{ $score * 2.83 }} 283" 
-                    stroke-linecap="round" 
+                    stroke-dasharray="{{ $score * 2.83 }} 283"
+                    stroke-linecap="round"
                     style="transition: stroke-dasharray 1s ease-in-out;" />
             </svg>
             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                <span style="font-size: 1.5rem; font-weight: 700; color: white; line-height: 1;">{{ $score }}</span>
-                <span style="font-size: 0.65rem; color: #94a3b8; text-transform: uppercase;">SCORE</span>
+                <span class="seo-score-num" style="color: {{ $colorHex }};">{{ $score }}</span>
+                <span class="seo-score-label-sm">SCORE</span>
             </div>
         </div>
 
         <!-- Text Summary -->
         <div style="flex: 1;">
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <h3 style="font-size: 1.125rem; font-weight: 600; color: white; margin: 0;">Optimization Grade</h3>
-                <span style="background-color: {{ $bgHex }}; color: {{ $colorHex }}; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">
+                <h3 class="seo-score-title">Optimization Grade</h3>
+                <span style="background-color: {{ $bgHex }}; color: {{ $colorHex }}; border: 1px solid {{ $colorHex }}; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">
                     {{ $grade }}
                 </span>
             </div>
-            <p style="font-size: 0.875rem; color: #94a3b8; margin: 0; line-height: 1.4;">
+            <p class="seo-score-subtitle">
                 @if($score >= 80)
                     Excellent work! Your content is perfectly optimized for search engines.
                 @elseif($score >= 50)
@@ -84,7 +183,7 @@
     </div>
 
     <!-- Checks List -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.75rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.625rem;">
         @foreach($checks as $check)
             @php
                 $iconColor = match ($check['status']) {
@@ -100,19 +199,19 @@
                     default => 'M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z',
                 };
             @endphp
-            <div style="display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem; background-color: rgba(30, 41, 59, 0.3); border-radius: 0.5rem; border: 1px solid rgba(51, 65, 85, 0.5);">
+            <div class="seo-score-check">
                 <svg style="width: 20px; height: 20px; color: {{ $iconColor }}; flex-shrink: 0; margin-top: 2px;" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="{{ $iconPath }}" clip-rule="evenodd" />
                 </svg>
-                <span style="font-size: 0.875rem; color: #cbd5e1; line-height: 1.4;">{{ $check['message'] }}</span>
+                <span class="seo-score-check-text">{{ $check['message'] }}</span>
             </div>
         @endforeach
     </div>
 
     <!-- Recommendations -->
     @if(count($recommendations) > 0)
-        <div style="margin-top: 0.5rem; padding: 1rem; background-color: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 0.5rem;">
-            <h4 style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 600; color: #fbbf24; margin-bottom: 0.75rem; margin-top: 0;">
+        <div class="seo-rec-wrap">
+            <h4 class="seo-rec-title">
                 <svg style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
@@ -120,8 +219,8 @@
             </h4>
             <ul style="margin: 0; padding: 0; list-style: none;">
                 @foreach($recommendations as $rec)
-                    <li style="display: flex; align-items: start; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 0.875rem; color: #94a3b8;">
-                        <span style="display: block; width: 6px; height: 6px; background-color: #fbbf24; border-radius: 50%; margin-top: 6px; flex-shrink: 0;"></span>
+                    <li class="seo-rec-item">
+                        <span style="display: block; width: 6px; height: 6px; background-color: #f59e0b; border-radius: 50%; margin-top: 6px; flex-shrink: 0;"></span>
                         <span>{{ $rec }}</span>
                     </li>
                 @endforeach
