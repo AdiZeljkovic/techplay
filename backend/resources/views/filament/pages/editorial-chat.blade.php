@@ -72,6 +72,253 @@
             border-top: 1px solid rgba(255,255,255,0.1) !important;
         }
 
+        /* ===== NEOBRUTALISM COMPONENT OVERRIDES ===== */
+
+        /* --- Chat Header --- */
+        .chat-header {
+            border-bottom: 2px solid #000 !important;
+            background: #fff !important;
+        }
+        .dark .chat-header {
+            border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+            background: var(--tp-base, #1e1e2e) !important;
+        }
+
+        /* --- Message bubbles: others --- */
+        .message-row:not(.own-message) .msg-text {
+            background: #f8fafc !important;
+            border: 2px solid #000 !important;
+            box-shadow: 3px 3px 0 0 #000 !important;
+            border-radius: 2px 12px 12px 12px !important;
+        }
+        .dark .message-row:not(.own-message) .msg-text {
+            background: var(--tp-elevated, #27273a) !important;
+            border-color: rgba(255,255,255,0.2) !important;
+            box-shadow: 3px 3px 0 0 rgba(255,255,255,0.15) !important;
+        }
+
+        /* --- Message bubbles: own --- */
+        .message-row.own-message .msg-text {
+            background: #7367f0 !important;
+            background-image: none !important;
+            border: 2px solid #000 !important;
+            box-shadow: 3px 3px 0 0 #000 !important;
+            border-radius: 12px 2px 12px 12px !important;
+            color: #fff !important;
+        }
+        .dark .message-row.own-message .msg-text {
+            border-color: rgba(255,255,255,0.3) !important;
+            box-shadow: 3px 3px 0 0 rgba(255,255,255,0.2) !important;
+        }
+
+        /* --- Input box --- */
+        .input-box {
+            border: 2px solid #000 !important;
+            box-shadow: 3px 3px 0 0 #000 !important;
+            border-radius: 10px !important;
+            background: #fff !important;
+        }
+        .dark .input-box {
+            border-color: rgba(255,255,255,0.2) !important;
+            box-shadow: 3px 3px 0 0 rgba(255,255,255,0.1) !important;
+            background: var(--tp-elevated, #27273a) !important;
+        }
+        .input-box:focus-within {
+            border-color: #7367f0 !important;
+            box-shadow: 3px 3px 0 0 #7367f0 !important;
+        }
+
+        /* --- Send button --- */
+        .send-btn.has-content {
+            background: #7367f0 !important;
+            background-image: none !important;
+            border: 2px solid #000 !important;
+            box-shadow: 2px 2px 0 0 #000 !important;
+            transition: all 0.1s ease !important;
+        }
+        .send-btn.has-content:hover {
+            box-shadow: none !important;
+            transform: translate(2px, 2px) !important;
+        }
+
+        /* --- Hover actions bar --- */
+        .hover-actions {
+            border: 2px solid #000 !important;
+            box-shadow: 3px 3px 0 0 #000 !important;
+            border-radius: 8px !important;
+            background: #fff !important;
+        }
+        .dark .hover-actions {
+            border-color: rgba(255,255,255,0.2) !important;
+            box-shadow: 3px 3px 0 0 rgba(255,255,255,0.1) !important;
+            background: var(--tp-elevated, #27273a) !important;
+        }
+
+        /* --- Reaction buttons --- */
+        .reaction-btn {
+            border: 2px solid #000 !important;
+            box-shadow: 2px 2px 0 0 #000 !important;
+            border-radius: 6px !important;
+            background: #fff !important;
+        }
+        .dark .reaction-btn {
+            border-color: rgba(255,255,255,0.2) !important;
+            box-shadow: 2px 2px 0 0 rgba(255,255,255,0.1) !important;
+        }
+        .reaction-btn.active {
+            background: #ede9fe !important;
+            border-color: #7367f0 !important;
+            box-shadow: 2px 2px 0 0 #7367f0 !important;
+        }
+        .reaction-btn:hover {
+            box-shadow: none !important;
+            transform: translate(2px, 2px) !important;
+        }
+
+        /* --- Emoji picker & GIF picker --- */
+        .emoji-picker,
+        .gif-picker {
+            border: 2px solid #000 !important;
+            box-shadow: 4px 4px 0 0 #000 !important;
+            border-radius: 10px !important;
+        }
+        .dark .emoji-picker,
+        .dark .gif-picker {
+            border-color: rgba(255,255,255,0.2) !important;
+            box-shadow: 4px 4px 0 0 rgba(255,255,255,0.15) !important;
+        }
+
+        /* --- Pinned messages dropdown --- */
+        .pinned-dropdown {
+            border: 2px solid #000 !important;
+            box-shadow: 4px 4px 0 0 #000 !important;
+            border-radius: 10px !important;
+        }
+        .dark .pinned-dropdown {
+            border-color: rgba(255,255,255,0.2) !important;
+            box-shadow: 4px 4px 0 0 rgba(255,255,255,0.15) !important;
+        }
+
+        /* --- Mention dropdown --- */
+        .mention-dropdown {
+            border: 2px solid #000 !important;
+            box-shadow: 4px 4px 0 0 #000 !important;
+            border-radius: 10px !important;
+        }
+        .dark .mention-dropdown {
+            border-color: rgba(255,255,255,0.2) !important;
+            box-shadow: 4px 4px 0 0 rgba(255,255,255,0.15) !important;
+        }
+        .mention-item.active {
+            background: #ede9fe !important;
+        }
+        .dark .mention-item.active {
+            background: rgba(115,103,240,0.2) !important;
+        }
+
+        /* --- Search bar --- */
+        .search-bar input {
+            border: 2px solid #000 !important;
+            border-radius: 8px !important;
+            background: #fff !important;
+        }
+        .dark .search-bar input {
+            border-color: rgba(255,255,255,0.2) !important;
+            background: var(--tp-elevated, #27273a) !important;
+        }
+
+        /* --- Channel/DM active state: flat color, no gradient --- */
+        .channel-item.active,
+        .dm-item.active {
+            background: #ede9fe !important;
+            background-image: none !important;
+            border: 2px solid #7367f0 !important;
+            box-shadow: 2px 2px 0 0 #7367f0 !important;
+            border-radius: 6px !important;
+        }
+        .dark .channel-item.active,
+        .dark .dm-item.active {
+            background: rgba(115,103,240,0.2) !important;
+            border-color: #7367f0 !important;
+        }
+        .channel-item.active .channel-name,
+        .channel-item.active .channel-hash,
+        .dm-item.active .dm-name {
+            color: #5b4ccf !important;
+            font-weight: 800 !important;
+        }
+
+        /* --- Thread panel divider --- */
+        .chat-thread-panel {
+            border-left: 2px solid #000 !important;
+        }
+        .dark .chat-thread-panel {
+            border-left: 1px solid rgba(255,255,255,0.1) !important;
+        }
+
+        /* --- Thread input --- */
+        .thread-input input {
+            border: 2px solid #000 !important;
+            border-radius: 8px !important;
+            background: #fff !important;
+        }
+        .dark .thread-input input {
+            border-color: rgba(255,255,255,0.2) !important;
+            background: var(--tp-elevated, #27273a) !important;
+        }
+
+        /* --- Hovercard --- */
+        .hovercard {
+            border: 2px solid #000 !important;
+            box-shadow: 4px 4px 0 0 #000 !important;
+            border-radius: 10px !important;
+        }
+        .dark .hovercard {
+            border-color: rgba(255,255,255,0.2) !important;
+            box-shadow: 4px 4px 0 0 rgba(255,255,255,0.15) !important;
+        }
+
+        /* --- Compose / action buttons --- */
+        .compose-btn:hover {
+            border: 2px solid #000 !important;
+            box-shadow: 2px 2px 0 0 #000 !important;
+            background: #ede9fe !important;
+            color: #5b4ccf !important;
+        }
+
+        /* --- Format/action toolbar buttons --- */
+        .fmt-btn:hover,
+        .act-btn:hover {
+            background: #ede9fe !important;
+            color: #5b4ccf !important;
+            border-radius: 4px !important;
+        }
+
+        /* --- Header buttons --- */
+        .header-btn:hover {
+            background: #ede9fe !important;
+            color: #5b4ccf !important;
+            border-radius: 6px !important;
+        }
+        .header-btn.active {
+            background: #7367f0 !important;
+            color: #fff !important;
+            border-radius: 6px !important;
+        }
+
+        /* --- Section headers: bolder --- */
+        .section-title {
+            font-weight: 900 !important;
+            letter-spacing: 0.08em !important;
+        }
+
+        /* Remove soft Gaussian shadows from avatars */
+        .msg-avatar,
+        .dm-avatar,
+        .thread-reply-avatar {
+            box-shadow: none !important;
+        }
+
         /* ===== HIDE PAGE HEADER & MAKE CARD LAYOUT ===== */
         .fi-header {
             display: none !important;
