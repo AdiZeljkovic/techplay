@@ -1,5 +1,77 @@
 <x-filament-panels::page>
     <style>
+        /* ===== NEOBRUTALISM THEME VARIABLES ===== */
+        :root {
+            --tp-base: #ffffff;
+            --tp-surface: #f8fafc;
+            --tp-void: #f1f5f9;
+            --tp-elevated: #ffffff;
+            --tp-text-bright: #0f172a;
+            --tp-text-primary: #1e293b;
+            --tp-text-secondary: #475569;
+            --tp-text-muted: #64748b;
+            --tp-text-dim: #94a3b8;
+            --tp-border: #e2e8f0;
+            --tp-border-faint: rgba(0, 0, 0, 0.06);
+            --tp-border-accent: #7367f0;
+            --tp-border-strong: #000000;
+            --tp-accent: #7367f0;
+            --tp-blue: #3b82f6;
+            --tp-red: #ef4444;
+            --tp-shadow-md: 3px 3px 0 0 #000;
+            --tp-shadow-lg: 4px 4px 0 0 #000;
+            --tp-radius-xs: 4px;
+            --tp-radius-sm: 8px;
+            --tp-radius-lg: 12px;
+            --tp-ease: all 0.1s ease;
+        }
+
+        .dark {
+            --tp-base: #1e1e2e;
+            --tp-surface: #181825;
+            --tp-void: #13131f;
+            --tp-elevated: #27273a;
+            --tp-text-bright: #f1f5f9;
+            --tp-text-primary: #e2e8f0;
+            --tp-text-secondary: #94a3b8;
+            --tp-text-muted: #64748b;
+            --tp-text-dim: #475569;
+            --tp-border: rgba(255, 255, 255, 0.1);
+            --tp-border-faint: rgba(255, 255, 255, 0.05);
+            --tp-border-strong: rgba(255, 255, 255, 0.25);
+            --tp-shadow-md: 3px 3px 0 0 rgba(255,255,255,0.2);
+            --tp-shadow-lg: 4px 4px 0 0 rgba(255,255,255,0.15);
+        }
+
+        /* Neobrutalism: outer wrapper gets thick border + offset shadow */
+        .chat-wrapper {
+            border: 2px solid #000 !important;
+            box-shadow: 4px 4px 0 0 #000 !important;
+        }
+
+        .dark .chat-wrapper {
+            border-color: rgba(255,255,255,0.2) !important;
+            box-shadow: 4px 4px 0 0 rgba(255,255,255,0.15) !important;
+        }
+
+        /* Sidebar divider */
+        .chat-sidebar {
+            border-right: 2px solid #000 !important;
+        }
+
+        .dark .chat-sidebar {
+            border-right: 1px solid rgba(255,255,255,0.1) !important;
+        }
+
+        /* Message input area top border */
+        .message-input-wrapper {
+            border-top: 2px solid #000 !important;
+        }
+
+        .dark .message-input-wrapper {
+            border-top: 1px solid rgba(255,255,255,0.1) !important;
+        }
+
         /* ===== HIDE PAGE HEADER & MAKE CARD LAYOUT ===== */
         .fi-header {
             display: none !important;
