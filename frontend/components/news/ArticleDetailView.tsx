@@ -67,13 +67,20 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
         return `${minutes} min read`;
     }, [article.content]);
 
-    // Handle scroll for sticky header/share
+    // Handle scroll for sticky header/share (rAF throttle + passive for better INP)
     useEffect(() => {
+        let rafId: number;
         const handleScroll = () => {
-            setIsScrolled(window.scrollY > 400);
+            cancelAnimationFrame(rafId);
+            rafId = requestAnimationFrame(() => {
+                setIsScrolled(window.scrollY > 400);
+            });
         };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            cancelAnimationFrame(rafId);
+        };
     }, []);
 
     if (!article) return null;

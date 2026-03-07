@@ -92,8 +92,8 @@ export default function BentoGrid() {
                             </p>
                             <div className="flex items-center gap-4 text-sm text-gray-400">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-full bg-white/10 relative overflow-hidden">
-                                        <Image src={MOCK_ARTICLES[0].author.avatar} alt="Author" fill sizes="32px" className="object-cover" />
+                                    <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden">
+                                        <Image src={MOCK_ARTICLES[0].author.avatar} alt="Author" width={32} height={32} className="object-cover rounded-full" />
                                     </div>
                                     <span className="text-white">{MOCK_ARTICLES[0].author.name}</span>
                                 </div>
