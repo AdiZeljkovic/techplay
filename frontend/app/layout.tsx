@@ -49,6 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
     keywords: ["gaming", "tech", "reviews", "hardware", "esports", "PC gaming"],
     openGraph: {
       type: 'website',
+      url: process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg',
       siteName: siteName,
       images: settings.seo_og_image_default ? [{ url: `${process.env.NEXT_PUBLIC_STORAGE_URL}/${settings.seo_og_image_default}` }] : [],
     },
@@ -137,12 +138,12 @@ export default function RootLayout({
           `}
         </Script>
 
-        {/* Google Identity Services - for Privee giveaway Google login */}
-        <Script src="https://accounts.google.com/gsi/client" strategy="beforeInteractive" />
+        {/* Google Identity Services - for Privee giveaway Google login (afterInteractive: doesn't block LCP) */}
+        <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
 
-        {/* Wowhead Tooltips - for WoW Character Analyzer */}
-        <Script src="https://wow.zamimg.com/widgets/power.js" strategy="afterInteractive" />
-        <Script id="wowhead-config" strategy="afterInteractive">
+        {/* Wowhead Tooltips - for WoW Character Analyzer (lazyOnload: only needed on /games pages) */}
+        <Script src="https://wow.zamimg.com/widgets/power.js" strategy="lazyOnload" />
+        <Script id="wowhead-config" strategy="lazyOnload">
           {`
             var whTooltips = {
               colorLinks: true,
@@ -151,6 +152,24 @@ export default function RootLayout({
             };
           `}
         </Script>
+
+        {/* Meta (Facebook) Pixel - lazyOnload so it doesn't block LCP */}
+        {process.env.NEXT_PUBLIC_META_PIXEL_ID && (
+          <Script id="meta-pixel" strategy="lazyOnload">
+            {`
+              !function(f,b,e,v,n,t,s){
+                if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+                n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+                if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+                n.queue=[];t=b.createElement(e);t.async=!0;
+                t.src=v;s=b.getElementsByTagName(e)[0];
+                s.parentNode.insertBefore(t,s)}(window,document,'script',
+                'https://connect.facebook.net/en_US/fbevents.js');
+              fbq('init', '${process.env.NEXT_PUBLIC_META_PIXEL_ID}');
+              fbq('track', 'PageView');
+            `}
+          </Script>
+        )}
 
         {/* Matomo Analytics */}
         <Script id="matomo-analytics" strategy="lazyOnload">

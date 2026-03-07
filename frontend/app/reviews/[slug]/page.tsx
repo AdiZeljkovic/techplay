@@ -127,8 +127,58 @@ export default async function ReviewSlugPage({ params }: Props) {
         notFound();
     }
 
+    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg';
+    const reviewUrl = review.canonical_url || `${siteUrl}/reviews/${slug}`;
+    const coverImage = (review.cover_image || review.featured_image_url)?.startsWith('http')
+        ? (review.cover_image || review.featured_image_url)
+        : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${review.cover_image || review.featured_image_url}`;
+
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": review.item_name || review.title,
+        "image": coverImage ? [coverImage] : [],
+        "description": review.seo_description || review.summary || review.excerpt || "",
+        "review": {
+            "@type": "Review",
+            "name": review.seo_title || review.title,
+            "url": reviewUrl,
+            "datePublished": review.published_at || review.created_at,
+            "author": {
+                "@type": "Person",
+                "name": review.author?.display_name || review.author?.username || "TechPlay Editor",
+                "url": `${siteUrl}/profile/${review.author?.username}`,
+            },
+            "publisher": {
+                "@type": "Organization",
+                "name": "TechPlay",
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": `${siteUrl}/logo.png`,
+                },
+            },
+            "reviewRating": {
+                "@type": "Rating",
+                "ratingValue": review.rating,
+                "bestRating": "10",
+                "worstRating": "1",
+            },
+        },
+        "aggregateRating": review.rating ? {
+            "@type": "AggregateRating",
+            "ratingValue": review.rating,
+            "bestRating": "10",
+            "worstRating": "1",
+            "ratingCount": "1",
+        } : undefined,
+    };
+
     return (
         <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             <ReviewDetailView review={review} />
         </>
     );

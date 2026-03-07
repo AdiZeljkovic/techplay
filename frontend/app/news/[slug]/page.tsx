@@ -176,22 +176,42 @@ export default async function NewsSlugPage({ params }: Props) {
     // We assume the backend change is deployed.
     const comments = article.comments || [];
 
+    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg';
+    const articleUrl = article.canonical_url || `${siteUrl}/news/${article.slug}`;
+    const featuredImage = article.featured_image_url?.startsWith('http')
+        ? article.featured_image_url
+        : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${article.featured_image_url}`;
+
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "NewsArticle",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": articleUrl,
+        },
         "headline": article.seo_title || article.title,
-        "image": [
-            article.featured_image_url?.startsWith('http')
-                ? article.featured_image_url
-                : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${article.featured_image_url}`
-        ],
+        "description": article.seo_description || article.excerpt || "",
+        "image": featuredImage ? [featuredImage] : [],
         "datePublished": article.published_at || article.created_at,
         "dateModified": article.updated_at,
         "author": [{
             "@type": "Person",
             "name": article.author?.display_name || article.author?.username || "TechPlay Editor",
-            "url": `${process.env.NEXT_PUBLIC_APP_URL}/profile/${article.author?.username}`
-        }]
+            "url": `${siteUrl}/profile/${article.author?.username}`,
+        }],
+        "publisher": {
+            "@type": "Organization",
+            "name": "TechPlay",
+            "logo": {
+                "@type": "ImageObject",
+                "url": `${siteUrl}/logo.png`,
+            },
+        },
+        "url": articleUrl,
+        "speakable": {
+            "@type": "SpeakableSpecification",
+            "cssSelector": ["h1", ".article-excerpt"],
+        },
     };
 
     return (

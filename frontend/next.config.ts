@@ -47,9 +47,20 @@ const nextConfig: NextConfig = {
 
   // Performance: Optimize packages and CSS
   experimental: {
-    optimizePackageImports: ['lucide-react', 'date-fns', 'recharts', 'framer-motion'],
+    optimizePackageImports: [
+      'lucide-react',
+      'date-fns',
+      'recharts',
+      'framer-motion',
+      '@tiptap/react',
+      '@tiptap/starter-kit',
+      '@tiptap/extension-image',
+      'hls.js',
+    ],
     // Enable CSS optimization - inlines critical CSS
     optimizeCss: true,
+    // Parallelize webpack builds
+    webpackBuildWorker: true,
   },
 
   // Keep existing image config with performance enhancements
