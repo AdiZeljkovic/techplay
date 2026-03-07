@@ -940,9 +940,6 @@ textarea:focus-visible {
     .mobile-tab-bar button svg { width: 20px; height: 20px; }
 }
 
-/* ─── 28. HIDE FILAMENT AUTO-WIDGETS ───────────────── */
-/* Filament renders registered widgets inside .fi-main outside .chat-wrapper */
-.fi-main > :not(.chat-wrapper) { display: none !important; }
 
 </style>
 
