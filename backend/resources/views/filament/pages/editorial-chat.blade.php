@@ -907,6 +907,43 @@ textarea:focus-visible {
     outline-offset: 2px;
 }
 
+/* ─── 27. MOBILE TAB BAR ────────────────────────── */
+.mobile-tab-bar { display: none; }
+@media (max-width: 640px) {
+    .mobile-tab-bar {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        background: var(--ec-bg);
+        border-top: 2px solid var(--ec-border-hard);
+        z-index: 200;
+        padding: 0 0.5rem;
+    }
+    .mobile-tab-bar button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        font-size: 0.65rem;
+        color: var(--ec-text-muted);
+        background: none;
+        border: none;
+        padding: 0.25rem 0.5rem;
+        cursor: pointer;
+    }
+    .mobile-tab-bar button.active { color: var(--ec-accent); }
+    .mobile-tab-bar button svg { width: 20px; height: 20px; }
+}
+
+/* ─── 28. HIDE FILAMENT AUTO-WIDGETS ───────────────── */
+/* Filament renders registered widgets inside .fi-main outside .chat-wrapper */
+.fi-main > :not(.chat-wrapper) { display: none !important; }
+
 </style>
 
     <div class="chat-wrapper" wire:poll.3s @touchstart="handleTouchStart($event)" @touchmove="handleTouchMove($event)"
