@@ -175,7 +175,7 @@ export default function SettingsClient() {
         );
     }
 
-    const renderTabButton = (id: 'bio' | 'ids' | 'specs' | 'security', label: string, icon: any) => (
+    const renderTabButton = (id: 'bio' | 'ids' | 'specs' | 'security' | 'privacy', label: string, icon: any) => (
         <button
             onClick={() => setActiveTab(id)}
             className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors w-full md:w-auto
