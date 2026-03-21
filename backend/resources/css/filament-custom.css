@@ -1134,17 +1134,6 @@
     border-radius: 0 0 var(--tp-radius-lg) var(--tp-radius-lg) !important;
 }
 
-/* Force searchable Select (TomSelect) dropdown to always open downward inside modals */
-.fi-modal .ts-dropdown {
-    top: calc(100% + 1px) !important;
-    bottom: auto !important;
-    margin-top: 0 !important;
-}
-
-/* Ensure modal content section has enough room for dropdown to open downward */
-.fi-modal-content-ctn:has(.ts-wrapper) {
-    padding-bottom: 12rem !important;
-}
 
 
 /* ============================================

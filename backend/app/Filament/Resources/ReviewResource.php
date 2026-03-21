@@ -28,8 +28,6 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Set;
-use Filament\Forms\Get;
-use Filament\Actions\Action;
 use App\Services\RawgService;
 use Filament\Notifications\Notification;
 
@@ -194,51 +192,47 @@ class ReviewResource extends Resource
                             ->collapsed(false) // Uncollapsed to show validation errors
                             ->collapsible()
                             ->schema([
+                                Select::make('rawg_game_slug')
+                                    ->label('🔍 Auto-fill from RAWG.io')
+                                    ->placeholder('Type a game name to search...')
+                                    ->searchable()
+                                    ->getSearchResultsUsing(function (string $search) {
+                                        $service = new RawgService();
+                                        $results = $service->searchGames($search);
+                                        if (!$results || !isset($results['results'])) return [];
+                                        return collect($results['results'])
+                                            ->mapWithKeys(fn($game) => [$game['slug'] => "{$game['name']} (" . substr($game['released'] ?? 'N/A', 0, 4) . ")"])
+                                            ->toArray();
+                                    })
+                                    ->getOptionLabelUsing(fn($value) => $value)
+                                    ->live()
+                                    ->afterStateUpdated(function (?string $state, Set $set) {
+                                        if (!$state) return;
+                                        $service = new RawgService();
+                                        $details = $service->getGameDetails($state);
+                                        if (!$details) {
+                                            Notification::make()->title('Failed to fetch data from RAWG')->danger()->send();
+                                            return;
+                                        }
+                                        $set('review_data.game_title', $details['name']);
+                                        $set('review_data.developer', $details['developers'][0]['name'] ?? null);
+                                        $set('review_data.publisher', $details['publishers'][0]['name'] ?? null);
+                                        $set('review_data.release_date', $details['released'] ?? null);
+                                        if (isset($details['parent_platforms'])) {
+                                            $set('review_data.platforms', collect($details['parent_platforms'])->pluck('platform.name')->toArray());
+                                        }
+                                        if (isset($details['genres'])) {
+                                            $set('review_data.genres', collect($details['genres'])->pluck('name')->map(fn($g) => strtolower($g))->toArray());
+                                        }
+                                        Notification::make()->title('Fields filled from RAWG')->success()->send();
+                                    })
+                                    ->dehydrated(false)
+                                    ->helperText('Select a game to auto-fill title, developer, publisher, release date, platforms and genres'),
+
                                 Grid::make(2)->schema([
                                     TextInput::make('review_data.game_title')
                                         ->label('Game Title')
-                                        ->placeholder('e.g. The Legend of Zelda')
-                                        // Removed required() to prevent blocking save on legacy items
-                                        ->suffixAction(
-                                            Action::make('fill_from_rawg')
-                                                ->icon('heroicon-o-cloud-arrow-down')
-                                                ->tooltip('Auto-fill from RAWG.io')
-                                                ->form([
-                                                    Select::make('game_slug')
-                                                        ->label('Search Game')
-                                                        ->searchable()
-                                                        ->getSearchResultsUsing(function (string $search) {
-                                                            $service = new RawgService();
-                                                            $results = $service->searchGames($search);
-                                                            if (!$results || !isset($results['results']))
-                                                                return [];
-                                                            return collect($results['results'])
-                                                                ->mapWithKeys(fn($game) => [$game['slug'] => "{$game['name']} (" . substr($game['released'] ?? 'N/A', 0, 4) . ")"])
-                                                                ->toArray();
-                                                        })
-                                                        ->getOptionLabelUsing(fn($value) => $value)
-                                                        ->required(),
-                                                ])
-                                                ->action(function (array $data, $set) {
-                                                    $service = new RawgService();
-                                                    $details = $service->getGameDetails($data['game_slug']);
-                                                    if (!$details) {
-                                                        Notification::make()->title('Failed to fetch data')->danger()->send();
-                                                        return;
-                                                    }
-                                                    $set('review_data.game_title', $details['name']);
-                                                    $set('review_data.developer', $details['developers'][0]['name'] ?? null);
-                                                    $set('review_data.publisher', $details['publishers'][0]['name'] ?? null);
-                                                    $set('review_data.release_date', $details['released'] ?? null);
-                                                    if (isset($details['parent_platforms'])) {
-                                                        $set('review_data.platforms', collect($details['parent_platforms'])->pluck('platform.name')->toArray());
-                                                    }
-                                                    if (isset($details['genres'])) {
-                                                        $set('review_data.genres', collect($details['genres'])->pluck('name')->map(fn($g) => strtolower($g))->toArray());
-                                                    }
-                                                    Notification::make()->title('Data filled from RAWG')->success()->send();
-                                                })
-                                        ),
+                                        ->placeholder('e.g. The Legend of Zelda'),
                                     TextInput::make('review_data.developer')
                                         ->label('Developer')
                                         ->placeholder('e.g. Nintendo'),
