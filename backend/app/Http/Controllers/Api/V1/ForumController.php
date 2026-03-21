@@ -424,17 +424,29 @@ class ForumController extends Controller
         $request->validate(['q' => 'required|string|min:3|max:100']);
         $query = $request->get('q');
 
-        $threads = Thread::whereRaw('MATCH(title, content) AGAINST(? IN BOOLEAN MODE)', [$query . '*'])
+        $threads = Thread::whereRaw(
+                "to_tsvector('english', title || ' ' || coalesce(content, '')) @@ plainto_tsquery('english', ?)",
+                [$query]
+            )
             ->with(['author:id,username,avatar_url', 'category:id,name,slug'])
             ->withCount('posts')
-            ->orderByRaw('MATCH(title, content) AGAINST(?) DESC', [$query])
+            ->orderByRaw(
+                "ts_rank(to_tsvector('english', title || ' ' || coalesce(content, '')), plainto_tsquery('english', ?)) DESC",
+                [$query]
+            )
             ->limit(20)
             ->get();
 
-        $posts = Post::whereRaw('MATCH(content) AGAINST(? IN BOOLEAN MODE)', [$query . '*'])
+        $posts = Post::whereRaw(
+                "to_tsvector('english', coalesce(content, '')) @@ plainto_tsquery('english', ?)",
+                [$query]
+            )
             ->whereNull('deleted_at')
             ->with(['author:id,username,avatar_url', 'thread:id,title,slug'])
-            ->orderByRaw('MATCH(content) AGAINST(?) DESC', [$query])
+            ->orderByRaw(
+                "ts_rank(to_tsvector('english', coalesce(content, '')), plainto_tsquery('english', ?)) DESC",
+                [$query]
+            )
             ->limit(10)
             ->get();
 

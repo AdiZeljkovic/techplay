@@ -19,7 +19,7 @@ class SearchController extends Controller
             'q' => 'required|string|min:2|max:100',
         ]);
 
-        $query = $request->q;
+        $query = $request->input('q');
         $cacheKey = 'search.articles.' . md5($query);
 
         // Cache for 60 seconds to prevent hammering
@@ -27,7 +27,7 @@ class SearchController extends Controller
             $results = Article::query()
                 ->where('status', 'published')
                 ->where('published_at', '<=', now())
-                ->whereRaw('MATCH(title, excerpt) AGAINST(? IN BOOLEAN MODE)', ['+' . implode('* +', explode(' ', trim($query))) . '*'])
+                ->whereRaw("to_tsvector('english', title || ' ' || coalesce(excerpt, '')) @@ plainto_tsquery('english', ?)", [$query])
                 // Only include articles from content categories (news, reviews, tech)
                 ->whereHas('category', function ($q) {
                     $q->whereIn('type', ['news', 'reviews', 'tech']);
