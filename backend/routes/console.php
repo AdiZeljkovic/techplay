@@ -19,3 +19,6 @@ Schedule::job(new \App\Jobs\SendGiveawayReminders)->everySixHours();
 
 // PERFORMANCE: Clean old view tracking records daily (keep last 7 days)
 Schedule::command('views:clean')->daily();
+
+// EDITORIAL: Auto-publish scheduled articles every minute
+Schedule::command('articles:publish-scheduled')->everyMinute();

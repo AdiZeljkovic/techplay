@@ -1,4 +1,4 @@
-import { ShoppingCart, X, ArrowRight, ShoppingBag } from "lucide-react";
+import { ShoppingCart, X, ArrowRight, ShoppingBag, Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -19,10 +19,12 @@ interface AddToCartDialogProps {
 
 export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartDialogProps) {
     const [isVisible, setIsVisible] = useState(false);
+    const [quantity, setQuantity] = useState(1);
 
     useEffect(() => {
         if (isOpen) {
             setIsVisible(true);
+            setQuantity(1);
             document.body.style.overflow = 'hidden';
         } else {
             const timer = setTimeout(() => setIsVisible(false), 300);
@@ -30,6 +32,15 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
             return () => clearTimeout(timer);
         }
     }, [isOpen]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onClose]);
 
     if (!isVisible && !isOpen) return null;
 
@@ -48,7 +59,12 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
             />
 
             {/* Modal */}
-            <div className={`relative w-full max-w-md bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl shadow-2xl transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}>
+            <div
+                role="dialog"
+                aria-modal="true"
+                aria-label="Added to cart"
+                className={`relative w-full max-w-md bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl shadow-2xl transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}
+            >
 
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-[var(--border)]">
@@ -94,6 +110,28 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
                             </div>
                         </div>
                     )}
+
+                    {/* Quantity Selector */}
+                    <div className="flex items-center justify-between mb-4 p-3 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border)]">
+                        <span className="text-sm font-medium text-[var(--text-muted)]">Quantity</span>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                                aria-label="Decrease quantity"
+                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--border)] border border-[var(--border)] transition-colors"
+                            >
+                                <Minus className="w-3.5 h-3.5" aria-hidden="true" />
+                            </button>
+                            <span className="w-8 text-center font-bold text-[var(--text-primary)]">{quantity}</span>
+                            <button
+                                onClick={() => setQuantity(q => q + 1)}
+                                aria-label="Increase quantity"
+                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--border)] border border-[var(--border)] transition-colors"
+                            >
+                                <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                            </button>
+                        </div>
+                    </div>
 
                     <div className="flex flex-col gap-3">
                         <Link

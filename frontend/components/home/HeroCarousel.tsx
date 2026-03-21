@@ -33,8 +33,19 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
     const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % featuredArticles.length);
     const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + featuredArticles.length) % featuredArticles.length);
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'ArrowLeft') prevSlide();
+        if (e.key === 'ArrowRight') nextSlide();
+    };
+
     return (
-        <section className="relative w-full h-[350px] sm:h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden bg-[#001540]">
+        <section
+            className="relative w-full h-[350px] sm:h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden bg-[#001540]"
+            onKeyDown={handleKeyDown}
+            tabIndex={0}
+            role="region"
+            aria-label="Featured articles carousel"
+        >
 
             {/* Background Image Layer with Crossfade */}
             <AnimatePresence mode="popLayout">
@@ -99,15 +110,6 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                     >
                         {decodeHtml(currentArticle.title)}
                     </motion.h1>
-
-                    {/* <motion.p
-                        key={`desc-${currentIndex}`}
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        className="text-gray-200 text-sm md:text-xl line-clamp-2 md:line-clamp-none mb-6 md:mb-8 max-w-2xl font-medium"
-                        dangerouslySetInnerHTML={{ __html: currentArticle.excerpt }}
-                    /> */}
 
                     <motion.div
                         key={`btn-${currentIndex}`}

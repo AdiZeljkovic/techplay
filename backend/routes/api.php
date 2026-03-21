@@ -56,6 +56,8 @@ Route::prefix('v1')->group(function () {
         Route::put('/user/profile', [App\Http\Controllers\Api\V1\AuthController::class, 'updateProfile']);
         Route::put('/user/preferences', [App\Http\Controllers\Api\V1\AuthController::class, 'updatePreferences']);
         Route::put('/user/password', [App\Http\Controllers\Api\V1\AuthController::class, 'changePassword']);
+        Route::get('/user/export-data', [App\Http\Controllers\Api\V1\AuthController::class, 'exportData']);
+        Route::delete('/user/account', [App\Http\Controllers\Api\V1\AuthController::class, 'deleteAccount']);
         Route::get('/user/notifications/counts', [App\Http\Controllers\Api\V1\NotificationController::class, 'counts']);
 
         // User WoW Characters
@@ -95,6 +97,9 @@ Route::prefix('v1')->group(function () {
         Route::post('/forum/threads', [App\Http\Controllers\Api\V1\ForumController::class, 'createThread']);
         Route::post('/forum/threads/{slug}/posts', [App\Http\Controllers\Api\V1\ForumController::class, 'createPost']);
         Route::post('/forum/threads/{slug}/upvote', [App\Http\Controllers\Api\V1\ForumController::class, 'upvote']);
+        Route::post('/forum/threads/{slug}/pin', [App\Http\Controllers\Api\V1\ForumController::class, 'pinThread']);
+        Route::put('/forum/threads/{slug}/posts/{postId}', [App\Http\Controllers\Api\V1\ForumController::class, 'updatePost']);
+        Route::delete('/forum/threads/{slug}/posts/{postId}', [App\Http\Controllers\Api\V1\ForumController::class, 'deletePost']);
 
         // Support Plans
         Route::post('/support/create-plan', [App\Http\Controllers\Api\V1\SupportController::class, 'createPlan']);
@@ -153,6 +158,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/forum/active', [App\Http\Controllers\Api\V1\ForumController::class, 'activeThreads']);
         Route::get('/forum/categories/{slug}', [App\Http\Controllers\Api\V1\ForumController::class, 'showCategory']);
         Route::get('/forum/threads/{slug}', [App\Http\Controllers\Api\V1\ForumController::class, 'showThread']);
+        Route::get('/forum/search', [App\Http\Controllers\Api\V1\ForumController::class, 'search'])->middleware('throttle:30,1');
 
         // Videos
         Route::get('/videos', [App\Http\Controllers\Api\V1\VideoController::class, 'index']);
@@ -265,43 +271,4 @@ Route::prefix('v1')->group(function () {
     // PayPal Webhooks (Signature Verified Internally)
     Route::post('/webhooks/paypal', [App\Http\Controllers\Api\V1\PayPalWebhookController::class, 'handleWebhook']);
 
-    // DEBUG: Test Groq API directly (no cache, hardcoded data)
-    Route::get('/debug-groq', function () {
-        $groqService = app(\App\Services\GroqService::class);
-
-        \Illuminate\Support\Facades\Log::warning('=== GROQ DEBUG TEST STARTED ===');
-
-        $testData = [
-            'character' => [
-                'name' => 'TestChar',
-                'level' => 80,
-                'class' => 'Mage',
-                'race' => 'Human',
-                'faction' => 'Alliance',
-                'achievement_points' => 5000,
-            ],
-            'achievements' => [
-                'total_completed' => 100,
-                'has_void_elf' => false,
-                'midnight_relevant' => 0,
-            ],
-            'mounts' => [
-                'total' => 50,
-                'void_themed' => 2,
-            ],
-            'housing_score' => 30,
-            'midnight_readiness' => 25,
-        ];
-
-        $result = $groqService->analyzeCharacterReadiness($testData);
-
-        \Illuminate\Support\Facades\Log::warning('=== GROQ DEBUG TEST FINISHED ===', ['result' => $result]);
-
-        return response()->json([
-            'success' => $result !== null,
-            'result' => $result,
-            'message' => $result ? 'Groq API works! ✅' : 'Groq failed - check tail -f logs ❌',
-            'check_logs' => 'tail -f storage/logs/laravel.log'
-        ]);
-    });
 });

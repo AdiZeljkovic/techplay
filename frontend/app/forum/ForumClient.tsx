@@ -10,6 +10,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import PageHero from "@/components/ui/PageHero";
 import ForumSidebar from "@/components/forum/ForumSidebar";
+import ForumSearch from "@/components/forum/ForumSearch";
 import { decodeHtml } from "@/lib/decode";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
@@ -76,6 +77,10 @@ export default function ForumPage() {
 
             {/* Content & Sidebar */}
             <div className="container mx-auto px-4 py-8">
+                {/* Forum Search Bar */}
+                <div className="mb-6 flex justify-end">
+                    <ForumSearch />
+                </div>
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Main Content */}
                     <div className="lg:col-span-3 space-y-8">

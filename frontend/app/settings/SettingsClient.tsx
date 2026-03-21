@@ -6,7 +6,7 @@ import axios from "@/lib/axios";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { Loader2, Save, User, Gamepad2, Cpu, Monitor, Lock, CheckCircle } from "lucide-react";
+import { Loader2, Save, User, Gamepad2, Cpu, Monitor, Lock, CheckCircle, ShieldCheck, Download, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 import { AnimatePresence, motion } from "framer-motion";
@@ -19,7 +19,10 @@ export default function SettingsClient() {
     console.log('Settings Page - User object:', user);
 
     const [saving, setSaving] = useState(false);
-    const [activeTab, setActiveTab] = useState<'bio' | 'ids' | 'specs' | 'security'>('bio');
+    const [activeTab, setActiveTab] = useState<'bio' | 'ids' | 'specs' | 'security' | 'privacy'>('bio');
+    const [isExporting, setIsExporting] = useState(false);
+    const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState("");
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     // Form States
@@ -130,6 +133,40 @@ export default function SettingsClient() {
         }
     };
 
+    const handleExportData = async () => {
+        setIsExporting(true);
+        try {
+            const res = await axios.get('/user/export-data', { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `techplay-data-${user?.username}-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch {
+            alert('Failed to export data. Please try again.');
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (deleteConfirmText !== user?.username) {
+            alert(`Please type your username "${user?.username}" to confirm.`);
+            return;
+        }
+        if (!confirm('This will permanently delete your account. This action CANNOT be undone.')) return;
+        setIsDeletingAccount(true);
+        try {
+            await axios.delete('/user/account');
+            logout();
+        } catch {
+            alert('Failed to delete account. Please contact support.');
+        } finally {
+            setIsDeletingAccount(false);
+        }
+    };
+
     if (isLoading || !user) {
         return (
             <div className="min-h-screen pt-24 flex justify-center bg-[var(--bg-primary)]">
@@ -172,6 +209,7 @@ export default function SettingsClient() {
                         {renderTabButton('ids', 'Gamertags', <Gamepad2 className="w-4 h-4" />)}
                         {renderTabButton('specs', 'PC Specs', <Cpu className="w-4 h-4" />)}
                         {renderTabButton('security', 'Security', <Lock className="w-4 h-4" />)}
+                        {renderTabButton('privacy', 'Privacy & Data', <ShieldCheck className="w-4 h-4" />)}
                     </div>
 
                     <div className="p-6 md:p-8">
@@ -457,6 +495,66 @@ export default function SettingsClient() {
                                     <Button onClick={handlePasswordChange} disabled={saving} className="w-full bg-red-600 hover:bg-red-700">
                                         Change Password
                                     </Button>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'privacy' && (
+                            <div className="max-w-lg mx-auto space-y-8">
+                                {/* Export Data */}
+                                <div className="p-5 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl">
+                                    <div className="flex items-start gap-3 mb-4">
+                                        <div className="p-2 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)]">
+                                            <Download className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-[var(--text-primary)]">Download My Data</h3>
+                                            <p className="text-sm text-[var(--text-muted)] mt-1">
+                                                Export all your account data including profile, forum posts, orders, and achievements as a JSON file.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <Button onClick={handleExportData} disabled={isExporting} variant="outline" className="w-full">
+                                        {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+                                        {isExporting ? 'Preparing export...' : 'Export My Data'}
+                                    </Button>
+                                </div>
+
+                                {/* Delete Account */}
+                                <div className="p-5 bg-red-500/5 border border-red-500/20 rounded-xl">
+                                    <div className="flex items-start gap-3 mb-4">
+                                        <div className="p-2 rounded-lg bg-red-500/10 text-red-400">
+                                            <Trash2 className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-red-400">Delete My Account</h3>
+                                            <p className="text-sm text-[var(--text-muted)] mt-1">
+                                                Permanently delete your account and anonymize all your data. This action cannot be undone.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label className="block text-sm text-[var(--text-secondary)] mb-1">
+                                                Type your username <strong>{user.username}</strong> to confirm:
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={deleteConfirmText}
+                                                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                                                placeholder={user.username}
+                                                className="w-full bg-[var(--bg-primary)] border border-red-500/30 rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-red-500"
+                                            />
+                                        </div>
+                                        <Button
+                                            onClick={handleDeleteAccount}
+                                            disabled={isDeletingAccount || deleteConfirmText !== user.username}
+                                            className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                                        >
+                                            {isDeletingAccount ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                                            {isDeletingAccount ? 'Deleting...' : 'Delete My Account'}
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         )}

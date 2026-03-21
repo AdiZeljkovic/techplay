@@ -25,10 +25,18 @@ class NotificationController extends Controller
             ->where('status', 'pending')
             ->count();
 
+        // Count unread forum reply notifications
+        $forumReplies = \Illuminate\Support\Facades\DB::table('notifications')
+            ->where('notifiable_id', $userId)
+            ->whereNull('read_at')
+            ->whereRaw("JSON_EXTRACT(data, '$.type') = 'forum_reply'")
+            ->count();
+
         return response()->json([
             'unread_messages' => $unreadMessages,
             'pending_requests' => $pendingRequests,
-            'total' => $unreadMessages + $pendingRequests
+            'forum_replies' => $forumReplies,
+            'total' => $unreadMessages + $pendingRequests + $forumReplies
         ]);
     }
 }

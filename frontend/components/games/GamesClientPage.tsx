@@ -7,8 +7,6 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Search, Calendar, Database, Gamepad2 } from "lucide-react";
 import PageHero from "@/components/ui/PageHero";
-import LimitModal from "@/components/ui/LimitModal";
-import { useSearchLimit } from "@/hooks/useSearchLimit";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -37,35 +35,13 @@ const getMetacriticColor = (score: number) => {
 export default function GamesClientPage() {
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    const [showLimitModal, setShowLimitModal] = useState(false);
-
-    // Use limit of 2 searches for guests
-    const { isLimitReached, incrementSearch } = useSearchLimit(2);
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (search === debouncedSearch) return;
-
-            // If clearing search, just clear it without counting
-            if (!search) {
-                setDebouncedSearch("");
-                return;
-            }
-
-            // If limit reached, show modal and reset search input to previous valid state (optional) or just don't fetch
-            if (isLimitReached) {
-                setShowLimitModal(true);
-                // Ideally we shouldn't update debouncedSearch so fetch doesn't happen
-                return;
-            }
-
-            // Valid search - increment count
-            incrementSearch();
             setDebouncedSearch(search);
         }, 500);
-
         return () => clearTimeout(timer);
-    }, [search, debouncedSearch, isLimitReached, incrementSearch]);
+    }, [search]);
 
     const { data, error, isLoading } = useSWR<GamesResponse>(
         debouncedSearch
@@ -76,11 +52,6 @@ export default function GamesClientPage() {
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
-            <LimitModal
-                isOpen={showLimitModal}
-                onClose={() => setShowLimitModal(false)}
-            />
-
             {/* Hero Section */}
             <PageHero
                 title="Game Database"

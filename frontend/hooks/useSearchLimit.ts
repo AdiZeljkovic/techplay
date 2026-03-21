@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
 
-export const useSearchLimit = (limit = 2) => {
+export const useSearchLimit = (limit = 100) => {
     const { user, isLoading } = useAuth();
     const [searchCount, setSearchCount] = useState(0);
     const [isLimitReached, setIsLimitReached] = useState(false);

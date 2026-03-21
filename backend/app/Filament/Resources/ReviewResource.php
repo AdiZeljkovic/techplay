@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ReviewResource\Pages;
+use App\Filament\Resources\NewsResource\RelationManagers\ContentVersionsRelationManager;
 use App\Filament\Components\SeoFields;
 use App\Filament\Components\MediaPickerFields;
 use App\Models\Article;
@@ -435,12 +436,13 @@ class ReviewResource extends Resource
                                             ->options([
                                                 'draft' => '📝 Draft',
                                                 'ready_for_review' => '👁️ Pending Review',
+                                                'scheduled' => '🕐 Scheduled',
                                                 'published' => '🌐 Published',
                                             ])
                                             ->default('draft')
                                             ->required()
                                             ->native(false)
-                                            ->helperText('Set to Published to go live'),
+                                            ->helperText('Use "Scheduled" to auto-publish on the Publish Date'),
 
                                         DateTimePicker::make('published_at')
                                             ->label('Publish Date')
@@ -533,6 +535,7 @@ class ReviewResource extends Resource
                     ->color(fn(string $state): string => match ($state) {
                         'draft' => 'gray',
                         'ready_for_review' => 'warning',
+                        'scheduled' => 'info',
                         'published' => 'success',
                         default => 'gray',
                     }),
@@ -547,6 +550,7 @@ class ReviewResource extends Resource
                     ->options([
                         'draft' => 'Draft',
                         'ready_for_review' => 'Pending Review',
+                        'scheduled' => 'Scheduled',
                         'published' => 'Published',
                     ]),
                 SelectFilter::make('category')
@@ -563,6 +567,13 @@ class ReviewResource extends Resource
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            ContentVersionsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

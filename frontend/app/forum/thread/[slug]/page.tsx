@@ -45,6 +45,7 @@ interface Post {
     id: number;
     content: string;
     created_at: string;
+    edited_at?: string;
     is_solution: boolean;
     author: User;
 }
@@ -113,6 +114,10 @@ export default function ThreadPage() {
     const [reportDialogOpen, setReportDialogOpen] = useState(false);
     const [hasReported, setHasReported] = useState(false);
     const [reportReason, setReportReason] = useState("");
+    const [isPinning, setIsPinning] = useState(false);
+    const [editingPostId, setEditingPostId] = useState<number | null>(null);
+    const [editContent, setEditContent] = useState("");
+    const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
 
     const { data, isLoading, mutate } = useSWR<ThreadData>(slug ? `/forum/threads/${slug}` : null, fetcher);
 
@@ -220,6 +225,70 @@ export default function ThreadPage() {
         }
     };
 
+    const handlePin = async () => {
+        if (!user || isPinning) return;
+        setIsPinning(true);
+        try {
+            const res = await axios.post(`/forum/threads/${slug}/pin`);
+            if (data) {
+                mutate({ ...data, thread: { ...data.thread, is_pinned: res.data.is_pinned } }, false);
+            }
+            toast.success(res.data.message);
+        } catch {
+            toast.error("Failed to update pin status.");
+        } finally {
+            setIsPinning(false);
+        }
+    };
+
+    const handleEditPost = (post: Post) => {
+        setEditingPostId(post.id);
+        setEditContent(post.content);
+    };
+
+    const handleSaveEdit = async (postId: number) => {
+        if (!editContent.trim()) return;
+        try {
+            const res = await axios.put(`/forum/threads/${slug}/posts/${postId}`, { content: editContent });
+            const updatedPost = res.data.data || res.data;
+            if (data) {
+                const currentPosts = getPosts(data);
+                const updatedPosts = currentPosts.map(p => p.id === postId ? { ...p, ...updatedPost } : p);
+                if (Array.isArray(data.posts)) {
+                    mutate({ ...data, posts: updatedPosts }, false);
+                } else {
+                    mutate({ ...data, posts: { ...data.posts, data: updatedPosts } }, false);
+                }
+            }
+            setEditingPostId(null);
+            toast.success("Post updated.");
+        } catch {
+            toast.error("Failed to update post.");
+        }
+    };
+
+    const handleDeletePost = async (postId: number) => {
+        if (!confirm("Are you sure you want to delete this post?")) return;
+        setDeletingPostId(postId);
+        try {
+            await axios.delete(`/forum/threads/${slug}/posts/${postId}`);
+            if (data) {
+                const currentPosts = getPosts(data);
+                const updatedPosts = currentPosts.filter(p => p.id !== postId);
+                if (Array.isArray(data.posts)) {
+                    mutate({ ...data, posts: updatedPosts, thread: { ...data.thread, posts_count: updatedPosts.length } }, false);
+                } else {
+                    mutate({ ...data, posts: { ...data.posts, data: updatedPosts }, thread: { ...data.thread, posts_count: updatedPosts.length } }, false);
+                }
+            }
+            toast.success("Post deleted.");
+        } catch {
+            toast.error("Failed to delete post.");
+        } finally {
+            setDeletingPostId(null);
+        }
+    };
+
     const handleReportClick = () => {
         if (hasReported) {
             toast("You have already reported this thread.", { icon: 'ℹ️' });
@@ -279,6 +348,8 @@ export default function ThreadPage() {
         return !!role;
     };
     const threadAuthorStaff = isStaff(thread.author);
+    const currentUserIsStaff = user ? isStaff({ ...user, roles: (user as any).roles }) : false;
+    const canPin = currentUserIsStaff;
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
@@ -314,6 +385,16 @@ export default function ThreadPage() {
                                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30">
                                         <Lock className="w-3 h-3" /> Locked
                                     </span>
+                                )}
+                                {canPin && (
+                                    <button
+                                        onClick={handlePin}
+                                        disabled={isPinning}
+                                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border transition-all ${thread.is_pinned ? 'bg-[var(--accent)]/10 text-[var(--accent)] border-[var(--accent)]/30 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30' : 'bg-white/5 text-[var(--text-muted)] border-white/10 hover:bg-[var(--accent)]/10 hover:text-[var(--accent)] hover:border-[var(--accent)]/30'}`}
+                                    >
+                                        <Pin className="w-3 h-3" />
+                                        {thread.is_pinned ? 'Unpin' : 'Pin'}
+                                    </button>
                                 )}
                             </div>
                             <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] leading-tight mb-3">
@@ -519,12 +600,56 @@ export default function ThreadPage() {
                                                     <div className="flex items-center justify-between mb-3">
                                                         <span className="text-xs text-[var(--text-muted)]">
                                                             {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                                                            {post.edited_at && <span className="ml-2 italic">(edited)</span>}
                                                         </span>
-                                                        <span className="text-xs text-[var(--text-muted)]">#{index + 2}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-[var(--text-muted)]">#{index + 2}</span>
+                                                            {user && (user.id === post.author?.id || currentUserIsStaff) && (
+                                                                <div className="flex items-center gap-1">
+                                                                    <button
+                                                                        onClick={() => handleEditPost(post)}
+                                                                        className="text-xs px-2 py-1 rounded text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--bg-elevated)] transition-all"
+                                                                    >
+                                                                        Edit
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleDeletePost(post.id)}
+                                                                        disabled={deletingPostId === post.id}
+                                                                        className="text-xs px-2 py-1 rounded text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                                                    >
+                                                                        {deletingPostId === post.id ? '...' : 'Delete'}
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                    <div className="prose prose-sm prose-invert max-w-none text-[var(--text-secondary)]">
-                                                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
-                                                    </div>
+                                                    {editingPostId === post.id ? (
+                                                        <div className="space-y-2">
+                                                            <textarea
+                                                                value={editContent}
+                                                                onChange={(e) => setEditContent(e.target.value)}
+                                                                className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg p-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-none min-h-[100px]"
+                                                            />
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    onClick={() => handleSaveEdit(post.id)}
+                                                                    className="px-3 py-1.5 bg-[var(--accent)] text-white text-xs font-bold rounded-lg hover:bg-[var(--accent-hover)] transition-colors"
+                                                                >
+                                                                    Save
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setEditingPostId(null)}
+                                                                    className="px-3 py-1.5 bg-[var(--bg-elevated)] text-[var(--text-muted)] text-xs font-bold rounded-lg hover:bg-[var(--border)] transition-colors"
+                                                                >
+                                                                    Cancel
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="prose prose-sm prose-invert max-w-none text-[var(--text-secondary)]">
+                                                            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

@@ -10,6 +10,7 @@ import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
 import { MobileMenuProvider } from "@/context/MobileMenuContext";
 import CookieConsentBanner from "@/components/ui/CookieConsentBanner";
 import GlobalSeo from "@/components/seo/GlobalSeo";
+import ConsentAwareAnalytics from "@/components/analytics/ConsentAwareAnalytics";
 import { Toaster } from "react-hot-toast";
 
 
@@ -124,24 +125,10 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
-        {/* Google Analytics - lazyOnload for better LCP (loads after page is fully interactive) */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-0J974Y0X23"
-          strategy="lazyOnload"
-        />
-        <Script id="google-analytics" strategy="lazyOnload">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-0J974Y0X23');
-          `}
-        </Script>
-
         {/* Google Identity Services - for Privee giveaway Google login (afterInteractive: doesn't block LCP) */}
         <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
 
-        {/* Wowhead Tooltips - for WoW Character Analyzer (lazyOnload: only needed on /games pages) */}
+        {/* Wowhead Tooltips - for WoW Character Analyzer (lazyOnload: only needed on /wow-analyzer pages) */}
         <Script src="https://wow.zamimg.com/widgets/power.js" strategy="lazyOnload" />
         <Script id="wowhead-config" strategy="lazyOnload">
           {`
@@ -153,39 +140,8 @@ export default function RootLayout({
           `}
         </Script>
 
-        {/* Meta (Facebook) Pixel - lazyOnload so it doesn't block LCP */}
-        {process.env.NEXT_PUBLIC_META_PIXEL_ID && (
-          <Script id="meta-pixel" strategy="lazyOnload">
-            {`
-              !function(f,b,e,v,n,t,s){
-                if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-                n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-                if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-                n.queue=[];t=b.createElement(e);t.async=!0;
-                t.src=v;s=b.getElementsByTagName(e)[0];
-                s.parentNode.insertBefore(t,s)}(window,document,'script',
-                'https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', '${process.env.NEXT_PUBLIC_META_PIXEL_ID}');
-              fbq('track', 'PageView');
-            `}
-          </Script>
-        )}
-
-        {/* Matomo Analytics */}
-        <Script id="matomo-analytics" strategy="lazyOnload">
-          {`
-            var _paq = window._paq = window._paq || [];
-            _paq.push(['trackPageView']);
-            _paq.push(['enableLinkTracking']);
-            (function() {
-              var u="//analytics.adizeljkovic.com/";
-              _paq.push(['setTrackerUrl', u+'matomo.php']);
-              _paq.push(['setSiteId', '1']);
-              var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-              g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-            })();
-          `}
-        </Script>
+        {/* Analytics loaded conditionally based on user cookie consent */}
+        <ConsentAwareAnalytics />
 
         <ThemeProvider>
           <SiteSettingsProvider>

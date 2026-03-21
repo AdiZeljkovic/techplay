@@ -155,4 +155,14 @@ class Article extends Model
     {
         return $this->morphMany(Comment::class, 'commentable');
     }
+
+    public function versions()
+    {
+        return $this->morphMany(\App\Models\ContentVersion::class, 'versionable')->latest();
+    }
+
+    protected static function booted(): void
+    {
+        static::observe(\App\Observers\ArticleVersionObserver::class);
+    }
 }

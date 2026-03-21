@@ -190,26 +190,6 @@ export default function WowAnalyzerPage() {
             "name": "TechPlay",
             "url": "https://techplay.gg"
         },
-        "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "4.9",
-            "ratingCount": "50000",
-            "bestRating": "5",
-            "worstRating": "1"
-        },
-        "review": {
-            "@type": "Review",
-            "reviewRating": {
-                "@type": "Rating",
-                "ratingValue": "5",
-                "bestRating": "5"
-            },
-            "author": {
-                "@type": "Person",
-                "name": "WoW Community"
-            },
-            "reviewBody": "Best free WoW character analyzer! Instant results, AI recommendations, and no login required. Perfect for Midnight expansion prep!"
-        },
         "featureList": [
             "Instant character analysis",
             "Gear optimization checker",

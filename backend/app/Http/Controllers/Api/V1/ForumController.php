@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Thread;
 use App\Models\Post;
+use App\Notifications\ForumReplyNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;  // Placeholder to keep tool happy without changing verification
+use Illuminate\Support\Facades\Cache;
 
 
 class ForumController extends Controller
@@ -204,10 +205,15 @@ class ForumController extends Controller
             });
 
             // Cache invalidation AFTER successful transaction commit
-            // This prevents race condition where cache is cleared before data is committed
             Cache::forget("forum.thread.{$slug}");
 
             \Illuminate\Support\Facades\Log::info('createPost: Post created', ['id' => $post->id]);
+
+            // Notify thread author if they are not the replier
+            $thread->load('author');
+            if ($thread->author && $thread->author_id !== Auth::id()) {
+                $thread->author->notify(new ForumReplyNotification($post, $thread, Auth::user()));
+            }
 
             $post->load('author.rank');
             $post->author->loadCount(['posts', 'threads']);
@@ -314,21 +320,18 @@ class ForumController extends Controller
     {
         $thread = Thread::where('slug', $slug)->firstOrFail();
 
-        // Check if already upvoted
         $exists = \Illuminate\Support\Facades\DB::table('thread_upvotes')
             ->where('user_id', Auth::id())
             ->where('thread_id', $thread->id)
             ->exists();
 
         if ($exists) {
-            // Remove upvote
             \Illuminate\Support\Facades\DB::table('thread_upvotes')
                 ->where('user_id', Auth::id())
                 ->where('thread_id', $thread->id)
                 ->delete();
             $action = 'removed';
         } else {
-            // Add upvote
             \Illuminate\Support\Facades\DB::table('thread_upvotes')->insert([
                 'user_id' => Auth::id(),
                 'thread_id' => $thread->id,
@@ -342,6 +345,103 @@ class ForumController extends Controller
             'message' => 'Upvote updated',
             'action' => $action,
             'count' => \Illuminate\Support\Facades\DB::table('thread_upvotes')->where('thread_id', $thread->id)->count()
+        ]);
+    }
+
+    public function pinThread(Request $request, string $slug)
+    {
+        $user = Auth::user();
+        $allowedRoles = ['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator'];
+
+        if (!$user->hasAnyRole($allowedRoles) && !in_array($user->role, ['admin', 'super_admin', 'moderator'])) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $thread = Thread::where('slug', $slug)->firstOrFail();
+        $thread->is_pinned = !$thread->is_pinned;
+        $thread->save();
+
+        // Invalidate category cache so pinned order refreshes
+        for ($i = 1; $i <= 5; $i++) {
+            Cache::forget("forum.category.{$thread->category->slug}.page_{$i}");
+        }
+
+        return response()->json([
+            'is_pinned' => $thread->is_pinned,
+            'message' => $thread->is_pinned ? 'Thread pinned.' : 'Thread unpinned.',
+        ]);
+    }
+
+    public function updatePost(Request $request, string $slug, int $postId, \App\Services\SanitizationService $sanitizer)
+    {
+        $request->validate(['content' => 'required|string|min:5|max:10000']);
+
+        $post = Post::findOrFail($postId);
+        $user = Auth::user();
+        $allowedRoles = ['Super Admin', 'Admin', 'Moderator'];
+
+        $isOwner = $post->author_id === $user->id;
+        $isStaff = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'moderator']);
+
+        if (!$isOwner && !$isStaff) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $post->content = $sanitizer->sanitizeRichContent($request->content);
+        $post->edited_at = now();
+        $post->save();
+
+        Cache::forget("forum.thread.{$slug}");
+
+        $post->load('author.rank');
+        $post->author->loadCount(['posts', 'threads']);
+
+        return new \App\Http\Resources\V1\PostResource($post);
+    }
+
+    public function deletePost(Request $request, string $slug, int $postId)
+    {
+        $post = Post::findOrFail($postId);
+        $user = Auth::user();
+        $allowedRoles = ['Super Admin', 'Admin', 'Moderator'];
+
+        $isOwner = $post->author_id === $user->id;
+        $isStaff = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'moderator']);
+
+        if (!$isOwner && !$isStaff) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $post->delete(); // Soft delete
+
+        Cache::forget("forum.thread.{$slug}");
+
+        return response()->json(['message' => 'Post deleted.']);
+    }
+
+    public function search(Request $request)
+    {
+        $request->validate(['q' => 'required|string|min:3|max:100']);
+        $query = $request->get('q');
+
+        $threads = Thread::whereRaw('MATCH(title, content) AGAINST(? IN BOOLEAN MODE)', [$query . '*'])
+            ->with(['author:id,username,avatar_url', 'category:id,name,slug'])
+            ->withCount('posts')
+            ->orderByRaw('MATCH(title, content) AGAINST(?) DESC', [$query])
+            ->limit(20)
+            ->get();
+
+        $posts = Post::whereRaw('MATCH(content) AGAINST(? IN BOOLEAN MODE)', [$query . '*'])
+            ->whereNull('deleted_at')
+            ->with(['author:id,username,avatar_url', 'thread:id,title,slug'])
+            ->orderByRaw('MATCH(content) AGAINST(?) DESC', [$query])
+            ->limit(10)
+            ->get();
+
+        return response()->json([
+            'threads' => $threads,
+            'posts' => $posts,
+            'query' => $query,
         ]);
     }
 }

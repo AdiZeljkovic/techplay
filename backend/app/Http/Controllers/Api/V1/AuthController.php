@@ -349,4 +349,61 @@ class AuthController extends Controller
             'message' => 'Password changed successfully',
         ]);
     }
+
+    public function exportData(Request $request)
+    {
+        $user = $request->user()->load(['rank', 'achievements']);
+
+        $data = [
+            'exported_at' => now()->toISOString(),
+            'profile' => [
+                'username' => $user->username,
+                'display_name' => $user->display_name,
+                'email' => $user->email,
+                'bio' => $user->bio,
+                'xp' => $user->xp,
+                'created_at' => $user->created_at,
+                'gamertags' => $user->gamertags,
+                'pc_specs' => $user->pc_specs,
+            ],
+            'forum' => [
+                'threads_count' => $user->threads()->count(),
+                'posts_count' => $user->posts()->count(),
+            ],
+            'orders' => \App\Models\Order::where('user_id', $user->id)
+                ->select('id', 'total', 'status', 'created_at')
+                ->get(),
+            'achievements' => $user->achievements->map(fn($a) => [
+                'name' => $a->name,
+                'description' => $a->description,
+                'unlocked_at' => $a->pivot->created_at ?? null,
+            ]),
+        ];
+
+        return response()->json($data)
+            ->header('Content-Disposition', 'attachment; filename="techplay-data.json"')
+            ->header('Content-Type', 'application/json');
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        $user = $request->user();
+        $id = $user->id;
+
+        // Anonymize personal data
+        $user->email = "deleted_{$id}@deleted.techplay.gg";
+        $user->name = "Deleted User";
+        $user->username = "deleted_user_{$id}";
+        $user->display_name = null;
+        $user->bio = null;
+        $user->avatar_url = null;
+        $user->cover_image = null;
+        $user->discord_id = null;
+        $user->save();
+
+        // Revoke all tokens
+        $user->tokens()->delete();
+
+        return response()->json(['message' => 'Account deleted.']);
+    }
 }

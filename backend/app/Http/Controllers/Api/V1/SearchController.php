@@ -27,11 +27,7 @@ class SearchController extends Controller
             $results = Article::query()
                 ->where('status', 'published')
                 ->where('published_at', '<=', now())
-                // Search in title and excerpt
-                ->where(function ($q) use ($query) {
-                    $q->where('title', 'LIKE', "%{$query}%")
-                        ->orWhere('excerpt', 'LIKE', "%{$query}%");
-                })
+                ->whereRaw('MATCH(title, excerpt) AGAINST(? IN BOOLEAN MODE)', ['+' . implode('* +', explode(' ', trim($query))) . '*'])
                 // Only include articles from content categories (news, reviews, tech)
                 ->whereHas('category', function ($q) {
                     $q->whereIn('type', ['news', 'reviews', 'tech']);
