@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 const STORAGE_URL = process.env.NEXT_PUBLIC_STORAGE_URL || 'https://api-beta.techplay.gg/storage';
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg').replace(/\/$/, '');
 
 export interface PageSeoData {
     page_path: string;
@@ -94,13 +95,17 @@ export async function generatePageMetadata(
     const keywords = pageSeo?.meta_keywords?.split(',').map((k: string) => k.trim())
         || defaults?.keywords
         || ["gaming", "tech", "reviews"];
-    const canonical = pageSeo?.canonical_url || undefined;
+    // Always generate canonical — fallback to APP_URL + path so every page has one.
+    const canonical = pageSeo?.canonical_url || `${APP_URL}${path === '/' ? '' : path}`;
 
     return {
         title,
         description,
         keywords,
-        alternates: canonical ? { canonical } : undefined,
+        alternates: {
+            canonical,
+            languages: { 'x-default': canonical },
+        },
         openGraph: {
             title: ogTitle,
             description: ogDescription,

@@ -1,0 +1,35 @@
+# TechPlay
+
+> TechPlay is a gaming portal covering hardware reviews, gaming news, esports, game database, and community discussions. Based in Bosnia and Herzegovina.
+
+## Content Sections
+
+- [News](/news) — Latest gaming and tech news
+- [Reviews](/reviews) — In-depth hardware and game reviews with expert ratings
+- [Hardware](/hardware) — PC hardware analysis, benchmarks, and buying guides
+- [Guides](/guides) — Gaming guides, tutorials, and tips
+- [Games Database](/games) — Database of 1M+ games with specs and release dates
+- [Videos](/videos) — Video content and streams
+- [Forum](/forum) — Community discussions and threads
+- [Calendar](/calendar) — Gaming release calendar and events
+
+## About
+
+- [About Us](/about) — About TechPlay and our team
+- [Impressum](/impressum) — Editorial staff and legal information
+- [Contact](/contact) — Contact information
+- [Rating System](/rating-system) — How TechPlay rates hardware and games
+
+## Legal
+
+- [Privacy Policy](/privacy)
+- [Terms of Service](/terms)
+- [Cookie Policy](/cookies)
+
+## API / Feeds
+
+- RSS Feed: https://api-beta.techplay.gg/api/v1/feed
+
+## Contact
+
+https://techplay.gg/contact

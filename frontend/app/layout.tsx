@@ -47,7 +47,7 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s ${separator} ${siteName}`,
     },
     description: settings.seo_meta_description || "Your source for gaming news, reviews, hardware analysis, and community discussions.",
-    keywords: ["gaming", "tech", "reviews", "hardware", "esports", "PC gaming"],
+    keywords: ["gaming", "gaming news", "hardware reviews", "PC gaming", "esports", "game database", "TechPlay"],
     openGraph: {
       type: 'website',
       url: process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg',
@@ -105,14 +105,62 @@ export const viewport: Viewport = {
   themeColor: '#001540',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Fetch settings server-side to render Organization/WebSite schema in initial HTML.
+  // Uses Next.js fetch cache (revalidate: 3600) — no extra network cost.
+  const settings = await getSiteSettings();
+  const siteName = settings.site_name || 'TechPlay';
+  const siteUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg').replace(/\/$/, '');
+  const storageUrl = process.env.NEXT_PUBLIC_STORAGE_URL || 'https://api-beta.techplay.gg/storage';
+
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': settings.seo_organization_type || 'Organization',
+    '@id': `${siteUrl}/#organization`,
+    name: settings.seo_organization_name || siteName,
+    url: siteUrl,
+    logo: {
+      '@type': 'ImageObject',
+      url: settings.seo_organization_logo
+        ? `${storageUrl}/${settings.seo_organization_logo}`
+        : `${siteUrl}/icon-512.png`,
+    },
+    sameAs: [
+      settings.seo_social_facebook,
+      settings.seo_social_twitter
+        ? `https://twitter.com/${settings.seo_social_twitter.replace('@', '')}`
+        : null,
+      settings.seo_social_instagram,
+      settings.youtube_url,
+      settings.discord_url,
+    ].filter(Boolean),
+  };
+
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${siteUrl}/#website`,
+    name: siteName,
+    url: siteUrl,
+    publisher: { '@id': `${siteUrl}/#organization` },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: { '@type': 'EntryPoint', urlTemplate: `${siteUrl}/search?q={search_term_string}` },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
   return (
     <html lang="en" className={beVietnamPro.variable} suppressHydrationWarning>
       <head>
+        {/* Organization + WebSite JSON-LD — server-rendered so SEO crawlers see it in raw HTML */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
+
         {/* Preconnect to API & storage - critical for LCP */}
         <link rel="preconnect" href="https://api-beta.techplay.gg" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://api-beta.techplay.gg" />

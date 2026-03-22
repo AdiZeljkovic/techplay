@@ -19,51 +19,13 @@ const navigationItems = [
     { name: "Contact", url: "/contact" },
 ];
 
+// NOTE: Organization and WebSite schemas are rendered server-side in layout.tsx
+// so they appear in the raw HTML for SEO crawlers. Only SiteNavigationElement
+// is added here since it doesn't affect initial HTML SEO scanning.
 export default function GlobalSeo() {
-    const { settings, loading } = useSiteSettings();
+    const { loading } = useSiteSettings();
 
     if (loading) return null;
-
-    const siteName = settings.seo_organization_name || settings.site_name || "TechPlay";
-
-    const organizationSchema = {
-        "@context": "https://schema.org",
-        "@type": settings.seo_organization_type || "Organization",
-        name: siteName,
-        url: siteUrl,
-        logo: {
-            "@type": "ImageObject",
-            url: settings.seo_organization_logo
-                ? `${process.env.NEXT_PUBLIC_STORAGE_URL}/${settings.seo_organization_logo}`
-                : `${siteUrl}/logo.png`,
-        },
-        sameAs: [
-            settings.seo_social_facebook,
-            settings.seo_social_twitter ? `https://twitter.com/${settings.seo_social_twitter.replace("@", "")}` : null,
-            settings.seo_social_instagram,
-            settings.youtube_url,
-            settings.discord_url,
-        ].filter(Boolean),
-    };
-
-    const websiteSchema = {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        name: siteName,
-        url: siteUrl,
-        publisher: {
-            "@type": settings.seo_organization_type || "Organization",
-            name: siteName,
-        },
-        potentialAction: {
-            "@type": "SearchAction",
-            target: {
-                "@type": "EntryPoint",
-                urlTemplate: `${siteUrl}/search?q={search_term_string}`,
-            },
-            "query-input": "required name=search_term_string",
-        },
-    };
 
     const navigationSchema = {
         "@context": "https://schema.org",
@@ -76,21 +38,8 @@ export default function GlobalSeo() {
     };
 
     return (
-        <>
-            {/* Organization / Knowledge Graph */}
-            <Script id="schema-org-graph" type="application/ld+json" strategy="beforeInteractive">
-                {JSON.stringify(organizationSchema)}
-            </Script>
-
-            {/* WebSite schema with SearchAction - drives Google Sitelinks search box */}
-            <Script id="schema-website" type="application/ld+json" strategy="beforeInteractive">
-                {JSON.stringify(websiteSchema)}
-            </Script>
-
-            {/* SiteNavigationElement - helps Google choose sitelinks */}
-            <Script id="schema-navigation" type="application/ld+json" strategy="beforeInteractive">
-                {JSON.stringify(navigationSchema)}
-            </Script>
-        </>
+        <Script id="schema-navigation" type="application/ld+json" strategy="afterInteractive">
+            {JSON.stringify(navigationSchema)}
+        </Script>
     );
 }
