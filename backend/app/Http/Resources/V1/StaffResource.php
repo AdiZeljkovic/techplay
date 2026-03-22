@@ -31,7 +31,7 @@ class StaffResource extends JsonResource
 
         return [
             'id' => $this->id,
-            'name' => $this->name ?? $this->username,
+            'name' => $this->display_name ?? $this->name ?? $this->username,
             'username' => $this->username,
             'avatar_url' => $this->avatar_url,
             'bio' => $this->bio,
