@@ -3,12 +3,11 @@
 namespace App\Filament\Resources\NewsResource\RelationManagers;
 
 use App\Models\ContentVersion;
-use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Actions\Action as TableAction;
+use Filament\Actions\Action as TableAction;
 
 class ContentVersionsRelationManager extends RelationManager
 {
