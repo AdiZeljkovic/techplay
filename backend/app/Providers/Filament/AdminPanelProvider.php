@@ -46,6 +46,22 @@ class AdminPanelProvider extends PanelProvider
             //     'panels::head.end',
             //     fn() => view('filament.custom-styles')
             // )
+            ->renderHook(
+                'panels::body.end',
+                fn () => new \Illuminate\Support\HtmlString(<<<'HTML'
+<script>
+// Fix: prevent RichEditor toolbar buttons from stealing focus off the editor.
+// Without this, clicking a toolbar button blurs the contenteditable which can
+// cause TipTap to restore the cursor at the wrong position, making heading
+// commands apply to the wrong paragraph.
+document.addEventListener('mousedown', function (e) {
+    if (e.target.closest('.fi-fo-rich-editor-toolbar button')) {
+        e.preventDefault();
+    }
+}, true);
+</script>
+HTML)
+            )
             ->maxContentWidth(Width::Full)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
