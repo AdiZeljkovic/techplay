@@ -77,21 +77,21 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
     // Step 3: YouTube - convert bare URLs to responsive iframe embeds.
     // (?<![="']) negative lookbehind prevents matching URLs inside HTML attributes (href="..."),
     // which would corrupt the HTML and break the page.
-    const youtubeRegex = /(?<![="'])(?:<p\b[^>]*>)?[\s\u00A0]*(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})[^\s<"']*[\s\u00A0]*(?:<\/p>)?/gi;
+    const youtubeRegex = /(?<![="'])(?:<p\b[^>]*>)?[\s\u00A0]*https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})[^\s<"']*[\s\u00A0]*(?:<\/p>)?/gi;
     processedContent = processedContent.replace(youtubeRegex, (_, videoId) => {
         return `<div class="embed-container my-8"><div class="relative w-full" style="padding-bottom:56.25%"><iframe class="absolute top-0 left-0 w-full h-full rounded-xl" src="https://www.youtube.com/embed/${videoId}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div></div>`;
     });
 
     // Step 4: Twitter/X - convert bare URLs to iframe embeds.
     // (?<![="']) prevents matching inside href/src attributes.
-    const twitterRegex = /(?<![="'])(?:<p\b[^>]*>)?[\s\u00A0]*(?:https?:\/\/)?(?:www\.)?(?:twitter\.com|x\.com)\/(\w+)\/status\/(\d+)[^\s<"']*[\s\u00A0]*(?:<\/p>)?/gi;
+    const twitterRegex = /(?<![="'])(?:<p\b[^>]*>)?[\s\u00A0]*https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/(\w+)\/status\/(\d+)[^\s<"']*[\s\u00A0]*(?:<\/p>)?/gi;
     processedContent = processedContent.replace(twitterRegex, (_, user, id) => {
         return `<div class="embed-container flex justify-center my-8"><iframe src="https://platform.twitter.com/embed/Tweet.html?dnt=true&id=${id}&theme=dark" style="width:550px;max-width:100%;min-height:300px;border:none;border-radius:12px;overflow:hidden;" allowfullscreen scrolling="no" class="twitter-embed-iframe"></iframe></div>`;
     });
 
     // Step 5: Instagram - convert bare URLs to iframe embeds.
     // (?<![="']) prevents matching inside href/src attributes.
-    const instagramRegex = /(?<![="'])(?:<p\b[^>]*>)?[\s\u00A0]*(?:https?:\/\/)?(?:www\.)?instagram\.com\/(p|reel)\/([a-zA-Z0-9_-]+)[^\s<"']*[\s\u00A0]*(?:<\/p>)?/gi;
+    const instagramRegex = /(?<![="'])(?:<p\b[^>]*>)?[\s\u00A0]*https?:\/\/(?:www\.)?instagram\.com\/(p|reel)\/([a-zA-Z0-9_-]+)[^\s<"']*[\s\u00A0]*(?:<\/p>)?/gi;
     processedContent = processedContent.replace(instagramRegex, (_, type, id) => {
         return `<div class="embed-container flex justify-center my-8"><iframe src="https://www.instagram.com/${type}/${id}/embed/" style="max-width:540px;width:100%;min-height:500px;border:none;border-radius:12px;overflow:hidden;background:#000;" scrolling="no" allowtransparency="true"></iframe></div>`;
     });
