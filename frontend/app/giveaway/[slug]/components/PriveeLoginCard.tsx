@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Script from "next/script";
 import axios from "@/lib/axios";
 
 interface PriveeEntry {
@@ -121,6 +122,9 @@ export default function PriveeLoginCard({ slug, onSuccess }: PriveeLoginCardProp
 
     return (
         <>
+            {/* Load Google Identity Services only on giveaway pages that need it */}
+            <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
+
             <div className="w-full space-y-5">
 
                 {/* ── STEP 1: Download the app ── */}

@@ -173,9 +173,6 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
-        {/* Google Identity Services - for Privee giveaway Google login (afterInteractive: doesn't block LCP) */}
-        <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
-
         {/* Wowhead Tooltips - for WoW Character Analyzer (lazyOnload: only needed on /wow-analyzer pages) */}
         <Script src="https://wow.zamimg.com/widgets/power.js" strategy="lazyOnload" />
         <Script id="wowhead-config" strategy="lazyOnload">
