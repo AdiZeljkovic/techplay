@@ -78,7 +78,7 @@ export default function InTextAd({
                         dangerouslySetInnerHTML={{ __html: part.html }}
                     />
                     {part.showAd && (
-                        <div className="my-8 flex justify-center">
+                        <div className="my-8 empty:my-0 flex justify-center">
                             <AdUnit position={position} className="max-w-2xl" />
                         </div>
                     )}
