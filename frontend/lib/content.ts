@@ -65,8 +65,11 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
     // NOTE: Only unwrap when the link text IS the URL itself (bare embed paste).
     // Links with custom text (e.g. <a href="youtube.com/...">Watch here</a>) are preserved as links.
     const socialDomains = 'youtube\\.com\\/watch|youtu\\.be|twitter\\.com|x\\.com|instagram\\.com\\/(?:p|reel)|facebook\\.com';
+    // Only unwrap when the link text IS the URL itself (starts with http).
+    // Links with custom text like <a href="youtube.com/...">Watch here</a> are left intact
+    // so they render as clickable links instead of being converted to embeds.
     const unwrapRegex = new RegExp(
-        `<p\\b[^>]*>[\\s\\u00A0]*<a\\b[^>]*?href=["'](https?:\\/\\/(?:www\\.)?(?:${socialDomains})[^"']*?)["'][^>]*>[\\s\\S]*?<\\/a>[\\s\\u00A0]*<\\/p>`,
+        `<p\\b[^>]*>[\\s\\u00A0]*<a\\b[^>]*?href=["'](https?:\\/\\/(?:www\\.)?(?:${socialDomains})[^"']*?)["'][^>]*>\\s*https?:\\/\\/[^<]*?<\\/a>[\\s\\u00A0]*<\\/p>`,
         'gi'
     );
     processedContent = processedContent.replace(unwrapRegex, '<p>$1</p>');
