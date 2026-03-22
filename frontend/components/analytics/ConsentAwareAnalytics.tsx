@@ -19,6 +19,11 @@ function readConsent(): CookieConsent | null {
     }
 }
 
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-0J974Y0X23";
+const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+const MATOMO_URL = "//analytics.adizeljkovic.com/";
+const MATOMO_SITE_ID = "1";
+
 export default function ConsentAwareAnalytics() {
     const [consent, setConsent] = useState<CookieConsent | null>(null);
 
@@ -35,32 +40,44 @@ export default function ConsentAwareAnalytics() {
         return () => window.removeEventListener("storage", handleStorage);
     }, []);
 
-    // Consent not yet determined — don't load any tracking
-    if (!consent) return null;
-
-    const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-0J974Y0X23";
-    const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
-
     return (
         <>
-            {consent.analytics && (
-                <>
-                    <Script
-                        src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-                        strategy="lazyOnload"
-                    />
-                    <Script id="google-analytics" strategy="lazyOnload">
-                        {`
-                            window.dataLayer = window.dataLayer || [];
-                            function gtag(){dataLayer.push(arguments);}
-                            gtag('js', new Date());
-                            gtag('config', '${GA_ID}');
-                        `}
-                    </Script>
-                </>
-            )}
+            {/* GA4 — cookieless mode (storage: none), no consent required */}
+            <Script
+                src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+                strategy="lazyOnload"
+            />
+            <Script id="google-analytics" strategy="lazyOnload">
+                {`
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', '${GA_ID}', {
+                        storage: 'none',
+                        anonymize_ip: true
+                    });
+                `}
+            </Script>
 
-            {consent.marketing && META_PIXEL_ID && (
+            {/* Matomo — cookieless mode (disableCookies), no consent required */}
+            <Script id="matomo-analytics" strategy="lazyOnload">
+                {`
+                    var _paq = window._paq = window._paq || [];
+                    _paq.push(['disableCookies']);
+                    _paq.push(['trackPageView']);
+                    _paq.push(['enableLinkTracking']);
+                    (function() {
+                        var u="${MATOMO_URL}";
+                        _paq.push(['setTrackerUrl', u+'matomo.php']);
+                        _paq.push(['setSiteId', '${MATOMO_SITE_ID}']);
+                        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+                        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+                    })();
+                `}
+            </Script>
+
+            {/* Meta Pixel — marketing cookies, requires explicit consent */}
+            {consent?.marketing && META_PIXEL_ID && (
                 <Script id="meta-pixel" strategy="lazyOnload">
                     {`
                         !function(f,b,e,v,n,t,s){
