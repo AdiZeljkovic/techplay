@@ -13,7 +13,7 @@ const FOOTER_LINKS = {
         { name: "Tech", href: "/hardware" },
         { name: "Video", href: "/videos" },
         { name: "Guides", href: "/guides" },
-        { name: "Database", href: "/database" },
+        { name: "Database", href: "/games" },
         { name: "Forum", href: "/forum" },
     ],
     community: [
