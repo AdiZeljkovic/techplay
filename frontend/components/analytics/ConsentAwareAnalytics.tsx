@@ -4,14 +4,14 @@ import Script from "next/script";
 import { useState, useEffect } from "react";
 
 interface CookieConsent {
-    essential: boolean;
+    necessary: boolean;
     analytics: boolean;
     marketing: boolean;
 }
 
 function readConsent(): CookieConsent | null {
     try {
-        const raw = localStorage.getItem("techplay_cookie_consent");
+        const raw = localStorage.getItem("cookie_preferences");
         if (!raw) return null;
         return JSON.parse(raw) as CookieConsent;
     } catch {
@@ -26,7 +26,7 @@ export default function ConsentAwareAnalytics() {
         setConsent(readConsent());
 
         const handleStorage = (e: StorageEvent) => {
-            if (e.key === "techplay_cookie_consent") {
+            if (e.key === "cookie_preferences") {
                 setConsent(readConsent());
             }
         };
