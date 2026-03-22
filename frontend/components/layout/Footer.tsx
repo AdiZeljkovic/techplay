@@ -10,7 +10,7 @@ const FOOTER_LINKS = {
     categories: [
         { name: "News", href: "/news" },
         { name: "Reviews", href: "/reviews" },
-        { name: "Tech", href: "/tech" },
+        { name: "Tech", href: "/hardware" },
         { name: "Video", href: "/videos" },
         { name: "Guides", href: "/guides" },
         { name: "Database", href: "/database" },
