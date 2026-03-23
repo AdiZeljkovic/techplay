@@ -1,5 +1,6 @@
 import { Client, TextChannel, EmbedBuilder } from 'discord.js';
 import axios from 'axios';
+import { config } from '../config';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Privee Video Polling Service
@@ -7,7 +8,6 @@ import axios from 'axios';
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const PRIVEE_API_BASE = 'https://38wzs9wt1a.execute-api.eu-central-1.amazonaws.com';
-const PRIVEE_USER_ID = 'e9eaa260-4aed-421c-8f87-c4d6bfe7bc79';
 
 interface PriveeMovie {
     id: string;
@@ -161,7 +161,7 @@ export class PriveeService {
         try {
             const response = await axios.get(
                 `${PRIVEE_API_BASE}/users/get-public-movies-by-user-id`,
-                { params: { userId: PRIVEE_USER_ID } }
+                { params: { userId: config.priveeUserId } }
             );
             const movies = response.data?.data?.movies?.items || [];
             // Only return movies that have visuals

@@ -10,6 +10,7 @@ export const config = {
     botSecret: process.env.DISCORD_BOT_SECRET || '', // Must match backend DISCORD_BOT_SECRET
     recapChannelId: process.env.RECAP_CHANNEL_ID || '', // Channel for weekly recaps
     checkInterval: parseInt(process.env.CHECK_INTERVAL_SECONDS || '600', 10) * 1000,
+    priveeUserId: process.env.PRIVEE_USER_ID || '',
 };
 
 // Validate required config
