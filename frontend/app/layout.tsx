@@ -175,6 +175,19 @@ export default async function RootLayout({
         {/* Google AdSense — in <head> so crawler sees it in raw HTML */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7427807317921666" crossOrigin="anonymous" />
+
+        {/* Google Consent Mode v2 — must be set BEFORE gtag.js loads */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('consent', 'default', {
+            analytics_storage: 'denied',
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            wait_for_update: 500
+          });
+        `}} />
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
 

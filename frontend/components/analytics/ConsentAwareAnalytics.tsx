@@ -19,6 +19,16 @@ function readConsent(): CookieConsent | null {
     }
 }
 
+function updateGoogleConsent(consent: CookieConsent) {
+    if (typeof window === "undefined" || !(window as any).gtag) return;
+    (window as any).gtag("consent", "update", {
+        analytics_storage: consent.analytics ? "granted" : "denied",
+        ad_storage: consent.marketing ? "granted" : "denied",
+        ad_user_data: consent.marketing ? "granted" : "denied",
+        ad_personalization: consent.marketing ? "granted" : "denied",
+    });
+}
+
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-0J974Y0X23";
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 const MATOMO_URL = "//analytics.adizeljkovic.com/";
@@ -28,11 +38,15 @@ export default function ConsentAwareAnalytics() {
     const [consent, setConsent] = useState<CookieConsent | null>(null);
 
     useEffect(() => {
-        setConsent(readConsent());
+        const saved = readConsent();
+        setConsent(saved);
+        if (saved) updateGoogleConsent(saved);
 
         const handleStorage = (e: StorageEvent) => {
             if (e.key === "cookie_preferences") {
-                setConsent(readConsent());
+                const updated = readConsent();
+                setConsent(updated);
+                if (updated) updateGoogleConsent(updated);
             }
         };
 
@@ -42,7 +56,7 @@ export default function ConsentAwareAnalytics() {
 
     return (
         <>
-            {/* GA4 — cookieless mode (storage: none), no consent required */}
+            {/* GA4 — Consent Mode v2 handles storage restrictions */}
             <Script
                 src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
                 strategy="lazyOnload"
@@ -52,10 +66,7 @@ export default function ConsentAwareAnalytics() {
                     window.dataLayer = window.dataLayer || [];
                     function gtag(){dataLayer.push(arguments);}
                     gtag('js', new Date());
-                    gtag('config', '${GA_ID}', {
-                        storage: 'none',
-                        anonymize_ip: true
-                    });
+                    gtag('config', '${GA_ID}', { anonymize_ip: true });
                 `}
             </Script>
 
