@@ -58,10 +58,28 @@ class SitemapController extends Controller
             $sitemaps[] = 'sitemap-images.xml';
         }
 
+        // Get actual last-modified dates per sitemap type
+        $lastmod = Cache::remember('sitemap.index.lastmod', 300, function () {
+            $articleLastmod = Article::where('status', 'published')->max('updated_at');
+            $guideLastmod   = Guide::where('status', 'published')->max('updated_at');
+            $videoLastmod   = Video::whereNotNull('published_at')->max('published_at');
+            $productLastmod = Product::where('is_active', true)->max('updated_at');
+            return [
+                'sitemap-pages.xml'      => now()->subDays(7)->toIso8601String(),
+                'sitemap-articles.xml'   => $articleLastmod ? \Carbon\Carbon::parse($articleLastmod)->toIso8601String() : now()->toIso8601String(),
+                'sitemap-categories.xml' => now()->subDays(7)->toIso8601String(),
+                'sitemap-guides.xml'     => $guideLastmod ? \Carbon\Carbon::parse($guideLastmod)->toIso8601String() : now()->toIso8601String(),
+                'sitemap-videos.xml'     => $videoLastmod ? \Carbon\Carbon::parse($videoLastmod)->toIso8601String() : now()->toIso8601String(),
+                'sitemap-products.xml'   => $productLastmod ? \Carbon\Carbon::parse($productLastmod)->toIso8601String() : now()->toIso8601String(),
+                'sitemap-news.xml'       => $articleLastmod ? \Carbon\Carbon::parse($articleLastmod)->toIso8601String() : now()->toIso8601String(),
+                'sitemap-images.xml'     => $articleLastmod ? \Carbon\Carbon::parse($articleLastmod)->toIso8601String() : now()->toIso8601String(),
+            ];
+        });
+
         foreach ($sitemaps as $sitemap) {
             $xml .= "  <sitemap>\n";
-            $xml .= "    <loc>{$this->apiUrl}/{$sitemap}</loc>\n";
-            $xml .= "    <lastmod>" . now()->toIso8601String() . "</lastmod>\n";
+            $xml .= "    <loc>{$this->frontendUrl}/{$sitemap}</loc>\n";
+            $xml .= "    <lastmod>" . ($lastmod[$sitemap] ?? now()->toIso8601String()) . "</lastmod>\n";
             $xml .= "  </sitemap>\n";
         }
 
@@ -371,9 +389,11 @@ class SitemapController extends Controller
     private function getArticleTypePath(string $type): string
     {
         return match ($type) {
-            'review' => 'reviews',
+            'review'   => 'reviews',
             'hardware' => 'hardware',
-            default => 'news',
+            'tech'     => 'tech',
+            'guide'    => 'guides',
+            default    => 'news',
         };
     }
 }
