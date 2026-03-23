@@ -23,8 +23,8 @@ Route::get('/sitemap-images.xml', [SitemapController::class, 'images']);
 Route::get('/robots.txt', function () {
     $content = \App\Models\SiteSetting::get('seo_robots_txt_content', "User-agent: *\nAllow: /");
 
-    // Append sitemap URL
-    $sitemapUrl = config('app.url') . '/sitemap.xml';
+    // Append sitemap URL (use frontend URL, not backend API URL)
+    $sitemapUrl = rtrim(env('FRONTEND_URL', config('app.url')), '/') . '/sitemap.xml';
     if (!str_contains($content, 'Sitemap:')) {
         $content .= "\n\nSitemap: " . $sitemapUrl;
     }
