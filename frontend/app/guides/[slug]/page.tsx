@@ -96,5 +96,43 @@ export default async function GuidePage({ params }: Props) {
         return notFound();
     }
 
-    return <GuideDetailView guide={data.guide} userVote={data.user_vote} />;
+    const { guide } = data;
+    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg';
+    const guideUrl = `${siteUrl}/guides/${slug}`;
+
+    let featuredImage = guide.featured_image_url;
+    if (featuredImage && !featuredImage.startsWith('http')) {
+        const storageUrl = process.env.NEXT_PUBLIC_STORAGE_URL?.replace(/\/$/, '') || '';
+        featuredImage = `${storageUrl}/${featuredImage.replace(/^\//, '')}`;
+    }
+
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "mainEntityOfPage": { "@type": "WebPage", "@id": guideUrl },
+        "headline": guide.title,
+        "description": guide.excerpt || "",
+        "image": featuredImage ? [featuredImage] : [],
+        "datePublished": guide.published_at || guide.created_at,
+        "dateModified": guide.updated_at,
+        "author": guide.author ? [{
+            "@type": "Person",
+            "name": guide.author.display_name || guide.author.username || "TechPlay",
+            "url": `${siteUrl}/author/${guide.author.username}`,
+        }] : [{ "@type": "Organization", "name": "TechPlay", "url": siteUrl }],
+        "publisher": {
+            "@type": "Organization",
+            "name": "TechPlay",
+            "logo": { "@type": "ImageObject", "url": `${siteUrl}/logo.png` },
+        },
+        "url": guideUrl,
+        "speakable": { "@type": "SpeakableSpecification", "cssSelector": ["h1", ".article-excerpt"] },
+    };
+
+    return (
+        <>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+            <GuideDetailView guide={guide} userVote={data.user_vote} />
+        </>
+    );
 }
