@@ -157,12 +157,12 @@ export default async function ReviewSlugPage({ params }: Props) {
                     "url": `${siteUrl}/logo.png`,
                 },
             },
-            "reviewRating": {
+            "reviewRating": review.rating ? {
                 "@type": "Rating",
                 "ratingValue": review.rating,
                 "bestRating": "10",
                 "worstRating": "1",
-            },
+            } : undefined,
         },
         "aggregateRating": review.rating ? {
             "@type": "AggregateRating",
