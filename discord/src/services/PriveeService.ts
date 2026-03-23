@@ -104,11 +104,15 @@ export class PriveeService {
 
                 if (newVisuals.length > 0) {
                     console.log(`🎬 Found ${newVisuals.length} new video(s) in "${movie.title}"`);
-                    await this.postNewVideos(movie, newVisuals);
+                    const posted = await this.postNewVideos(movie, newVisuals);
+                    // Only update cache if posting succeeded
+                    if (posted) {
+                        this.lastSeenVisualIds.set(movie.id, new Set(visuals.map(v => v.id)));
+                    }
+                } else {
+                    // No new visuals — still update cache
+                    this.lastSeenVisualIds.set(movie.id, new Set(visuals.map(v => v.id)));
                 }
-
-                // Update cache
-                this.lastSeenVisualIds.set(movie.id, new Set(visuals.map(v => v.id)));
             }
         } catch (error) {
             console.error('Error checking for new Privee videos:', error);
@@ -118,14 +122,25 @@ export class PriveeService {
     /**
      * Post new video notifications to #social-media
      */
-    private async postNewVideos(movie: PriveeMovie, visuals: PriveeVisual[]) {
-        const channel = this.client.channels.cache.find(
-            c => c.isTextBased() && (c as TextChannel).name === this.CHANNEL_NAME
-        ) as TextChannel;
+    private async postNewVideos(movie: PriveeMovie, visuals: PriveeVisual[]): Promise<boolean> {
+        const channelId = process.env.SOCIAL_MEDIA_CHANNEL_ID;
+        let channel: TextChannel | undefined;
+
+        if (channelId) {
+            const fetched = this.client.channels.cache.get(channelId)
+                ?? await this.client.channels.fetch(channelId).catch(() => null);
+            if (fetched?.isTextBased()) channel = fetched as TextChannel;
+        }
 
         if (!channel) {
-            console.warn('⚠️ #social-media channel not found');
-            return;
+            channel = this.client.channels.cache.find(
+                c => c.isTextBased() && (c as TextChannel).name === this.CHANNEL_NAME
+            ) as TextChannel;
+        }
+
+        if (!channel) {
+            console.error(`❌ [PriveeService] Channel #${this.CHANNEL_NAME} not found — set SOCIAL_MEDIA_CHANNEL_ID in .env or check bot permissions`);
+            return false;
         }
 
         for (const visual of visuals) {
@@ -151,7 +166,9 @@ export class PriveeService {
                 content: '🎥 **New video just dropped on Privee!**',
                 embeds: [embed]
             });
+            console.log(`✅ [PriveeService] Posted "${visual.title}" to #${this.CHANNEL_NAME}`);
         }
+        return true;
     }
 
     /**
