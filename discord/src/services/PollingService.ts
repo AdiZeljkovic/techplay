@@ -62,21 +62,25 @@ export class PollingService {
         this.buffy = BuffyService.getInstance();
     }
 
-    public start() {
+    public async start() {
         if (this.checkInterval) return;
 
         console.log('🔄 Polling Service Started (news, reviews, guides, tech → #latest-news)');
-        this.initializeFeeds();
+
+        // Await initialization so lastCheckedId is set before first poll
+        await this.initializeFeeds();
 
         this.checkInterval = setInterval(() => this.checkAllFeeds(), config.checkInterval);
     }
 
     private async initializeFeeds() {
-        // Set initial IDs without posting
         for (const feed of this.feeds) {
             const items = await this.fetchFeed(feed.type, 1);
             if (items.length > 0) {
                 feed.lastCheckedId = items[0].id;
+                console.log(`🔄 [PollingService] ${feed.type} initialized — last ID: ${feed.lastCheckedId}`);
+            } else {
+                console.warn(`⚠️ [PollingService] ${feed.type} init returned 0 items`);
             }
         }
     }
@@ -99,11 +103,19 @@ export class PollingService {
 
     private async checkFeed(feed: FeedTracker) {
         const items = await this.fetchFeed(feed.type, 5);
-        if (items.length === 0) return;
+
+        if (items.length === 0) {
+            console.warn(`⚠️ [PollingService] ${feed.type} poll returned 0 items`);
+            return;
+        }
+
+        const latestId = items[0].id;
+        console.log(`🔍 [PollingService] ${feed.type} — latest API id: ${latestId}, lastCheckedId: ${feed.lastCheckedId}`);
 
         const newItems = items.filter(n => n.id > feed.lastCheckedId && feed.lastCheckedId !== 0);
 
         if (newItems.length > 0) {
+            console.log(`📢 [PollingService] ${feed.type} — ${newItems.length} new item(s) found, posting...`);
             feed.lastCheckedId = Math.max(...newItems.map(n => n.id));
             await this.postToChannel(newItems, feed);
         }
@@ -114,22 +126,27 @@ export class PollingService {
             c => c.isTextBased() && (c as TextChannel).name === this.CHANNEL_NAME
         ) as TextChannel;
 
-        if (channel) {
-            for (const item of items.reverse()) {
-                const embed = new EmbedBuilder()
-                    .setTitle(`${feed.emoji} ${feed.label}`)
-                    .setDescription(`**${item.title}**\n${item.excerpt || ''}`)
-                    .setURL(`https://techplay.gg${feed.urlPrefix}${item.slug}`)
-                    .setColor(feed.color)
-                    .setFooter({ text: `TechPlay.gg • ${feed.type.charAt(0).toUpperCase() + feed.type.slice(1)}` })
-                    .setTimestamp();
+        if (!channel) {
+            console.error(`❌ [PollingService] Channel #${this.CHANNEL_NAME} not found — cannot post`);
+            return;
+        }
 
-                if (item.image) {
-                    embed.setImage(item.image);
-                }
+        for (const item of items.reverse()) {
+            const embed = new EmbedBuilder()
+                .setTitle(`${feed.emoji} ${feed.label}`)
+                .setDescription(`**${item.title}**\n${item.excerpt || ''}`)
+                .setURL(`https://techplay.gg${feed.urlPrefix}${item.slug}`)
+                .setColor(feed.color)
+                .setFooter({ text: `TechPlay.gg • ${feed.type.charAt(0).toUpperCase() + feed.type.slice(1)}` })
+                .setTimestamp();
 
-                await channel.send({ embeds: [embed] });
+            // API returns featured_image_url, not image
+            if (item.featured_image_url) {
+                embed.setImage(item.featured_image_url);
             }
+
+            await channel.send({ embeds: [embed] });
+            console.log(`✅ [PollingService] Posted "${item.title}" to #${this.CHANNEL_NAME}`);
         }
     }
 }

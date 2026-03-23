@@ -61,7 +61,7 @@ client.once(Events.ClientReady, async (readyClient) => {
 
     // Start background services
     const pollingService = new PollingService(client);
-    pollingService.start();
+    await pollingService.start();
 
     const serverStats = new ServerStatsService(client);
     serverStats.start();
