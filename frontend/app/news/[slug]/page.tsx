@@ -122,6 +122,9 @@ export async function generateMetadata(
         alternates: {
             canonical: article.canonical_url || `${process.env.NEXT_PUBLIC_APP_URL}/news/${slug}`,
         },
+        keywords: Array.isArray(article.tags) && article.tags.length > 0
+            ? article.tags.join(', ')
+            : (article.focus_keyword || undefined),
         robots: {
             index: !article.is_noindex,
             follow: !article.is_noindex,

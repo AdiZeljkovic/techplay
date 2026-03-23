@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\Article;
 use App\Services\RevalidationService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 class ArticleObserver
 {
@@ -58,6 +59,9 @@ class ArticleObserver
                     if ($article->is_featured_in_hero) {
                         $this->revalidationService->revalidateHomepage();
                     }
+
+                    // Ping search engines for instant indexing
+                    $this->pingSearchEngines($article->slug, $categoryPath);
                 }
             } else {
                 \Log::warning('Article has no category', ['id' => $article->id]);
@@ -119,5 +123,40 @@ class ArticleObserver
             'guide' => 'guides',
             default => null,
         };
+    }
+
+    /**
+     * Notify search engines of newly published/updated article via IndexNow + Google sitemap ping.
+     * Runs async (queue) if QUEUE_CONNECTION != sync; otherwise fire-and-forget with short timeout.
+     */
+    protected function pingSearchEngines(string $slug, string $categoryPath): void
+    {
+        $siteUrl = rtrim(config('app.url', 'https://techplay.gg'), '/');
+        $articleUrl = "{$siteUrl}/{$categoryPath}/{$slug}";
+
+        // ── IndexNow (Bing, Yandex, and others) ────────────────────────────────
+        $indexNowKey = env('INDEXNOW_KEY');
+        if ($indexNowKey) {
+            try {
+                Http::timeout(5)->post('https://api.indexnow.org/indexnow', [
+                    'host'        => parse_url($siteUrl, PHP_URL_HOST),
+                    'key'         => $indexNowKey,
+                    'keyLocation' => "{$siteUrl}/{$indexNowKey}.txt",
+                    'urlList'     => [$articleUrl],
+                ]);
+                \Log::info("IndexNow ping sent for: {$articleUrl}");
+            } catch (\Exception $e) {
+                \Log::warning('IndexNow ping failed', ['error' => $e->getMessage()]);
+            }
+        }
+
+        // ── Google News sitemap ping ────────────────────────────────────────────
+        // Tells Google to re-crawl the news sitemap (fastest way without Indexing API)
+        try {
+            $sitemapUrl = urlencode("{$siteUrl}/sitemap-news.xml");
+            Http::timeout(5)->get("https://www.google.com/ping?sitemap={$sitemapUrl}");
+        } catch (\Exception $e) {
+            \Log::warning('Google sitemap ping failed', ['error' => $e->getMessage()]);
+        }
     }
 }

@@ -14,6 +14,10 @@ export default function robots(): MetadataRoute.Robots {
                 crawlDelay: 0,
             },
             {
+                userAgent: 'Googlebot-News',
+                allow: ['/news/', '/guides/', '/reviews/', '/tech/'],
+            },
+            {
                 userAgent: 'Bingbot',
                 allow: '/',
                 crawlDelay: 0,
