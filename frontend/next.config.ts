@@ -49,7 +49,7 @@ const nextConfig: NextConfig = {
               "img-src * data: blob:",
               "connect-src 'self' https://api-beta.techplay.gg https://api.techplay.gg https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://www.facebook.com https://connect.facebook.net https://wow.zamimg.com https://accounts.google.com https://analytics.adizeljkovic.com",
               // iframes: YouTube, Twitter/X, Instagram, Facebook, Google Ads, Google Sign-In
-              "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://twitter.com https://x.com https://www.instagram.com https://www.facebook.com https://accounts.google.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://challenges.cloudflare.com",
+              "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://twitter.com https://x.com https://platform.twitter.com https://www.instagram.com https://www.facebook.com https://accounts.google.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://challenges.cloudflare.com",
               "media-src 'self' blob: https://api-beta.techplay.gg https://streaming-media.production.privee.world https://static-media.production.privee.world",
               "object-src 'none'",
               "base-uri 'self'",
