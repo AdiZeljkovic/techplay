@@ -171,15 +171,12 @@ export default async function RootLayout({
 
         {/* Google Analytics - load after page content */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+        {/* Google AdSense — in <head> so crawler sees it in raw HTML */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7427807317921666" crossOrigin="anonymous" />
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
-        {/* Google AdSense */}
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7427807317921666"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
 
         {/* Wowhead Tooltips - for WoW Character Analyzer (lazyOnload: only needed on /wow-analyzer pages) */}
         <Script src="https://wow.zamimg.com/widgets/power.js" strategy="lazyOnload" />
