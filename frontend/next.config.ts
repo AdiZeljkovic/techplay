@@ -146,7 +146,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/feed',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg'}/feed`,
+        destination: `${(process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg/api/v1').replace(/\/api\/v1\/?$/, '')}/feed`,
       },
     ];
   },
