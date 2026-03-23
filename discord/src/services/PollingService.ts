@@ -41,7 +41,7 @@ export class PollingService {
         {
             lastCheckedId: 0,
             type: 'guides',
-            urlPrefix: '/hardware/',
+            urlPrefix: '/guides/',
             emoji: '📖',
             label: 'New Guide',
             color: 0x2ecc71,
