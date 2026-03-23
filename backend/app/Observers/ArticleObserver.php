@@ -119,7 +119,7 @@ class ArticleObserver
         return match ($categoryType) {
             'news' => 'news',
             'review' => 'reviews',
-            'tech' => 'tech',
+            'tech' => 'hardware',
             'guide' => 'guides',
             default => null,
         };

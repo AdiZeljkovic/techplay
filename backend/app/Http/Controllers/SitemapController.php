@@ -391,7 +391,7 @@ class SitemapController extends Controller
         return match ($type) {
             'review'   => 'reviews',
             'hardware' => 'hardware',
-            'tech'     => 'tech',
+            'tech'     => 'hardware',
             'guide'    => 'guides',
             default    => 'news',
         };
