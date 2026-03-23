@@ -122,12 +122,24 @@ export class PollingService {
     }
 
     private async postToChannel(items: any[], feed: FeedTracker) {
-        const channel = this.client.channels.cache.find(
-            c => c.isTextBased() && (c as TextChannel).name === this.CHANNEL_NAME
-        ) as TextChannel;
+        // Prefer channel ID from env (reliable), fallback to name search
+        const channelId = process.env.LATEST_NEWS_CHANNEL_ID;
+        let channel: TextChannel | undefined;
+
+        if (channelId) {
+            const fetched = this.client.channels.cache.get(channelId)
+                ?? await this.client.channels.fetch(channelId).catch(() => null);
+            if (fetched?.isTextBased()) channel = fetched as TextChannel;
+        }
 
         if (!channel) {
-            console.error(`❌ [PollingService] Channel #${this.CHANNEL_NAME} not found — cannot post`);
+            channel = this.client.channels.cache.find(
+                c => c.isTextBased() && (c as TextChannel).name === this.CHANNEL_NAME
+            ) as TextChannel;
+        }
+
+        if (!channel) {
+            console.error(`❌ [PollingService] Channel #${this.CHANNEL_NAME} not found — set LATEST_NEWS_CHANNEL_ID in .env or check bot permissions`);
             return;
         }
 
