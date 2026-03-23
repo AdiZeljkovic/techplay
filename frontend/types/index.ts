@@ -53,6 +53,7 @@ export interface Article {
     seo_title?: string;
     seo_description?: string;
     focus_keyword?: string;
+    tags?: string[];
     canonical_url?: string;
     is_noindex?: boolean;
     author?: User;
