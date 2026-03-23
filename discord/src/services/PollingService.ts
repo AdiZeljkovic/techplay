@@ -116,12 +116,15 @@ export class PollingService {
 
         if (newItems.length > 0) {
             console.log(`📢 [PollingService] ${feed.type} — ${newItems.length} new item(s) found, posting...`);
-            feed.lastCheckedId = Math.max(...newItems.map(n => n.id));
-            await this.postToChannel(newItems, feed);
+            const posted = await this.postToChannel(newItems, feed);
+            // Only advance lastCheckedId if posting succeeded
+            if (posted) {
+                feed.lastCheckedId = Math.max(...newItems.map(n => n.id));
+            }
         }
     }
 
-    private async postToChannel(items: any[], feed: FeedTracker) {
+    private async postToChannel(items: any[], feed: FeedTracker): Promise<boolean> {
         // Prefer channel ID from env (reliable), fallback to name search
         const channelId = process.env.LATEST_NEWS_CHANNEL_ID;
         let channel: TextChannel | undefined;
@@ -140,7 +143,7 @@ export class PollingService {
 
         if (!channel) {
             console.error(`❌ [PollingService] Channel #${this.CHANNEL_NAME} not found — set LATEST_NEWS_CHANNEL_ID in .env or check bot permissions`);
-            return;
+            return false;
         }
 
         for (const item of items.reverse()) {
@@ -160,5 +163,6 @@ export class PollingService {
             await channel.send({ embeds: [embed] });
             console.log(`✅ [PollingService] Posted "${item.title}" to #${this.CHANNEL_NAME}`);
         }
+        return true;
     }
 }
