@@ -74,7 +74,21 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
     );
     processedContent = processedContent.replace(unwrapRegex, '<p>$1</p>');
 
-    // Step 3: YouTube - convert bare URLs to responsive iframe embeds.
+    // Step 3: Twitter blockquote embeds — editor saves <blockquote class="twitter-tweet">
+    // as HTML-escaped text (&lt;blockquote&gt;). Detect both escaped and raw variants,
+    // extract tweet ID from the twitter.com/status/ID URL, and convert to iframe.
+    // Escaped variant (TipTap/Filament saves embed code as plain text)
+    processedContent = processedContent.replace(
+        /&lt;blockquote[^>]*?class=(?:&quot;|")twitter-tweet(?:&quot;|")[^]*?(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)[^]*?&lt;\/blockquote&gt;(?:\s*&lt;script[^]*?widgets\.js[^]*?&lt;\/script&gt;)?/gi,
+        (_, tweetId) => `<div class="embed-container flex justify-center my-8"><iframe src="https://platform.twitter.com/embed/Tweet.html?dnt=true&id=${tweetId}&theme=dark" style="width:550px;max-width:100%;min-height:300px;border:none;border-radius:12px;overflow:hidden;" allowfullscreen scrolling="no" class="twitter-embed-iframe"></iframe></div>`
+    );
+    // Raw variant (in case editor saves as actual HTML)
+    processedContent = processedContent.replace(
+        /<blockquote[^>]*?class="twitter-tweet"[^>]*?>[\s\S]*?(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)[^<]*<\/blockquote>(?:\s*<script[^>]*?widgets\.js[^>]*?><\/script>)?/gi,
+        (_, tweetId) => `<div class="embed-container flex justify-center my-8"><iframe src="https://platform.twitter.com/embed/Tweet.html?dnt=true&id=${tweetId}&theme=dark" style="width:550px;max-width:100%;min-height:300px;border:none;border-radius:12px;overflow:hidden;" allowfullscreen scrolling="no" class="twitter-embed-iframe"></iframe></div>`
+    );
+
+    // Step 4: YouTube - convert bare URLs to responsive iframe embeds.
     // (?<![="']) negative lookbehind prevents matching URLs inside HTML attributes (href="..."),
     // which would corrupt the HTML and break the page.
     const youtubeRegex = /(?<![="'])(?:<p\b[^>]*>)?[\s\u00A0]*https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})[^\s<"']*[\s\u00A0]*(?:<\/p>)?/gi;
