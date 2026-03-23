@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Article;
 use App\Services\RevalidationService;
+use Illuminate\Support\Facades\Cache;
 
 class ArticleObserver
 {
@@ -35,6 +36,9 @@ class ArticleObserver
             if (!$article->relationLoaded('category')) {
                 $article->load('category');
             }
+
+            // Clear API listing caches so bots/clients see fresh data immediately
+            $this->clearApiListingCache($article->category->type ?? null);
 
             if ($article->category) {
                 // Determine category path based on category type
@@ -81,6 +85,26 @@ class ArticleObserver
         if ($article->is_featured_in_hero) {
             $this->revalidationService->revalidateHomepage();
         }
+    }
+
+    /**
+     * Clear paginated API listing caches for the relevant category
+     */
+    protected function clearApiListingCache(?string $categoryType): void
+    {
+        // Clear first 3 pages of the affected category listing
+        $prefixes = ['news', 'tech', 'reviews', 'guides'];
+        $targets = $categoryType ? [$categoryType] : $prefixes;
+
+        foreach ($targets as $type) {
+            for ($page = 1; $page <= 3; $page++) {
+                Cache::forget("news.index.v2.page_{$page}.cat_all");
+                Cache::forget("{$type}.index.v2.page_{$page}.cat_all");
+            }
+        }
+
+        // Clear trending cache
+        Cache::forget('news.trending');
     }
 
     /**
