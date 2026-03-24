@@ -60,7 +60,7 @@ export default function FeaturedCarousel() {
     return (
         <section className="container mx-auto px-4 py-8 -mt-20 relative z-20">
             <div className="relative h-[500px] w-full rounded-2xl overflow-hidden glass-panel border-white/10 group">
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                         key={currentSlide.id}
                         initial={{ opacity: 0, scale: 1.05 }}

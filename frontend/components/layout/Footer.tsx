@@ -225,7 +225,7 @@ export default function Footer() {
 
                 {/* Bottom Bar */}
                 <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-gray-400 text-xs">
+                    <p className="text-gray-400 text-xs" suppressHydrationWarning>
                         © {new Date().getFullYear()} TechPlay Gaming Portal. All rights reserved.
                     </p>
                     <div className="flex gap-6">
