@@ -14,6 +14,8 @@ interface HomeClientProps {
         news: Article[];
         reviews: Article[];
         tech: Article[];
+        latestGlobal: Article[];
+        popularGlobal: Article[];
     };
 }
 
@@ -75,7 +77,10 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                     </div>
 
                     {/* Sidebar (4 cols) */}
-                    <HomeSidebar />
+                    <HomeSidebar
+                        latestGlobal={initialData?.latestGlobal ?? []}
+                        popularGlobal={initialData?.popularGlobal ?? []}
+                    />
 
                 </div>
             </section>

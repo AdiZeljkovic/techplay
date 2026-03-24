@@ -15,6 +15,8 @@ export interface HomeData {
   news: Article[];
   reviews: Article[];
   tech: Article[];
+  latestGlobal: Article[];
+  popularGlobal: Article[];
 }
 
 async function getHomeData(): Promise<HomeData> {
@@ -31,7 +33,7 @@ async function getHomeData(): Promise<HomeData> {
     });
 
     if (!res.ok) {
-      return { hero: [], news: [], reviews: [], tech: [] };
+      return { hero: [], news: [], reviews: [], tech: [], latestGlobal: [], popularGlobal: [] };
     }
 
     const json = await res.json();
@@ -42,9 +44,11 @@ async function getHomeData(): Promise<HomeData> {
       news: data.news ?? [],
       reviews: data.reviews ?? [],
       tech: data.tech ?? [],
+      latestGlobal: data.latest_global ?? [],
+      popularGlobal: data.popular_global ?? [],
     };
   } catch {
-    return { hero: [], news: [], reviews: [], tech: [] };
+    return { hero: [], news: [], reviews: [], tech: [], latestGlobal: [], popularGlobal: [] };
   }
 }
 

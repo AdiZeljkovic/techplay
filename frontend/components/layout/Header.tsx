@@ -213,7 +213,7 @@ export default function Header() {
 
         const startPolling = () => {
             fetchNotifications(); // Immediate fetch
-            interval = setInterval(fetchNotifications, 30000);
+            interval = setInterval(fetchNotifications, 60000);
         };
 
         const stopPolling = () => {
