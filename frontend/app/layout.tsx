@@ -161,8 +161,10 @@ export default async function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
 
-        {/* Preconnect to API & storage - critical for LCP */}
-        <link rel="preconnect" href="https://api-beta.techplay.gg" crossOrigin="anonymous" />
+        {/* Preconnect to production API — used for client-side data fetching on interactive pages */}
+        <link rel="preconnect" href="https://api.techplay.gg" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://api.techplay.gg" />
+        {/* dns-prefetch only for beta API (used server-side only, browser never connects directly) */}
         <link rel="dns-prefetch" href="https://api-beta.techplay.gg" />
 
         {/* Google Analytics — dns-prefetch only, preconnect not needed (lazyOnload) */}
