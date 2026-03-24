@@ -164,5 +164,6 @@ class Article extends Model
     protected static function booted(): void
     {
         static::observe(\App\Observers\ArticleVersionObserver::class);
+        static::observe(\App\Observers\ArticleObserver::class);
     }
 }

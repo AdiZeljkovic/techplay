@@ -143,7 +143,7 @@ class SitemapController extends Controller
 
         foreach ($articles as $article) {
             $categoryType = $article->category->type ?? 'news';
-            $type = $this->getArticleTypePath($categoryType);
+            $type = self::getArticleTypePath($categoryType);
             $xml .= $this->urlEntry(
                 "{$this->frontendUrl}/{$type}/{$article->slug}",
                 $article->updated_at->toIso8601String(),
@@ -315,7 +315,7 @@ class SitemapController extends Controller
 
         foreach ($articles as $article) {
             $categoryType = $article->category->type ?? 'news';
-            $type = $this->getArticleTypePath($categoryType);
+            $type = self::getArticleTypePath($categoryType);
             $xml .= "  <url>\n";
             $xml .= "    <loc>{$this->frontendUrl}/{$type}/{$article->slug}</loc>\n";
             $xml .= "    <news:news>\n";
@@ -351,7 +351,7 @@ class SitemapController extends Controller
 
         foreach ($articles as $article) {
             $categoryType = $article->category->type ?? 'news';
-            $type = $this->getArticleTypePath($categoryType);
+            $type = self::getArticleTypePath($categoryType);
             $xml .= "  <url>\n";
             $xml .= "    <loc>{$this->frontendUrl}/{$type}/{$article->slug}</loc>\n";
             $xml .= "    <image:image>\n";
@@ -386,16 +386,13 @@ class SitemapController extends Controller
         return $xml;
     }
 
-    private function getArticleTypePath(string $type): string
+    public static function getArticleTypePath(string $type): string
     {
         return match ($type) {
-            'review'   => 'reviews',
-            'reviews'  => 'reviews',
-            'hardware' => 'hardware',
-            'tech'     => 'hardware',
-            'guide'    => 'guides',
-            'guides'   => 'guides',
-            default    => 'news',
+            'review', 'reviews' => 'reviews',
+            'hardware', 'tech'  => 'hardware',
+            'guide', 'guides'   => 'guides',
+            default             => 'news',
         };
     }
 }

@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\Article;
 use App\Services\RevalidationService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
 class ArticleObserver
@@ -17,54 +18,39 @@ class ArticleObserver
     }
 
     /**
-     * Handle the Article "saved" event (fires on both create and update)
-     *
-     * @param  \App\Models\Article  $article
-     * @return void
+     * Handle the Article "saved" event (fires on both create and update).
+     * Only triggers full publish flow when article is NEWLY published.
      */
-    public function saved(Article $article)
+    public function saved(Article $article): void
     {
-        \Log::info('ArticleObserver::saved fired', [
-            'id' => $article->id,
-            'slug' => $article->slug,
-            'status' => $article->status,
-            'has_category' => isset($article->category),
-        ]);
+        if ($article->status !== 'published' || ! $article->slug) {
+            return;
+        }
 
-        // Only revalidate if article is published
-        if ($article->status === 'published' && $article->slug) {
-            // Load category if not already loaded
-            if (!$article->relationLoaded('category')) {
-                $article->load('category');
-            }
+        // Only act when status just changed to 'published' (not on every edit of a published article)
+        $isNewlyPublished = $article->wasRecentlyCreated || $article->wasChanged('status');
+        if (! $isNewlyPublished) {
+            return;
+        }
 
-            // Clear API listing caches so bots/clients see fresh data immediately
-            $this->clearApiListingCache($article->category->type ?? null);
+        if (! $article->relationLoaded('category')) {
+            $article->load('category');
+        }
 
-            if ($article->category) {
-                // Determine category path based on category type
-                $categoryPath = $this->getCategoryPath($article->category->type);
+        $this->clearApiListingCache($article->category->type ?? null);
 
-                \Log::info('Triggering revalidation', [
-                    'slug' => $article->slug,
-                    'category_type' => $article->category->type,
-                    'category_path' => $categoryPath,
-                ]);
+        if ($article->category) {
+            $categoryPath = $this->getCategoryPath($article->category->type);
 
-                if ($categoryPath) {
-                    // Revalidate article page
-                    $this->revalidationService->revalidateArticle($article->slug, $categoryPath);
+            if ($categoryPath) {
+                $this->revalidationService->revalidateArticle($article->slug, $categoryPath);
 
-                    // Revalidate homepage if article is featured
-                    if ($article->is_featured_in_hero) {
-                        $this->revalidationService->revalidateHomepage();
-                    }
-
-                    // Ping search engines for instant indexing
-                    $this->pingSearchEngines($article->slug, $categoryPath);
+                if ($article->is_featured_in_hero) {
+                    $this->revalidationService->revalidateHomepage();
                 }
-            } else {
-                \Log::warning('Article has no category', ['id' => $article->id]);
+
+                $this->regenerateNewsSitemap();
+                $this->pingSearchEngines($article->slug, $categoryPath);
             }
         }
     }
@@ -129,16 +115,28 @@ class ArticleObserver
     }
 
     /**
-     * Notify search engines of newly published/updated article via IndexNow + Google sitemap ping.
-     * Runs async (queue) if QUEUE_CONNECTION != sync; otherwise fire-and-forget with short timeout.
+     * Regenerate static sitemap-news.xml so it's immediately up to date.
+     */
+    protected function regenerateNewsSitemap(): void
+    {
+        try {
+            $content = app(\App\Http\Controllers\SitemapController::class)->news()->getContent();
+            \Illuminate\Support\Facades\File::put(public_path('sitemap-news.xml'), $content);
+        } catch (\Throwable $e) {
+            \Log::warning('News sitemap regeneration failed', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Notify search engines of newly published article via IndexNow + Google sitemap ping.
      */
     protected function pingSearchEngines(string $slug, string $categoryPath): void
     {
-        $siteUrl = rtrim(config('app.url', 'https://techplay.gg'), '/');
+        $siteUrl = rtrim(config('app.frontend_url', 'https://techplay.gg'), '/');
         $articleUrl = "{$siteUrl}/{$categoryPath}/{$slug}";
 
         // ── IndexNow (Bing, Yandex, and others) ────────────────────────────────
-        $indexNowKey = env('INDEXNOW_KEY');
+        $indexNowKey = config('services.indexnow.key');
         if ($indexNowKey) {
             try {
                 Http::timeout(5)->post('https://api.indexnow.org/indexnow', [
