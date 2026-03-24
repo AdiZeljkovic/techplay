@@ -42,7 +42,7 @@ const nextConfig: NextConfig = {
             value: [
               "default-src 'self'",
               // Next.js hydration + JSON-LD dangerouslySetInnerHTML require unsafe-inline
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://www.facebook.com https://accounts.google.com https://wow.zamimg.com https://pagead2.googlesyndication.com https://tpc.googlesyndication.com https://adservice.google.com https://analytics.adizeljkovic.com https://challenges.cloudflare.com https://*.adtrafficquality.google",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://www.facebook.com https://accounts.google.com https://wow.zamimg.com https://pagead2.googlesyndication.com https://tpc.googlesyndication.com https://adservice.google.com https://analytics.adizeljkovic.com https://challenges.cloudflare.com https://*.adtrafficquality.google https://static.cloudflareinsights.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
               // Permissive img-src to allow all CDNs (avatars, banners, game covers, ads)
