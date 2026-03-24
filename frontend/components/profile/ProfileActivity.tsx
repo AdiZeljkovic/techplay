@@ -48,7 +48,7 @@ export default function ProfileActivity({ posts }: ProfileActivityProps) {
                                     <div className="flex items-center gap-2 mt-2 text-[11px] text-white/30">
                                         <span>Forum reply</span>
                                         <span className="text-white/10">&bull;</span>
-                                        <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
+                                        <span suppressHydrationWarning>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
                                     </div>
                                 </div>
                             </div>

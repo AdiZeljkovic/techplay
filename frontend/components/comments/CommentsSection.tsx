@@ -344,7 +344,7 @@ const CommentItem = memo(function CommentItem({
                             </span>
                         )}
 
-                        <span className="text-xs text-[var(--text-muted)]">• {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}</span>
+                        <span className="text-xs text-[var(--text-muted)]" suppressHydrationWarning>• {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}</span>
                     </div>
 
                     <div className={`text-[var(--text-secondary)] leading-relaxed text-sm ${depth === 0 ? 'text-base' : ''}`}>

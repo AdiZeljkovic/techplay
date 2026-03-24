@@ -260,7 +260,7 @@ export default function MessagesClient() {
                                             <h3 className={`text-sm font-semibold truncate ${chat.unreadCount > 0 ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
                                                 {chat.user.display_name || chat.user.username}
                                             </h3>
-                                            <span className="text-[10px] text-[var(--text-muted)]">
+                                            <span className="text-[10px] text-[var(--text-muted)]" suppressHydrationWarning>
                                                 {formatDistanceToNow(new Date(chat.lastMessage.created_at), { addSuffix: false })}
                                             </span>
                                         </div>

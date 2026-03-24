@@ -253,7 +253,7 @@ export default function CategoryThreadsPage() {
                                                                     </span>
                                                                 </div>
                                                                 <span className="hidden sm:inline">•</span>
-                                                                <span className="hidden sm:flex items-center gap-1">
+                                                                <span className="hidden sm:flex items-center gap-1" suppressHydrationWarning>
                                                                     <Clock className="w-3.5 h-3.5" />
                                                                     {formatDistanceToNow(new Date(thread.created_at), { addSuffix: true })}
                                                                 </span>

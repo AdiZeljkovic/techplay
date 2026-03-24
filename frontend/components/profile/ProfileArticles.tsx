@@ -64,7 +64,7 @@ export default function ProfileArticles({ articles }: ProfileArticlesProps) {
                             <p className="text-sm text-white/60 line-clamp-2 max-w-2xl mb-3">{featured.excerpt}</p>
                         )}
                         <div className="flex items-center gap-4 text-xs text-white/40">
-                            <span className="flex items-center gap-1.5">
+                            <span className="flex items-center gap-1.5" suppressHydrationWarning>
                                 <Clock className="w-3 h-3" />
                                 {formatDistanceToNow(new Date(featured.published_at), { addSuffix: true })}
                             </span>
@@ -109,7 +109,7 @@ export default function ProfileArticles({ articles }: ProfileArticlesProps) {
                                 </div>
 
                                 <div className="p-3 flex items-center justify-between text-[11px] text-white/30">
-                                    <span className="flex items-center gap-1">
+                                    <span className="flex items-center gap-1" suppressHydrationWarning>
                                         <Clock className="w-3 h-3" />
                                         {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
                                     </span>

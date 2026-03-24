@@ -132,7 +132,7 @@ export default async function VideoPage({ params }: Props) {
 
                     <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>Published {formatDistanceToNow(new Date(video.published_at), { addSuffix: true })}</span>
+                        <span suppressHydrationWarning>Published {formatDistanceToNow(new Date(video.published_at), { addSuffix: true })}</span>
                     </div>
                 </div>
             </div>

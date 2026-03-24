@@ -415,7 +415,7 @@ export default function ThreadPage() {
                                         Started by <Link href={`/profile/${thread.author?.username}`} className="text-[var(--accent)] hover:underline font-medium">{thread.author?.username || 'Unknown'}</Link>
                                     </span>
                                 </div>
-                                <span className="flex items-center gap-1">
+                                <span className="flex items-center gap-1" suppressHydrationWarning>
                                     <Clock className="w-4 h-4" />
                                     {formatDistanceToNow(new Date(thread.created_at), { addSuffix: true })}
                                 </span>
@@ -598,7 +598,7 @@ export default function ThreadPage() {
                                                 {/* Reply Content */}
                                                 <div className="flex-1 p-4">
                                                     <div className="flex items-center justify-between mb-3">
-                                                        <span className="text-xs text-[var(--text-muted)]">
+                                                        <span className="text-xs text-[var(--text-muted)]" suppressHydrationWarning>
                                                             {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                                                             {post.edited_at && <span className="ml-2 italic">(edited)</span>}
                                                         </span>

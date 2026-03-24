@@ -286,7 +286,7 @@ export default function WowRecentAnalyses({ limit = 20 }: WowRecentAnalysesProps
 
                                     {/* Metadata Footer */}
                                     <div className="flex items-center justify-between text-xs relative" style={{ color: MidnightTheme.text.muted }}>
-                                        <span className="flex items-center gap-1.5">
+                                        <span className="flex items-center gap-1.5" suppressHydrationWarning>
                                             <Clock className="w-3.5 h-3.5" />
                                             {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
                                         </span>

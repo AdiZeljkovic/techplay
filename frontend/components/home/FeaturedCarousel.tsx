@@ -109,7 +109,7 @@ export default function FeaturedCarousel() {
                                 </h2>
 
                                 <div className="flex items-center gap-6 text-gray-300 mb-6">
-                                    <span className="flex items-center gap-2 text-sm">
+                                    <span className="flex items-center gap-2 text-sm" suppressHydrationWarning>
                                         <Clock className="w-4 h-4" />
                                         {formatDistanceToNow(new Date(currentSlide.published_at), { addSuffix: true })}
                                     </span>

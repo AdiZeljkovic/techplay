@@ -181,7 +181,7 @@ export default function GuidesClientPage({ initialData }: GuidesClientPageProps)
 
                                         <div className="flex items-center justify-between pt-4 border-t border-[var(--border)]">
                                             <span className="text-xs text-[var(--text-muted)]">By {guide.author?.username || 'TechPlay'}</span>
-                                            <span className="text-xs text-[var(--text-muted)]">
+                                            <span className="text-xs text-[var(--text-muted)]" suppressHydrationWarning>
                                                 {formatDistanceToNow(new Date(guide.created_at), { addSuffix: true })}
                                             </span>
                                         </div>
