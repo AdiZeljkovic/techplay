@@ -51,21 +51,5 @@ async function getHomeData(): Promise<HomeData> {
 export default async function Home() {
   const homeData = await getHomeData();
 
-  // Preload the first hero image so the browser starts downloading it immediately,
-  // without waiting for JavaScript hydration. React 19 hoists this <link> to <head>.
-  const firstHero = homeData.hero.find(a => a.featured_image_url);
-  const heroImageUrl = firstHero?.featured_image_url
-    ? (firstHero.featured_image_url.startsWith('http')
-        ? firstHero.featured_image_url
-        : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${firstHero.featured_image_url}`)
-    : null;
-
-  return (
-    <>
-      {heroImageUrl && (
-        <link rel="preload" as="image" href={heroImageUrl} fetchPriority="high" />
-      )}
-      <HomeClient initialData={homeData} />
-    </>
-  );
+  return <HomeClient initialData={homeData} />;
 }

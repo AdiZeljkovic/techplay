@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Script from "next/script";
 import WowAnalyzerClient from "@/components/wow/WowAnalyzerClient";
 
 export const metadata: Metadata = {
@@ -274,6 +275,12 @@ export default function WowAnalyzerPage() {
 
     return (
         <>
+            {/* Wowhead Tooltips — only on this page, not globally */}
+            <Script id="wowhead-config" strategy="lazyOnload">
+                {`var whTooltips = { colorLinks: true, iconizeLinks: true, renameLinks: true };`}
+            </Script>
+            <Script src="https://wow.zamimg.com/widgets/power.js" strategy="lazyOnload" />
+
             {/* Structured Data Scripts */}
             <script
                 type="application/ld+json"

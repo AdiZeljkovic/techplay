@@ -17,7 +17,7 @@ import { Toaster } from "react-hot-toast";
 const beVietnamPro = Be_Vietnam_Pro({
   variable: "--font-main",
   subsets: ["latin"],
-  weight: ["400", "600", "700"], // Reduced from 5 to 3 essential weights for faster loading
+  weight: ["400", "700"], // 2 weights only — fewer font files in critical path
   display: 'swap',
   preload: true,
   adjustFontFallback: true, // Adjusts fallback font metrics to match web font, reducing CLS
@@ -165,15 +165,10 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://api-beta.techplay.gg" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://api-beta.techplay.gg" />
 
-        {/* Google Fonts - preconnect to both domains */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-
-        {/* Google Analytics */}
+        {/* Google Analytics — dns-prefetch only, preconnect not needed (lazyOnload) */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 
-        {/* Google AdSense — preconnect so the connection is ready when adsbygoogle.js loads */}
-        <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="anonymous" />
+        {/* Google AdSense */}
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net" />
 
@@ -195,18 +190,6 @@ export default async function RootLayout({
         `}} />
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
-
-        {/* Wowhead Tooltips - for WoW Character Analyzer (lazyOnload: only needed on /wow-analyzer pages) */}
-        <Script src="https://wow.zamimg.com/widgets/power.js" strategy="lazyOnload" />
-        <Script id="wowhead-config" strategy="lazyOnload">
-          {`
-            var whTooltips = {
-              colorLinks: true,
-              iconizeLinks: true,
-              renameLinks: true
-            };
-          `}
-        </Script>
 
         {/* Analytics loaded conditionally based on user cookie consent */}
         <ConsentAwareAnalytics />
