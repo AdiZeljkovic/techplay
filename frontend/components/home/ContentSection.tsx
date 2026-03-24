@@ -158,7 +158,7 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
                                 <User className="w-3.5 h-3.5 text-[var(--accent)]" />
                                 {featured.author?.display_name || featured.author?.username || "Editor"}
                             </div>
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1.5" suppressHydrationWarning>
                                 <Calendar className="w-3.5 h-3.5 text-[var(--accent)]" />
                                 {featured.published_at ? format(new Date(featured.published_at), 'dd/MM/yyyy') : 'Recently'}
                             </div>
@@ -212,7 +212,7 @@ export default function ContentSection({ title, icon: Icon, articles, viewAllLin
                                     </h4>
                                     <div className="mt-auto flex items-center justify-between text-[10px] text-white/60 uppercase font-bold tracking-wide">
                                         <span className="truncate max-w-[100px]">{item.author?.display_name || item.author?.username || "TechPlay"}</span>
-                                        <span>{item.published_at ? format(new Date(item.published_at), 'dd/MM/yyyy') : ''}</span>
+                                        <span suppressHydrationWarning>{item.published_at ? format(new Date(item.published_at), 'dd/MM/yyyy') : ''}</span>
                                     </div>
                                 </div>
                             </Link>

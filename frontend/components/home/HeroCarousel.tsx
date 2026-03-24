@@ -90,6 +90,7 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                         animate={{ x: 0, opacity: 1 }}
                         key={`ticker-${currentIndex}`}
                         className="text-white/80 text-xs font-mono uppercase tracking-wide flex items-center gap-2"
+                        suppressHydrationWarning
                     >
                         <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
                         {decodeHtml(currentArticle.category.name)}
