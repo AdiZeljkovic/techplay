@@ -51,7 +51,7 @@ export default function NewsTabsWidget({ latestNews, popularNews }: NewsTabsWidg
 
             {/* Content List */}
             <div className="p-2">
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                         key={activeTab}
                         initial={{ opacity: 0, y: 10 }}
