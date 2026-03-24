@@ -31,9 +31,10 @@ export default function NewsTabsWidget({ latestNews, popularNews }: NewsTabsWidg
                     )}
                 >
                     Latest
-                    {activeTab === "latest" && (
-                        <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent)]" />
-                    )}
+                    <span className={cn(
+                        "absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent)] transition-opacity duration-200",
+                        activeTab === "latest" ? "opacity-100" : "opacity-0"
+                    )} />
                 </button>
                 <button
                     onClick={() => setActiveTab("popular")}
@@ -43,9 +44,10 @@ export default function NewsTabsWidget({ latestNews, popularNews }: NewsTabsWidg
                     )}
                 >
                     Popular
-                    {activeTab === "popular" && (
-                        <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent)]" />
-                    )}
+                    <span className={cn(
+                        "absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent)] transition-opacity duration-200",
+                        activeTab === "popular" ? "opacity-100" : "opacity-0"
+                    )} />
                 </button>
             </div>
 
