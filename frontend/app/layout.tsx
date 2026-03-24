@@ -172,11 +172,7 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net" />
 
-        {/* Google AdSense — in <head> so crawler sees it in raw HTML */}
-        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7427807317921666" crossOrigin="anonymous" />
-
-        {/* Google Consent Mode v2 — must be set BEFORE gtag.js loads */}
+        {/* Google Consent Mode v2 — must be set BEFORE any Google scripts load */}
         <script dangerouslySetInnerHTML={{ __html: `
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
@@ -188,6 +184,10 @@ export default async function RootLayout({
             wait_for_update: 500
           });
         `}} />
+
+        {/* Google AdSense Auto Ads — loads after consent defaults are set */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7427807317921666" crossOrigin="anonymous" />
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
 
