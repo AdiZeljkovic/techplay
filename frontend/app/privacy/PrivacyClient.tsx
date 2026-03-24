@@ -28,7 +28,7 @@ export default function PrivacyPage() {
                                     <Calendar className="w-5 h-5" />
                                     <span className="font-bold text-sm uppercase tracking-wide">Last Updated</span>
                                 </div>
-                                <p className="text-2xl font-bold text-[var(--text-primary)]">January 1, 2026</p>
+                                <p className="text-2xl font-bold text-[var(--text-primary)]">March 24, 2026</p>
                             </div>
 
                             <div className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl p-6">
@@ -38,7 +38,7 @@ export default function PrivacyPage() {
                                 <ul className="space-y-3 text-sm text-[var(--text-secondary)]">
                                     <li className="flex gap-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5" />
-                                        Data is encrypted & secure
+                                        Data is encrypted &amp; secure
                                     </li>
                                     <li className="flex gap-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5" />
@@ -47,6 +47,10 @@ export default function PrivacyPage() {
                                     <li className="flex gap-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5" />
                                         You own your data
+                                    </li>
+                                    <li className="flex gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5" />
+                                        No ads without your consent
                                     </li>
                                 </ul>
                             </div>
@@ -63,83 +67,154 @@ export default function PrivacyPage() {
 
                                 <h2>1. Introduction</h2>
                                 <p>
-                                    TehcPlay.gg ("we," "our," or "us"), owned and operated by <strong>Luminor Solutions</strong>, is committed to protecting your privacy.
-                                    This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website
-                                    techplay.gg (the "Service"). By using the Service, you consent to the data practices described in this policy.
+                                    TechPlay.gg ("we," "our," or "us"), owned and operated by <strong>Luminor Solutions</strong>, is a gaming and technology media platform based in Bosnia and Herzegovina.
+                                    This Privacy Policy explains what data we collect when you use our website techplay.gg (the "Service"), how we use it, who we share it with, and what rights you have over it.
+                                    We have written this policy to be as clear and readable as possible — not to hide anything in legal language.
+                                </p>
+                                <p>
+                                    By using the Service, you agree to the collection and use of information as described in this policy. If you do not agree, please do not use the Service.
                                 </p>
 
                                 <h2>2. Data Controller</h2>
                                 <p>
-                                    For the purposes of the General Data Protection Regulation (GDPR), the Data Controller is:<br />
+                                    The Data Controller responsible for your personal data is:<br />
                                     <strong>Luminor Solutions</strong><br />
-                                    71000 Sarajevo<br />
-                                    Bosnia and Herzegovina<br />
+                                    71000 Sarajevo, Bosnia and Herzegovina<br />
                                     Email: <a href="mailto:privacy@techplay.gg">privacy@techplay.gg</a>
                                 </p>
 
                                 <h2>3. Information We Collect</h2>
-                                <p>We collect information that serves to provide, improve, and protect our services.</p>
+                                <p>We collect different types of information depending on how you use the Service:</p>
                                 <ul>
-                                    <li><strong>Personal Data:</strong> When you register, we collect your username, email address, and encrypted password. If you choose to complete your profile, we may also store a bio, gamertags, and PC specifications.</li>
-                                    <li><strong>Usage Data:</strong> We automatically collect information such as your IP address, browser type, operating system, pages visited, and time spent on the Service.</li>
-                                    <li><strong>Cookies:</strong> We use cookies to enhance your experience. See our <a href="/cookies">Cookie Policy</a> for details.</li>
+                                    <li><strong>Account Data:</strong> When you register, we collect your username, email address, and an encrypted password. If you choose to fill out your profile, we may also store a display name, bio, avatar, gamertags (e.g., Battle.net, Steam), and PC specifications.</li>
+                                    <li><strong>Authentication via Third Parties:</strong> If you sign in using Discord, Battle.net, or Google, we receive a limited set of profile data from those services (typically your username and email). We do not receive or store your password from those providers.</li>
+                                    <li><strong>Usage Data:</strong> We automatically collect technical information such as your IP address, browser type and version, operating system, pages visited, time spent on the Service, and referring URLs. This data is used to keep the platform running properly and to understand how it is being used.</li>
+                                    <li><strong>Forum &amp; Community Content:</strong> Posts, comments, reactions, and other content you submit to the forum or article comment sections are stored and associated with your account.</li>
+                                    <li><strong>Purchase Data:</strong> If you make a purchase in our shop, we collect order details and process payments through PayPal. We do not store full card numbers or financial credentials on our servers.</li>
+                                    <li><strong>Cookies and Tracking Technologies:</strong> We use cookies, local storage, and similar technologies. See our <a href="/cookies">Cookie Policy</a> for a full breakdown.</li>
                                 </ul>
 
                                 <h2>4. How We Use Your Data</h2>
-                                <p>We use the collected data for the following purposes:</p>
+                                <p>We use the data we collect to:</p>
                                 <ul>
-                                    <li>To provide and maintain our Service (e.g., logging you in).</li>
-                                    <li>To notify you about changes to our Service.</li>
-                                    <li>To allow you to participate in interactive features (comments, forum, ratings).</li>
-                                    <li>To provide customer support.</li>
-                                    <li>To gather analysis or valuable information so that we can improve our Service.</li>
-                                    <li>To monitor the usage of our Service and detect/prevent technical issues.</li>
+                                    <li>Provide, operate, and maintain the Service — including account management, forum functionality, and content delivery.</li>
+                                    <li>Process orders and handle payments through PayPal.</li>
+                                    <li>Analyse how the platform is used so we can improve it over time.</li>
+                                    <li>Send important service-related notifications (e.g., forum reply alerts, order confirmations). We do not send unsolicited marketing emails.</li>
+                                    <li>Detect and prevent abuse, spam, and security threats.</li>
+                                    <li>Comply with legal obligations.</li>
                                 </ul>
 
-                                <h2>5. Data Retention</h2>
+                                <h2>5. Advertising &amp; Third-Party Services</h2>
                                 <p>
-                                    We will retain your Personal Data only for as long as is necessary for the purposes set out in this Privacy Policy.
-                                    We will retain and use your Personal Data to the extent necessary to comply with our legal obligations (for example, if we are required to retain your data to comply with applicable laws),
-                                    resolve disputes, and enforce our legal agreements and policies.
+                                    We work with several third-party services to operate the platform. Below is a transparent breakdown of each one, what data they may access, and how you can control them.
                                 </p>
 
-                                <h2>6. Your Rights (GDPR)</h2>
-                                <p>If you are a resident of the European Economic Area (EEA), you have certain data protection rights:</p>
+                                <h3>Google AdSense</h3>
+                                <p>
+                                    We display advertisements served by <strong>Google AdSense</strong> (Google LLC, Mountain View, CA, USA). AdSense uses cookies and similar technologies to serve ads that may be relevant to your interests, based on your browsing activity across websites that use Google services.
+                                </p>
+                                <p>
+                                    Our publisher ID is <strong>pub-7427807317921666</strong>. Advertising cookies are only placed if you have consented to marketing cookies through our consent banner. If you decline, we still show ads, but they will not be personalised.
+                                </p>
+                                <p>
+                                    You can opt out of personalised advertising at any time through <a href="https://myadcenter.google.com" target="_blank" rel="noopener noreferrer">Google My Ad Center</a> or by visiting <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer">YourAdChoices</a>.
+                                    Google's privacy policy is available at <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">policies.google.com/privacy</a>.
+                                </p>
+
+                                <h3>Google Analytics</h3>
+                                <p>
+                                    We use <strong>Google Analytics 4</strong> to understand how visitors use TechPlay.gg — which pages are popular, how long people stay, and where they come from. This data is aggregated and anonymised; it does not identify individual users.
+                                    Analytics cookies are only activated if you consent to analytics tracking. We have implemented Google Consent Mode v2, which means no tracking data is sent to Google before you have made your choice.
+                                </p>
+
+                                <h3>Meta Pixel (Facebook)</h3>
+                                <p>
+                                    We use the <strong>Meta Pixel</strong> (Meta Platforms Ireland Ltd.) to measure the effectiveness of our content and, when permitted, to serve relevant ads on Facebook and Instagram. The Pixel is only loaded after you have explicitly accepted marketing cookies. If you decline, the Pixel does not load at all.
+                                </p>
+                                <p>
+                                    You can manage your ad preferences on Facebook at <a href="https://www.facebook.com/adpreferences" target="_blank" rel="noopener noreferrer">facebook.com/adpreferences</a>.
+                                </p>
+
+                                <h3>Discord (Login &amp; Community)</h3>
+                                <p>
+                                    We offer <strong>Discord OAuth</strong> login, which allows you to sign in using your Discord account. If you use this option, Discord shares your username and email with us. We also use Discord webhooks for internal notifications; no user data is sent via webhooks. The Discord bot integration is used solely for community features (e.g., server roles for supporters). Discord's privacy policy is at <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">discord.com/privacy</a>.
+                                </p>
+
+                                <h3>Battle.net / Blizzard Entertainment</h3>
+                                <p>
+                                    We offer <strong>Battle.net OAuth</strong> login for users who want to connect their Blizzard account (primarily for WoW-related features). If you use this option, Blizzard shares your Battle.net tag and email with us. Blizzard's privacy policy is at <a href="https://www.blizzard.com/en-us/legal/a4380ee5-5c8d-4e3b-83b7-ea26d01a9918" target="_blank" rel="noopener noreferrer">blizzard.com</a>.
+                                </p>
+
+                                <h3>Google Sign-In</h3>
+                                <p>
+                                    You may sign in using your Google account. If you do, Google shares your name, email address, and profile picture with us. We do not receive your Google password.
+                                </p>
+
+                                <h3>PayPal</h3>
+                                <p>
+                                    Payments in our shop are processed by <strong>PayPal (Europe) S.à r.l. et Cie, S.C.A.</strong> When you complete a purchase, you are redirected to PayPal's secure checkout. We receive a transaction confirmation but do not store your payment credentials. PayPal's privacy policy is at <a href="https://www.paypal.com/webapps/mpp/ua/privacy-full" target="_blank" rel="noopener noreferrer">paypal.com</a>.
+                                </p>
+
+                                <h3>Wowhead</h3>
+                                <p>
+                                    On pages related to World of Warcraft content, we load tooltips powered by <strong>Wowhead</strong> (Fanbyte/Ziff Davis). This is a JavaScript script that enhances item and spell links with hover tooltips. It does not use cookies or collect personal data. It is loaded in a privacy-safe manner (lazyOnload) and does not require your consent.
+                                </p>
+
+                                <h2>6. Your Consent Choices</h2>
+                                <p>
+                                    When you first visit TechPlay.gg, you will see our cookie consent banner. You can choose to:
+                                </p>
                                 <ul>
-                                    <li><strong>The right to access:</strong> You have the right to request copies of your personal data.</li>
-                                    <li><strong>The right to rectification:</strong> You have the right to request that we correct any information you believe is inaccurate.</li>
-                                    <li><strong>The right to erasure ("Right to be forgotten"):</strong> You can request that we delete your Personal Data under certain conditions.</li>
-                                    <li><strong>The right to restrict processing:</strong> You have the right to request that we restrict the processing of your personal data.</li>
-                                    <li><strong>The right to data portability:</strong> You have the right to request that we transfer the data that we have collected to another organization, or directly to you.</li>
+                                    <li><strong>Accept all</strong> — enables analytics and marketing cookies.</li>
+                                    <li><strong>Reject all</strong> — only strictly necessary cookies are used. Ads will still appear but will not be personalised.</li>
+                                    <li><strong>Customise</strong> — you can enable or disable analytics and marketing independently.</li>
                                 </ul>
-                                <p>To exercise these rights, please contact us at <a href="mailto:privacy@techplay.gg">privacy@techplay.gg</a>.</p>
-
-                                <h2>7. Third-Party Services</h2>
                                 <p>
-                                    We may employ third-party companies and individuals to facilitate our Service ("Service Providers"), to provide the Service on our behalf,
-                                    or to assist us in analyzing how our Service is used. These third parties have access to your Personal Data only to perform these tasks on our behalf
-                                    and are obligated not to disclose or use it for any other purpose.
+                                    You can change your preferences at any time by clicking "Cookie Settings" in the site footer.
+                                    We use Google Consent Mode v2, which means ad and analytics scripts default to a denied state and only activate after you have made your choice.
+                                </p>
+
+                                <h2>7. Data Retention</h2>
+                                <p>
+                                    We keep your personal data for as long as your account is active or as needed to provide you with the Service. If you delete your account, we anonymise your profile data within 30 days. Forum posts may be retained in an anonymised form to preserve thread continuity. We may retain certain data for longer periods where required by law (e.g., financial records related to purchases).
+                                </p>
+
+                                <h2>8. Your Rights (GDPR)</h2>
+                                <p>
+                                    If you are based in the European Economic Area (EEA) or the United Kingdom, you have the following rights under the GDPR:
                                 </p>
                                 <ul>
-                                    <li><strong>Google Analytics:</strong> We use Google Analytics to monitor and analyze the use of our Service. Google uses the data collected to track and monitor the use of our Service.</li>
+                                    <li><strong>Right of access:</strong> You can request a copy of all personal data we hold about you.</li>
+                                    <li><strong>Right to rectification:</strong> You can ask us to correct inaccurate data.</li>
+                                    <li><strong>Right to erasure ("Right to be forgotten"):</strong> You can request that we delete your account and personal data.</li>
+                                    <li><strong>Right to restrict processing:</strong> You can ask us to pause how we use your data in certain circumstances.</li>
+                                    <li><strong>Right to data portability:</strong> You can request your data in a machine-readable format.</li>
+                                    <li><strong>Right to object:</strong> You can object to processing based on legitimate interests, including direct marketing.</li>
+                                    <li><strong>Right to withdraw consent:</strong> Where processing is based on consent (e.g., analytics cookies), you can withdraw at any time without affecting the lawfulness of prior processing.</li>
                                 </ul>
+                                <p>To exercise any of these rights, email us at <a href="mailto:privacy@techplay.gg">privacy@techplay.gg</a>. We will respond within 30 days.</p>
 
-                                <h2>8. Security of Data</h2>
+                                <h2>9. Security of Data</h2>
                                 <p>
-                                    The security of your data is important to us, but remember that no method of transmission over the Internet, or method of electronic storage is 100% secure.
-                                    While we strive to use commercially acceptable means to protect your Personal Data, we cannot guarantee its absolute security.
+                                    We take reasonable technical and organisational measures to protect your data — including HTTPS encryption, hashed passwords, and access controls. That said, no method of transmission over the internet is completely secure. We cannot guarantee absolute security, but we take every practical step to protect the data we hold.
                                 </p>
 
-                                <h2>9. Changes to This Privacy Policy</h2>
+                                <h2>10. Children&apos;s Privacy</h2>
                                 <p>
-                                    We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.
-                                    You are advised to review this Privacy Policy periodically for any changes.
+                                    TechPlay.gg is not directed at children under the age of 13. We do not knowingly collect personal data from children. If you believe we have inadvertently collected data from a child, please contact us and we will delete it promptly.
                                 </p>
 
-                                <h2>10. Contact Us</h2>
+                                <h2>11. Changes to This Policy</h2>
                                 <p>
-                                    If you have any questions about this Privacy Policy, please contact us:<br />
-                                    By email: <a href="mailto:privacy@techplay.gg">privacy@techplay.gg</a>
+                                    We may update this policy from time to time. When we do, we will update the "Last Updated" date at the top of this page. For significant changes, we will notify registered users by email or through a notice on the website. We encourage you to review this page periodically.
+                                </p>
+
+                                <h2>12. Contact Us</h2>
+                                <p>
+                                    If you have questions about this Privacy Policy or want to exercise your rights, please reach out:<br />
+                                    Email: <a href="mailto:privacy@techplay.gg">privacy@techplay.gg</a><br />
+                                    Address: Luminor Solutions, 71000 Sarajevo, Bosnia and Herzegovina
                                 </p>
                             </div>
                         </div>
