@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
 import { Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
@@ -51,49 +50,40 @@ export default function NewsTabsWidget({ latestNews, popularNews }: NewsTabsWidg
                 </button>
             </div>
 
-            {/* Content List */}
+            {/* Content List — key change triggers CSS re-animation on tab switch */}
             <div className="p-2">
-                <AnimatePresence mode="wait" initial={false}>
-                    <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex flex-col gap-1"
-                    >
-                        {currentData.length === 0 && (
-                            <div className="p-4 text-center text-white/60 text-xs">No articles found.</div>
-                        )}
-                        {currentData.map((item, idx) => (
-                            <Link
-                                key={item.id}
-                                href={`/${item.category?.type === 'reviews' ? 'reviews' : (item.category?.type === 'tech' ? 'hardware' : (item.category?.type === 'guides' ? 'guides' : 'news'))}/${item.slug}`}
-                                className="group flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all"
-                            >
-                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--bg-primary)] border border-white/10 flex items-center justify-center text-[var(--accent)] font-bold text-xs shadow-inner">
-                                    {idx + 1}
+                <div key={activeTab} className="flex flex-col gap-1 animate-tab-content">
+                    {currentData.length === 0 && (
+                        <div className="p-4 text-center text-white/60 text-xs">No articles found.</div>
+                    )}
+                    {currentData.map((item, idx) => (
+                        <Link
+                            key={item.id}
+                            href={`/${item.category?.type === 'reviews' ? 'reviews' : (item.category?.type === 'tech' ? 'hardware' : (item.category?.type === 'guides' ? 'guides' : 'news'))}/${item.slug}`}
+                            className="group flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all"
+                        >
+                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--bg-primary)] border border-white/10 flex items-center justify-center text-[var(--accent)] font-bold text-xs shadow-inner">
+                                {idx + 1}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                    <span className="text-[9px] font-bold text-[var(--accent)] uppercase">{decodeHtml(item.category?.name) || 'News'}</span>
+                                    <span className="text-[9px] text-white/60">•</span>
+                                    <span className="text-[9px] text-white/60 flex items-center gap-1" suppressHydrationWarning>
+                                        {activeTab === "latest" ? (
+                                            <><Clock className="w-2.5 h-2.5" /> {item.published_at ? formatDistanceToNow(new Date(item.published_at), { addSuffix: true }) : ''}</>
+                                        ) : (
+                                            <><TrendingUp className="w-2.5 h-2.5" /> {(item as any).views || 0}</>
+                                        )}
+                                    </span>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-0.5">
-                                        <span className="text-[9px] font-bold text-[var(--accent)] uppercase">{decodeHtml(item.category?.name) || 'News'}</span>
-                                        <span className="text-[9px] text-white/60">•</span>
-                                        <span className="text-[9px] text-white/60 flex items-center gap-1" suppressHydrationWarning>
-                                            {activeTab === "latest" ? (
-                                                <><Clock className="w-2.5 h-2.5" /> {item.published_at ? formatDistanceToNow(new Date(item.published_at), { addSuffix: true }) : ''}</>
-                                            ) : (
-                                                <><TrendingUp className="w-2.5 h-2.5" /> {(item as any).views || 0}</>
-                                            )}
-                                        </span>
-                                    </div>
-                                    <h4 className="text-sm font-medium text-white/90 leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
-                                        {decodeHtml(item.title)}
-                                    </h4>
-                                </div>
-                            </Link>
-                        ))}
-                    </motion.div>
-                </AnimatePresence>
+                                <h4 className="text-sm font-medium text-white/90 leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                                    {decodeHtml(item.title)}
+                                </h4>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
             </div>
 
             <Link href="/news" className="block py-3 text-center text-xs font-bold text-white/70 hover:text-white hover:bg-white/5 transition-colors uppercase tracking-widest border-t border-white/5">

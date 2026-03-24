@@ -187,14 +187,19 @@ export default async function RootLayout({
           });
         `}} />
 
-        {/* Google AdSense Auto Ads — loads after consent defaults are set */}
-        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7427807317921666" crossOrigin="anonymous" />
+        {/* AdSense script moved to body via Script component (afterInteractive) */}
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
 
         {/* Analytics loaded conditionally based on user cookie consent */}
         <ConsentAwareAnalytics />
+
+        {/* AdSense Auto Ads — afterInteractive so it runs after React hydration, not during */}
+        <Script
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7427807317921666"
+            strategy="afterInteractive"
+            crossOrigin="anonymous"
+        />
 
         <ThemeProvider>
           <SiteSettingsProvider>
