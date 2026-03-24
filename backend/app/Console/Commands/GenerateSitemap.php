@@ -329,9 +329,10 @@ class GenerateSitemap extends Command
     private function getArticleTypePath(string $type): string
     {
         return match ($type) {
-            'review' => 'reviews',
-            'hardware' => 'hardware',
-            default => 'news',
+            'review', 'reviews' => 'reviews',
+            'hardware', 'tech'  => 'hardware',
+            'guide', 'guides'   => 'guides',
+            default             => 'news',
         };
     }
 
