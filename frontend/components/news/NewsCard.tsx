@@ -76,7 +76,7 @@ export default memo(function NewsCard({ article, index }: NewsCardProps) {
                         </div>
                         <div className="flex items-center gap-1.5">
                             <Clock className="w-3.5 h-3.5" />
-                            <span>{formatDistanceToNow(new Date(article.published_at || article.created_at), { addSuffix: true })}</span>
+                            <span suppressHydrationWarning>{formatDistanceToNow(new Date(article.published_at || article.created_at), { addSuffix: true })}</span>
                         </div>
                     </div>
                 </div>

@@ -76,7 +76,7 @@ export default function NewsTabsWidget({ latestNews, popularNews }: NewsTabsWidg
                                     <div className="flex items-center gap-2 mb-0.5">
                                         <span className="text-[9px] font-bold text-[var(--accent)] uppercase">{decodeHtml(item.category?.name) || 'News'}</span>
                                         <span className="text-[9px] text-white/60">•</span>
-                                        <span className="text-[9px] text-white/60 flex items-center gap-1">
+                                        <span className="text-[9px] text-white/60 flex items-center gap-1" suppressHydrationWarning>
                                             {activeTab === "latest" ? (
                                                 <><Clock className="w-2.5 h-2.5" /> {item.published_at ? formatDistanceToNow(new Date(item.published_at), { addSuffix: true }) : ''}</>
                                             ) : (
