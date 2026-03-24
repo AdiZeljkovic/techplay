@@ -169,8 +169,13 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
-        {/* Google Analytics - load after page content */}
+        {/* Google Analytics */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+        {/* Google AdSense — preconnect so the connection is ready when adsbygoogle.js loads */}
+        <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+        <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net" />
 
         {/* Google AdSense — in <head> so crawler sees it in raw HTML */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}

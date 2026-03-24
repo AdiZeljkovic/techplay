@@ -31,8 +31,6 @@ function updateGoogleConsent(consent: CookieConsent) {
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-0J974Y0X23";
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
-const MATOMO_URL = "//analytics.adizeljkovic.com/";
-const MATOMO_SITE_ID = "1";
 
 export default function ConsentAwareAnalytics() {
     const [consent, setConsent] = useState<CookieConsent | null>(null);
@@ -67,23 +65,6 @@ export default function ConsentAwareAnalytics() {
                     function gtag(){dataLayer.push(arguments);}
                     gtag('js', new Date());
                     gtag('config', '${GA_ID}', { anonymize_ip: true });
-                `}
-            </Script>
-
-            {/* Matomo — cookieless mode (disableCookies), no consent required */}
-            <Script id="matomo-analytics" strategy="lazyOnload">
-                {`
-                    var _paq = window._paq = window._paq || [];
-                    _paq.push(['disableCookies']);
-                    _paq.push(['trackPageView']);
-                    _paq.push(['enableLinkTracking']);
-                    (function() {
-                        var u="${MATOMO_URL}";
-                        _paq.push(['setTrackerUrl', u+'matomo.php']);
-                        _paq.push(['setSiteId', '${MATOMO_SITE_ID}']);
-                        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-                        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-                    })();
                 `}
             </Script>
 

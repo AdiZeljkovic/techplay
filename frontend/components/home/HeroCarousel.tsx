@@ -48,7 +48,9 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
         >
 
             {/* Background Image Layer with Crossfade */}
-            <AnimatePresence mode="popLayout">
+            {/* initial={false}: first slide renders at full opacity immediately (no LCP delay).
+                Slide transitions still animate normally. */}
+            <AnimatePresence mode="popLayout" initial={false}>
                 <motion.div
                     key={currentIndex}
                     initial={{ opacity: 0, scale: 1.1 }}
