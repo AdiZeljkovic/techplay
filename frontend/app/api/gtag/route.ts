@@ -1,0 +1,46 @@
+import { NextRequest, NextResponse } from "next/server";
+
+export const runtime = "edge";
+
+// Cache the patched gtag.js in the edge cache
+export async function GET(request: NextRequest) {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    if (!id) {
+        return new NextResponse("Missing id parameter", { status: 400 });
+    }
+
+    try {
+        const upstream = await fetch(
+            `https://www.googletagmanager.com/gtag/js?id=${id}`,
+            { next: { revalidate: 3600 } }
+        );
+
+        if (!upstream.ok) {
+            return new NextResponse("Failed to fetch gtag.js", { status: 502 });
+        }
+
+        let script = await upstream.text();
+
+        // Patch all GA4 collect URLs to go through our first-party proxy
+        const origin = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
+        script = script.replaceAll(
+            "https://www.google-analytics.com",
+            `${origin}/api/ga`
+        );
+        script = script.replaceAll(
+            "http://www.google-analytics.com",
+            `${origin}/api/ga`
+        );
+
+        return new NextResponse(script, {
+            headers: {
+                "Content-Type": "application/javascript; charset=utf-8",
+                "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+                "X-Content-Type-Options": "nosniff",
+            },
+        });
+    } catch {
+        return new NextResponse("Upstream error", { status: 502 });
+    }
+}

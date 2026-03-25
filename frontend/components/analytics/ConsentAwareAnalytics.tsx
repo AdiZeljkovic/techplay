@@ -64,10 +64,10 @@ export default function ConsentAwareAnalytics() {
 
     return (
         <>
-            {/* GA4 — afterInteractive fires earlier than lazyOnload, reducing missed visits */}
+            {/* GA4 — first-party proxy (/api/gtag) bypasses ad blockers that block googletagmanager.com */}
             {/* send_page_view: false — we manually send pageviews via usePathname above */}
             <Script
-                src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+                src={`/api/gtag?id=${GA_ID}`}
                 strategy="afterInteractive"
             />
             <Script id="google-analytics" strategy="afterInteractive">
