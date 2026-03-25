@@ -167,7 +167,7 @@ export default async function RootLayout({
         {/* dns-prefetch only for beta API (used server-side only, browser never connects directly) */}
         <link rel="dns-prefetch" href="https://api-beta.techplay.gg" />
 
-        {/* Google Analytics — dns-prefetch only, preconnect not needed (lazyOnload) */}
+        {/* Google Analytics — dns-prefetch only, preconnect not needed (afterInteractive) */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 
         {/* Google AdSense */}
