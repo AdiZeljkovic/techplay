@@ -2,6 +2,7 @@
 
 import Script from "next/script";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 interface CookieConsent {
     necessary: boolean;
@@ -34,6 +35,7 @@ const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
 export default function ConsentAwareAnalytics() {
     const [consent, setConsent] = useState<CookieConsent | null>(null);
+    const pathname = usePathname();
 
     useEffect(() => {
         const saved = readConsent();
@@ -52,25 +54,34 @@ export default function ConsentAwareAnalytics() {
         return () => window.removeEventListener("storage", handleStorage);
     }, []);
 
+    // Track SPA page navigation — fires on every route change in Next.js App Router
+    useEffect(() => {
+        if (typeof window === "undefined" || !(window as any).gtag) return;
+        (window as any).gtag("event", "page_view", {
+            page_path: pathname,
+        });
+    }, [pathname]);
+
     return (
         <>
-            {/* GA4 — Consent Mode v2 handles storage restrictions */}
+            {/* GA4 — afterInteractive fires earlier than lazyOnload, reducing missed visits */}
+            {/* send_page_view: false — we manually send pageviews via usePathname above */}
             <Script
                 src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-                strategy="lazyOnload"
+                strategy="afterInteractive"
             />
-            <Script id="google-analytics" strategy="lazyOnload">
+            <Script id="google-analytics" strategy="afterInteractive">
                 {`
                     window.dataLayer = window.dataLayer || [];
                     function gtag(){dataLayer.push(arguments);}
                     gtag('js', new Date());
-                    gtag('config', '${GA_ID}', { anonymize_ip: true });
+                    gtag('config', '${GA_ID}', { anonymize_ip: true, send_page_view: false });
                 `}
             </Script>
 
             {/* Meta Pixel — marketing cookies, requires explicit consent */}
             {consent?.marketing && META_PIXEL_ID && (
-                <Script id="meta-pixel" strategy="lazyOnload">
+                <Script id="meta-pixel" strategy="afterInteractive">
                     {`
                         !function(f,b,e,v,n,t,s){
                             if(f.fbq)return;n=f.fbq=function(){n.callMethod?
