@@ -64,10 +64,10 @@ export default function ConsentAwareAnalytics() {
 
     return (
         <>
-            {/* GA4 — first-party proxy (/api/gtag) bypasses ad blockers that block googletagmanager.com */}
+            {/* GA4 — first-party proxy (/proxy/gtag) bypasses ad blockers; /api/* is routed to Laravel backend */}
             {/* send_page_view: false — we manually send pageviews via usePathname above */}
             <Script
-                src={`/api/gtag?id=${GA_ID}`}
+                src={`/proxy/gtag?id=${GA_ID}`}
                 strategy="afterInteractive"
             />
             <Script id="google-analytics" strategy="afterInteractive">

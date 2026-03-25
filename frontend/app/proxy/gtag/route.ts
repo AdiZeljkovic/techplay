@@ -24,11 +24,11 @@ export async function GET(request: NextRequest) {
         const origin = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
         script = script.replaceAll(
             "https://www.google-analytics.com",
-            `${origin}/api/ga`
+            `${origin}/proxy/ga`
         );
         script = script.replaceAll(
             "http://www.google-analytics.com",
-            `${origin}/api/ga`
+            `${origin}/proxy/ga`
         );
 
         return new NextResponse(script, {
