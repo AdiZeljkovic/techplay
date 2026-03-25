@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
-
 const GA_UPSTREAM = "https://www.google-analytics.com";
 
 async function proxy(request: NextRequest, path: string[]): Promise<NextResponse> {

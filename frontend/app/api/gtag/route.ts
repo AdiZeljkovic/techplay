@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
-
-// Cache the patched gtag.js in the edge cache
+// Cache the patched gtag.js via Next.js fetch cache
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
