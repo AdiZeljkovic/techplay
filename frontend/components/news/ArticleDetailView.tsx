@@ -285,9 +285,8 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 prose-ol:list-decimal prose-ol:pl-6 prose-ol:my-4 prose-ol:text-[var(--text-secondary)]
                                 prose-li:mb-1.5
                                 prose-hr:border-[var(--border)] prose-hr:my-6
-                                [&_p:has(img)]:mb-0 [&_p:has(img)]:leading-none
                                 [&_iframe]:w-full [&_iframe]:min-h-[400px] [&_iframe]:max-w-full [&_iframe]:rounded-2xl [&_iframe]:shadow-xl [&_iframe]:border [&_iframe]:border-[var(--border)] [&_iframe]:my-3
-                                [&_p:has(iframe)]:mb-0 [&_p:has(iframe)]:leading-none
+                                [&_p:has(iframe)]:leading-none
                                 [&_.twitter-tweet]:mx-auto [&_.twitter-tweet]:my-3 [&_.instagram-media]:mx-auto [&_.instagram-media]:my-3 [&_.fb-post]:mx-auto [&_.fb-post]:my-3
                                 [&_figure]:my-3 [&_figure]:text-center [&_figcaption]:text-sm [&_figcaption]:text-[var(--text-secondary)] [&_figcaption]:mt-2
                             "
