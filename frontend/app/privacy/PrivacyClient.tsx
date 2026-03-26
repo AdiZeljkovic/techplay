@@ -115,7 +115,7 @@ export default function PrivacyPage() {
                                     We display advertisements served by <strong>Google AdSense</strong> (Google LLC, Mountain View, CA, USA). AdSense uses cookies and similar technologies to serve ads that may be relevant to your interests, based on your browsing activity across websites that use Google services.
                                 </p>
                                 <p>
-                                    Our publisher ID is <strong>pub-7427807317921666</strong>. Advertising cookies are only placed if you have consented to marketing cookies through our consent banner. If you decline, we still show ads, but they will not be personalised.
+                                    Our publisher ID is <strong>pub-7427807317921666</strong>. As a result of ad serving on this website, third parties (including Google) may be placing and reading cookies on your browser, or using web beacons to collect information. Advertising cookies are only placed if you have consented to marketing cookies through our consent banner. If you decline, we still show ads, but they will not be personalised.
                                 </p>
                                 <p>
                                     You can opt out of personalised advertising at any time through <a href="https://myadcenter.google.com" target="_blank" rel="noopener noreferrer">Google My Ad Center</a> or by visiting <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer">YourAdChoices</a>.

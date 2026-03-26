@@ -300,13 +300,16 @@ export default function ThreadPage() {
     const confirmReport = async () => {
         setIsReporting(true);
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await axios.post('/reports', {
+                reportable_type: 'thread',
+                reportable_id: data?.thread?.id,
+                reason: reportReason,
+            });
             setHasReported(true);
             setReportDialogOpen(false);
             toast.success("Thread reported. Thank you for helping keep the community safe.");
         } catch (error) {
-            toast.error("Failed to report thread.");
+            toast.error("Failed to report thread. Please try again.");
         } finally {
             setIsReporting(false);
         }
@@ -668,10 +671,16 @@ export default function ThreadPage() {
                                 </div>
                             ) : user ? (
                                 <>
-                                    <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                                        <Reply className="w-5 h-5 text-[var(--accent)]" />
-                                        Post a Reply
-                                    </h3>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
+                                            <Reply className="w-5 h-5 text-[var(--accent)]" />
+                                            Post a Reply
+                                        </h3>
+                                        <Link href="/community-guidelines" className="text-xs text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors flex items-center gap-1">
+                                            <Shield className="w-3 h-3" />
+                                            Community Guidelines
+                                        </Link>
+                                    </div>
                                     <form onSubmit={handleReply} className="space-y-4">
                                         <div className="flex gap-4">
                                             <div className="hidden md:block shrink-0">
