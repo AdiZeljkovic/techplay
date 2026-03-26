@@ -275,7 +275,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                             content={safeContent}
                             afterParagraphs={[3]}
                             position="article_in_text"
-                            className="prose md:prose-lg max-w-none
+                            className="prose prose-lg md:prose-xl max-w-none
                                 prose-headings:text-[var(--text-primary)] prose-headings:font-bold prose-headings:tracking-tight
                                 prose-h2:text-2xl prose-h2:md:text-3xl prose-h2:mt-8 prose-h2:mb-3 prose-h2:first:mt-0
                                 prose-h3:text-xl prose-h3:md:text-2xl prose-h3:mt-6 prose-h3:mb-2
