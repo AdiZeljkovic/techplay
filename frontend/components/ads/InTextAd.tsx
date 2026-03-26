@@ -69,21 +69,20 @@ export default function InTextAd({
         return parts;
     }, [content, afterParagraphs]);
 
+    // Single outer prose container so Typography's :first-child/:last-child
+    // margin-removal doesn't zero out spacing at chunk boundaries.
     return (
-        <>
+        <div className={className}>
             {contentParts.map((part, index) => (
                 <div key={index}>
-                    <div
-                        className={className}
-                        dangerouslySetInnerHTML={{ __html: part.html }}
-                    />
+                    <div dangerouslySetInnerHTML={{ __html: part.html }} />
                     {part.showAd && (
-                        <div className="my-8 empty:my-0 flex justify-center">
+                        <div className="not-prose my-8 empty:my-0 flex justify-center">
                             <AdUnit position={position} className="max-w-2xl" />
                         </div>
                     )}
                 </div>
             ))}
-        </>
+        </div>
     );
 }
