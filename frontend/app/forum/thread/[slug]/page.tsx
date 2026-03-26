@@ -676,7 +676,7 @@ export default function ThreadPage() {
                                             <Reply className="w-5 h-5 text-[var(--accent)]" />
                                             Post a Reply
                                         </h3>
-                                        <Link href="/community-guidelines" className="text-xs text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors flex items-center gap-1">
+                                        <Link href="/forum/rules" className="text-xs text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors flex items-center gap-1">
                                             <Shield className="w-3 h-3" />
                                             Community Guidelines
                                         </Link>
