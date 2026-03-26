@@ -223,7 +223,7 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
 
             <div className="container mx-auto px-4 -mt-10 relative z-20">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-                    <div className="hidden lg:block lg:col-span-1 h-full">
+                    <div className="hidden lg:block lg:col-span-1 h-full min-w-0">
                         <div className={`sticky top-32 flex flex-col gap-4 items-center transition-all duration-300 ${isScrolled ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
                             <button className="w-10 h-10 rounded-full bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[#1DA1F2] hover:border-[#1DA1F2] flex items-center justify-center transition-all hover:scale-110 shadow-lg group">
                                 <Twitter className="w-5 h-5" />
@@ -237,7 +237,7 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                         </div>
                     </div>
 
-                    <div className="lg:col-span-8 bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 md:p-10 lg:p-12 shadow-2xl relative overflow-hidden backdrop-blur-3xl bg-opacity-90">
+                    <div className="lg:col-span-8 min-w-0 bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 md:p-10 lg:p-12 shadow-2xl relative overflow-hidden backdrop-blur-3xl bg-opacity-90">
                         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[var(--accent)]/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
                         {guide.excerpt && (
@@ -352,7 +352,7 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                         </div>
                     </div>
 
-                    <aside className="lg:col-span-3 space-y-8 mt-12 lg:mt-0">
+                    <aside className="lg:col-span-3 min-w-0 space-y-8 mt-12 lg:mt-0">
                         <AdUnit position="sidebar_top" />
                         <div className="sticky top-24 space-y-8">
                             {toc.length > 0 && (

@@ -228,7 +228,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
 
                     {/* Social Sidebar (Left on Desktop) */}
-                    <div className="hidden lg:block lg:col-span-1 h-full">
+                    <div className="hidden lg:block lg:col-span-1 h-full min-w-0">
                         <div className={`sticky top-32 transition-all duration-300 ${isScrolled ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
                             <SocialShare
                                 url={`/reviews/${review.slug}`}
@@ -240,7 +240,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                     </div>
 
                     {/* Article Body (Center) */}
-                    <div className="lg:col-span-8 bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 md:p-10 lg:p-12 shadow-2xl relative overflow-hidden backdrop-blur-3xl bg-opacity-90">
+                    <div className="lg:col-span-8 min-w-0 bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 md:p-10 lg:p-12 shadow-2xl relative overflow-hidden backdrop-blur-3xl bg-opacity-90">
                         {/* Decorative Background Blur */}
                         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[var(--accent)]/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
@@ -388,7 +388,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                     </div>
 
                     {/* Sidebar (Right) */}
-                    <aside className="lg:col-span-3 space-y-8 mt-12 lg:mt-0">
+                    <aside className="lg:col-span-3 min-w-0 space-y-8 mt-12 lg:mt-0">
                         {/* REVIEW SPECIFIC: Moved to bottom of content per user request */}
 
                         <AdUnit position="sidebar_top" />
