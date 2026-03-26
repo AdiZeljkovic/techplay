@@ -2,18 +2,16 @@
 
 import { Article } from "@/types";
 import Link from "next/link";
-import { ArrowLeft, Clock, Calendar, User, Eye } from "lucide-react";
+import { ArrowLeft, Clock, Calendar } from "lucide-react";
 import Image from "next/image";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { useMemo, useState, useEffect } from "react";
 import { processContent } from "@/lib/content";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import TableOfContents from "@/components/ui/TableOfContents";
 import AdUnit from "@/components/ads/AdUnit";
-import InTextAd from "@/components/ads/InTextAd";
 import SocialShare from "@/components/share/SocialShare";
 import CommentsSection from "@/components/comments/CommentsSection";
-import DOMPurify from "isomorphic-dompurify";
 import LiveViewCount from "@/components/tracking/LiveViewCount";
 import TrendingSidebar from "@/components/news/TrendingSidebar";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
@@ -270,11 +268,8 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                             </div>
                         )}
 
-                        {/* Main Text with In-Text Ads */}
-                        <InTextAd
-                            content={safeContent}
-                            afterParagraphs={[3]}
-                            position="article_in_text"
+                        {/* Main Text */}
+                        <div
                             className="prose prose-lg md:prose-xl max-w-none
                                 prose-headings:text-[var(--text-primary)] prose-headings:font-bold prose-headings:tracking-tight
                                 prose-h2:text-2xl prose-h2:md:text-3xl prose-h2:mt-8 prose-h2:mb-3 prose-h2:first:mt-0
@@ -296,6 +291,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 [&_.twitter-tweet]:mx-auto [&_.twitter-tweet]:my-3 [&_.instagram-media]:mx-auto [&_.instagram-media]:my-3 [&_.fb-post]:mx-auto [&_.fb-post]:my-3
                                 [&_figure]:my-3 [&_figure]:text-center [&_figcaption]:text-sm [&_figcaption]:text-[var(--text-secondary)] [&_figcaption]:mt-2
                             "
+                            dangerouslySetInnerHTML={{ __html: safeContent }}
                         />
 
                         {/* Mid-Article Ad (Visible only on mobile/tablet roughly) */}
