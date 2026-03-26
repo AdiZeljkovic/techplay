@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, Fragment } from "react";
 import AdUnit from "@/components/ads/AdUnit";
 
 interface InTextAdProps {
@@ -71,17 +71,22 @@ export default function InTextAd({
 
     // Single outer prose container so Typography's :first-child/:last-child
     // margin-removal doesn't zero out spacing at chunk boundaries.
+    // Note: paragraphs at chunk boundaries can't CSS-collapse across div containers,
+    // so non-first chunks get -mt-4 (-1rem) to compensate for the un-collapsed P.mb.
     return (
         <div className={className}>
             {contentParts.map((part, index) => (
-                <div key={index}>
-                    <div dangerouslySetInnerHTML={{ __html: part.html }} />
+                <Fragment key={index}>
+                    <div
+                        dangerouslySetInnerHTML={{ __html: part.html }}
+                        className={index > 0 ? "-mt-4" : undefined}
+                    />
                     {part.showAd && (
                         <div className="not-prose my-8 empty:my-0 flex justify-center">
                             <AdUnit position={position} className="max-w-2xl" />
                         </div>
                     )}
-                </div>
+                </Fragment>
             ))}
         </div>
     );
