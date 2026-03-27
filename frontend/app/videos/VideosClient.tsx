@@ -60,28 +60,6 @@ export default function VideosPage() {
         }
     }, [selectedMovie]);
 
-    // Setup HLS when video changes — destroy old instance first
-    useEffect(() => {
-        if (visuals.length > 0 && videoRef.current) {
-            const currentVisual = visuals[currentVisualIndex];
-            const videoUrl = currentVisual?.media?.path;
-            const fallbackUrl = currentVisual?.media?.baseMediaPath;
-
-            if (videoUrl && videoUrl.includes('.m3u8')) {
-                loadHlsVideo(videoUrl, fallbackUrl);
-            } else if (videoUrl) {
-                destroyHls();
-                videoRef.current.src = videoUrl;
-                videoRef.current.load();
-            } else if (fallbackUrl) {
-                destroyHls();
-                videoRef.current.src = fallbackUrl;
-                videoRef.current.load();
-            }
-        }
-        return () => { destroyHls(); };
-    }, [visuals, currentVisualIndex, loadHlsVideo, destroyHls]);
-
     const destroyHls = useCallback(() => {
         if (hlsRef.current) {
             hlsRef.current.destroy();
@@ -122,6 +100,28 @@ export default function VideosPage() {
             videoRef.current.load();
         }
     }, [destroyHls]);
+
+    // Setup HLS when video changes — destroy old instance first
+    useEffect(() => {
+        if (visuals.length > 0 && videoRef.current) {
+            const currentVisual = visuals[currentVisualIndex];
+            const videoUrl = currentVisual?.media?.path;
+            const fallbackUrl = currentVisual?.media?.baseMediaPath;
+
+            if (videoUrl && videoUrl.includes('.m3u8')) {
+                loadHlsVideo(videoUrl, fallbackUrl);
+            } else if (videoUrl) {
+                destroyHls();
+                videoRef.current.src = videoUrl;
+                videoRef.current.load();
+            } else if (fallbackUrl) {
+                destroyHls();
+                videoRef.current.src = fallbackUrl;
+                videoRef.current.load();
+            }
+        }
+        return () => { destroyHls(); };
+    }, [visuals, currentVisualIndex, loadHlsVideo, destroyHls]);
 
     const fetchMovies = async () => {
         try {
