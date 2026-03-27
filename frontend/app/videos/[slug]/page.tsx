@@ -6,8 +6,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Script from "next/script";
 
-// Force dynamic rendering since we depend on params
-export const dynamic = 'force-dynamic';
+export const revalidate = 600;
 
 interface VideoItem {
     id: number;
@@ -61,14 +60,19 @@ export async function generateMetadata(
     const description = `Watch ${video.title} on TechPlay.`;
     const thumbnailUrl = video.thumbnail_url || `https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg`;
 
+    const canonicalUrl = `${process.env.NEXT_PUBLIC_APP_URL}/videos/${video.slug}`;
+
     return {
         title: title,
         description: description,
+        alternates: {
+            canonical: canonicalUrl,
+        },
         openGraph: {
             title: title,
             description: description,
             type: 'video.other',
-            url: `${process.env.NEXT_PUBLIC_APP_URL}/videos/${video.slug}`,
+            url: canonicalUrl,
             images: [thumbnailUrl],
         },
         twitter: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
     Play, Sparkles, Video, Film, Loader2,
     ChevronLeft, ChevronRight
@@ -46,6 +46,7 @@ export default function VideosPage() {
     const [isLoadingVisuals, setIsLoadingVisuals] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
+    const hlsRef = useRef<any>(null);
 
     // Fetch movies on mount
     useEffect(() => {
@@ -59,7 +60,7 @@ export default function VideosPage() {
         }
     }, [selectedMovie]);
 
-    // Setup HLS when video changes
+    // Setup HLS when video changes — destroy old instance first
     useEffect(() => {
         if (visuals.length > 0 && videoRef.current) {
             const currentVisual = visuals[currentVisualIndex];
@@ -67,25 +68,36 @@ export default function VideosPage() {
             const fallbackUrl = currentVisual?.media?.baseMediaPath;
 
             if (videoUrl && videoUrl.includes('.m3u8')) {
-                // For HLS streams, try hls.js first
                 loadHlsVideo(videoUrl, fallbackUrl);
             } else if (videoUrl) {
+                destroyHls();
                 videoRef.current.src = videoUrl;
+                videoRef.current.load();
             } else if (fallbackUrl) {
+                destroyHls();
                 videoRef.current.src = fallbackUrl;
+                videoRef.current.load();
             }
         }
-    }, [visuals, currentVisualIndex]);
+        return () => { destroyHls(); };
+    }, [visuals, currentVisualIndex, loadHlsVideo, destroyHls]);
 
-    const loadHlsVideo = async (url: string, fallbackUrl?: string) => {
+    const destroyHls = useCallback(() => {
+        if (hlsRef.current) {
+            hlsRef.current.destroy();
+            hlsRef.current = null;
+        }
+    }, []);
+
+    const loadHlsVideo = useCallback(async (url: string, fallbackUrl?: string) => {
         if (!videoRef.current) return;
+
+        destroyHls();
 
         // Check for native HLS support first (Safari)
         if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
             videoRef.current.src = url;
-            videoRef.current.addEventListener('loadedmetadata', () => {
-                videoRef.current?.play().catch(() => { });
-            });
+            videoRef.current.load();
             return;
         }
 
@@ -94,23 +106,22 @@ export default function VideosPage() {
             const Hls = (await import('hls.js')).default;
 
             if (Hls.isSupported()) {
-                const hls = new Hls();
+                const hls = new Hls({ enableWorker: true });
+                hlsRef.current = hls;
                 hls.loadSource(url);
                 hls.attachMedia(videoRef.current);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    videoRef.current?.play().catch(() => { });
-                });
                 return;
             }
-        } catch (error) {
+        } catch (err) {
             console.warn('HLS.js not available, using fallback');
         }
 
         // Fallback to MP4 if available
         if (fallbackUrl && videoRef.current) {
             videoRef.current.src = fallbackUrl;
+            videoRef.current.load();
         }
-    };
+    }, [destroyHls]);
 
     const fetchMovies = async () => {
         try {
