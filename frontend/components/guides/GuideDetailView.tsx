@@ -16,6 +16,8 @@ import axios from "@/lib/axios";
 import DOMPurify from "isomorphic-dompurify";
 import LiveViewCount from "@/components/tracking/LiveViewCount";
 import ArticleFooterMessage from "@/components/ui/ArticleFooterMessage";
+import Breadcrumbs from "@/components/seo/Breadcrumbs";
+import RelatedArticles from "@/components/seo/RelatedArticles";
 import { decodeHtml } from "@/lib/decode";
 import { Dialog } from "@/components/ui/Dialog";
 
@@ -150,13 +152,13 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
 
                 <div className="absolute inset-x-0 bottom-0 container mx-auto px-4 pb-12 z-10">
                     <div className="max-w-4xl">
-                        <Link
-                            href="/guides"
-                            className="inline-flex items-center gap-2 text-sm font-semibold text-white/80 hover:text-[var(--accent)] transition-colors mb-6 backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full border border-white/10 w-fit"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            Back to Guides
-                        </Link>
+                        <Breadcrumbs
+                            items={[
+                                { label: 'Guides', href: '/guides' },
+                                { label: decodeHtml(guide.title) },
+                            ]}
+                            className="mb-6"
+                        />
 
                         <div className="mb-4 animate-fade-in-up flex gap-3">
                             <span className={`px-4 py-1.5 text-xs font-bold tracking-wider rounded-full uppercase border backdrop-blur-md ${difficultyColors[guide.difficulty]}`}>
@@ -345,6 +347,14 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                         <div className="my-12 lg:hidden">
                             <AdUnit position="article_mid" />
                         </div>
+
+                        {/* Related Guides */}
+                        <RelatedArticles
+                            articles={(guide as any).related_articles || []}
+                            title="Slični vodiči"
+                            viewAllHref="/guides"
+                            articleBasePath="/guides"
+                        />
 
                         {/* Comments */}
                         <div className="mt-12 border-t border-[var(--border)] pt-12">

@@ -2,7 +2,7 @@
 
 import { Review } from "@/types";
 import Link from "next/link";
-import { ArrowLeft, Clock, Calendar, Check, X, Star } from "lucide-react";
+import { Clock, Calendar, Check, X, Star } from "lucide-react";
 import Image from "next/image";
 import { format } from "date-fns";
 import { useMemo, useState, useEffect } from "react";
@@ -17,6 +17,8 @@ import TrendingSidebar from "@/components/news/TrendingSidebar";
 import { Article } from "@/types";
 import DOMPurify from "isomorphic-dompurify";
 import LiveViewCount from "@/components/tracking/LiveViewCount";
+import Breadcrumbs from "@/components/seo/Breadcrumbs";
+import RelatedArticles from "@/components/seo/RelatedArticles";
 
 interface ReviewDetailViewProps {
     review: Review;
@@ -140,13 +142,13 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                 {/* Hero Content */}
                 <div className="absolute inset-x-0 bottom-0 container mx-auto px-4 pb-12 z-10">
                     <div className="max-w-4xl">
-                        <Link
-                            href="/reviews"
-                            className="inline-flex items-center gap-2 text-sm font-semibold text-white/80 hover:text-[var(--accent)] transition-colors mb-6 backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full border border-white/10 w-fit"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            Back to Reviews
-                        </Link>
+                        <Breadcrumbs
+                            items={[
+                                { label: 'Reviews', href: '/reviews' },
+                                { label: decodeHtml(review.title) },
+                            ]}
+                            className="mb-6"
+                        />
 
                         <div className="mb-4 animate-fade-in-up flex items-center gap-3">
                             <span className="px-4 py-1.5 text-xs font-bold tracking-wider bg-[var(--accent)] text-white rounded-full uppercase shadow-[0_0_15px_rgba(var(--accent-rgb),0.5)]">
@@ -380,6 +382,14 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                 </p>
                             </div>
                         </div>
+
+                        {/* Related Reviews */}
+                        <RelatedArticles
+                            articles={(review as any).related_articles || []}
+                            title="Slične recenzije"
+                            viewAllHref="/reviews"
+                            articleBasePath="/reviews"
+                        />
 
                         {/* Comments Section */}
                         <div className="mt-12 pt-12 border-t border-[var(--border)]">

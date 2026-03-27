@@ -9,12 +9,16 @@ import { decodeHtml } from "@/lib/decode";
 interface RelatedArticlesProps {
     articles: Article[];
     title?: string;
+    viewAllHref?: string;
+    articleBasePath?: string;
     className?: string;
 }
 
 export default function RelatedArticles({
     articles,
     title = "Related Articles",
+    viewAllHref = "/news",
+    articleBasePath = "/news",
     className = ""
 }: RelatedArticlesProps) {
     if (!articles || articles.length === 0) return null;
@@ -27,7 +31,7 @@ export default function RelatedArticles({
                     {title}
                 </h2>
                 <Link
-                    href="/news"
+                    href={viewAllHref}
                     className="text-[var(--accent)] hover:text-[var(--accent-hover)] text-sm font-semibold flex items-center gap-1 transition-colors"
                 >
                     View All <ArrowRight className="w-4 h-4" />
@@ -38,7 +42,7 @@ export default function RelatedArticles({
                 {articles.slice(0, 3).map((article) => (
                     <Link
                         key={article.id}
-                        href={`/news/${article.slug}`}
+                        href={`${articleBasePath}/${article.slug}`}
                         className="group bg-[var(--bg-card)] border border-[var(--border)] rounded-xl overflow-hidden hover:border-[var(--accent)]/30 transition-all hover:shadow-lg hover:shadow-[var(--accent)]/5"
                     >
                         {/* Image */}
