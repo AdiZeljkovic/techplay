@@ -5,11 +5,15 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MediaKitSettingResource\Pages;
 use App\Models\MediaKitSetting;
 use App\Services\MediaKitService;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -34,7 +38,7 @@ class MediaKitSettingResource extends Resource
     {
         return $schema
             ->components([
-                Forms\Components\Section::make('Basic Information')
+                Section::make('Basic Information')
                     ->components([
                         Forms\Components\TextInput::make('key')
                             ->required()
@@ -69,7 +73,7 @@ class MediaKitSettingResource extends Resource
                     ])
                     ->columns(3),
 
-                Forms\Components\Section::make('Value')
+                Section::make('Value')
                     ->components([
                         // Textarea for text/json
                         Forms\Components\Textarea::make('value')
@@ -97,7 +101,7 @@ class MediaKitSettingResource extends Resource
                             ->columnSpanFull(),
                     ]),
 
-                Forms\Components\Section::make('Display Settings')
+                Section::make('Display Settings')
                     ->components([
                         Forms\Components\TextInput::make('order')
                             ->numeric()
@@ -195,12 +199,12 @@ class MediaKitSettingResource extends Resource
                 DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->headerActions([
-                Tables\Actions\Action::make('clear_cache')
+                Action::make('clear_cache')
                     ->label('Clear Media Kit Cache')
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')
