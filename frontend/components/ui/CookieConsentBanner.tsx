@@ -21,27 +21,22 @@ const defaultPreferences: CookiePreferences = {
 
 export default function CookieConsentBanner() {
     const { user, isAuthenticated } = useAuth();
-    const [isVisible, setIsVisible] = useState(false);
+    const [isVisible, setIsVisible] = useState(true);
     const [showDetails, setShowDetails] = useState(false);
     const [preferences, setPreferences] = useState<CookiePreferences>(defaultPreferences);
 
     useEffect(() => {
-        // Check localStorage first
         const saved = localStorage.getItem("cookie_preferences");
         if (!saved) {
-            // If user is logged in, check if they have settings in DB
             if (isAuthenticated && user?.cookie_preferences) {
-                // Sync from DB to LocalStorage
                 localStorage.setItem("cookie_preferences", JSON.stringify(user.cookie_preferences));
                 setPreferences(user.cookie_preferences as unknown as CookiePreferences);
-            } else {
-                // No settings found anywhere -> Show Banner
-                const timer = setTimeout(() => setIsVisible(true), 1500); // Delay slightly for aesthetics
-                return () => clearTimeout(timer);
+                setIsVisible(false);
             }
+            // No consent yet — banner already visible (initial state true)
         } else {
-            // Already accepted on this device
             setPreferences(JSON.parse(saved));
+            setIsVisible(false);
         }
     }, [isAuthenticated, user]);
 
@@ -90,6 +85,8 @@ export default function CookieConsentBanner() {
         <AnimatePresence>
             {isVisible && (
                 <motion.div
+                    id="cookie-banner"
+                    suppressHydrationWarning
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: 100, opacity: 0 }}

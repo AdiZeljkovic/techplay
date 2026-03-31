@@ -174,6 +174,9 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net" />
 
+        {/* Hide cookie banner before React hydration for returning users — runs sync, no flash */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('cookie_preferences')){var s=document.createElement('style');s.textContent='#cookie-banner{display:none!important}';document.head.appendChild(s);}}catch(e){}})();` }} />
+
         {/* dataLayer + Consent Mode: analytics granted (cookieless), ads denied */}
         <script dangerouslySetInnerHTML={{ __html: `
           window.dataLayer = window.dataLayer || [];
