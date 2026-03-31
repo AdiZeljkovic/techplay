@@ -1,35 +1,44 @@
 # TechPlay
 
-> TechPlay is a gaming portal covering hardware reviews, gaming news, esports, game database, and community discussions. Based in Bosnia and Herzegovina.
+> TechPlay is a gaming and technology media outlet from Bosnia and Herzegovina. We publish hardware reviews with benchmark data, gaming news, PC build guides, and esports coverage. Our editorial team includes hardware engineers and competitive gamers with years of hands-on testing experience.
 
-## Content Sections
+## Content
 
-- [News](/news) — Latest gaming and tech news
-- [Reviews](/reviews) — In-depth hardware and game reviews with expert ratings
-- [Hardware](/hardware) — PC hardware analysis, benchmarks, and buying guides
-- [Guides](/guides) — Gaming guides, tutorials, and tips
-- [Games Database](/games) — Database of 1M+ games with specs and release dates
-- [Videos](/videos) — Video content and streams
-- [Forum](/forum) — Community discussions and threads
-- [Calendar](/calendar) — Gaming release calendar and events
+- [News](/news) — Daily gaming and technology news, industry announcements, and esports results
+- [Reviews](/reviews) — In-depth hardware and game reviews with scored ratings, benchmark comparisons, and expert verdicts
+- [Hardware](/hardware) — PC hardware analysis, component benchmarks, and buying recommendations
+- [Guides](/guides) — Step-by-step gaming guides, build tutorials, optimization tips, and how-tos
+- [Games Database](/games) — Searchable database of 1M+ games with specs, release dates, and metadata
+- [Videos](/videos) — Video reviews, benchmark visualizations, and streams
+- [Forum](/forum) — Community Q&A, build advice, and gaming discussions
+- [Calendar](/calendar) — Gaming release dates and industry events
+
+## Editorial Standards
+
+- All hardware reviews include measured benchmark data (FPS, thermals, power draw)
+- Reviews use a 1–10 scoring system documented at [/rating-system](/rating-system)
+- Content is written by identified authors with disclosed expertise
+- News sources are cited; editorial opinions are clearly labelled
 
 ## About
 
-- [About Us](/about) — About TechPlay and our team
-- [Impressum](/impressum) — Editorial staff and legal information
-- [Contact](/contact) — Contact information
-- [Rating System](/rating-system) — How TechPlay rates hardware and games
+- [About Us](/about) — Editorial team and mission
+- [Impressum](/impressum) — Publisher information, editorial staff, and legal details
+- [Contact](/contact) — Press and editorial contact
+
+## Feeds & APIs
+
+- RSS Feed: https://techplay.gg/feed
+- Sitemap: https://techplay.gg/sitemap.xml
+- News Sitemap: https://techplay.gg/sitemap-news.xml
+
+## Language & Region
+
+- Primary language: English
+- Region: Bosnia and Herzegovina (global audience)
 
 ## Legal
 
 - [Privacy Policy](/privacy)
 - [Terms of Service](/terms)
 - [Cookie Policy](/cookies)
-
-## API / Feeds
-
-- RSS Feed: https://api-beta.techplay.gg/api/v1/feed
-
-## Contact
-
-https://techplay.gg/contact
