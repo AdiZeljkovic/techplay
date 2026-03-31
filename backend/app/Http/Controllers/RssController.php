@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use App\Models\Guide;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\URL;
 
 class RssController extends Controller
 {
@@ -27,7 +26,7 @@ class RssController extends Controller
 
         $frontendUrl = rtrim(config('app.frontend_url', env('FRONTEND_URL')), '/');
         $siteTitle = config('app.name', 'TechPlay');
-        $feedUrl = URL::to('/feed');
+        $feedUrl = $frontendUrl . '/feed';
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml .= '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">';
@@ -44,9 +43,8 @@ class RssController extends Controller
 
             $link = "{$frontendUrl}/{$typePath}/{$article->slug}";
 
-            $pubDate = $article->published_at
-                ? $article->published_at->toRssString()
-                : $article->created_at->toRssString();
+            $rawDate = $article->published_at ?? $article->created_at;
+            $pubDate = $rawDate->isFuture() ? $article->created_at->toRssString() : $rawDate->toRssString();
 
             $imageTag = '';
             if ($article->featured_image_url) {
@@ -77,9 +75,8 @@ class RssController extends Controller
         foreach ($guides as $guide) {
             $link = "{$frontendUrl}/guides/{$guide->slug}";
 
-            $pubDate = $guide->published_at
-                ? $guide->published_at->toRssString()
-                : $guide->created_at->toRssString();
+            $rawDate = $guide->published_at ?? $guide->created_at;
+            $pubDate = $rawDate->isFuture() ? $guide->created_at->toRssString() : $rawDate->toRssString();
 
             $imageTag = '';
             if ($guide->featured_image_url) {
