@@ -143,11 +143,10 @@ const nextConfig: NextConfig = {
   },
 
   async rewrites() {
+    const backendBase = (process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg/api/v1').replace(/\/api\/v1\/?$/, '');
     return [
-      {
-        source: '/feed',
-        destination: `${(process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg/api/v1').replace(/\/api\/v1\/?$/, '')}/feed`,
-      },
+      { source: '/feed', destination: `${backendBase}/feed` },
+      { source: '/rss',  destination: `${backendBase}/feed` },
     ];
   },
 };
