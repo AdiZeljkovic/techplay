@@ -174,10 +174,16 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net" />
 
-        {/* dataLayer init — must be before GA4 script loads */}
+        {/* dataLayer + Consent Mode: analytics granted (cookieless), ads denied */}
         <script dangerouslySetInnerHTML={{ __html: `
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
+          gtag('consent', 'default', {
+            analytics_storage: 'granted',
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied'
+          });
         `}} />
 
         {/* AdSense script moved to body via Script component (afterInteractive) */}
