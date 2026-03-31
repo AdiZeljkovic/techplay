@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MediaKitSettingResource\Pages;
 use App\Models\MediaKitSetting;
 use App\Services\MediaKitService;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -189,8 +191,8 @@ class MediaKitSettingResource extends Resource
                     ->multiple(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
