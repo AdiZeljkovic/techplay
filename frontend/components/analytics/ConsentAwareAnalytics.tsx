@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 interface CookieConsent {
@@ -54,8 +54,14 @@ export default function ConsentAwareAnalytics() {
         return () => window.removeEventListener("storage", handleStorage);
     }, []);
 
-    // Track SPA page navigation — fires on every route change in Next.js App Router
+    // Track SPA page navigation — fires on route changes AFTER initial load
+    // Initial page view is handled by send_page_view:true in gtag config below
+    const isFirstRender = useRef(true);
     useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
         if (typeof window === "undefined" || !(window as any).gtag) return;
         (window as any).gtag("event", "page_view", {
             page_path: pathname,
@@ -75,7 +81,7 @@ export default function ConsentAwareAnalytics() {
                     window.dataLayer = window.dataLayer || [];
                     function gtag(){dataLayer.push(arguments);}
                     gtag('js', new Date());
-                    gtag('config', '${GA_ID}', { anonymize_ip: true, send_page_view: false });
+                    gtag('config', '${GA_ID}', { anonymize_ip: true, send_page_view: true });
                 `}
             </Script>
 
