@@ -22,3 +22,6 @@ Schedule::command('views:clean')->daily();
 
 // EDITORIAL: Auto-publish scheduled articles every minute
 Schedule::command('articles:publish-scheduled')->everyMinute();
+
+// SEO: Regenerate XML sitemaps every 6 hours
+Schedule::command('sitemap:generate')->everySixHours();

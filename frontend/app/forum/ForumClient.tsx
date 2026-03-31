@@ -178,7 +178,7 @@ export default function ForumPage() {
                                                                                     <div className="text-xs font-medium text-[var(--text-primary)] truncate group-hover:text-[var(--accent)] transition-colors">
                                                                                         {decodeHtml(category.latest_thread.title)}
                                                                                     </div>
-                                                                                    <div className="text-[10px] text-[var(--text-secondary)] truncate">
+                                                                                    <div className="text-[10px] text-[var(--text-secondary)] truncate" suppressHydrationWarning>
                                                                                         {formatDistanceToNow(new Date(category.latest_thread.created_at), { addSuffix: true })}
                                                                                     </div>
                                                                                 </div>
