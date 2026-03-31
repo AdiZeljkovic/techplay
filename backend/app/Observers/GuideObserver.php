@@ -5,6 +5,8 @@ namespace App\Observers;
 use App\Events\GuidePublished;
 use App\Models\Guide;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class GuideObserver
 {
@@ -12,6 +14,7 @@ class GuideObserver
     {
         if ($guide->status === 'published') {
             broadcast(new GuidePublished($guide))->toOthers();
+            $this->pingSearchEngines($guide->slug);
         }
 
         $this->invalidateCache($guide);
@@ -21,9 +24,30 @@ class GuideObserver
     {
         if ($guide->isDirty('status') && $guide->status === 'published') {
             broadcast(new GuidePublished($guide))->toOthers();
+            $this->pingSearchEngines($guide->slug);
         }
 
         $this->invalidateCache($guide);
+    }
+
+    protected function pingSearchEngines(string $slug): void
+    {
+        $siteUrl = rtrim(config('app.frontend_url', 'https://techplay.gg'), '/');
+        $articleUrl = "{$siteUrl}/guides/{$slug}";
+        $indexNowKey = config('services.indexnow.key');
+
+        if ($indexNowKey) {
+            try {
+                Http::timeout(5)->post('https://api.indexnow.org/indexnow', [
+                    'host'        => parse_url($siteUrl, PHP_URL_HOST),
+                    'key'         => $indexNowKey,
+                    'keyLocation' => "{$siteUrl}/{$indexNowKey}.txt",
+                    'urlList'     => [$articleUrl],
+                ]);
+            } catch (\Exception $e) {
+                Log::warning('IndexNow ping failed for guide', ['error' => $e->getMessage()]);
+            }
+        }
     }
 
     public function deleted(Guide $guide): void
