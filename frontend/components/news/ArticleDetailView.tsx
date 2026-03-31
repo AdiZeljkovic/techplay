@@ -12,7 +12,6 @@ import TableOfContents from "@/components/ui/TableOfContents";
 import AdUnit from "@/components/ads/AdUnit";
 import SocialShare from "@/components/share/SocialShare";
 import CommentsSection from "@/components/comments/CommentsSection";
-import LiveViewCount from "@/components/tracking/LiveViewCount";
 import TrendingSidebar from "@/components/news/TrendingSidebar";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import RelatedArticles from "@/components/seo/RelatedArticles";
@@ -227,12 +226,6 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
 
 
 
-                            <div className="hidden md:block w-px h-10 bg-white/20" />
-
-                            <div className="flex flex-col">
-                                <LiveViewCount slug={article.slug} initialViews={article.views || 0} />
-                                <span className="text-xs text-white/60">Views</span>
-                            </div>
                         </div>
                     </div>
                 </div>
