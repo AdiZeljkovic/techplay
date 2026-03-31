@@ -174,17 +174,10 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net" />
 
-        {/* Google Consent Mode v2 — must be set BEFORE any Google scripts load */}
+        {/* dataLayer init — must be before GA4 script loads */}
         <script dangerouslySetInnerHTML={{ __html: `
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
-          gtag('consent', 'default', {
-            analytics_storage: 'denied',
-            ad_storage: 'denied',
-            ad_user_data: 'denied',
-            ad_personalization: 'denied',
-            wait_for_update: 500
-          });
         `}} />
 
         {/* AdSense script moved to body via Script component (afterInteractive) */}
