@@ -4,16 +4,25 @@ namespace App\Observers;
 
 use App\Events\GuidePublished;
 use App\Models\Guide;
+use App\Services\RevalidationService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class GuideObserver
 {
+    protected RevalidationService $revalidationService;
+
+    public function __construct(RevalidationService $revalidationService)
+    {
+        $this->revalidationService = $revalidationService;
+    }
+
     public function created(Guide $guide): void
     {
         if ($guide->status === 'published') {
             broadcast(new GuidePublished($guide))->toOthers();
+            $this->revalidationService->revalidateArticle($guide->slug, 'guides');
             $this->pingSearchEngines($guide->slug);
         }
 
@@ -22,9 +31,13 @@ class GuideObserver
 
     public function updated(Guide $guide): void
     {
-        if ($guide->isDirty('status') && $guide->status === 'published') {
-            broadcast(new GuidePublished($guide))->toOthers();
-            $this->pingSearchEngines($guide->slug);
+        if ($guide->status === 'published') {
+            $this->revalidationService->revalidateArticle($guide->slug, 'guides');
+
+            if ($guide->isDirty('status')) {
+                broadcast(new GuidePublished($guide))->toOthers();
+                $this->pingSearchEngines($guide->slug);
+            }
         }
 
         $this->invalidateCache($guide);

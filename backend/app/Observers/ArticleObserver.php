@@ -27,12 +27,6 @@ class ArticleObserver
             return;
         }
 
-        // Only act when status just changed to 'published' (not on every edit of a published article)
-        $isNewlyPublished = $article->wasRecentlyCreated || $article->wasChanged('status');
-        if (! $isNewlyPublished) {
-            return;
-        }
-
         if (! $article->relationLoaded('category')) {
             $article->load('category');
         }
@@ -43,14 +37,19 @@ class ArticleObserver
             $categoryPath = $this->getCategoryPath($article->category->type);
 
             if ($categoryPath) {
+                // Always revalidate the article page when a published article is saved
                 $this->revalidationService->revalidateArticle($article->slug, $categoryPath);
 
                 if ($article->is_featured_in_hero) {
                     $this->revalidationService->revalidateHomepage();
                 }
 
-                $this->regenerateNewsSitemap();
-                $this->pingSearchEngines($article->slug, $categoryPath);
+                // Only ping search engines and regenerate news sitemap on first publish
+                $isNewlyPublished = $article->wasRecentlyCreated || $article->wasChanged('status');
+                if ($isNewlyPublished) {
+                    $this->regenerateNewsSitemap();
+                    $this->pingSearchEngines($article->slug, $categoryPath);
+                }
             }
         }
     }
