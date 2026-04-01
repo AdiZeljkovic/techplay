@@ -69,7 +69,7 @@ export default function TableOfContents({ items }: TableOfContentsProps) {
                                             : "text-gray-400 group-hover:text-white"
                                     )}
                                 >
-                                    {item.text.replace(/&quot;/g, '"')}
+                                    {item.text.replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&apos;/g, "'")}
                                 </span>
                             </a>
                         </li>
