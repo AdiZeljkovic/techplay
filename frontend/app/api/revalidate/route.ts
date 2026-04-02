@@ -59,10 +59,8 @@ export async function POST(request: NextRequest) {
                 // Map category to path (tech uses hardware route)
                 const pathPrefix = category === 'tech' ? 'hardware' : category;
 
-                // Next.js 15: revalidateTag requires profile parameter
-                // 'max' = stale-while-revalidate (serves stale while fetching fresh)
-                revalidateTag(`${tagPrefix}-${slug}`, 'max');
-                revalidateTag(category, 'max');
+                revalidateTag(`${tagPrefix}-${slug}`);
+                revalidateTag(category);
 
                 // Also revalidate paths (for page-level cache)
                 revalidatePath(`/${pathPrefix}/${slug}`);

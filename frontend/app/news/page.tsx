@@ -19,7 +19,7 @@ async function getInitialNews() {
 
     try {
         const res = await fetch(`${apiUrl}/news?page=1`, {
-            next: { revalidate: 300 },
+            next: { revalidate: 300, tags: ['news'] },
             headers: { 'Accept': 'application/json' },
         });
         if (!res.ok) return null;

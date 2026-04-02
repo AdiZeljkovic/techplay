@@ -19,7 +19,7 @@ async function getInitialReviews() {
 
     try {
         const res = await fetch(`${apiUrl}/reviews?page=1`, {
-            next: { revalidate: 600 },
+            next: { revalidate: 600, tags: ['reviews'] },
             headers: { 'Accept': 'application/json' },
         });
         if (!res.ok) return null;

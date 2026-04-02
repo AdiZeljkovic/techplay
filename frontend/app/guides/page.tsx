@@ -20,7 +20,7 @@ async function getInitialGuides() {
 
     try {
         const res = await fetch(`${apiUrl}/guides?page=1`, {
-            next: { revalidate: 900 },
+            next: { revalidate: 900, tags: ['guides'] },
             headers: { 'Accept': 'application/json' },
         });
         if (!res.ok) return null;

@@ -20,7 +20,7 @@ async function getInitialHardware() {
 
     try {
         const res = await fetch(`${apiUrl}/tech?page=1`, {
-            next: { revalidate: 600 },
+            next: { revalidate: 600, tags: ['hardware'] },
             headers: { 'Accept': 'application/json' },
         });
         if (!res.ok) return null;
