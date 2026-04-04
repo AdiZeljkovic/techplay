@@ -32,6 +32,7 @@ class ArticleObserver
         }
 
         $this->clearApiListingCache($article->category->type ?? null);
+        $this->clearArticleShowCache($article->slug);
 
         if ($article->category) {
             $categoryPath = $this->getCategoryPath($article->category->type);
@@ -74,6 +75,17 @@ class ArticleObserver
         if ($article->is_featured_in_hero) {
             $this->revalidationService->revalidateHomepage();
         }
+    }
+
+    /**
+     * Clear individual article show caches across all possible cache keys for this slug.
+     * Needed because ReviewResource and TechResource both use Article model but different cache keys.
+     */
+    protected function clearArticleShowCache(string $slug): void
+    {
+        Cache::forget("news.show.v2.{$slug}");
+        Cache::forget("tech.show.v2.{$slug}");
+        Cache::forget("reviews.show.v2.{$slug}");
     }
 
     /**
