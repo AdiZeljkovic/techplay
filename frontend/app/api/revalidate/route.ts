@@ -59,8 +59,8 @@ export async function POST(request: NextRequest) {
                 // Map category to path (tech uses hardware route)
                 const pathPrefix = category === 'tech' ? 'hardware' : category;
 
-                revalidateTag(`${tagPrefix}-${slug}`);
-                revalidateTag(category);
+                revalidateTag(`${tagPrefix}-${slug}`, 'max');
+                revalidateTag(category, 'max');
 
                 // Also revalidate paths (for page-level cache)
                 revalidatePath(`/${pathPrefix}/${slug}`);
