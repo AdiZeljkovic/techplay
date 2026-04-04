@@ -59,8 +59,8 @@ export async function POST(request: NextRequest) {
                 // Map category to path (tech uses hardware route)
                 const pathPrefix = category === 'tech' ? 'hardware' : category;
 
-                revalidateTag(`${tagPrefix}-${slug}`, 'max');
-                revalidateTag(category, 'max');
+                revalidateTag(`${tagPrefix}-${slug}`, { expire: 0 });
+                revalidateTag(category, { expire: 0 });
 
                 // Also revalidate paths (for page-level cache)
                 revalidatePath(`/${pathPrefix}/${slug}`);
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
                             `${baseUrl}/${pathPrefix}`,
                         ];
 
-                        await fetch(`https://api.cloudflare.com/client/v4/zones/${cloudflareZoneId}/purge_cache`, {
+                        const cfRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${cloudflareZoneId}/purge_cache`, {
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${cloudflareToken}`,
@@ -87,6 +87,8 @@ export async function POST(request: NextRequest) {
                             },
                             body: JSON.stringify({ files: urlsToPurge }),
                         });
+                        const cfBody = await cfRes.json();
+                        console.log('Cloudflare purge:', cfRes.status, JSON.stringify(cfBody));
                     } catch (error) {
                         console.error('Cloudflare cache purge failed:', error);
                         // Don't fail revalidation if Cloudflare purge fails
