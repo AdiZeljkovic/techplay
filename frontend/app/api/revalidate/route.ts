@@ -1,4 +1,5 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
+import { after } from 'next/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -67,32 +68,35 @@ export async function POST(request: NextRequest) {
                 revalidatePath(`/${pathPrefix}`);
                 revalidatePath('/');
 
-                // Purge Cloudflare cache for updated pages
+                // Purge Cloudflare cache AFTER response is sent and Next.js cache is settled
+                // Using after() to avoid race condition where CF re-caches stale content
+                // before executeRevalidates() has finished updating the data cache
                 const cloudflareToken = process.env.CLOUDFLARE_API_TOKEN;
                 const cloudflareZoneId = process.env.CLOUDFLARE_ZONE_ID;
 
                 if (cloudflareToken && cloudflareZoneId) {
-                    try {
-                        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg';
-                        const urlsToPurge = [
-                            `${baseUrl}/${pathPrefix}/${slug}`,
-                            `${baseUrl}/${pathPrefix}`,
-                        ];
+                    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg';
+                    const urlsToPurge = [
+                        `${baseUrl}/${pathPrefix}/${slug}`,
+                        `${baseUrl}/${pathPrefix}`,
+                    ];
 
-                        const cfRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${cloudflareZoneId}/purge_cache`, {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${cloudflareToken}`,
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ files: urlsToPurge }),
-                        });
-                        const cfBody = await cfRes.json();
-                        console.log('Cloudflare purge:', cfRes.status, JSON.stringify(cfBody));
-                    } catch (error) {
-                        console.error('Cloudflare cache purge failed:', error);
-                        // Don't fail revalidation if Cloudflare purge fails
-                    }
+                    after(async () => {
+                        try {
+                            const cfRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${cloudflareZoneId}/purge_cache`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${cloudflareToken}`,
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ files: urlsToPurge }),
+                            });
+                            const cfBody = await cfRes.json();
+                            console.log('Cloudflare purge (after):', cfRes.status, JSON.stringify(cfBody));
+                        } catch (error) {
+                            console.error('Cloudflare cache purge failed:', error);
+                        }
+                    });
                 }
 
                 return NextResponse.json({
