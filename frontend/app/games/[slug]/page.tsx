@@ -1,22 +1,36 @@
-"use client";
-
-import useSWR from "swr";
-import axios from "@/lib/axios";
-import { useParams } from "next/navigation";
-import {
-    Calendar, Monitor, Star, Globe, Clock, ShoppingCart,
-    ExternalLink, Timer, Gamepad2, ArrowLeft, Tag, Info,
-    Hourglass, Camera, Play, ChevronLeft, ChevronRight,
-    X, Trophy, Layers, Puzzle, ThumbsUp, Zap,
-} from "lucide-react";
-import { useEffect, useState, useCallback } from "react";
-import { differenceInSeconds, parseISO, isFuture, format } from "date-fns";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { getApiUrl } from "@/lib/api";
+import {
+    Calendar, Monitor, Star, Globe, ShoppingCart,
+    ExternalLink, Timer, Gamepad2, ArrowLeft, Tag, Info,
+    Hourglass, Camera, Play, Trophy, Layers, Puzzle, ThumbsUp, Zap, X,
+} from "lucide-react";
+import GameScreenshotsLightbox from "@/components/games/GameScreenshotsLightbox";
+import GameTrailersPlayer from "@/components/games/GameTrailersPlayer";
+import GameCountdownTimer from "@/components/games/GameCountdownTimer";
 
-const fetcher = (url: string) => axios.get(url).then((res) => res.data);
+/* ─── ISR config ────────────────────────────────────────────────────────────── */
 
-/* ─── Types ────────────────────────────────────────────────────────────────── */
+export const revalidate    = 86400 * 30; // 30 days
+export const dynamicParams = true;       // unknown slugs → dynamic fallback
+
+/* ─── generateStaticParams ──────────────────────────────────────────────────── */
+
+export async function generateStaticParams() {
+    try {
+        const res = await fetch(`${getApiUrl()}/games/crawled-slugs`, { cache: "no-store" });
+        if (!res.ok) return [];
+        const slugs: string[] = await res.json();
+        return slugs.map((slug) => ({ slug }));
+    } catch {
+        return [];
+    }
+}
+
+/* ─── Types ─────────────────────────────────────────────────────────────────── */
 
 interface Store {
     id: number;
@@ -26,7 +40,7 @@ interface Store {
 
 interface Rating {
     id: number;
-    title: string;  // "exceptional" | "recommended" | "meh" | "skip"
+    title: string;
     count: number;
     percent: number;
 }
@@ -40,7 +54,9 @@ interface MetacriticPlatform {
 interface GameDetail {
     id: number;
     name: string;
+    slug: string;
     description: string;
+    description_raw: string;
     released: string;
     background_image: string;
     background_image_additional: string;
@@ -93,98 +109,66 @@ interface GameListItem {
     rating: number;
 }
 
-/* ─── Countdown ─────────────────────────────────────────────────────────────── */
+/* ─── generateMetadata ───────────────────────────────────────────────────────── */
 
-function CountdownTimer({ targetDate }: { targetDate: string }) {
-    const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+    const { slug } = await params;
 
-    useEffect(() => {
-        const calc = () => {
-            const diff = differenceInSeconds(parseISO(targetDate), new Date());
-            if (diff <= 0) return null;
-            return {
-                days:    Math.floor(diff / (3600 * 24)),
-                hours:   Math.floor((diff % (3600 * 24)) / 3600),
-                minutes: Math.floor((diff % 3600) / 60),
-                seconds: Math.floor(diff % 60),
-            };
+    try {
+        const res = await fetch(`${getApiUrl()}/games/${slug}`);
+        if (!res.ok) return { title: "Game Not Found — TechPlay" };
+        const game: GameDetail = await res.json();
+
+        const description = game.description_raw
+            ? game.description_raw.slice(0, 155).trimEnd() + "..."
+            : `${game.name} — explore gameplay, screenshots, trailers and more on TechPlay.`;
+
+        const genres    = (game.genres    ?? []).map((g) => g.name);
+        const platforms = (game.platforms ?? []).map((p) => p.platform.name);
+        const keywords  = [...genres, ...platforms, game.name, "game", "gameplay", "gaming"].join(", ");
+
+        return {
+            title:       `${game.name} — TechPlay`,
+            description,
+            keywords,
+            alternates:  { canonical: `https://techplay.gg/games/${slug}` },
+            openGraph: {
+                title:       `${game.name} — TechPlay`,
+                description,
+                url:         `https://techplay.gg/games/${slug}`,
+                type:        "website",
+                images: game.background_image
+                    ? [{ url: game.background_image, width: 1280, height: 720, alt: game.name }]
+                    : [],
+            },
+            twitter: {
+                card:        "summary_large_image",
+                title:       `${game.name} — TechPlay`,
+                description,
+                images: game.background_image ? [game.background_image] : [],
+            },
         };
-        setTimeLeft(calc());
-        const t = setInterval(() => setTimeLeft(calc()), 1000);
-        return () => clearInterval(t);
-    }, [targetDate]);
-
-    if (!timeLeft) return null;
-
-    return (
-        <div className="flex flex-wrap gap-4">
-            {[["Days", timeLeft.days], ["Hours", timeLeft.hours], ["Mins", timeLeft.minutes], ["Secs", timeLeft.seconds]].map(([label, val]) => (
-                <div key={label} className="flex flex-col items-center bg-black/60 backdrop-blur-xl border border-[var(--accent)]/50 p-4 rounded-2xl min-w-[90px] shadow-[0_0_30px_rgba(var(--accent-rgb),0.2)]">
-                    <span className="text-4xl font-black text-white font-mono">{String(val).padStart(2, "0")}</span>
-                    <span className="text-[10px] uppercase text-[var(--accent)] font-bold tracking-widest mt-1">{label}</span>
-                </div>
-            ))}
-        </div>
-    );
+    } catch {
+        return { title: "TechPlay Games" };
+    }
 }
 
-/* ─── Screenshots Lightbox ──────────────────────────────────────────────────── */
+/* ─── Helpers ────────────────────────────────────────────────────────────────── */
 
-function Lightbox({ images, initial, onClose }: {
-    images: Screenshot[];
-    initial: number;
-    onClose: () => void;
-}) {
-    const [idx, setIdx] = useState(initial);
-
-    const prev = useCallback(() => setIdx(i => (i - 1 + images.length) % images.length), [images.length]);
-    const next = useCallback(() => setIdx(i => (i + 1) % images.length), [images.length]);
-
-    useEffect(() => {
-        const handler = (e: KeyboardEvent) => {
-            if (e.key === "Escape") onClose();
-            if (e.key === "ArrowLeft") prev();
-            if (e.key === "ArrowRight") next();
-        };
-        window.addEventListener("keydown", handler);
-        return () => window.removeEventListener("keydown", handler);
-    }, [onClose, prev, next]);
-
-    return (
-        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center" onClick={onClose}>
-            <button onClick={onClose} className="absolute top-4 right-4 p-2 text-white/70 hover:text-white bg-white/10 rounded-full z-10 transition-colors">
-                <X className="w-6 h-6" />
-            </button>
-            <button onClick={(e) => { e.stopPropagation(); prev(); }}
-                className="absolute left-4 p-3 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full z-10 transition-all">
-                <ChevronLeft className="w-6 h-6" />
-            </button>
-            <div className="relative w-full max-w-5xl max-h-[80vh] mx-16" onClick={(e) => e.stopPropagation()}>
-                <Image src={images[idx].image} alt={`Screenshot ${idx + 1}`} width={1920} height={1080}
-                    className="w-full h-auto max-h-[80vh] object-contain rounded-xl" />
-                <p className="text-center text-white/40 text-sm mt-3">{idx + 1} / {images.length}</p>
-            </div>
-            <button onClick={(e) => { e.stopPropagation(); next(); }}
-                className="absolute right-4 p-3 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full z-10 transition-all">
-                <ChevronRight className="w-6 h-6" />
-            </button>
-        </div>
-    );
-}
-
-/* ─── Rating bar colours ─────────────────────────────────────────────────────── */
-
-const RATING_STYLES: Record<string, { color: string; icon: typeof Star }> = {
-    exceptional: { color: "bg-green-500",  icon: Zap },
-    recommended: { color: "bg-blue-500",   icon: ThumbsUp },
-    meh:         { color: "bg-yellow-500", icon: Star },
-    skip:        { color: "bg-red-500",    icon: X },
+const RATING_STYLES: Record<string, { color: string; Icon: React.FC<{ className?: string }> }> = {
+    exceptional: { color: "bg-green-500",  Icon: Zap      },
+    recommended: { color: "bg-blue-500",   Icon: ThumbsUp },
+    meh:         { color: "bg-yellow-500", Icon: Star     },
+    skip:        { color: "bg-red-500",    Icon: X        },
 };
 
-const getMetacriticColor = (score: number) =>
-    score >= 80 ? "bg-green-500 text-white" : score >= 60 ? "bg-yellow-500 text-black" : "bg-red-500 text-white";
-
-/* ─── Mini game card ─────────────────────────────────────────────────────────── */
+function metacriticColor(score: number) {
+    return score >= 80
+        ? "bg-green-500 text-white"
+        : score >= 60
+        ? "bg-yellow-500 text-black"
+        : "bg-red-500 text-white";
+}
 
 function MiniGameCard({ game }: { game: GameListItem }) {
     return (
@@ -194,10 +178,14 @@ function MiniGameCard({ game }: { game: GameListItem }) {
                 {game.background_image ? (
                     <Image src={game.background_image} alt={game.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center"><Gamepad2 className="w-8 h-8 text-[var(--text-muted)]" /></div>
+                    <div className="w-full h-full flex items-center justify-center">
+                        <Gamepad2 className="w-8 h-8 text-[var(--text-muted)]" />
+                    </div>
                 )}
                 {game.metacritic ? (
-                    <span className={`absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-bold ${getMetacriticColor(game.metacritic)}`}>{game.metacritic}</span>
+                    <span className={`absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-bold ${metacriticColor(game.metacritic)}`}>
+                        {game.metacritic}
+                    </span>
                 ) : null}
             </div>
             <div className="p-3">
@@ -208,57 +196,83 @@ function MiniGameCard({ game }: { game: GameListItem }) {
     );
 }
 
-/* ─── Main page ──────────────────────────────────────────────────────────────── */
+/* ─── Page ───────────────────────────────────────────────────────────────────── */
 
-export default function GameDetailPage() {
-    const params = useParams();
-    const slug = params.slug as string;
+export default async function GameDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = await params;
+    const base     = getApiUrl();
 
-    const { data: game, isLoading } = useSWR<GameDetail>(slug ? `/games/${slug}` : null, fetcher);
-    const { data: screenshotsData }  = useSWR<{ results: Screenshot[] }>(slug ? `/games/${slug}/screenshots` : null, fetcher);
-    const { data: moviesData }        = useSWR<{ results: Movie[] }>(slug ? `/games/${slug}/movies` : null, fetcher);
-    const { data: seriesData }        = useSWR<{ results: GameListItem[] }>(slug ? `/games/${slug}/series` : null, fetcher);
-    const { data: suggestedData }     = useSWR<{ results: GameListItem[] }>(slug ? `/games/${slug}/suggested` : null, fetcher);
-    const { data: additionsData }     = useSWR<{ results: GameListItem[] }>(slug ? `/games/${slug}/additions` : null, fetcher);
+    const [game, screenshotsRes, moviesRes, seriesRes, suggestedRes, additionsRes] = await Promise.all([
+        fetch(`${base}/games/${slug}`).then((r) => (r.ok ? r.json() : null)),
+        fetch(`${base}/games/${slug}/screenshots`).then((r) => (r.ok ? r.json() : null)),
+        fetch(`${base}/games/${slug}/movies`).then((r) => (r.ok ? r.json() : null)),
+        fetch(`${base}/games/${slug}/series`).then((r) => (r.ok ? r.json() : null)),
+        fetch(`${base}/games/${slug}/suggested`).then((r) => (r.ok ? r.json() : null)),
+        fetch(`${base}/games/${slug}/additions`).then((r) => (r.ok ? r.json() : null)),
+    ]) as [GameDetail | null, { results: Screenshot[] } | null, { results: Movie[] } | null, { results: GameListItem[] } | null, { results: GameListItem[] } | null, { results: GameListItem[] } | null];
 
-    const [lightboxIdx, setLightboxIdx]   = useState<number | null>(null);
-    const [activeTrailer, setActiveTrailer] = useState(0);
+    if (!game) notFound();
 
-    const screenshots = screenshotsData?.results ?? [];
-    const movies      = moviesData?.results ?? [];
-    const series      = seriesData?.results?.filter(g => g.slug !== slug) ?? [];
-    const suggested   = suggestedData?.results ?? [];
-    const additions   = additionsData?.results ?? [];
+    const screenshots = screenshotsRes?.results ?? [];
+    const movies      = moviesRes?.results ?? [];
+    const series      = (seriesRes?.results ?? []).filter((g) => g.slug !== slug);
+    const suggested   = suggestedRes?.results ?? [];
+    const additions   = additionsRes?.results ?? [];
 
-    if (isLoading) return (
-        <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
-            <div className="w-16 h-16 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
-        </div>
-    );
+    const isUpcoming = game.released && new Date(game.released) > new Date();
 
-    if (!game) return (
-        <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center text-center px-4">
-            <h1 className="text-3xl font-bold text-white mb-4">Game Not Found</h1>
-            <p className="text-[var(--text-secondary)] mb-8">This game doesn't exist or couldn't be loaded.</p>
-            <Link href="/games" className="text-[var(--accent)] hover:underline font-medium">← Back to Games</Link>
-        </div>
-    );
+    /* ── JSON-LD ─────────────────────────────────────────────────────────────── */
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type":    "VideoGame",
+        name:        game.name,
+        description: game.description_raw?.slice(0, 500) ?? "",
+        image:       game.background_image ?? "",
+        url:         `https://techplay.gg/games/${game.slug}`,
+        ...(game.released ? { datePublished: game.released } : {}),
+        ...(game.ratings_count > 0 && game.rating > 0 ? {
+            aggregateRating: {
+                "@type":      "AggregateRating",
+                ratingValue:  game.rating.toFixed(1),
+                ratingCount:  game.ratings_count,
+                bestRating:   "5",
+                worstRating:  "1",
+            },
+        } : {}),
+        genre:           (game.genres    ?? []).map((g) => g.name),
+        gamePlatform:    (game.platforms ?? []).map((p) => p.platform.name),
+        publisher:       (game.publishers ?? []).map((p) => ({ "@type": "Organization", name: p.name })),
+        developer:       (game.developers ?? []).map((d) => ({ "@type": "Organization", name: d.name })),
+        applicationCategory: "Game",
+    };
 
-    const isUpcoming = game.released && isFuture(parseISO(game.released));
+    const breadcrumb = {
+        "@context": "https://schema.org",
+        "@type":    "BreadcrumbList",
+        itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home",  item: "https://techplay.gg" },
+            { "@type": "ListItem", position: 2, name: "Games", item: "https://techplay.gg/games" },
+            { "@type": "ListItem", position: 3, name: game.name, item: `https://techplay.gg/games/${game.slug}` },
+        ],
+    };
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
             {/* ── Hero ──────────────────────────────────────────────────────── */}
             <div className="relative h-[85vh] w-full overflow-hidden">
                 <div className="absolute inset-0 z-0">
-                    <Image
-                        src={game.background_image}
-                        alt={game.name}
-                        fill
-                        className="object-cover"
-                        priority
-                    />
+                    {game.background_image && (
+                        <Image
+                            src={game.background_image}
+                            alt={game.name}
+                            fill
+                            className="object-cover"
+                            priority
+                        />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)]/40 to-black/60" />
                     <div className="absolute inset-0 bg-gradient-to-r from-[var(--bg-primary)]/90 via-transparent to-transparent" />
                 </div>
@@ -272,7 +286,7 @@ export default function GameDetailPage() {
 
                     <div className="max-w-4xl animate-in slide-in-from-bottom-10 fade-in duration-700">
                         <div className="flex flex-wrap gap-2 mb-5">
-                            {game.genres?.map(g => (
+                            {game.genres?.map((g) => (
                                 <span key={g.name} className="px-3 py-1 bg-[var(--accent)]/90 text-white border border-[var(--accent)] rounded-full text-xs font-bold uppercase tracking-widest">
                                     {g.name}
                                 </span>
@@ -286,20 +300,22 @@ export default function GameDetailPage() {
                         {isUpcoming ? (
                             <div className="mt-6 mb-8">
                                 <p className="text-white/70 font-bold uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
-                                    <Clock className="w-4 h-4 text-[var(--accent)]" />
-                                    Releasing {format(parseISO(game.released), "MMMM d, yyyy")}
+                                    <Timer className="w-4 h-4 text-[var(--accent)]" />
+                                    Releasing {new Date(game.released).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
                                 </p>
-                                <CountdownTimer targetDate={game.released} />
+                                <GameCountdownTimer targetDate={game.released} />
                             </div>
                         ) : (
                             <div className="flex flex-wrap items-center gap-3 mt-6">
-                                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10">
-                                    <Calendar className="w-4 h-4 text-white/70" />
-                                    <span className="text-sm text-white font-medium">{game.released}</span>
-                                </div>
+                                {game.released && (
+                                    <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10">
+                                        <Calendar className="w-4 h-4 text-white/70" />
+                                        <span className="text-sm text-white font-medium">{game.released}</span>
+                                    </div>
+                                )}
                                 {game.metacritic ? (
                                     <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10">
-                                        <div className={`w-7 h-7 rounded flex items-center justify-center text-xs font-black ${getMetacriticColor(game.metacritic)}`}>
+                                        <div className={`w-7 h-7 rounded flex items-center justify-center text-xs font-black ${metacriticColor(game.metacritic)}`}>
                                             {game.metacritic}
                                         </div>
                                         <span className="text-sm text-gray-300">Metascore</span>
@@ -324,26 +340,8 @@ export default function GameDetailPage() {
                 </div>
             </div>
 
-            {/* ── Screenshots strip ─────────────────────────────────────────── */}
-            {screenshots.length > 0 && (
-                <div className="container mx-auto px-4 -mt-12 relative z-20 mb-10">
-                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                        {screenshots.map((s, i) => (
-                            <button key={s.id} onClick={() => setLightboxIdx(i)}
-                                className="relative shrink-0 w-48 h-28 rounded-xl overflow-hidden border border-white/10 hover:border-[var(--accent)] transition-all group">
-                                <Image src={s.image} alt={`Screenshot ${i + 1}`} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
-                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors flex items-center justify-center">
-                                    <Camera className="w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {lightboxIdx !== null && (
-                <Lightbox images={screenshots} initial={lightboxIdx} onClose={() => setLightboxIdx(null)} />
-            )}
+            {/* ── Screenshots strip (Client Component) ──────────────────────── */}
+            <GameScreenshotsLightbox screenshots={screenshots} />
 
             {/* ── Main content ─────────────────────────────────────────────── */}
             <div className="container mx-auto px-4 pb-20">
@@ -388,9 +386,9 @@ export default function GameDetailPage() {
                                     <span className="text-[var(--text-muted)] font-normal normal-case ml-1 text-xs">({game.ratings_count?.toLocaleString()} votes)</span>
                                 </h3>
                                 <div className="space-y-3">
-                                    {game.ratings.map(r => {
-                                        const style = RATING_STYLES[r.title] ?? { color: "bg-gray-500", icon: Star };
-                                        const Icon = style.icon;
+                                    {game.ratings.map((r) => {
+                                        const style = RATING_STYLES[r.title] ?? { color: "bg-gray-500", Icon: Star };
+                                        const { Icon } = style;
                                         return (
                                             <div key={r.id} className="flex items-center gap-3">
                                                 <Icon className="w-4 h-4 text-gray-400 shrink-0" />
@@ -415,10 +413,10 @@ export default function GameDetailPage() {
                                     Metacritic by Platform
                                 </h3>
                                 <div className="flex flex-wrap gap-3">
-                                    {game.metacritic_platforms.map(mp => (
+                                    {game.metacritic_platforms.map((mp) => (
                                         <a key={mp.platform.slug} href={mp.url} target="_blank" rel="noopener noreferrer"
                                             className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-colors">
-                                            <span className={`px-2 py-0.5 rounded text-xs font-black ${getMetacriticColor(mp.metascore)}`}>{mp.metascore}</span>
+                                            <span className={`px-2 py-0.5 rounded text-xs font-black ${metacriticColor(mp.metascore)}`}>{mp.metascore}</span>
                                             <span className="text-sm text-gray-300">{mp.platform.name}</span>
                                         </a>
                                     ))}
@@ -426,54 +424,15 @@ export default function GameDetailPage() {
                             </div>
                         )}
 
-                        {/* Trailers */}
-                        {movies.length > 0 && (
-                            <div className="bg-[#0f1221]/80 border border-white/5 rounded-3xl p-6 shadow-2xl">
-                                <h2 className="text-xl font-bold text-white mb-5 flex items-center gap-3">
-                                    <Play className="w-5 h-5 text-[var(--accent)]" />
-                                    Trailers & Videos
-                                </h2>
+                        {/* Trailers (Client Component) */}
+                        <GameTrailersPlayer movies={movies} />
 
-                                {/* Main video */}
-                                <div className="rounded-2xl overflow-hidden border border-white/10 mb-4">
-                                    <video
-                                        key={movies[activeTrailer]?.data?.max}
-                                        controls
-                                        poster={movies[activeTrailer]?.preview}
-                                        className="w-full max-h-[400px] bg-black"
-                                    >
-                                        <source src={movies[activeTrailer]?.data?.max} type="video/mp4" />
-                                        <source src={movies[activeTrailer]?.data?.["480"]} type="video/mp4" />
-                                    </video>
-                                </div>
-
-                                {/* Thumbnails */}
-                                {movies.length > 1 && (
-                                    <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
-                                        {movies.map((m, i) => (
-                                            <button key={m.id} onClick={() => setActiveTrailer(i)}
-                                                className={`relative shrink-0 w-36 h-20 rounded-xl overflow-hidden border-2 transition-all ${activeTrailer === i ? "border-[var(--accent)]" : "border-transparent hover:border-white/30"}`}>
-                                                <Image src={m.preview} alt={m.name} fill className="object-cover" />
-                                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                                    <Play className="w-5 h-5 text-white" fill="white" />
-                                                </div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {movies[activeTrailer] && (
-                                    <p className="text-xs text-gray-400 mt-3">{movies[activeTrailer].name}</p>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Dev / Publisher / Tags */}
+                        {/* Dev / Publisher */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="bg-[#0f1221]/60 border border-white/5 rounded-2xl p-5">
                                 <h3 className="text-xs uppercase text-gray-400 font-bold mb-3 tracking-widest">Developers</h3>
                                 <div className="flex flex-wrap gap-2">
-                                    {game.developers?.map(d => (
+                                    {game.developers?.map((d) => (
                                         <span key={d.name} className="text-white font-semibold text-sm">{d.name}</span>
                                     ))}
                                 </div>
@@ -481,7 +440,7 @@ export default function GameDetailPage() {
                             <div className="bg-[#0f1221]/60 border border-white/5 rounded-2xl p-5">
                                 <h3 className="text-xs uppercase text-gray-400 font-bold mb-3 tracking-widest">Publishers</h3>
                                 <div className="flex flex-wrap gap-2">
-                                    {game.publishers?.map(p => (
+                                    {game.publishers?.map((p) => (
                                         <span key={p.name} className="text-white font-semibold text-sm">{p.name}</span>
                                     ))}
                                 </div>
@@ -489,13 +448,13 @@ export default function GameDetailPage() {
                         </div>
 
                         {/* Tags */}
-                        {game.tags && game.tags.filter(t => t.language === "eng").length > 0 && (
+                        {game.tags && game.tags.filter((t) => t.language === "eng").length > 0 && (
                             <div className="bg-[#0f1221]/60 border border-white/5 rounded-2xl p-5">
                                 <h3 className="text-xs uppercase text-gray-400 font-bold mb-3 tracking-widest flex items-center gap-2">
                                     <Tag className="w-3.5 h-3.5" /> Tags
                                 </h3>
                                 <div className="flex flex-wrap gap-2">
-                                    {game.tags.filter(t => t.language === "eng").slice(0, 20).map(t => (
+                                    {game.tags.filter((t) => t.language === "eng").slice(0, 20).map((t) => (
                                         <span key={t.slug} className="px-2.5 py-1 bg-white/5 rounded-lg text-xs text-gray-400 border border-white/5 hover:border-white/20 transition-colors">
                                             {t.name}
                                         </span>
@@ -518,20 +477,17 @@ export default function GameDetailPage() {
                             {game.stores && game.stores.length > 0 ? (
                                 <div className="space-y-2">
                                     {game.stores.map((store) => {
-                                        const getUrl = () => {
-                                            if (store.url?.startsWith("http")) return store.url;
-                                            const n = store.store.name.toLowerCase();
-                                            const q = encodeURIComponent(game.name);
-                                            if (n.includes("steam"))       return `https://store.steampowered.com/search/?term=${q}`;
-                                            if (n.includes("gog"))         return `https://www.gog.com/en/games?query=${q}`;
-                                            if (n.includes("epic"))        return `https://store.epicgames.com/en-US/browse?q=${q}`;
-                                            if (n.includes("playstation")) return `https://store.playstation.com/search/${q}`;
-                                            if (n.includes("xbox"))        return `https://www.xbox.com/en-US/games/all-games?q=${q}`;
-                                            if (n.includes("nintendo"))    return `https://www.nintendo.com/search/?q=${q}`;
-                                            if (store.store.domain)        return `https://${store.store.domain}`;
-                                            return null;
-                                        };
-                                        const url = getUrl();
+                                        const n = store.store.name.toLowerCase();
+                                        const q = encodeURIComponent(game.name);
+                                        const url = store.url?.startsWith("http") ? store.url
+                                            : n.includes("steam")       ? `https://store.steampowered.com/search/?term=${q}`
+                                            : n.includes("gog")         ? `https://www.gog.com/en/games?query=${q}`
+                                            : n.includes("epic")        ? `https://store.epicgames.com/en-US/browse?q=${q}`
+                                            : n.includes("playstation") ? `https://store.playstation.com/search/${q}`
+                                            : n.includes("xbox")        ? `https://www.xbox.com/en-US/games/all-games?q=${q}`
+                                            : n.includes("nintendo")    ? `https://www.nintendo.com/search/?q=${q}`
+                                            : store.store.domain        ? `https://${store.store.domain}`
+                                            : null;
                                         if (!url) return null;
                                         return (
                                             <a key={store.id} href={url} target="_blank" rel="noopener noreferrer"
@@ -568,7 +524,7 @@ export default function GameDetailPage() {
                             <div className="mt-6 pt-6 border-t border-white/10">
                                 <h3 className="text-xs uppercase text-gray-400 font-bold mb-3 tracking-widest">Available On</h3>
                                 <div className="flex flex-wrap gap-2">
-                                    {game.platforms?.map(p => (
+                                    {game.platforms?.map((p) => (
                                         <span key={p.platform.name} className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs font-medium text-gray-300">
                                             {p.platform.name}
                                         </span>
@@ -605,7 +561,7 @@ export default function GameDetailPage() {
                             More in the Series
                         </h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                            {series.slice(0, 6).map(g => <MiniGameCard key={g.id} game={g} />)}
+                            {series.slice(0, 6).map((g) => <MiniGameCard key={g.id} game={g} />)}
                         </div>
                     </section>
                 )}
@@ -618,7 +574,7 @@ export default function GameDetailPage() {
                             DLC & Editions
                         </h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                            {additions.slice(0, 6).map(g => <MiniGameCard key={g.id} game={g} />)}
+                            {additions.slice(0, 6).map((g) => <MiniGameCard key={g.id} game={g} />)}
                         </div>
                     </section>
                 )}
@@ -631,7 +587,7 @@ export default function GameDetailPage() {
                             You Might Also Like
                         </h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                            {suggested.slice(0, 6).map(g => <MiniGameCard key={g.id} game={g} />)}
+                            {suggested.slice(0, 6).map((g) => <MiniGameCard key={g.id} game={g} />)}
                         </div>
                     </section>
                 )}

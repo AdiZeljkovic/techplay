@@ -172,8 +172,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/tech', [App\Http\Controllers\Api\V1\TechController::class, 'index']);
         Route::get('/tech/{slug}', [App\Http\Controllers\Api\V1\TechController::class, 'show']);
 
-        // Games (RAWG)
+        // Games (RAWG + local DB)
         Route::get('/games/calendar', [App\Http\Controllers\Api\V1\GameController::class, 'calendar']);
+        Route::get('/games/crawled-slugs', [App\Http\Controllers\Api\V1\GameController::class, 'crawledSlugs']);
         Route::get('/games', [App\Http\Controllers\Api\V1\GameController::class, 'index']);
         Route::get('/games/{slug}/screenshots', [App\Http\Controllers\Api\V1\GameController::class, 'screenshots']);
         Route::get('/games/{slug}/movies', [App\Http\Controllers\Api\V1\GameController::class, 'movies']);

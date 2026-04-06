@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Game;
 use App\Services\RawgService;
 use Illuminate\Http\Request;
 
@@ -13,6 +14,16 @@ class GameController extends Controller
     public function __construct(RawgService $rawgService)
     {
         $this->rawgService = $rawgService;
+    }
+
+    public function crawledSlugs()
+    {
+        $slugs = Game::whereNotNull('details_crawled_at')
+            ->orderByDesc('rating')
+            ->limit(2000)
+            ->pluck('slug');
+
+        return response()->json($slugs);
     }
 
     public function index(Request $request)
