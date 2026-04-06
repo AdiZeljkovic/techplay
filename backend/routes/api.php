@@ -175,6 +175,11 @@ Route::prefix('v1')->group(function () {
         // Games (RAWG)
         Route::get('/games/calendar', [App\Http\Controllers\Api\V1\GameController::class, 'calendar']);
         Route::get('/games', [App\Http\Controllers\Api\V1\GameController::class, 'index']);
+        Route::get('/games/{slug}/screenshots', [App\Http\Controllers\Api\V1\GameController::class, 'screenshots']);
+        Route::get('/games/{slug}/movies', [App\Http\Controllers\Api\V1\GameController::class, 'movies']);
+        Route::get('/games/{slug}/series', [App\Http\Controllers\Api\V1\GameController::class, 'series']);
+        Route::get('/games/{slug}/suggested', [App\Http\Controllers\Api\V1\GameController::class, 'suggested']);
+        Route::get('/games/{slug}/additions', [App\Http\Controllers\Api\V1\GameController::class, 'additions']);
         Route::get('/games/{slug}', [App\Http\Controllers\Api\V1\GameController::class, 'show']);
 
         // WoW Character Analyzer (Rate limited to 60 req/min to protect OpenAI costs)
