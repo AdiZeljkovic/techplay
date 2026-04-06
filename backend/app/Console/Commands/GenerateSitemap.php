@@ -2,9 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Http\Controllers\SitemapController;
+use App\Models\Game;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use App\Http\Controllers\SitemapController;
 
 class GenerateSitemap extends Command
 {
@@ -33,6 +34,18 @@ class GenerateSitemap extends Command
         foreach ($sitemaps as $filename => $generator) {
             File::put("{$outputPath}/{$filename}", $generator()->getContent());
             $this->line("  ✓ {$filename}");
+        }
+
+        // Game sitemaps — dynamic count based on crawled games
+        $gamesCount = Game::whereNotNull('details_crawled_at')->count();
+        if ($gamesCount > 0) {
+            $gamePages = (int) ceil($gamesCount / 50000);
+            for ($p = 1; $p <= $gamePages; $p++) {
+                $filename = "sitemap-games-{$p}.xml";
+                File::put("{$outputPath}/{$filename}", $sitemap->games($p)->getContent());
+                $this->line("  ✓ {$filename}");
+            }
+            $this->line("  ({$gamesCount} games across {$gamePages} file(s))");
         }
 
         $this->newLine();

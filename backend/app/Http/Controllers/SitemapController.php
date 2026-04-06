@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\Game;
 use App\Models\Guide;
 use App\Models\Video;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Giveaway;
 use App\Services\SchemaService;
+use Carbon\Carbon;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -75,6 +77,19 @@ class SitemapController extends Controller
                 'sitemap-images.xml'     => $articleLastmod ? \Carbon\Carbon::parse($articleLastmod)->toIso8601String() : now()->toIso8601String(),
             ];
         });
+
+        // Game sitemaps — paginated, 50,000 URLs per file (Google limit)
+        $gamesCount = Game::whereNotNull('details_crawled_at')->count();
+        if ($gamesCount > 0) {
+            $gamePages = (int) ceil($gamesCount / 50000);
+            $gameLastmodRaw = Game::whereNotNull('details_crawled_at')->max('details_crawled_at');
+            $gameLastmodStr = $gameLastmodRaw ? Carbon::parse($gameLastmodRaw)->toIso8601String() : now()->toIso8601String();
+            for ($p = 1; $p <= $gamePages; $p++) {
+                $filename = "sitemap-games-{$p}.xml";
+                $sitemaps[] = $filename;
+                $lastmod[$filename] = $gameLastmodStr;
+            }
+        }
 
         foreach ($sitemaps as $sitemap) {
             $xml .= "  <sitemap>\n";
@@ -360,6 +375,32 @@ class SitemapController extends Controller
             $xml .= "    </image:image>\n";
             $xml .= "  </url>\n";
         }
+
+        $xml .= '</urlset>';
+        return response($xml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    /**
+     * Games Sitemap (paginated — 50,000 per file)
+     */
+    public function games(int $page = 1): Response
+    {
+        $perPage = 50000;
+        $xml = $this->xmlHeader();
+
+        Game::whereNotNull('details_crawled_at')
+            ->select('slug', 'details_crawled_at')
+            ->orderBy('slug')
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
+            ->each(function (Game $game) use (&$xml) {
+                $xml .= $this->urlEntry(
+                    "{$this->frontendUrl}/games/{$game->slug}",
+                    $game->details_crawled_at->toIso8601String(),
+                    'monthly',
+                    '0.8'
+                );
+            });
 
         $xml .= '</urlset>';
         return response($xml, 200)->header('Content-Type', 'application/xml');
