@@ -132,7 +132,7 @@ class ImportRawgCsv extends Command
                 'released'               => ($releasedRaw && $releasedRaw !== 'nan' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $releasedRaw)) ? $releasedRaw : null,
                 'rating'                 => $ratingRaw !== null && $ratingRaw !== 'nan' ? round((float) $ratingRaw, 2) : null,
                 'metacritic'             => $metacRaw !== null && $metacRaw !== 'nan' ? (int) $metacRaw : null,
-                'background_image'       => $get($row, 'background_image'),
+                'background_image'       => (($img = $get($row, 'background_image')) && str_starts_with($img, 'http')) ? $img : null,
                 'platforms'              => json_encode($platforms ?? []),
                 'short_screenshots'      => json_encode($shortScreenshots ?? []),
                 'details_data'           => json_encode($detailsData),
@@ -152,17 +152,7 @@ class ImportRawgCsv extends Command
             ];
 
             if (count($buffer) >= $chunk) {
-                try {
-                    DB::table('games')->upsert($buffer, ['slug'], [
-                        'name', 'released', 'rating', 'metacritic', 'background_image',
-                        'platforms', 'short_screenshots', 'details_data', 'details_crawled_at',
-                        'updated_at',
-                    ]);
-                    $imported += count($buffer);
-                } catch (\Exception $e) {
-                    $this->warn("Chunk error at row {$rowNum}: " . $e->getMessage());
-                    $errors++;
-                }
+                [$imported, $errors] = $this->flushBuffer($buffer, $imported, $errors, $rowNum);
                 $buffer = [];
 
                 // Progress every 10k rows
@@ -176,19 +166,11 @@ class ImportRawgCsv extends Command
 
         // Flush remaining
         if (! empty($buffer)) {
-            try {
-                DB::table('games')->upsert($buffer, ['slug'], [
-                    'name', 'released', 'rating', 'metacritic', 'background_image',
-                    'platforms', 'short_screenshots', 'details_data', 'details_crawled_at',
-                    'updated_at',
-                ]);
-                $imported += count($buffer);
-            } catch (\Exception $e) {
-                $this->warn("Final chunk error: " . $e->getMessage());
-            }
+            [$imported, $errors] = $this->flushBuffer($buffer, $imported, $errors, $rowNum);
         }
 
         fclose($handle);
+
 
         $elapsed = round(microtime(true) - $startTime);
         $this->newLine();
@@ -196,5 +178,32 @@ class ImportRawgCsv extends Command
         $this->line("Skipped (no slug/name): {$skipped} | Chunk errors: {$errors}");
 
         return self::SUCCESS;
+    }
+
+    private function flushBuffer(array $buffer, int $imported, int $errors, int $rowNum): array
+    {
+        $columns = [
+            'name', 'released', 'rating', 'metacritic', 'background_image',
+            'platforms', 'short_screenshots', 'details_data', 'details_crawled_at',
+            'updated_at',
+        ];
+
+        try {
+            DB::table('games')->upsert($buffer, ['slug'], $columns);
+            $imported += count($buffer);
+        } catch (\Exception $e) {
+            // Chunk failed — try row by row to save as many as possible
+            foreach ($buffer as $record) {
+                try {
+                    DB::table('games')->upsert([$record], ['slug'], $columns);
+                    $imported++;
+                } catch (\Exception $rowError) {
+                    $this->warn("Skipped row (slug={$record['slug']}): " . substr($rowError->getMessage(), 0, 120));
+                    $errors++;
+                }
+            }
+        }
+
+        return [$imported, $errors];
     }
 }
