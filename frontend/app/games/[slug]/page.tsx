@@ -139,10 +139,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         const keywords  = [...genres, ...platforms, game.name, ...(year ? [year] : []), "game", "gameplay", "gaming", "review"].join(", ");
         const title     = year ? `${game.name} (${year}) — TechPlay` : `${game.name} — TechPlay`;
 
+        // Noindex games without description — thin content hurts domain authority
+        const hasContent = !!(game.description_raw && game.description_raw.trim().length > 50);
+
         return {
             title,
             description,
             keywords,
+            ...(!hasContent ? { robots: { index: false, follow: false } } : {}),
             alternates:  { canonical: `https://techplay.gg/games/${slug}` },
             openGraph: {
                 title,
