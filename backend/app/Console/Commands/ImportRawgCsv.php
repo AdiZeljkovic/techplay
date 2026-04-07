@@ -48,7 +48,8 @@ class ImportRawgCsv extends Command
         $jsonDecode = function (?string $val): ?array {
             if ($val === null || $val === '' || $val === 'nan') return null;
             $decoded = json_decode($val, true);
-            return json_last_error() === JSON_ERROR_NONE ? $decoded : null;
+            if (json_last_error() !== JSON_ERROR_NONE) return null;
+            return is_array($decoded) ? $decoded : null;
         };
 
         $buffer    = [];
