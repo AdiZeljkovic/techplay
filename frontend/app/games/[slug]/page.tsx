@@ -213,6 +213,9 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
 
     if (!game) notFound();
 
+    // Ensure rating is always a number (CSV import may store as string)
+    if (game.rating) game.rating = Number(game.rating);
+
     const screenshots = screenshotsRes?.results ?? [];
     const movies      = moviesRes?.results ?? [];
     const series      = (seriesRes?.results ?? []).filter((g) => g.slug !== slug);

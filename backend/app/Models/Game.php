@@ -46,6 +46,6 @@ class Game extends Model
         'suggested_crawled_at'   => 'datetime',
         'additions_crawled_at'   => 'datetime',
         'released'               => 'date',
-        'rating'                 => 'decimal:2',
+        'rating'                 => 'float',
     ];
 }
