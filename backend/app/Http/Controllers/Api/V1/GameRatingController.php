@@ -106,6 +106,29 @@ class GameRatingController extends Controller
             return response()->json(['message' => 'Invalid hub type'], 400);
         }
 
+        // RAWG slug → exact genre name stored in DB (Kaggle CSV stores full names, not slugs)
+        $genreNameMap = [
+            'action'               => 'Action',
+            'indie'                => 'Indie',
+            'adventure'            => 'Adventure',
+            'rpg'                  => 'Role-playing (RPG)',
+            'strategy'             => 'Strategy',
+            'shooter'              => 'Shooter',
+            'casual'               => 'Casual',
+            'simulation'           => 'Simulation',
+            'puzzle'               => 'Puzzle',
+            'arcade'               => 'Arcade',
+            'platformer'           => 'Platformer',
+            'racing'               => 'Racing',
+            'sports'               => 'Sports',
+            'massively-multiplayer'=> 'Massively Multiplayer',
+            'family'               => 'Family',
+            'fighting'             => 'Fighting',
+            'board-games'          => 'Board Games',
+            'educational'          => 'Educational',
+            'card'                 => 'Card',
+        ];
+
         $query = \App\Models\Game::whereNotNull('details_crawled_at')
             ->whereRaw("details_data->>'description_raw' IS NOT NULL")
             ->whereRaw("LENGTH(details_data->>'description_raw') > 50");
@@ -113,7 +136,7 @@ class GameRatingController extends Controller
         match ($type) {
             'genre'    => $query->whereRaw(
                 "EXISTS (SELECT 1 FROM jsonb_array_elements(details_data->'genres') g WHERE lower(g->>'name') = ?)",
-                [strtolower(str_replace('-', ' ', $value))]
+                [strtolower($genreNameMap[$value] ?? str_replace('-', ' ', $value))]
             ),
             'platform' => $query->whereRaw(
                 "EXISTS (SELECT 1 FROM jsonb_array_elements(platforms) p WHERE lower(p->'platform'->>'name') ILIKE ?)",

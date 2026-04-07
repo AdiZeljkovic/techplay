@@ -51,7 +51,7 @@ export default function HubPage({ type, value, title, description }: Props) {
 
     useEffect(() => {
         setLoading(true);
-        axios.get(`/api/v1/games/hub/${type}/${value}?page=${page}&sort=${sort}`)
+        axios.get(`/games/hub/${type}/${value}?page=${page}&sort=${sort}`)
             .then((res) => setData(res.data))
             .catch(() => setData(null))
             .finally(() => setLoading(false));
