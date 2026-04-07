@@ -236,7 +236,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
         ...(game.ratings_count > 0 && game.rating > 0 ? {
             aggregateRating: {
                 "@type":      "AggregateRating",
-                ratingValue:  game.rating.toFixed(1),
+                ratingValue:  Number(game.rating).toFixed(1),
                 ratingCount:  game.ratings_count,
                 bestRating:   "5",
                 worstRating:  "1",
@@ -327,7 +327,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                 {game.rating > 0 && (
                                     <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10">
                                         <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                        <span className="text-sm text-white font-medium">{game.rating.toFixed(1)}</span>
+                                        <span className="text-sm text-white font-medium">{Number(game.rating).toFixed(1)}</span>
                                         <span className="text-xs text-gray-400">/ {game.rating_top} ({game.ratings_count?.toLocaleString()})</span>
                                     </div>
                                 )}

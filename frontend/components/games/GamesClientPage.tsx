@@ -370,10 +370,10 @@ function GameCard({ game }: { game: Game }) {
                         <span>{game.tba ? "TBA" : (game.released?.slice(0, 4) ?? "—")}</span>
                     </div>
 
-                    {game.rating > 0 && (
-                        <div className={`flex items-center gap-1 text-xs font-bold ${getRatingColor(game.rating)}`}>
+                    {Number(game.rating) > 0 && (
+                        <div className={`flex items-center gap-1 text-xs font-bold ${getRatingColor(Number(game.rating))}`}>
                             <Star className="w-3 h-3 fill-current" />
-                            {game.rating.toFixed(1)}
+                            {Number(game.rating).toFixed(1)}
                         </div>
                     )}
                 </div>
