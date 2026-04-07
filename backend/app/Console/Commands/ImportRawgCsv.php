@@ -41,7 +41,7 @@ class ImportRawgCsv extends Command
         $headers = array_map('trim', $headers);
         $colIndex = array_flip($headers);
 
-        $get = fn (array $row, string $col): ?string => isset($colIndex[$col])
+        $get = fn (array $row, string $col): ?string => isset($colIndex[$col], $row[$colIndex[$col]])
             ? ($row[$colIndex[$col]] === '' ? null : $row[$colIndex[$col]])
             : null;
 
