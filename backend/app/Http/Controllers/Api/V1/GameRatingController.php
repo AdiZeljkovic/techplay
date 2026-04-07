@@ -135,16 +135,16 @@ class GameRatingController extends Controller
 
         match ($type) {
             'genre'    => $query->whereRaw(
-                "EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(details_data->'genres', '[]'::jsonb)) g WHERE lower(g->>'name') = ?)",
+                "EXISTS (SELECT 1 FROM json_array_elements(COALESCE(details_data->'genres', '[]'::json)) g WHERE lower(g->>'name') = ?)",
                 [strtolower($genreNameMap[$value] ?? str_replace('-', ' ', $value))]
             ),
             'platform' => $query->whereRaw(
-                "EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(platforms, '[]'::jsonb)) p WHERE lower(p->'platform'->>'name') ILIKE ?)",
+                "EXISTS (SELECT 1 FROM json_array_elements(COALESCE(platforms, '[]'::json)) p WHERE lower(p->'platform'->>'name') ILIKE ?)",
                 ['%' . strtolower(str_replace('-', ' ', $value)) . '%']
             ),
             'year'     => $query->whereRaw("EXTRACT(YEAR FROM released) = ?", [(int) $value]),
             'tag'      => $query->whereRaw(
-                "EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(details_data->'tags', '[]'::jsonb)) t WHERE lower(t->>'name') = ?)",
+                "EXISTS (SELECT 1 FROM json_array_elements(COALESCE(details_data->'tags', '[]'::json)) t WHERE lower(t->>'name') = ?)",
                 [strtolower(str_replace('-', ' ', $value))]
             ),
         };
