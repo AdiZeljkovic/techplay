@@ -22,7 +22,7 @@ interface HubResponse {
     page: number;
     per_page: number;
     last_page: number;
-    results: Game[];
+    games: Game[];
 }
 
 interface Props {
@@ -108,9 +108,9 @@ export default function HubPage({ type, value, title, description }: Props) {
                             <div key={i} className="bg-white/5 rounded-xl h-48 animate-pulse" />
                         ))}
                     </div>
-                ) : data && data.results.length > 0 ? (
+                ) : data && data.games.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                        {data.results.map((game) => (
+                        {data.games.map((game) => (
                             <Link key={game.id} href={`/games/${game.slug}`}
                                 className="group flex flex-col bg-[var(--bg-card)] border border-[var(--border)] rounded-xl overflow-hidden hover:border-[var(--accent)] transition-all hover:shadow-xl hover:shadow-[var(--accent)]/10">
                                 <div className="relative h-32 bg-[var(--bg-elevated)] overflow-hidden">
