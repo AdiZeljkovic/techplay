@@ -78,16 +78,23 @@ class ImportRawgCsv extends Command
             $metacRaw   = $get($row, 'metacritic');
             $releasedRaw = $get($row, 'released');
 
-            $platforms        = $jsonDecode($get($row, 'platforms'));
-            $genres           = $jsonDecode($get($row, 'genres'));
-            $tags             = $jsonDecode($get($row, 'tags'));
-            $developers       = $jsonDecode($get($row, 'developers'));
-            $publishers       = $jsonDecode($get($row, 'publishers'));
-            $stores           = $jsonDecode($get($row, 'stores'));
+            // CSV uses pipe-separated strings (not JSON) for most list fields
+            $platforms  = $this->parsePipe($get($row, 'platforms'),
+                fn ($n) => ['platform' => ['name' => $n, 'slug' => '']]);
+            $genres     = $this->parsePipe($get($row, 'genres'),
+                fn ($n) => ['name' => $n, 'slug' => '']);
+            $tags       = $this->parsePipe($get($row, 'tags'),
+                fn ($n) => ['name' => $n, 'slug' => str_replace(' ', '-', strtolower($n)), 'language' => 'eng']);
+            $developers = $this->parsePipe($get($row, 'developers'),
+                fn ($n) => ['name' => $n]);
+            $publishers = $this->parsePipe($get($row, 'publishers'),
+                fn ($n) => ['name' => $n]);
+            $stores     = $this->parsePipe($get($row, 'stores'),
+                fn ($n) => ['id' => 0, 'url' => '', 'store' => ['id' => 0, 'name' => $n, 'domain' => '']]);
             $ratings          = $jsonDecode($get($row, 'ratings'));
             $shortScreenshots = $jsonDecode($get($row, 'short_screenshots'));
             $esrbRaw          = $get($row, 'esrb_rating');
-            $esrb             = $jsonDecode($esrbRaw);
+            $esrb             = $esrbRaw && $esrbRaw !== 'nan' ? ['name' => $esrbRaw, 'slug' => strtolower($esrbRaw)] : null;
 
             // Build details_data in RAWG-compatible format
             $detailsData = [
@@ -178,6 +185,15 @@ class ImportRawgCsv extends Command
         $this->line("Skipped (no slug/name): {$skipped} | Chunk errors: {$errors}");
 
         return self::SUCCESS;
+    }
+
+    private function parsePipe(?string $val, callable $transform): array
+    {
+        if (! $val || $val === 'nan') return [];
+        return array_values(array_filter(array_map(
+            fn ($item) => $transform(trim($item)),
+            explode('|', $val)
+        ), fn ($item) => ! empty(array_filter($item))));
     }
 
     private function flushBuffer(array $buffer, int $imported, int $errors, int $rowNum): array
