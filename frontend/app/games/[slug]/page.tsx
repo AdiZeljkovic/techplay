@@ -120,31 +120,43 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         if (!res.ok) return { title: "Game Not Found — TechPlay" };
         const game: GameDetail = await res.json();
 
-        const description = game.description_raw
-            ? game.description_raw.slice(0, 155).trimEnd() + "..."
-            : `${game.name} — explore gameplay, screenshots, trailers and more on TechPlay.`;
+        // Trim description to last complete sentence within 155 chars
+        let description = "";
+        if (game.description_raw) {
+            const raw = game.description_raw.slice(0, 200);
+            const lastPeriod = Math.max(raw.lastIndexOf(". "), raw.lastIndexOf("! "), raw.lastIndexOf("? "));
+            description = lastPeriod > 80
+                ? raw.slice(0, lastPeriod + 1)
+                : raw.slice(0, 155).trimEnd() + "…";
+        } else {
+            const year      = game.released ? ` (${game.released.slice(0, 4)})` : "";
+            const platforms = (game.platforms ?? []).slice(0, 3).map((p) => p.platform.name).join(", ");
+            description = `${game.name}${year} — ${platforms ? `available on ${platforms}. ` : ""}Explore details, ratings and more on TechPlay.`;
+        }
 
         const genres    = (game.genres    ?? []).map((g) => g.name);
         const platforms = (game.platforms ?? []).map((p) => p.platform.name);
-        const keywords  = [...genres, ...platforms, game.name, "game", "gameplay", "gaming"].join(", ");
+        const year      = game.released ? game.released.slice(0, 4) : "";
+        const keywords  = [...genres, ...platforms, game.name, ...(year ? [year] : []), "game", "gameplay", "gaming", "review"].join(", ");
+        const title     = year ? `${game.name} (${year}) — TechPlay` : `${game.name} — TechPlay`;
 
         return {
-            title:       `${game.name} — TechPlay`,
+            title,
             description,
             keywords,
             alternates:  { canonical: `https://techplay.gg/games/${slug}` },
             openGraph: {
-                title:       `${game.name} — TechPlay`,
+                title,
                 description,
                 url:         `https://techplay.gg/games/${slug}`,
                 type:        "website",
                 images: game.background_image
-                    ? [{ url: game.background_image, width: 1280, height: 720, alt: game.name }]
+                    ? [{ url: game.background_image, width: 1280, height: 720, alt: `${game.name} cover` }]
                     : [],
             },
             twitter: {
                 card:        "summary_large_image",
-                title:       `${game.name} — TechPlay`,
+                title,
                 description,
                 images: game.background_image ? [game.background_image] : [],
             },
@@ -226,15 +238,18 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
     const isUpcoming = game.released && new Date(game.released) > new Date();
 
     /* ── JSON-LD ─────────────────────────────────────────────────────────────── */
-    const structuredData = {
-        "@context": "https://schema.org",
-        "@type":    "VideoGame",
-        name:        game.name,
-        description: game.description_raw?.slice(0, 500) ?? "",
-        image:       game.background_image ?? "",
-        url:         `https://techplay.gg/games/${game.slug}`,
-        ...(game.released ? { datePublished: game.released } : {}),
-        ...(game.ratings_count > 0 && game.rating > 0 ? {
+    const structuredData: Record<string, unknown> = {
+        "@context":          "https://schema.org",
+        "@type":             "VideoGame",
+        name:                game.name,
+        description:         game.description_raw?.slice(0, 500) ?? "",
+        image:               game.background_image ?? "",
+        url:                 `https://techplay.gg/games/${game.slug}`,
+        ...(game.released    ? { datePublished: game.released } : {}),
+        ...(game.metacritic  ? { contentRating: String(game.metacritic) } : {}),
+        ...(game.playtime    ? { playMode: "SinglePlayer", timeRequired: `PT${game.playtime}H` } : {}),
+        ...(game.esrb_rating ? { contentRating: game.esrb_rating.name } : {}),
+        ...(Number(game.ratings_count) > 0 && Number(game.rating) > 0 ? {
             aggregateRating: {
                 "@type":      "AggregateRating",
                 ratingValue:  Number(game.rating).toFixed(1),
@@ -243,11 +258,12 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                 worstRating:  "1",
             },
         } : {}),
-        genre:           (game.genres    ?? []).map((g) => g.name),
-        gamePlatform:    (game.platforms ?? []).map((p) => p.platform.name),
-        publisher:       (game.publishers ?? []).map((p) => ({ "@type": "Organization", name: p.name })),
-        developer:       (game.developers ?? []).map((d) => ({ "@type": "Organization", name: d.name })),
+        genre:               (game.genres    ?? []).map((g) => g.name),
+        gamePlatform:        (game.platforms ?? []).map((p) => p.platform.name),
+        publisher:           (game.publishers ?? []).map((p) => ({ "@type": "Organization", name: p.name })),
+        developer:           (game.developers ?? []).map((d) => ({ "@type": "Organization", name: d.name })),
         applicationCategory: "Game",
+        operatingSystem:     (game.platforms ?? []).map((p) => p.platform.name).join(", ") || undefined,
     };
 
     const breadcrumb = {
