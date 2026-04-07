@@ -52,7 +52,7 @@ export default function GameRating({ slug, isAuthenticated }: Props) {
     async function fetchRatings(page: number) {
         setLoading(true);
         try {
-            const res = await axios.get(`/api/v1/games/${slug}/ratings?page=${page}`);
+            const res = await axios.get(`/games/${slug}/ratings?page=${page}`);
             const data: ReviewsResponse = res.data;
             setAggregate(data.aggregate);
             setReviews((prev) => page === 1 ? data.reviews.data : [...prev, ...data.reviews.data]);
@@ -64,7 +64,7 @@ export default function GameRating({ slug, isAuthenticated }: Props) {
 
     async function fetchMyRating() {
         try {
-            const res = await axios.get(`/api/v1/games/${slug}/ratings/my`);
+            const res = await axios.get(`/games/${slug}/ratings/my`);
             if (res.data) {
                 setMyRating(res.data.rating);
                 setMyReview(res.data.review ?? "");
@@ -77,7 +77,7 @@ export default function GameRating({ slug, isAuthenticated }: Props) {
         setSubmitting(true);
         setSubmitError(null);
         try {
-            await axios.post(`/api/v1/games/${slug}/ratings`, {
+            await axios.post(`/games/${slug}/ratings`, {
                 rating: myRating,
                 review: myReview.trim() || null,
             });
@@ -95,7 +95,7 @@ export default function GameRating({ slug, isAuthenticated }: Props) {
     async function deleteRating() {
         setSubmitting(true);
         try {
-            await axios.delete(`/api/v1/games/${slug}/ratings`);
+            await axios.delete(`/games/${slug}/ratings`);
             setMyRating(0);
             setMyReview("");
             setShowForm(false);
