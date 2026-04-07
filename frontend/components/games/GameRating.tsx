@@ -26,10 +26,10 @@ interface ReviewsResponse {
 
 interface Props {
     slug: string;
-    isAuthenticated: boolean;
 }
 
-export default function GameRating({ slug, isAuthenticated }: Props) {
+export default function GameRating({ slug }: Props) {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [aggregate, setAggregate]     = useState<Aggregate | null>(null);
     const [reviews, setReviews]         = useState<Review[]>([]);
     const [lastPage, setLastPage]       = useState(1);
@@ -45,8 +45,11 @@ export default function GameRating({ slug, isAuthenticated }: Props) {
     const [submitError, setSubmitError]       = useState<string | null>(null);
 
     useEffect(() => {
+        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        const authed = !!token;
+        setIsAuthenticated(authed);
         fetchRatings(1);
-        if (isAuthenticated) fetchMyRating();
+        if (authed) fetchMyRating();
     }, [slug]);
 
     async function fetchRatings(page: number) {

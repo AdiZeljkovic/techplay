@@ -12,7 +12,6 @@ import GameScreenshotsLightbox from "@/components/games/GameScreenshotsLightbox"
 import GameTrailersPlayer from "@/components/games/GameTrailersPlayer";
 import GameCountdownTimer from "@/components/games/GameCountdownTimer";
 import GameRating from "@/components/games/GameRating";
-import { cookies } from "next/headers";
 
 /* ─── ISR config ────────────────────────────────────────────────────────────── */
 
@@ -219,10 +218,6 @@ function MiniGameCard({ game }: { game: GameListItem }) {
 export default async function GameDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
     const base     = getApiUrl();
-
-    // Check if user is authenticated (has session cookie)
-    const cookieStore = await cookies();
-    const isAuthenticated = cookieStore.has("techplay_session") || cookieStore.has("XSRF-TOKEN");
 
     const [game, screenshotsRes, moviesRes, seriesRes, suggestedRes, additionsRes] = await Promise.all([
         fetch(`${base}/games/${slug}`).then((r) => (r.ok ? r.json() : null)),
@@ -515,7 +510,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                             </div>
                         )}
                         {/* Community Ratings */}
-                        <GameRating slug={slug} isAuthenticated={isAuthenticated} />
+                        <GameRating slug={slug} />
                     </div>
 
                     {/* Sidebar */}
