@@ -4,16 +4,16 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
-use App\Services\RawgService;
+use App\Services\IgdbService;
 use Illuminate\Http\Request;
 
 class GameController extends Controller
 {
-    protected $rawgService;
+    protected $igdbService;
 
-    public function __construct(RawgService $rawgService)
+    public function __construct(IgdbService $igdbService)
     {
-        $this->rawgService = $rawgService;
+        $this->igdbService = $igdbService;
     }
 
     public function crawledSlugs()
@@ -29,11 +29,11 @@ class GameController extends Controller
     public function index(Request $request)
     {
         $query   = $request->input('search', '');
-        $filters = $request->only(['genres', 'platforms', 'dates', 'ordering', 'page']);
+        $filters = $request->only(['genres', 'platforms', 'dates', 'ordering', 'page', 'page_size']);
 
-        $data = $this->rawgService->searchGames($query, $filters);
+        $data = $this->igdbService->searchGames($query, $filters);
 
-        if (!$data) {
+        if (! $data) {
             return response()->json(['message' => 'Failed to fetch games'], 503);
         }
 
@@ -42,9 +42,9 @@ class GameController extends Controller
 
     public function show($slug)
     {
-        $data = $this->rawgService->getGameDetails($slug);
+        $data = $this->igdbService->getGameDetails($slug);
 
-        if (!$data) {
+        if (! $data) {
             return response()->json(['message' => 'Game not found'], 404);
         }
 
@@ -53,57 +53,32 @@ class GameController extends Controller
 
     public function screenshots($slug)
     {
-        $data = $this->rawgService->getGameScreenshots($slug);
-
-        if (!$data) {
-            return response()->json(['count' => 0, 'results' => []]);
-        }
-
-        return response()->json($data);
+        $data = $this->igdbService->getGameScreenshots($slug);
+        return response()->json($data ?? ['count' => 0, 'results' => []]);
     }
 
     public function movies($slug)
     {
-        $data = $this->rawgService->getGameMovies($slug);
-
-        if (!$data) {
-            return response()->json(['count' => 0, 'results' => []]);
-        }
-
-        return response()->json($data);
+        $data = $this->igdbService->getGameMovies($slug);
+        return response()->json($data ?? ['count' => 0, 'results' => []]);
     }
 
     public function series($slug)
     {
-        $data = $this->rawgService->getGameSeries($slug);
-
-        if (!$data) {
-            return response()->json(['count' => 0, 'results' => []]);
-        }
-
-        return response()->json($data);
+        $data = $this->igdbService->getGameSeries($slug);
+        return response()->json($data ?? ['count' => 0, 'results' => []]);
     }
 
     public function suggested($slug)
     {
-        $data = $this->rawgService->getGameSuggested($slug);
-
-        if (!$data) {
-            return response()->json(['count' => 0, 'results' => []]);
-        }
-
-        return response()->json($data);
+        $data = $this->igdbService->getGameSuggested($slug);
+        return response()->json($data ?? ['count' => 0, 'results' => []]);
     }
 
     public function additions($slug)
     {
-        $data = $this->rawgService->getGameAdditions($slug);
-
-        if (!$data) {
-            return response()->json(['count' => 0, 'results' => []]);
-        }
-
-        return response()->json($data);
+        $data = $this->igdbService->getGameAdditions($slug);
+        return response()->json($data ?? ['count' => 0, 'results' => []]);
     }
 
     public function calendar(Request $request)
@@ -111,9 +86,9 @@ class GameController extends Controller
         $start = $request->input('start_date', now()->format('Y-m-d'));
         $end   = $request->input('end_date', now()->addMonth()->format('Y-m-d'));
 
-        $data = $this->rawgService->getUpcomingReleases($start, $end);
+        $data = $this->igdbService->getUpcomingReleases($start, $end);
 
-        if (!$data) {
+        if (! $data) {
             return response()->json(['message' => 'Failed to fetch calendar'], 503);
         }
 

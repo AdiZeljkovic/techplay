@@ -51,6 +51,11 @@ return [
         'base_url' => env('RAWG_BASE_URL', 'https://api.rawg.io/api'),
     ],
 
+    'igdb' => [
+        'client_id'     => env('IGDB_CLIENT_ID'),
+        'client_secret' => env('IGDB_CLIENT_SECRET'),
+    ],
+
     'paypal' => [
         'client_id' => env('PAYPAL_CLIENT_ID'),
         'secret' => env('PAYPAL_SECRET'),

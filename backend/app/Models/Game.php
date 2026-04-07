@@ -8,7 +8,7 @@ class Game extends Model
 {
     protected $fillable = [
         'slug',
-        'rawg_id',
+        'igdb_id',
         'name',
         'released',
         'rating',

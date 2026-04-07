@@ -20,6 +20,11 @@ export default function GameTrailersPlayer({ movies }: Props) {
 
     if (movies.length === 0) return null;
 
+    const current = movies[activeTrailer];
+    const embedUrl = current?.data?.max
+        ? current.data.max + "?autoplay=1&rel=0"
+        : null;
+
     return (
         <div className="bg-[#0f1221]/80 border border-white/5 rounded-3xl p-6 shadow-2xl">
             <h2 className="text-xl font-bold text-white mb-5 flex items-center gap-3">
@@ -27,16 +32,21 @@ export default function GameTrailersPlayer({ movies }: Props) {
                 Trailers & Videos
             </h2>
 
-            <div className="rounded-2xl overflow-hidden border border-white/10 mb-4">
-                <video
-                    key={movies[activeTrailer]?.data?.max}
-                    controls
-                    poster={movies[activeTrailer]?.preview}
-                    className="w-full max-h-[400px] bg-black"
-                >
-                    <source src={movies[activeTrailer]?.data?.max} type="video/mp4" />
-                    <source src={movies[activeTrailer]?.data?.["480"]} type="video/mp4" />
-                </video>
+            <div className="rounded-2xl overflow-hidden border border-white/10 mb-4 aspect-video bg-black">
+                {embedUrl ? (
+                    <iframe
+                        key={embedUrl}
+                        src={embedUrl}
+                        title={current.name}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="w-full h-full"
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <Play className="w-12 h-12 text-white/30" />
+                    </div>
+                )}
             </div>
 
             {movies.length > 1 && (
@@ -53,8 +63,8 @@ export default function GameTrailersPlayer({ movies }: Props) {
                 </div>
             )}
 
-            {movies[activeTrailer] && (
-                <p className="text-xs text-gray-400 mt-3">{movies[activeTrailer].name}</p>
+            {current && (
+                <p className="text-xs text-gray-400 mt-3">{current.name}</p>
             )}
         </div>
     );
