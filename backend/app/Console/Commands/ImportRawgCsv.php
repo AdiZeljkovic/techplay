@@ -129,7 +129,7 @@ class ImportRawgCsv extends Command
                 'slug'                   => $slug,
                 'igdb_id'                => null,
                 'name'                   => mb_substr($name, 0, 500),
-                'released'               => ($releasedRaw && $releasedRaw !== 'nan') ? $releasedRaw : null,
+                'released'               => ($releasedRaw && $releasedRaw !== 'nan' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $releasedRaw)) ? $releasedRaw : null,
                 'rating'                 => $ratingRaw !== null && $ratingRaw !== 'nan' ? round((float) $ratingRaw, 2) : null,
                 'metacritic'             => $metacRaw !== null && $metacRaw !== 'nan' ? (int) $metacRaw : null,
                 'background_image'       => $get($row, 'background_image'),
