@@ -22,9 +22,11 @@ class CrawlIgdbStatus extends Command
 
         $igdbTotal = 230000; // approximate
 
-        $bar = fn (int $count, int $of) => $of > 0
-            ? str_repeat('█', (int) round($count / $of * 10)) . str_repeat('░', 10 - (int) round($count / $of * 10))
-            : str_repeat('░', 10);
+        $bar = function (int $count, int $of) {
+            if ($of <= 0) return str_repeat('░', 10);
+            $filled = min(10, (int) round($count / $of * 10));
+            return str_repeat('█', $filled) . str_repeat('░', 10 - $filled);
+        };
 
         $pct = fn (int $count, int $of) => $of > 0 ? number_format($count / $of * 100, 1) : '0.0';
 
