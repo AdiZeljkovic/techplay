@@ -52,8 +52,8 @@ export default function HubPage({ type, value, title, description }: Props) {
     useEffect(() => {
         setLoading(true);
         axios.get(`/games/hub/${type}/${value}?page=${page}&sort=${sort}`)
-            .then((res) => setData(res.data))
-            .catch(() => setData(null))
+            .then((res) => { setData(res.data); })
+            .catch((e) => { console.error("[HubPage] API error:", e?.response?.status, e?.message); setData(null); })
             .finally(() => setLoading(false));
     }, [type, value, page, sort]);
 
