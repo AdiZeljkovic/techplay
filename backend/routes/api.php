@@ -101,6 +101,11 @@ Route::prefix('v1')->group(function () {
         Route::put('/forum/threads/{slug}/posts/{postId}', [App\Http\Controllers\Api\V1\ForumController::class, 'updatePost']);
         Route::delete('/forum/threads/{slug}/posts/{postId}', [App\Http\Controllers\Api\V1\ForumController::class, 'deletePost']);
 
+        // Game Ratings (Auth)
+        Route::get('/games/{slug}/ratings/my', [App\Http\Controllers\Api\V1\GameRatingController::class, 'my']);
+        Route::post('/games/{slug}/ratings', [App\Http\Controllers\Api\V1\GameRatingController::class, 'upsert']);
+        Route::delete('/games/{slug}/ratings', [App\Http\Controllers\Api\V1\GameRatingController::class, 'destroy']);
+
         // Support Plans
         Route::post('/support/create-plan', [App\Http\Controllers\Api\V1\SupportController::class, 'createPlan']);
         Route::post('/support/pledge', [App\Http\Controllers\Api\V1\SupportController::class, 'pledge']);
@@ -172,15 +177,17 @@ Route::prefix('v1')->group(function () {
         Route::get('/tech', [App\Http\Controllers\Api\V1\TechController::class, 'index']);
         Route::get('/tech/{slug}', [App\Http\Controllers\Api\V1\TechController::class, 'show']);
 
-        // Games (RAWG + local DB)
+        // Games
         Route::get('/games/calendar', [App\Http\Controllers\Api\V1\GameController::class, 'calendar']);
         Route::get('/games/crawled-slugs', [App\Http\Controllers\Api\V1\GameController::class, 'crawledSlugs']);
+        Route::get('/games/hub/{type}/{value}', [App\Http\Controllers\Api\V1\GameRatingController::class, 'hub']);
         Route::get('/games', [App\Http\Controllers\Api\V1\GameController::class, 'index']);
         Route::get('/games/{slug}/screenshots', [App\Http\Controllers\Api\V1\GameController::class, 'screenshots']);
         Route::get('/games/{slug}/movies', [App\Http\Controllers\Api\V1\GameController::class, 'movies']);
         Route::get('/games/{slug}/series', [App\Http\Controllers\Api\V1\GameController::class, 'series']);
         Route::get('/games/{slug}/suggested', [App\Http\Controllers\Api\V1\GameController::class, 'suggested']);
         Route::get('/games/{slug}/additions', [App\Http\Controllers\Api\V1\GameController::class, 'additions']);
+        Route::get('/games/{slug}/ratings', [App\Http\Controllers\Api\V1\GameRatingController::class, 'index']);
         Route::get('/games/{slug}', [App\Http\Controllers\Api\V1\GameController::class, 'show']);
 
         // WoW Character Analyzer (Rate limited to 60 req/min to protect OpenAI costs)
