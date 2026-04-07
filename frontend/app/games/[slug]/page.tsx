@@ -14,7 +14,7 @@ import GameCountdownTimer from "@/components/games/GameCountdownTimer";
 
 /* ─── ISR config ────────────────────────────────────────────────────────────── */
 
-export const revalidate    = 86400 * 30; // 30 days
+export const revalidate    = 2592000; // 30 days
 export const dynamicParams = true;       // unknown slugs → dynamic fallback
 
 /* ─── generateStaticParams ──────────────────────────────────────────────────── */
