@@ -59,7 +59,7 @@ interface GameDetail {
     description_raw: string;
     released: string;
     background_image: string;
-    background_image_additional: string;
+    background_image_additional: string | null;
     website: string;
     rating: number;
     rating_top: number;
@@ -68,7 +68,6 @@ interface GameDetail {
     metacritic: number;
     metacritic_url: string | null;
     metacritic_platforms: MetacriticPlatform[];
-    background_image_additional: string | null;
     playtime: number;
     esrb_rating: { name: string; slug: string };
     achievements_count: number;
