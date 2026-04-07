@@ -106,12 +106,12 @@ class GameRatingController extends Controller
             return response()->json(['message' => 'Invalid hub type'], 400);
         }
 
-        // RAWG slug → exact genre name stored in DB (Kaggle CSV stores full names, not slugs)
+        // URL slug → exact genre name stored in DB (Kaggle CSV names)
         $genreNameMap = [
             'action'               => 'Action',
             'indie'                => 'Indie',
             'adventure'            => 'Adventure',
-            'rpg'                  => 'Role-playing (RPG)',
+            'rpg'                  => 'RPG',
             'strategy'             => 'Strategy',
             'shooter'              => 'Shooter',
             'casual'               => 'Casual',
@@ -127,6 +127,10 @@ class GameRatingController extends Controller
             'board-games'          => 'Board Games',
             'educational'          => 'Educational',
             'card'                 => 'Card',
+            'dungeon-crawler'      => 'Dungeon Crawler',
+            'point-and-click'      => 'Point & Click',
+            'horror'               => 'Horror',
+            'first-person'         => 'First-Person',
         ];
 
         $query = \App\Models\Game::whereNotNull('details_crawled_at')
