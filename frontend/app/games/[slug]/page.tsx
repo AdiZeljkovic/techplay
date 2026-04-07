@@ -66,8 +66,9 @@ interface GameDetail {
     ratings: Rating[];
     ratings_count: number;
     metacritic: number;
-    metacritic_url: string;
+    metacritic_url: string | null;
     metacritic_platforms: MetacriticPlatform[];
+    background_image_additional: string | null;
     playtime: number;
     esrb_rating: { name: string; slug: string };
     achievements_count: number;
@@ -267,6 +268,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
             {/* ── Hero ──────────────────────────────────────────────────────── */}
             <div className="relative h-[85vh] w-full overflow-hidden">
                 <div className="absolute inset-0 z-0">
+                    {/* Primary background */}
                     {game.background_image && (
                         <Image
                             src={game.background_image}
@@ -275,6 +277,17 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                             className="object-cover"
                             priority
                         />
+                    )}
+                    {/* Secondary image blended on the right side */}
+                    {game.background_image_additional && (
+                        <div className="absolute inset-0 hidden md:block">
+                            <Image
+                                src={game.background_image_additional}
+                                alt=""
+                                fill
+                                className="object-cover opacity-30 [mask-image:linear-gradient(to_left,rgba(0,0,0,0.8)_0%,transparent_60%)]"
+                            />
+                        </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)]/40 to-black/60" />
                     <div className="absolute inset-0 bg-gradient-to-r from-[var(--bg-primary)]/90 via-transparent to-transparent" />
@@ -317,12 +330,23 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                     </div>
                                 )}
                                 {game.metacritic ? (
-                                    <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10">
-                                        <div className={`w-7 h-7 rounded flex items-center justify-center text-xs font-black ${metacriticColor(game.metacritic)}`}>
-                                            {game.metacritic}
+                                    game.metacritic_url ? (
+                                        <a href={game.metacritic_url} target="_blank" rel="noopener noreferrer"
+                                            className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:border-white/30 transition-colors">
+                                            <div className={`w-7 h-7 rounded flex items-center justify-center text-xs font-black ${metacriticColor(game.metacritic)}`}>
+                                                {game.metacritic}
+                                            </div>
+                                            <span className="text-sm text-gray-300">Metascore</span>
+                                            <ExternalLink className="w-3 h-3 text-gray-400" />
+                                        </a>
+                                    ) : (
+                                        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10">
+                                            <div className={`w-7 h-7 rounded flex items-center justify-center text-xs font-black ${metacriticColor(game.metacritic)}`}>
+                                                {game.metacritic}
+                                            </div>
+                                            <span className="text-sm text-gray-300">Metascore</span>
                                         </div>
-                                        <span className="text-sm text-gray-300">Metascore</span>
-                                    </div>
+                                    )
                                 ) : null}
                                 {game.rating > 0 && (
                                     <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10">
