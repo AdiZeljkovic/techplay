@@ -106,17 +106,41 @@ class GameRatingController extends Controller
             return response()->json(['message' => 'Invalid hub type'], 400);
         }
 
-        $query = \App\Models\Game::whereNotNull('details_crawled_at')
-            ->whereRaw("details_data->>'description_raw' IS NOT NULL")
-            ->whereRaw("LENGTH(details_data->>'description_raw') > 50");
+        // Exact genre name map: URL slug → stored DB name
+        $genreMap = [
+            'action'               => 'Action',
+            'indie'                => 'Indie',
+            'adventure'            => 'Adventure',
+            'rpg'                  => 'RPG',
+            'strategy'             => 'Strategy',
+            'shooter'              => 'Shooter',
+            'casual'               => 'Casual',
+            'simulation'           => 'Simulation',
+            'puzzle'               => 'Puzzle',
+            'arcade'               => 'Arcade',
+            'platformer'           => 'Platformer',
+            'racing'               => 'Racing',
+            'sports'               => 'Sports',
+            'massively-multiplayer'=> 'Massively Multiplayer',
+            'family'               => 'Family',
+            'fighting'             => 'Fighting',
+            'board-games'          => 'Board Games',
+            'educational'          => 'Educational',
+            'card'                 => 'Card',
+            'dungeon-crawler'      => 'Dungeon Crawler',
+            'point-and-click'      => 'Point & Click',
+            'horror'               => 'Horror',
+            'first-person'         => 'First-Person',
+        ];
 
-        // Use indexed TEXT[] columns (genre_names, platform_names, tag_names)
-        // for fast GIN-indexed lookups instead of slow json_array_elements full scans
+        // Only show games that have a meaningful description (indexed boolean column)
+        $query = \App\Models\Game::where('has_description', true);
+
         match ($type) {
-            'genre'    => $query->whereRaw("? = ANY(genre_names)",    [$value === 'rpg' ? 'RPG' : ucwords(str_replace('-', ' ', $value))]),
-            'platform' => $query->whereRaw("? = ANY(platform_names)", [strtolower(str_replace('-', ' ', $value))]),
-            'year'     => $query->whereRaw("EXTRACT(YEAR FROM released) = ?", [(int) $value]),
-            'tag'      => $query->whereRaw("? = ANY(tag_names)",      [strtolower(str_replace('-', ' ', $value))]),
+            'genre'    => $query->whereRaw("genre_names @> ARRAY[?]::text[]",    [$genreMap[$value] ?? ucwords(str_replace('-', ' ', $value))]),
+            'platform' => $query->whereRaw("platform_names @> ARRAY[?]::text[]", [strtolower(str_replace('-', ' ', $value))]),
+            'year'     => $query->whereRaw("EXTRACT(YEAR FROM released) = ?",     [(int) $value]),
+            'tag'      => $query->whereRaw("tag_names @> ARRAY[?]::text[]",       [strtolower(str_replace('-', ' ', $value))]),
         };
 
         $orderColumn = match ($sort) {

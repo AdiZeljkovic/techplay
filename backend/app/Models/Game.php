@@ -22,6 +22,7 @@ class Game extends Model
         'series_data',
         'suggested_data',
         'additions_data',
+        'has_description',
         'details_crawled_at',
         'screenshots_crawled_at',
         'movies_crawled_at',

@@ -158,6 +158,7 @@ class ImportRawgCsv extends Command
                 'genre_names'            => $genreNamesArr,
                 'platform_names'         => $platformNamesArr,
                 'tag_names'              => $tagNamesArr,
+                'has_description'        => !empty($get($row, 'description_raw')) && strlen($get($row, 'description_raw')) > 50,
                 'platforms'              => json_encode($platforms ?? []),
                 'short_screenshots'      => json_encode($shortScreenshots ?? []),
                 'details_data'           => json_encode($detailsData),
@@ -218,7 +219,7 @@ class ImportRawgCsv extends Command
     {
         $columns = [
             'name', 'released', 'rating', 'metacritic', 'background_image',
-            'genre_names', 'platform_names', 'tag_names',
+            'genre_names', 'platform_names', 'tag_names', 'has_description',
             'platforms', 'short_screenshots', 'details_data', 'details_crawled_at',
             'updated_at',
         ];
