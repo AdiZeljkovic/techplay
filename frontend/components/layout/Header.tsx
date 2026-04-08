@@ -14,7 +14,7 @@ import axios from "@/lib/axios";
 import {
     Menu, X, Search, User, LogOut, ShoppingCart,
     ChevronDown, Facebook, Twitter, Instagram, Youtube,
-    Gamepad2, Mail, Users
+    Gamepad2, Mail, Users, Sword, Monitor, Tag, Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchDropdown from "./SearchDropdown";
@@ -57,6 +57,128 @@ interface NavItemType {
     children?: NavSubCategory[];
 }
 
+const DB_GENRES = [
+    { label: "Action",       slug: "action" },
+    { label: "RPG",          slug: "rpg" },
+    { label: "Shooter",      slug: "shooter" },
+    { label: "Indie",        slug: "indie" },
+    { label: "Adventure",    slug: "adventure" },
+    { label: "Strategy",     slug: "strategy" },
+    { label: "Puzzle",       slug: "puzzle" },
+    { label: "Horror",       slug: "horror" },
+    { label: "Racing",       slug: "racing" },
+    { label: "Sports",       slug: "sports" },
+    { label: "Platformer",   slug: "platformer" },
+    { label: "Simulation",   slug: "simulation" },
+];
+
+const DB_PLATFORMS = [
+    { label: "PC",          slug: "pc" },
+    { label: "PlayStation", slug: "playstation" },
+    { label: "Xbox",        slug: "xbox" },
+    { label: "Nintendo",    slug: "nintendo" },
+    { label: "Mobile",      slug: "mobile" },
+];
+
+const DB_YEARS = ["2024", "2023", "2022", "2021", "2020"];
+
+// Mega-dropdown for DATABASE nav item
+function DatabaseNavItem() {
+    const pathname = usePathname();
+    const isActive = pathname.startsWith("/games");
+    const [isHovered, setIsHovered] = useState(false);
+
+    useEffect(() => setIsHovered(false), [pathname]);
+
+    return (
+        <div className="relative h-full flex items-center"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}>
+            <Link href="/games" className={cn(
+                "flex items-center gap-1 text-[13px] font-bold tracking-wide transition-colors whitespace-nowrap px-2 py-2.5",
+                isActive || isHovered ? "text-[var(--accent)]" : "text-gray-300 hover:text-white"
+            )}>
+                DATABASE
+                <ChevronDown className={cn("w-3 h-3 mt-0.5 opacity-70 transition-transform duration-200", isHovered ? "rotate-180" : "rotate-0")} />
+            </Link>
+
+            <AnimatePresence>
+                {isHovered && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.97 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[520px] bg-[#001540]/98 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 p-5"
+                        style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}>
+
+                        <div className="grid grid-cols-3 gap-5">
+                            {/* Genres */}
+                            <div className="col-span-2">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <Sword className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Genres</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
+                                    {DB_GENRES.map((g) => (
+                                        <Link key={g.slug} href={`/games/genre/${g.slug}`}
+                                            className="px-2 py-1.5 text-[12px] font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+                                            {g.label}
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Platforms + Years */}
+                            <div className="flex flex-col gap-5">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Monitor className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Platforms</span>
+                                    </div>
+                                    <div className="flex flex-col gap-0.5">
+                                        {DB_PLATFORMS.map((p) => (
+                                            <Link key={p.slug} href={`/games/platform/${p.slug}`}
+                                                className="px-2 py-1.5 text-[12px] font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+                                                {p.label}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Calendar className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Years</span>
+                                    </div>
+                                    <div className="flex flex-col gap-0.5">
+                                        {DB_YEARS.map((y) => (
+                                            <Link key={y} href={`/games/year/${y}`}
+                                                className="px-2 py-1.5 text-[12px] font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+                                                {y}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+                            <Link href="/games" className="text-[11px] font-bold text-[var(--accent)] hover:text-white transition-colors uppercase tracking-wider">
+                                Browse All Games →
+                            </Link>
+                            <Link href="/games/tag/open-world" className="flex items-center gap-1.5 text-[11px] font-medium text-white/30 hover:text-white transition-colors">
+                                <Tag className="w-3 h-3" /> Popular Tags
+                            </Link>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
 // Initial Nav Items (will be populated with children from API)
 const INITIAL_NAV_ITEMS: NavItemType[] = [
     { name: "NEWS", href: "/news", hasDropdown: true },
@@ -65,7 +187,13 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
     { name: "VIDEO", href: "/videos" },
     { name: "GUIDES", href: "/guides" },
     { name: "CALENDAR", href: "/calendar" },
-    { name: "DATABASE", href: "/games" },
+    { name: "DATABASE", href: "/games", hasDropdown: true, children: [
+        { name: "All Games", href: "/games" },
+        { name: "── Genres ──", href: "/games" },
+        ...DB_GENRES.map(g => ({ name: g.label, href: `/games/genre/${g.slug}` })),
+        { name: "── Platforms ──", href: "/games" },
+        ...DB_PLATFORMS.map(p => ({ name: p.label, href: `/games/platform/${p.slug}` })),
+    ]},
     { name: "FORUM", href: "/forum" },
     { name: "SHOP", href: "/shop" },
 ];
@@ -421,13 +549,17 @@ export default function Header() {
 
                     {/* Desktop Nav (Center) */}
                     <nav className="hidden xl:flex items-center gap-5 h-full">
-                        {navItems.map((item) => (
-                            <NavItem
-                                key={item.name}
-                                item={item}
-                                badge={item.name === 'FORUM' && notifications.forum_replies > 0 ? notifications.forum_replies : undefined}
-                            />
-                        ))}
+                        {navItems.map((item) =>
+                            item.name === "DATABASE" ? (
+                                <DatabaseNavItem key="DATABASE" />
+                            ) : (
+                                <NavItem
+                                    key={item.name}
+                                    item={item}
+                                    badge={item.name === 'FORUM' && notifications.forum_replies > 0 ? notifications.forum_replies : undefined}
+                                />
+                            )
+                        )}
                     </nav>
 
                     {/* Actions (Right) */}
