@@ -110,43 +110,61 @@ export default function HubPage({ type, value, title, description, initialData }
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
 
-            {/* Hero — same style as PageHero */}
-            <div className="relative w-full mb-8 bg-[#000B25] overflow-hidden flex flex-col items-center justify-center text-center" style={{ minHeight: 380 }}>
-                {/* Background */}
+            {/* Hero */}
+            <div className="relative w-full mb-10 bg-[#000B25] overflow-hidden">
+                {/* Background layers */}
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#1a103c] via-[#0d0725] to-[#000000]" />
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(60,20,100,0.4)_0%,transparent_70%)] opacity-70" />
-                    <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.3) 1px, transparent 0)", backgroundSize: "40px 40px" }} />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#12082e] via-[#0d0725] to-[#060414]" />
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(80,30,160,0.35)_0%,transparent_70%)]" />
+                    <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: "radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.5) 1px, transparent 0)", backgroundSize: "32px 32px" }} />
+                    {/* Bottom fade into page bg */}
+                    <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[var(--bg-primary)] to-transparent" />
                 </div>
 
-                {/* Title block */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
-                    className="relative z-10 flex flex-col items-center gap-4 px-4 pb-36">
-                    <div className="mb-2 relative">
-                        <div className="absolute inset-0 blur-xl bg-[var(--accent)]/50 rounded-full" />
-                        <Sword className="w-12 h-12 text-[var(--accent)] relative z-10" />
-                    </div>
-                    <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight drop-shadow-xl">
-                        {title.split(" ").map((word, i) => (
-                            <span key={i} className={i === 1 ? "text-[var(--accent)]" : ""}>{word} </span>
-                        ))}
-                    </h1>
-                    <p className="text-lg md:text-xl text-white/60 max-w-2xl font-medium tracking-wide">{description}</p>
-                    {data && (
-                        <p className="text-sm font-semibold text-[var(--accent)]">{data.total.toLocaleString()} games</p>
-                    )}
-                </motion.div>
+                {/* Content */}
+                <div className="relative z-10 flex flex-col items-center text-center px-4 pt-14 pb-10 gap-0">
+                    {/* Icon */}
+                    <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}
+                        className="mb-5 relative flex items-center justify-center w-16 h-16">
+                        <div className="absolute inset-0 blur-2xl bg-[var(--accent)]/40 rounded-full" />
+                        <div className="relative z-10 w-14 h-14 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/30 flex items-center justify-center">
+                            <Sword className="w-7 h-7 text-[var(--accent)]" />
+                        </div>
+                    </motion.div>
 
-                {/* Floating filter pills — anchored to bottom of hero */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.5 }}
-                    className="absolute bottom-6 z-20 w-full px-4 flex flex-col items-center gap-2">
-                    <PillRow label="Sort"     options={SORT_OPTIONS}     value={sort}          onChange={(v) => { setSort(v); setPage(1); }} />
-                    <PillRow label="Score"    options={SCORE_OPTIONS}    value={metacriticMin} onChange={(v) => { setMetacriticMin(v); setPage(1); }} />
-                    <PillRow label="Era"      options={ERA_OPTIONS}      value={era}           onChange={(v) => { setEra(v); setPage(1); }} />
-                    {type !== "platform" && (
-                        <PillRow label="Platform" options={PLATFORM_OPTIONS} value={platform}  onChange={(v) => { setPlatform(v); setPage(1); }} />
-                    )}
-                </motion.div>
+                    {/* Title */}
+                    <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }}
+                        className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4 leading-tight">
+                        {title.split(" ").map((word, i) => (
+                            <span key={i} className={i === 1 ? "text-[var(--accent)] mx-1" : "mx-1"}>{word}</span>
+                        ))}
+                    </motion.h1>
+
+                    {/* Description + count */}
+                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}
+                        className="flex flex-col items-center gap-2 mb-8">
+                        <p className="text-base md:text-lg text-white/50 max-w-xl font-medium">{description}</p>
+                        {data && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[var(--accent)] text-xs font-bold tracking-widest uppercase">
+                                {data.total.toLocaleString()} games
+                            </span>
+                        )}
+                    </motion.div>
+
+                    {/* Divider */}
+                    <div className="w-full max-w-3xl h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-6" />
+
+                    {/* Filter pill rows */}
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }}
+                        className="flex flex-col items-center gap-2 w-full max-w-3xl">
+                        <PillRow label="Sort"     options={SORT_OPTIONS}     value={sort}          onChange={(v) => { setSort(v); setPage(1); }} />
+                        <PillRow label="Score"    options={SCORE_OPTIONS}    value={metacriticMin} onChange={(v) => { setMetacriticMin(v); setPage(1); }} />
+                        <PillRow label="Era"      options={ERA_OPTIONS}      value={era}           onChange={(v) => { setEra(v); setPage(1); }} />
+                        {type !== "platform" && (
+                            <PillRow label="Platform" options={PLATFORM_OPTIONS} value={platform}  onChange={(v) => { setPlatform(v); setPage(1); }} />
+                        )}
+                    </motion.div>
+                </div>
             </div>
 
             <div className="container mx-auto px-4">
