@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "@/lib/axios";
 import Image from "next/image";
 import Link from "next/link";
-import { Star, Gamepad2, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { Star, Gamepad2, ChevronLeft, ChevronRight, SlidersHorizontal, X } from "lucide-react";
 
 interface Game {
     id: number;
@@ -40,28 +40,82 @@ const SORT_OPTIONS = [
     { value: "name",       label: "Name" },
 ];
 
+const METACRITIC_OPTIONS = [
+    { value: "",   label: "Any" },
+    { value: "60", label: "60+" },
+    { value: "70", label: "70+" },
+    { value: "80", label: "80+" },
+    { value: "90", label: "90+" },
+];
+
+const ERA_OPTIONS = [
+    { value: "",         label: "All Time",  from: "",     to: "" },
+    { value: "2020s",    label: "2020s",     from: "2020", to: "2029" },
+    { value: "2010s",    label: "2010s",     from: "2010", to: "2019" },
+    { value: "2000s",    label: "2000s",     from: "2000", to: "2009" },
+    { value: "90s",      label: "90s",       from: "1990", to: "1999" },
+];
+
+const PLATFORM_OPTIONS = [
+    { value: "",          label: "All" },
+    { value: "pc",        label: "PC" },
+    { value: "playstation", label: "PlayStation" },
+    { value: "xbox",      label: "Xbox" },
+    { value: "nintendo",  label: "Nintendo" },
+    { value: "mobile",    label: "Mobile" },
+];
+
 function metacriticColor(score: number) {
     return score >= 80 ? "bg-green-500 text-white" : score >= 60 ? "bg-yellow-500 text-black" : "bg-red-500 text-white";
 }
 
+function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+    return (
+        <button onClick={onClick} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+            active ? "bg-[var(--accent)] text-white" : "bg-white/5 text-gray-400 hover:bg-white/10"
+        }`}>
+            {label}
+        </button>
+    );
+}
+
 export default function HubPage({ type, value, title, description, initialData }: Props) {
-    const [data, setData]       = useState<HubResponse | null>(initialData ?? null);
-    const [page, setPage]       = useState(1);
-    const [sort, setSort]       = useState("rating");
-    const [loading, setLoading] = useState(false);
+    const [data, setData]             = useState<HubResponse | null>(initialData ?? null);
+    const [page, setPage]             = useState(1);
+    const [sort, setSort]             = useState("rating");
+    const [metacriticMin, setMetacriticMin] = useState("");
+    const [era, setEra]               = useState("");
+    const [platform, setPlatform]     = useState("");
+    const [loading, setLoading]       = useState(false);
+
+    const isDefaultState = page === 1 && sort === "rating" && !metacriticMin && !era && !platform;
+
+    const buildUrl = useCallback(() => {
+        const params = new URLSearchParams({ page: String(page), sort });
+        if (metacriticMin)  params.set("metacritic_min", metacriticMin);
+        if (era) {
+            const found = ERA_OPTIONS.find(e => e.value === era);
+            if (found?.from) params.set("year_from", found.from);
+            if (found?.to)   params.set("year_to",   found.to);
+        }
+        if (platform && type !== "platform") params.set("platform", platform);
+        return `/games/hub/${type}/${value}?${params.toString()}`;
+    }, [type, value, page, sort, metacriticMin, era, platform]);
 
     useEffect(() => {
-        // Skip the initial fetch if we already have SSR data for page 1 / rating sort
-        if (page === 1 && sort === "rating" && initialData) return;
+        if (isDefaultState && initialData) return;
         setLoading(true);
-        axios.get(`/games/hub/${type}/${value}?page=${page}&sort=${sort}`)
-            .then((res) => { setData(res.data); })
-            .catch((e) => { console.error("[HubPage] API error:", e?.response?.status, e?.message); setData(null); })
+        axios.get(buildUrl())
+            .then((res) => setData(res.data))
+            .catch(() => setData(null))
             .finally(() => setLoading(false));
-    }, [type, value, page, sort]);
+    }, [buildUrl]);
 
     const handleSort = (s: string) => { setSort(s); setPage(1); };
     const handlePage = (p: number) => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); };
+    const resetFilters = () => { setMetacriticMin(""); setEra(""); setPlatform(""); setPage(1); };
+
+    const hasActiveFilters = !!(metacriticMin || era || platform);
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] pb-20">
@@ -86,22 +140,61 @@ export default function HubPage({ type, value, title, description, initialData }
             </div>
 
             <div className="container mx-auto px-4 mt-8">
-                {/* Sort bar */}
-                <div className="flex items-center gap-3 mb-6">
-                    <SlidersHorizontal className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-400">Sort by:</span>
-                    <div className="flex gap-2 flex-wrap">
-                        {SORT_OPTIONS.map((opt) => (
-                            <button key={opt.value} onClick={() => handleSort(opt.value)}
-                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                                    sort === opt.value
-                                        ? "bg-[var(--accent)] text-white"
-                                        : "bg-white/5 text-gray-400 hover:bg-white/10"
-                                }`}>
-                                {opt.label}
-                            </button>
-                        ))}
+                {/* Filter bar */}
+                <div className="bg-white/3 border border-white/5 rounded-2xl p-4 mb-6 space-y-3">
+
+                    {/* Sort */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <SlidersHorizontal className="w-4 h-4 text-gray-400 shrink-0" />
+                        <span className="text-xs text-gray-500 uppercase tracking-wider w-16 shrink-0">Sort</span>
+                        <div className="flex gap-2 flex-wrap">
+                            {SORT_OPTIONS.map((opt) => (
+                                <FilterChip key={opt.value} label={opt.label} active={sort === opt.value} onClick={() => handleSort(opt.value)} />
+                            ))}
+                        </div>
                     </div>
+
+                    {/* Metacritic */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <span className="text-xs text-gray-500 uppercase tracking-wider w-16 ml-7 shrink-0">Score</span>
+                        <div className="flex gap-2 flex-wrap">
+                            {METACRITIC_OPTIONS.map((opt) => (
+                                <FilterChip key={opt.value} label={opt.label} active={metacriticMin === opt.value} onClick={() => { setMetacriticMin(opt.value); setPage(1); }} />
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Era */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <span className="text-xs text-gray-500 uppercase tracking-wider w-16 ml-7 shrink-0">Era</span>
+                        <div className="flex gap-2 flex-wrap">
+                            {ERA_OPTIONS.map((opt) => (
+                                <FilterChip key={opt.value} label={opt.label} active={era === opt.value} onClick={() => { setEra(opt.value); setPage(1); }} />
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Platform (only for non-platform hubs) */}
+                    {type !== "platform" && (
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <span className="text-xs text-gray-500 uppercase tracking-wider w-16 ml-7 shrink-0">Platform</span>
+                            <div className="flex gap-2 flex-wrap">
+                                {PLATFORM_OPTIONS.map((opt) => (
+                                    <FilterChip key={opt.value} label={opt.label} active={platform === opt.value} onClick={() => { setPlatform(opt.value); setPage(1); }} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Reset */}
+                    {hasActiveFilters && (
+                        <div className="flex justify-end pt-1">
+                            <button onClick={resetFilters} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors">
+                                <X className="w-3.5 h-3.5" />
+                                Clear filters
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Grid */}
@@ -146,7 +239,7 @@ export default function HubPage({ type, value, title, description, initialData }
                         ))}
                     </div>
                 ) : (
-                    <p className="text-center text-gray-400 py-20">No games found.</p>
+                    <p className="text-center text-gray-400 py-20">No games found for selected filters.</p>
                 )}
 
                 {/* Pagination */}

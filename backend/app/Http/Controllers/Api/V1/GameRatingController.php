@@ -98,18 +98,22 @@ class GameRatingController extends Controller
      */
     public function hub(Request $request, string $type, string $value)
     {
-        $page    = max(1, (int) $request->input('page', 1));
-        $perPage = 24;
-        $sort    = $request->input('sort', 'rating');
+        $page          = max(1, (int) $request->input('page', 1));
+        $perPage       = 24;
+        $sort          = $request->input('sort', 'rating');
+        $metacriticMin = (int) $request->input('metacritic_min', 0);
+        $yearFrom      = (int) $request->input('year_from', 0);
+        $yearTo        = (int) $request->input('year_to', 0);
+        $platform      = trim((string) $request->input('platform', ''));
 
         $allowed = ['genre', 'platform', 'year', 'tag'];
         if (! in_array($type, $allowed)) {
             return response()->json(['message' => 'Invalid hub type'], 400);
         }
 
-        $cacheKey = "hub:{$type}:{$value}:{$sort}:{$page}";
+        $cacheKey = "hub:{$type}:{$value}:{$sort}:{$page}:{$metacriticMin}:{$yearFrom}:{$yearTo}:{$platform}";
 
-        $result = Cache::remember($cacheKey, 600, function () use ($type, $value, $sort, $page, $perPage) {
+        $result = Cache::remember($cacheKey, 600, function () use ($type, $value, $sort, $page, $perPage, $metacriticMin, $yearFrom, $yearTo, $platform) {
             $genreMap = [
                 'action'                => 'Action',
                 'indie'                 => 'Indie',
@@ -136,6 +140,15 @@ class GameRatingController extends Controller
                 'first-person'          => 'First-Person',
             ];
 
+            // Platform label → stored platform_names value (lowercase partial)
+            $platformMap = [
+                'pc'          => 'pc',
+                'playstation' => 'playstation',
+                'xbox'        => 'xbox',
+                'nintendo'    => 'nintendo',
+                'mobile'      => 'android', // stored as android/ios
+            ];
+
             $orderCol = match ($sort) {
                 'metacritic' => 'metacritic',
                 'released'   => 'released',
@@ -143,10 +156,10 @@ class GameRatingController extends Controller
                 default      => 'rating',
             };
 
-            // Build WHERE clause + bindings
             $where    = 'has_description = true';
             $bindings = [];
 
+            // Primary hub filter
             if ($type === 'genre') {
                 $where     .= ' AND genre_names @> ARRAY[?]::text[]';
                 $bindings[] = $genreMap[$value] ?? ucwords(str_replace('-', ' ', $value));
@@ -161,10 +174,28 @@ class GameRatingController extends Controller
                 $bindings[] = strtolower(str_replace('-', ' ', $value));
             }
 
+            // Additional filters
+            if ($metacriticMin > 0) {
+                $where     .= ' AND metacritic >= ?';
+                $bindings[] = $metacriticMin;
+            }
+            if ($yearFrom > 0) {
+                $where     .= ' AND EXTRACT(YEAR FROM released) >= ?';
+                $bindings[] = $yearFrom;
+            }
+            if ($yearTo > 0) {
+                $where     .= ' AND EXTRACT(YEAR FROM released) <= ?';
+                $bindings[] = $yearTo;
+            }
+            if ($platform !== '' && $type !== 'platform') {
+                $mapped     = $platformMap[$platform] ?? strtolower($platform);
+                $where     .= ' AND EXISTS (SELECT 1 FROM unnest(platform_names) p WHERE p LIKE ?)';
+                $bindings[] = '%' . $mapped . '%';
+            }
+
             $offset   = ($page - 1) * $perPage;
             $orderDir = ($orderCol === 'name') ? 'ASC' : 'DESC NULLS LAST';
 
-            // Single query — COUNT(*) OVER() avoids a second round-trip
             $rows = DB::select("
                 SELECT id, slug, name, released, rating, metacritic,
                        background_image, platforms,
