@@ -5,42 +5,128 @@ import { getApiUrl } from "@/lib/api";
 export const revalidate = 86400;
 export const dynamicParams = true;
 
-const GENRE_META: Record<string, { title: string; description: string }> = {
-    "action":      { title: "Best Action Games",      description: "Explore the best action games of all time. Fast-paced combat, thrilling gameplay and non-stop excitement." },
-    "rpg":         { title: "Best RPG Games",          description: "Discover top-rated role-playing games. Epic stories, deep character progression and vast open worlds." },
-    "adventure":   { title: "Best Adventure Games",    description: "Explore the greatest adventure games. Story-driven experiences, exploration and puzzle-solving." },
-    "strategy":    { title: "Best Strategy Games",     description: "Top strategy games that challenge your mind. From real-time to turn-based, conquer and build empires." },
-    "shooter":     { title: "Best Shooter Games",      description: "The best FPS and TPS games ever made. Intense gunplay, competitive multiplayer and tactical combat." },
-    "puzzle":      { title: "Best Puzzle Games",       description: "Brain-teasing puzzle games for all skill levels. Logic, creativity and satisfying problem solving." },
-    "sports":      { title: "Best Sports Games",       description: "Top sports games across all genres. Football, basketball, racing and more." },
-    "racing":      { title: "Best Racing Games",       description: "The fastest racing games on the planet. Arcade fun to realistic simulation." },
-    "fighting":    { title: "Best Fighting Games",     description: "Top fighting games with intense one-on-one combat. Master combos and beat the competition." },
-    "platformer":  { title: "Best Platformer Games",   description: "Classic and modern platformer games. Jump, run and explore colourful worlds." },
-    "simulation":  { title: "Best Simulation Games",   description: "Realistic simulation games for every interest. Life sims, city builders and more." },
-    "indie":       { title: "Best Indie Games",        description: "Hidden gems and celebrated indie titles. Creative, unique and unforgettable gaming experiences." },
-    "casual":      { title: "Best Casual Games",       description: "Easy-to-pick-up casual games for everyone. Relax and have fun without steep learning curves." },
-    "horror":      { title: "Best Horror Games",       description: "Scariest horror games that will keep you on edge. Survival horror, psychological thrills and more." },
+const GENRE_META: Record<string, {
+    title: string;
+    h1: string;
+    description: string;
+    keywords: string;
+}> = {
+    "action": {
+        title:       "Best Action Games in 2026",
+        h1:          "Best Action Games",
+        description: "The best action games ranked by community rating. Fast combat, explosive set pieces and games that keep you hooked for hours.",
+        keywords:    "best action games, action games 2026, top action games, action games ranked",
+    },
+    "rpg": {
+        title:       "Best RPG Games in 2026",
+        h1:          "Best RPG Games",
+        description: "Top-rated RPGs ranked by players worldwide. From massive open-world epics to intimate story-driven gems — find your next RPG.",
+        keywords:    "best RPG games, top role playing games, RPG games 2026, best JRPGs, open world RPG",
+    },
+    "adventure": {
+        title:       "Best Adventure Games in 2026",
+        h1:          "Best Adventure Games",
+        description: "The highest-rated adventure games of all time. Gripping narratives, world exploration and puzzles worth solving.",
+        keywords:    "best adventure games, top adventure games 2026, adventure games ranked, story games",
+    },
+    "strategy": {
+        title:       "Best Strategy Games in 2026",
+        h1:          "Best Strategy Games",
+        description: "Strategy games that actually make you think. Top-rated RTS, turn-based and grand strategy titles ranked by players.",
+        keywords:    "best strategy games, top strategy games 2026, RTS games, turn-based strategy, grand strategy",
+    },
+    "shooter": {
+        title:       "Best Shooter Games in 2026",
+        h1:          "Best Shooter Games",
+        description: "Top FPS and TPS games ranked by community score. Competitive multiplayer, tactical shooters and solo campaigns worth playing.",
+        keywords:    "best shooter games, best FPS games 2026, top FPS games, best TPS games, shooter games ranked",
+    },
+    "puzzle": {
+        title:       "Best Puzzle Games in 2026",
+        h1:          "Best Puzzle Games",
+        description: "The most satisfying puzzle games ranked by players. Logic challenges, mind-bending mechanics and games that reward patience.",
+        keywords:    "best puzzle games, top puzzle games 2026, puzzle games ranked, logic games, brain teasers",
+    },
+    "horror": {
+        title:       "Best Horror Games in 2026",
+        h1:          "Best Horror Games",
+        description: "The scariest and highest-rated horror games. Survival horror, psychological thrillers and atmospheric dread — ranked by players.",
+        keywords:    "best horror games, scariest games 2026, survival horror games, horror games ranked, psychological horror",
+    },
+    "indie": {
+        title:       "Best Indie Games in 2026",
+        h1:          "Best Indie Games",
+        description: "The best indie games ranked by community rating. Hidden gems, award-winners and small studio titles that outshine AAA releases.",
+        keywords:    "best indie games, top indie games 2026, indie games ranked, hidden gem games, best indie 2026",
+    },
+    "platformer": {
+        title:       "Best Platformer Games in 2026",
+        h1:          "Best Platformer Games",
+        description: "Top-rated platformers from all eras. Classic side-scrollers, 3D platformers and modern indie hits — ranked by players.",
+        keywords:    "best platformer games, top platform games 2026, best side scrollers, 3D platformer games",
+    },
+    "simulation": {
+        title:       "Best Simulation Games in 2026",
+        h1:          "Best Simulation Games",
+        description: "The highest-rated simulation games. City builders, life sims, farming and management games — ranked by the community.",
+        keywords:    "best simulation games, top sim games 2026, city builder games, life simulation, management games",
+    },
+    "racing": {
+        title:       "Best Racing Games in 2026",
+        h1:          "Best Racing Games",
+        description: "Top-rated racing games from arcade fun to serious simulation. The fastest and most celebrated titles ranked by players.",
+        keywords:    "best racing games, top racing games 2026, racing simulation games, arcade racing games",
+    },
+    "sports": {
+        title:       "Best Sports Games in 2026",
+        h1:          "Best Sports Games",
+        description: "The highest-rated sports games across every discipline. Football, basketball, tennis and more — ranked by community score.",
+        keywords:    "best sports games, top sports games 2026, football games, basketball games, sports games ranked",
+    },
+    "fighting": {
+        title:       "Best Fighting Games in 2026",
+        h1:          "Best Fighting Games",
+        description: "Top fighting games ranked by players. From beginner-friendly entries to deep competitive titles — the best in the genre.",
+        keywords:    "best fighting games, top fighting games 2026, fighting games ranked, best 1v1 games",
+    },
+    "casual": {
+        title:       "Best Casual Games in 2026",
+        h1:          "Best Casual Games",
+        description: "Top-rated casual games for every type of player. Easy to pick up, hard to put down — ranked by community rating.",
+        keywords:    "best casual games, top casual games 2026, easy games, relaxing games, casual games ranked",
+    },
 };
 
 function getMeta(genre: string) {
-    const key = genre.toLowerCase().replace(/-/g, " ");
-    return GENRE_META[key] ?? {
-        title:       `Best ${genre.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} Games`,
-        description: `Explore the best ${genre.replace(/-/g, " ")} games. Browse top-rated titles, ratings and reviews on TechPlay.`,
+    return GENRE_META[genre] ?? {
+        title:       `Best ${genre.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())} Games in 2026`,
+        h1:          `Best ${genre.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())} Games`,
+        description: `The best ${genre.replace(/-/g, " ")} games ranked by community rating. Browse top-rated titles on TechPlay.`,
+        keywords:    `best ${genre.replace(/-/g, " ")} games, top ${genre.replace(/-/g, " ")} games 2026`,
     };
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ genre: string }> }): Promise<Metadata> {
     const { genre } = await params;
     const meta = getMeta(genre);
+    const url = `https://techplay.gg/games/genre/${genre}`;
+
     return {
         title:       `${meta.title} — TechPlay`,
         description: meta.description,
-        alternates:  { canonical: `https://techplay.gg/games/genre/${genre}` },
+        keywords:    meta.keywords,
+        alternates:  { canonical: url },
         openGraph: {
             title:       `${meta.title} — TechPlay`,
             description: meta.description,
-            url:         `https://techplay.gg/games/genre/${genre}`,
+            url,
+            type:        "website",
+            siteName:    "TechPlay",
+        },
+        twitter: {
+            card:        "summary_large_image",
+            title:       `${meta.title} — TechPlay`,
+            description: meta.description,
         },
     };
 }
@@ -48,7 +134,34 @@ export async function generateMetadata({ params }: { params: Promise<{ genre: st
 export default async function GenreHubPage({ params }: { params: Promise<{ genre: string }> }) {
     const { genre } = await params;
     const meta = getMeta(genre);
+    const url = `https://techplay.gg/games/genre/${genre}`;
+
     const initialData = await fetch(`${getApiUrl()}/games/hub/genre/${genre}?page=1&sort=rating`, { next: { revalidate: 600 } })
         .then((r) => r.ok ? r.json() : null).catch(() => null);
-    return <HubPage type="genre" value={genre} title={meta.title} description={meta.description} initialData={initialData} />;
+
+    const breadcrumb = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home",  item: "https://techplay.gg" },
+            { "@type": "ListItem", position: 2, name: "Games", item: "https://techplay.gg/games" },
+            { "@type": "ListItem", position: 3, name: meta.h1, item: url },
+        ],
+    };
+
+    const collectionPage = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: meta.title,
+        description: meta.description,
+        url,
+    };
+
+    return (
+        <>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPage) }} />
+            <HubPage type="genre" value={genre} title={meta.h1} description={meta.description} initialData={initialData} />
+        </>
+    );
 }
