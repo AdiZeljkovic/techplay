@@ -80,7 +80,7 @@ const DB_PLATFORMS = [
     { label: "Mobile",      slug: "mobile" },
 ];
 
-const DB_YEARS = ["2024", "2023", "2022", "2021", "2020"];
+const DB_YEARS = ["2025", "2024", "2023", "2022", "2021", "2020"];
 
 // Mega-dropdown for DATABASE nav item
 function DatabaseNavItem() {
