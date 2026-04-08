@@ -41,6 +41,7 @@ class SitemapController extends Controller
             'sitemap-pages.xml',
             'sitemap-articles.xml',
             'sitemap-categories.xml',
+            'sitemap-hub.xml',
         ];
 
         // Conditional sitemaps - only include if they have content
@@ -67,6 +68,7 @@ class SitemapController extends Controller
             $videoLastmod   = Video::whereNotNull('published_at')->max('published_at');
             $productLastmod = Product::where('is_active', true)->max('updated_at');
             return [
+                'sitemap-hub.xml'        => now()->subDays(7)->toIso8601String(),
                 'sitemap-pages.xml'      => now()->subDays(7)->toIso8601String(),
                 'sitemap-articles.xml'   => $articleLastmod ? \Carbon\Carbon::parse($articleLastmod)->toIso8601String() : now()->toIso8601String(),
                 'sitemap-categories.xml' => now()->subDays(7)->toIso8601String(),
@@ -374,6 +376,50 @@ class SitemapController extends Controller
             $xml .= "      <image:title>" . htmlspecialchars($article->title) . "</image:title>\n";
             $xml .= "    </image:image>\n";
             $xml .= "  </url>\n";
+        }
+
+        $xml .= '</urlset>';
+        return response($xml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    /**
+     * Hub Pages Sitemap — genre, platform, year, popular tags
+     */
+    public function hub(): Response
+    {
+        $xml = $this->xmlHeader();
+
+        $genres = [
+            'action', 'indie', 'adventure', 'rpg', 'strategy', 'shooter',
+            'casual', 'simulation', 'puzzle', 'arcade', 'platformer', 'racing',
+            'sports', 'massively-multiplayer', 'family', 'fighting', 'board-games',
+            'educational', 'card', 'dungeon-crawler', 'point-and-click', 'horror',
+        ];
+
+        $platforms = ['pc', 'playstation', 'xbox', 'nintendo', 'mobile'];
+
+        $popularTags = [
+            'open-world', 'multiplayer', 'singleplayer', 'co-op', 'story-rich',
+            'first-person', 'third-person', 'sandbox', 'survival', 'stealth',
+            'turn-based', 'roguelike', 'metroidvania', 'souls-like', 'hack-and-slash',
+            'pixel-graphics', 'anime', 'sci-fi', 'fantasy', 'post-apocalyptic',
+        ];
+
+        foreach ($genres as $genre) {
+            $xml .= $this->urlEntry("{$this->frontendUrl}/games/genre/{$genre}", null, 'weekly', '0.7');
+        }
+
+        foreach ($platforms as $platform) {
+            $xml .= $this->urlEntry("{$this->frontendUrl}/games/platform/{$platform}", null, 'weekly', '0.7');
+        }
+
+        for ($year = 2025; $year >= 1990; $year--) {
+            $priority = $year >= 2015 ? '0.6' : '0.4';
+            $xml .= $this->urlEntry("{$this->frontendUrl}/games/year/{$year}", null, 'monthly', $priority);
+        }
+
+        foreach ($popularTags as $tag) {
+            $xml .= $this->urlEntry("{$this->frontendUrl}/games/tag/{$tag}", null, 'weekly', '0.6');
         }
 
         $xml .= '</urlset>';
