@@ -30,6 +30,7 @@ interface Props {
     value: string;
     title: string;
     description: string;
+    initialData?: HubResponse | null;
 }
 
 const SORT_OPTIONS = [
@@ -43,13 +44,15 @@ function metacriticColor(score: number) {
     return score >= 80 ? "bg-green-500 text-white" : score >= 60 ? "bg-yellow-500 text-black" : "bg-red-500 text-white";
 }
 
-export default function HubPage({ type, value, title, description }: Props) {
-    const [data, setData]     = useState<HubResponse | null>(null);
-    const [page, setPage]     = useState(1);
-    const [sort, setSort]     = useState("rating");
-    const [loading, setLoading] = useState(true);
+export default function HubPage({ type, value, title, description, initialData }: Props) {
+    const [data, setData]       = useState<HubResponse | null>(initialData ?? null);
+    const [page, setPage]       = useState(1);
+    const [sort, setSort]       = useState("rating");
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
+        // Skip the initial fetch if we already have SSR data for page 1 / rating sort
+        if (page === 1 && sort === "rating" && initialData) return;
         setLoading(true);
         axios.get(`/games/hub/${type}/${value}?page=${page}&sort=${sort}`)
             .then((res) => { setData(res.data); })

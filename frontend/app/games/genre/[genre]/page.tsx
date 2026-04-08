@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import HubPage from "@/app/games/_hub/HubPage";
+import { getApiUrl } from "@/lib/api";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -47,5 +48,7 @@ export async function generateMetadata({ params }: { params: Promise<{ genre: st
 export default async function GenreHubPage({ params }: { params: Promise<{ genre: string }> }) {
     const { genre } = await params;
     const meta = getMeta(genre);
-    return <HubPage type="genre" value={genre} title={meta.title} description={meta.description} />;
+    const initialData = await fetch(`${getApiUrl()}/games/hub/genre/${genre}?page=1&sort=rating`, { next: { revalidate: 600 } })
+        .then((r) => r.ok ? r.json() : null).catch(() => null);
+    return <HubPage type="genre" value={genre} title={meta.title} description={meta.description} initialData={initialData} />;
 }

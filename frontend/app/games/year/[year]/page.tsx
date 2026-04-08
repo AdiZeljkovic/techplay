@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import HubPage from "@/app/games/_hub/HubPage";
+import { getApiUrl } from "@/lib/api";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -20,12 +21,15 @@ export async function generateMetadata({ params }: { params: Promise<{ year: str
 
 export default async function YearHubPage({ params }: { params: Promise<{ year: string }> }) {
     const { year } = await params;
+    const initialData = await fetch(`${getApiUrl()}/games/hub/year/${year}?page=1&sort=rating`, { next: { revalidate: 600 } })
+        .then((r) => r.ok ? r.json() : null).catch(() => null);
     return (
         <HubPage
             type="year"
             value={year}
             title={`Best Games of ${year}`}
             description={`Discover the best video games released in ${year}. Top-rated titles sorted by rating, metacritic score and more.`}
+            initialData={initialData}
         />
     );
 }
