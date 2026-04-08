@@ -132,6 +132,21 @@ class ImportRawgCsv extends Command
                 'tba'                         => filter_var($get($row, 'tba'), FILTER_VALIDATE_BOOLEAN),
             ];
 
+            // Build PostgreSQL TEXT[] literals for GIN-indexed columns
+            $toTextArray = fn (array $items) => '{' . implode(',', array_map(
+                fn ($s) => '"' . str_replace('"', '\\"', $s) . '"', $items
+            )) . '}';
+
+            $genreNamesArr    = $toTextArray(array_column($genres ?? [], 'name'));
+            $platformNamesArr = $toTextArray(array_map(
+                fn ($p) => strtolower($p['platform']['name'] ?? ''),
+                array_filter($platforms ?? [], fn ($p) => !empty($p['platform']['name']))
+            ));
+            $tagNamesArr      = $toTextArray(array_map(
+                fn ($t) => strtolower($t['name'] ?? ''),
+                array_filter($tags ?? [], fn ($t) => !empty($t['name']))
+            ));
+
             $buffer[] = [
                 'slug'                   => $slug,
                 'igdb_id'                => null,
@@ -140,6 +155,9 @@ class ImportRawgCsv extends Command
                 'rating'                 => $ratingRaw !== null && $ratingRaw !== 'nan' ? round((float) $ratingRaw, 2) : null,
                 'metacritic'             => $metacRaw !== null && $metacRaw !== 'nan' ? (int) $metacRaw : null,
                 'background_image'       => (($img = $get($row, 'background_image')) && str_starts_with($img, 'http')) ? $img : null,
+                'genre_names'            => $genreNamesArr,
+                'platform_names'         => $platformNamesArr,
+                'tag_names'              => $tagNamesArr,
                 'platforms'              => json_encode($platforms ?? []),
                 'short_screenshots'      => json_encode($shortScreenshots ?? []),
                 'details_data'           => json_encode($detailsData),
@@ -200,6 +218,7 @@ class ImportRawgCsv extends Command
     {
         $columns = [
             'name', 'released', 'rating', 'metacritic', 'background_image',
+            'genre_names', 'platform_names', 'tag_names',
             'platforms', 'short_screenshots', 'details_data', 'details_crawled_at',
             'updated_at',
         ];
