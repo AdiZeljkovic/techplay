@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "@/lib/axios";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Star, Gamepad2, ChevronLeft, ChevronRight, Sword } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Star, Gamepad2, ChevronLeft, ChevronRight, Sword, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
@@ -36,7 +36,13 @@ interface Props {
     initialData?: HubResponse | null;
 }
 
-const SORT_OPTIONS    = [{ value: "rating", label: "Top Rated" }, { value: "metacritic", label: "Metacritic" }, { value: "released", label: "Newest" }, { value: "name", label: "A–Z" }];
+const SORT_OPTIONS = [
+    { value: "rating",     label: "Top Rated" },
+    { value: "metacritic", label: "Metacritic" },
+    { value: "released",   label: "Newest" },
+    { value: "name",       label: "A–Z" },
+];
+
 const SCORE_OPTIONS   = [{ value: "", label: "Any" }, { value: "60", label: "60+" }, { value: "70", label: "70+" }, { value: "80", label: "80+" }, { value: "90", label: "90+" }];
 const ERA_OPTIONS     = [{ value: "", label: "All Time", from: "", to: "" }, { value: "2020s", label: "2020s", from: "2020", to: "2029" }, { value: "2010s", label: "2010s", from: "2010", to: "2019" }, { value: "2000s", label: "2000s", from: "2000", to: "2009" }, { value: "90s", label: "90s", from: "1990", to: "1999" }];
 const PLATFORM_OPTIONS = [{ value: "", label: "All" }, { value: "pc", label: "PC" }, { value: "playstation", label: "PlayStation" }, { value: "xbox", label: "Xbox" }, { value: "nintendo", label: "Nintendo" }, { value: "mobile", label: "Mobile" }];
@@ -44,7 +50,7 @@ const PLATFORM_OPTIONS = [{ value: "", label: "All" }, { value: "pc", label: "PC
 function Pill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
     return (
         <button onClick={onClick} className={cn(
-            "flex items-center px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0",
+            "flex items-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0",
             active
                 ? "bg-[var(--accent)] text-white shadow-[0_0_15px_rgba(var(--accent-rgb),0.5)] scale-105"
                 : "text-white/70 hover:text-white hover:bg-white/5"
@@ -54,14 +60,22 @@ function Pill({ label, active, onClick }: { label: string; active: boolean; onCl
     );
 }
 
-function PillRow({ label, options, value, onChange }: { label: string; options: { value: string; label: string }[]; value: string; onChange: (v: string) => void }) {
+function FilterRow({ label, options, value, onChange }: { label: string; options: { value: string; label: string }[]; value: string; onChange: (v: string) => void }) {
     return (
-        <div className="bg-[#0f1221]/90 backdrop-blur-xl border border-white/10 rounded-2xl sm:rounded-full px-3 py-1.5 shadow-2xl flex items-center gap-1 overflow-x-auto" style={{ WebkitOverflowScrolling: "touch" }}>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/30 shrink-0 pr-2 pl-1">{label}</span>
-            <div className="w-px h-4 bg-white/10 shrink-0" />
-            {options.map((opt) => (
-                <Pill key={opt.value} label={opt.label} active={value === opt.value} onClick={() => onChange(opt.value)} />
-            ))}
+        <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-white/30 w-16 shrink-0 text-right">{label}</span>
+            <div className="flex items-center gap-1 flex-wrap">
+                {options.map((opt) => (
+                    <button key={opt.value} onClick={() => onChange(opt.value)} className={cn(
+                        "px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap",
+                        value === opt.value
+                            ? "bg-[var(--accent)] text-white"
+                            : "text-white/50 hover:text-white hover:bg-white/5 border border-white/10"
+                    )}>
+                        {opt.label}
+                    </button>
+                ))}
+            </div>
         </div>
     );
 }
@@ -81,7 +95,9 @@ export default function HubPage({ type, value, title, description, initialData }
     const [era, setEra]                     = useState("");
     const [platform, setPlatform]           = useState("");
     const [loading, setLoading]             = useState(false);
+    const [showFilters, setShowFilters]     = useState(false);
 
+    const hasAdvancedFilters = !!(metacriticMin || era || platform);
     const isDefaultState = page === 1 && sort === "rating" && !metacriticMin && !era && !platform;
 
     const buildUrl = useCallback(() => {
@@ -110,62 +126,99 @@ export default function HubPage({ type, value, title, description, initialData }
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
 
-            {/* Hero */}
-            <div className="relative w-full mb-10 bg-[#000B25] overflow-hidden">
-                {/* Background layers */}
+            {/* Hero — exact PageHero style */}
+            <div className="relative w-full h-[400px] mb-8 bg-[#000B25] overflow-hidden flex flex-col items-center justify-center text-center">
+                {/* Background */}
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#12082e] via-[#0d0725] to-[#060414]" />
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(80,30,160,0.35)_0%,transparent_70%)]" />
-                    <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: "radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.5) 1px, transparent 0)", backgroundSize: "32px 32px" }} />
-                    {/* Bottom fade into page bg */}
-                    <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[var(--bg-primary)] to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#1a103c] via-[#0d0725] to-[#000000]" />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(60,20,100,0.4)_0%,transparent_70%)] opacity-70" />
+                    <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.3) 1px, transparent 0)", backgroundSize: "40px 40px" }} />
                 </div>
 
-                {/* Content */}
-                <div className="relative z-10 flex flex-col items-center text-center px-4 pt-14 pb-10 gap-0">
-                    {/* Icon */}
-                    <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}
-                        className="mb-5 relative flex items-center justify-center w-16 h-16">
-                        <div className="absolute inset-0 blur-2xl bg-[var(--accent)]/40 rounded-full" />
-                        <div className="relative z-10 w-14 h-14 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/30 flex items-center justify-center">
-                            <Sword className="w-7 h-7 text-[var(--accent)]" />
-                        </div>
-                    </motion.div>
-
-                    {/* Title */}
-                    <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }}
-                        className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4 leading-tight">
+                {/* Title */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
+                    className="relative z-10 flex flex-col items-center gap-4 container mx-auto px-4">
+                    <div className="mb-2 relative">
+                        <div className="absolute inset-0 blur-xl bg-[var(--accent)]/50 rounded-full" />
+                        <Sword className="w-12 h-12 text-[var(--accent)] relative z-10" />
+                    </div>
+                    <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight drop-shadow-xl">
                         {title.split(" ").map((word, i) => (
-                            <span key={i} className={i === 1 ? "text-[var(--accent)] mx-1" : "mx-1"}>{word}</span>
+                            <span key={i} className={i === 1 ? "text-[var(--accent)]" : ""}>{word} </span>
                         ))}
-                    </motion.h1>
+                    </h1>
+                    <p className="text-lg md:text-xl text-white/60 max-w-2xl font-medium tracking-wide">{description}</p>
+                </motion.div>
 
-                    {/* Description + count */}
-                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}
-                        className="flex flex-col items-center gap-2 mb-8">
-                        <p className="text-base md:text-lg text-white/50 max-w-xl font-medium">{description}</p>
-                        {data && (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[var(--accent)] text-xs font-bold tracking-widest uppercase">
-                                {data.total.toLocaleString()} games
-                            </span>
-                        )}
-                    </motion.div>
+                {/* Single pill bar — sort + filters button */}
+                <div className="absolute bottom-6 sm:bottom-10 z-20 w-full px-2 sm:px-4 flex justify-center">
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.5 }}
+                        className="bg-[#0f1221]/90 backdrop-blur-xl border border-white/10 rounded-2xl sm:rounded-full p-1.5 shadow-2xl flex overflow-x-auto gap-1 items-center max-w-[95vw] sm:max-w-[90vw]"
+                        style={{ WebkitOverflowScrolling: "touch" }}>
 
-                    {/* Divider */}
-                    <div className="w-full max-w-3xl h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-6" />
+                        {/* Sort pills */}
+                        {SORT_OPTIONS.map((opt) => (
+                            <Pill key={opt.value} label={opt.label} active={sort === opt.value}
+                                onClick={() => { setSort(opt.value); setPage(1); }} />
+                        ))}
 
-                    {/* Filter pill rows */}
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }}
-                        className="flex flex-col items-center gap-2 w-full max-w-3xl">
-                        <PillRow label="Sort"     options={SORT_OPTIONS}     value={sort}          onChange={(v) => { setSort(v); setPage(1); }} />
-                        <PillRow label="Score"    options={SCORE_OPTIONS}    value={metacriticMin} onChange={(v) => { setMetacriticMin(v); setPage(1); }} />
-                        <PillRow label="Era"      options={ERA_OPTIONS}      value={era}           onChange={(v) => { setEra(v); setPage(1); }} />
-                        {type !== "platform" && (
-                            <PillRow label="Platform" options={PLATFORM_OPTIONS} value={platform}  onChange={(v) => { setPlatform(v); setPage(1); }} />
-                        )}
+                        {/* Divider */}
+                        <div className="w-px h-5 bg-white/10 mx-1 shrink-0" />
+
+                        {/* Filters toggle */}
+                        <button onClick={() => setShowFilters(v => !v)} className={cn(
+                            "flex items-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0",
+                            showFilters || hasAdvancedFilters
+                                ? "bg-white/10 text-white"
+                                : "text-white/60 hover:text-white hover:bg-white/5"
+                        )}>
+                            <SlidersHorizontal className="w-3.5 h-3.5" />
+                            Filters
+                            {hasAdvancedFilters && (
+                                <span className="w-4 h-4 rounded-full bg-[var(--accent)] text-white text-[9px] font-black flex items-center justify-center leading-none">
+                                    {[metacriticMin, era, platform].filter(Boolean).length}
+                                </span>
+                            )}
+                        </button>
                     </motion.div>
                 </div>
             </div>
+
+            {/* Advanced filters panel — slides in below hero */}
+            <AnimatePresence>
+                {showFilters && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                        className="overflow-hidden -mt-4 mb-6">
+                        <div className="container mx-auto px-4 pt-4">
+                            <div className="bg-[#0f1221]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl space-y-3">
+                                <div className="flex items-center justify-between mb-1">
+                                    <span className="text-xs font-bold uppercase tracking-widest text-white/40">Advanced Filters</span>
+                                    <div className="flex items-center gap-3">
+                                        {hasAdvancedFilters && (
+                                            <button onClick={() => { setMetacriticMin(""); setEra(""); setPlatform(""); setPage(1); }}
+                                                className="text-[11px] text-white/40 hover:text-white flex items-center gap-1 transition-colors">
+                                                <X className="w-3 h-3" /> Clear all
+                                            </button>
+                                        )}
+                                        <button onClick={() => setShowFilters(false)} className="text-white/30 hover:text-white transition-colors">
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                                <FilterRow label="Score"    options={SCORE_OPTIONS}    value={metacriticMin} onChange={(v) => { setMetacriticMin(v); setPage(1); }} />
+                                <FilterRow label="Era"      options={ERA_OPTIONS}      value={era}           onChange={(v) => { setEra(v); setPage(1); }} />
+                                {type !== "platform" && (
+                                    <FilterRow label="Platform" options={PLATFORM_OPTIONS} value={platform}  onChange={(v) => { setPlatform(v); setPage(1); }} />
+                                )}
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <div className="container mx-auto px-4">
                 {/* Result count */}
