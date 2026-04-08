@@ -37,7 +37,7 @@ interface Props {
 }
 
 const SORT_OPTIONS = [
-    { value: "rating",     label: "Top Rated" },
+    { value: "rating",     label: "Community Rating" },
     { value: "metacritic", label: "Metacritic" },
     { value: "released",   label: "Newest" },
     { value: "name",       label: "A–Z" },
