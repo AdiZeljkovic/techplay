@@ -5,9 +5,9 @@ import axios from "@/lib/axios";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Star, Gamepad2, ChevronLeft, ChevronRight, X, Sword } from "lucide-react";
-import PageHero from "@/components/ui/PageHero";
+import { Star, Gamepad2, ChevronLeft, ChevronRight, Sword } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { cn } from "@/lib/utils";
 
 interface Game {
     id: number;
@@ -36,37 +36,35 @@ interface Props {
     initialData?: HubResponse | null;
 }
 
-const SORT_OPTIONS = [
-    { value: "rating",     label: "Top Rated" },
-    { value: "metacritic", label: "Metacritic" },
-    { value: "released",   label: "Newest" },
-    { value: "name",       label: "A–Z" },
-];
+const SORT_OPTIONS    = [{ value: "rating", label: "Top Rated" }, { value: "metacritic", label: "Metacritic" }, { value: "released", label: "Newest" }, { value: "name", label: "A–Z" }];
+const SCORE_OPTIONS   = [{ value: "", label: "Any" }, { value: "60", label: "60+" }, { value: "70", label: "70+" }, { value: "80", label: "80+" }, { value: "90", label: "90+" }];
+const ERA_OPTIONS     = [{ value: "", label: "All Time", from: "", to: "" }, { value: "2020s", label: "2020s", from: "2020", to: "2029" }, { value: "2010s", label: "2010s", from: "2010", to: "2019" }, { value: "2000s", label: "2000s", from: "2000", to: "2009" }, { value: "90s", label: "90s", from: "1990", to: "1999" }];
+const PLATFORM_OPTIONS = [{ value: "", label: "All" }, { value: "pc", label: "PC" }, { value: "playstation", label: "PlayStation" }, { value: "xbox", label: "Xbox" }, { value: "nintendo", label: "Nintendo" }, { value: "mobile", label: "Mobile" }];
 
-const METACRITIC_OPTIONS = [
-    { value: "",   label: "Any Score" },
-    { value: "60", label: "60+" },
-    { value: "70", label: "70+" },
-    { value: "80", label: "80+" },
-    { value: "90", label: "90+" },
-];
+function Pill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+    return (
+        <button onClick={onClick} className={cn(
+            "flex items-center px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0",
+            active
+                ? "bg-[var(--accent)] text-white shadow-[0_0_15px_rgba(var(--accent-rgb),0.5)] scale-105"
+                : "text-white/70 hover:text-white hover:bg-white/5"
+        )}>
+            {label}
+        </button>
+    );
+}
 
-const ERA_OPTIONS = [
-    { value: "",      label: "All Time", from: "",     to: "" },
-    { value: "2020s", label: "2020s",    from: "2020", to: "2029" },
-    { value: "2010s", label: "2010s",    from: "2010", to: "2019" },
-    { value: "2000s", label: "2000s",    from: "2000", to: "2009" },
-    { value: "90s",   label: "90s",      from: "1990", to: "1999" },
-];
-
-const PLATFORM_OPTIONS = [
-    { value: "",            label: "All Platforms" },
-    { value: "pc",          label: "PC" },
-    { value: "playstation", label: "PlayStation" },
-    { value: "xbox",        label: "Xbox" },
-    { value: "nintendo",    label: "Nintendo" },
-    { value: "mobile",      label: "Mobile" },
-];
+function PillRow({ label, options, value, onChange }: { label: string; options: { value: string; label: string }[]; value: string; onChange: (v: string) => void }) {
+    return (
+        <div className="bg-[#0f1221]/90 backdrop-blur-xl border border-white/10 rounded-2xl sm:rounded-full px-3 py-1.5 shadow-2xl flex items-center gap-1 overflow-x-auto" style={{ WebkitOverflowScrolling: "touch" }}>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-white/30 shrink-0 pr-2 pl-1">{label}</span>
+            <div className="w-px h-4 bg-white/10 shrink-0" />
+            {options.map((opt) => (
+                <Pill key={opt.value} label={opt.label} active={value === opt.value} onClick={() => onChange(opt.value)} />
+            ))}
+        </div>
+    );
+}
 
 function metacriticColor(score: number) {
     if (score >= 90) return "bg-green-500 text-white";
@@ -75,42 +73,14 @@ function metacriticColor(score: number) {
     return "bg-red-500 text-white";
 }
 
-function FilterPill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
-    return (
-        <button onClick={onClick} className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 ${
-            active
-                ? "bg-[var(--accent)] text-white shadow-[0_0_15px_rgba(var(--accent-rgb),0.4)] scale-105"
-                : "text-white/70 hover:text-white hover:bg-white/5"
-        }`}>
-            {label}
-        </button>
-    );
-}
-
-function FilterRow({ label, options, value, onChange }: {
-    label: string;
-    options: { value: string; label: string }[];
-    value: string;
-    onChange: (v: string) => void;
-}) {
-    return (
-        <div className="flex items-center gap-1 flex-wrap">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/30 w-20 shrink-0 text-right pr-2">{label}</span>
-            {options.map((opt) => (
-                <FilterPill key={opt.value} label={opt.label} active={value === opt.value} onClick={() => onChange(opt.value)} />
-            ))}
-        </div>
-    );
-}
-
 export default function HubPage({ type, value, title, description, initialData }: Props) {
-    const [data, setData]               = useState<HubResponse | null>(initialData ?? null);
-    const [page, setPage]               = useState(1);
-    const [sort, setSort]               = useState("rating");
+    const [data, setData]                   = useState<HubResponse | null>(initialData ?? null);
+    const [page, setPage]                   = useState(1);
+    const [sort, setSort]                   = useState("rating");
     const [metacriticMin, setMetacriticMin] = useState("");
-    const [era, setEra]                 = useState("");
-    const [platform, setPlatform]       = useState("");
-    const [loading, setLoading]         = useState(false);
+    const [era, setEra]                     = useState("");
+    const [platform, setPlatform]           = useState("");
+    const [loading, setLoading]             = useState(false);
 
     const isDefaultState = page === 1 && sort === "rating" && !metacriticMin && !era && !platform;
 
@@ -136,48 +106,55 @@ export default function HubPage({ type, value, title, description, initialData }
     }, [buildUrl]);
 
     const handlePage = (p: number) => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); };
-    const resetFilters = () => { setMetacriticMin(""); setEra(""); setPlatform(""); setSort("rating"); setPage(1); };
-    const hasActiveFilters = !!(metacriticMin || era || platform || sort !== "rating");
-
-    // Build breadcrumb for PageHero title word coloring
-    const heroTitle = title; // e.g. "Best RPG Games"
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
-            <PageHero
-                title={heroTitle}
-                description={description}
-                icon={Sword}
-            />
 
-            <div className="container mx-auto px-4 py-8">
-
-                {/* Filter panel — styled like PageHero nav pill */}
-                <div className="mb-8 bg-[#0f1221]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl space-y-2">
-                    <FilterRow label="Sort"     options={SORT_OPTIONS}       value={sort}          onChange={(v) => { setSort(v); setPage(1); }} />
-                    <FilterRow label="Score"    options={METACRITIC_OPTIONS} value={metacriticMin} onChange={(v) => { setMetacriticMin(v); setPage(1); }} />
-                    <FilterRow label="Era"      options={ERA_OPTIONS}        value={era}           onChange={(v) => { setEra(v); setPage(1); }} />
-                    {type !== "platform" && (
-                        <FilterRow label="Platform" options={PLATFORM_OPTIONS}  value={platform}      onChange={(v) => { setPlatform(v); setPage(1); }} />
-                    )}
-                    {hasActiveFilters && (
-                        <div className="flex justify-end pt-1">
-                            <button onClick={resetFilters} className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white transition-colors">
-                                <X className="w-3 h-3" /> Reset filters
-                            </button>
-                        </div>
-                    )}
+            {/* Hero — same style as PageHero */}
+            <div className="relative w-full mb-8 bg-[#000B25] overflow-hidden flex flex-col items-center justify-center text-center" style={{ minHeight: 380 }}>
+                {/* Background */}
+                <div className="absolute inset-0 z-0">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#1a103c] via-[#0d0725] to-[#000000]" />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(60,20,100,0.4)_0%,transparent_70%)] opacity-70" />
+                    <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.3) 1px, transparent 0)", backgroundSize: "40px 40px" }} />
                 </div>
 
-                {/* Count + page info */}
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
-                    <h2 className="text-xl font-semibold text-white">
-                        {title}
-                    </h2>
+                {/* Title block */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
+                    className="relative z-10 flex flex-col items-center gap-4 px-4 pb-36">
+                    <div className="mb-2 relative">
+                        <div className="absolute inset-0 blur-xl bg-[var(--accent)]/50 rounded-full" />
+                        <Sword className="w-12 h-12 text-[var(--accent)] relative z-10" />
+                    </div>
+                    <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight drop-shadow-xl">
+                        {title.split(" ").map((word, i) => (
+                            <span key={i} className={i === 1 ? "text-[var(--accent)]" : ""}>{word} </span>
+                        ))}
+                    </h1>
+                    <p className="text-lg md:text-xl text-white/60 max-w-2xl font-medium tracking-wide">{description}</p>
                     {data && (
-                        <span className="text-sm text-[var(--text-muted)] font-mono">
-                            {data.total.toLocaleString()} GAMES FOUND
-                        </span>
+                        <p className="text-sm font-semibold text-[var(--accent)]">{data.total.toLocaleString()} games</p>
+                    )}
+                </motion.div>
+
+                {/* Floating filter pills — anchored to bottom of hero */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.5 }}
+                    className="absolute bottom-6 z-20 w-full px-4 flex flex-col items-center gap-2">
+                    <PillRow label="Sort"     options={SORT_OPTIONS}     value={sort}          onChange={(v) => { setSort(v); setPage(1); }} />
+                    <PillRow label="Score"    options={SCORE_OPTIONS}    value={metacriticMin} onChange={(v) => { setMetacriticMin(v); setPage(1); }} />
+                    <PillRow label="Era"      options={ERA_OPTIONS}      value={era}           onChange={(v) => { setEra(v); setPage(1); }} />
+                    {type !== "platform" && (
+                        <PillRow label="Platform" options={PLATFORM_OPTIONS} value={platform}  onChange={(v) => { setPlatform(v); setPage(1); }} />
+                    )}
+                </motion.div>
+            </div>
+
+            <div className="container mx-auto px-4">
+                {/* Result count */}
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
+                    <h2 className="text-xl font-semibold text-white">{title}</h2>
+                    {data && (
+                        <span className="text-sm text-[var(--text-muted)] font-mono">{data.total.toLocaleString()} GAMES FOUND</span>
                     )}
                 </div>
 
@@ -193,35 +170,25 @@ export default function HubPage({ type, value, title, description, initialData }
                         {data.results.map((game, idx) => (
                             <Link key={game.id} href={`/games/${game.slug}`}>
                                 <motion.article
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
+                                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: idx * 0.03, duration: 0.3 }}
                                     className="group h-full bg-[var(--bg-card)] border border-[var(--border)] rounded-xl overflow-hidden hover:border-[var(--accent)] hover:shadow-lg hover:shadow-[var(--accent)]/10 transition-all duration-300"
                                 >
-                                    {/* Cover image */}
                                     <div className="relative h-48 w-full overflow-hidden bg-[var(--bg-elevated)]">
                                         {game.background_image ? (
-                                            <Image
-                                                src={game.background_image}
-                                                alt={game.name}
-                                                fill
+                                            <Image src={game.background_image} alt={game.name} fill
                                                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                                className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                            />
+                                                className="object-cover group-hover:scale-105 transition-transform duration-500" />
                                         ) : (
                                             <div className="absolute inset-0 flex items-center justify-center">
                                                 <Gamepad2 className="w-10 h-10 text-white/10" />
                                             </div>
                                         )}
-
-                                        {/* Metacritic badge */}
                                         {game.metacritic ? (
                                             <div className={`absolute top-3 right-3 w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm backdrop-blur-md border border-white/10 ${metacriticColor(game.metacritic)}`}>
                                                 {game.metacritic}
                                             </div>
                                         ) : null}
-
-                                        {/* Year badge */}
                                         {game.released && (
                                             <div className="absolute bottom-3 left-3">
                                                 <span className="px-2.5 py-1 bg-black/60 backdrop-blur-sm text-white text-xs font-semibold rounded">
@@ -230,8 +197,6 @@ export default function HubPage({ type, value, title, description, initialData }
                                             </div>
                                         )}
                                     </div>
-
-                                    {/* Content */}
                                     <div className="p-4">
                                         <h3 className="text-base font-semibold text-white line-clamp-2 group-hover:text-[var(--accent)] transition-colors mb-3 leading-snug">
                                             {game.name}
@@ -264,18 +229,15 @@ export default function HubPage({ type, value, title, description, initialData }
                     </div>
                 )}
 
-                {/* Pagination */}
                 {data && data.last_page > 1 && (
                     <div className="flex items-center justify-center gap-2 mb-12">
-                        <Button variant="outline" size="sm"
-                            onClick={() => handlePage(page - 1)} disabled={page === 1 || loading}>
+                        <Button variant="outline" size="sm" onClick={() => handlePage(page - 1)} disabled={page === 1 || loading}>
                             <ChevronLeft className="w-4 h-4" /> Previous
                         </Button>
                         <div className="px-4 py-2 bg-[var(--bg-card)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-secondary)]">
                             Page <span className="font-bold text-white">{page}</span> of {data.last_page.toLocaleString()}
                         </div>
-                        <Button variant="outline" size="sm"
-                            onClick={() => handlePage(page + 1)} disabled={page === data.last_page || loading}>
+                        <Button variant="outline" size="sm" onClick={() => handlePage(page + 1)} disabled={page === data.last_page || loading}>
                             Next <ChevronRight className="w-4 h-4" />
                         </Button>
                     </div>
