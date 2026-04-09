@@ -434,9 +434,7 @@ class SitemapController extends Controller
         $perPage = 50000;
         $xml = $this->xmlHeader();
 
-        Game::whereNotNull('details_crawled_at')
-            ->whereRaw("details_data->>'description_raw' IS NOT NULL")
-            ->whereRaw("LENGTH(details_data->>'description_raw') > 50")
+        Game::where('has_description', true)
             ->select('slug', 'details_crawled_at')
             ->orderBy('slug')
             ->offset(($page - 1) * $perPage)
