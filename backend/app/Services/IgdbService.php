@@ -182,7 +182,10 @@ QUERY;
 
     public function getGameDetails(string $slug): ?array
     {
-        $game = Game::where('slug', $slug)->whereNotNull('details_crawled_at')->first();
+        $game = Game::where('slug', $slug)
+            ->whereNotNull('details_crawled_at')
+            ->select(['details_crawled_at', 'details_data'])
+            ->first();
         if ($game && $game->details_crawled_at->gt(now()->subDays(30))) {
             return $game->details_data;
         }
@@ -254,32 +257,37 @@ QUERY;
 
     public function getGameScreenshots(string $slug): ?array
     {
-        $game = Game::where('slug', $slug)->first();
-        return $game?->screenshots_data ?? ['count' => 0, 'results' => []];
+        return Cache::remember("game:{$slug}:screenshots", 86400, function () use ($slug) {
+            return Game::where('slug', $slug)->value('screenshots_data') ?? ['count' => 0, 'results' => []];
+        });
     }
 
     public function getGameMovies(string $slug): ?array
     {
-        $game = Game::where('slug', $slug)->first();
-        return $game?->movies_data ?? ['count' => 0, 'results' => []];
+        return Cache::remember("game:{$slug}:movies", 86400, function () use ($slug) {
+            return Game::where('slug', $slug)->value('movies_data') ?? ['count' => 0, 'results' => []];
+        });
     }
 
     public function getGameSeries(string $slug): ?array
     {
-        $game = Game::where('slug', $slug)->first();
-        return $game?->series_data ?? ['count' => 0, 'results' => []];
+        return Cache::remember("game:{$slug}:series", 86400, function () use ($slug) {
+            return Game::where('slug', $slug)->value('series_data') ?? ['count' => 0, 'results' => []];
+        });
     }
 
     public function getGameSuggested(string $slug): ?array
     {
-        $game = Game::where('slug', $slug)->first();
-        return $game?->suggested_data ?? ['count' => 0, 'results' => []];
+        return Cache::remember("game:{$slug}:suggested", 86400, function () use ($slug) {
+            return Game::where('slug', $slug)->value('suggested_data') ?? ['count' => 0, 'results' => []];
+        });
     }
 
     public function getGameAdditions(string $slug): ?array
     {
-        $game = Game::where('slug', $slug)->first();
-        return $game?->additions_data ?? ['count' => 0, 'results' => []];
+        return Cache::remember("game:{$slug}:additions", 86400, function () use ($slug) {
+            return Game::where('slug', $slug)->value('additions_data') ?? ['count' => 0, 'results' => []];
+        });
     }
 
     // -------------------------------------------------------------------------

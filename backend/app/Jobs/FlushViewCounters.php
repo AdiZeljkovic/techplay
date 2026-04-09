@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Flush view counters from Redis to database.
- * This job should be scheduled to run every 5 minutes.
+ * Uses SCAN instead of KEYS to avoid blocking Redis on large keyspaces.
  */
 class FlushViewCounters implements ShouldQueue
 {
@@ -20,91 +20,43 @@ class FlushViewCounters implements ShouldQueue
 
     public function handle(): void
     {
-        $this->flushThreadViews();
-        $this->flushArticleViews();
-        $this->flushAdViews();
+        $this->flushPattern('views:thread:*',  'threads',      'view_count');
+        $this->flushPattern('views:article:*', 'articles',     'views');
+        $this->flushPattern('views:ad:*',      'ad_campaigns', 'view_count');
+        $this->flushPattern('clicks:ad:*',     'ad_campaigns', 'click_count');
     }
 
-    /**
-     * Flush thread view counts
-     */
-    protected function flushThreadViews(): void
+    private function flushPattern(string $pattern, string $table, string $column): void
     {
-        $keys = Redis::keys('views:thread:*');
+        $prefix  = config('database.redis.options.prefix', '');
+        $cursor  = '0';
 
-        foreach ($keys as $key) {
-            // Extract thread ID from key
-            $threadId = str_replace('views:thread:', '', $key);
-            $threadId = str_replace(config('database.redis.options.prefix', ''), '', $threadId);
+        do {
+            [$cursor, $keys] = Redis::scan($cursor, ['match' => $pattern, 'count' => 100]);
 
-            $count = (int) Redis::get($key);
+            if (empty($keys)) {
+                continue;
+            }
 
-            if ($count > 0) {
-                DB::table('threads')
-                    ->where('id', $threadId)
-                    ->increment('view_count', $count);
+            foreach ($keys as $key) {
+                $count = (int) Redis::get($key);
 
+                if ($count <= 0) {
+                    continue;
+                }
+
+                // Strip Redis prefix to get the raw ID
+                $id = str_replace([$prefix, ltrim($pattern, '*'), ':'], '', $key);
+                // More reliable: extract the last segment after the last colon
+                $id = (int) substr($key, strrpos($key, ':') + 1);
+
+                if ($id <= 0) {
+                    continue;
+                }
+
+                DB::table($table)->where('id', $id)->increment($column, $count);
                 Redis::del($key);
             }
-        }
-    }
-
-    /**
-     * Flush article view counts
-     */
-    protected function flushArticleViews(): void
-    {
-        $keys = Redis::keys('views:article:*');
-
-        foreach ($keys as $key) {
-            $articleId = str_replace('views:article:', '', $key);
-            $articleId = str_replace(config('database.redis.options.prefix', ''), '', $articleId);
-
-            $count = (int) Redis::get($key);
-
-            if ($count > 0) {
-                DB::table('articles')
-                    ->where('id', $articleId)
-                    ->increment('views', $count);
-
-                Redis::del($key);
-            }
-        }
-    }
-
-    /**
-     * Flush ad view/click counts
-     */
-    protected function flushAdViews(): void
-    {
-        // Flush view counts
-        $viewKeys = Redis::keys('views:ad:*');
-        foreach ($viewKeys as $key) {
-            $adId = str_replace('views:ad:', '', $key);
-            $adId = str_replace(config('database.redis.options.prefix', ''), '', $adId);
-
-            $count = (int) Redis::get($key);
-            if ($count > 0) {
-                DB::table('ad_campaigns')
-                    ->where('id', $adId)
-                    ->increment('view_count', $count);
-                Redis::del($key);
-            }
-        }
-
-        // Flush click counts
-        $clickKeys = Redis::keys('clicks:ad:*');
-        foreach ($clickKeys as $key) {
-            $adId = str_replace('clicks:ad:', '', $key);
-            $adId = str_replace(config('database.redis.options.prefix', ''), '', $adId);
-
-            $count = (int) Redis::get($key);
-            if ($count > 0) {
-                DB::table('ad_campaigns')
-                    ->where('id', $adId)
-                    ->increment('click_count', $count);
-                Redis::del($key);
-            }
-        }
+        } while ($cursor !== '0');
     }
 }
