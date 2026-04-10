@@ -86,17 +86,12 @@ const nextConfig: NextConfig = {
     webpackBuildWorker: true,
   },
 
-  // Keep existing image config with performance enhancements
+  // Images: disable server-side processing for external CDN images.
+  // media.rawg.io is already a CDN — Next.js optimization creates millions of cached
+  // variants on disk (16+ per image × 900k games = disk exhaustion).
+  // <Image> component still provides lazy loading and CLS prevention without caching.
   images: {
-    // Prefer modern image formats for better compression
-    formats: ['image/avif', 'image/webp'],
-
-    // Device sizes for responsive images
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-
-    // Minimize layout shift
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
+    unoptimized: true,
 
     remotePatterns: [
       {

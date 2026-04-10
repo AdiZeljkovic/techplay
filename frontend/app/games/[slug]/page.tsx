@@ -13,23 +13,12 @@ import GameTrailersPlayer from "@/components/games/GameTrailersPlayer";
 import GameCountdownTimer from "@/components/games/GameCountdownTimer";
 import GameRating from "@/components/games/GameRating";
 
-/* ─── ISR config ────────────────────────────────────────────────────────────── */
+/* ─── Rendering: SSR on every request, Cloudflare caches at edge ─────────────
+   ISR disabled — 900k game slugs create millions of files and exhaust disk/inodes.
+   Cloudflare CDN caches page responses; Next.js writes nothing to disk.
+─────────────────────────────────────────────────────────────────────────────── */
 
-export const revalidate    = 2592000; // 30 days
-export const dynamicParams = true;       // unknown slugs → dynamic fallback
-
-/* ─── generateStaticParams ──────────────────────────────────────────────────── */
-
-export async function generateStaticParams() {
-    try {
-        const res = await fetch(`${getApiUrl()}/games/crawled-slugs`, { cache: "no-store" });
-        if (!res.ok) return [];
-        const slugs: string[] = await res.json();
-        return slugs.map((slug) => ({ slug }));
-    } catch {
-        return [];
-    }
-}
+export const dynamic = 'force-dynamic';
 
 /* ─── Types ─────────────────────────────────────────────────────────────────── */
 
