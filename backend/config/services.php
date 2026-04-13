@@ -105,5 +105,10 @@ return [
         'base_url' => env('PRIVEE_BASE_URL', 'https://38wzs9wt1a.execute-api.eu-central-1.amazonaws.com/'),
     ],
 
+    'mobygames' => [
+        'api_key'  => env('MOBY_API_KEY'),
+        'base_url' => 'https://api.mobygames.com/v1',
+    ],
+
 ];
 

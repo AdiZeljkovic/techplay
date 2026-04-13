@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Game extends Model
 {
     protected $fillable = [
         'slug',
-        'igdb_id',
+        'moby_id',
+        'moby_group_id',
+        'moby_group_name',
         'name',
         'released',
         'rating',
@@ -48,5 +51,13 @@ class Game extends Model
         'additions_crawled_at'   => 'datetime',
         'released'               => 'date',
         'rating'                 => 'float',
+        'moby_id'                => 'integer',
+        'moby_group_id'          => 'integer',
     ];
+
+    public function companies(): BelongsToMany
+    {
+        return $this->belongsToMany(GameCompany::class, 'game_company', 'game_id', 'game_company_id')
+            ->withPivot('role');
+    }
 }

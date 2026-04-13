@@ -10,23 +10,16 @@ import PageHero from "@/components/ui/PageHero";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
-interface ParentPlatform {
-    platform: { id: number; name: string; slug: string };
-}
-
 interface Game {
     id: number;
     name: string;
     slug: string;
     background_image: string;
-    released: string;
-    tba: boolean;
-    metacritic: number;
+    released: string | null;
     rating: number;
-    ratings_count: number;
-    genres: { id: number; name: string }[];
-    parent_platforms: ParentPlatform[];
-    short_screenshots: { id: number; image: string }[];
+    metacritic: null;
+    platforms: { platform_id: number; platform_name: string }[];
+    short_screenshots: { image: string; thumbnail_image?: string }[];
 }
 
 interface GamesResponse {
@@ -36,66 +29,44 @@ interface GamesResponse {
     previous: string | null;
 }
 
+// Genre names match MobyGames "Basic Genres" values stored in genre_names[]
 const GENRES = [
-    { id: "",  name: "All Genres" },
-    { id: "4",  name: "Action" },
-    { id: "3",  name: "Adventure" },
-    { id: "5",  name: "RPG" },
-    { id: "10", name: "Strategy" },
-    { id: "2",  name: "Shooter" },
-    { id: "7",  name: "Puzzle" },
-    { id: "1",  name: "Racing" },
-    { id: "15", name: "Sports" },
-    { id: "6",  name: "Fighting" },
-    { id: "83", name: "Platformer" },
-    { id: "14", name: "Simulation" },
-    { id: "51", name: "Indie" },
-    { id: "59", name: "MMO" },
+    { id: "",           name: "All Genres" },
+    { id: "Action",     name: "Action" },
+    { id: "Adventure",  name: "Adventure" },
+    { id: "Role-Playing (RPG)", name: "RPG" },
+    { id: "Strategy / tactics", name: "Strategy" },
+    { id: "Simulation", name: "Simulation" },
+    { id: "Sports",     name: "Sports" },
+    { id: "Racing / Driving", name: "Racing" },
+    { id: "Puzzle",     name: "Puzzle" },
+    { id: "Fighting",   name: "Fighting" },
+    { id: "Shooter",    name: "Shooter" },
 ];
 
+// Platform names match normalized platform_names[] values stored in DB
 const PLATFORMS = [
-    { id: "",    name: "All Platforms" },
-    { id: "4",   name: "PC" },
-    { id: "187", name: "PlayStation 5" },
-    { id: "18",  name: "PlayStation 4" },
-    { id: "186", name: "Xbox Series X" },
-    { id: "1",   name: "Xbox One" },
-    { id: "7",   name: "Nintendo Switch" },
-    { id: "3",   name: "iOS" },
-    { id: "21",  name: "Android" },
+    { id: "",            name: "All Platforms" },
+    { id: "PC",          name: "PC" },
+    { id: "PlayStation", name: "PlayStation" },
+    { id: "Xbox",        name: "Xbox" },
+    { id: "Nintendo",    name: "Nintendo" },
+    { id: "Mobile",      name: "Mobile" },
 ];
 
 const SORT_OPTIONS = [
-    { value: "-metacritic", label: "Metacritic Score" },
-    { value: "-rating",     label: "RAWG Rating" },
-    { value: "-added",      label: "Most Popular" },
-    { value: "-released",   label: "Newest First" },
-    { value: "released",    label: "Oldest First" },
-    { value: "name",        label: "A–Z" },
-    { value: "-name",       label: "Z–A" },
+    { value: "-rating",   label: "MobyScore" },
+    { value: "-released", label: "Newest First" },
+    { value: "released",  label: "Oldest First" },
+    { value: "name",      label: "A–Z" },
+    { value: "-name",     label: "Z–A" },
 ];
 
-const PLATFORM_ICONS: Record<string, string> = {
-    pc:          "PC",
-    playstation: "PS",
-    xbox:        "XB",
-    nintendo:    "NS",
-    mac:         "Mac",
-    linux:       "Linux",
-    ios:         "iOS",
-    android:     "And",
-};
-
-const getMetacriticColor = (score: number) => {
-    if (score >= 75) return "bg-green-600 text-white";
-    if (score >= 50) return "bg-yellow-500 text-black";
-    return "bg-red-600 text-white";
-};
-
+// MobyGames rating is 0-10 scale
 const getRatingColor = (rating: number) => {
-    if (rating >= 4)   return "text-green-400";
-    if (rating >= 3)   return "text-yellow-400";
-    if (rating >= 2)   return "text-orange-400";
+    if (rating >= 7.5) return "text-green-400";
+    if (rating >= 5)   return "text-yellow-400";
+    if (rating >= 3)   return "text-orange-400";
     return "text-red-400";
 };
 
@@ -104,7 +75,7 @@ export default function GamesClientPage() {
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [genre, setGenre]                 = useState("");
     const [platform, setPlatform]           = useState("");
-    const [ordering, setOrdering]           = useState("-metacritic");
+    const [ordering, setOrdering]           = useState("-rating");
     const [page, setPage]                   = useState(1);
     const [filtersOpen, setFiltersOpen]     = useState(false);
 
@@ -130,13 +101,13 @@ export default function GamesClientPage() {
     const { data, isLoading } = useSWR<GamesResponse>(buildUrl(), fetcher);
 
     const totalPages = data ? Math.ceil(data.count / 24) : 0;
-    const hasFilters = genre || platform || ordering !== "-metacritic" || debouncedSearch;
+    const hasFilters = genre || platform || ordering !== "-rating" || debouncedSearch;
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)]">
             <PageHero
                 title="Game Database"
-                description="Explore thousands of games powered by RAWG.io. Find your next adventure."
+                description="Explore thousands of games from the MobyGames database. Find your next adventure."
                 icon={Database}
             />
 
@@ -192,7 +163,7 @@ export default function GamesClientPage() {
                                 {SORT_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                             </select>
                             {hasFilters && (
-                                <button onClick={() => { setGenre(""); setPlatform(""); setOrdering("-metacritic"); setSearch(""); setDebouncedSearch(""); }}
+                                <button onClick={() => { setGenre(""); setPlatform(""); setOrdering("-rating"); setSearch(""); setDebouncedSearch(""); }}
                                     className="text-xs text-[var(--accent)] hover:underline font-medium px-2">
                                     Clear filters
                                 </button>
@@ -220,7 +191,7 @@ export default function GamesClientPage() {
                                 {SORT_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                             </select>
                             {hasFilters && (
-                                <button onClick={() => { setGenre(""); setPlatform(""); setOrdering("-metacritic"); setSearch(""); setDebouncedSearch(""); setFiltersOpen(false); }}
+                                <button onClick={() => { setGenre(""); setPlatform(""); setOrdering("-rating"); setSearch(""); setDebouncedSearch(""); setFiltersOpen(false); }}
                                     className="text-sm text-[var(--accent)] font-medium text-center py-1">
                                     Clear all filters
                                 </button>
@@ -270,7 +241,7 @@ export default function GamesClientPage() {
                         <p className="text-[var(--text-secondary)] mb-6">
                             {search ? `No results for "${search}".` : "Try different filters."}
                         </p>
-                        <button onClick={() => { setSearch(""); setDebouncedSearch(""); setGenre(""); setPlatform(""); setOrdering("-metacritic"); }}
+                        <button onClick={() => { setSearch(""); setDebouncedSearch(""); setGenre(""); setPlatform(""); setOrdering("-rating"); }}
                             className="text-[var(--accent)] hover:underline font-medium">
                             Clear all filters
                         </button>
@@ -289,6 +260,21 @@ function GameCard({ game }: { game: Game }) {
     const displayImg = hoverIdx !== null && screenshots[hoverIdx]
         ? screenshots[hoverIdx].image
         : imgSrc;
+
+    // Deduplicate platform names for display (show top-level family names)
+    const platformLabels = [...new Set(
+        (game.platforms ?? [])
+            .map((p) => {
+                const n = p.platform_name;
+                if (/playstation/i.test(n)) return "PS";
+                if (/xbox/i.test(n))        return "XB";
+                if (/nintendo|switch/i.test(n)) return "NS";
+                if (/windows|dos|linux|mac/i.test(n)) return "PC";
+                if (/android/i.test(n))     return "And";
+                if (/iphone|ios/i.test(n))  return "iOS";
+                return n.slice(0, 3).toUpperCase();
+            })
+    )].slice(0, 4);
 
     return (
         <Link
@@ -313,25 +299,13 @@ function GameCard({ game }: { game: Game }) {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
 
-                {/* TBA or Metacritic badge */}
-                <div className="absolute top-2.5 right-2.5 flex gap-1.5">
-                    {game.tba && (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[var(--accent)] text-white shadow-lg">TBA</span>
-                    )}
-                    {game.metacritic ? (
-                        <span className={`px-2 py-0.5 rounded text-xs font-bold shadow-lg ${getMetacriticColor(game.metacritic)}`}>
-                            {game.metacritic}
-                        </span>
-                    ) : null}
-                </div>
-
-                {/* Platform icons */}
-                {game.parent_platforms && game.parent_platforms.length > 0 && (
+                {/* Platform badges */}
+                {platformLabels.length > 0 && (
                     <div className="absolute bottom-2 left-2.5 flex gap-1 flex-wrap">
-                        {game.parent_platforms.slice(0, 4).map(({ platform }) => (
-                            <span key={platform.slug}
+                        {platformLabels.map((label) => (
+                            <span key={label}
                                 className="px-1.5 py-0.5 bg-black/70 backdrop-blur-sm text-[9px] font-bold text-white/80 rounded border border-white/10">
-                                {PLATFORM_ICONS[platform.slug] ?? platform.name.slice(0, 3).toUpperCase()}
+                                {label}
                             </span>
                         ))}
                     </div>
@@ -352,22 +326,14 @@ function GameCard({ game }: { game: Game }) {
 
             {/* Body */}
             <div className="p-4 flex-1 flex flex-col">
-                <h3 className="text-sm font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--accent)] transition-colors line-clamp-2 leading-snug">
+                <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3 group-hover:text-[var(--accent)] transition-colors line-clamp-2 leading-snug">
                     {game.name}
                 </h3>
-
-                <div className="flex flex-wrap gap-1 mb-3">
-                    {game.genres?.slice(0, 2).map(g => (
-                        <span key={g.id} className="bg-[var(--bg-elevated)] px-2 py-0.5 rounded text-[10px] text-[var(--text-muted)] border border-white/5">
-                            {g.name}
-                        </span>
-                    ))}
-                </div>
 
                 <div className="mt-auto flex items-center justify-between pt-3 border-t border-white/5">
                     <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                         <Calendar className="w-3 h-3" />
-                        <span>{game.tba ? "TBA" : (game.released?.slice(0, 4) ?? "—")}</span>
+                        <span>{game.released?.slice(0, 4) ?? "—"}</span>
                     </div>
 
                     {Number(game.rating) > 0 && (
