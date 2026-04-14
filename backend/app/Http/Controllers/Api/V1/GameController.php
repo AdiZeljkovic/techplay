@@ -9,6 +9,14 @@ use Illuminate\Support\Str;
 
 class GameController extends Controller
 {
+    /** Parse PostgreSQL TEXT[] string like `{Action,"Role-Playing (RPG)"}` into a PHP array. */
+    private function pgArray(mixed $value): array
+    {
+        if (is_array($value)) return $value;
+        if (! is_string($value) || $value === '{}') return [];
+        return str_getcsv(trim($value, '{}'));
+    }
+
     public function crawledSlugs()
     {
         $slugs = Game::whereNotNull('details_crawled_at')
@@ -91,11 +99,11 @@ class GameController extends Controller
             'platforms'                   => $game->platforms ?? [],
             'genres'                      => array_map(
                 fn($g) => ['name' => $g],
-                $game->genre_names ?? []
+                $this->pgArray($game->genre_names)
             ),
             'tags'                        => array_map(
                 fn($t) => ['name' => $t, 'slug' => Str::slug($t), 'language' => 'eng'],
-                $game->tag_names ?? []
+                $this->pgArray($game->tag_names)
             ),
             'developers'                  => $d['developers'] ?? [],
             'publishers'                  => $d['publishers'] ?? [],
