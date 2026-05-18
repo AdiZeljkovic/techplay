@@ -49,7 +49,7 @@ class GameResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return number_format(Game::whereNull('details_crawled_at')->count()) . ' need enrichment';
+        return number_format(Game::where('has_description', false)->count()) . ' need enrichment';
     }
 
     public static function getNavigationBadgeColor(): string
