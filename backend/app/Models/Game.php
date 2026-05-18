@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\PostgresArray;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -26,12 +27,16 @@ class Game extends Model
         'suggested_data',
         'additions_data',
         'has_description',
+        'genre_names',
+        'platform_names',
+        'tag_names',
         'details_crawled_at',
         'screenshots_crawled_at',
         'movies_crawled_at',
         'series_crawled_at',
         'suggested_crawled_at',
         'additions_crawled_at',
+        'description', // virtual — stored in details_data
     ];
 
     protected $casts = [
@@ -43,6 +48,10 @@ class Game extends Model
         'series_data'            => 'array',
         'suggested_data'         => 'array',
         'additions_data'         => 'array',
+        'genre_names'            => PostgresArray::class,
+        'platform_names'         => PostgresArray::class,
+        'tag_names'              => PostgresArray::class,
+        'has_description'        => 'boolean',
         'details_crawled_at'     => 'datetime',
         'screenshots_crawled_at' => 'datetime',
         'movies_crawled_at'      => 'datetime',
@@ -54,6 +63,19 @@ class Game extends Model
         'moby_id'                => 'integer',
         'moby_group_id'          => 'integer',
     ];
+
+    public function getDescriptionAttribute(): ?string
+    {
+        return data_get($this->details_data, 'description');
+    }
+
+    public function setDescriptionAttribute(?string $value): void
+    {
+        $details = is_array($this->details_data) ? $this->details_data : [];
+        $details['description'] = $value;
+        $this->details_data = $details;
+        $this->attributes['has_description'] = ! empty($value) ? 1 : 0;
+    }
 
     public function companies(): BelongsToMany
     {
