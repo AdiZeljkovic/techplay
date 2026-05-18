@@ -69,6 +69,7 @@ HTML)
             ->navigationGroups([
                 'Editorial Tools',
                 'Content Studio',
+                'Game Database',
                 'Community',
                 'Shop & Monetization',
                 'SEO & Marketing',
