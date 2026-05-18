@@ -47,17 +47,7 @@ class GameResource extends Resource
         return 'Game';
     }
 
-    public static function getNavigationBadge(): ?string
-    {
-        return number_format(Game::where('has_description', false)->count()) . ' need enrichment';
-    }
-
-    public static function getNavigationBadgeColor(): string
-    {
-        return 'warning';
-    }
-
-    public static function form(Schema $schema): Schema
+public static function form(Schema $schema): Schema
     {
         return $schema
             ->columns(['default' => 1, 'lg' => 3])
