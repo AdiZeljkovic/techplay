@@ -110,5 +110,9 @@ return [
         'base_url' => 'https://api.mobygames.com/v1',
     ],
 
+    'rawg' => [
+        'api_key' => env('RAWG_API_KEY'),
+    ],
+
 ];
 
