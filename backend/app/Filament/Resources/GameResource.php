@@ -17,6 +17,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -293,6 +294,9 @@ public static function form(Schema $schema): Schema
                     ->trueLabel('Has screenshots')
                     ->falseLabel('No screenshots')
                     ->placeholder('All games'),
+            ])
+            ->headerActions([
+                CreateAction::make(),
             ])
             ->actions([
                 EditAction::make(),

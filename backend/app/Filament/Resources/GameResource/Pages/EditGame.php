@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\GameResource\Pages;
 
 use App\Filament\Resources\GameResource;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditGame extends EditRecord
@@ -14,9 +15,15 @@ class EditGame extends EditRecord
         return \Filament\Support\Enums\Width::Full;
     }
 
+    protected function getHeaderActions(): array
+    {
+        return [
+            DeleteAction::make(),
+        ];
+    }
+
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        // Mark as manually enriched when saving with a description
         if (! empty($data['description']) && empty($data['details_crawled_at'])) {
             $data['details_crawled_at'] = now();
         }
