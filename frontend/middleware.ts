@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getServerApiUrl } from '@/lib/api';
 
 // Routes that require server-side authentication check
 // Note: Most routes use client-side Bearer token auth from localStorage
@@ -31,8 +32,8 @@ export async function middleware(request: NextRequest) {
 
         if (!hasBypassCookie) {
             try {
-                // Fetch status from API (backend)
-                let apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+                // Use server-side URL to bypass Cloudflare Bot Fight Mode
+                let apiUrl = getServerApiUrl();
 
                 // Sanitize URL: remove trailing slash
                 apiUrl = apiUrl.replace(/\/$/, '');
@@ -41,7 +42,7 @@ export async function middleware(request: NextRequest) {
                     apiUrl = apiUrl.substring(0, apiUrl.length - 7);
                 }
 
-                // Now apiUrl is clean base domain (e.g. http://localhost:8000)
+                // Now apiUrl is clean base (e.g. http://127.0.0.1:8000)
                 const res = await fetch(`${apiUrl}/api/v1/system/status`, {
                     // Fail fast if backend is slow
                     signal: AbortSignal.timeout(2000),

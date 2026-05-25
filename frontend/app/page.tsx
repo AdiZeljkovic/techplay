@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import HomeClient from "./HomeClient";
 import { generatePageMetadata } from "@/lib/seo";
+import { getServerApiUrl } from "@/lib/api";
 import { Article } from "@/types";
 
 // ISR: revalidate every 60 seconds, but can be triggered on-demand
@@ -20,11 +21,7 @@ export interface HomeData {
 }
 
 async function getHomeData(): Promise<HomeData> {
-  let apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-  if (apiUrl && apiUrl.includes('localhost')) {
-    apiUrl = apiUrl.replace('localhost', '127.0.0.1');
-  }
+  const apiUrl = getServerApiUrl();
 
   try {
     const res = await fetch(`${apiUrl}/home`, {

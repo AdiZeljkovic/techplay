@@ -9,3 +9,15 @@ export function getApiUrl(): string {
     }
     return url;
 }
+
+/**
+ * Returns the API URL for server-side (SSR/ISR) requests.
+ * Uses NEXT_PRIVATE_API_URL when set to bypass Cloudflare and call Octane directly,
+ * preventing Bot Fight Mode from blocking Node.js server requests.
+ */
+export function getServerApiUrl(): string {
+    if (process.env.NEXT_PRIVATE_API_URL) {
+        return process.env.NEXT_PRIVATE_API_URL;
+    }
+    return getApiUrl();
+}
