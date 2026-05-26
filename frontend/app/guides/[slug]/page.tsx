@@ -1,18 +1,14 @@
 import { notFound } from "next/navigation";
 import GuideDetailView from "@/components/guides/GuideDetailView";
 import { Metadata } from "next";
+import { getServerApiUrl } from "@/lib/api";
 
 // ISR enabled with on-demand revalidation
 export const revalidate = false; // 15 minutes (guides are more evergreen content)
 
 async function getGuide(slug: string) {
-    let apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (apiUrl && apiUrl.includes('localhost')) {
-        apiUrl = apiUrl.replace('localhost', '127.0.0.1');
-    }
-
     try {
-        const res = await fetch(`${apiUrl}/guides/${slug}`, {
+        const res = await fetch(`${getServerApiUrl()}/guides/${slug}`, {
             next: {
                 revalidate: 900,
                 tags: ['guides', `guide-${slug}`]

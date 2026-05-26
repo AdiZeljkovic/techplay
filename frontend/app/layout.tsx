@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Be_Vietnam_Pro } from "next/font/google";
+import { getServerApiUrl } from "@/lib/api";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
 import { CartProvider } from "@/context/CartContext";
@@ -25,7 +26,7 @@ const beVietnamPro = Be_Vietnam_Pro({
 
 async function getSiteSettings() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings`, {
+    const res = await fetch(`${getServerApiUrl()}/settings`, {
       next: { revalidate: 3600 } // Cache for 1 hour
     });
     if (!res.ok) return {};

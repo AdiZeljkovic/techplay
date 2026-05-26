@@ -2,6 +2,7 @@
 import NewsClient from "./NewsClient";
 import SeoContent from "@/components/seo/SeoContent";
 import { generateDynamicMetadata } from "@/lib/seo";
+import { getServerApiUrl } from "@/lib/api";
 import { Metadata } from "next";
 
 // Revalidate every 5 minutes
@@ -12,13 +13,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 async function getInitialNews() {
-    let apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (apiUrl && apiUrl.includes('localhost')) {
-        apiUrl = apiUrl.replace('localhost', '127.0.0.1');
-    }
-
     try {
-        const res = await fetch(`${apiUrl}/news?page=1`, {
+        const res = await fetch(`${getServerApiUrl()}/news?page=1`, {
             next: { revalidate: 300, tags: ['news'] },
             headers: { 'Accept': 'application/json' },
         });

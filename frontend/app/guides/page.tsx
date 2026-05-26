@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { generatePageMetadata } from "@/lib/seo";
 import GuidesClientPage from "@/components/guides/GuidesClientPage";
+import { getServerApiUrl } from "@/lib/api";
 
 // Revalidate every 15 minutes
 export const revalidate = 900;
@@ -13,13 +14,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 async function getInitialGuides() {
-    let apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (apiUrl && apiUrl.includes('localhost')) {
-        apiUrl = apiUrl.replace('localhost', '127.0.0.1');
-    }
-
     try {
-        const res = await fetch(`${apiUrl}/guides?page=1`, {
+        const res = await fetch(`${getServerApiUrl()}/guides?page=1`, {
             next: { revalidate: 900, tags: ['guides'] },
             headers: { 'Accept': 'application/json' },
         });

@@ -2,6 +2,7 @@
 import ReviewsClient from "./ReviewsClient";
 import SeoContent from "@/components/seo/SeoContent";
 import { generateDynamicMetadata } from "@/lib/seo";
+import { getServerApiUrl } from "@/lib/api";
 import { Metadata } from "next";
 
 // Revalidate every 10 minutes
@@ -12,13 +13,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 async function getInitialReviews() {
-    let apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (apiUrl && apiUrl.includes('localhost')) {
-        apiUrl = apiUrl.replace('localhost', '127.0.0.1');
-    }
-
     try {
-        const res = await fetch(`${apiUrl}/reviews?page=1`, {
+        const res = await fetch(`${getServerApiUrl()}/reviews?page=1`, {
             next: { revalidate: 600, tags: ['reviews'] },
             headers: { 'Accept': 'application/json' },
         });

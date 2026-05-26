@@ -1,8 +1,13 @@
 /**
- * Returns the API base URL, replacing 'localhost' with '127.0.0.1'
- * to avoid IPv6 resolution issues in Node.js server-side requests.
+ * Returns the API base URL.
+ * On server-side (SSR/ISR), uses NEXT_PRIVATE_API_URL (direct Octane connection)
+ * to bypass Cloudflare and avoid Bot Fight Mode blocking Node.js requests.
+ * On client-side, uses NEXT_PUBLIC_API_URL as normal.
  */
 export function getApiUrl(): string {
+    if (typeof window === 'undefined' && process.env.NEXT_PRIVATE_API_URL) {
+        return process.env.NEXT_PRIVATE_API_URL;
+    }
     let url = process.env.NEXT_PUBLIC_API_URL ?? '';
     if (url.includes('localhost')) {
         url = url.replace('localhost', '127.0.0.1');

@@ -4,19 +4,14 @@ import { notFound } from "next/navigation";
 import ReviewsCategoryView from "@/components/reviews/ReviewsCategoryView";
 import ReviewDetailView from "@/components/reviews/ReviewDetailView";
 import { REVIEW_CATEGORIES } from "@/lib/categories";
+import { getServerApiUrl } from "@/lib/api";
 
 // ISR enabled with on-demand revalidation
 export const revalidate = false; // 10 minutes (reviews change less frequently than news)
 
 async function getReview(slug: string): Promise<Review | null> {
-    let apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-    if (apiUrl && apiUrl.includes('localhost')) {
-        apiUrl = apiUrl.replace('localhost', '127.0.0.1');
-    }
-
     try {
-        const res = await fetch(`${apiUrl}/reviews/${slug}`, {
+        const res = await fetch(`${getServerApiUrl()}/reviews/${slug}`, {
             next: {
                 revalidate: 600,
                 tags: ['reviews', `review-${slug}`]

@@ -1,6 +1,7 @@
 import HardwareClient from "./HardwareClient";
 import { Metadata } from "next";
 import { generatePageMetadata } from "@/lib/seo";
+import { getServerApiUrl } from "@/lib/api";
 
 // Revalidate every 10 minutes
 export const revalidate = 600;
@@ -13,13 +14,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 async function getInitialHardware() {
-    let apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (apiUrl && apiUrl.includes('localhost')) {
-        apiUrl = apiUrl.replace('localhost', '127.0.0.1');
-    }
-
     try {
-        const res = await fetch(`${apiUrl}/tech?page=1`, {
+        const res = await fetch(`${getServerApiUrl()}/tech?page=1`, {
             next: { revalidate: 600, tags: ['hardware'] },
             headers: { 'Accept': 'application/json' },
         });

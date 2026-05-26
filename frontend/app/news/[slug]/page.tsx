@@ -4,21 +4,15 @@ import { notFound } from "next/navigation";
 import NewsCategoryView from "@/components/news/NewsCategoryView";
 import ArticleDetailView from "@/components/news/ArticleDetailView";
 import { NEWS_CATEGORIES } from "@/lib/categories";
+import { getServerApiUrl } from "@/lib/api";
 
 // On-demand ISR - no automatic revalidation, only manual via /api/revalidate
 // Backend triggers revalidation when content is updated
 export const revalidate = false; // Disable automatic revalidation - only on-demand
 
 async function getArticle(slug: string): Promise<Article | null> {
-    let apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-    // Fix for Node.js IPv6 localhost resolution issues
-    if (apiUrl && apiUrl.includes('localhost')) {
-        apiUrl = apiUrl.replace('localhost', '127.0.0.1');
-    }
-
     try {
-        const res = await fetch(`${apiUrl}/news/${slug}`, {
+        const res = await fetch(`${getServerApiUrl()}/news/${slug}`, {
             cache: 'force-cache', // Cache until manually revalidated
             next: {
                 tags: ['news', `news-${slug}`]
