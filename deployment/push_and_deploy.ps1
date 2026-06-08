@@ -3,29 +3,27 @@ $SERVER_IP = "46.224.110.57"
 $SERVER_USER = "root"
 $REMOTE_PATH = "/var/www/techplay"
 
-# 1. EXPORT DATABASE
-Write-Host "🐘 Exporting Database..."
-./deployment/local_export_db.ps1
-if ($LASTEXITCODE -ne 0) { exit 1 }
-
-# 2. GIT PUSH
-Write-Host "📦 Committing and Pushing..."
-git add .
-git commit -m "Deployment Update $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
-git push origin main
-
-# 3. COPY DATABASE TO SERVER
-Write-Host "🚀 Uploading Database..."
-scp deployment/database_backup.sql ${SERVER_USER}@${SERVER_IP}:${REMOTE_PATH}/deployment/database_backup.sql
-
-# 4. TRIGGER SERVER DEPLOYMENT
-Write-Host "🔄 Triggering Remote Deployment..."
-ssh ${SERVER_USER}@${SERVER_IP} "bash ${REMOTE_PATH}/deployment/deploy.sh"
-
-# 5. IMPORT DATABASE (Optional flag?)
-$import = Read-Host "Do you want to import the database on the server? (y/N)"
-if ($import -eq 'y') {
-    ssh ${SERVER_USER}@${SERVER_IP} "bash ${REMOTE_PATH}/deployment/server_import_db.sh"
+# 1. Provjeri branch
+$branch = git rev-parse --abbrev-ref HEAD
+if ($branch -ne "main") {
+    Write-Error "Deploy je dozvoljen samo sa main brancha! Trenutni: $branch"
+    exit 1
 }
 
-Write-Host "✅ FULL DEPLOYMENT COMPLETE!"
+# 2. Git push
+Write-Host "Pushing to GitHub..."
+git push origin main
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Git push failed!"
+    exit 1
+}
+
+# 3. Deploy na server
+Write-Host "Deploying to server..."
+ssh "${SERVER_USER}@${SERVER_IP}" "bash ${REMOTE_PATH}/deployment/deploy.sh"
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Server deploy failed!"
+    exit 1
+}
+
+Write-Host "Deploy complete!"
