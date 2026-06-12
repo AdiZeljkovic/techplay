@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Rank;
+use App\Models\User;
 use App\Services\AchievementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -26,11 +26,12 @@ class DiscordXpController extends Controller
     {
         // SECURITY: Verify bot token - REQUIRED for production
         $botSecret = config('services.discord.bot_secret');
-        if (!$botSecret || $request->header('X-Discord-Bot-Token') !== $botSecret) {
+        if (! $botSecret || ! hash_equals($botSecret, (string) $request->header('X-Discord-Bot-Token'))) {
             Log::warning('Discord XP: Unauthorized request', [
                 'ip' => $request->ip(),
                 'discord_id' => $request->input('discord_id'),
             ]);
+
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
@@ -38,13 +39,13 @@ class DiscordXpController extends Controller
         $xpAmount = (int) $request->input('xp', 0);
 
         // Validate: discord_id required, xp must be positive and reasonable (max 100 per request)
-        if (!$discordId || $xpAmount <= 0 || $xpAmount > 100) {
+        if (! $discordId || $xpAmount <= 0 || $xpAmount > 100) {
             return response()->json(['message' => 'Invalid data'], 400);
         }
 
         $user = User::where('discord_id', $discordId)->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not linked'], 404);
         }
 
@@ -72,7 +73,7 @@ class DiscordXpController extends Controller
             'new_xp' => $user->xp,
             'rank_up' => $rankUp,
             'new_rank' => $rankUp ? $newRank->name : null,
-            'achievements_unlocked' => array_map(fn($a) => [
+            'achievements_unlocked' => array_map(fn ($a) => [
                 'name' => $a->name,
                 'description' => $a->description,
                 'icon' => $a->icon_path,

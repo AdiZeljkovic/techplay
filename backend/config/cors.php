@@ -21,7 +21,16 @@ return [
 
     'allowed_origins' => array_values(array_unique(array_merge(
         explode(',', env('FRONTEND_URL', 'http://localhost:3000')),
-        ['https://techplay.gg', 'https://www.techplay.gg', 'https://beta.techplay.gg'],
+        [
+            'https://techplay.gg',
+            'https://www.techplay.gg',
+            'https://beta.techplay.gg',
+            'http://localhost:3000',
+            'http://localhost:3001',
+            'http://localhost:3002',
+            'http://127.0.0.1:3000',
+            'http://127.0.0.1:3001',
+        ],
     ))),
 
     'allowed_origins_patterns' => [],

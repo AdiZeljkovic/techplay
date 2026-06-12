@@ -7,7 +7,7 @@ import { config } from '../config';
 // Polls the Privee API for new videos and posts them to #social-media
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const PRIVEE_API_BASE = 'https://38wzs9wt1a.execute-api.eu-central-1.amazonaws.com';
+const PRIVEE_API_BASE = process.env.PRIVEE_API_URL || 'https://38wzs9wt1a.execute-api.eu-central-1.amazonaws.com';
 
 interface PriveeMovie {
     id: string;
@@ -65,6 +65,13 @@ export class PriveeService {
         this.checkInterval = setInterval(() => this.checkForNewVideos(), this.POLL_INTERVAL);
     }
 
+    public stop() {
+        if (this.checkInterval) {
+            clearInterval(this.checkInterval);
+            this.checkInterval = null;
+        }
+    }
+
     /**
      * Fetch all movies and their visuals to build the initial cache
      */
@@ -94,6 +101,14 @@ export class PriveeService {
 
         try {
             const movies = await this.fetchMovies();
+
+            // Drop cache entries for movies that no longer exist so the map can't grow forever
+            const currentMovieIds = new Set(movies.map(m => m.id));
+            for (const movieId of this.lastSeenVisualIds.keys()) {
+                if (!currentMovieIds.has(movieId)) {
+                    this.lastSeenVisualIds.delete(movieId);
+                }
+            }
 
             for (const movie of movies) {
                 const visuals = await this.fetchVisuals(movie.id);

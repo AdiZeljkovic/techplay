@@ -17,6 +17,18 @@ class ReviewObserver
         $this->revalidationService = $revalidationService;
     }
 
+    /**
+     * Sanitize the HTML body before it hits the database, so the frontend
+     * can safely render it with dangerouslySetInnerHTML.
+     */
+    public function saving(Review $review): void
+    {
+        if ($review->isDirty('content') && is_string($review->content)) {
+            $review->content = app(\App\Services\SanitizationService::class)
+                ->sanitizeStaffContent($review->content);
+        }
+    }
+
     public function created(Review $review): void
     {
         if ($review->status === 'published') {
@@ -47,10 +59,10 @@ class ReviewObserver
         if ($indexNowKey) {
             try {
                 Http::timeout(5)->post('https://api.indexnow.org/indexnow', [
-                    'host'        => parse_url($siteUrl, PHP_URL_HOST),
-                    'key'         => $indexNowKey,
+                    'host' => parse_url($siteUrl, PHP_URL_HOST),
+                    'key' => $indexNowKey,
                     'keyLocation' => "{$siteUrl}/{$indexNowKey}.txt",
-                    'urlList'     => [$articleUrl],
+                    'urlList' => [$articleUrl],
                 ]);
             } catch (\Exception $e) {
                 Log::warning('IndexNow ping failed for review', ['error' => $e->getMessage()]);

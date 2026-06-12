@@ -5,7 +5,6 @@ namespace App\Observers;
 use App\Models\Article;
 use App\Services\RevalidationService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
 class ArticleObserver
@@ -15,6 +14,18 @@ class ArticleObserver
     public function __construct(RevalidationService $revalidationService)
     {
         $this->revalidationService = $revalidationService;
+    }
+
+    /**
+     * Sanitize the HTML body before it hits the database, so the frontend
+     * can safely render it with dangerouslySetInnerHTML.
+     */
+    public function saving(Article $article): void
+    {
+        if ($article->isDirty('content') && is_string($article->content)) {
+            $article->content = app(\App\Services\SanitizationService::class)
+                ->sanitizeStaffContent($article->content);
+        }
     }
 
     /**
@@ -58,7 +69,6 @@ class ArticleObserver
     /**
      * Handle the Article "deleted" event
      *
-     * @param  \App\Models\Article  $article
      * @return void
      */
     public function deleted(Article $article)
@@ -151,10 +161,10 @@ class ArticleObserver
         if ($indexNowKey) {
             try {
                 Http::timeout(5)->post('https://api.indexnow.org/indexnow', [
-                    'host'        => parse_url($siteUrl, PHP_URL_HOST),
-                    'key'         => $indexNowKey,
+                    'host' => parse_url($siteUrl, PHP_URL_HOST),
+                    'key' => $indexNowKey,
                     'keyLocation' => "{$siteUrl}/{$indexNowKey}.txt",
-                    'urlList'     => [$articleUrl],
+                    'urlList' => [$articleUrl],
                 ]);
                 \Log::info("IndexNow ping sent for: {$articleUrl}");
             } catch (\Exception $e) {

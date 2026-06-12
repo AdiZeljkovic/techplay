@@ -113,6 +113,28 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// PROCESS SAFETY NETS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// A single rejected promise in a polling loop must not kill the whole bot.
+process.on('unhandledRejection', (reason) => {
+    console.error('⚠️ Unhandled promise rejection:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+    console.error('💥 Uncaught exception:', error);
+});
+
+// Graceful shutdown — lets Discord close the gateway connection cleanly.
+const shutdown = (signal: string) => {
+    console.log(`\n🛑 Received ${signal}, shutting down...`);
+    client.destroy();
+    process.exit(0);
+};
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // LOGIN
 // ═══════════════════════════════════════════════════════════════════════════════
 

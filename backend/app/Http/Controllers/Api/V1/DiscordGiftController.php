@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 class DiscordGiftController extends Controller
 {
     private const MIN_GIFT_AMOUNT = 10;
+
     private const MAX_GIFT_AMOUNT = 1000;
 
     /**
@@ -20,7 +21,7 @@ class DiscordGiftController extends Controller
     {
         // Verify bot token
         $botSecret = config('services.discord.bot_secret');
-        if (!$botSecret || $request->header('X-Discord-Bot-Token') !== $botSecret) {
+        if (! $botSecret || ! hash_equals($botSecret, (string) $request->header('X-Discord-Bot-Token'))) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
@@ -29,12 +30,12 @@ class DiscordGiftController extends Controller
         $amount = (int) $request->input('amount');
 
         // Validate input
-        if (!$senderDiscordId || !$receiverDiscordId || $amount < self::MIN_GIFT_AMOUNT) {
+        if (! $senderDiscordId || ! $receiverDiscordId || $amount < self::MIN_GIFT_AMOUNT) {
             return response()->json(['message' => 'Invalid data'], 400);
         }
 
         if ($amount > self::MAX_GIFT_AMOUNT) {
-            return response()->json(['message' => 'Maximum gift amount is ' . self::MAX_GIFT_AMOUNT . ' XP'], 400);
+            return response()->json(['message' => 'Maximum gift amount is '.self::MAX_GIFT_AMOUNT.' XP'], 400);
         }
 
         // Can't gift to yourself
@@ -45,11 +46,11 @@ class DiscordGiftController extends Controller
         $sender = User::where('discord_id', $senderDiscordId)->first();
         $receiver = User::where('discord_id', $receiverDiscordId)->first();
 
-        if (!$sender) {
+        if (! $sender) {
             return response()->json(['message' => 'Your account is not linked'], 404);
         }
 
-        if (!$receiver) {
+        if (! $receiver) {
             return response()->json(['message' => 'Recipient account is not linked'], 404);
         }
 
@@ -71,16 +72,17 @@ class DiscordGiftController extends Controller
             Log::info('XP Gift', [
                 'sender' => $sender->username,
                 'receiver' => $receiver->username,
-                'amount' => $amount
+                'amount' => $amount,
             ]);
 
             return response()->json([
                 'message' => 'Gift successful',
                 'sender_new_xp' => $sender->xp,
-                'receiver_new_xp' => $receiver->xp
+                'receiver_new_xp' => $receiver->xp,
             ]);
         } catch (\Exception $e) {
             Log::error('XP Gift failed', ['error' => $e->getMessage()]);
+
             return response()->json(['message' => 'Gift failed'], 500);
         }
     }

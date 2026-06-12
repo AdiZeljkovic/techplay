@@ -18,6 +18,18 @@ class GuideObserver
         $this->revalidationService = $revalidationService;
     }
 
+    /**
+     * Sanitize the HTML body before it hits the database, so the frontend
+     * can safely render it with dangerouslySetInnerHTML.
+     */
+    public function saving(Guide $guide): void
+    {
+        if ($guide->isDirty('content') && is_string($guide->content)) {
+            $guide->content = app(\App\Services\SanitizationService::class)
+                ->sanitizeStaffContent($guide->content);
+        }
+    }
+
     public function created(Guide $guide): void
     {
         if ($guide->status === 'published') {
@@ -52,10 +64,10 @@ class GuideObserver
         if ($indexNowKey) {
             try {
                 Http::timeout(5)->post('https://api.indexnow.org/indexnow', [
-                    'host'        => parse_url($siteUrl, PHP_URL_HOST),
-                    'key'         => $indexNowKey,
+                    'host' => parse_url($siteUrl, PHP_URL_HOST),
+                    'key' => $indexNowKey,
                     'keyLocation' => "{$siteUrl}/{$indexNowKey}.txt",
-                    'urlList'     => [$articleUrl],
+                    'urlList' => [$articleUrl],
                 ]);
             } catch (\Exception $e) {
                 Log::warning('IndexNow ping failed for guide', ['error' => $e->getMessage()]);
@@ -79,7 +91,7 @@ class GuideObserver
         // Clear guide listing cache (first 5 pages, all difficulties, no search)
         for ($page = 1; $page <= 5; $page++) {
             foreach (['all', 'beginner', 'intermediate', 'advanced'] as $diff) {
-                $cacheKey = "guides.index.v2.page_{$page}.diff_{$diff}.search_" . md5('');
+                $cacheKey = "guides.index.v2.page_{$page}.diff_{$diff}.search_".md5('');
                 Cache::forget($cacheKey);
             }
         }

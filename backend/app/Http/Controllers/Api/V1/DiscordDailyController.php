@@ -26,22 +26,23 @@ class DiscordDailyController extends Controller
     {
         // SECURITY: Verify bot token
         $botSecret = config('services.discord.bot_secret');
-        if (!$botSecret || $request->header('X-Discord-Bot-Token') !== $botSecret) {
+        if (! $botSecret || ! hash_equals($botSecret, (string) $request->header('X-Discord-Bot-Token'))) {
             Log::warning('Discord Daily: Unauthorized request', [
                 'ip' => $request->ip(),
             ]);
+
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
         $discordId = $request->input('discord_id');
 
-        if (!$discordId) {
+        if (! $discordId) {
             return response()->json(['message' => 'Discord ID required'], 400);
         }
 
         $user = User::where('discord_id', $discordId)->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not linked'], 404);
         }
 

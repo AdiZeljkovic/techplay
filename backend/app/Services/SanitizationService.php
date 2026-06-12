@@ -37,7 +37,7 @@ class SanitizationService
     /**
      * Sanitize title/headline - strips HTML but does NOT HTML-encode
      * Use for: Thread titles, article titles - where frontend handles escaping
-     * 
+     *
      * SECURITY: Safe because React/Next.js automatically escapes text content
      */
     public function sanitizeTitle(string $title): string
@@ -55,44 +55,23 @@ class SanitizationService
     }
 
     /**
-     * Sanitize rich content - allows SAFE HTML tags
-     * Use for: Article content, guide descriptions (admin/editor only!)
-     *
-     * SECURITY: Only allow this for trusted users (admin/editor roles)
-     * Regular users should NEVER have access to rich HTML input
+     * Sanitize rich content - allows SAFE HTML tags (HTMLPurifier, "forum" profile)
+     * Use for: Forum posts/threads and other user-supplied rich text.
+     * No iframes, no images, rel=nofollow on links.
      */
     public function sanitizeRichContent(string $content): string
     {
-        // TODO: Replace with Purifier when installed
-        // For now, use basic allowlist of safe tags
-        $allowedTags = '<p><br><strong><em><u><a><ul><ol><li><blockquote><code><pre>';
-
-        $clean = strip_tags($content, $allowedTags);
-
-        // Remove dangerous attributes from allowed tags
-        $clean = $this->removeDangerousAttributes($clean);
-
-        return $clean;
+        return \Mews\Purifier\Facades\Purifier::clean($content, 'forum');
     }
 
     /**
-     * Remove dangerous HTML attributes (onclick, onerror, etc.)
+     * Sanitize staff-authored content (HTMLPurifier, "staff_content" profile)
+     * Use for: Article, guide and review bodies. Allows headings, images,
+     * tables and whitelisted video embeds (YouTube, Vimeo, Twitch, Spotify).
      */
-    private function removeDangerousAttributes(string $html): string
+    public function sanitizeStaffContent(string $content): string
     {
-        $dangerousPatterns = [
-            '/\s*on\w+\s*=\s*["\'][^"\']*["\']/i', // onclick, onerror, etc.
-            '/\s*style\s*=\s*["\'][^"\']*["\']/i',  // inline styles (can contain expressions)
-            '/javascript:/i',                        // javascript: protocol
-            '/vbscript:/i',                          // vbscript: protocol
-            '/data:/i',                              // data: protocol (can embed scripts)
-        ];
-
-        foreach ($dangerousPatterns as $pattern) {
-            $html = preg_replace($pattern, '', $html);
-        }
-
-        return $html;
+        return \Mews\Purifier\Facades\Purifier::clean($content, 'staff_content');
     }
 
     /**
@@ -119,7 +98,7 @@ class SanitizationService
         }
 
         // Only allow http and https protocols
-        if (!preg_match('/^https?:\/\//i', $url)) {
+        if (! preg_match('/^https?:\/\//i', $url)) {
             return null;
         }
 

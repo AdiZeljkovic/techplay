@@ -5,10 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\PayPalService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PayPalController extends Controller
 {
@@ -114,11 +113,13 @@ class PayPalController extends Controller
             }
 
             Log::error('PayPal Create Order Failed', ['response' => $response]);
+
             return response()->json(['error' => 'Could not initiate payment.'], 500);
 
         } catch (\Exception $e) {
-            Log::error('Create Order Exception: ' . $e->getMessage());
-            return response()->json(['error' => $e->getMessage()], 500);
+            Log::error('Create Order Exception: '.$e->getMessage());
+
+            return response()->json(['error' => 'Could not initiate payment.'], 500);
         }
     }
 
@@ -128,7 +129,7 @@ class PayPalController extends Controller
     public function captureOrder(Request $request)
     {
         $request->validate([
-            'orderID' => 'required|string'
+            'orderID' => 'required|string',
         ]);
 
         $orderId = $request->orderID;
@@ -145,6 +146,7 @@ class PayPalController extends Controller
                         'status' => 'COMPLETED', // Normalized status
                     ]);
                 }
+
                 // SECURITY: Return only essential info, not raw PayPal response
                 return response()->json([
                     'status' => 'success',
@@ -153,11 +155,14 @@ class PayPalController extends Controller
                 ]);
             }
 
-            return response()->json(['error' => 'Payment capture failed or incomplete.', 'details' => $response], 400);
+            Log::error('PayPal Capture Failed', ['order_id' => $orderId, 'response' => $response]);
+
+            return response()->json(['error' => 'Payment capture failed or incomplete.'], 400);
 
         } catch (\Exception $e) {
-            Log::error('Capture Order Exception: ' . $e->getMessage());
-            return response()->json(['error' => $e->getMessage()], 500);
+            Log::error('Capture Order Exception: '.$e->getMessage());
+
+            return response()->json(['error' => 'Payment capture failed.'], 500);
         }
     }
 }

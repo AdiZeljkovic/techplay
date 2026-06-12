@@ -23,20 +23,20 @@ class DiscordAdminController extends Controller
      */
     public function giveXp(Request $request)
     {
-        if (!$this->verifyBotToken($request)) {
+        if (! $this->verifyBotToken($request)) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
         $discordId = $request->input('discord_id');
         $amount = (int) $request->input('amount');
 
-        if (!$discordId || $amount <= 0) {
+        if (! $discordId || $amount <= 0) {
             return response()->json(['message' => 'Invalid data'], 400);
         }
 
         $user = User::where('discord_id', $discordId)->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not linked'], 404);
         }
 
@@ -49,12 +49,12 @@ class DiscordAdminController extends Controller
         Log::info('Admin XP Give', [
             'user' => $user->username,
             'amount' => $amount,
-            'new_total' => $user->xp
+            'new_total' => $user->xp,
         ]);
 
         return response()->json([
             'message' => 'XP granted',
-            'new_xp' => $user->xp
+            'new_xp' => $user->xp,
         ]);
     }
 
@@ -63,20 +63,20 @@ class DiscordAdminController extends Controller
      */
     public function removeXp(Request $request)
     {
-        if (!$this->verifyBotToken($request)) {
+        if (! $this->verifyBotToken($request)) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
         $discordId = $request->input('discord_id');
         $amount = (int) $request->input('amount');
 
-        if (!$discordId || $amount <= 0) {
+        if (! $discordId || $amount <= 0) {
             return response()->json(['message' => 'Invalid data'], 400);
         }
 
         $user = User::where('discord_id', $discordId)->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not linked'], 404);
         }
 
@@ -88,12 +88,12 @@ class DiscordAdminController extends Controller
         Log::info('Admin XP Remove', [
             'user' => $user->username,
             'amount' => $actualRemoval,
-            'new_total' => $user->xp
+            'new_total' => $user->xp,
         ]);
 
         return response()->json([
             'message' => 'XP removed',
-            'new_xp' => $user->xp
+            'new_xp' => $user->xp,
         ]);
     }
 
@@ -102,14 +102,14 @@ class DiscordAdminController extends Controller
      */
     public function startEvent(Request $request)
     {
-        if (!$this->verifyBotToken($request)) {
+        if (! $this->verifyBotToken($request)) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
         $name = $request->input('name');
         $durationHours = (int) $request->input('duration_hours');
 
-        if (!$name || $durationHours <= 0) {
+        if (! $name || $durationHours <= 0) {
             return response()->json(['message' => 'Invalid data'], 400);
         }
 
@@ -126,15 +126,15 @@ class DiscordAdminController extends Controller
         Log::info('Discord Event Started', [
             'name' => $name,
             'duration_hours' => $durationHours,
-            'ends_at' => $endsAt->toIso8601String()
+            'ends_at' => $endsAt->toIso8601String(),
         ]);
 
         return response()->json([
             'message' => 'Event started',
             'event' => [
                 'name' => $name,
-                'ends_at' => $endsAt->toIso8601String()
-            ]
+                'ends_at' => $endsAt->toIso8601String(),
+            ],
         ]);
     }
 
@@ -145,7 +145,7 @@ class DiscordAdminController extends Controller
     {
         $event = Cache::get('discord_event');
 
-        if (!$event) {
+        if (! $event) {
             return response()->json(['event' => null]);
         }
 
@@ -175,6 +175,7 @@ class DiscordAdminController extends Controller
     private function verifyBotToken(Request $request): bool
     {
         $botSecret = config('services.discord.bot_secret');
-        return $botSecret && $request->header('X-Discord-Bot-Token') === $botSecret;
+
+        return $botSecret && hash_equals($botSecret, (string) $request->header('X-Discord-Bot-Token'));
     }
 }

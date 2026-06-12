@@ -12,8 +12,9 @@
 Thumbs.db
 Desktop.ini
 
-# Deployment
-# deployment/database_backup.sql (User requested to include in git)
+# Deployment — database dumps must never be committed (contain user data)
+deployment/*.sql
+deployment/*.dump
 
 # Dependency directories
 node_modules/

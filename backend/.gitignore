@@ -16,6 +16,9 @@
 /public/build
 /public/hot
 /public/storage
+# Filament publishes these on `composer install` (filament:upgrade)
+/public/js/filament
+/public/css/filament
 /storage/*.key
 /storage/pail
 /vendor

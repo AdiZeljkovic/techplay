@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\DiscordSubscription;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class DiscordSubscriptionController extends Controller
 {
@@ -15,14 +14,14 @@ class DiscordSubscriptionController extends Controller
     public function index(Request $request)
     {
         // Verify bot token
-        if (!$this->verifyBotToken($request)) {
+        if (! $this->verifyBotToken($request)) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
         $subscriptions = DiscordSubscription::all(['discord_id', 'type']);
 
         return response()->json([
-            'data' => $subscriptions
+            'data' => $subscriptions,
         ]);
     }
 
@@ -31,14 +30,14 @@ class DiscordSubscriptionController extends Controller
      */
     public function subscribe(Request $request)
     {
-        if (!$this->verifyBotToken($request)) {
+        if (! $this->verifyBotToken($request)) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
         $discordId = $request->input('discord_id');
         $type = $request->input('type');
 
-        if (!$discordId || !in_array($type, ['news', 'giveaway'])) {
+        if (! $discordId || ! in_array($type, ['news', 'giveaway'])) {
             return response()->json(['message' => 'Invalid data'], 400);
         }
 
@@ -56,7 +55,7 @@ class DiscordSubscriptionController extends Controller
      */
     public function unsubscribe(Request $request)
     {
-        if (!$this->verifyBotToken($request)) {
+        if (! $this->verifyBotToken($request)) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
@@ -73,6 +72,7 @@ class DiscordSubscriptionController extends Controller
     private function verifyBotToken(Request $request): bool
     {
         $botSecret = config('services.discord.bot_secret');
-        return $botSecret && $request->header('X-Discord-Bot-Token') === $botSecret;
+
+        return $botSecret && hash_equals($botSecret, (string) $request->header('X-Discord-Bot-Token'));
     }
 }

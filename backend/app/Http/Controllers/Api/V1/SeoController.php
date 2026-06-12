@@ -3,18 +3,38 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Article;
 use App\Services\InternalLinkService;
 use App\Services\SchemaService;
-use App\Models\Article;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SeoController extends Controller
 {
+    /**
+     * SEO tools are staff-only; auth:sanctum alone is not enough.
+     */
+    private function authorizeStaff(): ?\Illuminate\Http\JsonResponse
+    {
+        $user = Auth::user();
+        $allowedRoles = ['Super Admin', 'Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'];
+
+        if (! $user || (! $user->hasAnyRole($allowedRoles) && ! in_array($user->role, ['admin', 'super_admin', 'editor', 'moderator', 'journalist']))) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        return null;
+    }
+
     /**
      * Get internal link suggestions for content
      */
     public function suggestLinks(Request $request)
     {
+        if ($forbidden = $this->authorizeStaff()) {
+            return $forbidden;
+        }
+
         $request->validate([
             'content' => 'required|string|min:50',
             'exclude_id' => 'nullable|integer',
@@ -37,6 +57,10 @@ class SeoController extends Controller
      */
     public function getSchemas(Article $article)
     {
+        if ($forbidden = $this->authorizeStaff()) {
+            return $forbidden;
+        }
+
         return response()->json([
             'data' => SchemaService::getAllSchemas($article),
         ]);
@@ -47,6 +71,10 @@ class SeoController extends Controller
      */
     public function getOrphanPages()
     {
+        if ($forbidden = $this->authorizeStaff()) {
+            return $forbidden;
+        }
+
         $orphans = InternalLinkService::findOrphanPages();
 
         return response()->json([
@@ -60,6 +88,10 @@ class SeoController extends Controller
      */
     public function getInboundLinks(Article $article)
     {
+        if ($forbidden = $this->authorizeStaff()) {
+            return $forbidden;
+        }
+
         $links = InternalLinkService::findInboundLinks($article->id);
 
         return response()->json([

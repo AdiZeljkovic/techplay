@@ -1,6 +1,6 @@
-# CONFIG
-$SERVER_IP = "46.224.110.57"
-$SERVER_USER = "root"
+# CONFIG (override via environment variables)
+$SERVER_IP = if ($env:TECHPLAY_SERVER_IP) { $env:TECHPLAY_SERVER_IP } else { "46.224.110.57" }
+$SERVER_USER = if ($env:TECHPLAY_SERVER_USER) { $env:TECHPLAY_SERVER_USER } else { "root" }
 $REMOTE_PATH = "/var/www/techplay"
 
 # 1. Provjeri branch

@@ -4,13 +4,12 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
-use App\Models\Thread;
 use App\Models\Post;
+use App\Models\Thread;
 use App\Notifications\ForumReplyNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-
 
 class ForumController extends Controller
 {
@@ -48,7 +47,7 @@ class ForumController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get()
                 ->groupBy('category_id')
-                ->map(fn($threads) => $threads->first());
+                ->map(fn ($threads) => $threads->first());
 
             // Attach latest_thread to each category
             $allForumCategories->each(function ($cat) use ($latestThreads) {
@@ -82,11 +81,11 @@ class ForumController extends Controller
 
         // Reduced cache time to 30 seconds for faster updates
         $data = Cache::remember($cacheKey, 30, function () use ($slug) {
-            \Illuminate\Support\Facades\Log::info("Fetching category with slug: " . $slug);
+            \Illuminate\Support\Facades\Log::info('Fetching category with slug: '.$slug);
             $category = Category::where('slug', $slug)->where('type', 'forum')->first();
 
-            if (!$category) {
-                \Illuminate\Support\Facades\Log::error("Category not found for slug: " . $slug);
+            if (! $category) {
+                \Illuminate\Support\Facades\Log::error('Category not found for slug: '.$slug);
                 abort(404, 'Category not found');
             }
 
@@ -99,7 +98,7 @@ class ForumController extends Controller
 
             return [
                 'category' => $category,
-                'threads' => $threads
+                'threads' => $threads,
             ];
         });
 
@@ -113,7 +112,7 @@ class ForumController extends Controller
                 'author' => function ($q) {
                     $q->with(['rank', 'roles']);
                 },
-                'category'
+                'category',
             ])
             ->withCount(['posts', 'upvotes']) // Add upvotes count
             ->firstOrFail();
@@ -137,7 +136,7 @@ class ForumController extends Controller
             ->with([
                 'author' => function ($q) {
                     $q->with(['rank', 'roles']);
-                }
+                },
             ])
             ->paginate(15);
 
@@ -150,14 +149,14 @@ class ForumController extends Controller
 
         return response()->json([
             'thread' => new \App\Http\Resources\V1\ThreadResource($thread),
-            'posts' => \App\Http\Resources\V1\PostResource::collection($posts)
+            'posts' => \App\Http\Resources\V1\PostResource::collection($posts),
         ]);
     }
 
     public function createPost(Request $request, $slug, \App\Services\SanitizationService $sanitizer)
     {
         $request->validate([
-            'content' => 'required|string|min:5|max:10000' // Max 10k chars for post
+            'content' => 'required|string|min:5|max:10000', // Max 10k chars for post
         ]);
 
         // Sanitize content (XSS Protection)
@@ -178,7 +177,7 @@ class ForumController extends Controller
 
             $hasPermission = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'editor', 'moderator']);
 
-            if (!$hasPermission) {
+            if (! $hasPermission) {
                 return response()->json(['message' => 'Only staff members can reply in News & Announcements.'], 403);
             }
         }
@@ -191,11 +190,11 @@ class ForumController extends Controller
 
         try {
             // RACE CONDITION FIX: Use DB transaction with cache invalidation AFTER commit
-            $post = \Illuminate\Support\Facades\DB::transaction(function () use ($thread, $content, $slug) {
+            $post = \Illuminate\Support\Facades\DB::transaction(function () use ($thread, $content) {
                 $post = $thread->posts()->create([
                     'content' => $content,
                     'author_id' => Auth::id(),
-                    'thread_id' => $thread->id
+                    'thread_id' => $thread->id,
                 ]);
 
                 // Update thread timestamp inside transaction
@@ -220,28 +219,23 @@ class ForumController extends Controller
 
             return new \App\Http\Resources\V1\PostResource($post);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to create post: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Failed to create post: '.$e->getMessage());
             try {
-                file_put_contents(storage_path('logs/custom_error.log'), $e->getMessage() . PHP_EOL . $e->getTraceAsString() . PHP_EOL, FILE_APPEND);
+                file_put_contents(storage_path('logs/custom_error.log'), $e->getMessage().PHP_EOL.$e->getTraceAsString().PHP_EOL, FILE_APPEND);
             } catch (\Throwable $t) {
             }
 
-            return response()->json(['message' => 'Failed to create post: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to create post: '.$e->getMessage()], 500);
         }
     }
 
     public function createThread(Request $request, \App\Services\SanitizationService $sanitizer)
     {
-        \Illuminate\Support\Facades\Log::info('createThread called', [
-            'data' => $request->all(),
-            'user_id' => Auth::id()
-        ]);
-
         try {
             $validated = $request->validate([
                 'title' => 'required|string|max:255|min:5',
                 'content' => 'required|string|min:10|max:20000', // Max 20k chars for thread
-                'category_id' => 'required|exists:categories,id'
+                'category_id' => 'required|exists:categories,id',
             ]);
 
             // check restriction for "News & Announcements"
@@ -253,7 +247,7 @@ class ForumController extends Controller
                 // Check Spatie roles or legacy role column
                 $hasPermission = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'editor', 'moderator']);
 
-                if (!$hasPermission) {
+                if (! $hasPermission) {
                     return response()->json(['message' => 'Only staff members can create threads in News & Announcements.'], 403);
                 }
             }
@@ -267,7 +261,7 @@ class ForumController extends Controller
                 return response()->json(['message' => 'Thread flagged as spam.'], 422);
             }
 
-            $slug = \Illuminate\Support\Str::slug($request->title) . '-' . uniqid();
+            $slug = \Illuminate\Support\Str::slug($request->title).'-'.uniqid();
 
             // RACE CONDITION FIX: Use DB transaction with cache invalidation AFTER commit
             $thread = \Illuminate\Support\Facades\DB::transaction(function () use ($cleanTitle, $slug, $cleanContent, $request) {
@@ -276,7 +270,7 @@ class ForumController extends Controller
                     'slug' => $slug,
                     'content' => $cleanContent,
                     'category_id' => $request->category_id,
-                    'author_id' => Auth::id()
+                    'author_id' => Auth::id(),
                 ]);
             });
 
@@ -296,13 +290,15 @@ class ForumController extends Controller
             return response()->json($thread, 201);
 
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to create thread: ' . $e->getMessage(), [
+            \Illuminate\Support\Facades\Log::error('Failed to create thread: '.$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
+                'user_id' => \Illuminate\Support\Facades\Auth::id(),
             ]);
-            return response()->json(['message' => 'Failed to create thread. ' . $e->getMessage()], 500);
+
+            return response()->json(['message' => 'Failed to create thread.'], 500);
         }
     }
+
     public function activeThreads()
     {
         // Cache for 60 seconds
@@ -316,6 +312,7 @@ class ForumController extends Controller
 
         return response()->json($threads)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
+
     public function upvote($slug)
     {
         $thread = Thread::where('slug', $slug)->firstOrFail();
@@ -344,7 +341,7 @@ class ForumController extends Controller
         return response()->json([
             'message' => 'Upvote updated',
             'action' => $action,
-            'count' => \Illuminate\Support\Facades\DB::table('thread_upvotes')->where('thread_id', $thread->id)->count()
+            'count' => \Illuminate\Support\Facades\DB::table('thread_upvotes')->where('thread_id', $thread->id)->count(),
         ]);
     }
 
@@ -353,12 +350,12 @@ class ForumController extends Controller
         $user = Auth::user();
         $allowedRoles = ['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator'];
 
-        if (!$user->hasAnyRole($allowedRoles) && !in_array($user->role, ['admin', 'super_admin', 'moderator'])) {
+        if (! $user->hasAnyRole($allowedRoles) && ! in_array($user->role, ['admin', 'super_admin', 'moderator'])) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
         $thread = Thread::where('slug', $slug)->firstOrFail();
-        $thread->is_pinned = !$thread->is_pinned;
+        $thread->is_pinned = ! $thread->is_pinned;
         $thread->save();
 
         // Invalidate category cache so pinned order refreshes
@@ -383,7 +380,7 @@ class ForumController extends Controller
         $isOwner = $post->author_id === $user->id;
         $isStaff = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'moderator']);
 
-        if (!$isOwner && !$isStaff) {
+        if (! $isOwner && ! $isStaff) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
@@ -408,7 +405,7 @@ class ForumController extends Controller
         $isOwner = $post->author_id === $user->id;
         $isStaff = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'moderator']);
 
-        if (!$isOwner && !$isStaff) {
+        if (! $isOwner && ! $isStaff) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
@@ -425,9 +422,9 @@ class ForumController extends Controller
         $query = $request->get('q');
 
         $threads = Thread::whereRaw(
-                "to_tsvector('english', title || ' ' || coalesce(content, '')) @@ plainto_tsquery('english', ?)",
-                [$query]
-            )
+            "to_tsvector('english', title || ' ' || coalesce(content, '')) @@ plainto_tsquery('english', ?)",
+            [$query]
+        )
             ->with(['author:id,username,avatar_url', 'category:id,name,slug'])
             ->withCount('posts')
             ->orderByRaw(
@@ -438,9 +435,9 @@ class ForumController extends Controller
             ->get();
 
         $posts = Post::whereRaw(
-                "to_tsvector('english', coalesce(content, '')) @@ plainto_tsquery('english', ?)",
-                [$query]
-            )
+            "to_tsvector('english', coalesce(content, '')) @@ plainto_tsquery('english', ?)",
+            [$query]
+        )
             ->whereNull('deleted_at')
             ->with(['author:id,username,avatar_url', 'thread:id,title,slug'])
             ->orderByRaw(
