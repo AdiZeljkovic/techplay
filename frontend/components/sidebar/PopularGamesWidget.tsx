@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import axios from "@/lib/axios";
 
 interface Game {
     id: number;
@@ -37,11 +38,8 @@ export default function PopularGamesWidget() {
     useEffect(() => {
         async function load() {
             try {
-                const res = await fetch(`/api/proxy/games?ordering=-rating&page_size=5`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setGames((data.results || []).slice(0, 5));
-                }
+                const res = await axios.get('/games?ordering=-rating&page_size=5');
+                setGames((res.data.results || []).slice(0, 5));
             } catch {}
             finally { setLoading(false); }
         }

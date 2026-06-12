@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, MessageCircle, MessagesSquare, MessageSquare, Reply } from "lucide-react";
 import { decodeHtml } from "@/lib/decode";
+import axios from "@/lib/axios";
 
 interface ForumThread {
     id: number;
@@ -22,11 +23,9 @@ export default function ActiveDiscussionsWidget() {
     useEffect(() => {
         async function load() {
             try {
-                const res = await fetch(`/api/proxy/forum/active`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setThreads((Array.isArray(data) ? data : data.data || []).slice(0, 4));
-                }
+                const res = await axios.get('/forum/active');
+                const data = res.data;
+                setThreads((Array.isArray(data) ? data : data.data || []).slice(0, 4));
             } catch {}
             finally { setLoading(false); }
         }

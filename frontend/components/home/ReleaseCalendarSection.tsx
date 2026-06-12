@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import axios from "@/lib/axios";
 
 interface CalendarGame {
     id: number;
@@ -40,9 +41,8 @@ export default function ReleaseCalendarSection() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch("/api/proxy/games/calendar")
-            .then(r => r.ok ? r.json() : null)
-            .then(data => { if (data) setGames((data.results || []).slice(0, 5)); })
+        axios.get('/games/calendar')
+            .then(res => { setGames((res.data.results || []).slice(0, 5)); })
             .catch(() => {})
             .finally(() => setLoading(false));
     }, []);
