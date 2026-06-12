@@ -1,15 +1,15 @@
 "use client";
 
 import { Article, PaginatedResponse } from "@/types";
-import { Button } from "@/components/ui/Button";
-import Link from "next/link";
-import { ChevronLeft, ChevronRight, Newspaper } from "lucide-react";
-import Image from "next/image";
+import { Newspaper } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import { NEWS_CATEGORIES } from "@/lib/categories";
 import PageHero from "@/components/ui/PageHero";
+import ListingHeader from "@/components/ui/ListingHeader";
+import ListingPagination from "@/components/ui/ListingPagination";
+import ListingEmptyState from "@/components/ui/ListingEmptyState";
 import NewsCard from "@/components/news/NewsCard";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
@@ -36,7 +36,7 @@ export default function NewsCategoryView({ categorySlug }: NewsCategoryViewProps
     const articles = data?.data || [];
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
 
             <PageHero
                 title={category.label}
@@ -47,21 +47,14 @@ export default function NewsCategoryView({ categorySlug }: NewsCategoryViewProps
                 basePath="/news"
             />
 
-            <div className="container mx-auto px-4 py-8">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
 
-                <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
-                    <h2 className="text-xl font-semibold text-[var(--text-primary)]">
-                        {category.label} News
-                    </h2>
-                    <span className="text-sm text-[var(--text-muted)] font-mono">
-                        {data?.meta?.total || data?.total || 0} ARTICLES FOUND
-                    </span>
-                </div>
+                <ListingHeader title={`${category.label} News`} count={data?.meta?.total || data?.total || 0} countLabel="ARTICLES FOUND" />
 
                 {isLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                            <div key={i} className="h-80 bg-[var(--bg-card)] rounded-xl animate-pulse" />
+                            <div key={i} className="h-80 bg-zinc-100 dark:bg-[#0B0E14] rounded-xl animate-pulse" />
                         ))}
                     </div>
                 ) : articles.length > 0 ? (
@@ -72,38 +65,17 @@ export default function NewsCategoryView({ categorySlug }: NewsCategoryViewProps
                             ))}
                         </div>
 
-                        <div className="flex items-center justify-center gap-2 mb-12">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                disabled={page === 1 || isValidating}
-                            >
-                                <ChevronLeft className="w-4 h-4" />
-                                Previous
-                            </Button>
-
-                            <div className="px-4 py-2 bg-[var(--bg-card)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-secondary)]">
-                                Page <span className="font-bold text-white">{data?.meta?.current_page || data?.current_page}</span> of {data?.meta?.last_page || data?.last_page}
-                            </div>
-
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPage((p) => p + 1)}
-                                disabled={(!data?.links?.next && !data?.next_page_url) || isValidating}
-                            >
-                                Next
-                                <ChevronRight className="w-4 h-4" />
-                            </Button>
-                        </div>
+                        <ListingPagination
+                            page={data?.meta?.current_page || data?.current_page || page}
+                            lastPage={data?.meta?.last_page || data?.last_page}
+                            onPrev={() => setPage((p) => Math.max(1, p - 1))}
+                            onNext={() => setPage((p) => p + 1)}
+                            prevDisabled={page === 1 || isValidating}
+                            nextDisabled={(!data?.links?.next && !data?.next_page_url) || isValidating}
+                        />
                     </>
                 ) : (
-                    <div className="text-center py-24 bg-[var(--bg-card)]/50 border border-[var(--border)] rounded-3xl">
-                        <Newspaper className="w-16 h-16 text-[var(--text-muted)] mx-auto mb-6 opacity-50" />
-                        <h3 className="text-xl font-bold text-white mb-2">No stories found</h3>
-                        <p className="text-[var(--text-secondary)]">No news available in this category yet.</p>
-                    </div>
+                    <ListingEmptyState icon={Newspaper} title="No stories found" description="No news available in this category yet." />
                 )}
             </div>
         </div>

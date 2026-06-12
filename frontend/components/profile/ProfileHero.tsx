@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
 import { UserPlus, Clock, Mail, Award, Calendar, ShieldCheck, Crown, Pen, Activity, Gamepad2, Cpu, Trophy } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
@@ -26,8 +25,8 @@ const roleConfig: Record<string, { color: string; bg: string; border: string; ic
     super_admin: { color: "text-red-400", bg: "bg-red-500/15", border: "border-red-500/40", icon: Crown, label: "Super Admin" },
     "editor-in-chief": { color: "text-orange-400", bg: "bg-orange-500/15", border: "border-orange-500/40", icon: Crown, label: "Editor-in-Chief" },
     editor: { color: "text-amber-400", bg: "bg-amber-500/15", border: "border-amber-500/40", icon: Pen, label: "Editor" },
-    moderator: { color: "text-blue-400", bg: "bg-blue-500/15", border: "border-blue-500/40", icon: ShieldCheck, label: "Moderator" },
-    journalist: { color: "text-emerald-400", bg: "bg-emerald-500/15", border: "border-emerald-500/40", icon: Pen, label: "Journalist" },
+    moderator: { color: "text-tp-accent/80", bg: "bg-tp-accent/15", border: "border-tp-accent/40", icon: ShieldCheck, label: "Moderator" },
+    journalist: { color: "text-tp-accent/70", bg: "bg-tp-accent/12", border: "border-tp-accent/30", icon: Pen, label: "Journalist" },
 };
 
 const tabs = [
@@ -76,8 +75,8 @@ export default function ProfileHero({
                             style={{
                                 backgroundImage: `
                                     radial-gradient(ellipse at 20% 60%, rgba(252, 65, 0, 0.08) 0%, transparent 60%),
-                                    radial-gradient(ellipse at 80% 30%, rgba(139, 92, 246, 0.06) 0%, transparent 60%),
-                                    radial-gradient(ellipse at 50% 90%, rgba(6, 182, 212, 0.04) 0%, transparent 50%)
+                                    radial-gradient(ellipse at 80% 30%, rgba(252, 65, 0, 0.04) 0%, transparent 60%),
+                                    radial-gradient(ellipse at 50% 90%, rgba(212, 54, 0, 0.03) 0%, transparent 50%)
                                 `,
                             }}
                         />
@@ -129,14 +128,14 @@ export default function ProfileHero({
 
                 {/* === USER INFO - overlaid at bottom === */}
                 <div className="absolute bottom-14 md:bottom-16 left-0 right-0 z-10">
-                    <div className="container mx-auto px-4 max-w-5xl">
+                    <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
                         <div className="flex items-end gap-5 md:gap-7">
                             {/* Avatar with animated ring */}
                             <div className="relative flex-shrink-0">
                                 <div
                                     className="absolute -inset-1.5 rounded-full opacity-80"
                                     style={{
-                                        background: "conic-gradient(from 0deg, #FC4100, #8b5cf6, #06b6d4, #FC4100)",
+                                        background: "conic-gradient(from 0deg, #FC4100, #d43600, #FF7A3D, #FC4100)",
                                         animation: "spin-ring 6s linear infinite",
                                     }}
                                 />
@@ -209,7 +208,7 @@ export default function ProfileHero({
                                             initial={{ width: 0 }}
                                             animate={{ width: `${xpProgress}%` }}
                                             transition={{ duration: 1.2, ease: "easeOut" }}
-                                            className="h-full bg-gradient-to-r from-[var(--accent)] via-[#ff6b35] to-purple-500 rounded-full shadow-[0_0_12px_rgba(252,65,0,0.5)]"
+                                            className="h-full bg-gradient-to-r from-[var(--accent)] via-[#ff6b35] to-[#FF7A3D] rounded-full shadow-[0_0_12px_rgba(252,65,0,0.5)]"
                                         />
                                     </div>
                                 </div>
@@ -221,7 +220,7 @@ export default function ProfileHero({
                 {/* === TAB NAVIGATION - glass bar at bottom edge === */}
                 <div className="absolute bottom-0 left-0 right-0 z-20">
                     <div className="bg-black/30 backdrop-blur-xl border-t border-white/10">
-                        <div className="container mx-auto px-4 max-w-5xl">
+                        <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
                             <div className="flex items-center gap-0 overflow-x-auto no-scrollbar">
                                 {tabs.map((tab) => (
                                     <button

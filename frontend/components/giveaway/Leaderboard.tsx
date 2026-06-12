@@ -119,7 +119,7 @@ export default function Leaderboard({ slug }: LeaderboardProps) {
                                 entry.rank === 3 ? 'bg-orange-400/30' :
                                 'bg-[var(--accent)]/20'
                             }`} />
-                            <div className={`relative bg-[var(--bg-primary)]/50 border rounded-xl p-3 transition-all duration-300 hover:scale-[1.02] ${
+                            <div className={`relative/50 border rounded-xl p-3 transition-all duration-300 hover:scale-[1.02] ${
                                 entry.rank === 1 ? 'border-yellow-500/50' :
                                 entry.rank === 2 ? 'border-gray-400/50' :
                                 entry.rank === 3 ? 'border-orange-400/50' :

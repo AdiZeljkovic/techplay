@@ -67,7 +67,7 @@ export default function TierCard({ tier }: TierCardProps) {
 
     return (
         <div
-            className="relative bg-[#000B25]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 flex flex-col h-full hover:border-[var(--card-border-hover)] transition-all group overflow-hidden"
+            className="relative bg-[var(--bg-secondary)]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 flex flex-col h-full hover:border-[var(--card-border-hover)] transition-all group overflow-hidden"
             style={{ '--card-border-hover': borderColor } as any}
         >
             {/* Glow Effect */}

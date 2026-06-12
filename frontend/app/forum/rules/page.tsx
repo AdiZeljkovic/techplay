@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 
 export default function ForumRulesPage() {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] py-12 px-4 md:px-8">
+        <div className="min-h-screen py-12 px-4 md:px-8">
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-12">
                     <div className="inline-flex p-3 rounded-2xl bg-[var(--accent)]/10 text-[var(--accent)] mb-4 shadow-[0_0_20px_rgba(var(--accent-rgb),0.2)]">

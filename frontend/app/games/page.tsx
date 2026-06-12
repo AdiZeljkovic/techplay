@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { generatePageMetadata } from "@/lib/seo";
 import GamesClientPage from "@/components/games/GamesClientPage";
 
@@ -9,9 +10,13 @@ export async function generateMetadata(): Promise<Metadata> {
     });
 }
 
-// Force dynamic rendering if we use search params later
+// Force dynamic rendering — filters live in URL search params
 export const dynamic = 'force-dynamic';
 
 export default function GamesPage() {
-    return <GamesClientPage />;
+    return (
+        <Suspense>
+            <GamesClientPage />
+        </Suspense>
+    );
 }

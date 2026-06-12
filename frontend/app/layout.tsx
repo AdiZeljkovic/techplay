@@ -1,6 +1,21 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Be_Vietnam_Pro } from "next/font/google";
+import { Sora, Inter } from "next/font/google";
+
+const sora = Sora({
+  variable: "--font-sora",
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"], // Sora max weight is 800 (font-black renders as 800)
+  display: 'swap',
+  preload: true,
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: 'swap',
+  preload: true,
+});
 import { getServerApiUrl } from "@/lib/api";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
@@ -14,15 +29,6 @@ import GlobalSeo from "@/components/seo/GlobalSeo";
 import ConsentAwareAnalytics from "@/components/analytics/ConsentAwareAnalytics";
 import { Toaster } from "react-hot-toast";
 
-
-const beVietnamPro = Be_Vietnam_Pro({
-  variable: "--font-main",
-  subsets: ["latin"],
-  weight: ["400", "700"], // 2 weights only — fewer font files in critical path
-  display: 'swap',
-  preload: true,
-  adjustFontFallback: true, // Adjusts fallback font metrics to match web font, reducing CLS
-});
 
 async function getSiteSettings() {
   try {
@@ -156,7 +162,7 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang="en" className={beVietnamPro.variable} suppressHydrationWarning>
+    <html lang="en" className={`${sora.variable} ${inter.variable} dark`} suppressHydrationWarning>
       <head>
         {/* Organization + WebSite JSON-LD — server-rendered so SEO crawlers see it in raw HTML */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
@@ -174,6 +180,9 @@ export default async function RootLayout({
         {/* Google AdSense */}
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net" />
+
+        {/* Anti-flash: apply saved theme class before first paint */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('techplay-theme');if(t==='light'){document.documentElement.classList.remove('dark');}else{document.documentElement.classList.add('dark');}}catch(e){}})();` }} />
 
         {/* Hide cookie banner before React hydration for returning users — runs sync, no flash */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('cookie_preferences')){var s=document.createElement('style');s.textContent='#cookie-banner{display:none!important}';document.head.appendChild(s);}}catch(e){}})();` }} />

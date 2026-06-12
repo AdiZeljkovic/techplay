@@ -113,7 +113,7 @@ export default async function VideoPage({ params }: Props) {
     };
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             <Script
                 id="video-schema"
                 type="application/ld+json"

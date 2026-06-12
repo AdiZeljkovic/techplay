@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Loader2, Send } from "lucide-react";
 import axios from "@/lib/axios";
+import toast from "react-hot-toast";
 
 interface SendMessageModalProps {
     isOpen: boolean;
@@ -51,7 +52,7 @@ export function SendMessageModal({ isOpen, onClose, recipientUsername, replyToMe
             }, 1000);
         } catch (error) {
             console.error("Failed to send message", error);
-            alert("Failed to send message");
+            toast.error("Failed to send message");
         } finally {
             setLoading(false);
         }

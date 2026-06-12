@@ -5,9 +5,9 @@ import axios from "@/lib/axios";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/Button";
 import { User } from "lucide-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { GamertagsCard } from "@/components/profile/GamertagsCard";
 import { SpecsCard } from "@/components/profile/SpecsCard";
 import { AchievementGrid } from "@/components/profile/AchievementGrid";
@@ -35,13 +35,13 @@ export default function ProfilePage() {
     const { data: profile, isLoading } = useSWR<UserProfile>(shouldFetch ? `/users/${username}` : null, fetcher);
 
     const handleSendRequest = async () => {
-        if (!currentUser) return alert("Please login first.");
+        if (!currentUser) return toast.error("Please login first.");
         setLoadingAction(true);
         try {
             await axios.post("/friends/request", { username });
             setFriendStatus("pending");
         } catch {
-            alert("Failed to send request.");
+            toast.error("Failed to send request.");
         } finally {
             setLoadingAction(false);
         }
@@ -49,10 +49,10 @@ export default function ProfilePage() {
 
     if (isLoading || authLoading || (rawUsername === "me" && !currentUser)) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)]">
+            <div className="min-h-screen">
                 <div className="-mt-[120px] md:-mt-[116px] h-[460px] md:h-[536px] bg-gradient-to-b from-[var(--bg-secondary)] to-[var(--bg-primary)] animate-pulse relative">
                     <div className="absolute bottom-16 left-0 right-0">
-                        <div className="container mx-auto px-4 max-w-5xl flex items-end gap-6">
+                        <div className="max-w-[1320px] mx-auto px-4 xl:px-0 flex items-end gap-6">
                             <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-white/5" />
                             <div className="flex-1 space-y-3 pb-2">
                                 <div className="h-8 w-48 bg-white/5 rounded" />
@@ -63,7 +63,7 @@ export default function ProfilePage() {
                     </div>
                 </div>
                 <div className="bg-[var(--bg-secondary)] py-4">
-                    <div className="container mx-auto px-4 max-w-5xl flex gap-8">
+                    <div className="max-w-[1320px] mx-auto px-4 xl:px-0 flex gap-8">
                         {Array.from({ length: 6 }).map((_, i) => (
                             <div key={i} className="flex-1 space-y-2 py-2">
                                 <div className="h-6 w-10 bg-white/5 rounded mx-auto" />
@@ -78,11 +78,11 @@ export default function ProfilePage() {
 
     if (!profile || !profile.user) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center gap-4">
+            <div className="min-h-screen flex flex-col items-center justify-center gap-4">
                 <User className="w-16 h-16 text-[var(--text-muted)]" />
                 <h1 className="text-2xl font-bold text-[var(--text-primary)]">User Not Found</h1>
-                <Link href="/">
-                    <Button>Go Home</Button>
+                <Link href="/" className="inline-flex items-center gap-2 h-[42px] px-5 bg-tp-accent hover:bg-tp-accent-hover text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[12px]">
+                    Go Home
                 </Link>
             </div>
         );
@@ -93,7 +93,7 @@ export default function ProfilePage() {
     const isStaffUser = ["admin", "editor", "moderator", "journalist", "super_admin"].includes(userData.role?.toLowerCase() || "");
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             <div>
                 <ProfileHero
                     userData={userData}
@@ -112,7 +112,7 @@ export default function ProfilePage() {
 
             <ProfileStats stats={stats} isStaff={isStaffUser} />
 
-            <div className="container mx-auto px-4 py-8 max-w-5xl">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
                 {activeTab === "overview" && (
                     <ProfileOverview
                         userData={userData}

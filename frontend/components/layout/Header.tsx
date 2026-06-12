@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
-import { useTheme } from "@/context/ThemeContext";
 import { useCart } from "@/context/CartContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { useMobileMenu } from "@/context/MobileMenuContext";
@@ -14,11 +13,15 @@ import axios from "@/lib/axios";
 import {
     Menu, X, Search, User, LogOut, ShoppingCart,
     ChevronDown, Facebook, Twitter, Instagram, Youtube,
-    Gamepad2, Mail, Users, Sword, Monitor, Tag, Calendar
+    Mail, Users, Sword, Monitor, Tag, Calendar, Gamepad2,
+    Newspaper, Trophy, Star, Cpu, ArrowRight,
+    Film, Mic, MessageSquare, Briefcase,
+    Clock, ThumbsUp, Gem, Rocket, Gauge, BookOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchDropdown from "./SearchDropdown";
 import { decodeHtml } from "@/lib/decode";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 const DiscordIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -48,6 +51,8 @@ const UTILITY_LINKS = [
 interface NavSubCategory {
     name: string;
     href: string;
+    icon?: React.ComponentType<{ className?: string }>;
+    description?: string;
 }
 
 interface NavItemType {
@@ -55,6 +60,7 @@ interface NavItemType {
     href: string;
     hasDropdown?: boolean;
     children?: NavSubCategory[];
+    viewAllLabel?: string;
 }
 
 const DB_GENRES = [
@@ -95,8 +101,8 @@ function DatabaseNavItem() {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}>
             <Link href="/games" className={cn(
-                "flex items-center gap-1 text-[13px] font-bold tracking-wide transition-colors whitespace-nowrap px-2 py-2.5",
-                isActive || isHovered ? "text-[var(--accent)]" : "text-gray-300 hover:text-white"
+                "flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.06em] transition-colors whitespace-nowrap px-2 py-2.5",
+                isActive || isHovered ? "text-tp-accent" : "text-zinc-600 dark:text-slate-300 hover:text-tp-accent dark:hover:text-white"
             )}>
                 DATABASE
                 <ChevronDown className={cn("w-3 h-3 mt-0.5 opacity-70 transition-transform duration-200", isHovered ? "rotate-180" : "rotate-0")} />
@@ -109,68 +115,71 @@ function DatabaseNavItem() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.97 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[520px] bg-[#001540]/98 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 p-5"
-                        style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}>
-
-                        <div className="grid grid-cols-3 gap-5">
-                            {/* Genres */}
-                            <div className="col-span-2">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <Sword className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Genres</span>
-                                </div>
-                                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
-                                    {DB_GENRES.map((g) => (
-                                        <Link key={g.slug} href={`/games/genre/${g.slug}`}
-                                            className="px-2 py-1.5 text-[12px] font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-                                            {g.label}
-                                        </Link>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Platforms + Years */}
-                            <div className="flex flex-col gap-5">
-                                <div>
+                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[520px] rounded-xl shadow-2xl overflow-hidden z-[100] bg-white dark:bg-[#0D1117] backdrop-blur-xl border border-zinc-200 dark:border-white/5"
+                    >
+                        <div className="h-[3px] bg-tp-accent w-full" />
+                        <div className="p-5">
+                            <div className="grid grid-cols-3 gap-5">
+                                {/* Genres */}
+                                <div className="col-span-2">
                                     <div className="flex items-center gap-2 mb-3">
-                                        <Monitor className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Platforms</span>
+                                        <Sword className="w-3.5 h-3.5 text-tp-accent" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-white/40">Genres</span>
                                     </div>
-                                    <div className="flex flex-col gap-0.5">
-                                        {DB_PLATFORMS.map((p) => (
-                                            <Link key={p.slug} href={`/games/platform/${p.slug}`}
-                                                className="px-2 py-1.5 text-[12px] font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-                                                {p.label}
+                                    <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
+                                        {DB_GENRES.map((g) => (
+                                            <Link key={g.slug} href={`/games/genre/${g.slug}`}
+                                                className="px-2 py-1.5 text-[12px] font-medium text-zinc-600 dark:text-[#A1A1AA] hover:text-tp-accent dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg transition-all">
+                                                {g.label}
                                             </Link>
                                         ))}
                                     </div>
                                 </div>
 
-                                <div>
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <Calendar className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Years</span>
+                                {/* Platforms + Years */}
+                                <div className="flex flex-col gap-5">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <Monitor className="w-3.5 h-3.5 text-tp-accent" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-white/40">Platforms</span>
+                                        </div>
+                                        <div className="flex flex-col gap-0.5">
+                                            {DB_PLATFORMS.map((p) => (
+                                                <Link key={p.slug} href={`/games/platform/${p.slug}`}
+                                                    className="px-2 py-1.5 text-[12px] font-medium text-zinc-600 dark:text-[#A1A1AA] hover:text-tp-accent dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg transition-all">
+                                                    {p.label}
+                                                </Link>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col gap-0.5">
-                                        {DB_YEARS.map((y) => (
-                                            <Link key={y} href={`/games/year/${y}`}
-                                                className="px-2 py-1.5 text-[12px] font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-                                                {y}
-                                            </Link>
-                                        ))}
+
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <Calendar className="w-3.5 h-3.5 text-tp-accent" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-white/40">Years</span>
+                                        </div>
+                                        <div className="flex flex-col gap-0.5">
+                                            {DB_YEARS.map((y) => (
+                                                <Link key={y} href={`/games/year/${y}`}
+                                                    className="px-2 py-1.5 text-[12px] font-medium text-zinc-600 dark:text-[#A1A1AA] hover:text-tp-accent dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg transition-all">
+                                                    {y}
+                                                </Link>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Footer */}
-                        <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
-                            <Link href="/games" className="text-[11px] font-bold text-[var(--accent)] hover:text-white transition-colors uppercase tracking-wider">
-                                Browse All Games →
-                            </Link>
-                            <Link href="/games/tag/open-world" className="flex items-center gap-1.5 text-[11px] font-medium text-white/30 hover:text-white transition-colors">
-                                <Tag className="w-3 h-3" /> Popular Tags
-                            </Link>
+                            {/* Footer */}
+                            <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-white/5 flex items-center justify-between">
+                                <Link href="/games" className="flex items-center gap-1.5 text-[11px] font-bold text-tp-accent hover:text-tp-accent-hover uppercase tracking-wider transition-colors group">
+                                    Browse All Games
+                                    <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                                </Link>
+                                <Link href="/games/tag/open-world" className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-400 dark:text-white/30 hover:text-tp-accent dark:hover:text-white transition-colors">
+                                    <Tag className="w-3 h-3" /> Popular Tags
+                                </Link>
+                            </div>
                         </div>
                     </motion.div>
                 )}
@@ -181,11 +190,31 @@ function DatabaseNavItem() {
 
 // Initial Nav Items (will be populated with children from API)
 const INITIAL_NAV_ITEMS: NavItemType[] = [
-    { name: "NEWS", href: "/news", hasDropdown: true },
-    { name: "REVIEWS", href: "/reviews", hasDropdown: true },
-    { name: "TECH", href: "/hardware", hasDropdown: true },
-    { name: "VIDEO", href: "/videos" },
-    { name: "GUIDES", href: "/guides" },
+    { name: "NEWS", href: "/news", hasDropdown: true, viewAllLabel: "All News", children: [
+        { name: "Gaming",      href: "/news/gaming",      icon: Gamepad2,      description: "Game news & announcements" },
+        { name: "PC",          href: "/news/pc",          icon: Cpu,           description: "PC gaming & hardware" },
+        { name: "Consoles",    href: "/news/consoles",    icon: Monitor,       description: "PlayStation, Xbox & Nintendo" },
+        { name: "Movies & TV", href: "/news/movies-tv",   icon: Film,          description: "Adaptations & entertainment" },
+        { name: "Industry",    href: "/news/industry",    icon: Briefcase,     description: "Business & dev news" },
+        { name: "E-sport",     href: "/news/e-sport",     icon: Trophy,        description: "Tournaments & pro gaming" },
+        { name: "Opinions",    href: "/news/opinions",    icon: MessageSquare, description: "Editorials & columns" },
+        { name: "Interviews",  href: "/news/interviews",  icon: Mic,           description: "Conversations with creators" },
+    ]},
+    { name: "REVIEWS", href: "/reviews", hasDropdown: true, viewAllLabel: "All Reviews", children: [
+        { name: "Latest",          href: "/reviews/latest",          icon: Clock,    description: "Fresh off the press" },
+        { name: "Editor's Choice", href: "/reviews/editors-choice",  icon: ThumbsUp, description: "Our top picks" },
+        { name: "AAA Titles",      href: "/reviews/aaa-titles",      icon: Gamepad2, description: "Big-budget blockbusters" },
+        { name: "Indie Gems",      href: "/reviews/indie-gems",      icon: Gem,      description: "Hidden indie treasures" },
+        { name: "Retro",           href: "/reviews/retro",           icon: Rocket,   description: "Classics revisited" },
+    ]},
+    { name: "TECH", href: "/hardware", hasDropdown: true, viewAllLabel: "All Hardware", children: [
+        { name: "Reviews",    href: "/hardware/reviews",    icon: Star,      description: "Hands-on hardware reviews" },
+        { name: "Benchmarks", href: "/hardware/benchmarks", icon: Gauge,     description: "Performance testing" },
+        { name: "Guides",     href: "/hardware/guides",     icon: BookOpen,  description: "Buying & build guides" },
+        { name: "Tech News",  href: "/hardware/news",       icon: Newspaper, description: "Latest tech headlines" },
+    ]},
+    { name: "VIDEO",    href: "/videos" },
+    { name: "GUIDES",   href: "/guides" },
     { name: "CALENDAR", href: "/calendar" },
     { name: "DATABASE", href: "/games", hasDropdown: true, children: [
         { name: "All Games", href: "/games" },
@@ -195,87 +224,148 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
         ...DB_PLATFORMS.map(p => ({ name: p.label, href: `/games/platform/${p.slug}` })),
     ]},
     { name: "FORUM", href: "/forum" },
-    { name: "SHOP", href: "/shop" },
+    { name: "SHOP",  href: "/shop" },
 ];
 
 // Logo Component
 function BrandLogo() {
     return (
         <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-[var(--accent)] rounded-lg flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform duration-300">
-                <Gamepad2 className="w-6 h-6" />
+            <div className="w-10 h-10 bg-tp-accent rounded-lg flex items-center justify-center shadow-lg group-hover:bg-tp-accent-hover transition-colors">
+                <Gamepad2 className="w-5 h-5 text-white" strokeWidth={2} />
             </div>
-            <div className="flex flex-col justify-center">
-                <span className="font-bold text-2xl leading-none text-white tracking-tight">
-                    TECH<span className="text-[var(--accent)]">PLAY</span>
-                </span>
-                <span className="text-[10px] font-medium text-gray-400 tracking-[0.2em] uppercase leading-none mt-1 group-hover:text-[var(--accent)] transition-colors">
-                    Gaming Portal
-                </span>
+            <div className="flex flex-col leading-none">
+                <span className="font-display font-bold text-[18px] text-zinc-900 dark:text-white tracking-tight leading-none">TECHPLAY</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500 dark:text-slate-400 mt-[3px]">GAMING PORTAL</span>
             </div>
         </Link>
     );
 }
 
-// Nav Dropdown Component
-function NavItem({ item, badge }: { item: NavItemType; badge?: number }) {
+// Nav dropdown component — mega menu (vertical) or plain link
+function NavItem({ item, badge, onHoverChange }: {
+    item: NavItemType;
+    badge?: number;
+    onHoverChange?: (name: string | null) => void;
+}) {
     const pathname = usePathname();
     const isActive = pathname.startsWith(item.href);
-    const [isHovered, setIsHovered] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const isMegaMenu = !!(item.hasDropdown && item.children?.[0]?.icon);
 
-    // Close dropdown when route changes
-    useEffect(() => setIsHovered(false), [pathname]);
+    useEffect(() => { setIsOpen(false); onHoverChange?.(null); }, [pathname]);
+
+    const handleEnter = () => { setIsOpen(true); onHoverChange?.(item.name); };
+    const handleLeave = () => { setIsOpen(false); onHoverChange?.(null); };
 
     return (
         <div
             className="relative h-full flex items-center"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            onMouseEnter={handleEnter}
+            onMouseLeave={handleLeave}
         >
             <Link
                 href={item.href}
                 className={cn(
-                    "flex items-center gap-1 text-[13px] font-bold tracking-wide transition-colors whitespace-nowrap px-2 py-2.5",
-                    isActive || isHovered ? "text-[var(--accent)]" : "text-gray-300 hover:text-white"
+                    "relative flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.06em] transition-colors whitespace-nowrap px-2 py-2.5",
+                    isActive || isOpen ? "text-tp-accent" : "text-zinc-600 dark:text-slate-300 hover:text-tp-accent dark:hover:text-white"
                 )}
             >
                 {item.name}
                 {badge ? (
-                    <span className="ml-1 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1" aria-label={`${badge} unread notifications`}>
+                    <span className="ml-1 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
                         {badge > 9 ? '9+' : badge}
                     </span>
                 ) : null}
                 {item.hasDropdown && (
-                    <ChevronDown className={cn(
-                        "w-3 h-3 mt-0.5 opacity-70 transition-transform duration-200",
-                        isHovered ? "rotate-180" : "rotate-0"
-                    )} aria-hidden="true" />
+                    <ChevronDown className={cn("w-3 h-3 mt-0.5 opacity-70 transition-transform duration-200", isOpen ? "rotate-180" : "rotate-0")} aria-hidden="true" />
+                )}
+                {isActive && (
+                    <span style={{
+                        position: 'absolute', bottom: 0, left: '8px', right: '8px',
+                        height: '3px', borderRadius: '2px 2px 0 0',
+                        background: 'linear-gradient(90deg, #FC4100, rgba(252,65,0,0.6))',
+                        boxShadow: '0 0 8px rgba(252,65,0,0.6)',
+                    }} />
                 )}
             </Link>
 
-            {/* Dropdown Menu */}
             <AnimatePresence>
-                {item.hasDropdown && item.children && isHovered && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute top-full left-0 mt-2 w-[min(224px,calc(100vw-2rem))] bg-[#001540]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 p-2"
-                        style={{ boxShadow: "0 20px 50px rgba(0,0,0,0.5)" }}
-                    >
-                        <div className="flex flex-col gap-1">
-                            {item.children.map((child, idx) => (
-                                <Link
-                                    key={idx}
-                                    href={child.href}
-                                    className="block px-4 py-3 text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all"
-                                >
-                                    {child.name}
-                                </Link>
-                            ))}
-                        </div>
-                    </motion.div>
+                {item.hasDropdown && item.children && item.children.length > 0 && isOpen && (
+                    isMegaMenu ? (
+                        /* ── MEGA DROPDOWN — vertikalno, pozicionirano ispod nav linka ── */
+                        <motion.div
+                            key="mega"
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -4 }}
+                            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                            className="absolute top-full left-0 z-[100] w-[300px] bg-white dark:bg-[#0D1117] border border-t-0 border-zinc-200 dark:border-white/[0.07] shadow-xl dark:shadow-[0_20px_48px_rgba(0,0,0,0.6)] rounded-b-xl overflow-hidden"
+                        >
+                            <div className="flex flex-col p-2">
+                                {item.children.map((child, idx) => {
+                                    const Icon = child.icon;
+                                    return (
+                                        <Link
+                                            key={idx}
+                                            href={child.href}
+                                            className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-zinc-50 dark:hover:bg-white/[0.05] group transition-all duration-150"
+                                        >
+                                            {Icon && (
+                                                <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/[0.07] group-hover:bg-tp-accent/10 group-hover:border-tp-accent/25 flex items-center justify-center shrink-0 transition-all duration-150">
+                                                    <Icon className="w-[18px] h-[18px] text-zinc-500 dark:text-[#A1A1AA] group-hover:text-tp-accent transition-colors duration-150" />
+                                                </div>
+                                            )}
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-[13px] font-bold text-zinc-900 dark:text-white group-hover:text-tp-accent transition-colors duration-150 leading-tight">
+                                                    {child.name}
+                                                </span>
+                                                {child.description && (
+                                                    <span className="text-[11px] text-zinc-500 dark:text-[#6B7280] leading-tight mt-0.5">
+                                                        {child.description}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+
+                            {item.viewAllLabel && (
+                                <div className="px-5 py-3 border-t border-zinc-100 dark:border-white/[0.06] bg-zinc-50/50 dark:bg-white/[0.02]">
+                                    <Link
+                                        href={item.href}
+                                        className="flex items-center gap-1.5 text-[11px] font-bold text-tp-accent hover:text-tp-accent-hover uppercase tracking-wider transition-colors group"
+                                    >
+                                        VIEW ALL {item.name}
+                                        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform duration-150" />
+                                    </Link>
+                                </div>
+                            )}
+                        </motion.div>
+                    ) : (
+                        /* ── REGULAR DROPDOWN ── */
+                        <motion.div
+                            key="dropdown"
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -4 }}
+                            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                            className="absolute top-full left-0 z-[100] w-[220px] bg-white dark:bg-[#0D1117] border border-t-0 border-zinc-200 dark:border-white/[0.07] shadow-xl dark:shadow-[0_20px_48px_rgba(0,0,0,0.6)] rounded-b-xl overflow-hidden"
+                        >
+                            <div className="p-2 flex flex-col">
+                                {item.children.map((child, idx) => (
+                                    <Link
+                                        key={idx}
+                                        href={child.href}
+                                        className="block px-4 py-3 text-[13px] font-medium text-zinc-700 dark:text-[#A1A1AA] hover:text-tp-accent dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg transition-all"
+                                    >
+                                        {child.name}
+                                    </Link>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )
                 )}
             </AnimatePresence>
         </div>
@@ -285,6 +375,7 @@ function NavItem({ item, badge }: { item: NavItemType; badge?: number }) {
 export default function Header() {
     const { isOpen: isMobileMenuOpen, setIsOpen: setIsMobileMenuOpen } = useMobileMenu();
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [expandedMobileItem, setExpandedMobileItem] = useState<string | null>(null);
     const { user, logout } = useAuth();
     const { itemCount } = useCart();
@@ -292,6 +383,8 @@ export default function Header() {
     const pathname = usePathname();
     const [navItems, setNavItems] = useState<NavItemType[]>(INITIAL_NAV_ITEMS);
     const [notifications, setNotifications] = useState({ unread_messages: 0, pending_requests: 0, forum_replies: 0 });
+
+
 
     // Build dynamic social links from settings
     const socialLinks = Object.keys(SOCIAL_ICON_MAP)
@@ -311,8 +404,18 @@ export default function Header() {
 
                 setNavItems((prevItems) => prevItems.map(item => {
                     const key = item.name.toLowerCase();
-                    if (tree[key]) {
-                        return { ...item, children: tree[key] };
+                    if (tree[key] && Array.isArray(tree[key])) {
+                        // Merge API children with existing icon/description by href match
+                        const apiChildren: NavSubCategory[] = tree[key];
+                        const mergedChildren = apiChildren.map((apiChild: NavSubCategory) => {
+                            const existing = item.children?.find(c =>
+                                c.href === apiChild.href || c.name.toLowerCase() === apiChild.name.toLowerCase()
+                            );
+                            return existing
+                                ? { ...apiChild, icon: existing.icon, description: existing.description }
+                                : apiChild;
+                        });
+                        return { ...item, children: mergedChildren };
                     }
                     return item;
                 }));
@@ -373,14 +476,22 @@ export default function Header() {
         };
     }, [user]);
 
-    // Close mobile menu on route change
-    useEffect(() => setIsMobileMenuOpen(false), [pathname]);
+    // Close mobile menu and search on route change
+    useEffect(() => { setIsMobileMenuOpen(false); setIsSearchOpen(false); }, [pathname]);
+
+    // Close search on Escape
+    useEffect(() => {
+        if (!isSearchOpen) return;
+        const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") setIsSearchOpen(false); };
+        document.addEventListener("keydown", handleKey);
+        return () => document.removeEventListener("keydown", handleKey);
+    }, [isSearchOpen]);
 
     return (
-        <div className="w-full font-sans sticky top-0 z-50">
+        <div className="w-full font-sans fixed top-0 left-0 right-0 z-50 flex flex-col shadow-2xl">
             {/* MOBILE: TOP BAR (Sign In / Search) */}
-            <div className="bg-[#000B25] border-b border-white/5 xl:hidden">
-                <div className="container mx-auto px-4 flex justify-between items-center h-10">
+            <div className="border-b border-white/5 xl:hidden bg-[#020305]">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 flex justify-between items-center h-[34px]">
                     {/* Left: Sign In / Register */}
                     {user ? (
                         <Link
@@ -430,7 +541,7 @@ export default function Header() {
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden border-t border-white/5"
                         >
-                            <div className="container mx-auto px-4 py-3">
+                            <div className="max-w-[1320px] mx-auto px-4 py-3">
                                 <SearchDropdown placeholder="Search TechPlay..." isMobile />
                             </div>
                         </motion.div>
@@ -439,8 +550,8 @@ export default function Header() {
             </div>
 
             {/* DESKTOP TOP BAR */}
-            <div className="bg-[#001540] border-b border-white/5 text-xs py-1 hidden xl:block">
-                <div className="container mx-auto px-4 flex justify-between items-center h-9">
+            <div className="hidden xl:block bg-zinc-100 dark:bg-[#020305] transition-colors duration-300">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 flex justify-between items-center h-[34px]">
                     {/* Left: Utility Links */}
                     <div className="flex items-center gap-6">
                         {UTILITY_LINKS.map((link) => (
@@ -448,8 +559,8 @@ export default function Header() {
                                 key={link.name}
                                 href={link.href}
                                 className={cn(
-                                    "font-semibold transition-colors hover:text-white uppercase tracking-wider text-[10px]",
-                                    link.highlight ? "text-[var(--accent)]" : "text-gray-400"
+                                    "text-[10px] uppercase font-bold transition-colors tracking-widest",
+                                    link.highlight ? "text-tp-accent" : "text-zinc-500 dark:text-slate-400 hover:text-tp-accent"
                                 )}
                             >
                                 {link.name}
@@ -459,9 +570,9 @@ export default function Header() {
 
                     {/* Right: Socials & Auth */}
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-3 pr-4 border-r border-white/10">
+                        <div className="flex items-center gap-3 pr-4 border-r border-zinc-200 dark:border-white/10">
                             {socialLinks.map((social, idx) => (
-                                <Link key={idx} href={social.href} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label={`Follow us on ${social.name}`}>
+                                <Link key={idx} href={social.href} target="_blank" rel="noopener noreferrer" className="text-zinc-500 dark:text-slate-400 hover:text-tp-accent transition-colors" aria-label={`Follow us on ${social.name}`}>
                                     <social.icon className="w-3.5 h-3.5" aria-hidden="true" />
                                 </Link>
                             ))}
@@ -483,7 +594,7 @@ export default function Header() {
                                     <Link href="/messages" className="p-2 text-gray-400 hover:text-[var(--accent)] hover:bg-white/5 rounded-full transition-colors relative" title="Messages">
                                         <Mail className="w-5 h-5" />
                                         {notifications.unread_messages > 0 && (
-                                            <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-[#001540]">
+                                            <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-[#020816]">
                                                 {notifications.unread_messages}
                                             </span>
                                         )}
@@ -491,7 +602,7 @@ export default function Header() {
                                     <Link href="/friends" className="p-2 text-gray-400 hover:text-[var(--accent)] hover:bg-white/5 rounded-full transition-colors relative" title="Friends">
                                         <Users className="w-5 h-5" />
                                         {notifications.pending_requests > 0 && (
-                                            <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-[#001540]">
+                                            <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-[#020816]">
                                                 {notifications.pending_requests}
                                             </span>
                                         )}
@@ -529,12 +640,9 @@ export default function Header() {
                                 </button>
                             </div>
                         ) : (
-                            <Link
-                                href="/login"
-                                className="flex items-center gap-2 px-3 py-1 bg-white/5 hover:bg-white/10 text-white font-semibold rounded transition-all text-[10px] uppercase tracking-wide border border-white/5"
-                            >
+                            <Link href="/login" className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors text-[10px] uppercase tracking-wide font-semibold">
                                 <User className="w-3 h-3" />
-                                Sign In / Register
+                                Sign In
                             </Link>
                         )}
                     </div>
@@ -542,8 +650,8 @@ export default function Header() {
             </div>
 
             {/* MAIN HEADER */}
-            <header className="bg-[#00215E]/95 backdrop-blur-md border-b border-white/5 shadow-lg relative z-40">
-                <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+            <header className="w-full bg-white/95 dark:bg-gradient-to-b dark:from-[#0F141D]/98 dark:to-[#05070A]/98 backdrop-blur-md border-b-[3px] border-tp-accent relative shadow-sm dark:shadow-none transition-colors duration-300">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 h-[72px] flex items-center justify-between">
                     {/* Logo (Left) */}
                     <BrandLogo />
 
@@ -564,18 +672,49 @@ export default function Header() {
 
                     {/* Actions (Right) */}
                     <div className="flex items-center gap-4">
-                        {/* Search Bar */}
-                        <div className="hidden 2xl:block">
-                            <SearchDropdown placeholder="Search articles..." />
-                        </div>
+                        {/* Theme Toggle */}
+                        <ThemeToggle />
 
-                        {/* Support Us Button */}
-                        <Link
-                            href="/support"
-                            className="hidden md:flex items-center gap-2 px-6 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-sm font-bold rounded-full transition-all shadow-lg shadow-[var(--accent)]/20 uppercase tracking-wide"
+                        {/* Search Icon */}
+                        <button
+                            onClick={() => setIsSearchOpen(prev => !prev)}
+                            className={cn(
+                                "hidden xl:flex items-center justify-center w-9 h-9 rounded-lg transition-colors",
+                                isSearchOpen
+                                    ? "bg-tp-accent text-white"
+                                    : "text-zinc-600 dark:text-slate-400 hover:text-tp-accent dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5"
+                            )}
+                            aria-label="Toggle search"
                         >
-                            SUPPORT US
-                        </Link>
+                            <Search className="w-[18px] h-[18px]" />
+                        </button>
+
+                        {/* Auth Buttons (main nav bar - desktop, guests only) */}
+                        {!user && (
+                            <div className="hidden xl:flex items-center gap-2">
+                                <Link
+                                    href="/login"
+                                    className="text-slate-300 hover:text-white font-semibold transition-colors text-[11px] uppercase tracking-widest"
+                                >
+                                    Sign In
+                                </Link>
+                                <Link
+                                    href="/register"
+                                    className="inline-flex items-center justify-center bg-tp-accent hover:bg-tp-accent-hover text-white px-6 h-[34px] rounded-sm font-semibold transition-colors uppercase text-[11px] tracking-widest leading-none"
+                                >
+                                    Register
+                                </Link>
+                            </div>
+                        )}
+                        {/* Support Us (for logged-in users) */}
+                        {user && (
+                            <Link
+                                href="/support"
+                                className="hidden md:inline-flex items-center justify-center bg-tp-accent hover:bg-tp-accent-hover text-white px-6 h-[34px] rounded-sm font-semibold transition-colors uppercase text-[11px] tracking-widest leading-none"
+                            >
+                                Support Us
+                            </Link>
+                        )}
 
                         {/* Hamburger Menu - Mobile Only */}
                         <button
@@ -590,6 +729,36 @@ export default function Header() {
                 </div>
             </header>
 
+            {/* SEARCH OVERLAY */}
+            <AnimatePresence>
+                {isSearchOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.18 }}
+                        className="hidden xl:block bg-zinc-50/98 dark:bg-[#0B0E14]/98 backdrop-blur-md border-b border-zinc-200 dark:border-[#161B22] w-full shadow-2xl"
+                    >
+                        <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-4 flex items-center gap-4">
+                            <SearchDropdown
+                                isMobile={true}
+                                placeholder="Search articles, games, reviews..."
+                                className="flex-1"
+                                onClose={() => setIsSearchOpen(false)}
+                                autoFocus={true}
+                            />
+                            <button
+                                onClick={() => setIsSearchOpen(false)}
+                                className="text-slate-400 hover:text-white transition-colors shrink-0"
+                                aria-label="Close search"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* MOBILE MENU overlay */}
             <AnimatePresence>
                 {isMobileMenuOpen && (
@@ -598,16 +767,16 @@ export default function Header() {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: "100%" }}
                         transition={{ type: "tween", duration: 0.25 }}
-                        className="xl:hidden fixed inset-0 top-[128px] bg-[#00215E] z-50 overflow-y-auto"
+                        className="xl:hidden fixed inset-0 top-[106px] z-50 overflow-y-auto bg-[#05070A]/97 backdrop-blur-md"
                     >
-                        <div className="container mx-auto px-4 py-4 space-y-4">
+                        <div className="max-w-[1320px] mx-auto px-4 py-4 space-y-4">
                             {/* User Quick Actions (if logged in) */}
                             {user && (
                                 <div className="flex gap-2">
                                     <Link
                                         href="/messages"
                                         onClick={() => setIsMobileMenuOpen(false)}
-                                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#001540] rounded-xl text-gray-300 hover:bg-white/10 transition-colors border border-white/5"
+                                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-colors border border-[#161B22] bg-[#0B0E14]"
                                     >
                                         <Mail className="w-5 h-5" />
                                         <span className="text-sm font-medium">Messages</span>
@@ -618,7 +787,7 @@ export default function Header() {
                                     <Link
                                         href="/friends"
                                         onClick={() => setIsMobileMenuOpen(false)}
-                                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#001540] rounded-xl text-gray-300 hover:bg-white/10 transition-colors border border-white/5"
+                                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-colors border border-[#161B22] bg-[#0B0E14]"
                                     >
                                         <Users className="w-5 h-5" />
                                         <span className="text-sm font-medium">Friends</span>

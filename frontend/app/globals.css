@@ -1,10 +1,21 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  /* Display font (headings) — Sora, loaded via next/font in layout.tsx */
+  --font-display: var(--font-sora), "Sora", sans-serif;
+  /* Body font — Inter, loaded via next/font in layout.tsx */
+  --font-body: var(--font-inter), "Inter", sans-serif;
+  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+}
 
 @theme {
-  /* Fonts */
-  --font-display: "Be Vietnam Pro", sans-serif;
-  --font-body: "Be Vietnam Pro", sans-serif;
+
+  /* Template-compatible accent tokens */
+  --color-tp-accent: #FC4100;
+  --color-tp-accent-hover: #d43600;
+  --color-tp-bg-main: #05070A;
 
   /* Colors */
   --color-border: var(--border);
@@ -42,31 +53,30 @@
    ======================================== */
 
 :root {
-  /* DEFAULT THEME (Dark Blue - User Request) */
+  /* DEFAULT THEME (Dark Gaming - TechPlay Identity)
+     NOTE: remapped to the new design palette — all legacy pages that
+     still use var(--bg-card) / var(--border) etc. inherit the redesign. */
 
   /* Backgrounds */
-  --bg-primary: #001540;
-  /* Deep Navy Background */
-  --bg-secondary: #000B25;
-  /* Darker areas */
-  --bg-card: #00215E;
-  /* Slightly lighter for cards */
-  --bg-elevated: #002B7A;
-  /* Hovers / Elevated states */
+  --bg-primary: #05070A;
+  --bg-secondary: #0B0E14;
+  --bg-card: #0B0E14;
+  --bg-elevated: #10141B;
 
   /* Text */
   --text-primary: #FFFFFF;
-  --text-secondary: #E0E7FF;
-  --text-muted: #94A3B8;
+  --text-secondary: #A1A1AA;
+  --text-muted: #71717A;
 
   /* Accent - User Specified Orange/Red */
   --accent: #FC4100;
-  --accent-hover: #FF5722;
+  --accent-hover: #d43600;
   --accent-light: rgba(252, 65, 0, 0.15);
+  --accent-rgb: 252, 65, 0;
 
   /* Borders */
-  --border: rgba(255, 255, 255, 0.1);
-  --border-light: rgba(255, 255, 255, 0.2);
+  --border: #161B22;
+  --border-light: rgba(255, 255, 255, 0.08);
 
   /* Status */
   --success: #10B981;
@@ -80,37 +90,6 @@
   --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
-[data-theme="light"] {
-  /* FORCED DARK MODE FOR BRAND CONSISTENCY */
-  /* User requested global colors. We map "Light" to "Dark Blue" for now. */
-  --bg-primary: #001540;
-  --bg-secondary: #000B25;
-  --bg-card: #00215E;
-  --bg-elevated: #002B7A;
-
-  --text-primary: #FFFFFF;
-  --text-secondary: #E0E7FF;
-  --text-muted: #94A3B8;
-
-  --accent: #FC4100;
-  --border: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] {
-  /* Same as Root/Default */
-  --bg-primary: #001540;
-  --bg-secondary: #000B25;
-  --bg-card: #00215E;
-  --bg-elevated: #002B7A;
-
-  --text-primary: #FFFFFF;
-  --text-secondary: #E0E7FF;
-  --text-muted: #94A3B8;
-
-  --accent: #FC4100;
-  --border: rgba(255, 255, 255, 0.1);
-}
-
 /* ========================================
    BASE STYLES
    ======================================== */
@@ -118,15 +97,19 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 140px;
-  /* Compensate for sticky header height */
+  background-color: #05070A;
+  /* clip (not hidden) — prevents horizontal scroll from overflowing content
+     without creating a scroll container that would break position: sticky */
+  overflow-x: clip;
 }
 
 body {
   font-family: var(--font-body);
-  background-color: var(--bg-primary);
+  background-color: #05070A;
   color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
 }
 
 /* Custom Scrollbar */
@@ -147,17 +130,57 @@ body {
   background: var(--accent);
 }
 
-/* Glassmorphism Utilities */
+/* Premium Glassmorphism & Cards */
 .glass {
-  background: rgba(0, 21, 64, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(4, 18, 37, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .glass-card {
-  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(0, 33, 94, 0.4) 100%);
-  border: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(4, 18, 37, 0.9) 0%, rgba(5, 24, 48, 0.8) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-card:hover {
+  border-color: rgba(252, 65, 0, 0.3);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(252, 65, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Glow & Neon Effects */
+.glow-border {
+  position: relative;
+}
+.glow-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--accent), rgba(252, 65, 0, 0.1), transparent);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.glow-border:hover::before {
+  opacity: 1;
+}
+
+.bg-tech-grid {
+  background-size: 30px 30px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Ticker scroll animation */
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.333%); }
 }
 
 /* Tab content fade-in — replaces framer-motion in NewsTabsWidget */
@@ -169,11 +192,31 @@ body {
   animation: tab-content-in 0.2s ease-out;
 }
 
-/* Text Gradients */
-.text-gradient {
-  background: linear-gradient(135deg, #FFFFFF 0%, #a5b4fc 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* High-Fidelity Text Glow */
+.text-glow {
+  text-shadow: 0 0 15px rgba(252, 65, 0, 0.4), 0 0 2px rgba(252, 65, 0, 0.2);
+}
+
+.text-glow-white {
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.15), 0 0 40px rgba(255, 255, 255, 0.05);
+}
+
+/* Precision HUD lines */
+.hud-line-h {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+.hud-line-v {
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--border), transparent);
+}
+
+/* Subtle Noise Texture */
+.bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3column%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  pointer-events: none;
 }
 
 

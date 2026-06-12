@@ -8,6 +8,7 @@ import { UserCheck, UserX, Clock, Users, UserPlus, Search, Loader2 } from "lucid
 import Link from "next/link";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import toast from "react-hot-toast";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -51,9 +52,9 @@ export default function FriendsClient() {
             setSearchResults(prev => prev.map(u =>
                 u.username === username ? { ...u, friendship_status: 'sent' } : u
             ));
-            alert("Friend request sent!");
+            toast.success("Friend request sent!");
         } catch (error: any) {
-            alert(error.response?.data?.message || "Failed to send request");
+            toast.error(error.response?.data?.message || "Failed to send request");
         }
     };
 
@@ -95,8 +96,8 @@ export default function FriendsClient() {
     );
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] pt-24 pb-12">
-            <div className="container mx-auto px-4 max-w-5xl">
+        <div className="min-h-screen pt-24 pb-12">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2 flex items-center gap-3">
                         <Users className="w-8 h-8 text-[var(--accent)]" />
@@ -125,7 +126,7 @@ export default function FriendsClient() {
                                             <Link key={friend.id} href={`/profile/${friend.username}`}
                                                 className="group flex items-center gap-4 p-4 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl hover:border-[var(--accent)] transition-all">
                                                 <div className="relative">
-                                                    <div className="w-12 h-12 rounded-full bg-[var(--bg-primary)] overflow-hidden border border-[var(--border)] group-hover:border-[var(--accent)]">
+                                                    <div className="w-12 h-12 rounded-full overflow-hidden border border-[var(--border)] group-hover:border-[var(--accent)]">
                                                         <img src={friend.avatar_url || `https://ui-avatars.com/api/?name=${friend.username}&background=random`} alt={friend.username} className="w-full h-full object-cover" />
                                                     </div>
                                                     <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[var(--bg-elevated)]" title="Online"></div>
@@ -160,7 +161,7 @@ export default function FriendsClient() {
                                         {requests.map((request) => (
                                             <div key={request.id} className="flex items-center justify-between p-4 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border)]">
                                                 <Link href={`/profile/${request.username}`} className="flex items-center gap-3">
-                                                    <div className="w-12 h-12 rounded-full bg-[var(--bg-primary)] overflow-hidden">
+                                                    <div className="w-12 h-12 rounded-full overflow-hidden">
                                                         <img src={request.avatar_url || `https://ui-avatars.com/api/?name=${request.username}&background=random`} alt={request.username} />
                                                     </div>
                                                     <div>
@@ -210,7 +211,7 @@ export default function FriendsClient() {
                                     {searchResults.map((result) => (
                                         <div key={result.id} className="flex items-center justify-between p-4 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border)]">
                                             <Link href={`/profile/${result.username}`} className="flex items-center gap-3">
-                                                <div className="w-12 h-12 rounded-full bg-[var(--bg-primary)] overflow-hidden">
+                                                <div className="w-12 h-12 rounded-full overflow-hidden">
                                                     <img src={result.avatar_url || `https://ui-avatars.com/api/?name=${result.username}&background=random`} alt={result.username} />
                                                 </div>
                                                 <div>

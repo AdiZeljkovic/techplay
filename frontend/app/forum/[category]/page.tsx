@@ -7,7 +7,6 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { MessageSquare, Lock, Pin, Eye, ArrowLeft, Plus, Clock, TrendingUp, Users, MessageCircle, Sparkles } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import ForumSidebar from "@/components/forum/ForumSidebar";
 import { useRealTimeForum } from "@/hooks";
@@ -45,13 +44,13 @@ interface CategoryData {
 
 const getCategoryColor = (slug: string) => {
     switch (slug) {
-        case 'the-lounge': return '#8b5cf6';
-        case 'general-chat': return '#3b82f6';
-        case 'news-announcements': return '#ef4444';
-        case 'hardware-tech': return '#10b981';
-        case 'game-reviews': return '#f59e0b';
-        case 'off-topic': return '#64748b';
-        default: return '#3b82f6';
+        case 'the-lounge': return '#FC4100';
+        case 'general-chat': return '#FC4100';
+        case 'news-announcements': return '#FC4100';
+        case 'hardware-tech': return '#FC4100';
+        case 'game-reviews': return '#FC4100';
+        case 'off-topic': return '#71717A';
+        default: return '#FC4100';
     }
 };
 
@@ -78,16 +77,16 @@ export default function CategoryThreadsPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)]">
+            <div className="min-h-screen">
                 <div className="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
-                    <div className="container mx-auto px-4 py-8">
+                    <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
                         <div className="animate-pulse space-y-4">
                             <div className="h-6 w-32 bg-[var(--bg-card)] rounded" />
                             <div className="h-10 w-64 bg-[var(--bg-card)] rounded" />
                         </div>
                     </div>
                 </div>
-                <div className="container mx-auto px-4 py-8">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                         <div className="lg:col-span-3 space-y-3">
                             {[1, 2, 3, 4, 5].map((i) => (
@@ -102,11 +101,11 @@ export default function CategoryThreadsPage() {
 
     if (!data) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center gap-4">
+            <div className="min-h-screen flex flex-col items-center justify-center gap-4">
                 <MessageSquare className="w-16 h-16 text-[var(--text-muted)]" />
                 <h1 className="text-2xl font-bold text-[var(--text-primary)]">Category Not Found</h1>
-                <Link href="/forum">
-                    <Button>Back to Forums</Button>
+                <Link href="/forum" className="inline-flex items-center gap-2 h-[42px] px-5 bg-tp-accent hover:bg-tp-accent-hover text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[12px]">
+                    Back to Forums
                 </Link>
             </div>
         );
@@ -117,7 +116,7 @@ export default function CategoryThreadsPage() {
     const totalReplies = threads.data.reduce((acc, t) => acc + (t.posts_count || 0), 0);
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             {/* Hero Header */}
             <div className="relative bg-[var(--bg-secondary)] border-b border-[var(--border)] overflow-hidden">
                 {/* Background Accent */}
@@ -126,7 +125,7 @@ export default function CategoryThreadsPage() {
                     style={{ background: `linear-gradient(135deg, ${color} 0%, transparent 60%)` }}
                 />
 
-                <div className="container mx-auto px-4 py-8 relative z-10">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8 relative z-10">
                     {/* Breadcrumb */}
                     <Link
                         href="/forum"
@@ -159,11 +158,9 @@ export default function CategoryThreadsPage() {
 
                         {/* Action Button */}
                         {user && (
-                            <Link href={`/forum/create?category=${category.slug}`}>
-                                <Button className="shadow-lg shadow-[var(--accent)]/20">
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    New Thread
-                                </Button>
+                            <Link href={`/forum/create?category=${category.slug}`} className="inline-flex items-center gap-2 h-[42px] px-5 bg-tp-accent hover:bg-tp-accent-hover text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[12px] shadow-lg shadow-tp-accent/20">
+                                <Plus className="w-4 h-4" />
+                                New Thread
                             </Link>
                         )}
                     </div>
@@ -190,7 +187,7 @@ export default function CategoryThreadsPage() {
             </div>
 
             {/* Content */}
-            <div className="container mx-auto px-4 py-8">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Threads List */}
                     <div className="lg:col-span-3">
@@ -285,15 +282,13 @@ export default function CategoryThreadsPage() {
                                 <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">No threads yet</h3>
                                 <p className="text-[var(--text-secondary)] mb-6">Be the first to start a discussion in this category!</p>
                                 {user ? (
-                                    <Link href={`/forum/create?category=${category.slug}`}>
-                                        <Button className="shadow-lg shadow-[var(--accent)]/20">
-                                            <Plus className="w-4 h-4 mr-2" />
-                                            Start the first discussion
-                                        </Button>
+                                    <Link href={`/forum/create?category=${category.slug}`} className="inline-flex items-center gap-2 h-[42px] px-5 bg-tp-accent hover:bg-tp-accent-hover text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[12px] shadow-lg shadow-tp-accent/20">
+                                        <Plus className="w-4 h-4" />
+                                        Start the first discussion
                                     </Link>
                                 ) : (
-                                    <Link href="/login">
-                                        <Button>Log in to post</Button>
+                                    <Link href="/login" className="inline-flex items-center gap-2 h-[42px] px-5 bg-tp-accent hover:bg-tp-accent-hover text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[12px]">
+                                        Log in to post
                                     </Link>
                                 )}
                             </div>

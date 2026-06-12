@@ -33,7 +33,7 @@ export default memo(function NewsCard({ article, index }: NewsCardProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05, duration: 0.3 }}
-                className="group h-full bg-[var(--bg-card)] border border-[var(--border)] rounded-xl overflow-hidden hover:border-[var(--accent)] hover:shadow-lg transition-all duration-300"
+                className="group h-full bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-xl overflow-hidden hover:border-tp-accent/50 dark:hover:border-tp-accent/50 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.5)] transition-all duration-300"
             >
                 {/* Image */}
                 <div className="relative h-48 w-full overflow-hidden">
@@ -47,12 +47,13 @@ export default memo(function NewsCard({ article, index }: NewsCardProps) {
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                     ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-light)] to-[var(--bg-elevated)]" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-tp-accent/15 to-zinc-100 dark:to-[#1A1F26]" />
                     )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
 
                     {/* Category Badge */}
                     <div className="absolute top-3 left-3">
-                        <span className="px-2.5 py-1 bg-[var(--accent)] text-white text-xs font-semibold rounded uppercase">
+                        <span className="px-2.5 py-1 bg-tp-accent text-white text-[10px] font-bold rounded uppercase tracking-widest leading-none inline-block shadow-sm shadow-tp-accent/20">
                             {decodeHtml(article.category.name)}
                         </span>
                     </div>
@@ -60,22 +61,22 @@ export default memo(function NewsCard({ article, index }: NewsCardProps) {
 
                 {/* Content */}
                 <div className="p-4 sm:p-5 flex flex-col">
-                    <h3 className="text-lg font-semibold text-[var(--text-primary)] line-clamp-2 group-hover:text-[var(--accent)] transition-colors mb-2">
+                    <h3 className="text-[16px] font-bold text-zinc-900 dark:text-white leading-snug line-clamp-2 group-hover:text-tp-accent transition-colors mb-2">
                         {decodeHtml(article.title)}
                     </h3>
 
-                    <p className="text-sm text-[var(--text-secondary)] line-clamp-2 mb-4 flex-grow">
+                    <p className="text-[13px] text-zinc-600 dark:text-[#A1A1AA] leading-relaxed line-clamp-2 mb-4 flex-grow">
                         {decodeHtml(article.excerpt) || "No excerpt available for this article."}
                     </p>
 
                     {/* Meta */}
-                    <div className="flex items-center justify-between text-xs text-[var(--text-muted)] pt-4 border-t border-[var(--border)]">
-                        <div className="flex items-center gap-1.5">
-                            <User className="w-3.5 h-3.5" />
-                            <span>{article.author?.display_name || article.author?.username || "Editor"}</span>
+                    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-[#71717A] pt-4 border-t border-zinc-200 dark:border-white/[0.04]">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                            <User className="w-3.5 h-3.5 shrink-0 text-tp-accent" />
+                            <span className="truncate">{article.author?.display_name || article.author?.username || "Editor"}</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5" />
+                        <div className="flex items-center gap-1.5 shrink-0">
+                            <Clock className="w-3.5 h-3.5 text-tp-accent" />
                             <span suppressHydrationWarning>{formatDistanceToNow(new Date(article.published_at || article.created_at), { addSuffix: true })}</span>
                         </div>
                     </div>

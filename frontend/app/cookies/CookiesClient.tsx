@@ -6,14 +6,14 @@ import { motion } from "framer-motion";
 
 export default function CookiePolicyPage() {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             <PageHero
                 title="Cookie Policy"
                 description="A full breakdown of every cookie we use, why we use it, and how you can control it."
                 icon={Cookie}
             />
 
-            <div className="container mx-auto px-4 py-16 max-w-5xl">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-16">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -37,19 +37,19 @@ export default function CookiePolicyPage() {
                                 </h3>
                                 <ul className="space-y-3 text-sm text-[var(--text-secondary)]">
                                     <li className="flex gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+                                        <div className="w-1.5 h-1.5 rounded-full bg-tp-accent mt-1.5 flex-shrink-0" />
                                         Strictly Necessary
                                     </li>
                                     <li className="flex gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 flex-shrink-0" />
+                                        <div className="w-1.5 h-1.5 rounded-full bg-tp-accent/60 mt-1.5 flex-shrink-0" />
                                         Analytics (consent required)
                                     </li>
                                     <li className="flex gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1.5 flex-shrink-0" />
+                                        <div className="w-1.5 h-1.5 rounded-full bg-tp-accent/40 mt-1.5 flex-shrink-0" />
                                         Advertising (consent required)
                                     </li>
                                     <li className="flex gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-pink-500 mt-1.5 flex-shrink-0" />
+                                        <div className="w-1.5 h-1.5 rounded-full bg-tp-accent/20 mt-1.5 flex-shrink-0" />
                                         Marketing (consent required)
                                     </li>
                                 </ul>

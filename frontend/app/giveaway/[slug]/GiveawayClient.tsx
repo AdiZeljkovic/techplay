@@ -228,7 +228,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     // ── Loading skeleton ──────────────────────────────────────────────────────
     if (loading) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)]">
+            <div className="min-h-screen">
                 <div className="relative w-full min-h-[60vh] bg-gradient-to-b from-white/[0.04] to-[var(--bg-primary)] animate-pulse" />
                 <div className="max-w-6xl mx-auto px-4 py-10">
                     <div className="grid lg:grid-cols-3 gap-8">
@@ -247,7 +247,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     // ── Giveaway not found ────────────────────────────────────────────────────
     if (!giveaway) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center px-4">
+            <div className="min-h-screen flex items-center justify-center px-4">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -319,7 +319,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                             </span>
                         )}
                         {task.is_repeatable && (
-                            <span className="text-[10px] bg-blue-500/12 text-blue-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                            <span className="text-[10px] bg-tp-accent/10 text-tp-accent px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
                                 Daily
                             </span>
                         )}
@@ -364,7 +364,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     };
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
 
             {/* ══════════════════════════════════════════════════════════════
                 CINEMATIC HERO
@@ -389,8 +389,8 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                 {!heroBgImage && (
                     <div className="absolute inset-0 overflow-hidden">
                         <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-[var(--accent)]/10 rounded-full blur-[120px]" />
-                        <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-purple-500/8 rounded-full blur-[100px]" />
-                        <div className="absolute top-0 right-1/4 w-64 h-64 bg-blue-500/6 rounded-full blur-[80px]" />
+                        <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-tp-accent/5 rounded-full blur-[100px]" />
+                        <div className="absolute top-0 right-1/4 w-64 h-64 bg-tp-accent/4 rounded-full blur-[80px]" />
                     </div>
                 )}
 

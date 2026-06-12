@@ -16,7 +16,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return (
         <>
             <Header />
-            <main className="flex-grow">{children}</main>
+            {/* pt accounts for fixed header: 34px top bar + 72px main nav = 106px */}
+            <main className="flex-grow pt-[106px]">{children}</main>
             <Footer />
         </>
     );

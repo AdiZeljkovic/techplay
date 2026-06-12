@@ -1,6 +1,5 @@
 
 import NewsClient from "./NewsClient";
-import SeoContent from "@/components/seo/SeoContent";
 import { generateDynamicMetadata } from "@/lib/seo";
 import { getServerApiUrl } from "@/lib/api";
 import { Metadata } from "next";
@@ -28,10 +27,5 @@ async function getInitialNews() {
 export default async function NewsPage() {
     const initialData = await getInitialNews();
 
-    return (
-        <>
-            <NewsClient initialData={initialData} />
-            <SeoContent path="/news" />
-        </>
-    );
+    return <NewsClient initialData={initialData} />;
 }

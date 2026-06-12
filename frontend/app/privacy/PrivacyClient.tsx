@@ -6,14 +6,14 @@ import { motion } from "framer-motion";
 
 export default function PrivacyPage() {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             <PageHero
                 title="Privacy Policy"
                 description="We value your privacy. Learn how we collect, use, and protect your data."
                 icon={Shield}
             />
 
-            <div className="container mx-auto px-4 py-16 max-w-5xl">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-16">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

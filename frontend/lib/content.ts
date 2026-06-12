@@ -89,12 +89,21 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
     );
 
     // Step 4: YouTube - convert bare URLs to responsive iframe embeds.
+    // Uses CSS aspect-ratio (aspect-video) instead of the absolute/padding-bottom hack,
+    // so the embed always reserves its real height and never overlaps surrounding text.
     // (?<![="']) negative lookbehind prevents matching URLs inside HTML attributes (href="..."),
     // which would corrupt the HTML and break the page.
     const youtubeRegex = /(?<![="'])(?:<p\b[^>]*>)?[\s\u00A0]*https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})[^\s<"']*[\s\u00A0]*(?:<\/p>)?/gi;
     processedContent = processedContent.replace(youtubeRegex, (_, videoId) => {
-        return `<div class="embed-container my-8"><div class="relative w-full" style="padding-bottom:56.25%"><iframe class="absolute top-0 left-0 w-full h-full rounded-xl" src="https://www.youtube.com/embed/${videoId}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div></div>`;
+        return `<div class="embed-container my-8"><iframe class="w-full aspect-video rounded-xl block" src="https://www.youtube.com/embed/${videoId}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
     });
+
+    // Step 4b: Normalize raw pasted YouTube embed code (<iframe src="...youtube.com/embed/...">)
+    // to the same responsive markup \u2014 strips fixed width/height so it can't overflow the column.
+    processedContent = processedContent.replace(
+        /<iframe\b[^>]*?src=["']https?:\/\/(?:www\.)?(?:youtube(?:-nocookie)?\.com)\/embed\/([\w-]{11})[^"']*["'][^>]*>(?:\s*<\/iframe>)?/gi,
+        (_, videoId) => `<iframe class="w-full aspect-video rounded-xl block" src="https://www.youtube.com/embed/${videoId}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
+    );
 
     // Step 4: Twitter/X - convert bare URLs to iframe embeds.
     // (?<![="']) prevents matching inside href/src attributes.

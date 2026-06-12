@@ -57,7 +57,7 @@ export default function ProfileOverview({ userData, stats, isStaff, recentArticl
                                 <span className="font-bold text-white text-xs">{userData.rank?.name || "Rookie"}</span>
                             </div>
                             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-sm">
-                                <Calendar className="w-3.5 h-3.5 text-blue-400" />
+                                <Calendar className="w-3.5 h-3.5 text-tp-accent" />
                                 <span className="text-white/40 text-xs uppercase tracking-wider">Member Since</span>
                                 <span className="font-bold text-white text-xs">
                                     {format(new Date(userData.created_at), "MMMM yyyy")}
@@ -65,7 +65,7 @@ export default function ProfileOverview({ userData, stats, isStaff, recentArticl
                             </div>
                             {isStaff && (
                                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06] text-sm">
-                                    <Pen className="w-3.5 h-3.5 text-emerald-400" />
+                                    <Pen className="w-3.5 h-3.5 text-tp-accent/70" />
                                     <span className="text-white/40 text-xs uppercase tracking-wider">Articles</span>
                                     <span className="font-bold text-white text-xs">{stats.reviews_count || 0}</span>
                                 </div>
@@ -124,7 +124,7 @@ export default function ProfileOverview({ userData, stats, isStaff, recentArticl
             <div>
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="profile-section-header text-white">
-                        <Activity className="w-5 h-5 text-cyan-400" />
+                        <Activity className="w-5 h-5 text-tp-accent" />
                         {isStaff ? "Published Articles" : "Recent Activity"}
                     </h3>
                 </div>

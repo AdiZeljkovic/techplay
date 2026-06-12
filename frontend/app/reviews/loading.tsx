@@ -6,7 +6,7 @@ import { CardGridSkeleton } from "@/components/ui/Skeleton";
  */
 export default function ReviewsLoading() {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             {/* Hero Skeleton */}
             <div className="h-[40vh] bg-[var(--bg-elevated)] animate-pulse" />
 

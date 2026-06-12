@@ -49,14 +49,14 @@ const ScoreCard = ({ score, title, description, color, bgGradient, icon: Icon }:
 
 export default function RatingSystemPage() {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             <PageHero
                 title="Our Rating System"
                 description="Transparency in how we play, test, and score the games you love."
                 icon={Star}
             />
 
-            <div className="container mx-auto px-4 py-16 md:py-24 max-w-7xl">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-16 md:py-24">
 
                 {/* Visual Intro */}
                 <motion.div
@@ -149,8 +149,8 @@ export default function RatingSystemPage() {
                     className="relative bg-[var(--bg-elevated)] border border-[var(--border)] rounded-[3rem] p-10 md:p-20 overflow-hidden"
                 >
                     {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px]" />
-                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px]" />
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-tp-accent/5 rounded-full blur-[100px]" />
+                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-tp-accent/5 rounded-full blur-[100px]" />
 
                     <div className="relative z-10 text-center mb-16">
                         <h2 className="text-3xl md:text-5xl font-black text-[var(--text-primary)] mb-6">The 5 Pillars</h2>
@@ -165,19 +165,19 @@ export default function RatingSystemPage() {
                                 icon: Gamepad2,
                                 title: "Gameplay",
                                 desc: "Mechanics, controls, and game feel.",
-                                color: "text-purple-400"
+                                color: "text-tp-accent"
                             },
                             {
                                 icon: Monitor,
                                 title: "Visuals",
                                 desc: "Art direction, fidelity, and polish.",
-                                color: "text-blue-400"
+                                color: "text-tp-accent"
                             },
                             {
                                 icon: Volume2,
                                 title: "Audio",
                                 desc: "Sound design, music score, acting.",
-                                color: "text-cyan-400"
+                                color: "text-tp-accent"
                             },
                             {
                                 icon: History,

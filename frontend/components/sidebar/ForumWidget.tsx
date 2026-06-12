@@ -48,7 +48,7 @@ export default function ForumWidget() {
 
     if (isLoading) {
         return (
-            <div className="bg-[#00215E] border border-white/10 rounded-2xl overflow-hidden shadow-lg animate-pulse h-64">
+            <div className="bg-[var(--bg-card)] border border-white/10 rounded-2xl overflow-hidden shadow-lg animate-pulse h-64">
                 <div className="p-4 border-b border-white/10">
                     <div className="h-4 w-32 bg-white/10 rounded" />
                 </div>
@@ -61,7 +61,7 @@ export default function ForumWidget() {
     }
 
     return (
-        <div className="bg-[#00215E] border border-white/10 rounded-2xl overflow-hidden shadow-lg">
+        <div className="bg-[var(--bg-card)] border border-white/10 rounded-2xl overflow-hidden shadow-lg">
             <div className="p-4 border-b border-white/10 flex items-center justify-between">
                 <h3 className="flex items-center gap-2 font-bold text-white text-sm uppercase tracking-wider">
                     <MessagesSquare className="w-4 h-4 text-[var(--accent)]" />

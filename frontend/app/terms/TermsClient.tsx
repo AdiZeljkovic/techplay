@@ -6,14 +6,14 @@ import { motion } from "framer-motion";
 
 export default function TermsPage() {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             <PageHero
                 title="Terms of Service"
                 description="Please read these terms carefully before using our service."
                 icon={FileText}
             />
 
-            <div className="container mx-auto px-4 py-16 max-w-5xl">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-16">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -33,7 +33,7 @@ export default function TermsPage() {
 
                             <div className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl p-6">
                                 <h3 className="font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                                    <Scale className="w-5 h-5 text-blue-400" /> Summary
+                                    <Scale className="w-5 h-5 text-tp-accent" /> Summary
                                 </h3>
                                 <ul className="space-y-3 text-sm text-[var(--text-secondary)]">
                                     <li className="flex gap-2">
@@ -57,7 +57,7 @@ export default function TermsPage() {
                     <div className="md:w-2/3">
                         <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-8 md:p-12 relative overflow-hidden">
                             {/* Decor */}
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -z-0 pointer-events-none" />
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-tp-accent/5 rounded-full blur-3xl -z-0 pointer-events-none" />
 
                             <div className="prose prose-invert prose-lg max-w-none relative z-10 prose-headings:text-[var(--text-primary)] prose-p:text-[var(--text-secondary)] prose-li:text-[var(--text-secondary)] prose-strong:text-[var(--text-primary)] prose-a:text-[var(--accent)] hover:prose-a:text-[var(--accent-light)]">
 

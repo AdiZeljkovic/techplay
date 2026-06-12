@@ -1,11 +1,15 @@
 "use client";
 
 import { Article } from "@/types";
-import { Zap, Gamepad2, Cpu } from "lucide-react";
 import HeroCarousel from "@/components/home/HeroCarousel";
-import HomeSidebar from "@/components/sidebar/HomeSidebar";
-import ContentSection from "@/components/home/ContentSection";
-import AdUnit from "@/components/ads/AdUnit";
+import NewsSection from "@/components/home/NewsSection";
+import ReviewsSection from "@/components/home/ReviewsSection";
+import HardwareSection from "@/components/home/HardwareSection";
+import ReleaseCalendarSection from "@/components/home/ReleaseCalendarSection";
+import PlatformHighlights from "@/components/home/PlatformHighlights";
+import CommunityForum from "@/components/home/CommunityForum";
+import DiscordWidget from "@/components/home/DiscordWidget";
+import NewsletterCTA from "@/components/home/NewsletterCTA";
 import { useHome } from "@/hooks/useApi";
 
 interface HomeClientProps {
@@ -20,70 +24,53 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({ initialData }: HomeClientProps) {
-    const { hero: heroArticles, news: latestNews, reviews: latestReviews, tech: hardwareLab, isLoading } = useHome(initialData);
+    const { hero: heroArticles, news: latestNews, reviews: latestReviews, tech: hardwareLab } = useHome(initialData);
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <main className="min-h-screen bg-[#F4F4F5] dark:bg-[#05070A] flex flex-col pt-0 font-sans text-zinc-900 dark:text-slate-300 transition-colors duration-300">
 
-            {/* Immersive Hero Carousel */}
             <HeroCarousel articles={heroArticles} />
 
-            {/* Hero Banner Ad */}
-            <div className="container mx-auto px-4 pt-8">
-                <AdUnit position="home_hero" className="max-w-5xl mx-auto" />
+            <PlatformHighlights />
+
+            {/* Row 1: Latest News + Upcoming Releases */}
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 w-full mb-16 md:mb-20">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 xl:gap-[60px]">
+                    <div className="lg:col-span-2">
+                        <NewsSection articles={latestNews} />
+                    </div>
+                    <div className="lg:col-span-1 border-t lg:border-t-0 border-zinc-200 dark:border-white/5 lg:pl-4 xl:pl-8 pt-10 lg:pt-0">
+                        <ReleaseCalendarSection />
+                    </div>
+                </div>
             </div>
 
-            {/* Main Content */}
-            <section className="container mx-auto px-4 py-16">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-
-                    {/* Main Column (8 cols) */}
-                    <div className="lg:col-span-8 space-y-16">
-
-                        {/* 1. LATEST NEWS */}
-                        <ContentSection
-                            title="Latest News"
-                            icon={Zap}
-                            articles={latestNews}
-                            viewAllLink="/news"
-                            isLoading={isLoading}
-                        />
-
-                        {/* Mid-Section Ad 1 */}
-                        <AdUnit position="home_mid_1" />
-
-                        {/* 2. LATEST REVIEWS */}
-                        <ContentSection
-                            title="Latest Reviews"
-                            icon={Gamepad2}
-                            articles={latestReviews}
-                            viewAllLink="/reviews"
-                            isLoading={isLoading}
-                        />
-
-                        {/* Mid-Section Ad 2 */}
-                        <AdUnit position="home_mid_2" />
-
-                        {/* 3. HARDWARE LAB */}
-                        <ContentSection
-                            title="Hardware Lab"
-                            icon={Cpu}
-                            articles={hardwareLab}
-                            viewAllLink="/hardware"
-                            color="#06b6d4"
-                            isLoading={isLoading}
-                        />
-
+            {/* Row 2: Latest Reviews + Community Forum */}
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 w-full mb-20">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 xl:gap-[60px]">
+                    <div className="lg:col-span-2">
+                        <ReviewsSection articles={latestReviews} />
                     </div>
-
-                    {/* Sidebar (4 cols) */}
-                    <HomeSidebar
-                        latestGlobal={initialData?.latestGlobal ?? []}
-                        popularGlobal={initialData?.popularGlobal ?? []}
-                    />
-
+                    <div className="lg:col-span-1 border-t lg:border-t-0 border-zinc-200 dark:border-white/5 lg:border-l lg:pl-10 xl:pl-[60px] pt-10 lg:pt-0 border-l-zinc-200 dark:border-l-white/5">
+                        <CommunityForum />
+                    </div>
                 </div>
-            </section>
-        </div>
+            </div>
+
+            {/* Row 3: Hardware Lab + Discord */}
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 w-full mb-20">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 xl:gap-[60px]">
+                    <div className="lg:col-span-2">
+                        <HardwareSection articles={hardwareLab} />
+                    </div>
+                    <div className="lg:col-span-1 border-t lg:border-t-0 border-zinc-200 dark:border-white/5 lg:border-l lg:pl-10 xl:pl-[60px] pt-10 lg:pt-0 border-l-zinc-200 dark:border-l-white/5">
+                        <DiscordWidget />
+                    </div>
+                </div>
+            </div>
+
+            <NewsletterCTA />
+
+        </main>
     );
 }

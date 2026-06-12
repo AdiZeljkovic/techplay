@@ -8,7 +8,7 @@ import { Home, Search, ArrowLeft } from "lucide-react";
  */
 export default function NotFound() {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center px-4">
+        <div className="min-h-screen flex items-center justify-center px-4">
             <div className="max-w-lg w-full text-center">
                 {/* 404 Display */}
                 <div className="relative mb-8">

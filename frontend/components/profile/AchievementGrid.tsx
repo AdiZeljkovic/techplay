@@ -70,7 +70,7 @@ export const AchievementGrid = ({ achievements }: AchievementGridProps) => {
                         </div>
                         <div className="h-3 bg-black/40 rounded-full overflow-hidden border border-white/[0.06]">
                             <div
-                                className="h-full bg-gradient-to-r from-[var(--accent)] to-purple-500 rounded-full transition-all duration-700 shadow-[0_0_10px_rgba(252,65,0,0.4)]"
+                                className="h-full bg-gradient-to-r from-[var(--accent)] to-[#FF7A3D] rounded-full transition-all duration-700 shadow-[0_0_10px_rgba(252,65,0,0.4)]"
                                 style={{ width: `${unlockProgress}%` }}
                             />
                         </div>

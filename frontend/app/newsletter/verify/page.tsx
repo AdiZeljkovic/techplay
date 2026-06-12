@@ -47,7 +47,7 @@ function NewsletterVerifyContent() {
     }, [token, router]);
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center p-4">
+        <div className="min-h-screen flex items-center justify-center p-4">
             <div className="max-w-md w-full bg-white/5 border border-white/10 p-8 rounded-2xl text-center backdrop-blur-xl">
                 {status === 'loading' && (
                     <div className="flex flex-col items-center">
@@ -90,7 +90,7 @@ function NewsletterVerifyContent() {
 export default function NewsletterVerifyPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center p-4">
+            <div className="min-h-screen flex items-center justify-center p-4">
                 <Loader2 className="w-12 h-12 text-[var(--accent)] animate-spin" />
             </div>
         }>

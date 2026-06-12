@@ -4,12 +4,84 @@ import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { LogIn, Shield, Mail, RefreshCw } from "lucide-react";
+import { Gamepad2, Shield, Mail, RefreshCw, Zap, Trophy, MessageSquare, Gift, ChevronsRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Turnstile from "@/components/ui/Turnstile";
 import axios from "@/lib/axios";
+
+const PERKS = [
+    { icon: Zap,           text: "Earn XP for every comment and article you read" },
+    { icon: Trophy,        text: "Level up and unlock community ranks" },
+    { icon: MessageSquare, text: "Join discussions on the forum" },
+    { icon: Gift,          text: "Enter exclusive giveaways" },
+];
+
+const inputClass = "w-full h-[48px] bg-zinc-50 dark:bg-[#05070A] border border-zinc-200 dark:border-[#161B22] rounded-lg px-4 text-[14px] text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-[#52525B] focus:outline-none focus:border-tp-accent/60 transition-colors";
+const labelClass = "block text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-[#71717A] mb-2";
+
+/* Left-side brand panel shared visual */
+function BrandPanel() {
+    return (
+        <div className="relative hidden lg:flex flex-col justify-between p-10 bg-[#05070A] overflow-hidden">
+            {/* Decorations */}
+            <div className="absolute -top-[120px] -left-[80px] w-[400px] h-[400px] bg-tp-accent/15 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute -bottom-[150px] -right-[100px] w-[350px] h-[350px] bg-tp-accent/10 blur-[100px] rounded-full pointer-events-none" />
+            <div
+                className="absolute inset-0 opacity-[0.05]"
+                style={{ backgroundImage: 'radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.9) 1px, transparent 0)', backgroundSize: '28px 28px' }}
+            />
+            {/* HUD corner brackets */}
+            <div className="absolute top-5 left-5 w-6 h-6 border-t-2 border-l-2 border-tp-accent/40" />
+            <div className="absolute bottom-5 right-5 w-6 h-6 border-b-2 border-r-2 border-tp-accent/40" />
+
+            {/* Logo */}
+            <Link href="/" className="relative z-10 flex items-center gap-3 group w-max">
+                <div className="w-10 h-10 bg-tp-accent rounded-lg flex items-center justify-center shadow-lg group-hover:bg-tp-accent-hover transition-colors">
+                    <Gamepad2 className="w-5 h-5 text-white" strokeWidth={2} />
+                </div>
+                <div className="flex flex-col leading-none">
+                    <span className="font-display font-bold text-[16px] text-white tracking-tight leading-none">TECHPLAY</span>
+                    <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400 mt-[3px]">GAMING PORTAL</span>
+                </div>
+            </Link>
+
+            {/* Middle */}
+            <div className="relative z-10">
+                <span className="flex items-center gap-2 text-tp-accent font-bold tracking-[0.2em] text-[11px] uppercase mb-4">
+                    <span className="w-2 h-2 rounded-full bg-tp-accent animate-pulse" />
+                    PLAYER LOGIN
+                </span>
+                <h2 className="font-display text-[42px] font-black text-white uppercase leading-[0.95] tracking-tight mb-5">
+                    GAME<br />
+                    <span className="text-tp-accent">ON.</span>
+                </h2>
+                <p className="text-[14px] text-[#A1A1AA] leading-relaxed max-w-[300px] mb-8">
+                    Sign back in and pick up where you left off — your XP, rank and community are waiting.
+                </p>
+
+                <ul className="flex flex-col gap-3.5">
+                    {PERKS.map(({ icon: Icon, text }) => (
+                        <li key={text} className="flex items-center gap-3">
+                            <span className="w-8 h-8 rounded-lg bg-tp-accent/10 border border-tp-accent/20 flex items-center justify-center shrink-0">
+                                <Icon className="w-4 h-4 text-tp-accent" />
+                            </span>
+                            <span className="text-[13px] text-[#D4D4D8]">{text}</span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            {/* Bottom strip */}
+            <div className="relative z-10 flex items-center gap-5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#71717A]">
+                <span><span className="text-white">15K+</span> MEMBERS</span>
+                <span className="w-1 h-1 rounded-full bg-tp-accent" />
+                <span><span className="text-white">50K+</span> GAMES</span>
+                <span className="w-1 h-1 rounded-full bg-tp-accent" />
+                <span><span className="text-white">24/7</span> COMMUNITY</span>
+            </div>
+        </div>
+    );
+}
 
 export default function LoginClient() {
     const [isLoading, setIsLoading] = useState(false);
@@ -96,34 +168,33 @@ export default function LoginClient() {
     // Show verification required screen
     if (requiresVerification) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center px-4">
+            <div className="min-h-screen flex items-center justify-center px-4 py-12">
                 <div className="w-full max-w-md">
-                    <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-8 text-center">
-                        {/* Icon */}
-                        <div className="w-16 h-16 bg-[var(--accent)]/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <Mail className="w-8 h-8 text-[var(--accent)]" />
+                    <div className="relative overflow-hidden bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-[24px] p-8 text-center shadow-2xl dark:shadow-[0_20px_48px_rgba(0,0,0,0.6)]">
+                        <div className="absolute top-0 left-0 right-0 h-[3px] bg-tp-accent" />
+                        <div className="absolute -top-[80px] left-1/2 -translate-x-1/2 w-[250px] h-[180px] bg-tp-accent/10 blur-[70px] rounded-full pointer-events-none" />
+
+                        <div className="relative w-16 h-16 bg-tp-accent/10 border border-tp-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <Mail className="w-7 h-7 text-tp-accent" />
                         </div>
 
-                        {/* Title */}
-                        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-3">
+                        <span className="text-tp-accent font-bold tracking-[0.2em] text-[10px] uppercase block mb-2">ONE MORE STEP</span>
+                        <h1 className="font-display text-[24px] font-bold text-zinc-900 dark:text-white uppercase tracking-[0.04em] mb-3">
                             Verify Your Email
                         </h1>
 
-                        {/* Message */}
-                        <p className="text-[var(--text-secondary)] mb-6">
+                        <p className="text-[14px] text-zinc-600 dark:text-[#A1A1AA] leading-relaxed mb-6">
                             We've sent a verification link to{" "}
-                            <span className="text-[var(--accent)] font-medium">{requiresVerification}</span>.
-                            Please check your inbox and click the link to verify your account.
+                            <span className="text-tp-accent font-bold">{requiresVerification}</span>.
+                            Check your inbox and click the link to activate your account.
                         </p>
 
-                        {/* Resend Success */}
                         {resendSuccess && (
                             <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-sm text-green-500">
                                 Verification email sent! Check your inbox.
                             </div>
                         )}
 
-                        {/* Errors */}
                         {errors.length > 0 && (
                             <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
                                 <ul className="text-sm text-red-500 list-disc list-inside">
@@ -134,28 +205,22 @@ export default function LoginClient() {
                             </div>
                         )}
 
-                        {/* Resend Button */}
-                        <Button
+                        <button
                             onClick={handleResendVerification}
-                            variant="outline"
-                            className="w-full mb-4"
-                            isLoading={isResending}
+                            disabled={isResending}
+                            className="w-full h-[48px] border border-zinc-200 dark:border-[#161B22] text-zinc-700 dark:text-[#A1A1AA] hover:border-tp-accent/40 hover:text-tp-accent font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[12px] flex items-center justify-center gap-2 disabled:opacity-50 mb-6"
                         >
-                            <RefreshCw className="w-4 h-4 mr-2" />
-                            Resend Verification Email
-                        </Button>
+                            <RefreshCw className={`w-4 h-4 ${isResending ? "animate-spin" : ""}`} />
+                            {isResending ? "Sending..." : "Resend Verification Email"}
+                        </button>
 
-                        {/* Divider */}
-                        <div className="border-t border-[var(--border)] my-6" />
-
-                        {/* Back to Login */}
-                        <p className="text-sm text-[var(--text-muted)] mb-3">
+                        <p className="text-[12px] text-zinc-500 dark:text-[#71717A] mb-3">
                             Didn't receive the email? Check your spam folder or click above to resend.
                         </p>
 
                         <button
                             onClick={() => setRequiresVerification(null)}
-                            className="text-sm text-[var(--accent)] hover:underline"
+                            className="text-[11px] font-bold uppercase tracking-wider text-tp-accent hover:text-tp-accent-hover transition-colors"
                         >
                             ← Back to Login
                         </button>
@@ -166,25 +231,33 @@ export default function LoginClient() {
     }
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center px-4">
-            <div className="w-full max-w-md">
-                <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-8">
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <div className="w-14 h-14 bg-[var(--accent)] rounded-xl flex items-center justify-center mx-auto mb-4">
-                            <LogIn className="w-7 h-7 text-white" />
+        <div className="min-h-screen flex items-center justify-center px-4 py-12">
+            <div className="w-full max-w-[1000px] grid lg:grid-cols-2 rounded-[24px] overflow-hidden border border-zinc-200 dark:border-[#161B22] shadow-2xl dark:shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0B0E14]">
+
+                <BrandPanel />
+
+                {/* Form side */}
+                <div className="relative p-8 md:p-10 lg:p-12">
+                    {/* Mobile mini-logo */}
+                    <Link href="/" className="lg:hidden flex items-center gap-2.5 mb-8 w-max">
+                        <div className="w-9 h-9 bg-tp-accent rounded-lg flex items-center justify-center">
+                            <Gamepad2 className="w-4.5 h-4.5 text-white" strokeWidth={2} />
                         </div>
-                        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
-                            Welcome Back
+                        <span className="font-display font-bold text-[15px] text-zinc-900 dark:text-white tracking-tight">TECHPLAY</span>
+                    </Link>
+
+                    <div className="mb-8">
+                        <span className="text-tp-accent font-bold tracking-[0.2em] text-[10px] uppercase block mb-2">PLAYER 1 — READY?</span>
+                        <h1 className="font-display text-[28px] font-bold text-zinc-900 dark:text-white uppercase tracking-[0.03em] leading-tight mb-2">
+                            Welcome <span className="text-tp-accent">Back</span>
                         </h1>
-                        <p className="text-[var(--text-secondary)]">
-                            Sign in to continue to TechPlay
+                        <p className="text-[13px] text-zinc-600 dark:text-[#A1A1AA]">
+                            Insert credentials to continue.
                         </p>
                     </div>
 
-                    {/* API Errors */}
                     {errors.length > 0 && (
-                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                        <div className="mb-5 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
                             <ul className="text-sm text-red-500 list-disc list-inside">
                                 {errors.map((error, index) => (
                                     <li key={index}>{error}</li>
@@ -193,102 +266,101 @@ export default function LoginClient() {
                         </div>
                     )}
 
-                    {/* Status Message */}
                     {status && (
-                        <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-sm text-green-500">
+                        <div className="mb-5 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-sm text-green-500">
                             {status}
                         </div>
                     )}
 
-                    {/* Form */}
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                        <Input
-                            label="Email Address"
-                            type="email"
-                            placeholder="you@example.com"
-                            {...register("email", { required: "Email is required" })}
-                            error={formErrors.email?.message as string}
-                        />
-
-                        <Input
-                            label="Password"
-                            type="password"
-                            placeholder="••••••••"
-                            {...register("password", { required: "Password is required" })}
-                            error={formErrors.password?.message as string}
-                        />
-
-                        <div className="flex justify-end">
-                            <Link
-                                href="/forgot-password"
-                                className="text-sm text-[var(--accent)] hover:underline"
-                            >
-                                Forgot Password?
-                            </Link>
+                        <div>
+                            <label className={labelClass}>Email Address</label>
+                            <input
+                                type="email"
+                                placeholder="you@example.com"
+                                className={inputClass}
+                                {...register("email", { required: "Email is required" })}
+                            />
+                            {formErrors.email && <p className="text-red-500 text-xs mt-1.5">{formErrors.email.message as string}</p>}
                         </div>
 
-                        {/* Turnstile Widget */}
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className={`${labelClass} mb-0`}>Password</label>
+                                <Link href="/forgot-password" className="text-[10px] font-bold uppercase tracking-wider text-tp-accent hover:text-tp-accent-hover transition-colors">
+                                    Forgot?
+                                </Link>
+                            </div>
+                            <input
+                                type="password"
+                                placeholder="••••••••"
+                                className={inputClass}
+                                {...register("password", { required: "Password is required" })}
+                            />
+                            {formErrors.password && <p className="text-red-500 text-xs mt-1.5">{formErrors.password.message as string}</p>}
+                        </div>
+
                         <Turnstile
                             onVerify={handleTurnstileVerify}
                             onError={handleTurnstileError}
                         />
 
-                        <Button
+                        <button
                             type="submit"
-                            className="w-full"
-                            isLoading={isLoading}
-                            disabled={!turnstileToken && process.env.NEXT_PUBLIC_TURNSTILE_ENABLED !== 'false'}
+                            disabled={isLoading || (!turnstileToken && process.env.NEXT_PUBLIC_TURNSTILE_ENABLED !== 'false')}
+                            className="group w-full h-[52px] bg-tp-accent hover:bg-tp-accent-hover text-white font-bold rounded-lg transition-colors uppercase tracking-[0.1em] text-[13px] flex items-center justify-center gap-1.5 shadow-lg shadow-tp-accent/25 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Sign In
-                        </Button>
+                            {isLoading ? "Signing in..." : (
+                                <>
+                                    Press Start
+                                    <ChevronsRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                </>
+                            )}
+                        </button>
 
-                        <div className="relative">
+                        <div className="relative py-1">
                             <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t border-[var(--border)]" />
+                                <span className="w-full border-t border-zinc-200 dark:border-[#161B22]" />
                             </div>
-                            <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-[var(--bg-card)] px-2 text-[var(--text-muted)]">
-                                    Or
+                            <div className="relative flex justify-center">
+                                <span className="bg-white dark:bg-[#0B0E14] px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 dark:text-[#52525B]">
+                                    Or continue with
                                 </span>
                             </div>
                         </div>
 
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full relative hover:bg-[#5865F2]/10 hover:border-[#5865F2] hover:text-[#5865F2] transition-colors"
-                            onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/discord/redirect`}
-                        >
-                            <svg className="w-5 h-5 mr-2" viewBox="0 0 127.14 96.36" fill="currentColor">
-                                <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.09,105.09,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.11,77.11,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.89,105.89,0,0,0,126.6,80.22c.12-23.61-4.38-47.56-18.9-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" />
-                            </svg>
-                            Continue with Discord
-                        </Button>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                type="button"
+                                className="h-[48px] rounded-lg border border-zinc-200 dark:border-[#161B22] text-zinc-700 dark:text-[#A1A1AA] hover:border-[#5865F2] hover:text-[#5865F2] hover:bg-[#5865F2]/5 font-bold text-[12px] uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                                onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/discord/redirect`}
+                            >
+                                <svg className="w-4 h-4" viewBox="0 0 127.14 96.36" fill="currentColor">
+                                    <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.09,105.09,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.11,77.11,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.89,105.89,0,0,0,126.6,80.22c.12-23.61-4.38-47.56-18.9-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" />
+                                </svg>
+                                Discord
+                            </button>
 
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full relative hover:bg-blue-600/10 hover:border-blue-600 hover:text-blue-600 transition-colors mt-3"
-                            onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/battlenet/redirect?region=eu`}
-                        >
-                            <Shield className="w-5 h-5 mr-2" />
-                            Continue with Battle.net
-                        </Button>
+                            <button
+                                type="button"
+                                className="h-[48px] rounded-lg border border-zinc-200 dark:border-[#161B22] text-zinc-700 dark:text-[#A1A1AA] hover:border-blue-500 hover:text-blue-500 hover:bg-blue-500/5 font-bold text-[12px] uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                                onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/battlenet/redirect?region=eu`}
+                            >
+                                <Shield className="w-4 h-4" />
+                                Battle.net
+                            </button>
+                        </div>
                     </form>
 
-                    <div className="mt-4 flex items-center justify-center gap-2 text-xs text-[var(--text-muted)]">
+                    <div className="mt-5 flex items-center justify-center gap-1.5 text-[10px] text-zinc-400 dark:text-[#52525B] font-bold uppercase tracking-wider">
                         <Shield className="w-3 h-3" />
                         Protected by Cloudflare Turnstile
                     </div>
 
-                    {/* Footer */}
-                    <div className="mt-6 text-center text-sm text-[var(--text-secondary)]">
-                        Don't have an account?{" "}
-                        <Link
-                            href="/register"
-                            className="text-[var(--accent)] font-medium hover:underline"
-                        >
-                            Create one
+                    <div className="mt-7 pt-6 border-t border-zinc-200 dark:border-[#161B22] text-center">
+                        <span className="text-[13px] text-zinc-600 dark:text-[#A1A1AA]">New player? </span>
+                        <Link href="/register" className="text-[12px] font-bold uppercase tracking-wider text-tp-accent hover:text-tp-accent-hover transition-colors">
+                            Create your account →
                         </Link>
                     </div>
                 </div>
@@ -296,4 +368,3 @@ export default function LoginClient() {
         </div>
     );
 }
-

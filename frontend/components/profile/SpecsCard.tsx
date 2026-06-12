@@ -90,7 +90,7 @@ export const SpecsCard = ({ specs }: SpecsCardProps) => {
             {/* Core Components */}
             <div>
                 <h3 className="profile-section-header text-white mb-4">
-                    <Cpu className="w-5 h-5 text-blue-400" />
+                    <Cpu className="w-5 h-5 text-tp-accent" />
                     Core Components
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -101,7 +101,7 @@ export const SpecsCard = ({ specs }: SpecsCardProps) => {
             {/* Peripherals */}
             <div>
                 <h3 className="profile-section-header text-white mb-4">
-                    <Headphones className="w-5 h-5 text-purple-400" />
+                    <Headphones className="w-5 h-5 text-tp-accent/70" />
                     Peripherals
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

@@ -193,16 +193,16 @@ export default function MessagesClient() {
 
     if (isAuthLoading || isLoading) {
         return (
-            <div className="h-screen pt-24 bg-[var(--bg-primary)] flex justify-center items-center">
+            <div className="h-screen pt-24 flex justify-center items-center">
                 <div className="w-10 h-10 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] pt-24 pb-12 flex justify-center">
+        <div className="min-h-screen pt-24 pb-12 flex justify-center">
             {/* Main Container - Fixed Height Widget (Compact) */}
-            <div className="container mx-auto px-4 max-w-5xl h-[600px] flex flex-col md:flex-row gap-3">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 h-[600px] flex flex-col md:flex-row gap-3">
 
                 {/* 1. SIDEBAR (User List) */}
                 <div className={`w-full md:w-1/3 lg:w-1/4 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl flex flex-col overflow-hidden
@@ -238,7 +238,7 @@ export default function MessagesClient() {
                                 >
                                     {/* Avatar */}
                                     <div className="relative flex-shrink-0">
-                                        <div className="w-10 h-10 rounded-full bg-[var(--bg-primary)] overflow-hidden border border-[var(--border)]">
+                                        <div className="w-10 h-10 rounded-full overflow-hidden border border-[var(--border)]">
                                             {chat.user.avatar_url ? (
                                                 <img src={chat.user.avatar_url} alt={chat.user.username} className="w-full h-full object-cover" />
                                             ) : (
@@ -300,7 +300,7 @@ export default function MessagesClient() {
                                     </button>
 
                                     <Link href={`/profile/${activeConversation?.user.username}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                                        <div className="w-9 h-9 rounded-full bg-[var(--bg-primary)] overflow-hidden border border-[var(--border)]">
+                                        <div className="w-9 h-9 rounded-full overflow-hidden border border-[var(--border)]">
                                             {activeConversation?.user.avatar_url ? (
                                                 <img src={activeConversation?.user.avatar_url} alt="" className="w-full h-full object-cover" />
                                             ) : (
@@ -359,7 +359,7 @@ export default function MessagesClient() {
                             </div>
 
                             {/* Messages Scroll Area */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-[var(--bg-primary)]/30">
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar/30">
                                 {activeMessages.map((msg, i) => {
                                     const isMe = msg.sender_id === user?.id;
                                     const showAvatar = !isMe && (i === 0 || activeMessages[i - 1].sender_id !== msg.sender_id);
@@ -372,7 +372,7 @@ export default function MessagesClient() {
                                                 {!isMe && (
                                                     <div className="w-8 h-8 flex-shrink-0">
                                                         {showAvatar && (
-                                                            <div className="w-8 h-8 rounded-full bg-[var(--bg-primary)] overflow-hidden border border-[var(--border)]">
+                                                            <div className="w-8 h-8 rounded-full overflow-hidden border border-[var(--border)]">
                                                                 {msg.sender.avatar_url ? (
                                                                     <img src={msg.sender.avatar_url} className="w-full h-full object-cover" />
                                                                 ) : (

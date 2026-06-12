@@ -34,7 +34,7 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         async function fetchSettings() {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings`);
+                const res = await fetch(`/api/proxy/settings`);
                 if (res.ok) {
                     const data = await res.json();
                     setSettings(data);

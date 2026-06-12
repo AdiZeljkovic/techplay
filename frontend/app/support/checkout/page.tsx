@@ -56,12 +56,12 @@ function SupportCheckoutContent() {
 
     if (loading || authLoading) return <LoadingView />;
 
-    if (!tier) return <div className="min-h-screen bg-[var(--bg-primary)] text-white flex items-center justify-center">Tier not found.</div>;
+    if (!tier) return <div className="min-h-screen text-white flex items-center justify-center">Tier not found.</div>;
 
     if (success) return <SuccessView user={user} router={router} />;
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] py-20 px-4 font-sans selection:bg-[var(--accent)]/30">
+        <div className="min-h-screen py-20 px-4 font-sans selection:bg-[var(--accent)]/30">
             {/* Background Texture */}
             <div className="fixed inset-0 bg-[radial-gradient(circle_at_top_right,rgba(var(--accent-rgb),0.08),transparent_50%)] pointer-events-none" />
             <div className="fixed inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(0,0,0,0.4),transparent_50%)] pointer-events-none" />
@@ -370,7 +370,7 @@ function OptionCard({ selected, onClick, title, price, period, description }: an
 
 function SuccessView({ user, router }: any) {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center p-4">
+        <div className="min-h-screen flex items-center justify-center p-4">
             <div className="max-w-md w-full bg-[var(--bg-card)] border border-[var(--border)] p-10 rounded-3xl text-center shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-500">
                 <div className="absolute top-0 w-full left-0 h-1 bg-[var(--accent)]" />
 
@@ -396,7 +396,7 @@ function SuccessView({ user, router }: any) {
 
 function LoadingView() {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center">
             <Loader2 className="w-8 h-8 text-[var(--accent)] animate-spin" />
         </div>
     );

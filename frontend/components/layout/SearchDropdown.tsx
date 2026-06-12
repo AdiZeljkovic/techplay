@@ -24,9 +24,11 @@ interface SearchDropdownProps {
     className?: string;
     placeholder?: string;
     isMobile?: boolean;
+    onClose?: () => void;
+    autoFocus?: boolean;
 }
 
-export default function SearchDropdown({ className, placeholder = "Search...", isMobile = false }: SearchDropdownProps) {
+export default function SearchDropdown({ className, placeholder = "Search...", isMobile = false, onClose, autoFocus = false }: SearchDropdownProps) {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<SearchResult[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -35,6 +37,10 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
+
+    useEffect(() => {
+        if (autoFocus) inputRef.current?.focus();
+    }, [autoFocus]);
 
     // Debounced search with proper cleanup to prevent memory leaks
     useEffect(() => {
@@ -116,6 +122,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
     const navigateTo = (url: string) => {
         setIsOpen(false);
         setQuery("");
+        onClose?.();
         router.push(url);
     };
 
@@ -178,7 +185,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         className={cn(
-                            "absolute z-50 bg-[#001540]/98 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden",
+                            "absolute z-50 bg-[var(--bg-primary)]/98 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden",
                             isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[min(400px,calc(100vw-2rem))]"
                         )}
                         style={{ boxShadow: "0 20px 50px rgba(0,0,0,0.5)" }}
@@ -238,7 +245,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         className={cn(
-                            "absolute z-50 bg-[#001540]/98 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl p-6 text-center",
+                            "absolute z-50 bg-[var(--bg-primary)]/98 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl p-6 text-center",
                             isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[min(300px,calc(100vw-2rem))]"
                         )}
                     >

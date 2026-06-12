@@ -39,17 +39,17 @@ interface StaffData {
 const getRoleColor = (role: string) => {
     switch (role) {
         case 'Super Admin':
-            return { border: 'border-yellow-500', text: 'text-yellow-400', bg: 'from-yellow-500 to-orange-600' };
+            return { border: 'border-tp-accent', text: 'text-tp-accent', bg: 'from-tp-accent to-[#FF7A3D]' };
         case 'Editor-in-Chief':
-            return { border: 'border-purple-500', text: 'text-purple-400', bg: 'from-purple-500 to-pink-600' };
+            return { border: 'border-tp-accent/80', text: 'text-tp-accent', bg: 'from-tp-accent to-[#FF7A3D]' };
         case 'Editor':
-            return { border: 'border-blue-500', text: 'text-blue-400', bg: 'from-blue-500 to-cyan-600' };
+            return { border: 'border-tp-accent/60', text: 'text-tp-accent/80', bg: 'from-tp-accent/80 to-[#FF7A3D]' };
         case 'Journalist':
-            return { border: 'border-cyan-500', text: 'text-cyan-400', bg: 'from-cyan-500 to-teal-600' };
+            return { border: 'border-tp-accent/40', text: 'text-tp-accent/70', bg: 'from-tp-accent/70 to-[#FF7A3D]/70' };
         case 'Moderator':
-            return { border: 'border-green-500', text: 'text-green-400', bg: 'from-green-500 to-emerald-600' };
+            return { border: 'border-tp-accent/30', text: 'text-tp-accent/60', bg: 'from-tp-accent/60 to-[#FF7A3D]/60' };
         default:
-            return { border: 'border-[var(--accent)]', text: 'text-[var(--accent)]', bg: 'from-[var(--accent)] to-purple-600' };
+            return { border: 'border-[var(--accent)]', text: 'text-[var(--accent)]', bg: 'from-[var(--accent)] to-[#FF7A3D]' };
     }
 };
 
@@ -139,13 +139,13 @@ export default function ImpressumClient({ staff }: { staff: StaffData | null }) 
     const moderators = staff?.['Moderator'] || [];
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             <PageHero
                 title="Impressum"
                 description="Meet the people behind TechPlay and get in touch with our team."
             />
 
-            <div className="container mx-auto px-4 py-16 max-w-6xl">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-16">
                 <motion.div
                     variants={staggerContainer}
                     initial="hidden"
@@ -199,7 +199,7 @@ export default function ImpressumClient({ staff }: { staff: StaffData | null }) 
                                 <div className="space-y-4">
                                     <a
                                         href="mailto:redakcija@techplay.gg"
-                                        className="flex items-center gap-4 p-4 bg-[var(--bg-primary)] rounded-xl border border-[var(--border)] hover:border-[var(--accent)] transition-colors group"
+                                        className="flex items-center gap-4 p-4 rounded-xl border border-[var(--border)] hover:border-[var(--accent)] transition-colors group"
                                     >
                                         <div className="p-2 bg-[var(--accent)]/10 rounded-lg">
                                             <Mail className="w-5 h-5 text-[var(--accent)]" />
@@ -211,7 +211,7 @@ export default function ImpressumClient({ staff }: { staff: StaffData | null }) 
                                     </a>
                                     <a
                                         href="tel:+38762574783"
-                                        className="flex items-center gap-4 p-4 bg-[var(--bg-primary)] rounded-xl border border-[var(--border)] hover:border-[var(--accent)] transition-colors group"
+                                        className="flex items-center gap-4 p-4 rounded-xl border border-[var(--border)] hover:border-[var(--accent)] transition-colors group"
                                     >
                                         <div className="p-2 bg-[var(--accent)]/10 rounded-lg">
                                             <Phone className="w-5 h-5 text-[var(--accent)]" />
@@ -230,7 +230,7 @@ export default function ImpressumClient({ staff }: { staff: StaffData | null }) 
                     {editorInChief.length > 0 && (
                         <motion.section variants={fadeInUp}>
                             <div className="flex items-center gap-3 mb-6">
-                                <Crown className="w-6 h-6 text-purple-400" />
+                                <Crown className="w-6 h-6 text-tp-accent" />
                                 <h2 className="text-2xl font-bold text-[var(--text-primary)]">Editor-in-Chief</h2>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -245,7 +245,7 @@ export default function ImpressumClient({ staff }: { staff: StaffData | null }) 
                     {editors.length > 0 && (
                         <motion.section variants={fadeInUp}>
                             <div className="flex items-center gap-3 mb-6">
-                                <PenTool className="w-6 h-6 text-blue-400" />
+                                <PenTool className="w-6 h-6 text-tp-accent" />
                                 <h2 className="text-2xl font-bold text-[var(--text-primary)]">Editors</h2>
                             </div>
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
@@ -260,7 +260,7 @@ export default function ImpressumClient({ staff }: { staff: StaffData | null }) 
                     {journalists.length > 0 && (
                         <motion.section variants={fadeInUp}>
                             <div className="flex items-center gap-3 mb-6">
-                                <Newspaper className="w-6 h-6 text-cyan-400" />
+                                <Newspaper className="w-6 h-6 text-tp-accent" />
                                 <h2 className="text-2xl font-bold text-[var(--text-primary)]">Journalists</h2>
                             </div>
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
@@ -275,7 +275,7 @@ export default function ImpressumClient({ staff }: { staff: StaffData | null }) 
                     {moderators.length > 0 && (
                         <motion.section variants={fadeInUp}>
                             <div className="flex items-center gap-3 mb-6">
-                                <Shield className="w-6 h-6 text-green-400" />
+                                <Shield className="w-6 h-6 text-tp-accent" />
                                 <h2 className="text-2xl font-bold text-[var(--text-primary)]">Community Moderators</h2>
                             </div>
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -309,7 +309,7 @@ export default function ImpressumClient({ staff }: { staff: StaffData | null }) 
 
                     {/* Join Us CTA */}
                     <motion.section variants={fadeInUp}>
-                        <div className="bg-gradient-to-r from-[var(--accent)]/20 via-[var(--bg-card)] to-purple-600/20 border border-[var(--border)] rounded-3xl p-10 text-center relative overflow-hidden">
+                        <div className="bg-gradient-to-r from-[var(--accent)]/20 via-[var(--bg-card)] to-[var(--accent)]/10 border border-[var(--border)] rounded-3xl p-10 text-center relative overflow-hidden">
                             <div className="absolute inset-0 bg-[url('/images/grid-pattern.svg')] opacity-5" />
                             <div className="relative z-10">
                                 <Sparkles className="w-10 h-10 text-[var(--accent)] mx-auto mb-4" />

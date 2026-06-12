@@ -85,7 +85,7 @@ function CreateThreadForm() {
 
     if (authLoading) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="w-10 h-10 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
             </div>
         );
@@ -93,7 +93,7 @@ function CreateThreadForm() {
 
     if (!user) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center gap-6 p-4">
+            <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-4">
                 <div className="w-24 h-24 bg-[var(--bg-card)] rounded-full flex items-center justify-center">
                     <AlertCircle className="w-12 h-12 text-[var(--accent)]" />
                 </div>
@@ -116,10 +116,10 @@ function CreateThreadForm() {
     const selectedCategory = allCategories.find(c => c.id === categoryId);
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             {/* Header */}
             <div className="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
-                <div className="container mx-auto px-4 py-8">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
                     <Link
                         href="/forum"
                         className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors mb-6"
@@ -129,7 +129,7 @@ function CreateThreadForm() {
                     </Link>
 
                     <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-gradient-to-br from-[var(--accent)] to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-[var(--accent)]/30">
+                        <div className="w-14 h-14 bg-tp-accent rounded-2xl flex items-center justify-center shadow-lg shadow-[var(--accent)]/30">
                             <Sparkles className="w-7 h-7 text-white" />
                         </div>
                         <div>
@@ -141,7 +141,7 @@ function CreateThreadForm() {
             </div>
 
             {/* Content */}
-            <div className="container mx-auto px-4 py-8">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Main Form */}
                     <div className="lg:col-span-3">
@@ -179,7 +179,7 @@ function CreateThreadForm() {
                                 </label>
                                 {preselectedCategory && selectedCategory ? (
                                     // Locked View
-                                    <div className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] flex items-center justify-between opacity-80 cursor-not-allowed">
+                                    <div className="w-full border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] flex items-center justify-between opacity-80 cursor-not-allowed">
                                         <div className="flex items-center gap-2">
                                             <span className="font-medium">{selectedCategory.name}</span>
                                             <span className="text-xs bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-0.5 rounded-full border border-[var(--accent)]/20">
@@ -193,7 +193,7 @@ function CreateThreadForm() {
                                     <select
                                         value={categoryId || ""}
                                         onChange={(e) => setCategoryId(Number(e.target.value))}
-                                        className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all cursor-pointer appearance-none"
+                                        className="w-full border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all cursor-pointer appearance-none"
                                         required
                                     >
                                         <option value="">Select a category...</option>
@@ -220,7 +220,7 @@ function CreateThreadForm() {
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="Enter a clear, descriptive title..."
-                                    className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] placeholder:text-gray-400 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all text-lg"
+                                    className="w-full border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] placeholder:text-gray-400 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all text-lg"
                                     maxLength={255}
                                     required
                                 />
@@ -313,7 +313,7 @@ function CreateThreadForm() {
 // Loading fallback for Suspense
 function LoadingFallback() {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center">
             <div className="w-10 h-10 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
         </div>
     );

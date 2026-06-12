@@ -51,10 +51,10 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
         : null;
 
     return (
-        <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/70 backdrop-blur-sm"
                 onClick={onClose}
             />
 
@@ -63,20 +63,22 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
                 role="dialog"
                 aria-modal="true"
                 aria-label="Added to cart"
-                className={`relative w-full max-w-md bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl shadow-2xl transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}
+                className={`relative w-full max-w-md bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-[24px] shadow-2xl dark:shadow-[0_20px_48px_rgba(0,0,0,0.6)] overflow-hidden transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}
             >
+                <div className="h-[3px] bg-tp-accent w-full" />
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-5 border-b border-[var(--border)]">
-                    <div className="flex items-center gap-2 text-green-400">
-                        <div className="p-1 rounded-full bg-green-500/10 border border-green-500/20">
-                            <ShoppingCart className="w-4 h-4" />
+                <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-[#161B22]">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                            <ShoppingCart className="w-4 h-4 text-green-500" />
                         </div>
-                        <span className="font-bold">Added to Cart</span>
+                        <span className="font-display text-[15px] font-bold text-zinc-900 dark:text-white uppercase tracking-[0.05em]">Added to Cart</span>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1 hover:bg-[var(--bg-elevated)] rounded-full transition-colors text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                        className="w-9 h-9 rounded-lg flex items-center justify-center text-zinc-500 dark:text-[#A1A1AA] hover:text-tp-accent hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
+                        aria-label="Close"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -86,47 +88,49 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
                 <div className="p-6">
                     {product && (
                         <div className="flex gap-4 mb-6">
-                            <div className="relative w-20 h-20 bg-[var(--bg-elevated)] rounded-lg overflow-hidden border border-[var(--border)] flex-shrink-0">
+                            <div className="relative w-20 h-20 bg-zinc-100 dark:bg-[#10141B] rounded-xl overflow-hidden border border-zinc-200 dark:border-[#161B22] flex-shrink-0">
                                 {imageUrl ? (
                                     <Image
                                         src={imageUrl}
                                         alt={product.name}
                                         fill
+                                        sizes="80px"
                                         className="object-cover"
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center">
-                                        <ShoppingBag className="w-8 h-8 text-[var(--text-muted)] opacity-20" />
+                                        <ShoppingBag className="w-8 h-8 text-zinc-300 dark:text-white/10" />
                                     </div>
                                 )}
                             </div>
                             <div className="flex-1">
-                                <h3 className="font-bold text-[var(--text-primary)] line-clamp-2 mb-1">
+                                <h3 className="text-[14px] font-bold text-zinc-900 dark:text-white line-clamp-2 leading-snug mb-1.5">
                                     {product.name}
                                 </h3>
-                                <div className="text-[var(--accent)] font-bold">
-                                    {product.price.toLocaleString('bs-BA', { minimumFractionDigits: 2 })} KM
+                                <div className="font-display text-[18px] font-bold text-tp-accent leading-none">
+                                    {product.price.toLocaleString('bs-BA', { minimumFractionDigits: 2 })}
+                                    <span className="text-[11px] font-bold text-zinc-500 dark:text-[#71717A] ml-1">KM</span>
                                 </div>
                             </div>
                         </div>
                     )}
 
                     {/* Quantity Selector */}
-                    <div className="flex items-center justify-between mb-4 p-3 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border)]">
-                        <span className="text-sm font-medium text-[var(--text-muted)]">Quantity</span>
+                    <div className="flex items-center justify-between mb-5 p-3.5 bg-zinc-50 dark:bg-[#070A0F] rounded-xl border border-zinc-200 dark:border-[#161B22]">
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 dark:text-[#71717A]">Quantity</span>
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setQuantity(q => Math.max(1, q - 1))}
                                 aria-label="Decrease quantity"
-                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--border)] border border-[var(--border)] transition-colors"
+                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] text-zinc-600 dark:text-[#A1A1AA] hover:border-tp-accent/40 hover:text-tp-accent transition-colors"
                             >
                                 <Minus className="w-3.5 h-3.5" aria-hidden="true" />
                             </button>
-                            <span className="w-8 text-center font-bold text-[var(--text-primary)]">{quantity}</span>
+                            <span className="w-8 text-center font-display font-bold text-[15px] text-zinc-900 dark:text-white">{quantity}</span>
                             <button
                                 onClick={() => setQuantity(q => q + 1)}
                                 aria-label="Increase quantity"
-                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--border)] border border-[var(--border)] transition-colors"
+                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] text-zinc-600 dark:text-[#A1A1AA] hover:border-tp-accent/40 hover:text-tp-accent transition-colors"
                             >
                                 <Plus className="w-3.5 h-3.5" aria-hidden="true" />
                             </button>
@@ -136,7 +140,7 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
                     <div className="flex flex-col gap-3">
                         <Link
                             href="/shop/checkout"
-                            className="w-full py-3 bg-[var(--accent)] text-white font-bold rounded-xl hover:bg-[var(--accent-hover)] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[var(--accent)]/20"
+                            className="w-full h-[48px] bg-tp-accent hover:bg-tp-accent-hover text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 uppercase tracking-[0.08em] text-[12px] shadow-lg shadow-tp-accent/20"
                             onClick={onClose}
                         >
                             Checkout Now <ArrowRight className="w-4 h-4" />
@@ -144,7 +148,7 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
 
                         <button
                             onClick={onClose}
-                            className="w-full py-3 bg-[var(--bg-elevated)] text-[var(--text-primary)] font-bold rounded-xl hover:bg-[var(--bg-secondary)] border border-[var(--border)] transition-all"
+                            className="w-full h-[48px] border border-zinc-200 dark:border-[#161B22] text-zinc-700 dark:text-[#A1A1AA] hover:border-tp-accent/40 hover:text-tp-accent font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[12px]"
                         >
                             Continue Shopping
                         </button>

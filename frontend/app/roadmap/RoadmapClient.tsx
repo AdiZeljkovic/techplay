@@ -9,7 +9,7 @@ import { Rocket } from "lucide-react";
 
 export default function RoadmapPage() {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             <PageHero
                 title="Roadmap 2026"
                 description="Shaping the future of gaming & tech"

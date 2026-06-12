@@ -38,8 +38,8 @@ export default function ProfileActivity({ posts }: ProfileActivityProps) {
                         {/* Content card */}
                         <div className="flex-1 glow-card rounded-xl bg-[var(--bg-card)] border border-white/[0.06] p-4 hover:border-white/10 transition-all">
                             <div className="flex items-start gap-3">
-                                <div className="p-2 rounded-lg bg-blue-500/10 flex-shrink-0">
-                                    <MessageSquare className="w-4 h-4 text-blue-400" />
+                                <div className="p-2 rounded-lg bg-tp-accent/10 flex-shrink-0">
+                                    <MessageSquare className="w-4 h-4 text-tp-accent" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[var(--text-secondary)] text-sm line-clamp-2">

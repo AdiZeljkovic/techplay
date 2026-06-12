@@ -10,8 +10,8 @@ interface ProfileArticlesProps {
 }
 
 const typeColors: Record<string, string> = {
-    reviews: "bg-purple-500/90",
-    news: "bg-blue-500/90",
+    reviews: "bg-tp-accent/90",
+    news: "bg-tp-accent/70",
     tech: "bg-orange-500/90",
     guide: "bg-emerald-500/90",
 };

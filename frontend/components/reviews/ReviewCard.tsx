@@ -38,7 +38,7 @@ export default memo(function ReviewCard({ review, index, basePath = "/reviews", 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05, duration: 0.3 }}
-                className="group h-full bg-[var(--bg-card)] border border-[var(--border)] rounded-xl overflow-hidden hover:border-[var(--accent)] hover:shadow-lg transition-all duration-300"
+                className="group h-full bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-xl overflow-hidden hover:border-tp-accent/50 dark:hover:border-tp-accent/50 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.5)] transition-all duration-300"
             >
                 {/* Image */}
                 <div className="relative h-48 w-full overflow-hidden">
@@ -52,19 +52,20 @@ export default memo(function ReviewCard({ review, index, basePath = "/reviews", 
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                     ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-light)] to-[var(--bg-elevated)]" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-tp-accent/15 to-zinc-100 dark:to-[#1A1F26]" />
                     )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
 
                     {/* Score Badge - Hidden if hideRating is true */}
                     {!hideRating && (
-                        <div className={`absolute top-3 right-3 w-12 h-12 rounded-full ${ratingBg} backdrop-blur-md border border-[var(--border)] flex items-center justify-center`}>
-                            <span className={`text-lg font-bold ${ratingColor}`}>{score}</span>
+                        <div className={`absolute top-3 right-3 w-12 h-12 rounded-[12px] ${ratingBg} backdrop-blur-md border border-white/10 flex items-center justify-center shadow-lg`}>
+                            <span className={`text-lg font-bold font-display ${ratingColor}`}>{score}</span>
                         </div>
                     )}
 
                     {/* Category Badge */}
                     <div className="absolute bottom-3 left-3">
-                        <span className="px-2.5 py-1 bg-[var(--accent)] text-white text-xs font-semibold rounded uppercase">
+                        <span className="px-2.5 py-1 bg-tp-accent text-white text-[10px] font-bold rounded uppercase tracking-widest leading-none inline-block shadow-sm shadow-tp-accent/20">
                             {decodeHtml(review.category?.name) || 'Latest'}
                         </span>
                     </div>
@@ -73,27 +74,27 @@ export default memo(function ReviewCard({ review, index, basePath = "/reviews", 
                 {/* Content */}
                 <div className="p-5 flex flex-col h-[calc(100%-12rem)]">
                     {review.review_data?.game_title && (
-                        <p className="text-sm font-medium text-[var(--accent)] mb-1">{review.review_data.game_title}</p>
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-tp-accent mb-1.5">{review.review_data.game_title}</p>
                     )}
 
-                    <h3 className="text-lg font-semibold text-[var(--text-primary)] line-clamp-2 group-hover:text-[var(--accent)] transition-colors mb-2">
+                    <h3 className="text-[16px] font-bold text-zinc-900 dark:text-white leading-snug line-clamp-2 group-hover:text-tp-accent transition-colors mb-2">
                         {decodeHtml(review.title)}
                     </h3>
 
-                    <p className="text-sm text-[var(--text-secondary)] line-clamp-2 mb-4 flex-grow">
+                    <p className="text-[13px] text-zinc-600 dark:text-[#A1A1AA] leading-relaxed line-clamp-2 mb-4 flex-grow">
                         {decodeHtml(review.excerpt || review.summary) || "Read our full review for the verdict."}
                     </p>
 
                     {/* Star Rating - Hidden if hideRating is true */}
                     {!hideRating && (
-                        <div className="flex items-center gap-1 mt-auto">
+                        <div className="flex items-center gap-1 mt-auto pt-4 border-t border-zinc-200 dark:border-white/[0.04]">
                             {[...Array(5)].map((_, i) => (
                                 <Star
                                     key={i}
-                                    className={`w-4 h-4 ${i < Math.round(score / 2) ? "text-yellow-400 fill-yellow-400" : "text-[var(--text-muted)]"}`}
+                                    className={`w-4 h-4 ${i < Math.round(score / 2) ? "text-tp-accent fill-tp-accent" : "text-zinc-300 dark:text-[#3F3F46]"}`}
                                 />
                             ))}
-                            <span className="text-sm text-[var(--text-muted)] ml-2">{score}</span>
+                            <span className="text-[12px] font-bold text-zinc-500 dark:text-[#71717A] ml-2">{score}/10</span>
                         </div>
                     )}
                 </div>

@@ -1,6 +1,5 @@
 
 import ReviewsClient from "./ReviewsClient";
-import SeoContent from "@/components/seo/SeoContent";
 import { generateDynamicMetadata } from "@/lib/seo";
 import { getServerApiUrl } from "@/lib/api";
 import { Metadata } from "next";
@@ -28,10 +27,5 @@ async function getInitialReviews() {
 export default async function ReviewsPage() {
     const initialData = await getInitialReviews();
 
-    return (
-        <>
-            <ReviewsClient initialData={initialData} />
-            <SeoContent path="/reviews" />
-        </>
-    );
+    return <ReviewsClient initialData={initialData} />;
 }

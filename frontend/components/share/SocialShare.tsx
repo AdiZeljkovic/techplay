@@ -32,7 +32,6 @@ export default function SocialShare({
         whatsapp: `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`,
         telegram: `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`,
         reddit: `https://reddit.com/submit?url=${encodedUrl}&title=${encodedTitle}`,
-        n4g: `https://n4g.com/tips?url=${encodedUrl}&title=${encodedTitle}`,
     };
 
     const handleShare = (platform: string) => {
@@ -99,12 +98,6 @@ export default function SocialShare({
             color: "hover:text-[#25D366] hover:border-[#25D366]",
             action: () => handleShare("whatsapp"),
         },
-        {
-            name: "N4G",
-            icon: null,
-            color: "hover:text-[#CC0000] hover:border-[#CC0000]",
-            action: () => handleShare("n4g"),
-        },
     ];
 
     if (vertical) {
@@ -118,7 +111,7 @@ export default function SocialShare({
                         title={`Share on ${btn.name}`}
                         aria-label={`Share on ${btn.name}`}
                     >
-                        {btn.icon ? <btn.icon className="w-5 h-5" /> : <span className="text-[10px] font-bold leading-none">N4G</span>}
+                        <btn.icon className="w-5 h-5" />
                     </button>
                 ))}
 
@@ -156,7 +149,7 @@ export default function SocialShare({
                     title={`Share on ${btn.name}`}
                     aria-label={`Share on ${btn.name}`}
                 >
-                    {btn.icon ? <btn.icon className="w-5 h-5" /> : <span className="text-[10px] font-bold leading-none">N4G</span>}
+                    <btn.icon className="w-5 h-5" />
                 </button>
             ))}
 

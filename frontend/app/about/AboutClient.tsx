@@ -24,13 +24,13 @@ const staggerContainer = {
 
 export default function AboutPage() {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             <PageHero
                 title="About TechPlay"
                 description="Built by gamers, for gamers. Just honest gaming and tech talk."
             />
 
-            <div className="container mx-auto px-4 py-16 max-w-6xl space-y-24">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-16 space-y-24">
 
                 {/* Mission Section */}
                 <motion.section
@@ -40,7 +40,7 @@ export default function AboutPage() {
                     variants={fadeInUp}
                     className="text-center max-w-3xl mx-auto"
                 >
-                    <h2 className="text-3xl font-bold text-white mb-6">What We Do</h2>
+                    <h2 className="font-display text-3xl font-bold text-white mb-6 uppercase tracking-tight">What We Do</h2>
                     <p className="text-lg text-[var(--text-secondary)] leading-relaxed mb-6">
                         We test hardware until it breaks. We play games until 4 AM to write honest reviews.
                         We dig through patch notes so you don't have to. And we do it because we genuinely care
@@ -129,8 +129,8 @@ export default function AboutPage() {
 
                             {/* Glowing orbs */}
                             <div className="absolute top-10 left-10 w-32 h-32 bg-[var(--accent)]/20 rounded-full blur-3xl" />
-                            <div className="absolute bottom-20 right-20 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl" />
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
+                            <div className="absolute bottom-20 right-20 w-40 h-40 bg-tp-accent/10 rounded-full blur-3xl" />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-tp-accent/5 rounded-full blur-3xl" />
 
                             {/* Floating gaming icons */}
                             <motion.div
@@ -149,7 +149,7 @@ export default function AboutPage() {
                                 className="absolute top-16 right-[20%]"
                             >
                                 <div className="p-4 bg-[var(--bg-card)]/80 backdrop-blur-sm rounded-2xl border border-[var(--border)] shadow-lg">
-                                    <Monitor className="w-10 h-10 text-blue-400" />
+                                    <Monitor className="w-10 h-10 text-[#A1A1AA]" />
                                 </div>
                             </motion.div>
 
@@ -159,7 +159,7 @@ export default function AboutPage() {
                                 className="absolute top-1/3 left-[8%]"
                             >
                                 <div className="p-3 bg-[var(--bg-card)]/80 backdrop-blur-sm rounded-xl border border-[var(--border)] shadow-lg">
-                                    <Keyboard className="w-8 h-8 text-purple-400" />
+                                    <Keyboard className="w-8 h-8 text-[#A1A1AA]" />
                                 </div>
                             </motion.div>
 
@@ -169,7 +169,7 @@ export default function AboutPage() {
                                 className="absolute top-1/4 right-[10%]"
                             >
                                 <div className="p-3 bg-[var(--bg-card)]/80 backdrop-blur-sm rounded-xl border border-[var(--border)] shadow-lg">
-                                    <Cpu className="w-8 h-8 text-green-400" />
+                                    <Cpu className="w-8 h-8 text-[#A1A1AA]" />
                                 </div>
                             </motion.div>
 
@@ -179,7 +179,7 @@ export default function AboutPage() {
                                     initial={{ scale: 0.9, opacity: 0 }}
                                     whileInView={{ scale: 1, opacity: 1 }}
                                     viewport={{ once: true }}
-                                    className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-purple-500 to-blue-500"
+                                    className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] to-[#FF7A3D]"
                                 >
                                     TP
                                 </motion.div>

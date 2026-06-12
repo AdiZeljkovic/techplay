@@ -10,13 +10,11 @@ import { Loader2, Save, User, Gamepad2, Cpu, Monitor, Lock, CheckCircle, ShieldC
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 import { AnimatePresence, motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 export default function SettingsClient() {
     const { user, isLoading, logout } = useAuth({ middleware: 'auth' });
     const router = useRouter();
-
-    // DEBUG: Log user object to see if email is present
-    console.log('Settings Page - User object:', user);
 
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState<'bio' | 'ids' | 'specs' | 'security' | 'privacy'>('bio');
@@ -100,13 +98,13 @@ export default function SettingsClient() {
             if (user?.username) {
                 mutate(`/users/${user.username}`);
             }
-            alert('Settings saved successfully!');
+            toast.success('Settings saved successfully!');
             router.refresh();
         } catch (error: any) {
             console.error("Failed to save settings", error);
             // Show specific error if available
             const msg = error.response?.data?.message || "Failed to save settings.";
-            alert(msg);
+            toast.error(msg);
         } finally {
             setSaving(false);
         }
@@ -127,7 +125,7 @@ export default function SettingsClient() {
             console.error("Failed to change password", error);
             const msg = error.response?.data?.message || "Failed to change password.";
             const valErrors = error.response?.data?.errors ? Object.values(error.response.data.errors).flat().join('\n') : '';
-            alert(`${msg}\n${valErrors}`);
+            toast.error(valErrors ? `${msg}\n${valErrors}` : msg);
         } finally {
             setSaving(false);
         }
@@ -144,7 +142,7 @@ export default function SettingsClient() {
             a.click();
             window.URL.revokeObjectURL(url);
         } catch {
-            alert('Failed to export data. Please try again.');
+            toast.error('Failed to export data. Please try again.');
         } finally {
             setIsExporting(false);
         }
@@ -152,7 +150,7 @@ export default function SettingsClient() {
 
     const handleDeleteAccount = async () => {
         if (deleteConfirmText !== user?.username) {
-            alert(`Please type your username "${user?.username}" to confirm.`);
+            toast.error(`Please type your username "${user?.username}" to confirm.`);
             return;
         }
         if (!confirm('This will permanently delete your account. This action CANNOT be undone.')) return;
@@ -161,7 +159,7 @@ export default function SettingsClient() {
             await axios.delete('/user/account');
             logout();
         } catch {
-            alert('Failed to delete account. Please contact support.');
+            toast.error('Failed to delete account. Please contact support.');
         } finally {
             setIsDeletingAccount(false);
         }
@@ -169,7 +167,7 @@ export default function SettingsClient() {
 
     if (isLoading || !user) {
         return (
-            <div className="min-h-screen pt-24 flex justify-center bg-[var(--bg-primary)]">
+            <div className="min-h-screen pt-24 flex justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-[var(--accent)]" />
             </div>
         );
@@ -190,8 +188,8 @@ export default function SettingsClient() {
     );
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] pt-24 pb-12">
-            <div className="container mx-auto px-4 max-w-4xl">
+        <div className="min-h-screen pt-24 pb-12">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
                 <div className="flex items-center justify-between mb-8">
                     <h1 className="text-3xl font-bold text-[var(--text-primary)]">Profile Settings</h1>
                     {activeTab !== 'security' && (
@@ -543,7 +541,7 @@ export default function SettingsClient() {
                                                 value={deleteConfirmText}
                                                 onChange={(e) => setDeleteConfirmText(e.target.value)}
                                                 placeholder={user.username}
-                                                className="w-full bg-[var(--bg-primary)] border border-red-500/30 rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-red-500"
+                                                className="w-full border border-red-500/30 rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-red-500"
                                             />
                                         </div>
                                         <Button

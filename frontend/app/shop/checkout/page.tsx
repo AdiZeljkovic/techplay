@@ -72,9 +72,9 @@ export default function CheckoutPage() {
 
     if (orderSuccess) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)]">
+            <div className="min-h-screen">
                 <PageHero title="Checkout" icon={ShoppingCart} />
-                <div className="container mx-auto px-4 py-20 text-center">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-20 text-center">
                     <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle2 className="w-12 h-12 text-green-500" />
                     </div>
@@ -95,9 +95,9 @@ export default function CheckoutPage() {
 
     if (items.length === 0) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)]">
+            <div className="min-h-screen">
                 <PageHero title="Checkout" icon={ShoppingCart} />
-                <div className="container mx-auto px-4 py-20 text-center">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-20 text-center">
                     <div className="w-24 h-24 bg-[var(--bg-elevated)] rounded-full flex items-center justify-center mx-auto mb-6 border border-[var(--border)]">
                         <ShoppingCart className="w-10 h-10 text-[var(--text-muted)]" />
                     </div>
@@ -115,14 +115,14 @@ export default function CheckoutPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             <PageHero
                 title="Secure Checkout"
                 description="Complete your purchase securely."
                 icon={ShoppingCart}
             />
 
-            <div className="container mx-auto px-4 py-12">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                     {/* Left Column: Shipping & Payment */}

@@ -124,10 +124,10 @@ export default function HubPage({ type, value, title, description, initialData }
     const handlePage = (p: number) => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
 
             {/* Hero — exact PageHero style */}
-            <div className="relative w-full h-[400px] mb-8 bg-[#000B25] overflow-hidden flex flex-col items-center justify-center text-center">
+            <div className="relative w-full h-[400px] mb-8 bg-[var(--bg-secondary)] overflow-hidden flex flex-col items-center justify-center text-center">
                 {/* Background */}
                 <div className="absolute inset-0 z-0">
                     <div className="absolute inset-0 bg-gradient-to-br from-[#1a103c] via-[#0d0725] to-[#000000]" />

@@ -69,20 +69,20 @@ export default function ForumSearch() {
     return (
         <div ref={containerRef} className="relative w-full max-w-sm">
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" aria-hidden="true" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-tp-accent" aria-hidden="true" />
                 <input
                     type="search"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search forum..."
                     aria-label="Search forum threads and posts"
-                    className="w-full bg-[var(--bg-elevated)] border border-[var(--border)] rounded-full py-2 pl-9 pr-8 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-all"
+                    className="w-full bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-full h-[44px] pl-11 pr-9 text-[13px] text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-[#71717A] focus:outline-none focus:border-tp-accent/50 transition-all shadow-sm dark:shadow-[0_4px_16px_rgba(0,0,0,0.3)]"
                 />
                 {query && (
                     <button
                         onClick={() => { setQuery(""); setIsOpen(false); }}
                         aria-label="Clear search"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-[#71717A] hover:text-tp-accent transition-colors"
                     >
                         <X className="w-3.5 h-3.5" />
                     </button>
@@ -90,27 +90,28 @@ export default function ForumSearch() {
             </div>
 
             {isOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl shadow-2xl z-50 overflow-hidden max-h-80 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#0D1117] border border-zinc-200 dark:border-white/[0.07] rounded-xl shadow-2xl dark:shadow-[0_20px_48px_rgba(0,0,0,0.6)] z-50 overflow-hidden max-h-80 overflow-y-auto">
+                    <div className="h-[3px] bg-tp-accent w-full sticky top-0" />
                     {isLoading ? (
-                        <div className="p-4 text-center text-sm text-[var(--text-muted)]">Searching...</div>
+                        <div className="p-4 text-center text-[13px] text-zinc-500 dark:text-[#71717A]">Searching...</div>
                     ) : totalResults === 0 ? (
-                        <div className="p-4 text-center text-sm text-[var(--text-muted)]">No results for "{query}"</div>
+                        <div className="p-4 text-center text-[13px] text-zinc-500 dark:text-[#71717A]">No results for "{query}"</div>
                     ) : (
                         <>
                             {results!.threads.length > 0 && (
                                 <div>
-                                    <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] bg-[var(--bg-elevated)]">Threads</div>
+                                    <div className="px-4 py-2 text-[9px] font-bold uppercase tracking-[0.18em] text-tp-accent bg-zinc-50 dark:bg-white/[0.03]">Threads</div>
                                     {results!.threads.map(t => (
                                         <Link
                                             key={t.id}
                                             href={`/forum/thread/${t.slug}`}
                                             onClick={() => { setIsOpen(false); setQuery(""); }}
-                                            className="flex items-center gap-3 px-3 py-2.5 hover:bg-[var(--bg-elevated)] transition-colors"
+                                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors group"
                                         >
-                                            <MessageSquare className="w-4 h-4 text-[var(--accent)] flex-shrink-0" aria-hidden="true" />
+                                            <MessageSquare className="w-4 h-4 text-tp-accent flex-shrink-0" aria-hidden="true" />
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-sm font-medium text-[var(--text-primary)] truncate">{t.title}</div>
-                                                <div className="text-xs text-[var(--text-muted)]">{t.category?.name} · {t.posts_count} replies</div>
+                                                <div className="text-[13px] font-bold text-zinc-900 dark:text-white truncate group-hover:text-tp-accent transition-colors">{t.title}</div>
+                                                <div className="text-[11px] text-zinc-500 dark:text-[#71717A]">{t.category?.name} · {t.posts_count} replies</div>
                                             </div>
                                         </Link>
                                     ))}
@@ -118,18 +119,18 @@ export default function ForumSearch() {
                             )}
                             {results!.posts.length > 0 && (
                                 <div>
-                                    <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] bg-[var(--bg-elevated)]">Posts</div>
+                                    <div className="px-4 py-2 text-[9px] font-bold uppercase tracking-[0.18em] text-tp-accent bg-zinc-50 dark:bg-white/[0.03]">Posts</div>
                                     {results!.posts.map(p => (
                                         <Link
                                             key={p.id}
                                             href={`/forum/thread/${p.thread?.slug}`}
                                             onClick={() => { setIsOpen(false); setQuery(""); }}
-                                            className="flex items-center gap-3 px-3 py-2.5 hover:bg-[var(--bg-elevated)] transition-colors"
+                                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors"
                                         >
-                                            <MessageSquare className="w-4 h-4 text-[var(--text-muted)] flex-shrink-0" aria-hidden="true" />
+                                            <MessageSquare className="w-4 h-4 text-zinc-400 dark:text-[#71717A] flex-shrink-0" aria-hidden="true" />
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-xs text-[var(--text-muted)] truncate">{p.thread?.title}</div>
-                                                <div className="text-sm text-[var(--text-secondary)] line-clamp-1"
+                                                <div className="text-[11px] text-zinc-500 dark:text-[#71717A] truncate">{p.thread?.title}</div>
+                                                <div className="text-[13px] text-zinc-700 dark:text-[#A1A1AA] line-clamp-1"
                                                     dangerouslySetInnerHTML={{ __html: p.content.replace(/<[^>]+>/g, '').substring(0, 80) + '...' }}
                                                 />
                                             </div>
@@ -140,7 +141,7 @@ export default function ForumSearch() {
                             <Link
                                 href={`/forum/search?q=${encodeURIComponent(query)}`}
                                 onClick={() => setIsOpen(false)}
-                                className="block px-3 py-2 text-xs text-center text-[var(--accent)] hover:bg-[var(--bg-elevated)] border-t border-[var(--border)] transition-colors"
+                                className="block px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-center text-tp-accent hover:bg-zinc-50 dark:hover:bg-white/5 border-t border-zinc-200 dark:border-white/[0.06] transition-colors"
                             >
                                 See all results for "{query}"
                             </Link>

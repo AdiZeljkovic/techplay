@@ -5,9 +5,11 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import { Review, PaginatedResponse } from "@/types";
 import ReviewCard from "@/components/reviews/ReviewCard";
-import { Button } from "@/components/ui/Button";
-import { Cpu, ChevronLeft, ChevronRight } from "lucide-react";
+import { Cpu } from "lucide-react";
 import PageHero from "@/components/ui/PageHero";
+import ListingHeader from "@/components/ui/ListingHeader";
+import ListingPagination from "@/components/ui/ListingPagination";
+import ListingEmptyState from "@/components/ui/ListingEmptyState";
 import AdUnit from "@/components/ads/AdUnit";
 import { HARDWARE_CATEGORIES } from "@/lib/categories";
 
@@ -40,7 +42,7 @@ export default function HardwareClient({ initialData }: HardwareClientProps) {
     const reviews = data?.data || [];
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
 
             <PageHero
                 title="Hardware Lab"
@@ -51,26 +53,19 @@ export default function HardwareClient({ initialData }: HardwareClientProps) {
                 categoryBase="/hardware"
             />
 
-            <div className="container mx-auto px-4 py-8">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
 
                 {/* Top Banner Ad */}
                 <div className="mb-8">
                     <AdUnit position="listing_top" />
                 </div>
 
-                <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
-                    <h2 className="text-xl font-semibold text-[var(--text-primary)]">
-                        All Hardware
-                    </h2>
-                    <span className="text-sm text-[var(--text-muted)] font-mono">
-                        {data?.meta?.total || data?.total || 0} ITEMS TESTED
-                    </span>
-                </div>
+                <ListingHeader title="All Hardware" count={data?.meta?.total || data?.total || 0} countLabel="ITEMS TESTED" />
 
                 {isLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[1, 2, 3].map((i) => (
-                            <div key={i} className="h-80 bg-[var(--bg-card)] rounded-xl animate-pulse" />
+                            <div key={i} className="h-80 bg-zinc-100 dark:bg-[#0B0E14] rounded-xl animate-pulse" />
                         ))}
                     </div>
                 ) : reviews.length > 0 ? (
@@ -81,47 +76,26 @@ export default function HardwareClient({ initialData }: HardwareClientProps) {
                             ))}
                         </div>
 
-                        <div className="flex items-center justify-center gap-2 mb-12">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                disabled={page === 1 || isValidating}
-                            >
-                                <ChevronLeft className="w-4 h-4" />
-                                Previous
-                            </Button>
-
-                            <div className="px-4 py-2 bg-[var(--bg-card)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-secondary)]">
-                                Page <span className="font-bold text-white">{data?.meta?.current_page || data?.current_page}</span> of {data?.meta?.last_page || data?.last_page}
-                            </div>
-
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPage((p) => p + 1)}
-                                disabled={(!data?.links?.next && !data?.next_page_url) || isValidating}
-                            >
-                                Next
-                                <ChevronRight className="w-4 h-4" />
-                            </Button>
-                        </div>
+                        <ListingPagination
+                            page={data?.meta?.current_page || data?.current_page || page}
+                            lastPage={data?.meta?.last_page || data?.last_page}
+                            onPrev={() => setPage((p) => Math.max(1, p - 1))}
+                            onNext={() => setPage((p) => p + 1)}
+                            prevDisabled={page === 1 || isValidating}
+                            nextDisabled={(!data?.links?.next && !data?.next_page_url) || isValidating}
+                        />
                     </>
                 ) : (
-                    <div className="text-center py-24 bg-[var(--bg-card)]/50 border border-[var(--border)] rounded-3xl">
-                        <Cpu className="w-16 h-16 text-[var(--text-muted)] mx-auto mb-6 opacity-50" />
-                        <h3 className="text-xl font-bold text-white mb-2">No hardware content found</h3>
-                        <p className="text-[var(--text-secondary)]">Check back later for new benchmarks.</p>
-                    </div>
+                    <ListingEmptyState icon={Cpu} title="No hardware content found" description="Check back later for new benchmarks." />
                 )}
             </div>
 
             {/* SEO Bottom Content */}
             {categoryData?.data?.seo_text && (
-                <div className="container mx-auto px-4 pb-16">
-                    <div className="bg-[var(--bg-card)]/30 rounded-2xl p-8 border border-[var(--border)]">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 pb-16">
+                    <div className="bg-white dark:bg-[#0B0E14]/50 rounded-[24px] p-8 border border-zinc-200 dark:border-[#161B22] transition-colors duration-300">
                         <div
-                            className="prose prose-invert prose-p:text-[var(--text-secondary)] prose-headings:text-white max-w-none"
+                            className="prose dark:prose-invert prose-p:text-zinc-600 dark:prose-p:text-[#A1A1AA] prose-headings:text-zinc-900 dark:prose-headings:text-white max-w-none"
                             dangerouslySetInnerHTML={{ __html: categoryData.data.seo_text }}
                         />
                     </div>

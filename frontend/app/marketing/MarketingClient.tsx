@@ -8,8 +8,6 @@ import {
     MonitorSmartphone, MousePointerClick, Shield, Globe,
     Cpu, Gamepad2, Layers
 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-
 const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } }
@@ -32,34 +30,34 @@ const adSpecs = [
         dims: "970x250 + Background",
         desc: "Maximum impact. Own the top of the homepage and wrap the site experience.",
         icon: Layout,
-        color: "text-purple-400"
+        color: "text-tp-accent"
     },
     {
         name: "Leaderboard",
         dims: "728x90",
         desc: "High visibility across all pages. The industry standard/staple for brand awareness.",
         icon: Layers,
-        color: "text-blue-400"
+        color: "text-tp-accent"
     },
     {
         name: "Medium Rectangle",
         dims: "300x250",
         desc: "Integrated into the sidebar and article content. High click-through rates.",
         icon: MonitorSmartphone,
-        color: "text-green-400"
+        color: "text-tp-accent"
     },
     {
         name: "Mobile Sticky",
         dims: "320x50 / 320x100",
         desc: "Persistent footer ad on mobile devices. Cannot be missed.",
         icon: Zap,
-        color: "text-yellow-400"
+        color: "text-tp-accent"
     }
 ];
 
 export default function MarketingClient() {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             <PageHero
                 title="Advertising & Partnerships"
                 description="Connect with a passionate audience of gamers, tech enthusiasts, and early adopters."
@@ -68,7 +66,7 @@ export default function MarketingClient() {
 
             {/* Introduction: The "Gamers Who Read" Value Prop */}
             <section className="py-20 relative overflow-hidden">
-                <div className="container mx-auto px-4 max-w-5xl relative z-10 text-center">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 relative z-10 text-center">
                     <motion.div
                         initial="hidden"
                         whileInView="visible"
@@ -77,7 +75,7 @@ export default function MarketingClient() {
                     >
                         <h2 className="text-3xl md:text-5xl font-black text-[var(--text-primary)] mb-8 leading-tight">
                             More Than Just <br className="hidden md:block" />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] to-purple-500">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] to-[#FF7A3D]">
                                 Impressions
                             </span>
                         </h2>
@@ -93,12 +91,12 @@ export default function MarketingClient() {
 
                 {/* Background Glows */}
                 <div className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-[var(--accent)]/10 rounded-full blur-[120px] -z-0 pointer-events-none" />
-                <div className="absolute top-1/3 right-0 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] -z-0 pointer-events-none" />
+                <div className="absolute top-1/3 right-0 w-80 h-80 bg-tp-accent/5 rounded-full blur-[100px] -z-0 pointer-events-none" />
             </section>
 
             {/* Audience Demographics */}
             <section className="py-20 bg-[var(--bg-secondary)] border-y border-[var(--border)]">
-                <div className="container mx-auto px-4 max-w-7xl">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -117,7 +115,7 @@ export default function MarketingClient() {
                             whileHover={{ y: -5 }}
                             className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl text-center"
                         >
-                            <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-400">
+                            <div className="w-12 h-12 bg-tp-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-tp-accent">
                                 <Users className="w-6 h-6" />
                             </div>
                             <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Young Professionals</h3>
@@ -130,7 +128,7 @@ export default function MarketingClient() {
                             whileHover={{ y: -5 }}
                             className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl text-center"
                         >
-                            <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-purple-400">
+                            <div className="w-12 h-12 bg-tp-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-tp-accent">
                                 <Globe className="w-6 h-6" />
                             </div>
                             <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Global Reach</h3>
@@ -143,7 +141,7 @@ export default function MarketingClient() {
                             whileHover={{ y: -5 }}
                             className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl text-center"
                         >
-                            <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-green-400">
+                            <div className="w-12 h-12 bg-tp-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-tp-accent">
                                 <Cpu className="w-6 h-6" />
                             </div>
                             <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Hardware Enthusiasts</h3>
@@ -156,7 +154,7 @@ export default function MarketingClient() {
                             whileHover={{ y: -5 }}
                             className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl text-center"
                         >
-                            <div className="w-12 h-12 bg-yellow-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-yellow-400">
+                            <div className="w-12 h-12 bg-tp-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-tp-accent">
                                 <Gamepad2 className="w-6 h-6" />
                             </div>
                             <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Active Buyers</h3>
@@ -169,7 +167,7 @@ export default function MarketingClient() {
 
             {/* Ad Placements Showcase */}
             <section className="py-20">
-                <div className="container mx-auto px-4 max-w-7xl">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
                     <motion.div
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
@@ -217,7 +215,7 @@ export default function MarketingClient() {
                             </div>
                             <div className="mt-6 flex flex-col gap-4 opacity-90">
                                 {/* Billboard */}
-                                <div className="w-full h-24 bg-purple-500/20 border-2 border-dashed border-purple-500/50 rounded-lg flex items-center justify-center text-purple-400 font-mono text-xs md:text-sm">
+                                <div className="w-full h-24 bg-tp-accent/15 border-2 border-dashed border-tp-accent/40 rounded-lg flex items-center justify-center text-tp-accent font-mono text-xs md:text-sm">
                                     Billboard (970x250)
                                 </div>
                                 <div className="flex gap-4">
@@ -228,7 +226,7 @@ export default function MarketingClient() {
                                         <div className="h-4 w-5/6 bg-[var(--bg-card)] rounded" />
                                         <div className="h-4 w-4/6 bg-[var(--bg-card)] rounded" />
                                         {/* Native/In-Article */}
-                                        <div className="w-full h-16 bg-blue-500/20 border-2 border-dashed border-blue-500/50 rounded-lg flex items-center justify-center text-blue-400 font-mono text-xs">
+                                        <div className="w-full h-16 bg-tp-accent/10 border-2 border-dashed border-tp-accent/30 rounded-lg flex items-center justify-center text-tp-accent/80 font-mono text-xs">
                                             In-Article (Native)
                                         </div>
                                         <div className="h-4 w-full bg-[var(--bg-card)] rounded" />
@@ -236,7 +234,7 @@ export default function MarketingClient() {
                                     </div>
                                     {/* Sidebar */}
                                     <div className="w-1/3 flex flex-col gap-4">
-                                        <div className="w-full aspect-square bg-green-500/20 border-2 border-dashed border-green-500/50 rounded-lg flex items-center justify-center text-green-400 font-mono text-center text-xs p-2">
+                                        <div className="w-full aspect-square bg-tp-accent/8 border-2 border-dashed border-tp-accent/25 rounded-lg flex items-center justify-center text-tp-accent/70 font-mono text-center text-xs p-2">
                                             Medium Rectangle (300x250)
                                         </div>
                                         <div className="flex-1 bg-[var(--bg-card)] rounded-lg opacity-50" />
@@ -251,7 +249,7 @@ export default function MarketingClient() {
 
             {/* Custom Solutions (Replaces Pricing) */}
             <section className="py-24 bg-[var(--bg-elevated)] border-y border-[var(--border)] overflow-hidden">
-                <div className="container mx-auto px-4 max-w-7xl">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         whileInView={{ opacity: 1, scale: 1 }}
@@ -281,7 +279,7 @@ export default function MarketingClient() {
 
                             {/* Card 2 */}
                             <div className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl group hover:border-[var(--accent)] transition-colors">
-                                <VideoIcon className="w-10 h-10 text-purple-400 mb-6" />
+                                <VideoIcon className="w-10 h-10 text-tp-accent mb-6" />
                                 <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-4">Video & Social</h3>
                                 <p className="text-[var(--text-secondary)] mb-6">
                                     Short-form video content (Reels/TikTok) and social media blasts that reach gamers where they scroll.
@@ -290,7 +288,7 @@ export default function MarketingClient() {
 
                             {/* Card 3 */}
                             <div className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl group hover:border-[var(--accent)] transition-colors">
-                                <MousePointerClick className="w-10 h-10 text-green-400 mb-6" />
+                                <MousePointerClick className="w-10 h-10 text-tp-accent mb-6" />
                                 <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-4">Giveaways</h3>
                                 <p className="text-[var(--text-secondary)] mb-6">
                                     High-engagement campaigns that drive massive traffic and social following. You provide the loot, we bring the crowd.
@@ -303,7 +301,7 @@ export default function MarketingClient() {
 
             {/* CTA Section */}
             <section className="py-20 text-center">
-                <div className="container mx-auto px-4 max-w-4xl">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -316,14 +314,12 @@ export default function MarketingClient() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <a href="mailto:marketing@techplay.gg">
-                                <Button size="lg" className="h-14 text-lg px-8 rounded-full bg-[var(--accent)] hover:bg-[var(--accent)]/90">
-                                    <Mail className="w-5 h-5 mr-2" /> marketing@techplay.gg
-                                </Button>
+                            <a href="mailto:marketing@techplay.gg" className="inline-flex items-center gap-2 h-[52px] px-8 bg-tp-accent hover:bg-tp-accent-hover text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[13px] shadow-lg shadow-tp-accent/20">
+                                <Mail className="w-5 h-5" /> marketing@techplay.gg
                             </a>
-                            <Button variant="outline" size="lg" className="h-14 text-lg px-8 rounded-full" disabled>
-                                <Download className="w-5 h-5 mr-2" /> Download Media Kit (PDF)
-                            </Button>
+                            <button disabled className="inline-flex items-center gap-2 h-[52px] px-8 border border-[var(--border)] text-[var(--text-secondary)] font-bold rounded-lg uppercase tracking-[0.08em] text-[13px] opacity-50 cursor-not-allowed">
+                                <Download className="w-5 h-5" /> Download Media Kit (PDF)
+                            </button>
                         </div>
                         <p className="mt-8 text-[var(--text-muted)] text-sm">
                             Agency? Ask for our agency rate card.

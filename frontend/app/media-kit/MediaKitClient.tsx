@@ -8,6 +8,7 @@ import {
     Mail
 } from "lucide-react";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 // Components
 import AnimatedCounter from "./components/AnimatedCounter";
@@ -23,7 +24,7 @@ import RequestPackageModal from "./components/RequestPackageModal";
 
 function MediaKitSkeleton() {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             <div className="h-screen bg-[var(--bg-secondary)] animate-pulse" />
             <div className="container mx-auto px-4 py-20 space-y-20">
                 {[...Array(8)].map((_, i) => (
@@ -36,7 +37,7 @@ function MediaKitSkeleton() {
 
 function ErrorState({ message }: { message: string }) {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center">
             <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-3xl p-12 max-w-2xl text-center">
                 <h2 className="text-2xl font-bold text-white mb-4">Failed to Load Media Kit</h2>
                 <p className="text-white/50">{message}</p>
@@ -97,7 +98,7 @@ function StatCard({ label, value, icon: Icon, gradient, delay }: {
 
             <div className="flex items-start justify-between mb-5">
                 <div className={`w-12 h-12 rounded-xl ${gradient} p-[1px]`}>
-                    <div className="w-full h-full rounded-xl bg-[var(--bg-primary)] flex items-center justify-center
+                    <div className="w-full h-full rounded-xl flex items-center justify-center
                                    group-hover:bg-[var(--bg-primary)]/80 transition-colors duration-500">
                         <Icon className="w-5 h-5 text-white/80" />
                     </div>
@@ -210,7 +211,7 @@ export default function MediaKitClient() {
     const stats = data.statistics;
 
     const handleDownloadPDF = () => {
-        alert("PDF download functionality coming soon!");
+        toast("PDF download functionality coming soon!");
     };
 
     // Build pricing tiers from API data
@@ -234,7 +235,7 @@ export default function MediaKitClient() {
 
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             {/* Request Package Modal */}
             <RequestPackageModal
                 isOpen={packageModalOpen}

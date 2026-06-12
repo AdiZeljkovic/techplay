@@ -76,14 +76,14 @@ export default function GiveawaysClient() {
     };
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             <PageHero
                 title="Giveaways"
                 description="Win amazing gaming prizes"
                 icon={Gift}
             />
 
-            <div className="max-w-7xl mx-auto px-4 py-16">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-16">
                 {/* Filters */}
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-2">

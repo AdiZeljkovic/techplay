@@ -47,7 +47,7 @@ const nextConfig: NextConfig = {
               "font-src 'self' https://fonts.gstatic.com data:",
               // Permissive img-src to allow all CDNs (avatars, banners, game covers, ads)
               "img-src * data: blob:",
-              "connect-src 'self' https://api-beta.techplay.gg https://api.techplay.gg https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://www.facebook.com https://connect.facebook.net https://wow.zamimg.com https://accounts.google.com https://*.adtrafficquality.google https://www.google.com https://pagead2.googlesyndication.com https://38wzs9wt1a.execute-api.eu-central-1.amazonaws.com https://streaming-media.production.privee.world https://static-media.production.privee.world",
+              `connect-src 'self' https://api-beta.techplay.gg https://api.techplay.gg http://backend.test https://backend.test http://127.0.0.1:8001 http://127.0.0.1:8000 https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://www.facebook.com https://connect.facebook.net https://wow.zamimg.com https://accounts.google.com https://*.adtrafficquality.google https://www.google.com https://pagead2.googlesyndication.com https://38wzs9wt1a.execute-api.eu-central-1.amazonaws.com https://streaming-media.production.privee.world https://static-media.production.privee.world`,
               // iframes: YouTube, Twitter/X, Instagram, Facebook, Google Ads, Google Sign-In
               "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://twitter.com https://x.com https://platform.twitter.com https://www.instagram.com https://www.facebook.com https://accounts.google.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://pagead2.googlesyndication.com https://www.google.com https://*.adtrafficquality.google https://challenges.cloudflare.com",
               "media-src 'self' blob: https://api-beta.techplay.gg https://streaming-media.production.privee.world https://static-media.production.privee.world",
@@ -93,6 +93,9 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
 
+    // Next.js 16 requires every quality value used by <Image quality={...}> to be declared
+    qualities: [60, 75],
+
     remotePatterns: [
       {
         protocol: 'https',
@@ -105,6 +108,18 @@ const nextConfig: NextConfig = {
       {
         protocol: 'http',
         hostname: 'localhost',
+      },
+      {
+        protocol: 'http',
+        hostname: 'backend.test',
+      },
+      {
+        protocol: 'https',
+        hostname: 'backend.test',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
       },
       {
         protocol: 'https',

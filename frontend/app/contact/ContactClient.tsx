@@ -60,13 +60,13 @@ export default function ContactPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             <PageHero
                 title="Get in Touch"
                 description="Got a tip? Found a bug? Want to work with us? We're all ears."
             />
 
-            <div className="container mx-auto px-4 py-16 md:py-24 max-w-7xl">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-16 md:py-24">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
 
                     {/* Left Column: Contact Info & Departments */}
@@ -77,7 +77,7 @@ export default function ContactPage() {
                         viewport={{ once: true }}
                     >
                         <motion.div variants={fadeInUp} className="mb-12">
-                            <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-6">Contact Information</h2>
+                            <h2 className="font-display text-3xl font-bold text-zinc-900 dark:text-white mb-6 uppercase tracking-tight">Contact Information</h2>
                             <p className="text-[var(--text-secondary)] text-lg leading-relaxed mb-8">
                                 We actually read our emails (shocking, we know). Whether you've got a news tip, want your game reviewed,
                                 or just found a typo that's driving you nuts—hit the right inbox below and we'll get back to you.
@@ -95,25 +95,25 @@ export default function ContactPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-4 p-6 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl group hover:border-purple-500 transition-colors">
-                                    <div className="p-3 bg-purple-500/10 rounded-xl text-purple-400 group-hover:scale-110 transition-transform">
+                                <div className="flex items-start gap-4 p-6 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl group hover:border-tp-accent/40 transition-colors">
+                                    <div className="p-3 bg-tp-accent/10 rounded-xl text-tp-accent group-hover:scale-110 transition-transform">
                                         <Briefcase className="w-6 h-6" />
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-[var(--text-primary)] text-lg mb-1">Advertising & Partnerships</h3>
                                         <p className="text-[var(--text-secondary)] text-sm mb-2">Want to advertise or partner with us? Let's talk rates and options.</p>
-                                        <a href="mailto:marketing@techplay.gg" className="text-purple-400 font-medium hover:underline">marketing@techplay.gg</a>
+                                        <a href="mailto:marketing@techplay.gg" className="text-tp-accent font-medium hover:underline">marketing@techplay.gg</a>
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-4 p-6 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl group hover:border-blue-500 transition-colors">
-                                    <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 group-hover:scale-110 transition-transform">
+                                <div className="flex items-start gap-4 p-6 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl group hover:border-tp-accent/40 transition-colors">
+                                    <div className="p-3 bg-tp-accent/10 rounded-xl text-tp-accent group-hover:scale-110 transition-transform">
                                         <HelpCircle className="w-6 h-6" />
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-[var(--text-primary)] text-lg mb-1">Technical Support</h3>
                                         <p className="text-[var(--text-secondary)] text-sm mb-2">Site broken? Can't log in? Comments not working? We'll fix it.</p>
-                                        <a href="mailto:support@techplay.gg" className="text-blue-400 font-medium hover:underline">support@techplay.gg</a>
+                                        <a href="mailto:support@techplay.gg" className="text-tp-accent font-medium hover:underline">support@techplay.gg</a>
                                     </div>
                                 </div>
                             </div>
@@ -145,8 +145,8 @@ export default function ContactPage() {
                     >
                         <div className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-3xl p-8 md:p-10 relative overflow-hidden">
                             {/* Decorative gradients */}
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--accent)]/5 rounded-full blur-3xl -z-0 pointer-events-none" />
-                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl -z-0 pointer-events-none" />
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-tp-accent/5 rounded-full blur-3xl -z-0 pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-tp-accent/3 rounded-full blur-3xl -z-0 pointer-events-none" />
 
                             <div className="relative z-10">
                                 <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Send us a message</h3>
@@ -198,7 +198,7 @@ export default function ContactPage() {
                                                 <select
                                                     id="subject"
                                                     name="subject"
-                                                    className="w-full h-10 px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border)] rounded-md text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] appearance-none"
+                                                    className="w-full h-10 px-3 py-2 border border-[var(--border)] rounded-md text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] appearance-none"
                                                     required
                                                     defaultValue=""
                                                 >
@@ -217,7 +217,7 @@ export default function ContactPage() {
 
                                         <div className="space-y-2">
                                             <label htmlFor="message" className="text-sm font-medium text-[var(--text-secondary)]">Message</label>
-                                            <Textarea id="message" name="message" placeholder="How can we help you?" required className="min-h-[150px] bg-[var(--bg-primary)]" />
+                                            <Textarea id="message" name="message" placeholder="How can we help you?" required className="min-h-[150px]" />
                                         </div>
 
                                         <Button type="submit" className="w-full h-12 text-lg" disabled={isSubmitting}>

@@ -47,7 +47,7 @@ export default function NewsCategoryClient({ categorySlug, initialData }: NewsCa
     const articles = data?.data || [];
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
 
             <PageHero
                 title={categoryDef.label}
@@ -58,7 +58,7 @@ export default function NewsCategoryClient({ categorySlug, initialData }: NewsCa
                 categoryBase="/news/category"
             />
 
-            <div className="container mx-auto px-4 py-8">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
 
                 <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
                     <h2 className="text-xl font-semibold text-[var(--text-primary)]">
@@ -120,7 +120,7 @@ export default function NewsCategoryClient({ categorySlug, initialData }: NewsCa
 
             {/* SEO Bottom Content */}
             {categoryData?.data?.seo_text && (
-                <div className="container mx-auto px-4 pb-16">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 pb-16">
                     <div className="bg-[var(--bg-card)]/30 rounded-2xl p-8 border border-[var(--border)]">
                         <div
                             className="prose prose-invert prose-p:text-[var(--text-secondary)] prose-headings:text-white max-w-none"

@@ -31,7 +31,7 @@ export default function HardwareSlugClient({ slug }: HardwareSlugClientProps) {
     // Loading state
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="animate-pulse">Loading...</div>
             </div>
         );
@@ -44,7 +44,7 @@ export default function HardwareSlugClient({ slug }: HardwareSlugClientProps) {
 
     // Not found
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">
                 <h1 className="text-2xl font-bold text-white mb-2">Not Found</h1>
                 <p className="text-[var(--text-secondary)]">This content could not be found.</p>

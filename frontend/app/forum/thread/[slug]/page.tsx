@@ -317,8 +317,8 @@ export default function ThreadPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)]">
-                <div className="container mx-auto px-4 py-8">
+            <div className="min-h-screen">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
                     <div className="animate-pulse space-y-6">
                         <div className="h-8 bg-[var(--bg-card)] rounded-lg w-1/3" />
                         <div className="h-48 bg-[var(--bg-card)] rounded-2xl" />
@@ -331,7 +331,7 @@ export default function ThreadPage() {
 
     if (!data) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center gap-4">
+            <div className="min-h-screen flex flex-col items-center justify-center gap-4">
                 <MessageSquare className="w-16 h-16 text-[var(--text-muted)]" />
                 <h1 className="text-2xl font-bold text-[var(--text-primary)]">Thread Not Found</h1>
                 <Link href="/forum">
@@ -355,10 +355,10 @@ export default function ThreadPage() {
     const canPin = currentUserIsStaff;
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             {/* Header */}
             <div className="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
-                <div className="container mx-auto px-4 py-6">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-6">
                     {/* Breadcrumb */}
                     <div className="flex items-center gap-2 text-sm text-[var(--text-muted)] mb-4">
                         <Link href="/forum" className="hover:text-[var(--accent)] transition-colors flex items-center gap-1">
@@ -437,7 +437,7 @@ export default function ThreadPage() {
             </div>
 
             {/* Main Content */}
-            <div className="container mx-auto px-4 py-8">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Thread Content & Replies */}
                     <div className="lg:col-span-3 space-y-6">
@@ -631,7 +631,7 @@ export default function ThreadPage() {
                                                             <textarea
                                                                 value={editContent}
                                                                 onChange={(e) => setEditContent(e.target.value)}
-                                                                className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-lg p-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-none min-h-[100px]"
+                                                                className="w-full border border-[var(--border)] rounded-lg p-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-none min-h-[100px]"
                                                             />
                                                             <div className="flex gap-2">
                                                                 <button
@@ -759,7 +759,7 @@ export default function ThreadPage() {
                             This action cannot be undone.
                         </p>
                         <textarea
-                            className="w-full bg-[var(--bg-primary)] border border-[var(--border)] rounded-md p-3 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-none"
+                            className="w-full border border-[var(--border)] rounded-md p-3 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-none"
                             rows={3}
                             placeholder="Reason for reporting (optional)..."
                             value={reportReason}

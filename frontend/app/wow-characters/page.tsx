@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import axios from '@/lib/axios';
 import { UserWowCharacter } from '@/types';
 import { Shield, Sword, Star, Trash2, TrendingUp, AlertCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function MyCharactersPage() {
     const router = useRouter();
@@ -47,7 +48,7 @@ export default function MyCharactersPage() {
             fetchCharacters(); // Refresh list
         } catch (err) {
             console.error('Failed to set main character', err);
-            alert('Failed to set main character. Please try again.');
+            toast.error('Failed to set main character. Please try again.');
         }
     };
 
@@ -59,7 +60,7 @@ export default function MyCharactersPage() {
             fetchCharacters(); // Refresh list
         } catch (err) {
             console.error('Failed to remove character', err);
-            alert('Failed to remove character. Please try again.');
+            toast.error('Failed to remove character. Please try again.');
         }
     };
 
@@ -88,7 +89,7 @@ export default function MyCharactersPage() {
 
     if (loading) {
         return (
-            <div className="container mx-auto px-4 py-20 max-w-7xl">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-20">
                 <div className="flex items-center justify-center">
                     <div className="text-center">
                         <div className="w-16 h-16 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -101,7 +102,7 @@ export default function MyCharactersPage() {
 
     if (error) {
         return (
-            <div className="container mx-auto px-4 py-20 max-w-7xl">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-20">
                 <div className="bg-red-500/10 border border-red-500/20 p-6 rounded-3xl text-center">
                     <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
                     <p className="text-red-500">{error}</p>
@@ -117,7 +118,7 @@ export default function MyCharactersPage() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-20 max-w-7xl">
+        <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-20">
             {/* Header */}
             <div className="mb-8">
                 <h1 className="text-4xl font-bold text-[var(--text-primary)] mb-2 flex items-center gap-3">
@@ -244,8 +245,8 @@ export default function MyCharactersPage() {
                     </div>
 
                     {/* Tips */}
-                    <div className="bg-gradient-to-br from-purple-500/5 to-[var(--accent)]/5 border border-purple-500/20 p-6 rounded-3xl">
-                        <h4 className="text-sm font-semibold text-purple-400 uppercase mb-3">Quick Tips</h4>
+                    <div className="bg-tp-accent/5 border border-tp-accent/20 p-6 rounded-3xl">
+                        <h4 className="text-sm font-semibold text-tp-accent uppercase mb-3">Quick Tips</h4>
                         <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
                             <li>• Click "Analyze" to run a fresh Midnight readiness analysis for any character</li>
                             <li>• Set your most-played character as "Main" for easy identification</li>

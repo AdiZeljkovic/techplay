@@ -4,22 +4,22 @@ import { useCart } from "@/context/CartContext";
 import Link from "next/link";
 import Image from "next/image";
 import { Trash2, ShoppingBag, ArrowRight, ArrowLeft, Minus, Plus } from "lucide-react";
-import { Button } from "@/components/ui/Button";
 
 export default function CartClient() {
     const { items, removeFromCart, updateQuantity, totalPrice, clearCart } = useCart();
 
     if (items.length === 0) {
         return (
-            <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center py-20 px-8">
                     <div className="w-20 h-20 bg-[var(--bg-card)] border border-[var(--border)] rounded-full flex items-center justify-center mx-auto mb-6">
                         <ShoppingBag className="w-10 h-10 text-[var(--text-muted)]" />
                     </div>
                     <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Your cart is empty</h2>
                     <p className="text-[var(--text-secondary)] mb-8">Looks like you haven't added anything yet.</p>
-                    <Link href="/shop">
-                        <Button>Start Shopping</Button>
+                    <Link href="/shop" className="inline-flex items-center gap-2 h-[48px] px-8 bg-tp-accent hover:bg-tp-accent-hover text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[13px]">
+                        Start Shopping
+                        <ArrowRight className="w-4 h-4" />
                     </Link>
                 </div>
             </div>
@@ -27,10 +27,10 @@ export default function CartClient() {
     }
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             {/* Header */}
             <div className="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
-                <div className="container mx-auto px-4 py-6">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-6">
                     <Link
                         href="/shop"
                         className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors mb-4"
@@ -52,7 +52,7 @@ export default function CartClient() {
             </div>
 
             {/* Cart Content */}
-            <div className="container mx-auto px-4 py-8">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Cart Items */}
                     <div className="lg:col-span-8">
@@ -148,11 +148,9 @@ export default function CartClient() {
                                 </div>
                             </div>
 
-                            <Link href="/checkout" className="block">
-                                <Button className="w-full">
-                                    Proceed to Checkout
-                                    <ArrowRight className="w-4 h-4" />
-                                </Button>
+                            <Link href="/checkout" className="flex items-center justify-center gap-2 h-[50px] w-full bg-tp-accent hover:bg-tp-accent-hover text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[13px] shadow-lg shadow-tp-accent/20">
+                                Proceed to Checkout
+                                <ArrowRight className="w-4 h-4" />
                             </Link>
                         </div>
                     </div>

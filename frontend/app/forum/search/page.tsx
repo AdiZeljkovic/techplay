@@ -43,7 +43,7 @@ function ForumSearchResults() {
     }, [q]);
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-3xl">
+        <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
             <Link href="/forum" className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--accent)] mb-6 transition-colors">
                 <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Back to Forum
             </Link>
@@ -118,10 +118,10 @@ function ForumSearchResults() {
 
 export default function ForumSearchPage() {
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)]">
+        <div className="min-h-screen">
             <PageHero title="Forum Search" description="Search threads and posts" icon={Search} />
             <Suspense fallback={
-                <div className="container mx-auto px-4 py-8 max-w-3xl space-y-4">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8 space-y-4">
                     {[...Array(5)].map((_, i) => (
                         <div key={i} className="h-20 bg-[var(--bg-card)] rounded-xl animate-pulse" />
                     ))}
