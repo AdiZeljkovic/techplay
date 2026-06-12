@@ -522,14 +522,17 @@ export default function Header() {
                         </Link>
                     )}
 
-                    {/* Right: Search */}
-                    <button
-                        onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-                        className="p-2 text-gray-400 hover:text-white transition-colors"
-                        aria-label="Search"
-                    >
-                        <Search className="w-5 h-5" />
-                    </button>
+                    {/* Right: Theme toggle + Search */}
+                    <div className="flex items-center">
+                        <ThemeToggle className="flex items-center justify-center w-9 h-9 text-gray-400 hover:text-white transition-colors" />
+                        <button
+                            onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+                            className="p-2 text-gray-400 hover:text-white transition-colors"
+                            aria-label="Search"
+                        >
+                            <Search className="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Mobile Search Dropdown */}
