@@ -2,23 +2,21 @@
 
 namespace App\Providers\Filament;
 
+use Filafly\Themes\Brisk\BriskTheme;
+use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Support\Colors\Color;
-use Filament\Enums\ThemeMode;
+use Filament\Support\Enums\Width;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-
-use Filament\Support\Enums\Width;
-use Caresome\FilamentNeobrutalism\NeobrutalismeTheme;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -32,16 +30,11 @@ class AdminPanelProvider extends PanelProvider
             ->spa()
             ->darkMode(true)
             ->defaultThemeMode(ThemeMode::Dark)
-            ->colors([
-                'primary' => '#7367f0',
-                'gray' => Color::Slate,
-            ])
-            ->font('Inter')
             ->brandName('TechPlay')
             ->brandLogoHeight('3rem')
             ->sidebarCollapsibleOnDesktop()
             ->collapsedSidebarWidth('9rem')
-            ->plugin(NeobrutalismeTheme::make())
+            ->plugin(BriskTheme::make())
             // ->renderHook(
             //     'panels::head.end',
             //     fn() => view('filament.custom-styles')
