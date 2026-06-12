@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import axios from "@/lib/axios";
 
 interface CalendarGame {
     id: number;
@@ -43,11 +44,8 @@ export default function UpcomingReleasesWidget() {
     useEffect(() => {
         async function load() {
             try {
-                const res = await fetch(`/api/proxy/games/calendar`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setGames((data.results || []).slice(0, 5));
-                }
+                const res = await axios.get('/games/calendar');
+                setGames((res.data.results || []).slice(0, 5));
             } catch {}
             finally { setLoading(false); }
         }
