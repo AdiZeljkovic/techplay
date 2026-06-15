@@ -70,12 +70,12 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                             {categoryLabel}
                         </span>
 
-                        <h1 className="font-display text-[28px] sm:text-[36px] lg:text-[52px] xl:text-[62px] font-black text-zinc-900 dark:text-white uppercase leading-[0.95] lg:leading-[0.9] tracking-tight mb-2 drop-shadow-sm dark:drop-shadow-lg">
+                        <h1 className="font-display text-[28px] sm:text-[36px] lg:text-[52px] xl:text-[62px] font-black text-zinc-900 dark:text-white uppercase leading-[0.95] lg:leading-[0.9] tracking-tight mb-2 drop-shadow-sm dark:drop-shadow-lg line-clamp-5">
                             {decodeHtml(current.title).toUpperCase()}
                         </h1>
 
                         {current.excerpt && (
-                            <p className="text-[14px] text-zinc-700 dark:text-[#E4E4E5] max-w-[380px] leading-relaxed mb-6 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] dark:drop-shadow-md line-clamp-3">
+                            <p className="text-[14px] text-zinc-700 dark:text-[#E4E4E5] max-w-[380px] leading-relaxed mb-6 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] dark:drop-shadow-md line-clamp-2">
                                 {decodeHtml(current.excerpt)}
                             </p>
                         )}
