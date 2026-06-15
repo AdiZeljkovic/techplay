@@ -21,7 +21,6 @@ import {
 import { cn } from "@/lib/utils";
 import SearchDropdown from "./SearchDropdown";
 import { decodeHtml } from "@/lib/decode";
-import ThemeToggle from "@/components/ui/ThemeToggle";
 
 const DiscordIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -522,17 +521,14 @@ export default function Header() {
                         </Link>
                     )}
 
-                    {/* Right: Theme toggle + Search */}
-                    <div className="flex items-center">
-                        <ThemeToggle className="flex items-center justify-center w-9 h-9 text-gray-400 hover:text-white transition-colors" />
-                        <button
-                            onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-                            className="p-2 text-gray-400 hover:text-white transition-colors"
-                            aria-label="Search"
-                        >
-                            <Search className="w-5 h-5" />
-                        </button>
-                    </div>
+                    {/* Right: Search */}
+                    <button
+                        onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+                        className="p-2 text-gray-400 hover:text-white transition-colors"
+                        aria-label="Search"
+                    >
+                        <Search className="w-5 h-5" />
+                    </button>
                 </div>
 
                 {/* Mobile Search Dropdown */}
@@ -675,9 +671,6 @@ export default function Header() {
 
                     {/* Actions (Right) */}
                     <div className="flex items-center gap-4">
-                        {/* Theme Toggle */}
-                        <ThemeToggle />
-
                         {/* Search Icon */}
                         <button
                             onClick={() => setIsSearchOpen(prev => !prev)}
