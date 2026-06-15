@@ -31,7 +31,7 @@ export default function ReviewsSection({ articles }: ReviewsSectionProps) {
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 w-full">
                 {reviewCards.map((review) => {
                     const score = parseFloat(String(review.review_score ?? 0)) || 0;
 
@@ -47,7 +47,7 @@ export default function ReviewsSection({ articles }: ReviewsSectionProps) {
                                 src={getImageSrc(review.featured_image_url)}
                                 alt={decodeHtml(review.title)}
                                 fill
-                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
                                 className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 dark:opacity-70 group-hover:opacity-100"
                             />
                             {/* Gradient Overlay */}
@@ -57,24 +57,24 @@ export default function ReviewsSection({ articles }: ReviewsSectionProps) {
                             {/* Score Ribbon */}
                             {score > 0 && (
                                 <div
-                                    className="absolute top-0 right-6 w-[54px] h-[64px] bg-tp-accent flex flex-col items-center justify-end pb-3 shadow-[0_5px_15px_rgba(0,0,0,0.5)] group-hover:h-[70px] transition-all duration-300"
+                                    className="absolute top-0 right-4 sm:right-6 w-[42px] sm:w-[54px] h-[50px] sm:h-[64px] bg-tp-accent flex flex-col items-center justify-end pb-2 sm:pb-3 shadow-[0_5px_15px_rgba(0,0,0,0.5)] group-hover:h-[56px] sm:group-hover:h-[70px] transition-all duration-300"
                                     style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%)" }}
                                 >
-                                    <span className="font-display text-[22px] font-bold text-white leading-none drop-shadow-md tracking-tighter">
+                                    <span className="font-display text-[17px] sm:text-[22px] font-bold text-white leading-none drop-shadow-md tracking-tighter">
                                         {score.toFixed(1)}
                                     </span>
                                 </div>
                             )}
 
                             {/* Review Badge */}
-                            <div className="absolute top-5 left-5 bg-white/80 dark:bg-[#0B0E14]/80 backdrop-blur-md border border-zinc-200 dark:border-white/10 px-2.5 py-1.5 rounded flex items-center gap-1.5 shadow-sm dark:shadow-lg">
+                            <div className="absolute top-3 sm:top-5 left-3 sm:left-5 bg-white/80 dark:bg-[#0B0E14]/80 backdrop-blur-md border border-zinc-200 dark:border-white/10 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded flex items-center gap-1 sm:gap-1.5 shadow-sm dark:shadow-lg">
                                 <div className="w-1.5 h-1.5 rounded-full bg-tp-accent animate-pulse" />
                                 <span className="text-zinc-900 dark:text-[#E4E4E5] text-[10px] font-bold uppercase tracking-widest leading-none mt-[1px]">REVIEW</span>
                             </div>
 
                             {/* Content Bottom */}
-                            <div className="relative z-10 flex flex-col p-6 mt-auto">
-                                <h3 className="font-sans font-bold text-[20px] text-white leading-[1.2] group-hover:text-tp-accent transition-colors drop-shadow-sm dark:drop-shadow-lg">
+                            <div className="relative z-10 flex flex-col p-3 sm:p-6 mt-auto">
+                                <h3 className="font-sans font-bold text-[13px] sm:text-[20px] text-white leading-[1.2] group-hover:text-tp-accent transition-colors drop-shadow-sm dark:drop-shadow-lg line-clamp-3">
                                     {decodeHtml(review.title)}
                                 </h3>
                             </div>
