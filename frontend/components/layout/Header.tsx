@@ -671,51 +671,29 @@ export default function Header() {
 
                     {/* Actions (Right) */}
                     <div className="flex items-center gap-4">
-                        {/* Search — inline expanding */}
-                        <div className="hidden xl:flex items-center gap-2">
-                            <AnimatePresence initial={false}>
-                                {isSearchOpen && (
-                                    <motion.div
-                                        key="search-bar"
-                                        initial={{ width: 0, opacity: 0 }}
-                                        animate={{ width: 300, opacity: 1 }}
-                                        exit={{ width: 0, opacity: 0 }}
-                                        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                                        style={{ overflow: "hidden", flexShrink: 0 }}
-                                    >
-                                        <SearchDropdown
-                                            isMobile={false}
-                                            placeholder="Search articles, games..."
-                                            onClose={() => setIsSearchOpen(false)}
-                                            autoFocus={true}
-                                        />
-                                    </motion.div>
+                        {/* Search button */}
+                        <button
+                            onClick={() => setIsSearchOpen(prev => !prev)}
+                            className={cn(
+                                "hidden xl:flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200",
+                                isSearchOpen
+                                    ? "bg-tp-accent text-white shadow-lg shadow-tp-accent/30"
+                                    : "text-zinc-600 dark:text-slate-400 hover:text-tp-accent dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5"
+                            )}
+                            aria-label="Toggle search"
+                        >
+                            <AnimatePresence mode="wait" initial={false}>
+                                {isSearchOpen ? (
+                                    <motion.span key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                                        <X className="w-[18px] h-[18px]" />
+                                    </motion.span>
+                                ) : (
+                                    <motion.span key="s" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                                        <Search className="w-[18px] h-[18px]" />
+                                    </motion.span>
                                 )}
                             </AnimatePresence>
-
-                            <button
-                                onClick={() => setIsSearchOpen(prev => !prev)}
-                                className={cn(
-                                    "flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 shrink-0",
-                                    isSearchOpen
-                                        ? "bg-tp-accent text-white shadow-lg shadow-tp-accent/30"
-                                        : "text-zinc-600 dark:text-slate-400 hover:text-tp-accent dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5"
-                                )}
-                                aria-label="Toggle search"
-                            >
-                                <AnimatePresence mode="wait" initial={false}>
-                                    {isSearchOpen ? (
-                                        <motion.span key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
-                                            <X className="w-[18px] h-[18px]" />
-                                        </motion.span>
-                                    ) : (
-                                        <motion.span key="s" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
-                                            <Search className="w-[18px] h-[18px]" />
-                                        </motion.span>
-                                    )}
-                                </AnimatePresence>
-                            </button>
-                        </div>
+                        </button>
 
                         {/* Auth Buttons (main nav bar - desktop, guests only) */}
                         {!user && (
@@ -756,6 +734,31 @@ export default function Header() {
                     </div>
                 </div>
             </header>
+
+            {/* DESKTOP SEARCH DROPDOWN */}
+            <AnimatePresence>
+                {isSearchOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                        className="hidden xl:block bg-[#0A0D13]/98 backdrop-blur-md border-b border-white/[0.06] w-full"
+                        style={{ boxShadow: "0 12px 40px rgba(0,0,0,0.5)" }}
+                    >
+                        <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-3 flex justify-end">
+                            <div className="w-[420px]">
+                                <SearchDropdown
+                                    isMobile={false}
+                                    placeholder="Search articles, games, reviews..."
+                                    onClose={() => setIsSearchOpen(false)}
+                                    autoFocus={true}
+                                />
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* MOBILE MENU overlay */}
             <AnimatePresence>
