@@ -138,9 +138,9 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
             {/* Search Input */}
             <div className="relative group">
                 <Search className={cn(
-                    "absolute left-3 top-1/2 -translate-y-1/2 transition-colors",
-                    isMobile ? "w-5 h-5 left-4" : "w-4 h-4",
-                    isLoading ? "text-[var(--accent)]" : "text-gray-400 group-focus-within:text-[var(--accent)]"
+                    "absolute top-1/2 -translate-y-1/2 transition-colors pointer-events-none",
+                    isMobile ? "w-5 h-5 left-4" : "w-4 h-4 left-3",
+                    isLoading ? "text-tp-accent" : "text-[#4B5563] group-focus-within:text-tp-accent"
                 )} />
 
                 <input
@@ -152,10 +152,10 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                     onFocus={() => query.length >= 2 && results.length > 0 && setIsOpen(true)}
                     placeholder={placeholder}
                     className={cn(
-                        "bg-[#1e293b] border border-[#334155] text-gray-300 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all placeholder:text-gray-600",
+                        "w-full bg-[#0D1117] border border-white/[0.1] text-white focus:outline-none focus:border-tp-accent focus:ring-1 focus:ring-tp-accent/50 transition-all placeholder:text-[#4B5563]",
                         isMobile
-                            ? "w-full rounded-xl py-3 pl-12 pr-10 text-base text-white"
-                            : "w-44 lg:w-56 rounded-full py-2 pl-10 pr-8 text-sm"
+                            ? "rounded-xl py-3 pl-12 pr-10 text-base"
+                            : "rounded-lg py-2 pl-9 pr-8 text-sm"
                     )}
                 />
 
@@ -181,15 +181,17 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
             <AnimatePresence>
                 {isOpen && results.length > 0 && (
                     <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
+                        initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                        transition={{ duration: 0.15, ease: "easeOut" }}
                         className={cn(
-                            "absolute z-50 bg-[var(--bg-primary)]/98 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden",
+                            "absolute z-50 bg-[#0D1117] backdrop-blur-xl border border-white/[0.07] rounded-xl shadow-2xl overflow-hidden",
                             isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[min(400px,calc(100vw-2rem))]"
                         )}
-                        style={{ boxShadow: "0 20px 50px rgba(0,0,0,0.5)" }}
+                        style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(252,65,0,0.1)" }}
                     >
+                        <div className="h-[2px] bg-gradient-to-r from-tp-accent/80 to-tp-accent/20 w-full" />
                         <div className="max-h-[400px] overflow-y-auto">
                             {results.map((result, index) => (
                                 <button
@@ -241,13 +243,15 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                 {/* No results */}
                 {isOpen && query.length >= 2 && !isLoading && results.length === 0 && (
                     <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
+                        initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                        transition={{ duration: 0.15, ease: "easeOut" }}
                         className={cn(
-                            "absolute z-50 bg-[var(--bg-primary)]/98 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl p-6 text-center",
+                            "absolute z-50 bg-[#0D1117] backdrop-blur-xl border border-white/[0.07] rounded-xl shadow-2xl p-6 text-center",
                             isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[min(300px,calc(100vw-2rem))]"
                         )}
+                        style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}
                     >
                         <Search className="w-8 h-8 text-gray-600 mx-auto mb-2" />
                         <p className="text-gray-400 text-sm">No results found for "{query}"</p>

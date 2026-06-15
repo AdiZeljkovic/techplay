@@ -671,42 +671,50 @@ export default function Header() {
 
                     {/* Actions (Right) */}
                     <div className="flex items-center gap-4">
-                        {/* Search Icon + compact dropdown */}
-                        <div className="relative hidden xl:flex">
+                        {/* Search — inline expanding */}
+                        <div className="hidden xl:flex items-center gap-2">
+                            <AnimatePresence initial={false}>
+                                {isSearchOpen && (
+                                    <motion.div
+                                        key="search-bar"
+                                        initial={{ width: 0, opacity: 0 }}
+                                        animate={{ width: 300, opacity: 1 }}
+                                        exit={{ width: 0, opacity: 0 }}
+                                        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                                        style={{ overflow: "hidden", flexShrink: 0 }}
+                                    >
+                                        <SearchDropdown
+                                            isMobile={false}
+                                            placeholder="Search articles, games..."
+                                            onClose={() => setIsSearchOpen(false)}
+                                            autoFocus={true}
+                                        />
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
                             <button
                                 onClick={() => setIsSearchOpen(prev => !prev)}
                                 className={cn(
-                                    "flex items-center justify-center w-9 h-9 rounded-lg transition-colors",
+                                    "flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 shrink-0",
                                     isSearchOpen
-                                        ? "bg-tp-accent text-white"
+                                        ? "bg-tp-accent text-white shadow-lg shadow-tp-accent/30"
                                         : "text-zinc-600 dark:text-slate-400 hover:text-tp-accent dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5"
                                 )}
                                 aria-label="Toggle search"
                             >
-                                <Search className="w-[18px] h-[18px]" />
+                                <AnimatePresence mode="wait" initial={false}>
+                                    {isSearchOpen ? (
+                                        <motion.span key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                                            <X className="w-[18px] h-[18px]" />
+                                        </motion.span>
+                                    ) : (
+                                        <motion.span key="s" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                                            <Search className="w-[18px] h-[18px]" />
+                                        </motion.span>
+                                    )}
+                                </AnimatePresence>
                             </button>
-
-                            <AnimatePresence>
-                                {isSearchOpen && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        exit={{ opacity: 0, y: -6, scale: 0.97 }}
-                                        transition={{ duration: 0.16, ease: "easeOut" }}
-                                        className="absolute top-[calc(100%+14px)] right-0 w-[440px] bg-white dark:bg-[#0D1117] border border-zinc-200 dark:border-white/[0.07] rounded-xl shadow-2xl dark:shadow-[0_20px_48px_rgba(0,0,0,0.6)] overflow-hidden z-[200]"
-                                    >
-                                        <div className="h-[3px] bg-tp-accent w-full" />
-                                        <div className="p-3">
-                                            <SearchDropdown
-                                                isMobile={false}
-                                                placeholder="Search articles, games, reviews..."
-                                                onClose={() => setIsSearchOpen(false)}
-                                                autoFocus={true}
-                                            />
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
                         </div>
 
                         {/* Auth Buttons (main nav bar - desktop, guests only) */}
