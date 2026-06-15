@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarDays, Library, MessageSquare, ArrowUpRight } from "lucide-react";
+import { CalendarDays, Library, MessageSquare, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Article } from "@/types";
 import { decodeHtml } from "@/lib/decode";
 
@@ -21,6 +21,8 @@ function getArticleLink(article: Article) {
 export default function HeroCarousel({ articles }: HeroCarouselProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const featuredArticles = articles.filter(a => a.featured_image_url).slice(0, 5);
+    const touchStartX = useRef<number>(0);
+    const touchStartY = useRef<number>(0);
 
     useEffect(() => {
         if (featuredArticles.length <= 1) return;
@@ -29,6 +31,21 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
         }, 8000);
         return () => clearInterval(timer);
     }, [featuredArticles.length]);
+
+    const goPrev = () => setCurrentIndex(prev => (prev - 1 + featuredArticles.length) % featuredArticles.length);
+    const goNext = () => setCurrentIndex(prev => (prev + 1) % featuredArticles.length);
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.touches[0].clientX;
+        touchStartY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        const dx = touchStartX.current - e.changedTouches[0].clientX;
+        const dy = Math.abs(touchStartY.current - e.changedTouches[0].clientY);
+        if (Math.abs(dx) < 40 || dy > Math.abs(dx)) return;
+        dx > 0 ? goNext() : goPrev();
+    };
 
     if (featuredArticles.length === 0) return null;
 
@@ -44,7 +61,11 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
     return (
         <section className="relative pt-10 pb-[80px] transition-colors duration-300">
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
-                <div className="relative border border-zinc-200 dark:border-white/5 bg-white dark:bg-[#05070A] rounded-xl overflow-hidden flex flex-col lg:flex-row lg:h-[560px] shadow-sm dark:shadow-none transition-colors duration-300">
+                <div
+                    className="relative border border-zinc-200 dark:border-white/5 bg-white dark:bg-[#05070A] rounded-xl overflow-hidden flex flex-col lg:flex-row lg:h-[560px] shadow-sm dark:shadow-none transition-colors duration-300"
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                >
 
                     {/* Background image — crossfade + Ken Burns zoom */}
                     <div className="absolute inset-0 z-0">
@@ -139,16 +160,43 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                             </motion.div>
                         </AnimatePresence>
 
-                        {/* Slide indicators */}
-                        <div className="mt-6 lg:mt-0 flex gap-[8px] items-center lg:absolute lg:right-10 lg:bottom-[40px] xl:bottom-[60px]">
-                            {featuredArticles.map((_, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => setCurrentIndex(i)}
-                                    className={`h-[3px] transition-all duration-500 rounded-sm ${i === currentIndex ? "bg-tp-accent w-8" : "bg-zinc-300 hover:bg-zinc-400 dark:bg-white/20 dark:hover:bg-white/40 w-4"}`}
-                                    aria-label={`Slide ${i + 1}`}
-                                />
-                            ))}
+                        {/* Arrows + slide indicators */}
+                        <div className="mt-6 lg:mt-0 flex items-center gap-3 lg:absolute lg:right-10 lg:bottom-[40px] xl:bottom-[60px]">
+                            {/* Prev arrow */}
+                            <button
+                                onClick={goPrev}
+                                aria-label="Previous slide"
+                                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0
+                                    bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 backdrop-blur-sm
+                                    text-white/60 hover:text-white hover:bg-tp-accent hover:border-tp-accent
+                                    transition-all duration-200 shadow-sm"
+                            >
+                                <ChevronLeft className="w-4 h-4" strokeWidth={2.5} />
+                            </button>
+
+                            {/* Dots */}
+                            <div className="flex gap-[7px] items-center">
+                                {featuredArticles.map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setCurrentIndex(i)}
+                                        className={`h-[3px] transition-all duration-500 rounded-sm ${i === currentIndex ? "bg-tp-accent w-8" : "bg-zinc-300 hover:bg-zinc-400 dark:bg-white/20 dark:hover:bg-white/40 w-4"}`}
+                                        aria-label={`Slide ${i + 1}`}
+                                    />
+                                ))}
+                            </div>
+
+                            {/* Next arrow */}
+                            <button
+                                onClick={goNext}
+                                aria-label="Next slide"
+                                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0
+                                    bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 backdrop-blur-sm
+                                    text-white/60 hover:text-white hover:bg-tp-accent hover:border-tp-accent
+                                    transition-all duration-200 shadow-sm"
+                            >
+                                <ChevronRight className="w-4 h-4" strokeWidth={2.5} />
+                            </button>
                         </div>
                     </div>
 
