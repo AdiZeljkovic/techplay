@@ -39,7 +39,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                     <div className="lg:col-span-2">
                         <NewsSection articles={latestNews} />
                     </div>
-                    <div className="lg:col-span-1 border-t lg:border-t-0 border-zinc-200 dark:border-white/5 lg:pl-4 xl:pl-8 pt-10 lg:pt-0">
+                    <div className="lg:col-span-1 border-t lg:border-t-0 border-zinc-200 dark:border-white/5 lg:border-l lg:pl-10 xl:pl-[60px] pt-10 lg:pt-0 border-l-zinc-200 dark:border-l-white/5">
                         <ReleaseCalendarSection />
                     </div>
                 </div>
