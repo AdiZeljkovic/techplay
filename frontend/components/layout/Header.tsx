@@ -671,19 +671,43 @@ export default function Header() {
 
                     {/* Actions (Right) */}
                     <div className="flex items-center gap-4">
-                        {/* Search Icon */}
-                        <button
-                            onClick={() => setIsSearchOpen(prev => !prev)}
-                            className={cn(
-                                "hidden xl:flex items-center justify-center w-9 h-9 rounded-lg transition-colors",
-                                isSearchOpen
-                                    ? "bg-tp-accent text-white"
-                                    : "text-zinc-600 dark:text-slate-400 hover:text-tp-accent dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5"
-                            )}
-                            aria-label="Toggle search"
-                        >
-                            <Search className="w-[18px] h-[18px]" />
-                        </button>
+                        {/* Search Icon + compact dropdown */}
+                        <div className="relative hidden xl:flex">
+                            <button
+                                onClick={() => setIsSearchOpen(prev => !prev)}
+                                className={cn(
+                                    "flex items-center justify-center w-9 h-9 rounded-lg transition-colors",
+                                    isSearchOpen
+                                        ? "bg-tp-accent text-white"
+                                        : "text-zinc-600 dark:text-slate-400 hover:text-tp-accent dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5"
+                                )}
+                                aria-label="Toggle search"
+                            >
+                                <Search className="w-[18px] h-[18px]" />
+                            </button>
+
+                            <AnimatePresence>
+                                {isSearchOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                                        transition={{ duration: 0.16, ease: "easeOut" }}
+                                        className="absolute top-[calc(100%+14px)] right-0 w-[440px] bg-white dark:bg-[#0D1117] border border-zinc-200 dark:border-white/[0.07] rounded-xl shadow-2xl dark:shadow-[0_20px_48px_rgba(0,0,0,0.6)] overflow-hidden z-[200]"
+                                    >
+                                        <div className="h-[3px] bg-tp-accent w-full" />
+                                        <div className="p-3">
+                                            <SearchDropdown
+                                                isMobile={false}
+                                                placeholder="Search articles, games, reviews..."
+                                                onClose={() => setIsSearchOpen(false)}
+                                                autoFocus={true}
+                                            />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
 
                         {/* Auth Buttons (main nav bar - desktop, guests only) */}
                         {!user && (
@@ -724,36 +748,6 @@ export default function Header() {
                     </div>
                 </div>
             </header>
-
-            {/* SEARCH OVERLAY */}
-            <AnimatePresence>
-                {isSearchOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.18 }}
-                        className="hidden xl:block bg-zinc-50/98 dark:bg-[#0B0E14]/98 backdrop-blur-md border-b border-zinc-200 dark:border-[#161B22] w-full shadow-2xl"
-                    >
-                        <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-4 flex items-center gap-4">
-                            <SearchDropdown
-                                isMobile={true}
-                                placeholder="Search articles, games, reviews..."
-                                className="flex-1"
-                                onClose={() => setIsSearchOpen(false)}
-                                autoFocus={true}
-                            />
-                            <button
-                                onClick={() => setIsSearchOpen(false)}
-                                className="text-slate-400 hover:text-white transition-colors shrink-0"
-                                aria-label="Close search"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
             {/* MOBILE MENU overlay */}
             <AnimatePresence>
