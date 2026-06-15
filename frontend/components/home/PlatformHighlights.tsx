@@ -17,7 +17,7 @@ export default function PlatformHighlights() {
                 <div className="absolute top-0 left-[20%] w-[60%] h-[1px] bg-gradient-to-r from-transparent via-tp-accent/20 dark:via-tp-accent/50 to-transparent" />
                 <div className="absolute -top-[150px] -left-[100px] w-[400px] h-[400px] bg-tp-accent/5 blur-[100px] rounded-full pointer-events-none" />
 
-                <div className="mb-10 relative z-10">
+                <div className="mb-10 relative z-10 text-center lg:text-left">
                     <span className="text-tp-accent font-bold tracking-[0.15em] text-[11px] uppercase mb-3 block">
                         EXPLORE TECHPLAY.GG
                     </span>
