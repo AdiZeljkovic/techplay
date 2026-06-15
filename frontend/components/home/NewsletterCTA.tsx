@@ -58,21 +58,21 @@ export default function NewsletterCTA() {
                             <span className="text-[#10b981] font-semibold text-[14px]">✓ {message}</span>
                         </div>
                     ) : (
-                        <form onSubmit={handleSubmit} className="w-full md:w-auto flex flex-col sm:flex-row items-stretch shrink-0 max-w-lg md:max-w-none gap-[1px]">
+                        <form onSubmit={handleSubmit} className="w-full md:w-auto shrink-0 max-w-lg md:max-w-none">
                             <div className="flex flex-col gap-1">
-                                <div className="flex">
+                                <div className="flex flex-col sm:flex-row">
                                     <input
                                         type="email"
                                         value={email}
                                         onChange={e => setEmail(e.target.value)}
                                         placeholder="Your email address"
                                         disabled={status === "loading"}
-                                        className="w-full sm:w-[320px] bg-white dark:bg-[#05070A] border border-zinc-300 dark:border-[#161B22] border-r-0 rounded-l-[8px] px-5 h-[50px] text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-[#71717A] text-[13px] focus:outline-none focus:border-tp-accent/50 transition-colors"
+                                        className="w-full sm:w-[300px] bg-white dark:bg-[#05070A] border border-zinc-300 dark:border-[#161B22] sm:border-r-0 rounded-[8px] sm:rounded-l-[8px] sm:rounded-r-none px-5 h-[50px] text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-[#71717A] text-[13px] focus:outline-none focus:border-tp-accent/50 transition-colors"
                                     />
                                     <button
                                         type="submit"
                                         disabled={status === "loading"}
-                                        className="w-full sm:w-[160px] h-[50px] bg-tp-accent hover:bg-tp-accent-hover text-white px-6 rounded-r-[8px] font-bold uppercase tracking-[0.08em] text-[13px] transition-all shadow-lg border border-tp-accent hover:shadow-[0_0_20px_rgba(252,65,0,0.3)] disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                                        className="w-full sm:w-[160px] h-[50px] mt-2 sm:mt-0 bg-tp-accent hover:bg-tp-accent-hover text-white px-6 rounded-[8px] sm:rounded-l-none sm:rounded-r-[8px] font-bold uppercase tracking-[0.08em] text-[13px] transition-all shadow-lg border border-tp-accent hover:shadow-[0_0_20px_rgba(252,65,0,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {status === "loading" ? "..." : "SUBSCRIBE"}
                                     </button>
