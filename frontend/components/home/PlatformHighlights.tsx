@@ -4,10 +4,10 @@ import Link from "next/link";
 import { Gamepad2, CalendarDays, MessageSquare, Star } from "lucide-react";
 
 const CARDS = [
-    { Icon: Gamepad2, title: "GAME DATABASE", description: "Explore over 1,000,000 games. Search, filter, discover.", cta: "1M+ GAMES", href: "/games" },
-    { Icon: CalendarDays, title: "RELEASE CALENDAR", description: "Track upcoming games. Never miss a release.", cta: "UPDATED DAILY", href: "/calendar" },
-    { Icon: MessageSquare, title: "COMMUNITY FORUM", description: "Join the conversation. Share, help, connect.", cta: "COMMUNITY HUB", href: "/forum" },
-    { Icon: Star, title: "REVIEWS & SCORES", description: "Honest reviews.\nHelpful scores.", cta: "EDITORIAL REVIEWS", href: "/reviews" },
+    { Icon: Gamepad2, title: "GAME DATABASE", description: "200,000+ games and counting. Search, filter, find your next obsession.", cta: "EXPLORE GAMES", href: "/games" },
+    { Icon: CalendarDays, title: "RELEASE CALENDAR", description: "What's dropping this month? All platforms, all dates — one place.", cta: "VIEW CALENDAR", href: "/calendar" },
+    { Icon: MessageSquare, title: "COMMUNITY FORUM", description: "Got a hot take? Drop it in the forum. We want to hear it.", cta: "JOIN THE FORUM", href: "/forum" },
+    { Icon: Star, title: "REVIEWS & SCORES", description: "Honest reviews. Helpful scores. No sponsored opinions.", cta: "READ REVIEWS", href: "/reviews" },
 ];
 
 export default function PlatformHighlights() {
