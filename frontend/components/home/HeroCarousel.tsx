@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, Rocket, Library, ArrowUpRight } from "lucide-react";
+import { CalendarDays, Library, MessageSquare, ArrowUpRight } from "lucide-react";
 import { Article } from "@/types";
 import { decodeHtml } from "@/lib/decode";
 
@@ -159,25 +159,25 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
 
                         {[
                             {
-                                href: "/games/calendar",
-                                icon: Rocket,
-                                label: "UPCOMING RELEASE",
-                                title: "Ghost of Yōtei",
-                                meta: "02 OCT 2025",
+                                href: "/games",
+                                icon: Library,
+                                label: "GAME DATABASE",
+                                title: "Explore 50,000+ game titles",
+                                meta: "UPDATED DAILY",
+                            },
+                            {
+                                href: "/calendar",
+                                icon: CalendarDays,
+                                label: "RELEASE CALENDAR",
+                                title: "Never miss an upcoming launch",
+                                meta: "ALL PLATFORMS",
                             },
                             {
                                 href: "/forum",
-                                icon: Flame,
-                                label: "TRENDING DISCUSSION",
-                                title: "Which game are you most excited for in 2025?",
-                                meta: "128 REPLIES",
-                            },
-                            {
-                                href: "/games",
-                                icon: Library,
-                                label: "GAMING DATABASE",
-                                title: "Explore over 50,000 game titles",
-                                meta: "UPDATED DAILY",
+                                icon: MessageSquare,
+                                label: "COMMUNITY FORUM",
+                                title: "Join the discussion",
+                                meta: "SHARE YOUR THOUGHTS",
                             },
                         ].map((card) => (
                             <Link
