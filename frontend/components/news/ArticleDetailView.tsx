@@ -102,7 +102,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
 
                             {/* Hero Banner */}
                             <div className="relative w-full rounded-[24px] flex flex-col overflow-hidden bg-[#0B0E14] border border-[#161B22] h-[580px]">
-                                <div className="relative w-full flex-1 flex flex-col justify-center min-h-0">
+                                <div className="relative w-full flex-1 flex flex-col justify-end min-h-0">
                                     <div className="absolute inset-0">
                                         {article.featured_image_url ? (
                                             <Image
@@ -119,12 +119,12 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         )}
                                         {/* Left fade */}
                                         <div className="absolute inset-0 bg-gradient-to-r from-[#05070A]/90 via-[#05070A]/50 to-transparent w-[65%]" />
-                                        {/* Bottom fade */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-[#05070A]/50 via-transparent to-transparent" />
+                                        {/* Bottom fade — stronger to ensure text legibility */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/60 to-transparent" />
                                     </div>
 
                                     {/* Left content panel */}
-                                    <div className="relative z-10 flex flex-col justify-center p-8 md:p-12 w-full md:w-[70%]">
+                                    <div className="relative z-10 flex flex-col p-8 md:p-12 w-full md:w-[75%]">
                                         {/* Category badge */}
                                         <div className="bg-[var(--accent)] text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded inline-flex w-max mb-5 leading-none shadow-sm shadow-[var(--accent)]/20">
                                             {decodeHtml(article.category?.name) || "News"}

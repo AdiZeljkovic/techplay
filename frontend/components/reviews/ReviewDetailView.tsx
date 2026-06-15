@@ -131,7 +131,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
 
                             {/* Hero Banner */}
                             <div className="relative w-full rounded-[24px] flex flex-col overflow-hidden bg-[#0B0E14] border border-[#161B22] h-[580px]">
-                                <div className="relative w-full flex-1 flex flex-col justify-center min-h-0">
+                                <div className="relative w-full flex-1 flex flex-col justify-end min-h-0">
                                     <div className="absolute inset-0">
                                         {imageUrl ? (
                                             <Image
@@ -149,11 +149,11 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                         {/* Left fade — shows image on right */}
                                         <div className="absolute inset-0 bg-gradient-to-r from-[#05070A] via-[#05070A]/95 to-transparent w-[85%]" />
                                         {/* Bottom fade */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/60 to-transparent opacity-90" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/60 to-transparent" />
                                     </div>
 
                                     {/* Left content panel */}
-                                    <div className="relative z-10 flex flex-col justify-center p-8 md:p-12 w-full md:w-[70%]">
+                                    <div className="relative z-10 flex flex-col p-8 md:p-12 w-full md:w-[75%]">
                                         {/* Category badge + score */}
                                         <div className="flex items-center gap-3 mb-5">
                                             <div className="bg-[var(--accent)] text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded inline-flex w-max leading-none shadow-sm shadow-[var(--accent)]/20">
