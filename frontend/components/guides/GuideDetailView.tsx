@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, ThumbsUp, ThumbsDown } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ThumbsUp } from "lucide-react";
 import Image from "next/image";
 import { format } from "date-fns";
 import Script from "next/script";
@@ -10,15 +10,13 @@ import { processContent } from "@/lib/content";
 import { ARTICLE_PROSE } from "@/lib/prose";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import AdUnit from "@/components/ads/AdUnit";
-import SocialShare from "@/components/share/SocialShare";
 import CommentsSection from "@/components/comments/CommentsSection";
 import RecommendedNews from "@/components/news/RecommendedNews";
 import ReleaseCalendarSection from "@/components/home/ReleaseCalendarSection";
 import DiscordWidget from "@/components/home/DiscordWidget";
 import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
-import ArticleFooterMessage from "@/components/ui/ArticleFooterMessage";
-import AuthorBio from "@/components/ui/AuthorBio";
+import ArticleFooter from "@/components/ui/ArticleFooter";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import RelatedArticles from "@/components/seo/RelatedArticles";
 import { decodeHtml } from "@/lib/decode";
@@ -54,9 +52,6 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const { user } = useAuth();
     useEmbedScripts();
-    const [voteState, setVoteState] = useState<'helpful' | 'not_helpful' | null>(
-        initialVote === true ? 'helpful' : initialVote === false ? 'not_helpful' : null
-    );
 
     // Calculate reading time
     const readingTime = useMemo(() => {
@@ -66,21 +61,6 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
         return `${minutes} min read`;
     }, [guide.content]);
 
-    const handleVote = async (isHelpful: boolean) => {
-        if (!user) {
-            setShowLoginPrompt(true);
-            return;
-        }
-
-        const newState = isHelpful ? 'helpful' : 'not_helpful';
-        setVoteState(newState);
-
-        try {
-            await axios.post(`/guides/${guide.id}/vote`, { is_helpful: isHelpful });
-        } catch (error) {
-            console.error("Vote failed", error);
-        }
-    };
 
     const difficultyColors = {
         beginner: 'text-green-400 border-green-400 bg-green-400/10',
@@ -278,52 +258,13 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                                         <AdUnit position="article_mid" />
                                     </div>
 
-                                    <ArticleFooterMessage />
-
-                                    {/* Voting Section */}
-                                    <div className="mt-12 p-8 bg-[#0B0E14] rounded-2xl border border-[#161B22] text-center">
-                                        <h3 className="text-xl font-bold text-white mb-2">Was this guide helpful?</h3>
-                                        <p className="text-[#A1A1AA] mb-6 text-sm">Your feedback helps us improve our content.</p>
-
-                                        <div className="flex justify-center gap-4">
-                                            <button
-                                                onClick={() => handleVote(true)}
-                                                className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all font-semibold ${voteState === 'helpful' ? 'bg-green-500 text-white shadow-lg shadow-green-500/20' : 'bg-[#05070A] border border-[#161B22] text-[#A1A1AA] hover:border-green-500 hover:text-green-500'}`}
-                                            >
-                                                <ThumbsUp className={`w-5 h-5 ${voteState === 'helpful' ? 'fill-current' : ''}`} />
-                                                Yes, thanks!
-                                            </button>
-                                            <button
-                                                onClick={() => handleVote(false)}
-                                                className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all font-semibold ${voteState === 'not_helpful' ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'bg-[#05070A] border border-[#161B22] text-[#A1A1AA] hover:border-red-500 hover:text-red-500'}`}
-                                            >
-                                                <ThumbsDown className={`w-5 h-5 ${voteState === 'not_helpful' ? 'fill-current' : ''}`} />
-                                                Not really
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Tags Footer */}
-                                    <div className="mt-12 pt-8 border-t border-[#161B22] flex flex-wrap gap-2 items-center">
-                                        <span className="text-sm font-semibold text-white mr-2">Tags:</span>
-                                        <span className={`px-3 py-1 text-sm rounded-lg border capitalize ${difficultyColors[guide.difficulty]}`}>
-                                            {guide.difficulty}
-                                        </span>
-                                    </div>
-
-                                    {/* Mobile Social Share */}
-                                    <div className="lg:hidden mt-8 p-6 bg-[#0B0E14] border border-[#161B22] rounded-2xl">
-                                        <h3 className="text-sm font-semibold text-white mb-4 text-center">Share this guide</h3>
-                                        <SocialShare
-                                            url={`/guides/${guide.slug}`}
-                                            title={decodeHtml(guide.title)}
-                                            description={decodeHtml(guide.excerpt) || ''}
-                                            vertical={false}
-                                        />
-                                    </div>
-
-                                    {/* Author Bio */}
-                                    <AuthorBio author={guide.author} />
+                                    <ArticleFooter
+                                        author={guide.author}
+                                        tags={guide.difficulty ? [guide.difficulty] : []}
+                                        shareUrl={`/guides/${guide.slug}`}
+                                        shareTitle={decodeHtml(guide.title)}
+                                        shareDescription={decodeHtml(guide.excerpt) || ''}
+                                    />
 
                                     {/* Related Guides */}
                                     <RelatedArticles

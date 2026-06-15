@@ -8,7 +8,6 @@ import { format } from "date-fns";
 import { useMemo } from "react";
 import Script from "next/script";
 import AdUnit from "@/components/ads/AdUnit";
-import SocialShare from "@/components/share/SocialShare";
 import CommentsSection from "@/components/comments/CommentsSection";
 import ReviewSidebar from "@/components/reviews/ReviewSidebar";
 import RecommendedNews from "@/components/news/RecommendedNews";
@@ -20,8 +19,7 @@ import RelatedArticles from "@/components/seo/RelatedArticles";
 import { processContent } from "@/lib/content";
 import { ARTICLE_PROSE } from "@/lib/prose";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
-import ArticleFooterMessage from "@/components/ui/ArticleFooterMessage";
-import AuthorBio from "@/components/ui/AuthorBio";
+import ArticleFooter from "@/components/ui/ArticleFooter";
 import { decodeHtml } from "@/lib/decode";
 
 interface ReviewDetailViewProps {
@@ -302,35 +300,12 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                         )}
                                     </div>
 
-                                    <ArticleFooterMessage />
-
-                                    {/* Tags Footer */}
-                                    {review.tags && review.tags.length > 0 && (
-                                        <div className="mt-12 pt-8 border-t border-[#161B22] flex flex-wrap gap-2">
-                                            <span className="text-sm font-semibold text-white mr-2">Tags:</span>
-                                            {review.tags.map((tag, i) => (
-                                                <span key={i} className="px-3 py-1 bg-[#0B0E14] text-[#A1A1AA] text-sm rounded-lg hover:text-[var(--accent)] hover:border-[var(--accent)] border border-[#161B22] transition-all cursor-pointer">
-                                                    #{tag}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {/* Mobile Social Share */}
-                                    <div className="lg:hidden mt-8 p-6 bg-[#0B0E14] border border-[#161B22] rounded-2xl">
-                                        <h3 className="text-sm font-semibold text-white mb-4 text-center">Share this review</h3>
-                                        <SocialShare
-                                            url={`/reviews/${review.slug}`}
-                                            title={decodeHtml(review.title)}
-                                            description={decodeHtml(review.excerpt) || ''}
-                                            vertical={false}
-                                        />
-                                    </div>
-
-                                    {/* Author Bio */}
-                                    <AuthorBio
+                                    <ArticleFooter
                                         author={review.author}
-                                        fallbackBio="TechPlay reviewer. Expert in detailed analysis and performance testing."
+                                        tags={review.tags || []}
+                                        shareUrl={`/reviews/${review.slug}`}
+                                        shareTitle={decodeHtml(review.title)}
+                                        shareDescription={decodeHtml(review.excerpt) || ''}
                                     />
 
                                     {/* Comments */}

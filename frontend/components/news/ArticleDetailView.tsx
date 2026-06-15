@@ -17,8 +17,7 @@ import ReleaseCalendarSection from "@/components/home/ReleaseCalendarSection";
 import DiscordWidget from "@/components/home/DiscordWidget";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import RelatedArticles from "@/components/seo/RelatedArticles";
-import ArticleFooterMessage from "@/components/ui/ArticleFooterMessage";
-import AuthorBio from "@/components/ui/AuthorBio";
+import ArticleFooter from "@/components/ui/ArticleFooter";
 import { decodeHtml } from "@/lib/decode";
 
 interface ArticleDetailViewProps {
@@ -217,32 +216,13 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         <AdUnit position="article_mid" />
                                     </div>
 
-                                    <ArticleFooterMessage />
-
-                                    {/* Tags Footer */}
-                                    <div className="mt-12 pt-8 border-t border-[#161B22] flex flex-wrap gap-2">
-                                        <span className="text-sm font-semibold text-white mr-2">Tags:</span>
-                                        <span className="px-3 py-1 bg-[#0B0E14] text-[#A1A1AA] text-sm rounded-lg hover:text-[var(--accent)] hover:border-[var(--accent)] border border-[#161B22] transition-all cursor-pointer">
-                                            {decodeHtml(article.category?.name)}
-                                        </span>
-                                        <span className="px-3 py-1 bg-[#0B0E14] text-[#A1A1AA] text-sm rounded-lg hover:text-[var(--accent)] hover:border-[var(--accent)] border border-[#161B22] transition-all cursor-pointer">
-                                            Gaming
-                                        </span>
-                                    </div>
-
-                                    {/* Mobile Social Share */}
-                                    <div className="lg:hidden mt-8 p-6 bg-[#0B0E14] border border-[#161B22] rounded-2xl">
-                                        <h3 className="text-sm font-semibold text-white mb-4 text-center">Share this article</h3>
-                                        <SocialShare
-                                            url={`/news/${article.slug}`}
-                                            title={decodeHtml(article.title)}
-                                            description={decodeHtml(article.excerpt) || ''}
-                                            vertical={false}
-                                        />
-                                    </div>
-
-                                    {/* Author Bio */}
-                                    <AuthorBio author={article.author} />
+                                    <ArticleFooter
+                                        author={article.author}
+                                        tags={[decodeHtml(article.category?.name), 'Gaming'].filter(Boolean) as string[]}
+                                        shareUrl={`/news/${article.slug}`}
+                                        shareTitle={decodeHtml(article.title)}
+                                        shareDescription={decodeHtml(article.excerpt) || ''}
+                                    />
 
                                     {/* Comments */}
                                     <div className="mt-12 pt-12 border-t border-[#161B22]">
