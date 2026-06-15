@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Rocket, Library, ArrowUpRight } from "lucide-react";
 import { Article } from "@/types";
 import { decodeHtml } from "@/lib/decode";
@@ -45,19 +46,34 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
                 <div className="relative border border-zinc-200 dark:border-white/5 bg-white dark:bg-[#05070A] rounded-xl overflow-hidden flex flex-col lg:flex-row lg:h-[560px] shadow-sm dark:shadow-none transition-colors duration-300">
 
-                    {/* Main Background Image */}
+                    {/* Background image — crossfade + Ken Burns zoom */}
                     <div className="absolute inset-0 z-0">
-                        <Image
-                            src={imageUrl}
-                            alt={decodeHtml(current.title)}
-                            fill
-                            priority
-                            className="object-cover opacity-90 dark:opacity-100"
-                        />
-                        {/* Gradient overlays — light + dark (desktop) */}
-                        <div className="hidden lg:block absolute inset-0 bg-gradient-to-r from-white via-white/75 dark:from-[#05070A] dark:via-[#05070A]/70 to-transparent w-[55%]" />
-                        <div className="hidden lg:block absolute inset-0 bg-gradient-to-l from-white via-white/60 dark:from-[#05070A] dark:via-[#05070A]/60 to-transparent w-[40%] right-0 left-auto" />
-                        <div className="hidden lg:block absolute inset-0 bg-gradient-to-t from-white via-white/20 dark:from-[#05070A] dark:via-[#05070A]/10 to-transparent opacity-70 dark:opacity-60" />
+                        <AnimatePresence mode="sync">
+                            <motion.div
+                                key={currentIndex}
+                                className="absolute inset-0"
+                                initial={{ opacity: 0, scale: 1.06 }}
+                                animate={{ opacity: 1, scale: 1.0 }}
+                                exit={{ opacity: 0 }}
+                                transition={{
+                                    opacity: { duration: 0.7, ease: "easeInOut" },
+                                    scale: { duration: 8, ease: "linear" },
+                                }}
+                            >
+                                <Image
+                                    src={imageUrl}
+                                    alt={decodeHtml(current.title)}
+                                    fill
+                                    priority
+                                    className="object-cover opacity-90 dark:opacity-100"
+                                />
+                            </motion.div>
+                        </AnimatePresence>
+
+                        {/* Gradient overlays — static, always visible */}
+                        <div className="hidden lg:block absolute inset-0 bg-gradient-to-r from-white via-white/75 dark:from-[#05070A] dark:via-[#05070A]/70 to-transparent w-[55%] z-10" />
+                        <div className="hidden lg:block absolute inset-0 bg-gradient-to-l from-white via-white/60 dark:from-[#05070A] dark:via-[#05070A]/60 to-transparent w-[40%] right-0 left-auto z-10" />
+                        <div className="hidden lg:block absolute inset-0 bg-gradient-to-t from-white via-white/20 dark:from-[#05070A] dark:via-[#05070A]/10 to-transparent opacity-70 dark:opacity-60 z-10" />
                     </div>
 
                     {/* Left Content */}
@@ -66,50 +82,62 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                         {/* Mobile-only bottom gradient for text legibility */}
                         <div className="lg:hidden absolute inset-0 bg-gradient-to-t from-white via-white/75 dark:from-[#05070A] dark:via-[#05070A]/75 to-transparent pointer-events-none" style={{ zIndex: -1 }} />
 
-                        <span className="text-tp-accent font-bold tracking-[0.15em] text-[10px] uppercase mb-3 drop-shadow-sm">
-                            {categoryLabel}
-                        </span>
-
-                        <h1 className="font-display text-[28px] sm:text-[36px] lg:text-[52px] xl:text-[62px] font-black text-zinc-900 dark:text-white uppercase leading-[0.95] lg:leading-[0.9] tracking-tight mb-2 drop-shadow-sm dark:drop-shadow-lg line-clamp-5">
-                            {decodeHtml(current.title).toUpperCase()}
-                        </h1>
-
-                        {current.excerpt && (
-                            <p className="text-[14px] text-zinc-700 dark:text-[#E4E4E5] max-w-[380px] leading-relaxed mb-6 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] dark:drop-shadow-md line-clamp-2">
-                                {decodeHtml(current.excerpt)}
-                            </p>
-                        )}
-
-                        <div className="flex flex-wrap items-center gap-7">
-                            {current.author && (
-                                <div className="flex items-center gap-4">
-                                    <div className="w-[46px] h-[46px] rounded-full overflow-hidden border-2 border-zinc-200 dark:border-white/10 relative shadow-sm dark:shadow-lg">
-                                        {current.author.avatar_url ? (
-                                            <Image src={current.author.avatar_url} alt={current.author.display_name || current.author.username} fill className="object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full bg-zinc-200 dark:bg-[#1A1F26]" />
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-zinc-900 dark:text-white font-bold text-[14px] leading-tight drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] dark:drop-shadow-none">
-                                            {decodeHtml(current.author.display_name || current.author.username)}
-                                        </span>
-                                        <span suppressHydrationWarning className="text-zinc-600 dark:text-[#A1A1AA] text-[10px] font-bold uppercase tracking-widest mt-1">
-                                            {new Date(current.published_at).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })}
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="w-px h-10 bg-zinc-300 dark:bg-white/10 hidden sm:block mx-1" />
-
-                            <Link
-                                href={getArticleLink(current)}
-                                className="bg-tp-accent hover:bg-tp-accent-hover text-white px-8 h-[46px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[12px] flex items-center justify-center shadow-lg shadow-tp-accent/20"
+                        {/* Animated text content */}
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={currentIndex}
+                                initial={{ opacity: 0, y: 22 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -12 }}
+                                transition={{ duration: 0.45, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+                                className="flex flex-col"
                             >
-                                {ctaLabel}
-                            </Link>
-                        </div>
+                                <span className="text-tp-accent font-bold tracking-[0.15em] text-[10px] uppercase mb-3 drop-shadow-sm">
+                                    {categoryLabel}
+                                </span>
+
+                                <h1 className="font-display text-[28px] sm:text-[36px] lg:text-[52px] xl:text-[62px] font-black text-zinc-900 dark:text-white uppercase leading-[0.95] lg:leading-[0.9] tracking-tight mb-2 drop-shadow-sm dark:drop-shadow-lg line-clamp-5">
+                                    {decodeHtml(current.title).toUpperCase()}
+                                </h1>
+
+                                {current.excerpt && (
+                                    <p className="text-[14px] text-zinc-700 dark:text-[#E4E4E5] max-w-[380px] leading-relaxed mb-6 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] dark:drop-shadow-md line-clamp-2">
+                                        {decodeHtml(current.excerpt)}
+                                    </p>
+                                )}
+
+                                <div className="flex flex-wrap items-center gap-7">
+                                    {current.author && (
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-[46px] h-[46px] rounded-full overflow-hidden border-2 border-zinc-200 dark:border-white/10 relative shadow-sm dark:shadow-lg">
+                                                {current.author.avatar_url ? (
+                                                    <Image src={current.author.avatar_url} alt={current.author.display_name || current.author.username} fill className="object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-zinc-200 dark:bg-[#1A1F26]" />
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-zinc-900 dark:text-white font-bold text-[14px] leading-tight drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] dark:drop-shadow-none">
+                                                    {decodeHtml(current.author.display_name || current.author.username)}
+                                                </span>
+                                                <span suppressHydrationWarning className="text-zinc-600 dark:text-[#A1A1AA] text-[10px] font-bold uppercase tracking-widest mt-1">
+                                                    {new Date(current.published_at).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="w-px h-10 bg-zinc-300 dark:bg-white/10 hidden sm:block mx-1" />
+
+                                    <Link
+                                        href={getArticleLink(current)}
+                                        className="bg-tp-accent hover:bg-tp-accent-hover text-white px-8 h-[46px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[12px] flex items-center justify-center shadow-lg shadow-tp-accent/20"
+                                    >
+                                        {ctaLabel}
+                                    </Link>
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
 
                         {/* Slide indicators */}
                         <div className="mt-6 lg:mt-0 flex gap-[8px] items-center lg:absolute lg:right-10 lg:bottom-[40px] xl:bottom-[60px]">
@@ -117,7 +145,7 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                                 <button
                                     key={i}
                                     onClick={() => setCurrentIndex(i)}
-                                    className={`w-8 h-[3px] transition-all rounded-sm ${i === currentIndex ? "bg-tp-accent" : "bg-zinc-300 hover:bg-zinc-400 dark:bg-white/20 dark:hover:bg-white/40"}`}
+                                    className={`h-[3px] transition-all duration-500 rounded-sm ${i === currentIndex ? "bg-tp-accent w-8" : "bg-zinc-300 hover:bg-zinc-400 dark:bg-white/20 dark:hover:bg-white/40 w-4"}`}
                                     aria-label={`Slide ${i + 1}`}
                                 />
                             ))}
