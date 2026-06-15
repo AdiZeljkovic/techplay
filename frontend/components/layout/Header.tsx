@@ -543,21 +543,6 @@ export default function Header() {
                     </button>
                 </div>
 
-                {/* Mobile Search Dropdown */}
-                <AnimatePresence>
-                    {mobileSearchOpen && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden border-t border-white/5"
-                        >
-                            <div className="max-w-[1320px] mx-auto px-4 py-3">
-                                <SearchDropdown placeholder="Search TechPlay..." isMobile />
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
             </div>
 
             {/* DESKTOP TOP BAR */}
@@ -746,6 +731,29 @@ export default function Header() {
                     </div>
                 </div>
             </header>
+
+            {/* MOBILE SEARCH PANEL — outside overflow-hidden so results can flow freely */}
+            <AnimatePresence>
+                {mobileSearchOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                        className="xl:hidden bg-[#0A0D13]/98 backdrop-blur-md border-b border-white/[0.06] w-full"
+                        style={{ boxShadow: "0 12px 40px rgba(0,0,0,0.5)" }}
+                    >
+                        <div className="max-w-[1320px] mx-auto px-4 py-3">
+                            <SearchDropdown
+                                isMobile
+                                placeholder="Search TechPlay..."
+                                onClose={() => setMobileSearchOpen(false)}
+                                autoFocus={true}
+                            />
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* DESKTOP SEARCH DROPDOWN */}
             <AnimatePresence>
