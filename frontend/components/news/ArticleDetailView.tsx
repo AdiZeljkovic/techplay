@@ -119,10 +119,10 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         ) : (
                                             <div className="w-full h-full bg-gradient-to-br from-[#0d2444] to-[#05070A]" />
                                         )}
-                                        {/* Left fade — shows image on right */}
-                                        <div className="absolute inset-0 bg-gradient-to-r from-[#05070A] via-[#05070A]/80 to-transparent w-[70%]" />
+                                        {/* Left fade */}
+                                        <div className="absolute inset-0 bg-gradient-to-r from-[#05070A]/90 via-[#05070A]/50 to-transparent w-[65%]" />
                                         {/* Bottom fade */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-[#05070A]/80 via-[#05070A]/20 to-transparent" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#05070A]/50 via-transparent to-transparent" />
                                     </div>
 
                                     {/* Left content panel */}
@@ -179,8 +179,8 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                             {decodeHtml(article.category?.name) || "News"}
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="text-[#71717A] text-[11px] font-bold uppercase tracking-widest">SHARE:</span>
+                                    <div className="flex items-center gap-2 flex-nowrap">
+                                        <span className="text-[#71717A] text-[11px] font-bold uppercase tracking-widest shrink-0">SHARE:</span>
                                         <SocialShare
                                             url={`/news/${article.slug}`}
                                             title={decodeHtml(article.title)}

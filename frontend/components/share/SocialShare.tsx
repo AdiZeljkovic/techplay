@@ -71,7 +71,7 @@ export default function SocialShare({
         }
     };
 
-    const buttonClass = "w-10 h-10 rounded-full bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-secondary)] flex items-center justify-center transition-all hover:scale-110 shadow-lg";
+    const buttonClass = "w-9 h-9 rounded-full bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-secondary)] flex items-center justify-center transition-all hover:scale-110 shadow-lg shrink-0";
 
     const shareButtons = [
         {
@@ -140,7 +140,7 @@ export default function SocialShare({
 
     // Horizontal layout for mobile
     return (
-        <div className={`flex gap-3 flex-wrap justify-center ${className}`}>
+        <div className={`flex gap-2 flex-nowrap ${className}`}>
             {shareButtons.map((btn) => (
                 <button
                     key={btn.name}
