@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
+import { Gamepad2, Facebook, Twitter, Instagram, Youtube } from "lucide-react";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 const DiscordIcon = ({ className }: { className?: string }) => (
@@ -16,119 +16,146 @@ const TikTokIcon = ({ className }: { className?: string }) => (
     </svg>
 );
 
-const SOCIAL_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-    twitter_url:   Twitter,
-    facebook_url:  Facebook,
-    instagram_url: Instagram,
-    youtube_url:   Youtube,
-    discord_url:   DiscordIcon,
-    tiktok_url:    TikTokIcon,
+const SOCIAL_ICON_MAP: Record<string, { Icon: React.ComponentType<{ className?: string }>; label: string }> = {
+    twitter_url:   { Icon: Twitter,     label: "Twitter" },
+    facebook_url:  { Icon: Facebook,    label: "Facebook" },
+    instagram_url: { Icon: Instagram,   label: "Instagram" },
+    youtube_url:   { Icon: Youtube,     label: "YouTube" },
+    discord_url:   { Icon: DiscordIcon, label: "Discord" },
+    tiktok_url:    { Icon: TikTokIcon,  label: "TikTok" },
 };
 
-const FOOTER_LINKS = {
-    explore: [
-        { name: "News",             href: "/news" },
-        { name: "Reviews",          href: "/reviews" },
-        { name: "Games",            href: "/games" },
-        { name: "Release Calendar", href: "/calendar" },
-        { name: "Hardware Lab",     href: "/hardware" },
-        { name: "Guides",           href: "/guides" },
-    ],
-    database: [
-        { name: "All Games",    href: "/games" },
-        { name: "Platforms",    href: "/games" },
-        { name: "Genres",       href: "/games" },
-        { name: "Developers",   href: "/games" },
-    ],
-    community: [
-        { name: "Forum",        href: "/forum" },
-        { name: "Leaderboard",  href: "/leaderboard" },
-        { name: "Achievements", href: "/leaderboard" },
-        { name: "Discord",      href: "https://discord.gg/wPQG9gUMXH" },
-    ],
-    support: [
-        { name: "About Us",         href: "/about" },
-        { name: "Contact",          href: "/contact" },
-        { name: "Privacy Policy",   href: "/privacy" },
-        { name: "Terms of Service", href: "/terms" },
-    ],
-};
+const NAV = [
+    {
+        heading: "EXPLORE",
+        links: [
+            { name: "News",             href: "/news" },
+            { name: "Reviews",          href: "/reviews" },
+            { name: "Games",            href: "/games" },
+            { name: "Release Calendar", href: "/calendar" },
+            { name: "Hardware Lab",     href: "/hardware" },
+            { name: "Guides",           href: "/guides" },
+        ],
+    },
+    {
+        heading: "DATABASE",
+        links: [
+            { name: "All Games",  href: "/games" },
+            { name: "Platforms",  href: "/games" },
+            { name: "Genres",     href: "/games" },
+            { name: "Developers", href: "/games" },
+        ],
+    },
+    {
+        heading: "COMMUNITY",
+        links: [
+            { name: "Forum",        href: "/forum" },
+            { name: "Leaderboard",  href: "/leaderboard" },
+            { name: "Achievements", href: "/leaderboard" },
+            { name: "Discord",      href: "https://discord.gg/wPQG9gUMXH" },
+        ],
+    },
+    {
+        heading: "SUPPORT",
+        links: [
+            { name: "About Us",         href: "/about" },
+            { name: "Contact",          href: "/contact" },
+            { name: "Privacy Policy",   href: "/privacy" },
+            { name: "Terms of Service", href: "/terms" },
+        ],
+    },
+];
 
 export default function Footer() {
     const { settings } = useSiteSettings();
 
     const socialLinks = Object.keys(SOCIAL_ICON_MAP)
         .filter(key => settings[key])
-        .map(key => ({ Icon: SOCIAL_ICON_MAP[key], href: settings[key] || '#' }));
+        .map(key => ({ ...SOCIAL_ICON_MAP[key], href: settings[key] || '#' }));
 
     return (
-        <footer className="bg-zinc-50 dark:bg-[#0B0E14] border-t border-zinc-200 dark:border-[#12161E] pt-16 pb-0 transition-colors duration-300">
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
-                <div className="flex flex-col lg:flex-row gap-12 lg:gap-24">
+        <footer className="relative bg-[#070A10] border-t border-white/[0.06] overflow-hidden">
+            {/* Ambient glow */}
+            <div className="absolute -top-[200px] left-[10%] w-[500px] h-[400px] bg-tp-accent/5 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute -top-[100px] right-[15%] w-[300px] h-[300px] bg-blue-500/3 blur-[100px] rounded-full pointer-events-none" />
+
+            {/* Top accent line */}
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-tp-accent/60 to-transparent" />
+
+            <div className="relative max-w-[1320px] mx-auto px-4 xl:px-0 pt-16 pb-12">
+                <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-16">
 
                     {/* Brand column */}
-                    <div className="flex flex-col max-w-sm flex-1">
-                        <Link href="/" className="font-display font-bold text-[22px] tracking-tight flex items-center mb-4">
-                            <span className="text-zinc-900 dark:text-white">TECH</span>
-                            <span className="text-tp-accent">PLAY</span>
-                            <span className="text-zinc-500 dark:text-slate-400 text-sm ml-[1px] mt-[1px]">.GG</span>
+                    <div className="flex flex-col">
+                        <Link href="/" className="flex items-center gap-3 group mb-5">
+                            <div className="w-10 h-10 bg-tp-accent rounded-lg flex items-center justify-center shadow-lg shadow-tp-accent/30 group-hover:bg-tp-accent-hover transition-colors">
+                                <Gamepad2 className="w-5 h-5 text-white" strokeWidth={2} />
+                            </div>
+                            <div className="flex flex-col leading-none">
+                                <span className="font-display font-bold text-[18px] text-white tracking-tight leading-none">TECHPLAY</span>
+                                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mt-[3px]">GAMING PORTAL</span>
+                            </div>
                         </Link>
-                        <p className="text-zinc-500 dark:text-[#A1A1AA] text-[13px] leading-relaxed mb-6 max-w-[280px]">
-                            Your gaming hub for news, reviews, releases, database and community.
+
+                        <p className="text-[13px] text-[#6B7280] leading-relaxed mb-8 max-w-[260px]">
+                            Your home for gaming news, honest reviews, release dates, and a community that actually cares about games.
                         </p>
-                        <div className="flex items-center gap-[18px]">
-                            {socialLinks.map((s, i) => (
-                                <Link
-                                    key={i}
-                                    href={s.href}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-zinc-500 dark:text-[#A1A1AA] hover:text-[#FC4100] transition-colors"
-                                >
-                                    <s.Icon className="w-[18px] h-[18px]" />
-                                </Link>
-                            ))}
-                        </div>
+
+                        {/* Social icons */}
+                        {socialLinks.length > 0 && (
+                            <div className="flex items-center gap-2">
+                                {socialLinks.map((s, i) => (
+                                    <Link
+                                        key={i}
+                                        href={s.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label={s.label}
+                                        className="w-9 h-9 rounded-lg bg-white/5 border border-white/[0.08] flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-tp-accent/10 hover:border-tp-accent/30 transition-all duration-200"
+                                    >
+                                        <s.Icon className="w-[16px] h-[16px]" />
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
-                    {/* 4-col nav grid */}
-                    <div className="flex-[2] grid grid-cols-2 md:grid-cols-4 gap-8">
-                        <div className="flex flex-col gap-4">
-                            <h4 className="font-sans font-bold uppercase tracking-wider text-zinc-900 dark:text-white text-[11px] mb-1">EXPLORE</h4>
-                            {FOOTER_LINKS.explore.map(item => (
-                                <Link key={item.name} href={item.href} className="text-[13px] text-zinc-500 dark:text-[#A1A1AA] hover:text-[#FC4100] transition-colors">{item.name}</Link>
-                            ))}
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            <h4 className="font-sans font-bold uppercase tracking-wider text-zinc-900 dark:text-white text-[11px] mb-1">DATABASE</h4>
-                            {FOOTER_LINKS.database.map(item => (
-                                <Link key={item.name} href={item.href} className="text-[13px] text-zinc-500 dark:text-[#A1A1AA] hover:text-[#FC4100] transition-colors">{item.name}</Link>
-                            ))}
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            <h4 className="font-sans font-bold uppercase tracking-wider text-zinc-900 dark:text-white text-[11px] mb-1">COMMUNITY</h4>
-                            {FOOTER_LINKS.community.map(item => (
-                                <Link key={item.name} href={item.href} className="text-[13px] text-zinc-500 dark:text-[#A1A1AA] hover:text-[#FC4100] transition-colors">{item.name}</Link>
-                            ))}
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            <h4 className="font-sans font-bold uppercase tracking-wider text-zinc-900 dark:text-white text-[11px] mb-1">SUPPORT</h4>
-                            {FOOTER_LINKS.support.map(item => (
-                                <Link key={item.name} href={item.href} className="text-[13px] text-zinc-500 dark:text-[#A1A1AA] hover:text-[#FC4100] transition-colors">{item.name}</Link>
-                            ))}
-                        </div>
+                    {/* Nav columns */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                        {NAV.map((col) => (
+                            <div key={col.heading}>
+                                <div className="flex items-center gap-2 mb-5">
+                                    <span className="w-[3px] h-3 rounded-full bg-tp-accent" />
+                                    <h4 className="text-[11px] font-black uppercase tracking-[0.14em] text-white">
+                                        {col.heading}
+                                    </h4>
+                                </div>
+                                <ul className="flex flex-col gap-3">
+                                    {col.links.map(item => (
+                                        <li key={item.name}>
+                                            <Link
+                                                href={item.href}
+                                                className="text-[13px] text-[#6B7280] hover:text-white transition-colors duration-150 hover:translate-x-0.5 inline-block"
+                                            >
+                                                {item.name}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
 
             {/* Bottom bar */}
-            <div className="w-full border-t border-zinc-200 dark:border-[#12161E] mt-12 py-3 bg-zinc-100/50 dark:bg-[#0B0E14]/40 transition-colors duration-300">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 flex flex-col md:flex-row items-center justify-between gap-2">
-                    <p className="text-[12px] text-zinc-500 dark:text-[#A1A1AA]">
+            <div className="relative border-t border-white/[0.06]">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+                    <p className="text-[12px] text-[#4B5563]">
                         © 2026 TechPlay Gaming Portal. All rights reserved.
                     </p>
-                    <p className="text-[12px] text-zinc-500 dark:text-[#A1A1AA]">
-                        Made by <span className="text-zinc-900 dark:text-white font-medium">Luminor Solutions</span>
+                    <p className="text-[12px] text-[#4B5563]">
+                        Made by <Link href="https://luminor.agency" target="_blank" rel="noopener noreferrer" className="text-[#6B7280] hover:text-white transition-colors font-medium">Luminor Solutions</Link>
                     </p>
                 </div>
             </div>
