@@ -52,12 +52,13 @@ export default function ArticleFooter({
     return (
         <div className="mt-12">
             <div className="bg-[#0B0E14] border border-[#161B22] rounded-[20px] overflow-hidden">
-                {/* Orange hairline */}
-                <div className="h-[2px] bg-gradient-to-r from-tp-accent/60 via-tp-accent/20 to-transparent" />
-
                 {/* Header */}
-                <div className="px-5 pt-5 pb-3">
-                    <span className="text-tp-accent font-bold tracking-[0.15em] text-[10px] uppercase">Stay Connected</span>
+                <div className="px-6 pt-7 pb-6 text-center">
+                    <div className="flex items-center gap-4">
+                        <div className="h-px flex-1 bg-gradient-to-r from-transparent to-tp-accent/40" />
+                        <span className="text-tp-accent font-bold tracking-[0.22em] text-[11px] uppercase shrink-0">Stay Connected</span>
+                        <div className="h-px flex-1 bg-gradient-to-l from-transparent to-tp-accent/40" />
+                    </div>
                 </div>
 
                 {/* Tags + Share row */}
