@@ -794,7 +794,7 @@ export default function Header() {
                             animate={{ x: 0 }}
                             exit={{ x: "100%" }}
                             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                            className="xl:hidden fixed inset-y-0 right-0 w-[82vw] max-w-[340px] bg-[#080B11] z-[60] flex flex-col border-l border-white/[0.06]"
+                            className="xl:hidden fixed inset-0 bg-[#080B11] z-[60] flex flex-col"
                             style={{ boxShadow: "-20px 0 60px rgba(0,0,0,0.7)" }}
                         >
                             {/* Drawer header */}
