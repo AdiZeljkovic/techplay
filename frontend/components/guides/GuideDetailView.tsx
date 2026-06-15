@@ -17,6 +17,7 @@ import DiscordWidget from "@/components/home/DiscordWidget";
 import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 import ArticleFooter from "@/components/ui/ArticleFooter";
+import SocialShare from "@/components/share/SocialShare";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import RelatedArticles from "@/components/seo/RelatedArticles";
 import { decodeHtml } from "@/lib/decode";
