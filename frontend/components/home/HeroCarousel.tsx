@@ -162,22 +162,22 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
                                 href: "/games",
                                 icon: Library,
                                 label: "GAME DATABASE",
-                                title: "Explore 50,000+ game titles",
-                                meta: "UPDATED DAILY",
+                                title: "Explore 200,000+ game titles",
+                                meta: "FIND YOUR NEXT GAME",
                             },
                             {
                                 href: "/calendar",
                                 icon: CalendarDays,
                                 label: "RELEASE CALENDAR",
-                                title: "Never miss an upcoming launch",
+                                title: "What's dropping this month?",
                                 meta: "ALL PLATFORMS",
                             },
                             {
                                 href: "/forum",
                                 icon: MessageSquare,
                                 label: "COMMUNITY FORUM",
-                                title: "Join the discussion",
-                                meta: "SHARE YOUR THOUGHTS",
+                                title: "Got a hot take? Let's hear it.",
+                                meta: "JOIN THE CONVERSATION",
                             },
                         ].map((card) => (
                             <Link
