@@ -111,7 +111,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                                 src={imageUrl!}
                                                 alt={decodeHtml(article.title)}
                                                 fill
-                                                className="object-cover object-right opacity-80"
+                                                className="object-cover object-right opacity-100"
                                                 priority
                                                 quality={90}
                                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
@@ -120,9 +120,9 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                             <div className="w-full h-full bg-gradient-to-br from-[#0d2444] to-[#05070A]" />
                                         )}
                                         {/* Left fade — shows image on right */}
-                                        <div className="absolute inset-0 bg-gradient-to-r from-[#05070A] via-[#05070A]/95 to-transparent w-[85%]" />
+                                        <div className="absolute inset-0 bg-gradient-to-r from-[#05070A] via-[#05070A]/80 to-transparent w-[70%]" />
                                         {/* Bottom fade */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/60 to-transparent opacity-90" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#05070A]/80 via-[#05070A]/20 to-transparent" />
                                     </div>
 
                                     {/* Left content panel */}
@@ -139,13 +139,6 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                                 {decodeHtml(article.title)}
                                             </h1>
                                         </div>
-
-                                        {/* Excerpt */}
-                                        {article.excerpt && (
-                                            <p className="text-[15px] md:text-[18px] text-[#A1A1AA] leading-relaxed mb-8 max-w-xl">
-                                                {decodeHtml(article.excerpt)}
-                                            </p>
-                                        )}
 
                                         {/* Author row */}
                                         <div className="flex items-center gap-3">
