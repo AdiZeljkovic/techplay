@@ -8,7 +8,6 @@ import { format } from "date-fns";
 import { useMemo } from "react";
 import Script from "next/script";
 import AdUnit from "@/components/ads/AdUnit";
-import CommentsSection from "@/components/comments/CommentsSection";
 import ReviewSidebar from "@/components/reviews/ReviewSidebar";
 import RecommendedNews from "@/components/news/RecommendedNews";
 import ReleaseCalendarSection from "@/components/home/ReleaseCalendarSection";
@@ -307,12 +306,9 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                         shareUrl={`/reviews/${review.slug}`}
                                         shareTitle={decodeHtml(review.title)}
                                         shareDescription={decodeHtml(review.excerpt) || ''}
+                                        commentableId={review.id}
+                                        commentableType="review"
                                     />
-
-                                    {/* Comments */}
-                                    <div className="mt-12 pt-12 border-t border-[#161B22]">
-                                        <CommentsSection commentableId={review.id} commentableType="review" />
-                                    </div>
 
                                     {/* Related Reviews */}
                                     <RelatedArticles

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import SocialShare from "@/components/share/SocialShare";
+import CommentsSection from "@/components/comments/CommentsSection";
 
 const DiscordIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -31,9 +32,15 @@ interface ArticleFooterProps {
     shareUrl: string;
     shareTitle: string;
     shareDescription?: string;
+    commentableId: number;
+    commentableType: 'article' | 'review' | 'guide';
+    initialComments?: any[];
 }
 
-export default function ArticleFooter({ author, tags, shareUrl, shareTitle, shareDescription = "" }: ArticleFooterProps) {
+export default function ArticleFooter({
+    author, tags, shareUrl, shareTitle, shareDescription = "",
+    commentableId, commentableType, initialComments,
+}: ArticleFooterProps) {
     const { settings } = useSiteSettings();
 
     const socialLinks = Object.keys(SOCIAL_ICON_MAP)
@@ -48,8 +55,13 @@ export default function ArticleFooter({ author, tags, shareUrl, shareTitle, shar
                 {/* Orange hairline */}
                 <div className="h-[2px] bg-gradient-to-r from-tp-accent/60 via-tp-accent/20 to-transparent" />
 
+                {/* Header */}
+                <div className="px-5 pt-5 pb-3">
+                    <span className="text-tp-accent font-bold tracking-[0.15em] text-[10px] uppercase">Stay Connected</span>
+                </div>
+
                 {/* Tags + Share row */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-4 border-b border-[#161B22]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-3 border-t border-[#161B22]">
                     {filteredTags.length > 0 && (
                         <div className="flex flex-wrap gap-2 items-center">
                             <span className="text-[#71717A] text-[11px] font-bold uppercase tracking-widest shrink-0">Tags:</span>
@@ -62,19 +74,13 @@ export default function ArticleFooter({ author, tags, shareUrl, shareTitle, shar
                     )}
                     <div className="flex items-center gap-2 shrink-0">
                         <span className="text-[#71717A] text-[11px] font-bold uppercase tracking-widest">Share:</span>
-                        <SocialShare
-                            url={shareUrl}
-                            title={shareTitle}
-                            description={shareDescription}
-                            vertical={false}
-                        />
+                        <SocialShare url={shareUrl} title={shareTitle} description={shareDescription} vertical={false} />
                     </div>
                 </div>
 
                 {/* Author + Follow row */}
                 {author && (
-                    <div className="flex items-start sm:items-center justify-between gap-4 px-5 py-5">
-                        {/* Author info */}
+                    <div className="flex items-start sm:items-center justify-between gap-4 px-5 py-5 border-t border-[#161B22]">
                         <div className="flex items-center gap-4 min-w-0 flex-1">
                             <Link href={`/profile/${author.username || 'me'}`} className="shrink-0">
                                 {author.avatar_url ? (
@@ -106,20 +112,13 @@ export default function ArticleFooter({ author, tags, shareUrl, shareTitle, shar
                             </div>
                         </div>
 
-                        {/* Site social icons */}
                         {socialLinks.length > 0 && (
                             <div className="hidden sm:flex flex-col gap-2 items-end shrink-0">
                                 <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#71717A]">Follow Us</span>
                                 <div className="flex items-center gap-1.5">
                                     {socialLinks.map((s, i) => (
-                                        <Link
-                                            key={i}
-                                            href={s.href}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            aria-label={s.label}
-                                            className="w-8 h-8 rounded-lg bg-white/5 border border-white/[0.08] flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-tp-accent/10 hover:border-tp-accent/30 transition-all duration-200"
-                                        >
+                                        <Link key={i} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
+                                            className="w-8 h-8 rounded-lg bg-white/5 border border-white/[0.08] flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-tp-accent/10 hover:border-tp-accent/30 transition-all duration-200">
                                             <s.Icon className="w-[14px] h-[14px]" />
                                         </Link>
                                     ))}
@@ -128,6 +127,15 @@ export default function ArticleFooter({ author, tags, shareUrl, shareTitle, shar
                         )}
                     </div>
                 )}
+
+                {/* Comments */}
+                <div className="border-t border-[#161B22] px-5 py-8">
+                    <CommentsSection
+                        commentableId={commentableId}
+                        commentableType={commentableType}
+                        initialComments={initialComments}
+                    />
+                </div>
             </div>
         </div>
     );

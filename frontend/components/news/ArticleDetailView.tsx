@@ -11,7 +11,6 @@ import { ARTICLE_PROSE } from "@/lib/prose";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import AdUnit from "@/components/ads/AdUnit";
 import SocialShare from "@/components/share/SocialShare";
-import CommentsSection from "@/components/comments/CommentsSection";
 import RecommendedNews from "@/components/news/RecommendedNews";
 import ReleaseCalendarSection from "@/components/home/ReleaseCalendarSection";
 import DiscordWidget from "@/components/home/DiscordWidget";
@@ -222,16 +221,10 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         shareUrl={`/news/${article.slug}`}
                                         shareTitle={decodeHtml(article.title)}
                                         shareDescription={decodeHtml(article.excerpt) || ''}
+                                        commentableId={article.id}
+                                        commentableType="article"
+                                        initialComments={initialComments}
                                     />
-
-                                    {/* Comments */}
-                                    <div className="mt-12 pt-12 border-t border-[#161B22]">
-                                        <CommentsSection
-                                            commentableId={article.id}
-                                            commentableType="article"
-                                            initialComments={initialComments}
-                                        />
-                                    </div>
 
                                     <RelatedArticles
                                         articles={(article as any).related_articles || []}

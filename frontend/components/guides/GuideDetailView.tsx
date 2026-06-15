@@ -10,7 +10,6 @@ import { processContent } from "@/lib/content";
 import { ARTICLE_PROSE } from "@/lib/prose";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import AdUnit from "@/components/ads/AdUnit";
-import CommentsSection from "@/components/comments/CommentsSection";
 import RecommendedNews from "@/components/news/RecommendedNews";
 import ReleaseCalendarSection from "@/components/home/ReleaseCalendarSection";
 import DiscordWidget from "@/components/home/DiscordWidget";
@@ -265,6 +264,8 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                                         shareUrl={`/guides/${guide.slug}`}
                                         shareTitle={decodeHtml(guide.title)}
                                         shareDescription={decodeHtml(guide.excerpt) || ''}
+                                        commentableId={guide.id}
+                                        commentableType="guide"
                                     />
 
                                     {/* Related Guides */}
@@ -274,11 +275,6 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                                         viewAllHref="/guides"
                                         articleBasePath="/guides"
                                     />
-
-                                    {/* Comments */}
-                                    <div className="mt-12 border-t border-[#161B22] pt-12">
-                                        <CommentsSection commentableId={guide.id} commentableType="guide" />
-                                    </div>
                                 </div>
                             </div>
                         </div>
