@@ -20,6 +20,7 @@ import { processContent } from "@/lib/content";
 import { ARTICLE_PROSE } from "@/lib/prose";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import ArticleFooter from "@/components/ui/ArticleFooter";
+import SocialShare from "@/components/share/SocialShare";
 import { decodeHtml } from "@/lib/decode";
 
 interface ReviewDetailViewProps {
