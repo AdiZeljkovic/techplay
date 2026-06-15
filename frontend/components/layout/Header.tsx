@@ -187,6 +187,18 @@ function DatabaseNavItem() {
     );
 }
 
+const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+    NEWS:     Newspaper,
+    REVIEWS:  Star,
+    TECH:     Cpu,
+    VIDEO:    Film,
+    GUIDES:   BookOpen,
+    CALENDAR: Calendar,
+    DATABASE: Gamepad2,
+    FORUM:    MessageSquare,
+    SHOP:     ShoppingCart,
+};
+
 // Initial Nav Items (will be populated with children from API)
 const INITIAL_NAV_ITEMS: NavItemType[] = [
     { name: "NEWS", href: "/news", hasDropdown: true, viewAllLabel: "All News", children: [
@@ -760,157 +772,180 @@ export default function Header() {
                 )}
             </AnimatePresence>
 
-            {/* MOBILE MENU overlay */}
+            {/* MOBILE MENU — right-side drawer */}
             <AnimatePresence>
                 {isMobileMenuOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, x: "100%" }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: "100%" }}
-                        transition={{ type: "tween", duration: 0.25 }}
-                        className="xl:hidden fixed inset-0 top-[106px] z-50 overflow-y-auto bg-[#05070A]/97 backdrop-blur-md"
-                    >
-                        <div className="max-w-[1320px] mx-auto px-4 py-4 space-y-4">
-                            {/* User Quick Actions (if logged in) */}
+                    <>
+                        {/* Backdrop */}
+                        <motion.div
+                            key="backdrop"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="xl:hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[45]"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        />
+
+                        {/* Drawer */}
+                        <motion.div
+                            key="drawer"
+                            initial={{ x: "100%" }}
+                            animate={{ x: 0 }}
+                            exit={{ x: "100%" }}
+                            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                            className="xl:hidden fixed inset-y-0 right-0 w-[82vw] max-w-[340px] bg-[#080B11] z-[60] flex flex-col border-l border-white/[0.06]"
+                            style={{ boxShadow: "-20px 0 60px rgba(0,0,0,0.7)" }}
+                        >
+                            {/* Drawer header */}
+                            <div className="flex items-center justify-between px-5 h-[60px] border-b border-white/[0.06] shrink-0">
+                                <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 bg-tp-accent rounded-lg flex items-center justify-center shadow-lg shadow-tp-accent/30">
+                                        <Gamepad2 className="w-4 h-4 text-white" strokeWidth={2} />
+                                    </div>
+                                    <div className="flex flex-col leading-none">
+                                        <span className="font-display font-bold text-[15px] text-white tracking-tight">TECHPLAY</span>
+                                        <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400 mt-[2px]">GAMING PORTAL</span>
+                                    </div>
+                                </Link>
+                                <button
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="w-8 h-8 rounded-lg bg-white/5 border border-white/[0.08] flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            {/* User card */}
                             {user && (
-                                <div className="flex gap-2">
-                                    <Link
-                                        href="/messages"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-colors border border-[#161B22] bg-[#0B0E14]"
-                                    >
-                                        <Mail className="w-5 h-5" />
-                                        <span className="text-sm font-medium">Messages</span>
-                                        {notifications.unread_messages > 0 && (
-                                            <span className="w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{notifications.unread_messages}</span>
+                                <div className="px-4 py-3 border-b border-white/[0.06] shrink-0">
+                                    <Link href={`/profile/${user.username || 'me'}`} onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 mb-3">
+                                        {user.avatar_url ? (
+                                            <Image src={user.avatar_url} alt={user.username || ''} width={40} height={40}
+                                                className="w-10 h-10 rounded-full object-cover border-2 border-tp-accent/40"
+                                                unoptimized={user.avatar_url.includes('discord') || user.avatar_url.includes('gravatar')} />
+                                        ) : (
+                                            <div className="w-10 h-10 rounded-full bg-tp-accent/15 border-2 border-tp-accent/30 flex items-center justify-center">
+                                                <User className="w-5 h-5 text-tp-accent" />
+                                            </div>
                                         )}
+                                        <div>
+                                            <div className="text-white font-bold text-[14px] leading-tight">{decodeHtml(user.display_name || user.username)}</div>
+                                            <div className="text-[11px] text-slate-400 mt-0.5">Level {Math.floor((user.xp || 0) / 1000) + 1} · {user.xp || 0} XP</div>
+                                        </div>
                                     </Link>
-                                    <Link
-                                        href="/friends"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-gray-300 hover:bg-white/10 transition-colors border border-[#161B22] bg-[#0B0E14]"
-                                    >
-                                        <Users className="w-5 h-5" />
-                                        <span className="text-sm font-medium">Friends</span>
-                                        {notifications.pending_requests > 0 && (
-                                            <span className="w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{notifications.pending_requests}</span>
-                                        )}
-                                    </Link>
+                                    <div className="flex gap-2">
+                                        <Link href="/messages" onClick={() => setIsMobileMenuOpen(false)}
+                                            className="relative flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white/5 border border-white/[0.08] text-slate-400 text-[11px] font-bold uppercase tracking-wide hover:text-white hover:bg-white/10 transition-colors">
+                                            <Mail className="w-3.5 h-3.5" /> Messages
+                                            {notifications.unread_messages > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center">{notifications.unread_messages}</span>}
+                                        </Link>
+                                        <Link href="/friends" onClick={() => setIsMobileMenuOpen(false)}
+                                            className="relative flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white/5 border border-white/[0.08] text-slate-400 text-[11px] font-bold uppercase tracking-wide hover:text-white hover:bg-white/10 transition-colors">
+                                            <Users className="w-3.5 h-3.5" /> Friends
+                                            {notifications.pending_requests > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center">{notifications.pending_requests}</span>}
+                                        </Link>
+                                    </div>
                                 </div>
                             )}
 
-                            {/* Navigation with Accordion Dropdowns */}
-                            <nav className="flex flex-col">
-                                {navItems.map((item) => (
-                                    <div key={item.name} className="border-b border-white/5 last:border-b-0">
-                                        {item.hasDropdown && item.children ? (
-                                            <>
-                                                {/* Accordion Header */}
-                                                <button
-                                                    onClick={() => setExpandedMobileItem(
-                                                        expandedMobileItem === item.name ? null : item.name
-                                                    )}
-                                                    className="w-full py-4 px-2 text-gray-300 hover:text-white font-bold text-base transition-colors flex justify-between items-center"
-                                                >
-                                                    {item.name}
-                                                    <ChevronDown className={cn(
-                                                        "w-5 h-5 text-gray-400 transition-transform duration-200",
-                                                        expandedMobileItem === item.name ? "rotate-180" : ""
-                                                    )} />
-                                                </button>
-
-                                                {/* Accordion Content */}
-                                                <AnimatePresence>
-                                                    {expandedMobileItem === item.name && (
-                                                        <motion.div
-                                                            initial={{ height: 0, opacity: 0 }}
-                                                            animate={{ height: "auto", opacity: 1 }}
-                                                            exit={{ height: 0, opacity: 0 }}
-                                                            transition={{ duration: 0.2 }}
-                                                            className="overflow-hidden"
-                                                        >
-                                                            <div className="pl-4 pb-3 flex flex-col gap-1">
-                                                                {/* Link to main category page */}
-                                                                <Link
-                                                                    href={item.href}
-                                                                    onClick={() => setIsMobileMenuOpen(false)}
-                                                                    className="py-2.5 px-3 text-[var(--accent)] text-sm font-semibold rounded-lg hover:bg-white/5 transition-colors"
-                                                                >
-                                                                    All {item.name}
-                                                                </Link>
-                                                                {item.children.map((child, idx) => (
-                                                                    <Link
-                                                                        key={idx}
-                                                                        href={child.href}
-                                                                        onClick={() => setIsMobileMenuOpen(false)}
-                                                                        className="py-2.5 px-3 text-gray-400 hover:text-white hover:bg-white/5 text-sm font-medium rounded-lg transition-colors"
-                                                                    >
-                                                                        {child.name}
-                                                                    </Link>
-                                                                ))}
+                            {/* Nav */}
+                            <nav className="flex-1 overflow-y-auto py-1">
+                                {navItems.map((item) => {
+                                    const Icon = NAV_ICONS[item.name];
+                                    return (
+                                        <div key={item.name}>
+                                            {item.hasDropdown && item.children ? (
+                                                <>
+                                                    <button
+                                                        onClick={() => setExpandedMobileItem(expandedMobileItem === item.name ? null : item.name)}
+                                                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors group"
+                                                    >
+                                                        {Icon && (
+                                                            <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.07] flex items-center justify-center shrink-0 group-hover:bg-tp-accent/10 group-hover:border-tp-accent/20 transition-all">
+                                                                <Icon className="w-[15px] h-[15px] text-slate-400 group-hover:text-tp-accent transition-colors" />
                                                             </div>
-                                                        </motion.div>
+                                                        )}
+                                                        <span className="flex-1 text-[13px] font-bold uppercase tracking-[0.07em] text-slate-200 group-hover:text-white transition-colors text-left">{item.name}</span>
+                                                        <ChevronDown className={cn("w-4 h-4 text-slate-500 transition-transform duration-200 shrink-0", expandedMobileItem === item.name ? "rotate-180 text-tp-accent" : "")} />
+                                                    </button>
+                                                    <AnimatePresence>
+                                                        {expandedMobileItem === item.name && (
+                                                            <motion.div
+                                                                initial={{ height: 0, opacity: 0 }}
+                                                                animate={{ height: "auto", opacity: 1 }}
+                                                                exit={{ height: 0, opacity: 0 }}
+                                                                transition={{ duration: 0.18 }}
+                                                                className="overflow-hidden"
+                                                            >
+                                                                <div className="ml-[52px] mr-4 mb-1 pl-3 border-l border-tp-accent/25 flex flex-col gap-0.5">
+                                                                    <Link href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-tp-accent text-[11px] font-bold uppercase tracking-widest">
+                                                                        All {item.name}
+                                                                    </Link>
+                                                                    {item.children.map((child, idx) => (
+                                                                        <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
+                                                                            className="py-1.5 text-[13px] text-slate-400 hover:text-white transition-colors">
+                                                                            {child.name}
+                                                                        </Link>
+                                                                    ))}
+                                                                </div>
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </>
+                                            ) : (
+                                                <Link href={item.href} onClick={() => setIsMobileMenuOpen(false)}
+                                                    className="flex items-center gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors group">
+                                                    {Icon && (
+                                                        <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.07] flex items-center justify-center shrink-0 group-hover:bg-tp-accent/10 group-hover:border-tp-accent/20 transition-all">
+                                                            <Icon className="w-[15px] h-[15px] text-slate-400 group-hover:text-tp-accent transition-colors" />
+                                                        </div>
                                                     )}
-                                                </AnimatePresence>
-                                            </>
-                                        ) : (
-                                            <Link
-                                                href={item.href}
-                                                onClick={() => setIsMobileMenuOpen(false)}
-                                                className="block py-4 px-2 text-gray-300 hover:text-white font-bold text-base transition-colors"
-                                            >
-                                                {item.name}
-                                            </Link>
-                                        )}
-                                    </div>
-                                ))}
-                            </nav>
+                                                    <span className="text-[13px] font-bold uppercase tracking-[0.07em] text-slate-200 group-hover:text-white transition-colors">{item.name}</span>
+                                                </Link>
+                                            )}
+                                        </div>
+                                    );
+                                })}
 
-                            {/* Utility Links Mobile */}
-                            <div className="pt-4 border-t border-white/10 grid grid-cols-2 gap-2">
-                                {UTILITY_LINKS.map((link) => (
-                                    <Link
-                                        key={link.name}
-                                        href={link.href}
-                                        className={cn(
-                                            "text-xs font-semibold tracking-wider hover:text-white py-3 px-3 rounded-lg hover:bg-white/5 transition-colors",
-                                            link.highlight ? "text-[var(--accent)]" : "text-gray-400"
-                                        )}
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        {link.name}
-                                    </Link>
-                                ))}
-                            </div>
-
-                            {/* Social Links & Sign Out */}
-                            <div className="pt-4 flex flex-col gap-4">
-                                <div className="flex justify-center gap-6">
-                                    {socialLinks.map((social, idx) => (
-                                        <Link key={idx} href={social.href} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white p-2">
-                                            <social.icon className="w-5 h-5" />
+                                {/* Utility links */}
+                                <div className="mx-4 mt-2 pt-3 border-t border-white/[0.06] grid grid-cols-2 gap-1">
+                                    {UTILITY_LINKS.map((link) => (
+                                        <Link key={link.name} href={link.href} onClick={() => setIsMobileMenuOpen(false)}
+                                            className={cn("py-2 px-2 text-[11px] font-semibold tracking-wider rounded-lg hover:bg-white/5 transition-colors",
+                                                link.highlight ? "text-tp-accent" : "text-slate-500 hover:text-slate-300")}>
+                                            {link.name}
                                         </Link>
                                     ))}
                                 </div>
+                            </nav>
+
+                            {/* Bottom */}
+                            <div className="shrink-0 border-t border-white/[0.06] px-4 py-4 flex flex-col gap-3">
+                                {socialLinks.length > 0 && (
+                                    <div className="flex items-center gap-2">
+                                        {socialLinks.map((social, idx) => (
+                                            <Link key={idx} href={social.href} target="_blank" rel="noopener noreferrer"
+                                                className="w-8 h-8 rounded-lg bg-white/5 border border-white/[0.08] flex items-center justify-center text-slate-400 hover:text-white hover:bg-tp-accent/10 hover:border-tp-accent/30 transition-all">
+                                                <social.icon className="w-[14px] h-[14px]" />
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
                                 {user ? (
-                                    <button
-                                        onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                                        className="w-full py-3 text-red-400 hover:text-red-300 text-sm font-medium border border-red-400/20 rounded-xl hover:bg-red-400/10 transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <LogOut className="w-4 h-4" /> Sign Out
+                                    <button onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                                        className="w-full py-2.5 text-red-400 border border-red-400/20 rounded-xl hover:bg-red-400/10 transition-colors flex items-center justify-center gap-2 text-[12px] font-bold uppercase tracking-wide">
+                                        <LogOut className="w-3.5 h-3.5" /> Sign Out
                                     </button>
                                 ) : (
-                                    <Link
-                                        href="/login"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                        className="w-full text-center py-3 font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] rounded-xl transition-colors"
-                                    >
+                                    <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}
+                                        className="w-full text-center py-3 font-bold text-white bg-tp-accent hover:bg-tp-accent-hover rounded-xl transition-colors text-[12px] uppercase tracking-widest shadow-lg shadow-tp-accent/20">
                                         Sign In / Register
                                     </Link>
                                 )}
                             </div>
-                        </div>
-                    </motion.div>
+                        </motion.div>
+                    </>
                 )}
             </AnimatePresence>
         </div>
