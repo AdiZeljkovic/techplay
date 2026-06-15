@@ -8,7 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { User, Comment } from "@/types";
 import { Button } from "../ui/Button";
-import { MessageSquare, CornerDownRight, Send, Trophy, ShieldCheck, Gamepad2, ChevronUp, ChevronDown } from "lucide-react";
+import { MessageSquare, Send, ShieldCheck, Gamepad2, ChevronUp, ChevronDown } from "lucide-react";
 import { decodeHtml } from "@/lib/decode";
 
 // Removed local Comment interface in favor of shared type
@@ -156,104 +156,99 @@ export default function CommentsSection({ commentableId, commentableType, initia
     };
 
     return (
-        <div id="comments" className="max-w-4xl mx-auto py-12 px-4">
-            <div className="mb-8">
-                <span className="text-tp-accent font-bold tracking-[0.15em] text-[10px] uppercase mb-2 block">
-                    COMMUNITY
-                </span>
-                <h3 className="font-display text-[24px] font-bold text-white uppercase tracking-[0.05em] flex items-center gap-3">
-                    DISCUSSION
-                    <span className="text-[#71717A] text-[16px] font-normal tracking-normal">({comments.length})</span>
+        <div id="comments">
+            {/* Section header */}
+            <div className="flex items-center gap-3 mb-6">
+                <h3 className="font-display text-[16px] font-bold text-white uppercase tracking-[0.08em] flex items-center gap-2.5">
+                    Discussion
+                    <span className="text-[#71717A] text-[13px] font-normal tracking-normal normal-case">({comments.length})</span>
                 </h3>
             </div>
 
-            {/* Main Comment Form */}
-            <div className="relative overflow-hidden bg-[#0B0E14]/80 backdrop-blur-md border border-[#161B22] rounded-[24px] p-6 md:p-8 mb-10 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-                <div className="absolute top-0 left-[25%] w-[50%] h-[1px] bg-gradient-to-r from-transparent via-[#FC4100]/40 to-transparent" />
-                <div className="absolute -top-[100px] -right-[50px] w-[250px] h-[250px] bg-[#FC4100]/5 blur-[80px] rounded-full pointer-events-none" />
-
-                {isAuthLoading ? (
-                    <div className="flex gap-4 animate-pulse relative z-10">
-                        <div className="w-10 h-10 rounded-full bg-white/5" />
-                        <div className="flex-1 space-y-3">
-                            <div className="h-10 w-full bg-white/5 rounded-lg" />
-                            <div className="h-8 w-32 bg-white/5 rounded-lg" />
-                        </div>
+            {/* Comment form / auth gate */}
+            {isAuthLoading ? (
+                <div className="flex gap-4 animate-pulse mb-8">
+                    <div className="w-10 h-10 rounded-full bg-white/5 shrink-0" />
+                    <div className="flex-1 space-y-3">
+                        <div className="h-[100px] w-full bg-white/5 rounded-xl" />
+                        <div className="h-8 w-32 bg-white/5 rounded-lg" />
                     </div>
-                ) : user ? (
-                    <form onSubmit={(e) => handleSubmit(e)} className="relative z-10">
-                        <div className="flex gap-4">
-                            <div className="hidden sm:block shrink-0 w-10 h-10 rounded-full overflow-hidden bg-[#1A1F26] ring-2 ring-white/5">
-                                {user.avatar_url ? (
-                                    <Image src={user.avatar_url} alt={user.username} width={40} height={40} className="object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center font-bold text-tp-accent">
-                                        {user?.username?.charAt(0)?.toUpperCase() || '?'}
-                                    </div>
-                                )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <textarea
-                                    value={content}
-                                    onChange={(e) => setContent(e.target.value)}
-                                    placeholder="What are your thoughts? (You'll earn 10 XP!)"
-                                    className="w-full bg-[#05070A] border border-[#161B22] rounded-xl p-4 text-[14px] text-white focus:outline-none focus:border-tp-accent/50 transition-all min-h-[100px] resize-y placeholder:text-[#71717A]"
-                                    required
-                                />
-                                {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-                                {statusMessage && (
-                                    <div className={`mt-3 p-3 rounded-lg text-sm border ${statusMessage.type === 'warning'
-                                        ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
-                                        : 'bg-green-500/10 border-green-500/20 text-green-500'
-                                        }`}>
-                                        {statusMessage.text}
-                                    </div>
-                                )}
-                                <div className="mt-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                                    <p className="text-[11px] text-[#71717A]">Remember to be respectful and follow our guidelines.</p>
-                                    <button
-                                        type="submit"
-                                        disabled={isSubmitting || !content.trim()}
-                                        className="bg-tp-accent hover:bg-tp-accent-hover text-white px-8 h-[42px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[12px] flex items-center justify-center shadow-lg shadow-tp-accent/20 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-                                    >
-                                        {isSubmitting ? "POSTING..." : "POST COMMENT"}
-                                    </button>
+                </div>
+            ) : user ? (
+                <form onSubmit={(e) => handleSubmit(e)} className="mb-8">
+                    <div className="flex gap-3">
+                        <div className="hidden sm:block shrink-0 w-9 h-9 rounded-full overflow-hidden bg-[#1A1F26] ring-2 ring-white/5 mt-0.5">
+                            {user.avatar_url ? (
+                                <Image src={user.avatar_url} alt={user.username} width={36} height={36} className="object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center font-bold text-tp-accent text-sm">
+                                    {user?.username?.charAt(0)?.toUpperCase() || '?'}
                                 </div>
+                            )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <textarea
+                                value={content}
+                                onChange={(e) => setContent(e.target.value)}
+                                placeholder="Share your thoughts… (earn 10 XP!)"
+                                className="w-full bg-[#05070A] border border-[#1E2430] rounded-xl p-4 text-[14px] text-white focus:outline-none focus:border-tp-accent/50 transition-colors min-h-[90px] resize-y placeholder:text-[#4B5563]"
+                                required
+                            />
+                            {error && <p className="text-red-500 text-[12px] mt-2">{error}</p>}
+                            {statusMessage && (
+                                <div className={`mt-3 p-3 rounded-lg text-[13px] border ${statusMessage.type === 'warning'
+                                    ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
+                                    : 'bg-green-500/10 border-green-500/20 text-green-500'
+                                    }`}>
+                                    {statusMessage.text}
+                                </div>
+                            )}
+                            <div className="mt-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                                <p className="text-[11px] text-[#4B5563]">Be respectful and follow our community guidelines.</p>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting || !content.trim()}
+                                    className="bg-tp-accent hover:bg-tp-accent-hover text-white px-6 h-[38px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[11px] flex items-center justify-center shadow-lg shadow-tp-accent/20 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                                >
+                                    {isSubmitting ? "Posting…" : "Post Comment"}
+                                </button>
                             </div>
                         </div>
-                    </form>
-                ) : (
-                    <div className="text-center py-8 relative z-10">
-                        <div className="w-14 h-14 rounded-2xl bg-tp-accent/10 border border-tp-accent/20 flex items-center justify-center mx-auto mb-5">
-                            <Gamepad2 className="w-6 h-6 text-tp-accent" />
+                    </div>
+                </form>
+            ) : (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-5 px-5 mb-8 bg-[#05070A] rounded-xl border border-[#1E2430]">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-tp-accent/10 border border-tp-accent/20 flex items-center justify-center shrink-0">
+                            <Gamepad2 className="w-5 h-5 text-tp-accent" />
                         </div>
-                        <h4 className="font-display text-[20px] font-bold text-white uppercase tracking-[0.05em] mb-2">Join the conversation</h4>
-                        <p className="text-[#A1A1AA] text-[14px] mb-7 max-w-md mx-auto leading-relaxed">You must be logged in to leave a comment, like posts, and earn community XP.</p>
-                        <div className="flex justify-center gap-3">
-                            <Link
-                                href="/login?redirect=back"
-                                className="border border-[#161B22] hover:border-tp-accent/40 text-[#A1A1AA] hover:text-white px-8 h-[42px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[12px] flex items-center justify-center"
-                            >
-                                LOG IN
-                            </Link>
-                            <Link
-                                href="/register?redirect=back"
-                                className="bg-tp-accent hover:bg-tp-accent-hover text-white px-8 h-[42px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[12px] flex items-center justify-center shadow-lg shadow-tp-accent/20"
-                            >
-                                SIGN UP
-                            </Link>
+                        <div>
+                            <p className="text-white font-bold text-[14px]">Join the Conversation</p>
+                            <p className="text-[#6B7280] text-[12px] mt-0.5">Log in to comment and earn community XP.</p>
                         </div>
                     </div>
-                )}
-            </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <Link
+                            href="/login?redirect=back"
+                            className="border border-[#1E2430] hover:border-tp-accent/40 text-[#A1A1AA] hover:text-white px-5 h-[36px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[11px] flex items-center"
+                        >
+                            Log In
+                        </Link>
+                        <Link
+                            href="/register?redirect=back"
+                            className="bg-tp-accent hover:bg-tp-accent-hover text-white px-5 h-[36px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[11px] flex items-center shadow-lg shadow-tp-accent/20"
+                        >
+                            Sign Up
+                        </Link>
+                    </div>
+                </div>
+            )}
 
-
-
-            {/* Comment List */}
+            {/* Comment list */}
             {isLoading ? (
-                <div className="text-center py-12">
-                    <div className="w-8 h-8 border-2 border-tp-accent border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                    <p className="text-[#71717A]">Loading discussion...</p>
+                <div className="text-center py-10">
+                    <div className="w-6 h-6 border-2 border-tp-accent border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                    <p className="text-[#71717A] text-[13px]">Loading discussion…</p>
                 </div>
             ) : comments.length > 0 ? (
                 <div className="space-y-6">
@@ -274,10 +269,10 @@ export default function CommentsSection({ commentableId, commentableType, initia
                     ))}
                 </div>
             ) : (
-                <div className="text-center py-16 bg-[#0B0E14]/40 rounded-[24px] border border-dashed border-[#161B22]">
-                    <MessageSquare className="w-10 h-10 text-[#71717A] mx-auto mb-4 opacity-40" />
-                    <p className="text-[#A1A1AA] font-bold text-[14px] uppercase tracking-wider">No comments yet</p>
-                    <p className="text-[#71717A] text-[13px] mt-1.5">Be the first to share your thoughts!</p>
+                <div className="text-center py-10">
+                    <MessageSquare className="w-8 h-8 text-[#71717A] mx-auto mb-3 opacity-30" />
+                    <p className="text-[#A1A1AA] font-bold text-[13px] uppercase tracking-wider">No comments yet</p>
+                    <p className="text-[#71717A] text-[12px] mt-1">Be the first to share your thoughts!</p>
                 </div>
             )}
         </div>
