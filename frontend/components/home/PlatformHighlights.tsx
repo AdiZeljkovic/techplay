@@ -5,7 +5,7 @@ import { Gamepad2, CalendarDays, MessageSquare, Star } from "lucide-react";
 
 const CARDS = [
     { Icon: Gamepad2, title: "GAME DATABASE", description: "Explore over 1,000,000 games. Search, filter, discover.", cta: "1M+ GAMES", href: "/games" },
-    { Icon: CalendarDays, title: "RELEASE CALENDAR", description: "Track upcoming games. Never miss a release.", cta: "UPDATED DAILY", href: "/games/calendar" },
+    { Icon: CalendarDays, title: "RELEASE CALENDAR", description: "Track upcoming games. Never miss a release.", cta: "UPDATED DAILY", href: "/calendar" },
     { Icon: MessageSquare, title: "COMMUNITY FORUM", description: "Join the conversation. Share, help, connect.", cta: "COMMUNITY HUB", href: "/forum" },
     { Icon: Star, title: "REVIEWS & SCORES", description: "Honest reviews.\nHelpful scores.", cta: "EDITORIAL REVIEWS", href: "/reviews" },
 ];
@@ -31,7 +31,8 @@ export default function PlatformHighlights() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6 relative z-10">
                     {CARDS.map((card) => (
-                        <div key={card.href} className="bg-zinc-50 dark:bg-[#0B0E14] rounded-[16px] border border-zinc-200 dark:border-[#161B22] hover:border-tp-accent/30 transition-all duration-300 p-6 lg:p-7 flex flex-col group shadow-sm dark:shadow-lg">
+                        <div key={card.href} className="relative overflow-hidden bg-zinc-50 dark:bg-[#0B0E14] rounded-[16px] border border-zinc-200 dark:border-[#161B22] hover:border-tp-accent/30 transition-all duration-300 p-6 lg:p-7 flex flex-col group shadow-sm dark:shadow-lg">
+                            <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-tp-accent scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300 rounded-l-[16px]" />
                             <div className="w-[62px] h-[62px] mx-auto rounded-full border border-tp-accent bg-tp-accent/5 flex items-center justify-center mb-8 group-hover:shadow-[0_0_15px_rgba(252,65,0,0.2)] transition-all">
                                 <div className="w-[48px] h-[48px] rounded-full bg-white dark:bg-[#1A1F26] flex items-center justify-center shadow-[inset_0_2px_10px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_10px_rgba(0,0,0,0.3)] border border-zinc-100 dark:border-none">
                                     <card.Icon className="w-[22px] h-[22px] text-tp-accent" strokeWidth={2} />
