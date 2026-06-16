@@ -205,15 +205,18 @@ export default function NewsroomHero({
                     {/* ══ RIGHT — Full-bleed editorial card ══ */}
                     {featuredArticle && featuredImageUrl && (
                         <motion.div
-                            className="w-full xl:w-[400px] shrink-0 py-8"
+                            className="w-full xl:flex-1 py-8 flex xl:items-center xl:justify-center"
                             initial={{ opacity: 0, y: 24 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.55, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
                         >
                             <Link
                                 href={featuredHref}
-                                className="group relative flex flex-col w-full h-full min-h-[380px] rounded-[20px] overflow-hidden border border-[#161B22] hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(0,0,0,0.6)] transition-all duration-300"
+                                className="group relative flex flex-col w-full xl:max-w-[420px] h-full min-h-[420px] rounded-[20px] overflow-hidden border border-[#161B22] hover:border-tp-accent/40 hover:-translate-x-1 hover:shadow-[0_8px_40px_rgba(252,65,0,0.18)] transition-all duration-300"
                             >
+                                {/* Orange accent bar — slides in from left on hover */}
+                                <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-tp-accent scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300 z-20" />
+
                                 {/* Full bleed image */}
                                 <div className="absolute inset-0">
                                     <Image
