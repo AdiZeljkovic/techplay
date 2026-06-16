@@ -226,6 +226,7 @@ Route::prefix('v1')->group(function () {
     // Games (Rate limited - 60 per minute to prevent scraping)
     Route::middleware('throttle:60,1')->group(function () {
         Route::get('/games/calendar', [App\Http\Controllers\Api\V1\GameController::class, 'calendar']);
+        Route::get('/games/rawg/{slug}', [App\Http\Controllers\Api\V1\GameController::class, 'rawgDetail']);
         Route::get('/games/crawled-slugs', [App\Http\Controllers\Api\V1\GameController::class, 'crawledSlugs']);
         Route::get('/games/hub/{type}/{value}', [App\Http\Controllers\Api\V1\GameRatingController::class, 'hub']);
         Route::get('/games', [App\Http\Controllers\Api\V1\GameController::class, 'index']);

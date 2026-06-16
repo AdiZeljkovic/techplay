@@ -170,6 +170,24 @@ class GameController extends Controller
     }
 
     /**
+     * Fetch a single game's full details from the RAWG.io API.
+     * Cached for 12 hours — RAWG game details rarely change.
+     */
+    public function rawgDetail(string $slug, \App\Services\RawgService $rawg)
+    {
+        $game = \Illuminate\Support\Facades\Cache::remember("rawg.game.{$slug}", 3600 * 12, function () use ($slug, $rawg) {
+            return $rawg->getGameDetails($slug);
+        });
+
+        if (! $game) {
+            return response()->json(['message' => 'Game not found'], 404);
+        }
+
+        return response()->json($game)
+            ->header('Cache-Control', 'public, max-age=3600, stale-while-revalidate=43200');
+    }
+
+    /**
      * Game release calendar — powered by the RAWG.io API.
      *
      * With start_date/end_date: returns all releases in the range (month view).

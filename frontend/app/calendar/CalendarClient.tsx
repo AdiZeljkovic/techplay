@@ -3,15 +3,10 @@
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import Image from "next/image";
-import { useMemo, useState, useEffect } from "react";
-import {
-    Calendar as CalendarIcon, ChevronLeft, ChevronRight,
-    Flame, Gamepad2, X
-} from "lucide-react";
-import {
-    format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval,
-    isToday, parseISO, isSameMonth, isBefore, startOfDay, getDay
-} from "date-fns";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Flame, Gamepad2, Clock } from "lucide-react";
+import { format, addMonths, startOfMonth, endOfMonth, isToday, parseISO, isBefore, startOfDay, isSameMonth } from "date-fns";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
@@ -44,7 +39,6 @@ const PLATFORM_FILTERS = [
     { id: "nintendo", label: "NINTENDO" },
 ];
 
-/** Map a RAWG platform to a compact colored chip (label + bg class) */
 function platformChip(name: string, slug?: string): { label: string; cls: string } | null {
     const s = (slug || name).toLowerCase();
     if (s.includes("pc") || s === "windows") return { label: "PC", cls: "bg-[#2F6FED]" };
@@ -61,7 +55,6 @@ function platformChip(name: string, slug?: string): { label: string; cls: string
     return null;
 }
 
-/** Deduped colored chips for a game */
 function gameChips(game: GameRelease, max = 4) {
     const chips: { label: string; cls: string }[] = [];
     for (const p of game.platforms || []) {
@@ -84,47 +77,84 @@ function hypeLabel(added: number): string {
     return String(added);
 }
 
-/* ── Game tile (inside a day cell) ── */
-function GameTile({ game, className = "" }: { game: GameRelease; className?: string }) {
-    const { visible } = gameChips(game, 3);
-    return (
-        <div className={`relative overflow-hidden group/tile bg-zinc-100 dark:bg-[#10141B] ${className}`}>
-            {game.background_image ? (
-                <Image
-                    src={game.background_image}
-                    alt={game.name}
-                    fill
-                    sizes="220px"
-                    quality={60}
-                    className="object-cover opacity-90 group-hover/tile:opacity-100 group-hover/tile:scale-105 transition-all duration-500"
-                />
-            ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <Gamepad2 className="w-6 h-6 text-zinc-400 dark:text-white/15" />
-                </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
+function metacriticColor(score: number): string {
+    if (score >= 75) return "bg-green-500 text-white";
+    if (score >= 50) return "bg-yellow-500 text-black";
+    return "bg-red-500 text-white";
+}
 
-            <div className="absolute bottom-0 left-0 right-0 p-2">
-                <h4 className="text-[11px] font-bold text-white leading-[1.25] line-clamp-2 mb-1 group-hover/tile:text-tp-accent transition-colors">
+function GameCard({ game }: { game: GameRelease }) {
+    const { visible, hidden } = gameChips(game, 4);
+
+    return (
+        <Link
+            href={`/calendar/${game.slug}`}
+            className="group relative block bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-xl overflow-hidden hover:border-tp-accent/40 dark:hover:border-tp-accent/40 hover:-translate-x-1 hover:shadow-[0_8px_40px_rgba(252,65,0,0.18)] transition-all duration-300"
+        >
+            <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-tp-accent scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300 z-20" />
+
+            {/* Cover */}
+            <div className="relative aspect-video overflow-hidden bg-zinc-100 dark:bg-[#1A1F26]">
+                {game.background_image ? (
+                    <Image
+                        src={game.background_image}
+                        alt={game.name}
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        quality={70}
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <Gamepad2 className="w-8 h-8 text-zinc-400 dark:text-white/15" />
+                    </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+                {game.metacritic && (
+                    <div className={`absolute top-2 right-2 w-9 h-9 rounded-lg flex items-center justify-center text-[12px] font-bold shadow-lg ${metacriticColor(game.metacritic)}`}>
+                        {game.metacritic}
+                    </div>
+                )}
+
+                {(game.added || 0) > 0 && (
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-2 py-[3px]">
+                        <Flame className="w-3 h-3 text-tp-accent shrink-0" />
+                        <span className="text-[10px] font-bold text-white leading-none">{hypeLabel(game.added!)}</span>
+                    </div>
+                )}
+            </div>
+
+            {/* Content */}
+            <div className="p-3">
+                <h3 className="text-[13px] font-bold text-zinc-900 dark:text-white leading-snug line-clamp-2 group-hover:text-tp-accent transition-colors mb-1.5">
                     {game.name}
-                </h4>
-                <div className="flex flex-wrap gap-[3px]">
-                    {visible.map((chip) => (
-                        <span key={chip.label} className={`${chip.cls} text-white text-[7.5px] font-bold tracking-wider px-1 py-[2px] rounded-[3px] leading-none`}>
+                </h3>
+                {(game.genres?.length || 0) > 0 && (
+                    <p className="text-[11px] text-zinc-500 dark:text-[#71717A] truncate mb-2">
+                        {game.genres!.slice(0, 2).map(g => g.name).join(" · ")}
+                    </p>
+                )}
+                <div className="flex flex-wrap gap-1">
+                    {visible.map(chip => (
+                        <span key={chip.label} className={`${chip.cls} text-white text-[8px] font-bold tracking-wider px-1.5 py-[3px] rounded-[3px] leading-none`}>
                             {chip.label}
                         </span>
                     ))}
+                    {hidden > 0 && (
+                        <span className="bg-zinc-200 dark:bg-white/10 text-zinc-600 dark:text-white/50 text-[8px] font-bold px-1.5 py-[3px] rounded-[3px] leading-none">
+                            +{hidden}
+                        </span>
+                    )}
                 </div>
             </div>
-        </div>
+        </Link>
     );
 }
 
 export default function CalendarClient() {
     const [viewDate, setViewDate] = useState(() => startOfMonth(new Date()));
     const [platform, setPlatform] = useState("all");
-    const [dayModal, setDayModal] = useState<{ date: Date; games: GameRelease[] } | null>(null);
 
     const startDate = format(startOfMonth(viewDate), "yyyy-MM-dd");
     const endDate = format(endOfMonth(viewDate), "yyyy-MM-dd");
@@ -136,16 +166,13 @@ export default function CalendarClient() {
         { revalidateOnFocus: false, dedupingInterval: 300000 }
     );
 
-    // Close modal on Escape
-    useEffect(() => {
-        if (!dayModal) return;
-        const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setDayModal(null); };
-        document.addEventListener("keydown", onKey);
-        return () => document.removeEventListener("keydown", onKey);
-    }, [dayModal]);
-
     const releases = useMemo(
         () => (data?.results || []).filter(g => g.released && matchesPlatform(g, platform)),
+        [data, platform]
+    );
+
+    const tbaGames = useMemo(
+        () => (data?.results || []).filter(g => (!g.released || g.tba) && matchesPlatform(g, platform)),
         [data, platform]
     );
 
@@ -163,20 +190,16 @@ export default function CalendarClient() {
     }, [releases]);
 
     const highlights = useMemo(
-        () => [...releases]
-            .filter(g => g.background_image)
+        () => [...(data?.results || [])]
+            .filter(g => g.background_image && matchesPlatform(g, platform))
             .sort((a, b) => (b.added || 0) - (a.added || 0))
             .slice(0, 6),
-        [releases]
+        [data, platform]
     );
-
-    const days = eachDayOfInterval({ start: startOfMonth(viewDate), end: endOfMonth(viewDate) });
-    // Monday-first offset
-    const leadingEmpty = (getDay(startOfMonth(viewDate)) + 6) % 7;
 
     const navigate = (dir: -1 | 1) => setViewDate(d => startOfMonth(addMonths(d, dir)));
 
-    const getGames = (day: Date) => releasesByDay.get(format(day, "yyyy-MM-dd")) || [];
+    const sortedDates = [...releasesByDay.entries()].sort(([a], [b]) => a.localeCompare(b));
 
     return (
         <div className="min-h-screen">
@@ -204,7 +227,6 @@ export default function CalendarClient() {
                         Every game launch, in one place. Powered by community hype — never miss a release.
                     </p>
 
-                    {/* Month switcher */}
                     <div className="flex items-center gap-3 flex-wrap justify-center">
                         <div className="flex items-center bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-full p-1.5 shadow-sm dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                             <button
@@ -264,8 +286,9 @@ export default function CalendarClient() {
                         ) : (
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                                 {highlights.map((game, i) => (
-                                    <div
+                                    <Link
                                         key={game.id}
+                                        href={`/calendar/${game.slug}`}
                                         className="group relative aspect-[3/4] rounded-xl overflow-hidden border border-zinc-200 dark:border-[#161B22] hover:border-tp-accent/50 bg-zinc-100 dark:bg-[#0B0E14] hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(252,65,0,0.12)] transition-all duration-300"
                                     >
                                         {game.background_image && (
@@ -299,7 +322,7 @@ export default function CalendarClient() {
                                                 {hypeLabel(game.added || 0)} TRACKING
                                             </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ))}
                             </div>
                         )}
@@ -307,7 +330,7 @@ export default function CalendarClient() {
                 )}
 
                 {/* ── PLATFORM FILTERS ── */}
-                <div className="flex items-center gap-2 mb-8 overflow-x-auto scrollbar-hide pb-1">
+                <div className="flex items-center gap-2 mb-10 overflow-x-auto scrollbar-hide pb-1">
                     {PLATFORM_FILTERS.map(f => (
                         <button
                             key={f.id}
@@ -323,276 +346,92 @@ export default function CalendarClient() {
                     ))}
                 </div>
 
-                {/* ══════════ DESKTOP: MOSAIC MONTH GRID ══════════ */}
-                <div className="hidden lg:block">
-                    {/* Weekday headers */}
-                    <div className="grid grid-cols-7 gap-2 mb-2">
-                        {["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map(d => (
-                            <div key={d} className="text-center text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-[#71717A] py-2">
-                                {d}
+                {/* ── DATE-GROUPED RELEASE LIST ── */}
+                {isLoading ? (
+                    <div className="space-y-10">
+                        {[...Array(3)].map((_, g) => (
+                            <div key={g}>
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className="w-[52px] h-[60px] rounded-xl bg-zinc-100 dark:bg-[#0B0E14] animate-pulse shrink-0" />
+                                    <div className="flex-1 h-[1px] bg-zinc-200 dark:bg-white/5" />
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {[...Array(4)].map((_, i) => (
+                                        <div key={i} className="rounded-xl bg-zinc-100 dark:bg-[#0B0E14] animate-pulse">
+                                            <div className="aspect-video" />
+                                            <div className="p-3 space-y-2">
+                                                <div className="h-4 bg-zinc-200 dark:bg-[#161B22] rounded" />
+                                                <div className="h-3 bg-zinc-200 dark:bg-[#161B22] rounded w-2/3" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         ))}
                     </div>
+                ) : sortedDates.length > 0 ? (
+                    <div>
+                        {sortedDates.map(([dateStr, games]) => {
+                            const date = parseISO(dateStr);
+                            const today = isToday(date);
+                            const past = isBefore(date, startOfDay(new Date())) && !today;
 
-                    {isLoading ? (
-                        <div className="grid grid-cols-7 gap-2">
-                            {[...Array(35)].map((_, i) => (
-                                <div key={i} className="h-[180px] bg-zinc-100 dark:bg-[#0B0E14] rounded-xl animate-pulse" />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-7 gap-2">
-                            {/* Leading empty cells */}
-                            {[...Array(leadingEmpty)].map((_, i) => (
-                                <div key={`lead-${i}`} className="h-[180px] rounded-xl border border-zinc-200/60 dark:border-[#10141B] bg-zinc-50/50 dark:bg-[#070A0F]/50" />
-                            ))}
-
-                            {days.map(day => {
-                                const games = getGames(day);
-                                const today = isToday(day);
-                                const past = isBefore(day, startOfDay(new Date())) && !today;
-                                const count = games.length;
-
-                                return (
-                                    <div
-                                        key={day.toISOString()}
-                                        className={`relative h-[180px] rounded-xl overflow-hidden border transition-all duration-200 ${
+                            return (
+                                <section key={dateStr} className={past ? "opacity-60 hover:opacity-100 transition-opacity duration-300" : ""}>
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className={`w-[52px] h-[60px] rounded-xl border flex flex-col items-center justify-center shrink-0 ${
                                             today
-                                                ? "border-tp-accent ring-1 ring-tp-accent shadow-[0_0_24px_rgba(252,65,0,0.2)]"
-                                                : count > 0
-                                                    ? "border-zinc-200 dark:border-[#161B22] hover:border-tp-accent/40"
-                                                    : "border-zinc-200/60 dark:border-[#10141B]"
-                                        } ${count > 0 ? "bg-white dark:bg-[#0B0E14] cursor-pointer" : "bg-zinc-50/50 dark:bg-[#070A0F]/50"} ${past && count > 0 ? "opacity-75 hover:opacity-100" : ""}`}
-                                        onClick={count > 0 ? () => setDayModal({ date: day, games }) : undefined}
-                                    >
-                                        {/* Game mosaic */}
-                                        {count === 1 && <GameTile game={games[0]} className="absolute inset-0" />}
-                                        {count === 2 && (
-                                            <div className="absolute inset-0 grid grid-cols-2 gap-px">
-                                                <GameTile game={games[0]} />
-                                                <GameTile game={games[1]} />
-                                            </div>
-                                        )}
-                                        {count === 3 && (
-                                            <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-px">
-                                                <GameTile game={games[0]} className="row-span-2" />
-                                                <GameTile game={games[1]} />
-                                                <GameTile game={games[2]} />
-                                            </div>
-                                        )}
-                                        {count >= 4 && (
-                                            <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-px">
-                                                <GameTile game={games[0]} />
-                                                <GameTile game={games[1]} />
-                                                <GameTile game={games[2]} />
-                                                <div className="relative overflow-hidden bg-zinc-100 dark:bg-[#10141B]">
-                                                    {games[3].background_image && (
-                                                        <Image src={games[3].background_image} alt={games[3].name} fill sizes="110px" quality={50} className="object-cover opacity-30" />
-                                                    )}
-                                                    <div className="absolute inset-0 bg-black/55 flex flex-col items-center justify-center">
-                                                        <span className="font-display text-[20px] font-bold text-white leading-none">+{count - 3}</span>
-                                                        <span className="text-[8px] font-bold uppercase tracking-widest text-white/60 mt-1">MORE</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Day number — corner ribbon */}
-                                        <div
-                                            className={`absolute top-0 left-0 w-[42px] h-[42px] z-10 ${
-                                                today ? "bg-tp-accent" : count > 0 ? "bg-tp-accent/90" : "bg-transparent"
-                                            }`}
-                                            style={count > 0 || today ? { clipPath: "polygon(0 0, 100% 0, 0 100%)" } : undefined}
-                                        >
-                                            <span className={`absolute top-[5px] left-[7px] font-display text-[14px] font-bold leading-none ${
-                                                count > 0 || today ? "text-white" : "text-zinc-400 dark:text-[#3F3F46]"
-                                            }`}>
-                                                {format(day, "d")}
+                                                ? "bg-tp-accent border-tp-accent shadow-[0_0_20px_rgba(252,65,0,0.3)]"
+                                                : "bg-white dark:bg-[#0B0E14] border-zinc-200 dark:border-[#161B22]"
+                                        }`}>
+                                            <span className={`text-[8px] font-bold uppercase tracking-widest leading-none mb-1 ${today ? "text-white/80" : "text-tp-accent"}`}>
+                                                {format(date, "EEE").toUpperCase()}
+                                            </span>
+                                            <span className={`font-display text-[22px] font-bold leading-none ${today ? "text-white" : "text-zinc-900 dark:text-white"}`}>
+                                                {format(date, "d")}
                                             </span>
                                         </div>
+                                        <div className="flex-1 h-[1px] bg-zinc-200 dark:bg-white/5" />
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-[#71717A] shrink-0">
+                                            {games.length} {games.length === 1 ? "RELEASE" : "RELEASES"}
+                                        </span>
                                     </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
 
-                {/* ══════════ MOBILE: COMPACT DAY LIST ══════════ */}
-                <div className="lg:hidden">
-                    {isLoading ? (
-                        <div className="flex flex-col gap-4">
-                            {[...Array(4)].map((_, i) => (
-                                <div key={i} className="h-[120px] bg-zinc-100 dark:bg-[#0B0E14] rounded-xl animate-pulse" />
-                            ))}
-                        </div>
-                    ) : releases.length > 0 ? (
-                        <div className="flex flex-col">
-                            {[...releasesByDay.entries()]
-                                .sort(([a], [b]) => a.localeCompare(b))
-                                .map(([dateStr, games]) => {
-                                    const date = parseISO(dateStr);
-                                    const today = isToday(date);
-                                    const past = isBefore(date, startOfDay(new Date())) && !today;
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
+                                        {games.map(game => <GameCard key={game.id} game={game} />)}
+                                    </div>
+                                </section>
+                            );
+                        })}
 
-                                    return (
-                                        <div key={dateStr} className="flex gap-4 group/day">
-                                            <div className={`flex flex-col items-center w-[52px] shrink-0 ${past ? "opacity-45" : ""}`}>
-                                                <div className={`flex flex-col items-center justify-center w-[52px] h-[60px] rounded-xl border ${
-                                                    today
-                                                        ? "bg-tp-accent border-tp-accent text-white shadow-[0_0_24px_rgba(252,65,0,0.3)]"
-                                                        : "bg-white dark:bg-[#0B0E14] border-zinc-200 dark:border-[#161B22]"
-                                                }`}>
-                                                    <span className={`text-[8px] font-bold uppercase tracking-widest ${today ? "text-white/80" : "text-tp-accent"}`}>
-                                                        {format(date, "EEE").toUpperCase()}
-                                                    </span>
-                                                    <span className={`font-display text-[22px] font-bold leading-none mt-0.5 ${today ? "text-white" : "text-zinc-900 dark:text-white"}`}>
-                                                        {format(date, "d")}
-                                                    </span>
-                                                </div>
-                                                <div className="flex-1 w-[2px] bg-zinc-200 dark:bg-[#161B22] my-2 group-last/day:hidden" />
-                                            </div>
-
-                                            <div className="flex-1 min-w-0 pb-6 flex flex-col gap-2.5">
-                                                {games.map(game => {
-                                                    const { visible } = gameChips(game, 4);
-                                                    return (
-                                                        <div
-                                                            key={game.id}
-                                                            className={`flex gap-3 p-3 rounded-xl bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] ${past ? "opacity-60" : ""}`}
-                                                        >
-                                                            <div className="relative w-[84px] h-[56px] rounded-lg overflow-hidden shrink-0 border border-zinc-200 dark:border-white/5 bg-zinc-100 dark:bg-[#1A1F26]">
-                                                                {game.background_image ? (
-                                                                    <Image src={game.background_image} alt={game.name} fill sizes="84px" quality={60} className="object-cover" />
-                                                                ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center">
-                                                                        <Gamepad2 className="w-5 h-5 text-zinc-400 dark:text-white/20" />
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                            <div className="flex flex-col min-w-0 flex-1">
-                                                                <h4 className="text-[13px] font-bold text-zinc-900 dark:text-white leading-snug line-clamp-2">
-                                                                    {game.name}
-                                                                </h4>
-                                                                <div className="flex flex-wrap gap-1 mt-auto pt-1.5">
-                                                                    {visible.map(chip => (
-                                                                        <span key={chip.label} className={`${chip.cls} text-white text-[7.5px] font-bold tracking-wider px-1 py-[2px] rounded-[3px] leading-none`}>
-                                                                            {chip.label}
-                                                                        </span>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                            {(game.added || 0) > 0 && (
-                                                                <span className="flex items-start gap-1 text-[10px] font-bold text-zinc-500 dark:text-[#71717A] shrink-0">
-                                                                    <Flame className="w-3 h-3 text-tp-accent" />
-                                                                    {hypeLabel(game.added!)}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                        </div>
-                    ) : (
-                        <ListingEmptyState
-                            icon={CalendarIcon}
-                            title="No releases found"
-                            description={`No game releases tracked for ${format(viewDate, "MMMM yyyy")}.`}
-                        />
-                    )}
-                </div>
-
-                {/* Desktop empty state */}
-                {!isLoading && releases.length === 0 && (
-                    <div className="hidden lg:block mt-8">
-                        <ListingEmptyState
-                            icon={CalendarIcon}
-                            title="No releases found"
-                            description={platform === "all"
-                                ? `No game releases tracked for ${format(viewDate, "MMMM yyyy")} yet.`
-                                : `No ${PLATFORM_FILTERS.find(f => f.id === platform)?.label} releases for ${format(viewDate, "MMMM yyyy")}.`}
-                        />
+                        {/* TBA section */}
+                        {tbaGames.length > 0 && (
+                            <section>
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className="w-[52px] h-[60px] rounded-xl border border-zinc-200 dark:border-[#161B22] bg-zinc-50 dark:bg-[#0B0E14] flex items-center justify-center shrink-0">
+                                        <Clock className="w-5 h-5 text-zinc-400 dark:text-[#71717A]" />
+                                    </div>
+                                    <div className="flex-1 h-[1px] bg-zinc-200 dark:bg-white/5" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-[#71717A] shrink-0">
+                                        TO BE ANNOUNCED · {tbaGames.length} {tbaGames.length === 1 ? "GAME" : "GAMES"}
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-10 opacity-60">
+                                    {tbaGames.map(game => <GameCard key={game.id} game={game} />)}
+                                </div>
+                            </section>
+                        )}
                     </div>
+                ) : (
+                    <ListingEmptyState
+                        icon={CalendarIcon}
+                        title="No releases found"
+                        description={platform === "all"
+                            ? `No game releases tracked for ${format(viewDate, "MMMM yyyy")} yet.`
+                            : `No ${PLATFORM_FILTERS.find(f => f.id === platform)?.label} releases for ${format(viewDate, "MMMM yyyy")}.`}
+                    />
                 )}
             </div>
-
-            {/* ── DAY DETAIL MODAL ── */}
-            {dayModal && (
-                <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-                    onClick={() => setDayModal(null)}
-                >
-                    <div
-                        className="bg-white dark:bg-[#0B0E14] w-full max-w-xl rounded-[24px] border border-zinc-200 dark:border-[#161B22] shadow-2xl overflow-hidden"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <div className="h-[3px] bg-tp-accent w-full" />
-                        <div className="px-6 py-5 border-b border-zinc-200 dark:border-[#161B22] flex justify-between items-center">
-                            <div>
-                                <span className="text-tp-accent font-bold tracking-[0.15em] text-[10px] uppercase block mb-1">
-                                    {format(dayModal.date, "EEEE").toUpperCase()}
-                                </span>
-                                <h3 className="font-display text-[20px] font-bold text-zinc-900 dark:text-white uppercase tracking-[0.04em] leading-none">
-                                    {format(dayModal.date, "MMMM d, yyyy")}
-                                </h3>
-                            </div>
-                            <button
-                                onClick={() => setDayModal(null)}
-                                className="w-10 h-10 rounded-lg flex items-center justify-center text-zinc-500 dark:text-[#A1A1AA] hover:text-tp-accent hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
-                                aria-label="Close"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-                        <div className="p-4 max-h-[60vh] overflow-y-auto custom-scrollbar flex flex-col gap-2.5">
-                            {dayModal.games.map(game => {
-                                const { visible } = gameChips(game, 5);
-                                return (
-                                    <div
-                                        key={game.id}
-                                        className="flex gap-4 p-3 rounded-xl bg-zinc-50 dark:bg-[#070A0F] border border-zinc-200 dark:border-[#161B22] hover:border-tp-accent/40 transition-colors"
-                                    >
-                                        <div className="relative w-[100px] h-[64px] rounded-lg overflow-hidden shrink-0 border border-zinc-200 dark:border-white/5 bg-zinc-100 dark:bg-[#1A1F26]">
-                                            {game.background_image ? (
-                                                <Image src={game.background_image} alt={game.name} fill sizes="100px" quality={60} className="object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center">
-                                                    <Gamepad2 className="w-5 h-5 text-zinc-400 dark:text-white/20" />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="flex flex-col min-w-0 flex-1">
-                                            <div className="flex items-start justify-between gap-2">
-                                                <h4 className="text-[14px] font-bold text-zinc-900 dark:text-white leading-snug line-clamp-2">{game.name}</h4>
-                                                {(game.added || 0) > 0 && (
-                                                    <span className="flex items-center gap-1 text-[10px] font-bold text-zinc-500 dark:text-[#71717A] shrink-0">
-                                                        <Flame className="w-3 h-3 text-tp-accent" />
-                                                        {hypeLabel(game.added!)}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            {(game.genres?.length || 0) > 0 && (
-                                                <span className="text-[11px] text-zinc-500 dark:text-[#71717A] truncate mt-0.5">
-                                                    {game.genres!.slice(0, 3).map(g => g.name).join(" · ")}
-                                                </span>
-                                            )}
-                                            <div className="flex flex-wrap gap-1 mt-auto pt-1.5">
-                                                {visible.map(chip => (
-                                                    <span key={chip.label} className={`${chip.cls} text-white text-[7.5px] font-bold tracking-wider px-1 py-[2px] rounded-[3px] leading-none`}>
-                                                        {chip.label}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
