@@ -172,10 +172,10 @@ export default function NewsroomHero({
                             )}
                         </div>
 
-                        {/* ── Category pills ── */}
+                        {/* ── Category pills — max 5 per row → 2 rows ── */}
                         {categories && categories.length > 0 && (
                             <div className="pb-10">
-                                <div className="flex flex-wrap gap-2">
+                                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-w-[500px]">
                                     {categories.map((cat) => {
                                         const isSelected = selectedCategory === cat.id;
                                         const href = cat.slug === 'all'
@@ -186,14 +186,14 @@ export default function NewsroomHero({
                                                 key={cat.id}
                                                 href={href}
                                                 className={cn(
-                                                    "flex items-center gap-2 px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all duration-200 border",
+                                                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all duration-200 border whitespace-nowrap",
                                                     isSelected
                                                         ? "bg-tp-accent text-white border-tp-accent shadow-lg shadow-tp-accent/20"
                                                         : "bg-[#0A0D12] text-[#52525B] border-[#161B22] hover:text-white hover:border-[#2A2F3A] hover:bg-[#0F1318]"
                                                 )}
                                             >
-                                                <cat.icon className={cn("w-3.5 h-3.5 shrink-0", isSelected ? "text-white" : "text-tp-accent/50")} />
-                                                {cat.label}
+                                                <cat.icon className={cn("w-3 h-3 shrink-0", isSelected ? "text-white" : "text-tp-accent/50")} />
+                                                <span className="truncate">{cat.label}</span>
                                             </Link>
                                         );
                                     })}
@@ -212,7 +212,7 @@ export default function NewsroomHero({
                         >
                             <Link
                                 href={featuredHref}
-                                className="group relative flex flex-col w-full h-full min-h-[380px] rounded-[20px] overflow-hidden border border-[#161B22] hover:border-tp-accent/30 transition-colors duration-300"
+                                className="group relative flex flex-col w-full h-full min-h-[380px] rounded-[20px] overflow-hidden border border-[#161B22] hover:border-tp-accent/50 hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(0,0,0,0.6)] transition-all duration-300"
                             >
                                 {/* Full bleed image */}
                                 <div className="absolute inset-0">
