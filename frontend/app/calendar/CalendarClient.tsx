@@ -238,23 +238,6 @@ export default function CalendarClient() {
         [data, platform]
     );
 
-    // Stats
-    const totalReleases = releases.length + tbaGames.length;
-    const trackedCount = useMemo(
-        () => (data?.results || []).filter(g => (g.added || 0) > 0).length,
-        [data]
-    );
-    const platformCount = useMemo(() => {
-        const seen = new Set<string>();
-        for (const g of releases) {
-            for (const p of g.platforms || []) {
-                const chip = platformChip(p.platform.name, p.platform.slug);
-                if (chip) seen.add(chip.label);
-            }
-        }
-        return seen.size;
-    }, [releases]);
-
     // Sidebar: upcoming games from today forward, sorted by date
     const upcomingList = useMemo(
         () => releases
@@ -282,7 +265,6 @@ export default function CalendarClient() {
     };
 
     const hero = highlights[heroIndex] ?? null;
-    const featuredChips = hero ? gameChips(hero, 5).visible : [];
 
     const scrollToCalendar = () => calendarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
@@ -387,15 +369,6 @@ export default function CalendarClient() {
                                                 {hero.released && (
                                                     <HeroCountdown releaseDate={hero.released} />
                                                 )}
-                                                {featuredChips.length > 0 && (
-                                                    <div className="flex gap-1.5 mb-5">
-                                                        {featuredChips.map(chip => (
-                                                            <span key={chip.label} className={`${chip.cls} text-white text-[9px] font-bold tracking-wider px-2 py-[5px] rounded-[4px] leading-none`}>
-                                                                {chip.label}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                )}
                                                 <div className="flex items-center gap-3">
                                                     <Link
                                                         href={`/calendar/${hero.slug}`}
@@ -426,36 +399,6 @@ export default function CalendarClient() {
                                     </motion.div>
                                 </AnimatePresence>
 
-                                {/* Stats row */}
-                                {!isLoading && totalReleases > 0 && (
-                                    <div className="flex items-center gap-5 md:gap-8 mt-8 pt-6 border-t border-white/[0.07] flex-wrap">
-                                        <div className="flex items-center gap-2.5">
-                                            <Gamepad2 className="w-4 h-4 text-tp-accent shrink-0" />
-                                            <div className="leading-none">
-                                                <span className="font-display text-[20px] font-black text-white">{totalReleases}</span>
-                                                <span className="text-[9px] font-bold uppercase tracking-wider text-white/35 ml-2">Releases this month</span>
-                                            </div>
-                                        </div>
-                                        {trackedCount > 0 && (
-                                            <div className="flex items-center gap-2.5">
-                                                <Bookmark className="w-4 h-4 text-tp-accent shrink-0" />
-                                                <div className="leading-none">
-                                                    <span className="font-display text-[20px] font-black text-white">{trackedCount}</span>
-                                                    <span className="text-[9px] font-bold uppercase tracking-wider text-white/35 ml-2">Games tracked</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                        {platformCount > 0 && (
-                                            <div className="flex items-center gap-2.5">
-                                                <Monitor className="w-4 h-4 text-tp-accent shrink-0" />
-                                                <div className="leading-none">
-                                                    <span className="font-display text-[20px] font-black text-white">{platformCount}</span>
-                                                    <span className="text-[9px] font-bold uppercase tracking-wider text-white/35 ml-2">Platforms covered</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
                             </div>
 
                             {/* ── RIGHT — glass sidebar ── */}
