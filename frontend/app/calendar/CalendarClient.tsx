@@ -93,6 +93,78 @@ function metacriticColor(score: number): string {
     return "bg-red-500 text-white";
 }
 
+// ── Countdown timer — live, seconds-level precision ──
+function CountdownTimer({ releaseDate }: { releaseDate: string }) {
+    const [t, setT] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, past: false, today: false });
+
+    useEffect(() => {
+        function tick() {
+            const diff = parseISO(releaseDate).getTime() - Date.now();
+            if (diff <= 0) {
+                const isToday_ = diff > -86400000;
+                setT({ days: 0, hours: 0, minutes: 0, seconds: 0, past: true, today: isToday_ });
+                return;
+            }
+            setT({
+                days: Math.floor(diff / 86400000),
+                hours: Math.floor((diff % 86400000) / 3600000),
+                minutes: Math.floor((diff % 3600000) / 60000),
+                seconds: Math.floor((diff % 60000) / 1000),
+                past: false,
+                today: false,
+            });
+        }
+        tick();
+        const id = setInterval(tick, 1000);
+        return () => clearInterval(id);
+    }, [releaseDate]);
+
+    if (t.past) {
+        return (
+            <div className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-green-500/15 border border-green-500/30 rounded-full">
+                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse shrink-0" />
+                <span className="text-green-400 text-[12px] font-bold uppercase tracking-widest">
+                    {t.today ? "Out Today" : "Out Now"}
+                </span>
+            </div>
+        );
+    }
+
+    const units = [
+        { value: t.days,    label: "Days" },
+        { value: t.hours,   label: "Hrs"  },
+        { value: t.minutes, label: "Min"  },
+        { value: t.seconds, label: "Sec"  },
+    ];
+
+    return (
+        <div className="flex items-end gap-2 md:gap-3">
+            {units.map(({ value, label }, i) => (
+                <div key={label} className="flex items-end gap-2 md:gap-3">
+                    <div className="flex flex-col items-center">
+                        <div className="w-[60px] md:w-[76px] h-[60px] md:h-[76px] bg-black/50 backdrop-blur-xl border border-white/[0.08] rounded-2xl flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_8px_32px_rgba(0,0,0,0.5)]">
+                            <span
+                                className="font-display text-[28px] md:text-[38px] font-black text-white tabular-nums leading-none"
+                                suppressHydrationWarning
+                            >
+                                {String(value).padStart(2, "0")}
+                            </span>
+                        </div>
+                        <span className="text-[8px] font-bold uppercase tracking-[0.15em] text-white/35 mt-2 leading-none">
+                            {label}
+                        </span>
+                    </div>
+                    {i < 3 && (
+                        <span className="text-white/20 font-display text-[22px] md:text-[28px] font-black leading-none pb-7 select-none">
+                            :
+                        </span>
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+}
+
 function GameCard({ game }: { game: GameRelease }) {
     const { visible, hidden } = gameChips(game, 4);
 
@@ -232,7 +304,6 @@ export default function CalendarClient() {
     };
 
     const hero = highlights[heroIndex] ?? null;
-    const heroChips = hero ? gameChips(hero, 3).visible : [];
 
     return (
         <div className="min-h-screen bg-white dark:bg-[#05070A]">
@@ -324,41 +395,42 @@ export default function CalendarClient() {
                                     >
                                         {hero ? (
                                             <>
-                                                <div className="flex items-center gap-2 mb-2">
+                                                {/* Rank label */}
+                                                <div className="flex items-center gap-2 mb-3">
                                                     <Flame className="w-3.5 h-3.5 text-tp-accent" />
                                                     <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/50">
                                                         #{String(heroIndex + 1).padStart(2, "0")} Most Anticipated
                                                     </span>
                                                 </div>
+
+                                                {/* Game name */}
                                                 <h2
-                                                    className="font-display font-black text-white leading-tight mb-3 max-w-[500px]"
-                                                    style={{ fontSize: "clamp(18px, 2.8vw, 30px)" }}
+                                                    className="font-display font-black text-white leading-tight max-w-[540px]"
+                                                    style={{ fontSize: "clamp(20px, 3vw, 36px)" }}
                                                 >
                                                     {hero.name}
                                                 </h2>
-                                                <div className="flex items-center gap-2.5 flex-wrap mb-4">
-                                                    {hero.released && (
-                                                        <span className="bg-tp-accent text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-lg shadow-tp-accent/20">
-                                                            {format(parseISO(hero.released), "MMMM d, yyyy")}
-                                                        </span>
-                                                    )}
-                                                    {heroChips.map(chip => (
-                                                        <span
-                                                            key={chip.label}
-                                                            className={`${chip.cls} text-white text-[9px] font-bold tracking-wider px-2 py-1.5 rounded-[4px] leading-none`}
-                                                        >
-                                                            {chip.label}
-                                                        </span>
-                                                    ))}
-                                                    {(hero.added || 0) > 0 && (
-                                                        <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full px-3 py-1.5">
-                                                            <Flame className="w-3 h-3 text-tp-accent" />
-                                                            <span className="text-[10px] font-bold text-white/80">
-                                                                {hypeLabel(hero.added!)} tracking
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
+
+                                                {/* Release date text */}
+                                                {hero.released && !hero.tba && (
+                                                    <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-white/40 mt-2 mb-5">
+                                                        Coming {format(parseISO(hero.released), "MMMM d, yyyy")}
+                                                    </p>
+                                                )}
+                                                {hero.tba && (
+                                                    <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-white/40 mt-2 mb-5">
+                                                        Release date TBA
+                                                    </p>
+                                                )}
+
+                                                {/* Countdown timer */}
+                                                {hero.released && !hero.tba ? (
+                                                    <div className="mb-5">
+                                                        <CountdownTimer releaseDate={hero.released} />
+                                                    </div>
+                                                ) : null}
+
+                                                {/* CTA */}
                                                 <Link
                                                     href={`/calendar/${hero.slug}`}
                                                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-tp-accent hover:bg-tp-accent/90 text-white text-[11px] font-bold uppercase tracking-widest rounded-full transition-all shadow-lg shadow-tp-accent/30"
@@ -368,12 +440,14 @@ export default function CalendarClient() {
                                                 </Link>
                                             </>
                                         ) : isLoading ? (
-                                            <div className="space-y-3 max-w-[420px]">
+                                            <div className="space-y-4 max-w-[420px]">
                                                 <div className="h-4 bg-white/10 rounded animate-pulse w-36" />
-                                                <div className="h-7 bg-white/10 rounded animate-pulse w-72" />
-                                                <div className="flex gap-2 mt-1">
-                                                    <div className="h-7 bg-white/10 rounded-lg animate-pulse w-36" />
-                                                    <div className="h-7 bg-white/10 rounded animate-pulse w-12" />
+                                                <div className="h-8 bg-white/10 rounded animate-pulse w-72" />
+                                                <div className="h-3 bg-white/10 rounded animate-pulse w-48" />
+                                                <div className="flex gap-3 mt-2">
+                                                    {[...Array(4)].map((_, i) => (
+                                                        <div key={i} className="w-[60px] h-[60px] bg-white/10 rounded-2xl animate-pulse" />
+                                                    ))}
                                                 </div>
                                             </div>
                                         ) : null}
