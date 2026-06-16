@@ -59,7 +59,7 @@ export default function NewsClient({ initialData }: NewsClientProps) {
                 selectedCategory={selectedCategory}
                 basePath="/news"
                 categoryBase="/news/category"
-                featuredArticle={articles[0]}
+                featuredArticle={articles[0] as Article}
             />
 
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
