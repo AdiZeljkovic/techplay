@@ -104,17 +104,11 @@ export default function NewsroomHero({
                     >
                         <div>
                             {/* Top meta row */}
-                            <div className="flex items-center justify-between mb-8">
-                                <div className="flex items-center gap-2.5">
-                                    <span className="w-2 h-2 rounded-full bg-tp-accent shadow-[0_0_8px_rgba(252,65,0,0.8)]" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[#3F3F46]">
-                                        {sectionLabel}
-                                    </span>
-                                </div>
-                                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#1A1F26] bg-[#0A0D12]">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shadow-[0_0_6px_rgba(74,222,128,0.7)]" />
-                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#4B5563]">Live Feed</span>
-                                </div>
+                            <div className="flex items-center mb-8">
+                                <span className="w-2 h-2 rounded-full bg-tp-accent shadow-[0_0_8px_rgba(252,65,0,0.8)]" />
+                                <span className="ml-2.5 text-[10px] font-black uppercase tracking-[0.22em] text-[#3F3F46]">
+                                    {sectionLabel}
+                                </span>
                             </div>
 
                             {/* ── Headline ── */}
@@ -178,33 +172,32 @@ export default function NewsroomHero({
                             )}
                         </div>
 
-                        {/* ── Category tabs — bottom anchored ── */}
+                        {/* ── Category pills ── */}
                         {categories && categories.length > 0 && (
-                            <div className="flex items-end overflow-x-auto scrollbar-hide border-b border-[#0F1318] -mx-4 px-4 xl:mx-0 xl:px-0">
-                                {categories.map((cat) => {
-                                    const isSelected = selectedCategory === cat.id;
-                                    const href = cat.slug === 'all'
-                                        ? (basePath || '#')
-                                        : `${categoryBase || basePath}/${cat.slug}`;
-                                    return (
-                                        <Link
-                                            key={cat.id}
-                                            href={href}
-                                            className={cn(
-                                                "group flex items-center gap-1.5 px-3 md:px-4 py-3.5 text-[10px] md:text-[11px] font-black uppercase tracking-[0.1em] whitespace-nowrap shrink-0 border-b-2 -mb-px transition-all duration-200",
-                                                isSelected
-                                                    ? "text-white border-tp-accent"
-                                                    : "text-[#3A3A3A] border-transparent hover:text-[#71717A] hover:border-[#2A2A2A]"
-                                            )}
-                                        >
-                                            <cat.icon className={cn(
-                                                "w-3.5 h-3.5 shrink-0 transition-colors",
-                                                isSelected ? "text-tp-accent" : "text-[#3A3A3A] group-hover:text-[#52525B]"
-                                            )} />
-                                            <span className="hidden sm:inline">{cat.label}</span>
-                                        </Link>
-                                    );
-                                })}
+                            <div className="pb-10">
+                                <div className="flex flex-wrap gap-2">
+                                    {categories.map((cat) => {
+                                        const isSelected = selectedCategory === cat.id;
+                                        const href = cat.slug === 'all'
+                                            ? (basePath || '#')
+                                            : `${categoryBase || basePath}/${cat.slug}`;
+                                        return (
+                                            <Link
+                                                key={cat.id}
+                                                href={href}
+                                                className={cn(
+                                                    "flex items-center gap-2 px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all duration-200 border",
+                                                    isSelected
+                                                        ? "bg-tp-accent text-white border-tp-accent shadow-lg shadow-tp-accent/20"
+                                                        : "bg-[#0A0D12] text-[#52525B] border-[#161B22] hover:text-white hover:border-[#2A2F3A] hover:bg-[#0F1318]"
+                                                )}
+                                            >
+                                                <cat.icon className={cn("w-3.5 h-3.5 shrink-0", isSelected ? "text-white" : "text-tp-accent/50")} />
+                                                {cat.label}
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         )}
                     </motion.div>
@@ -212,14 +205,14 @@ export default function NewsroomHero({
                     {/* ══ RIGHT — Full-bleed editorial card ══ */}
                     {featuredArticle && featuredImageUrl && (
                         <motion.div
-                            className="w-full xl:w-[420px] shrink-0 pb-0"
+                            className="w-full xl:w-[400px] shrink-0 py-8"
                             initial={{ opacity: 0, y: 24 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.55, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
                         >
                             <Link
                                 href={featuredHref}
-                                className="group relative flex flex-col w-full h-full min-h-[380px] xl:min-h-[420px] rounded-t-[20px] overflow-hidden border border-b-0 border-[#161B22] hover:border-tp-accent/30 transition-colors duration-300"
+                                className="group relative flex flex-col w-full h-full min-h-[380px] rounded-[20px] overflow-hidden border border-[#161B22] hover:border-tp-accent/30 transition-colors duration-300"
                             >
                                 {/* Full bleed image */}
                                 <div className="absolute inset-0">
