@@ -1,12 +1,12 @@
 "use client";
 
 import { Review, PaginatedResponse } from "@/types";
-import { Star } from "lucide-react";
+import { Star, Globe, Gamepad2 } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import { REVIEW_CATEGORIES } from "@/lib/categories";
-import PageHero from "@/components/ui/PageHero";
+import NewsroomHero from "@/components/news/NewsroomHero";
 import ListingHeader from "@/components/ui/ListingHeader";
 import ListingPagination from "@/components/ui/ListingPagination";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
@@ -46,13 +46,21 @@ export default function ReviewsCategoryView({ categorySlug }: ReviewsCategoryVie
     return (
         <div className="min-h-screen">
 
-            <PageHero
-                title={category.label}
-                description={category.label === "Latest" ? "The freshest reviews hot off the press." : `Browsing ${category.label} reviews.`}
-                icon={category.icon}
+            <NewsroomHero
+                sectionLabel={`TECHPLAY.GG · ${category.label.toUpperCase()}`}
+                headline={category.label.toUpperCase()}
+                headlineAccent="REVIEWS"
+                tagline={category.label === "Latest" ? "The freshest reviews hot off the press." : `Latest ${category.label} reviews and analysis.`}
+                stats={[
+                    { icon: Star,     label: "Expert Reviews" },
+                    { icon: Globe,    label: "Global Coverage" },
+                    { icon: Gamepad2, label: "Built for Players" },
+                ]}
                 categories={REVIEW_CATEGORIES}
                 selectedCategory={category.id}
                 basePath="/reviews"
+                featuredItem={reviews[0] as any}
+                featuredBasePath="/reviews"
             />
 
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">

@@ -1,12 +1,12 @@
 "use client";
 
 import { Article, PaginatedResponse } from "@/types";
-import { Newspaper } from "lucide-react";
+import { Newspaper, Globe, Gamepad2 } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import { NEWS_CATEGORIES } from "@/lib/categories";
-import PageHero from "@/components/ui/PageHero";
+import NewsroomHero from "@/components/news/NewsroomHero";
 import ListingHeader from "@/components/ui/ListingHeader";
 import ListingPagination from "@/components/ui/ListingPagination";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
@@ -38,13 +38,21 @@ export default function NewsCategoryView({ categorySlug }: NewsCategoryViewProps
     return (
         <div className="min-h-screen">
 
-            <PageHero
-                title={category.label}
-                description={`Latest news and updates from the ${category.label} world.`}
-                icon={category.icon}
+            <NewsroomHero
+                sectionLabel={`TECHPLAY.GG · ${category.label.toUpperCase()}`}
+                headline={category.label.toUpperCase()}
+                headlineAccent=" NEWS"
+                tagline={`Latest ${category.label} news and updates.`}
+                stats={[
+                    { icon: Newspaper, label: "Breaking News" },
+                    { icon: Globe,     label: "Global Coverage" },
+                    { icon: Gamepad2,  label: "Built for Players" },
+                ]}
                 categories={NEWS_CATEGORIES}
                 selectedCategory={category.id}
                 basePath="/news"
+                featuredItem={articles[0] as any}
+                featuredBasePath="/news"
             />
 
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
