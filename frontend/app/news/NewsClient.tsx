@@ -5,8 +5,8 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import { Article, PaginatedResponse } from "@/types";
 import NewsCard from "@/components/news/NewsCard";
-import { Newspaper, Flame } from "lucide-react";
-import PageHero from "@/components/ui/PageHero";
+import { Newspaper } from "lucide-react";
+import NewsroomHero from "@/components/news/NewsroomHero";
 import ListingHeader from "@/components/ui/ListingHeader";
 import ListingPagination from "@/components/ui/ListingPagination";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
@@ -50,14 +50,16 @@ export default function NewsClient({ initialData }: NewsClientProps) {
     return (
         <div className="min-h-screen">
 
-            <PageHero
-                title="The Newsroom"
-                description="Breaking stories. Industry analysis. All the news that matters."
-                icon={Flame}
+            <NewsroomHero
+                headline="NEWS"
+                headlineAccent="ROOM"
+                tagline="The latest from gaming, tech and the industry."
+                description="Breaking news, reviews, release updates, hardware coverage and deep dives — all in one place for players who want more than headlines."
                 categories={NEWS_CATEGORIES}
                 selectedCategory={selectedCategory}
                 basePath="/news"
                 categoryBase="/news/category"
+                featuredArticle={articles[0]}
             />
 
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">

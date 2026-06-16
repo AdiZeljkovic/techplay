@@ -7,7 +7,7 @@ import { Article, PaginatedResponse } from "@/types";
 import NewsCard from "@/components/news/NewsCard";
 import { Button } from "@/components/ui/Button";
 import { Newspaper, ChevronLeft, ChevronRight } from "lucide-react";
-import PageHero from "@/components/ui/PageHero";
+import NewsroomHero from "@/components/news/NewsroomHero";
 import { NEWS_CATEGORIES } from "@/lib/categories";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
@@ -49,13 +49,16 @@ export default function NewsCategoryClient({ categorySlug, initialData }: NewsCa
     return (
         <div className="min-h-screen">
 
-            <PageHero
-                title={categoryDef.label}
-                description={`Latest ${categoryDef.label} news and updates.`}
+            <NewsroomHero
+                sectionLabel={`TECHPLAY.GG · ${categoryDef.label.toUpperCase()}`}
+                headline={categoryDef.label.toUpperCase()}
+                headlineAccent=" NEWS"
+                tagline={`Latest ${categoryDef.label} news and updates.`}
                 categories={NEWS_CATEGORIES}
                 selectedCategory={categoryDef.id}
                 basePath="/news"
                 categoryBase="/news/category"
+                featuredArticle={articles[0]}
             />
 
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
