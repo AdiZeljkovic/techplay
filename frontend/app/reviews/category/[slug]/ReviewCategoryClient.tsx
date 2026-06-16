@@ -6,11 +6,17 @@ import axios from "@/lib/axios";
 import { Review, PaginatedResponse } from "@/types";
 import ReviewCard from "@/components/reviews/ReviewCard";
 import { Button } from "@/components/ui/Button";
-import { Star, ChevronLeft, ChevronRight } from "lucide-react";
-import PageHero from "@/components/ui/PageHero";
+import { Star, Globe, Gamepad2, ChevronLeft, ChevronRight } from "lucide-react";
+import NewsroomHero from "@/components/news/NewsroomHero";
 import { REVIEW_CATEGORIES } from "@/lib/categories";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
+
+const REVIEWS_STATS = [
+    { icon: Star,     label: "Expert Reviews" },
+    { icon: Globe,    label: "Global Coverage" },
+    { icon: Gamepad2, label: "Built for Players" },
+];
 
 interface ReviewCategoryClientProps {
     categorySlug: string;
@@ -20,7 +26,6 @@ interface ReviewCategoryClientProps {
 export default function ReviewCategoryClient({ categorySlug, initialData }: ReviewCategoryClientProps) {
     const [page, setPage] = useState(1);
 
-    // Find the category definition
     const categoryDef = REVIEW_CATEGORIES.find(c => c.slug === categorySlug);
 
     if (!categoryDef) {
@@ -29,7 +34,7 @@ export default function ReviewCategoryClient({ categorySlug, initialData }: Revi
 
     const queryParams = new URLSearchParams({
         page: page.toString(),
-        category: categoryDef.id // e.g. 'reviews-latest', 'reviews-rpg'
+        category: categoryDef.id
     });
 
     const { data, isLoading, isValidating } = useSWR<PaginatedResponse<Review>>(
@@ -38,7 +43,6 @@ export default function ReviewCategoryClient({ categorySlug, initialData }: Revi
         page === 1 && initialData ? { fallbackData: initialData, revalidateOnMount: false } : {}
     );
 
-    // Fetch Category Details (for SEO Text)
     const { data: categoryData } = useSWR(
         `/categories/${categorySlug}`,
         fetcher
@@ -49,13 +53,18 @@ export default function ReviewCategoryClient({ categorySlug, initialData }: Revi
     return (
         <div className="min-h-screen">
 
-            <PageHero
-                title={categoryDef.label}
-                description={`Latest ${categoryDef.label} reviews and analysis.`}
+            <NewsroomHero
+                sectionLabel={`TECHPLAY.GG · ${categoryDef.label.toUpperCase()}`}
+                headline={categoryDef.label.toUpperCase()}
+                headlineAccent="REVIEWS"
+                tagline={`Latest ${categoryDef.label} reviews and analysis.`}
+                stats={REVIEWS_STATS}
                 categories={REVIEW_CATEGORIES}
                 selectedCategory={categoryDef.id}
                 basePath="/reviews"
                 categoryBase="/reviews/category"
+                featuredItem={reviews[0] as any}
+                featuredBasePath="/reviews"
             />
 
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
@@ -118,7 +127,6 @@ export default function ReviewCategoryClient({ categorySlug, initialData }: Revi
                 )}
             </div>
 
-            {/* SEO Bottom Content */}
             {categoryData?.data?.seo_text && (
                 <div className="max-w-[1320px] mx-auto px-4 xl:px-0 pb-16">
                     <div className="bg-[var(--bg-card)]/30 rounded-2xl p-8 border border-[var(--border)]">

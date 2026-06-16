@@ -58,7 +58,8 @@ export default function NewsCategoryClient({ categorySlug, initialData }: NewsCa
                 selectedCategory={categoryDef.id}
                 basePath="/news"
                 categoryBase="/news/category"
-                featuredArticle={articles[0]}
+                featuredItem={articles[0]}
+                featuredBasePath="/news"
             />
 
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">

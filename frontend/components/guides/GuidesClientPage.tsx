@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useState, useMemo } from "react";
 import { BookOpen, Search, Zap, Target, Rocket, User, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import PageHero from "@/components/ui/PageHero";
+import NewsroomHero from "@/components/news/NewsroomHero";
 import ListingHeader from "@/components/ui/ListingHeader";
 import ListingPagination from "@/components/ui/ListingPagination";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
@@ -99,18 +99,26 @@ export default function GuidesClientPage({ initialData }: GuidesClientPageProps)
 
     return (
         <div className="min-h-screen">
-            {/* Hero Section with Categories */}
-            <PageHero
-                title="Guides Hub"
-                description="Master your gear and games with expert guides from our community."
-                icon={BookOpen}
+            <NewsroomHero
+                sectionLabel="TECHPLAY.GG GUIDES"
+                headline="GUIDES"
+                headlineAccent="HUB"
+                tagline="Master your games with expert guides."
+                description="Step-by-step walkthroughs, builds and strategies for every skill level — from beginner to advanced."
+                stats={[
+                    { icon: BookOpen, label: "Expert Guides" },
+                    { icon: Target,   label: "Strategy Tips" },
+                    { icon: Rocket,   label: "All Skill Levels" },
+                ]}
                 categories={GUIDE_CATEGORIES}
                 selectedCategory={difficulty}
                 onSelectCategory={handleCategorySelect}
+                featuredItem={displayGuides[0] as any}
+                featuredBasePath="/guides"
             />
 
             {/* Search Bar */}
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 -mt-2 relative z-30">
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 mb-8 relative z-30">
                 <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
                     <div className="relative">
                         <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-zinc-400 dark:text-[#71717A]" />

@@ -5,8 +5,8 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import { Review, PaginatedResponse } from "@/types";
 import ReviewCard from "@/components/reviews/ReviewCard";
-import { Cpu } from "lucide-react";
-import PageHero from "@/components/ui/PageHero";
+import { Cpu, Gauge, Globe } from "lucide-react";
+import NewsroomHero from "@/components/news/NewsroomHero";
 import ListingHeader from "@/components/ui/ListingHeader";
 import ListingPagination from "@/components/ui/ListingPagination";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
@@ -15,6 +15,12 @@ import { HARDWARE_CATEGORIES } from "@/lib/categories";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
+const HARDWARE_STATS = [
+    { icon: Cpu,   label: "Benchmark-Driven" },
+    { icon: Gauge, label: "Real World Tests" },
+    { icon: Globe, label: "Latest Hardware" },
+];
+
 interface HardwareClientProps {
     initialData?: any;
 }
@@ -22,10 +28,7 @@ interface HardwareClientProps {
 export default function HardwareClient({ initialData }: HardwareClientProps) {
     const [page, setPage] = useState(1);
 
-    // Fetch tech articles from dedicated endpoint
-    const queryParams = new URLSearchParams({
-        page: page.toString()
-    });
+    const queryParams = new URLSearchParams({ page: page.toString() });
 
     const { data, isLoading, isValidating } = useSWR<PaginatedResponse<Review>>(
         `/tech?${queryParams.toString()}`,
@@ -33,24 +36,26 @@ export default function HardwareClient({ initialData }: HardwareClientProps) {
         page === 1 && initialData ? { fallbackData: initialData, revalidateOnMount: false } : {}
     );
 
-    // Fetch Category Details (for SEO Text) - 'tech' is the main hardware category identifier
-    const { data: categoryData } = useSWR(
-        `/categories/tech`,
-        fetcher
-    );
+    const { data: categoryData } = useSWR(`/categories/tech`, fetcher);
 
     const reviews = data?.data || [];
 
     return (
         <div className="min-h-screen">
 
-            <PageHero
-                title="Hardware Lab"
-                description="Benchmark-driven reviews. Thermals. Raw performance numbers."
-                basePath="/hardware"
+            <NewsroomHero
+                sectionLabel="TECHPLAY.GG HARDWARE"
+                headline="HARDWARE"
+                headlineAccent="LAB"
+                tagline="Benchmark-driven. Real-world tested."
+                description="GPU benchmarks, thermals, power draw and verdicts on the hardware that matters most."
+                stats={HARDWARE_STATS}
                 categories={HARDWARE_CATEGORIES}
                 selectedCategory="tech"
+                basePath="/hardware"
                 categoryBase="/hardware"
+                featuredItem={reviews[0] as any}
+                featuredBasePath="/hardware"
             />
 
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
@@ -90,7 +95,6 @@ export default function HardwareClient({ initialData }: HardwareClientProps) {
                 )}
             </div>
 
-            {/* SEO Bottom Content */}
             {categoryData?.data?.seo_text && (
                 <div className="max-w-[1320px] mx-auto px-4 xl:px-0 pb-16">
                     <div className="bg-white dark:bg-[#0B0E14]/50 rounded-[24px] p-8 border border-zinc-200 dark:border-[#161B22] transition-colors duration-300">

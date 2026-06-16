@@ -5,8 +5,8 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import { Review, PaginatedResponse } from "@/types";
 import ReviewCard from "@/components/reviews/ReviewCard";
-import { Star } from "lucide-react";
-import PageHero from "@/components/ui/PageHero";
+import { Star, Globe, Gamepad2 } from "lucide-react";
+import NewsroomHero from "@/components/news/NewsroomHero";
 import ListingHeader from "@/components/ui/ListingHeader";
 import ListingPagination from "@/components/ui/ListingPagination";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
@@ -16,6 +16,12 @@ import { useRealTimeReviews } from "@/hooks";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
+const REVIEWS_STATS = [
+    { icon: Star,     label: "Expert Reviews" },
+    { icon: Globe,    label: "Global Coverage" },
+    { icon: Gamepad2, label: "Built for Players" },
+];
+
 interface ReviewsClientProps {
     initialData?: any;
 }
@@ -23,7 +29,6 @@ interface ReviewsClientProps {
 export default function ReviewsClient({ initialData }: ReviewsClientProps) {
     const [page, setPage] = useState(1);
 
-    // Default to 'all'
     const selectedCategory = "all";
     const queryParams = new URLSearchParams({ page: page.toString() });
 
@@ -33,10 +38,8 @@ export default function ReviewsClient({ initialData }: ReviewsClientProps) {
         page === 1 && initialData ? { fallbackData: initialData, revalidateOnMount: false } : {}
     );
 
-    // Real-time hook
     const { reviews: realtimeReviews, newCount } = useRealTimeReviews([]);
 
-    // Combine real-time with fetched
     const fetchedReviews = data?.data || [];
     const reviews = page === 1
         ? [...realtimeReviews.filter(rt => !fetchedReviews.some(f => f.id === rt.id)), ...fetchedReviews]
@@ -45,14 +48,19 @@ export default function ReviewsClient({ initialData }: ReviewsClientProps) {
     return (
         <div className="min-h-screen">
 
-            <PageHero
-                title="Review Hub"
-                description="In-depth analysis. Benchmarks. Final verdicts you can trust."
-                icon={Star}
+            <NewsroomHero
+                sectionLabel="TECHPLAY.GG REVIEWS"
+                headline="REVIEW"
+                headlineAccent="HUB"
+                tagline="In-depth analysis. Final verdicts you can trust."
+                description="Benchmark-driven reviews, scores, pros and cons — across games, hardware and more."
+                stats={REVIEWS_STATS}
                 categories={REVIEW_CATEGORIES}
                 selectedCategory={selectedCategory}
                 basePath="/reviews"
                 categoryBase="/reviews/category"
+                featuredItem={reviews[0] as any}
+                featuredBasePath="/reviews"
             />
 
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">

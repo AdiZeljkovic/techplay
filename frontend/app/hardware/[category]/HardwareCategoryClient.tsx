@@ -5,14 +5,20 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import { Review, PaginatedResponse } from "@/types";
 import ReviewCard from "@/components/reviews/ReviewCard";
-import { Cpu } from "lucide-react";
-import PageHero from "@/components/ui/PageHero";
+import { Cpu, Gauge, Globe } from "lucide-react";
+import NewsroomHero from "@/components/news/NewsroomHero";
 import ListingHeader from "@/components/ui/ListingHeader";
 import ListingPagination from "@/components/ui/ListingPagination";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
 import { HARDWARE_CATEGORIES } from "@/lib/categories";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
+
+const HARDWARE_STATS = [
+    { icon: Cpu,   label: "Benchmark-Driven" },
+    { icon: Gauge, label: "Real World Tests" },
+    { icon: Globe, label: "Latest Hardware" },
+];
 
 interface HardwareCategoryClientProps {
     categorySlug: string;
@@ -22,20 +28,15 @@ interface HardwareCategoryClientProps {
 export default function HardwareCategoryClient({ categorySlug, initialData }: HardwareCategoryClientProps) {
     const [page, setPage] = useState(1);
 
-    // Find the category definition to get its ID (which is used for API filtering)
-    // The slug in URL (e.g. 'reviews') -> maps to definition with slug 'reviews' -> ID 'tech-reviews'
     const categoryDef = HARDWARE_CATEGORIES.find(c => c.slug === categorySlug);
 
     if (!categoryDef) {
-        // If category doesn't exist in our definitions, show 404
-        // Note: In Client Component, notFound() works but might be better handled by parent.
-        // For now we return null or redirect. parent server component handles 404 better.
         return <div>Category not found</div>;
     }
 
     const queryParams = new URLSearchParams({
         page: page.toString(),
-        category: categoryDef.id // use the ID for API filtering
+        category: categoryDef.id
     });
 
     const { data, isLoading, isValidating } = useSWR<PaginatedResponse<Review>>(
@@ -44,24 +45,25 @@ export default function HardwareCategoryClient({ categorySlug, initialData }: Ha
         page === 1 && initialData ? { fallbackData: initialData, revalidateOnMount: false } : {}
     );
 
-    // Fetch Category Details (for SEO Text)
-    const { data: categoryData } = useSWR(
-        `/categories/${categorySlug}`,
-        fetcher
-    );
+    const { data: categoryData } = useSWR(`/categories/${categorySlug}`, fetcher);
 
     const reviews = data?.data || [];
 
     return (
         <div className="min-h-screen">
 
-            <PageHero
-                title={categoryDef.label}
-                description={`Latest ${categoryDef.label} from our labs.`}
-                basePath="/hardware"
+            <NewsroomHero
+                sectionLabel={`TECHPLAY.GG · ${categoryDef.label.toUpperCase()}`}
+                headline={categoryDef.label.toUpperCase()}
+                headlineAccent="TECH"
+                tagline={`Latest ${categoryDef.label} from our labs.`}
+                stats={HARDWARE_STATS}
                 categories={HARDWARE_CATEGORIES}
                 selectedCategory={categoryDef.id}
+                basePath="/hardware"
                 categoryBase="/hardware"
+                featuredItem={reviews[0] as any}
+                featuredBasePath="/hardware"
             />
 
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
@@ -96,7 +98,6 @@ export default function HardwareCategoryClient({ categorySlug, initialData }: Ha
                 )}
             </div>
 
-            {/* SEO Bottom Content */}
             {categoryData?.data?.seo_text && (
                 <div className="max-w-[1320px] mx-auto px-4 xl:px-0 pb-16">
                     <div className="bg-white dark:bg-[#0B0E14]/50 rounded-[24px] p-8 border border-zinc-200 dark:border-[#161B22] transition-colors duration-300">
@@ -107,7 +108,6 @@ export default function HardwareCategoryClient({ categorySlug, initialData }: Ha
                     </div>
                 </div>
             )}
-
         </div>
     );
 }
