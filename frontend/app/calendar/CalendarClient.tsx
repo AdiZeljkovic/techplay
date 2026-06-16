@@ -13,6 +13,7 @@ import {
 import {
     format, addMonths, startOfMonth, endOfMonth,
     isToday, parseISO, isBefore, startOfDay, isSameMonth,
+    startOfWeek, endOfWeek, eachDayOfInterval,
 } from "date-fns";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
 
@@ -45,6 +46,8 @@ const PLATFORM_FILTERS = [
     { id: "xbox",        label: "Xbox",         icon: Gamepad    },
     { id: "nintendo",    label: "Nintendo",     icon: CircleDot  },
 ];
+
+const DAY_HEADERS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 function platformChip(name: string, slug?: string): { label: string; cls: string } | null {
     const s = (slug || name).toLowerCase();
@@ -99,7 +102,6 @@ function GameCard({ game }: { game: GameRelease }) {
             className="group relative block bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-xl overflow-hidden hover:border-tp-accent/40 dark:hover:border-tp-accent/40 hover:-translate-x-1 hover:shadow-[0_8px_40px_rgba(252,65,0,0.18)] transition-all duration-300"
         >
             <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-tp-accent scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300 z-20" />
-
             <div className="relative aspect-video overflow-hidden bg-zinc-100 dark:bg-[#1A1F26]">
                 {game.background_image ? (
                     <Image
@@ -116,13 +118,11 @@ function GameCard({ game }: { game: GameRelease }) {
                     </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
                 {game.metacritic && (
                     <div className={`absolute top-2 right-2 w-9 h-9 rounded-lg flex items-center justify-center text-[12px] font-bold shadow-lg ${metacriticColor(game.metacritic)}`}>
                         {game.metacritic}
                     </div>
                 )}
-
                 {(game.added || 0) > 0 && (
                     <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-2 py-[3px]">
                         <Flame className="w-3 h-3 text-tp-accent shrink-0" />
@@ -130,7 +130,6 @@ function GameCard({ game }: { game: GameRelease }) {
                     </div>
                 )}
             </div>
-
             <div className="p-3">
                 <h3 className="text-[13px] font-bold text-zinc-900 dark:text-white leading-snug line-clamp-2 group-hover:text-tp-accent transition-colors mb-1.5">
                     {game.name}
@@ -156,11 +155,6 @@ function GameCard({ game }: { game: GameRelease }) {
         </Link>
     );
 }
-
-const cardVariants = {
-    hidden: { opacity: 0, y: 16 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] } },
-};
 
 export default function CalendarClient() {
     const [viewDate, setViewDate] = useState(() => startOfMonth(new Date()));
@@ -208,6 +202,20 @@ export default function CalendarClient() {
         [data, platform]
     );
 
+    // Calendar grid — full weeks containing the month (Mon-start)
+    const calendarStart = useMemo(
+        () => startOfWeek(startOfMonth(viewDate), { weekStartsOn: 1 }),
+        [viewDate]
+    );
+    const calendarEnd = useMemo(
+        () => endOfWeek(endOfMonth(viewDate), { weekStartsOn: 1 }),
+        [viewDate]
+    );
+    const calendarDays = useMemo(
+        () => eachDayOfInterval({ start: calendarStart, end: calendarEnd }),
+        [calendarStart, calendarEnd]
+    );
+
     // Auto-rotate hero through top 3 most anticipated
     useEffect(() => {
         if (highlights.length < 2) return;
@@ -223,17 +231,21 @@ export default function CalendarClient() {
         setHeroIndex(0);
     };
 
-    const sortedDates = [...releasesByDay.entries()].sort(([a], [b]) => a.localeCompare(b));
     const hero = highlights[heroIndex] ?? null;
     const heroChips = hero ? gameChips(hero, 3).visible : [];
 
     return (
         <div className="min-h-screen bg-white dark:bg-[#05070A]">
 
-            {/* ────────────────────────────────── CINEMATIC HERO ────────────────────────────── */}
-            <div className="relative w-full h-[65vh] min-h-[500px] overflow-hidden bg-[#05070A]">
+            {/* ────────────────────── CINEMATIC HERO ────────────────────── */}
+            <div className="relative w-full h-[65vh] min-h-[520px] overflow-hidden bg-[#05070A]">
 
-                {/* Ken Burns background — crossfade between top 3 anticipated games */}
+                {/* Corner bracket decorations */}
+                <div className="absolute top-5 left-5 xl:left-[calc((100vw-1320px)/2)] w-8 h-8 border-t-2 border-l-2 border-tp-accent/50 rounded-tl-sm pointer-events-none z-10" />
+                <div className="absolute top-5 right-5 xl:right-[calc((100vw-1320px)/2)] w-8 h-8 border-t-2 border-r-2 border-tp-accent/20 rounded-tr-sm pointer-events-none z-10" />
+                <div className="absolute bottom-5 right-5 xl:right-[calc((100vw-1320px)/2)] w-8 h-8 border-b-2 border-r-2 border-tp-accent/50 rounded-br-sm pointer-events-none z-10" />
+
+                {/* Ken Burns background */}
                 <AnimatePresence mode="sync">
                     {hero?.background_image && (
                         <motion.div
@@ -264,7 +276,6 @@ export default function CalendarClient() {
                     )}
                 </AnimatePresence>
 
-                {/* Loading shimmer before data arrives */}
                 {isLoading && !hero && (
                     <div className="absolute inset-0 bg-gradient-to-br from-tp-accent/5 via-transparent to-transparent animate-pulse" />
                 )}
@@ -273,37 +284,36 @@ export default function CalendarClient() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/65 to-[#05070A]/10" />
                 <div className="absolute inset-0 bg-gradient-to-r from-[#05070A]/90 via-[#05070A]/25 to-transparent" />
 
-                {/* Orange accent line at top */}
+                {/* Orange top accent line */}
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-tp-accent/70 via-tp-accent/20 to-transparent" />
 
                 {/* Content — pinned to bottom */}
                 <div className="absolute inset-0 flex items-end">
-                    <div className="max-w-[1320px] mx-auto px-4 xl:px-0 w-full pb-12">
+                    <div className="max-w-[1320px] mx-auto px-4 xl:px-0 w-full pb-10">
                         <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 items-end">
 
-                            {/* LEFT: label + month + featured game info */}
+                            {/* LEFT */}
                             <div>
-                                <div className="flex items-center gap-2.5 mb-5">
+                                <div className="flex items-center gap-2.5 mb-4">
                                     <span className="w-5 h-[2px] bg-tp-accent shrink-0" />
                                     <span className="text-tp-accent text-[10px] font-bold uppercase tracking-[0.2em]">
                                         Release Calendar
                                     </span>
                                 </div>
 
-                                {/* Giant month name */}
                                 <h1
                                     className="font-display font-black text-white uppercase leading-[0.88] tracking-tight"
-                                    style={{ fontSize: "clamp(52px, 9vw, 108px)" }}
+                                    style={{ fontSize: "clamp(48px, 9vw, 108px)" }}
                                 >
                                     {format(viewDate, "MMMM")}
-                                    <span className="text-white/15 ml-4" style={{ fontSize: "clamp(40px, 7vw, 80px)" }}>
+                                    <span className="text-white/15 ml-4" style={{ fontSize: "clamp(36px, 7vw, 80px)" }}>
                                         {format(viewDate, "yyyy")}
                                     </span>
                                 </h1>
 
                                 <div className="h-[1px] bg-white/10 my-5 max-w-[540px]" />
 
-                                {/* Featured game info — animates per hero rotation */}
+                                {/* Featured game info — animates per rotation */}
                                 <AnimatePresence mode="wait">
                                     <motion.div
                                         key={`info-${heroIndex}-${startDate}`}
@@ -314,7 +324,7 @@ export default function CalendarClient() {
                                     >
                                         {hero ? (
                                             <>
-                                                <div className="flex items-center gap-2 mb-2.5">
+                                                <div className="flex items-center gap-2 mb-2">
                                                     <Flame className="w-3.5 h-3.5 text-tp-accent" />
                                                     <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/50">
                                                         #{String(heroIndex + 1).padStart(2, "0")} Most Anticipated
@@ -322,11 +332,11 @@ export default function CalendarClient() {
                                                 </div>
                                                 <h2
                                                     className="font-display font-black text-white leading-tight mb-3 max-w-[500px]"
-                                                    style={{ fontSize: "clamp(20px, 3vw, 32px)" }}
+                                                    style={{ fontSize: "clamp(18px, 2.8vw, 30px)" }}
                                                 >
                                                     {hero.name}
                                                 </h2>
-                                                <div className="flex items-center gap-2.5 flex-wrap">
+                                                <div className="flex items-center gap-2.5 flex-wrap mb-4">
                                                     {hero.released && (
                                                         <span className="bg-tp-accent text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-lg shadow-tp-accent/20">
                                                             {format(parseISO(hero.released), "MMMM d, yyyy")}
@@ -349,13 +359,20 @@ export default function CalendarClient() {
                                                         </div>
                                                     )}
                                                 </div>
+                                                <Link
+                                                    href={`/calendar/${hero.slug}`}
+                                                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-tp-accent hover:bg-tp-accent/90 text-white text-[11px] font-bold uppercase tracking-widest rounded-full transition-all shadow-lg shadow-tp-accent/30"
+                                                >
+                                                    View Details
+                                                    <ChevronRight className="w-3.5 h-3.5" />
+                                                </Link>
                                             </>
                                         ) : isLoading ? (
                                             <div className="space-y-3 max-w-[420px]">
                                                 <div className="h-4 bg-white/10 rounded animate-pulse w-36" />
                                                 <div className="h-7 bg-white/10 rounded animate-pulse w-72" />
-                                                <div className="flex gap-2">
-                                                    <div className="h-7 bg-white/10 rounded-lg animate-pulse w-32" />
+                                                <div className="flex gap-2 mt-1">
+                                                    <div className="h-7 bg-white/10 rounded-lg animate-pulse w-36" />
                                                     <div className="h-7 bg-white/10 rounded animate-pulse w-12" />
                                                 </div>
                                             </div>
@@ -363,31 +380,56 @@ export default function CalendarClient() {
                                     </motion.div>
                                 </AnimatePresence>
 
-                                {/* Dot indicators */}
+                                {/* Thumbnail navigation strip */}
                                 {highlights.length > 1 && (
-                                    <div className="flex items-center gap-2 mt-7">
-                                        {highlights.slice(0, 3).map((_, i) => (
+                                    <div className="flex items-stretch gap-2.5 mt-7 max-w-[520px]">
+                                        {highlights.slice(0, 3).map((g, i) => (
                                             <button
                                                 key={i}
                                                 onClick={() => setHeroIndex(i)}
-                                                aria-label={`Show game ${i + 1}`}
-                                                className={`rounded-full transition-all duration-300 ${
+                                                className={`group relative flex-1 flex items-center gap-2.5 rounded-xl p-2.5 border transition-all duration-300 text-left ${
                                                     i === heroIndex
-                                                        ? "w-7 h-1.5 bg-tp-accent"
-                                                        : "w-1.5 h-1.5 bg-white/25 hover:bg-white/60"
+                                                        ? "bg-white/12 border-tp-accent/50 backdrop-blur-md"
+                                                        : "bg-white/5 border-white/10 hover:border-white/25 backdrop-blur-sm opacity-60 hover:opacity-100"
                                                 }`}
-                                            />
+                                            >
+                                                {g.background_image && (
+                                                    <div className="relative w-12 h-8 rounded-md overflow-hidden shrink-0">
+                                                        <Image
+                                                            src={g.background_image}
+                                                            fill
+                                                            sizes="48px"
+                                                            quality={60}
+                                                            className="object-cover"
+                                                            alt={g.name}
+                                                        />
+                                                    </div>
+                                                )}
+                                                <div className="min-w-0">
+                                                    <span className="text-[8px] font-bold uppercase tracking-widest text-white/40 leading-none block mb-0.5">
+                                                        #{String(i + 1).padStart(2, "0")}
+                                                    </span>
+                                                    <p className="text-[11px] font-bold text-white leading-tight line-clamp-1">
+                                                        {g.name}
+                                                    </p>
+                                                </div>
+                                                {i === heroIndex && (
+                                                    <span className="absolute left-0 top-3 bottom-3 w-[2px] bg-tp-accent rounded-full" />
+                                                )}
+                                            </button>
                                         ))}
                                     </div>
                                 )}
                             </div>
 
-                            {/* RIGHT: release count + month nav */}
+                            {/* RIGHT: month nav + release count */}
                             <div className="flex flex-col items-start lg:items-end gap-5">
                                 {!isLoading && (releases.length + tbaGames.length) > 0 && (
                                     <div className="lg:text-right">
-                                        <span className="font-display font-black text-white leading-none"
-                                            style={{ fontSize: "clamp(44px, 6vw, 72px)" }}>
+                                        <span
+                                            className="font-display font-black text-white leading-none"
+                                            style={{ fontSize: "clamp(44px, 6vw, 72px)" }}
+                                        >
                                             {releases.length + tbaGames.length}
                                         </span>
                                         <span className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mt-1">
@@ -396,7 +438,6 @@ export default function CalendarClient() {
                                     </div>
                                 )}
 
-                                {/* Month navigation */}
                                 <div className="flex items-center bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-2 gap-1">
                                     <button
                                         onClick={() => navigate(-1)}
@@ -431,10 +472,10 @@ export default function CalendarClient() {
                 </div>
             </div>
 
-            {/* ────────────────────────────────── MAIN CONTENT ────────────────────────────── */}
+            {/* ────────────────────── MAIN CONTENT ────────────────────── */}
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 pb-20">
 
-                {/* ── MOST ANTICIPATED — horizontal scroll spotlight strip ── */}
+                {/* ── MOST ANTICIPATED — equal poster grid ── */}
                 {(isLoading || highlights.length > 0) && (
                     <section className="pt-10 mb-14">
                         <div className="flex items-end justify-between mb-7">
@@ -444,96 +485,81 @@ export default function CalendarClient() {
                                     Most Anticipated
                                 </h2>
                             </div>
-                            {!isLoading && data?.results?.length && (
+                            {!isLoading && data?.results?.length ? (
                                 <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 dark:text-[#71717A]">
                                     {data.results.length} releases · by hype
                                 </span>
-                            )}
+                            ) : null}
                         </div>
 
                         {isLoading ? (
-                            <div className="flex gap-4 overflow-hidden">
-                                {([280, 210, 210, 170, 170, 170] as const).map((w, i) => (
-                                    <div
-                                        key={i}
-                                        className="shrink-0 rounded-2xl bg-zinc-100 dark:bg-[#0B0E14] animate-pulse"
-                                        style={{ width: w, height: i === 0 ? 400 : i <= 2 ? 300 : 250 }}
-                                    />
+                            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+                                {[...Array(6)].map((_, i) => (
+                                    <div key={i} className="aspect-[2/3] rounded-2xl bg-zinc-100 dark:bg-[#0B0E14] animate-pulse" />
                                 ))}
                             </div>
                         ) : (
-                            <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 xl:-mx-0 xl:px-0 scrollbar-hide">
-                                {highlights.map((game, i) => {
-                                    const wh = i === 0
-                                        ? "w-[280px] h-[400px]"
-                                        : i <= 2
-                                            ? "w-[210px] h-[300px]"
-                                            : "w-[170px] h-[250px]";
-                                    const rankSize = i === 0 ? "text-[96px]" : i <= 2 ? "text-[72px]" : "text-[52px]";
-                                    const nameSize = i === 0 ? "text-[17px]" : i <= 2 ? "text-[13px]" : "text-[12px]";
-                                    const dateNumSize = i === 0 ? "text-[18px]" : "text-[14px]";
+                            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+                                {highlights.map((game, i) => (
+                                    <Link
+                                        key={game.id}
+                                        href={`/calendar/${game.slug}`}
+                                        className="group relative aspect-[2/3] rounded-2xl overflow-hidden border border-zinc-200 dark:border-[#161B22] bg-zinc-100 dark:bg-[#0B0E14] hover:border-tp-accent/50 hover:-translate-y-1.5 hover:shadow-[0_16px_48px_rgba(252,65,0,0.2)] transition-all duration-300"
+                                    >
+                                        {game.background_image && (
+                                            <Image
+                                                src={game.background_image}
+                                                alt={game.name}
+                                                fill
+                                                sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 220px"
+                                                quality={75}
+                                                className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                                            />
+                                        )}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
 
-                                    return (
-                                        <Link
-                                            key={game.id}
-                                            href={`/calendar/${game.slug}`}
-                                            className={`group relative shrink-0 rounded-2xl overflow-hidden border border-zinc-200 dark:border-[#161B22] bg-zinc-100 dark:bg-[#0B0E14] hover:border-tp-accent/50 hover:-translate-y-1.5 hover:shadow-[0_16px_48px_rgba(252,65,0,0.2)] transition-all duration-300 ${wh}`}
-                                        >
-                                            {game.background_image && (
-                                                <Image
-                                                    src={game.background_image}
-                                                    alt={game.name}
-                                                    fill
-                                                    sizes="280px"
-                                                    quality={75}
-                                                    className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-                                                />
-                                            )}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
+                                        {/* Rank number */}
+                                        <span className="absolute top-2 left-3 font-display text-[56px] font-black leading-none text-white/[0.07] group-hover:text-tp-accent/15 transition-colors duration-300 select-none">
+                                            {String(i + 1).padStart(2, "0")}
+                                        </span>
 
-                                            {/* Large rank number — ghost, accent glow on hover */}
-                                            <span className={`absolute top-2 left-3 font-display font-black leading-none text-white/[0.06] group-hover:text-tp-accent/15 transition-colors duration-300 select-none ${rankSize}`}>
-                                                {String(i + 1).padStart(2, "0")}
-                                            </span>
+                                        {/* Date badge */}
+                                        {game.released && (
+                                            <div className="absolute top-3 right-3 bg-tp-accent text-white rounded-xl px-2 py-1.5 flex flex-col items-center shadow-lg shadow-black/40 leading-none">
+                                                <span className="font-display text-[14px] font-bold">
+                                                    {format(parseISO(game.released), "d")}
+                                                </span>
+                                                <span className="text-[7px] font-bold tracking-widest mt-0.5">
+                                                    {format(parseISO(game.released), "MMM").toUpperCase()}
+                                                </span>
+                                            </div>
+                                        )}
 
-                                            {/* Date badge */}
-                                            {game.released && (
-                                                <div className="absolute top-3 right-3 bg-tp-accent text-white rounded-xl px-2.5 py-2 flex flex-col items-center shadow-lg shadow-black/40 leading-none">
-                                                    <span className={`font-display font-bold ${dateNumSize}`}>
-                                                        {format(parseISO(game.released), "d")}
-                                                    </span>
-                                                    <span className="text-[7px] font-bold tracking-widest mt-0.5">
-                                                        {format(parseISO(game.released), "MMM").toUpperCase()}
+                                        {/* Bottom info */}
+                                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                                            <h3 className="font-display text-[13px] font-bold text-white group-hover:text-tp-accent transition-colors line-clamp-2 leading-snug mb-1">
+                                                {game.name}
+                                            </h3>
+                                            {(game.added || 0) > 0 && (
+                                                <div className="flex items-center gap-1.5">
+                                                    <Flame className="w-3 h-3 text-tp-accent shrink-0" />
+                                                    <span className="text-[9px] font-bold text-white/50 uppercase tracking-wider">
+                                                        {hypeLabel(game.added!)}
                                                     </span>
                                                 </div>
                                             )}
+                                        </div>
 
-                                            {/* Bottom info */}
-                                            <div className="absolute bottom-0 left-0 right-0 p-3.5">
-                                                <h3 className={`font-display font-bold text-white group-hover:text-tp-accent transition-colors line-clamp-2 leading-snug mb-1.5 ${nameSize}`}>
-                                                    {game.name}
-                                                </h3>
-                                                {i <= 2 && (game.added || 0) > 0 && (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Flame className="w-3 h-3 text-tp-accent shrink-0" />
-                                                        <span className="text-[9px] font-bold text-white/50 uppercase tracking-wider">
-                                                            {hypeLabel(game.added!)} tracking
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-tp-accent scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300 z-20" />
-                                        </Link>
-                                    );
-                                })}
+                                        <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-tp-accent scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300 z-20" />
+                                    </Link>
+                                ))}
                             </div>
                         )}
                     </section>
                 )}
 
-                {/* ── PLATFORM FILTERS ── */}
-                <div className="flex items-center gap-2 mb-10 overflow-x-auto scrollbar-hide pb-1">
+                {/* ── PLATFORM FILTERS — centered ── */}
+                <div className="flex justify-center items-center gap-2 mb-10 flex-wrap">
                     {PLATFORM_FILTERS.map(f => {
                         const Icon = f.icon;
                         const active = platform === f.id;
@@ -541,7 +567,7 @@ export default function CalendarClient() {
                             <button
                                 key={f.id}
                                 onClick={() => setPlatform(f.id)}
-                                className={`flex items-center gap-2 px-5 h-[44px] rounded-full text-[11px] font-bold uppercase tracking-wider whitespace-nowrap shrink-0 transition-all duration-300 border ${
+                                className={`flex items-center gap-2 px-5 h-[44px] rounded-full text-[11px] font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-300 border ${
                                     active
                                         ? "bg-tp-accent border-tp-accent text-white shadow-[0_0_24px_rgba(252,65,0,0.35)]"
                                         : "bg-white dark:bg-[#0B0E14] border-zinc-200 dark:border-[#161B22] text-zinc-600 dark:text-[#A1A1AA] hover:text-zinc-900 dark:hover:text-white hover:border-tp-accent/30"
@@ -554,95 +580,120 @@ export default function CalendarClient() {
                     })}
                 </div>
 
-                {/* ── DATE-GROUPED RELEASE LIST ── */}
+                {/* ── CALENDAR GRID ── */}
                 {isLoading ? (
-                    <div className="space-y-12">
-                        {[...Array(3)].map((_, g) => (
-                            <div key={g}>
-                                <div className="flex items-center gap-4 mb-5">
-                                    <div className="w-[58px] h-[68px] rounded-xl bg-zinc-100 dark:bg-[#0B0E14] animate-pulse shrink-0" />
-                                    <div className="flex-1 h-[1px] bg-zinc-200 dark:bg-white/5" />
+                    <>
+                        <div className="grid grid-cols-7 mb-px">
+                            {DAY_HEADERS.map(d => (
+                                <div key={d} className="py-3 text-center text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-[#3F3F46]">
+                                    <span className="hidden sm:inline">{d}</span>
+                                    <span className="sm:hidden">{d[0]}</span>
                                 </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                    {[...Array(3)].map((_, i) => (
-                                        <div key={i} className="rounded-xl bg-zinc-100 dark:bg-[#0B0E14] animate-pulse">
-                                            <div className="aspect-video" />
-                                            <div className="p-3 space-y-2">
-                                                <div className="h-4 bg-zinc-200 dark:bg-[#161B22] rounded" />
-                                                <div className="h-3 bg-zinc-200 dark:bg-[#161B22] rounded w-2/3" />
-                                            </div>
-                                        </div>
-                                    ))}
+                            ))}
+                        </div>
+                        <div className="grid grid-cols-7 border-l border-t border-zinc-200 dark:border-[#161B22] rounded-xl overflow-hidden">
+                            {[...Array(35)].map((_, i) => (
+                                <div key={i} className="border-r border-b border-zinc-200 dark:border-[#161B22] min-h-[90px] md:min-h-[120px] bg-white dark:bg-[#05070A] animate-pulse" />
+                            ))}
+                        </div>
+                    </>
+                ) : releases.length > 0 || tbaGames.length > 0 ? (
+                    <>
+                        {/* Day headers */}
+                        <div className="grid grid-cols-7 mb-px">
+                            {DAY_HEADERS.map(d => (
+                                <div key={d} className="py-3 text-center text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-[#71717A]">
+                                    <span className="hidden sm:inline">{d}</span>
+                                    <span className="sm:hidden">{d[0]}</span>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : sortedDates.length > 0 ? (
-                    <div>
-                        {sortedDates.map(([dateStr, games]) => {
-                            const date = parseISO(dateStr);
-                            const today = isToday(date);
-                            const past = isBefore(date, startOfDay(new Date())) && !today;
+                            ))}
+                        </div>
 
-                            return (
-                                <section
-                                    key={dateStr}
-                                    className={past ? "opacity-60 hover:opacity-100 transition-opacity duration-300" : ""}
-                                >
-                                    {/* Date separator */}
-                                    <div className="flex items-center gap-4 mb-5">
-                                        <div className={`w-[58px] h-[68px] rounded-xl border flex flex-col items-center justify-center shrink-0 ${
-                                            today
-                                                ? "bg-tp-accent border-tp-accent shadow-[0_0_24px_rgba(252,65,0,0.35)]"
-                                                : "bg-white dark:bg-[#0B0E14] border-zinc-200 dark:border-[#161B22]"
-                                        }`}>
-                                            <span className={`text-[7px] font-bold uppercase tracking-widest leading-none mb-0.5 ${today ? "text-white/70" : "text-tp-accent"}`}>
-                                                {format(date, "EEE").toUpperCase()}
-                                            </span>
-                                            <span className={`font-display text-[24px] font-black leading-none ${today ? "text-white" : "text-zinc-900 dark:text-white"}`}>
-                                                {format(date, "d")}
-                                            </span>
-                                            <span className={`text-[7px] font-bold uppercase tracking-widest leading-none mt-0.5 ${today ? "text-white/70" : "text-tp-accent/80"}`}>
-                                                {format(date, "MMM").toUpperCase()}
-                                            </span>
-                                        </div>
+                        {/* Calendar cells */}
+                        <div className="grid grid-cols-7 border-l border-t border-zinc-200 dark:border-[#161B22] rounded-xl overflow-hidden">
+                            {calendarDays.map(day => {
+                                const dayStr = format(day, "yyyy-MM-dd");
+                                const games = releasesByDay.get(dayStr) || [];
+                                const isCurrentDay = isToday(day);
+                                const isThisMonth = isSameMonth(day, viewDate);
+                                const isPast = isBefore(day, startOfDay(new Date())) && !isCurrentDay;
 
-                                        <div className="flex-1 h-[1px] bg-zinc-200 dark:bg-white/5" />
-
-                                        <div className="flex items-center gap-2.5 shrink-0">
-                                            {today && (
-                                                <span className="text-[9px] font-bold text-tp-accent uppercase tracking-widest bg-tp-accent/10 border border-tp-accent/20 px-2.5 py-1 rounded-full">
-                                                    Today
-                                                </span>
-                                            )}
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-[#71717A]">
-                                                {games.length} {games.length === 1 ? "RELEASE" : "RELEASES"}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Card grid — 3 cols with stagger animation */}
-                                    <motion.div
-                                        className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-12"
-                                        initial="hidden"
-                                        animate="visible"
-                                        variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
+                                return (
+                                    <div
+                                        key={dayStr}
+                                        className={`border-r border-b border-zinc-200 dark:border-[#161B22] min-h-[90px] md:min-h-[120px] p-1.5 md:p-2 relative transition-colors ${
+                                            !isThisMonth
+                                                ? "bg-zinc-50/70 dark:bg-black/20"
+                                                : "bg-white dark:bg-[#05070A]"
+                                        } ${isCurrentDay ? "!bg-tp-accent/[0.04] dark:!bg-tp-accent/[0.07]" : ""} ${isPast ? "opacity-55" : ""}`}
                                     >
-                                        {games.map(game => (
-                                            <motion.div key={game.id} variants={cardVariants}>
-                                                <GameCard game={game} />
-                                            </motion.div>
-                                        ))}
-                                    </motion.div>
-                                </section>
-                            );
-                        })}
+                                        {/* Date number */}
+                                        <div className="flex items-start justify-between mb-1">
+                                            <span
+                                                className={`text-[11px] font-bold leading-none inline-flex items-center justify-center ${
+                                                    isCurrentDay
+                                                        ? "w-[22px] h-[22px] rounded-full bg-tp-accent text-white text-[10px]"
+                                                        : isThisMonth
+                                                            ? "text-zinc-700 dark:text-[#A1A1AA]"
+                                                            : "text-zinc-400 dark:text-[#3F3F46]"
+                                                }`}
+                                            >
+                                                {format(day, "d")}
+                                            </span>
 
-                        {/* TBA section */}
+                                            {/* Mobile: dot count */}
+                                            {games.length > 0 && (
+                                                <div className="flex gap-[3px] md:hidden pt-0.5">
+                                                    {[...Array(Math.min(games.length, 3))].map((_, j) => (
+                                                        <span key={j} className="w-[5px] h-[5px] rounded-full bg-tp-accent" />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Desktop: game mini-cards */}
+                                        {games.length > 0 && (
+                                            <div className="hidden md:block space-y-1">
+                                                {games.slice(0, 2).map(game => (
+                                                    <Link
+                                                        key={game.id}
+                                                        href={`/calendar/${game.slug}`}
+                                                        className="group/game flex items-center gap-1.5 rounded-md p-1 hover:bg-tp-accent/10 transition-colors"
+                                                    >
+                                                        {game.background_image && (
+                                                            <div className="relative w-9 h-5 rounded overflow-hidden shrink-0">
+                                                                <Image
+                                                                    src={game.background_image}
+                                                                    fill
+                                                                    sizes="36px"
+                                                                    quality={60}
+                                                                    className="object-cover"
+                                                                    alt={game.name}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        <span className="text-[10px] font-medium text-zinc-600 dark:text-[#A1A1AA] truncate group-hover/game:text-tp-accent transition-colors leading-tight">
+                                                            {game.name}
+                                                        </span>
+                                                    </Link>
+                                                ))}
+                                                {games.length > 2 && (
+                                                    <span className="text-[9px] font-bold text-tp-accent/60 pl-1">
+                                                        +{games.length - 2} more
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* TBA section below calendar */}
                         {tbaGames.length > 0 && (
-                            <section>
+                            <section className="mt-12">
                                 <div className="flex items-center gap-4 mb-5">
-                                    <div className="w-[58px] h-[68px] rounded-xl border border-zinc-200 dark:border-[#161B22] bg-zinc-50 dark:bg-[#0B0E14] flex items-center justify-center shrink-0">
+                                    <div className="w-[52px] h-[52px] rounded-xl border border-zinc-200 dark:border-[#161B22] bg-zinc-50 dark:bg-[#0B0E14] flex items-center justify-center shrink-0">
                                         <Clock className="w-5 h-5 text-zinc-400 dark:text-[#71717A]" />
                                     </div>
                                     <div className="flex-1 h-[1px] bg-zinc-200 dark:bg-white/5" />
@@ -650,12 +701,12 @@ export default function CalendarClient() {
                                         TBA · {tbaGames.length} {tbaGames.length === 1 ? "GAME" : "GAMES"}
                                     </span>
                                 </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-12 opacity-60">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 opacity-60">
                                     {tbaGames.map(game => <GameCard key={game.id} game={game} />)}
                                 </div>
                             </section>
                         )}
-                    </div>
+                    </>
                 ) : (
                     <ListingEmptyState
                         icon={CalendarIcon}
