@@ -20,6 +20,58 @@ import ListingEmptyState from "@/components/ui/ListingEmptyState";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
+function HeroCountdown({ releaseDate }: { releaseDate: string }) {
+    const [t, setT] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, past: false, today: false });
+    useEffect(() => {
+        function tick() {
+            const diff = parseISO(releaseDate).getTime() - Date.now();
+            if (diff <= 0) {
+                setT({ days: 0, hours: 0, minutes: 0, seconds: 0, past: true, today: diff > -86400000 });
+                return;
+            }
+            setT({ days: Math.floor(diff / 86400000), hours: Math.floor((diff % 86400000) / 3600000), minutes: Math.floor((diff % 3600000) / 60000), seconds: Math.floor((diff % 60000) / 1000), past: false, today: false });
+        }
+        tick();
+        const id = setInterval(tick, 1000);
+        return () => clearInterval(id);
+    }, [releaseDate]);
+
+    if (t.past || t.today) {
+        return (
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-tp-accent/15 border border-tp-accent/30 mb-5">
+                <span className="text-[13px] font-black text-tp-accent uppercase tracking-widest">
+                    {t.today ? "Out Today" : "Out Now"}
+                </span>
+            </div>
+        );
+    }
+
+    const units = [
+        { v: t.days, label: "Days" },
+        { v: t.hours, label: "Hrs" },
+        { v: t.minutes, label: "Min" },
+        { v: t.seconds, label: "Sec" },
+    ];
+
+    return (
+        <div className="flex items-end gap-2 mb-5">
+            {units.map(({ v, label }, i) => (
+                <div key={label} className="flex items-end gap-2">
+                    <div className="flex flex-col items-center bg-black/40 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 min-w-[52px]">
+                        <span className="font-display font-black text-white text-[26px] leading-none tabular-nums" suppressHydrationWarning>
+                            {String(v).padStart(2, "0")}
+                        </span>
+                        <span className="text-[8px] font-bold uppercase tracking-widest text-white/35 mt-1 leading-none">{label}</span>
+                    </div>
+                    {i < units.length - 1 && (
+                        <span className="text-white/25 font-black text-[18px] leading-none mb-3">:</span>
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+}
+
 interface GameRelease {
     id: number;
     slug: string;
@@ -332,23 +384,18 @@ export default function CalendarClient() {
                                                 >
                                                     {hero.name}
                                                 </h2>
-                                                <div className="flex items-center gap-2.5 flex-wrap mb-5">
-                                                    {hero.released && (
-                                                        <div className="flex items-center gap-1.5 text-[12px] font-semibold text-white/60">
-                                                            <CalendarIcon className="w-3.5 h-3.5 text-tp-accent shrink-0" strokeWidth={2} />
-                                                            {format(parseISO(hero.released), "MMMM d, yyyy")}
-                                                        </div>
-                                                    )}
-                                                    {featuredChips.length > 0 && (
-                                                        <div className="flex gap-1.5">
-                                                            {featuredChips.map(chip => (
-                                                                <span key={chip.label} className={`${chip.cls} text-white text-[9px] font-bold tracking-wider px-2 py-[5px] rounded-[4px] leading-none`}>
-                                                                    {chip.label}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                {hero.released && (
+                                                    <HeroCountdown releaseDate={hero.released} />
+                                                )}
+                                                {featuredChips.length > 0 && (
+                                                    <div className="flex gap-1.5 mb-5">
+                                                        {featuredChips.map(chip => (
+                                                            <span key={chip.label} className={`${chip.cls} text-white text-[9px] font-bold tracking-wider px-2 py-[5px] rounded-[4px] leading-none`}>
+                                                                {chip.label}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
                                                 <div className="flex items-center gap-3">
                                                     <Link
                                                         href={`/calendar/${hero.slug}`}
