@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { LucideIcon, Star, RefreshCw, Globe, Gamepad2 } from "lucide-react";
+import { LucideIcon, Star, RefreshCw, Globe, Gamepad2, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Article } from "@/types";
@@ -31,7 +31,7 @@ interface NewsroomHeroProps {
 
 const DEFAULT_STATS = [
     { icon: RefreshCw, label: "Updated Daily" },
-    { icon: Globe,     label: "Global Gaming Coverage" },
+    { icon: Globe,     label: "Global Coverage" },
     { icon: Gamepad2,  label: "Built for Players" },
 ];
 
@@ -57,90 +57,130 @@ export default function NewsroomHero({
     const featuredHref = featuredArticle ? `/news/${featuredArticle.slug}` : '#';
 
     const publishedDate = (() => {
-        if (!featuredArticle?.published_at) return '';
+        const raw = featuredArticle?.published_at || featuredArticle?.created_at;
+        if (!raw) return '';
         try {
-            const d = new Date(featuredArticle.published_at);
+            const d = new Date(raw);
             return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         } catch { return ''; }
     })();
 
     return (
-        <div className="relative w-full overflow-hidden bg-[#05070A] border-b border-[#161B22] mb-10">
+        <div className="relative w-full overflow-hidden bg-[#030507] border-b border-[#0F1318] mb-10">
 
-            {/* Ambient glow */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute -top-[80px] -left-[80px] w-[500px] h-[400px] bg-tp-accent/[0.07] blur-[130px] rounded-full" />
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-tp-accent/50 via-tp-accent/20 to-transparent" />
+            {/* ── Background atmosphere ── */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                {/* Main orange glow — top left */}
+                <div className="absolute -top-32 -left-24 w-[700px] h-[500px] bg-tp-accent/[0.12] blur-[160px] rounded-full" />
+                {/* Secondary glow */}
+                <div className="absolute top-1/2 left-1/3 w-[300px] h-[300px] bg-tp-accent/[0.04] blur-[100px] rounded-full" />
+                {/* Subtle grid */}
+                <div
+                    className="absolute inset-0 opacity-[0.025]"
+                    style={{
+                        backgroundImage: 'linear-gradient(rgba(252,65,0,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(252,65,0,0.4) 1px, transparent 1px)',
+                        backgroundSize: '80px 80px',
+                    }}
+                />
+                {/* Top accent line */}
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-tp-accent via-tp-accent/40 to-transparent" />
             </div>
 
-            {/* Corner brackets */}
-            <div className="absolute top-3 left-3 w-5 h-5 border-l-2 border-t-2 border-tp-accent/40" />
-            <div className="absolute top-3 right-3 w-5 h-5 border-r-2 border-t-2 border-tp-accent/40" />
+            {/* ── Corner brackets ── */}
+            <div className="absolute top-4 left-4 w-6 h-6 border-l-2 border-t-2 border-tp-accent/60" />
+            <div className="absolute top-4 right-4 w-6 h-6 border-r-2 border-t-2 border-tp-accent/60" />
+            <div className="absolute bottom-0 left-4 w-5 h-5 border-l border-b border-white/5" />
+            <div className="absolute bottom-0 right-4 w-5 h-5 border-r border-b border-white/5" />
 
-            <div className="relative z-10 max-w-[1320px] mx-auto px-4 xl:px-0 pt-10 pb-0">
-                <div className="flex flex-col xl:flex-row gap-8 xl:gap-14 items-start">
+            <div className="relative z-10 max-w-[1320px] mx-auto px-4 xl:px-0 pt-12 pb-0">
+                <div className="flex flex-col xl:flex-row gap-10 xl:gap-14 items-stretch">
 
-                    {/* LEFT: Text + tabs */}
+                    {/* ══ LEFT ══ */}
                     <motion.div
-                        className="flex-1 min-w-0 flex flex-col"
-                        initial={{ opacity: 0, y: 16 }}
+                        className="flex-1 min-w-0 flex flex-col justify-between pb-0"
+                        initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                     >
-                        {/* Top label row */}
-                        <div className="flex items-center justify-between mb-5">
-                            <span className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#3F3F46]">
-                                <span className="w-1.5 h-1.5 rounded-full bg-tp-accent/50" />
-                                {sectionLabel}
-                            </span>
-                            <span className="hidden sm:flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-[#3F3F46]">
-                                LIVE FEED
-                                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                            </span>
+                        <div>
+                            {/* Top meta row */}
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="flex items-center gap-2.5">
+                                    <span className="w-2 h-2 rounded-full bg-tp-accent shadow-[0_0_8px_rgba(252,65,0,0.8)]" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[#3F3F46]">
+                                        {sectionLabel}
+                                    </span>
+                                </div>
+                                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#1A1F26] bg-[#0A0D12]">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shadow-[0_0_6px_rgba(74,222,128,0.7)]" />
+                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#4B5563]">Live Feed</span>
+                                </div>
+                            </div>
+
+                            {/* ── Headline ── */}
+                            <div className="flex items-start gap-4 mb-6">
+                                {/* Left orange accent bar */}
+                                <div className="w-[5px] shrink-0 self-stretch bg-gradient-to-b from-tp-accent to-tp-accent/20 rounded-full mt-1 mb-1" />
+
+                                <h1 className="font-display font-black leading-[0.85] tracking-[-0.02em]">
+                                    <span
+                                        className="block text-white"
+                                        style={{
+                                            fontSize: 'clamp(56px, 8.5vw, 110px)',
+                                            textShadow: '0 0 60px rgba(255,255,255,0.08)',
+                                        }}
+                                    >
+                                        {headline}
+                                    </span>
+                                    {headlineAccent && (
+                                        <span
+                                            className="block text-tp-accent"
+                                            style={{
+                                                fontSize: 'clamp(56px, 8.5vw, 110px)',
+                                                textShadow: '0 0 80px rgba(252,65,0,0.4)',
+                                            }}
+                                        >
+                                            {headlineAccent.trim()}
+                                        </span>
+                                    )}
+                                </h1>
+                            </div>
+
+                            {/* Tagline */}
+                            {tagline && (
+                                <p className="text-[17px] md:text-[20px] font-semibold text-white/90 leading-snug mb-3 pl-9">
+                                    {tagline}
+                                </p>
+                            )}
+
+                            {/* Description */}
+                            {description && (
+                                <p className="text-[13px] md:text-[14px] text-[#52525B] leading-relaxed max-w-[520px] pl-9 mb-8">
+                                    {description}
+                                </p>
+                            )}
+
+                            {/* Stats row */}
+                            {stats.length > 0 && (
+                                <div className="flex items-center gap-0 flex-wrap pl-9 mb-10">
+                                    {stats.map((stat, i) => (
+                                        <span key={i} className="flex items-center">
+                                            <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-[#3A3A3A]">
+                                                <stat.icon className="w-3 h-3 text-tp-accent/40" />
+                                                {stat.label}
+                                            </span>
+                                            {i < stats.length - 1 && (
+                                                <span className="mx-5 h-3 w-px bg-[#1A1F26]" />
+                                            )}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
-                        {/* Big headline */}
-                        <h1 className="font-display font-black leading-[0.88] tracking-tight mb-5">
-                            <span className="text-[clamp(52px,9vw,108px)] text-white">{headline}</span>
-                            {headlineAccent && (
-                                <span className="text-[clamp(52px,9vw,108px)] text-tp-accent">{headlineAccent}</span>
-                            )}
-                        </h1>
-
-                        {/* Tagline */}
-                        {tagline && (
-                            <p className="text-[16px] md:text-[19px] font-semibold text-white leading-snug mb-3">
-                                {tagline}
-                            </p>
-                        )}
-
-                        {/* Description */}
-                        {description && (
-                            <p className="text-[13px] text-[#6B7280] leading-relaxed mb-7 max-w-lg">
-                                {description}
-                            </p>
-                        )}
-
-                        {/* Stats row */}
-                        {stats.length > 0 && (
-                            <div className="flex items-center flex-wrap gap-y-2 mb-8">
-                                {stats.map((stat, i) => (
-                                    <span key={i} className="flex items-center">
-                                        <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#3F3F46]">
-                                            <stat.icon className="w-3 h-3 text-tp-accent/50" />
-                                            {stat.label}
-                                        </span>
-                                        {i < stats.length - 1 && (
-                                            <span className="mx-4 text-[#1E2430] select-none">|</span>
-                                        )}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Category tabs — bottom border underline style */}
+                        {/* ── Category tabs — bottom anchored ── */}
                         {categories && categories.length > 0 && (
-                            <div className="flex items-end gap-0 overflow-x-auto scrollbar-hide border-b border-[#161B22] -mx-4 px-4 xl:mx-0 xl:px-0">
+                            <div className="flex items-end overflow-x-auto scrollbar-hide border-b border-[#0F1318] -mx-4 px-4 xl:mx-0 xl:px-0">
                                 {categories.map((cat) => {
                                     const isSelected = selectedCategory === cat.id;
                                     const href = cat.slug === 'all'
@@ -151,14 +191,17 @@ export default function NewsroomHero({
                                             key={cat.id}
                                             href={href}
                                             className={cn(
-                                                "flex items-center gap-1.5 px-3 md:px-4 py-3 text-[10px] md:text-[11px] font-bold uppercase tracking-wider whitespace-nowrap shrink-0 border-b-2 -mb-px transition-all",
+                                                "group flex items-center gap-1.5 px-3 md:px-4 py-3.5 text-[10px] md:text-[11px] font-black uppercase tracking-[0.1em] whitespace-nowrap shrink-0 border-b-2 -mb-px transition-all duration-200",
                                                 isSelected
                                                     ? "text-white border-tp-accent"
-                                                    : "text-[#4B5563] border-transparent hover:text-[#A1A1AA] hover:border-white/20"
+                                                    : "text-[#3A3A3A] border-transparent hover:text-[#71717A] hover:border-[#2A2A2A]"
                                             )}
                                         >
-                                            <cat.icon className={cn("w-3.5 h-3.5 shrink-0", isSelected ? "text-tp-accent" : "text-[#4B5563]")} />
-                                            <span className="hidden xs:inline sm:inline">{cat.label}</span>
+                                            <cat.icon className={cn(
+                                                "w-3.5 h-3.5 shrink-0 transition-colors",
+                                                isSelected ? "text-tp-accent" : "text-[#3A3A3A] group-hover:text-[#52525B]"
+                                            )} />
+                                            <span className="hidden sm:inline">{cat.label}</span>
                                         </Link>
                                     );
                                 })}
@@ -166,69 +209,75 @@ export default function NewsroomHero({
                         )}
                     </motion.div>
 
-                    {/* RIGHT: Featured article card */}
+                    {/* ══ RIGHT — Full-bleed editorial card ══ */}
                     {featuredArticle && featuredImageUrl && (
                         <motion.div
-                            className="w-full xl:w-[400px] shrink-0 pb-0 xl:pb-0 xl:pt-2"
-                            initial={{ opacity: 0, x: 24 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.45, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                            className="w-full xl:w-[420px] shrink-0 pb-0"
+                            initial={{ opacity: 0, y: 24 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.55, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
                         >
                             <Link
                                 href={featuredHref}
-                                className="group block bg-[#0B0E14] border border-[#161B22] rounded-[16px] overflow-hidden hover:border-tp-accent/30 transition-colors"
+                                className="group relative flex flex-col w-full h-full min-h-[380px] xl:min-h-[420px] rounded-t-[20px] overflow-hidden border border-b-0 border-[#161B22] hover:border-tp-accent/30 transition-colors duration-300"
                             >
-                                {/* Image */}
-                                <div className="relative w-full aspect-[16/9] overflow-hidden">
+                                {/* Full bleed image */}
+                                <div className="absolute inset-0">
                                     <Image
                                         src={featuredImageUrl}
                                         alt={decodeHtml(featuredArticle.title)}
                                         fill
-                                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                        sizes="(max-width: 1280px) 100vw, 400px"
-                                        unoptimized={featuredImageUrl.includes('discord') || featuredImageUrl.includes('gravatar')}
+                                        className="object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-out"
+                                        sizes="(max-width: 1280px) 100vw, 420px"
+                                        priority
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B0E14]/70 via-transparent to-transparent" />
+                                    {/* Gradient overlays */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-[#030507] via-[#030507]/50 to-transparent" />
+                                    <div className="absolute inset-0 bg-gradient-to-r from-[#030507]/40 to-transparent" />
+                                    {/* Top vignette */}
+                                    <div className="absolute inset-0 bg-gradient-to-b from-[#030507]/60 via-transparent to-transparent" />
+                                </div>
 
-                                    {/* Editor's Pick badge */}
-                                    <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-[#0B0E14]/90 backdrop-blur-sm border border-[#161B22] rounded-full px-3 py-1">
+                                {/* Top badges */}
+                                <div className="relative z-10 flex items-start justify-between p-4">
+                                    <div className="flex items-center gap-1.5 bg-[#030507]/80 backdrop-blur-md border border-white/10 rounded-full px-3 py-1.5">
                                         <Star className="w-3 h-3 text-tp-accent fill-tp-accent" />
-                                        <span className="text-[10px] font-bold uppercase tracking-widest text-white">Editor's Pick</span>
+                                        <span className="text-[9px] font-black uppercase tracking-[0.18em] text-white">Editor's Pick</span>
                                     </div>
-
-                                    {/* Category badge */}
                                     {featuredArticle.category?.name && (
-                                        <div className="absolute top-3 right-3 bg-tp-accent text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded">
+                                        <div className="bg-tp-accent text-white text-[9px] font-black uppercase tracking-[0.15em] px-3 py-1.5 rounded-full shadow-lg shadow-tp-accent/30">
                                             {featuredArticle.category.name}
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Content */}
-                                <div className="p-5">
+                                {/* Bottom content — over image */}
+                                <div className="relative z-10 mt-auto p-6">
                                     {publishedDate && (
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#4B5563] mb-2">
+                                        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#4B5563] mb-2.5">
                                             {publishedDate}
                                         </p>
                                     )}
 
-                                    <h3 className="font-display font-bold text-[16px] text-white leading-tight mb-2 group-hover:text-tp-accent transition-colors line-clamp-3">
+                                    <h3 className="font-display font-black text-[18px] md:text-[20px] text-white leading-[1.15] mb-2 group-hover:text-tp-accent transition-colors duration-300 line-clamp-3">
                                         {decodeHtml(featuredArticle.title)}
                                     </h3>
 
                                     {featuredArticle.excerpt && (
-                                        <p className="text-[12px] text-[#6B7280] leading-relaxed line-clamp-2 mb-4">
+                                        <p className="text-[12px] text-[#71717A] leading-relaxed line-clamp-2 mb-5">
                                             {decodeHtml(featuredArticle.excerpt)}
                                         </p>
                                     )}
 
-                                    <span className="inline-flex items-center gap-1.5 text-tp-accent text-[11px] font-bold uppercase tracking-widest group-hover:gap-3 transition-all duration-200">
-                                        READ MORE <span>→</span>
-                                    </span>
+                                    <div className="flex items-center gap-2 text-tp-accent text-[11px] font-black uppercase tracking-[0.15em] group-hover:gap-3 transition-all duration-300">
+                                        Read More
+                                        <ArrowRight className="w-3.5 h-3.5" />
+                                    </div>
                                 </div>
                             </Link>
                         </motion.div>
                     )}
+
                 </div>
             </div>
         </div>
