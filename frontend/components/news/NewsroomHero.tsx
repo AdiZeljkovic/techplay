@@ -93,7 +93,7 @@ export default function NewsroomHero({
             <div className="absolute bottom-0 right-4 w-5 h-5 border-r border-b border-white/5" />
 
             <div className="relative z-10 max-w-[1320px] mx-auto px-4 xl:px-0 pt-12 pb-0">
-                <div className="flex flex-col xl:flex-row gap-10 xl:gap-14 items-stretch">
+                <div className="flex flex-col xl:flex-row gap-8 xl:gap-10 items-stretch">
 
                     {/* ══ LEFT ══ */}
                     <motion.div
@@ -172,10 +172,10 @@ export default function NewsroomHero({
                             )}
                         </div>
 
-                        {/* ── Category pills — max 5 per row → 2 rows ── */}
+                        {/* ── Category pills ── */}
                         {categories && categories.length > 0 && (
                             <div className="pb-10">
-                                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-w-[500px]">
+                                <div className="flex flex-wrap gap-2 max-w-[560px]">
                                     {categories.map((cat) => {
                                         const isSelected = selectedCategory === cat.id;
                                         const href = cat.slug === 'all'
@@ -193,7 +193,7 @@ export default function NewsroomHero({
                                                 )}
                                             >
                                                 <cat.icon className={cn("w-3 h-3 shrink-0", isSelected ? "text-white" : "text-tp-accent/50")} />
-                                                <span className="truncate">{cat.label}</span>
+                                                <span>{cat.label}</span>
                                             </Link>
                                         );
                                     })}
@@ -212,7 +212,7 @@ export default function NewsroomHero({
                         >
                             <Link
                                 href={featuredHref}
-                                className="group relative flex flex-col w-full h-full min-h-[380px] rounded-[20px] overflow-hidden border border-[#161B22] hover:border-tp-accent/50 hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(0,0,0,0.6)] transition-all duration-300"
+                                className="group relative flex flex-col w-full h-full min-h-[380px] rounded-[20px] overflow-hidden border border-[#161B22] hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(0,0,0,0.6)] transition-all duration-300"
                             >
                                 {/* Full bleed image */}
                                 <div className="absolute inset-0">
