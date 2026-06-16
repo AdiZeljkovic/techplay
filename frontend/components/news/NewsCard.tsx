@@ -33,8 +33,9 @@ export default memo(function NewsCard({ article, index }: NewsCardProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05, duration: 0.3 }}
-                className="group h-full bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-xl overflow-hidden hover:border-tp-accent/50 dark:hover:border-tp-accent/50 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.5)] transition-all duration-300"
+                className="group relative h-full bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-xl overflow-hidden hover:border-tp-accent/40 dark:hover:border-tp-accent/40 hover:-translate-x-1 hover:shadow-[0_8px_40px_rgba(252,65,0,0.18)] transition-all duration-300"
             >
+                <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-tp-accent scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300 z-20" />
                 {/* Image */}
                 <div className="relative h-48 w-full overflow-hidden">
                     {imageUrl ? (
