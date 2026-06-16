@@ -58,7 +58,6 @@ export default function NewsClient({ initialData }: NewsClientProps) {
                 categories={NEWS_CATEGORIES}
                 selectedCategory={selectedCategory}
                 basePath="/news"
-                categoryBase="/news/category"
                 featuredItem={articles[0] as Article}
                 featuredBasePath="/news"
             />

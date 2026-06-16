@@ -58,7 +58,6 @@ export default function ReviewsClient({ initialData }: ReviewsClientProps) {
                 categories={REVIEW_CATEGORIES}
                 selectedCategory={selectedCategory}
                 basePath="/reviews"
-                categoryBase="/reviews/category"
                 featuredItem={reviews[0] as any}
                 featuredBasePath="/reviews"
             />
