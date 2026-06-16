@@ -79,7 +79,7 @@ export default function HardwareCategoryClient({ categorySlug, initialData }: Ha
                 ) : reviews.length > 0 ? (
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                            {reviews.map((review, idx) => (
+                            {reviews.slice(1).map((review, idx) => (
                                 <ReviewCard key={review.id} review={review} index={idx} basePath="/hardware" hideRating={true} />
                             ))}
                         </div>

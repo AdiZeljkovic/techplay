@@ -68,7 +68,7 @@ export default function NewsCategoryView({ categorySlug }: NewsCategoryViewProps
                 ) : articles.length > 0 ? (
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-                            {articles.map((article, idx) => (
+                            {articles.slice(1).map((article, idx) => (
                                 <NewsCard key={article.id} article={article} index={idx} />
                             ))}
                         </div>

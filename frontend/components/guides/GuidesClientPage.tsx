@@ -151,7 +151,7 @@ export default function GuidesClientPage({ initialData }: GuidesClientPageProps)
                 ) : displayGuides.length > 0 ? (
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                            {displayGuides.map((guide: any) => (
+                            {displayGuides.slice(1).map((guide: any) => (
                                 <Link
                                     key={guide.id}
                                     href={`/guides/${guide.slug}`}
