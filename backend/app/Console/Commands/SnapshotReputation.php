@@ -30,7 +30,7 @@ class SnapshotReputation extends Command
 
         $start = Carbon::createFromFormat('Y-m-d', "{$period}-01")->startOfMonth();
         $end = (clone $start)->endOfMonth();
-        $weights = config('ranking.contribution_weights');
+        $weights = config('ranking.contribution_weights') ?: ['post' => 5, 'comment' => 2, 'thread' => 10];
 
         $this->info("Snapshotting reputation for {$period}…");
         $count = 0;

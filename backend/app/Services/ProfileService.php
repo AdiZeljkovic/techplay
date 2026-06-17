@@ -14,6 +14,18 @@ use Illuminate\Support\Facades\DB;
  */
 class ProfileService
 {
+    /** Fallbacks used when config is unavailable (e.g. stale config cache during deploy). */
+    private const DEFAULT_WEIGHTS = ['post' => 5, 'comment' => 2, 'thread' => 10];
+
+    private const DEFAULT_TIERS = [
+        ['name' => 'Bronze', 'min' => 0, 'color' => '#CD7F32'],
+        ['name' => 'Silver', 'min' => 2000, 'color' => '#C0C0C0'],
+        ['name' => 'Gold', 'min' => 5000, 'color' => '#FFD700'],
+        ['name' => 'Platinum', 'min' => 10000, 'color' => '#67E8F9'],
+        ['name' => 'Diamond', 'min' => 20000, 'color' => '#60A5FA'],
+        ['name' => 'Master', 'min' => 40000, 'color' => '#C084FC'],
+    ];
+
     /**
      * Counts per status + favorites + total. Single grouped query.
      *
@@ -162,7 +174,7 @@ class ProfileService
         [$tierName, $tierColor, $division] = $this->rankingTier($rep);
 
         // Monthly contribution (current month-to-date).
-        $weights = config('ranking.contribution_weights');
+        $weights = config('ranking.contribution_weights') ?: self::DEFAULT_WEIGHTS;
         $start = now()->startOfMonth();
         $posts = $user->posts()->where('created_at', '>=', $start)->count();
         $comments = $user->comments()->where('status', 'approved')->where('created_at', '>=', $start)->count();
@@ -194,7 +206,7 @@ class ProfileService
      */
     public function rankingTier(int $rep): array
     {
-        $tiers = config('ranking.tiers');
+        $tiers = config('ranking.tiers') ?: self::DEFAULT_TIERS;
         $current = $tiers[0];
         $nextMin = null;
 
@@ -264,6 +276,6 @@ class ProfileService
                 'percent' => $percent,
                 'completed' => $current >= $target,
             ];
-        }, config('milestones'));
+        }, config('milestones') ?: []);
     }
 }
