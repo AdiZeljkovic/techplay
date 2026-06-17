@@ -615,31 +615,57 @@ export default function CalendarClient() {
                         </>
                     ) : releases.length > 0 || tbaGames.length > 0 ? (
                         <>
-                            <div className="grid grid-cols-7 mb-px">
+                            {/* Day header row */}
+                            <div className="grid grid-cols-7 mb-1">
                                 {DAY_HEADERS.map(d => (
-                                    <div key={d} className="py-3 text-center text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-[#71717A]">
+                                    <div key={d} className="py-2.5 text-center text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-white/30">
                                         <span className="hidden sm:inline">{d}</span>
                                         <span className="sm:hidden">{d[0]}</span>
                                     </div>
                                 ))}
                             </div>
-                            <div className="grid grid-cols-7 border-l border-t border-zinc-200 dark:border-[#161B22] rounded-xl overflow-hidden">
+                            <div className="grid grid-cols-7 border-l border-t border-zinc-200 dark:border-white/[0.06] rounded-xl overflow-hidden">
                                 {calendarDays.map(day => {
                                     const dayStr = format(day, "yyyy-MM-dd");
                                     const games = releasesByDay.get(dayStr) || [];
                                     const isCurrentDay = isToday(day);
                                     const isThisMonth = isSameMonth(day, viewDate);
                                     const isPast = isBefore(day, startOfDay(new Date())) && !isCurrentDay;
+                                    const hasGames = games.length > 0;
                                     return (
                                         <div
                                             key={dayStr}
-                                            className={`border-r border-b border-zinc-200 dark:border-[#161B22] min-h-[90px] md:min-h-[120px] p-1.5 md:p-2 relative transition-colors ${!isThisMonth ? "bg-zinc-50/70 dark:bg-black/20" : "bg-white dark:bg-[#05070A]"} ${isCurrentDay ? "!bg-tp-accent/[0.04] dark:!bg-tp-accent/[0.07]" : ""} ${isPast ? "opacity-55" : ""}`}
+                                            className={[
+                                                "border-r border-b border-zinc-200 dark:border-white/[0.06]",
+                                                "min-h-[90px] md:min-h-[120px] p-1.5 md:p-2 relative transition-colors",
+                                                !isThisMonth
+                                                    ? "bg-zinc-50 dark:bg-[#07090C]"
+                                                    : hasGames
+                                                        ? "bg-white dark:bg-[#0F1318]"
+                                                        : "bg-white dark:bg-[#0B0D11]",
+                                                isCurrentDay ? "!bg-tp-accent/[0.06] dark:!bg-tp-accent/[0.10]" : "",
+                                                isPast ? "opacity-50" : "",
+                                            ].join(" ")}
                                         >
-                                            <div className="flex items-start justify-between mb-1">
-                                                <span className={`text-[11px] font-bold leading-none inline-flex items-center justify-center ${isCurrentDay ? "w-[22px] h-[22px] rounded-full bg-tp-accent text-white text-[10px]" : isThisMonth ? "text-zinc-700 dark:text-[#A1A1AA]" : "text-zinc-400 dark:text-[#3F3F46]"}`}>
+                                            {/* Left accent bar on cells with games */}
+                                            {hasGames && isThisMonth && !isCurrentDay && (
+                                                <span className="absolute left-0 top-0 bottom-0 w-[2px] bg-tp-accent/40" />
+                                            )}
+                                            {isCurrentDay && (
+                                                <span className="absolute left-0 top-0 bottom-0 w-[2px] bg-tp-accent" />
+                                            )}
+
+                                            <div className="flex items-start justify-between mb-1.5">
+                                                <span className={`text-[11px] font-bold leading-none inline-flex items-center justify-center shrink-0 ${
+                                                    isCurrentDay
+                                                        ? "w-[22px] h-[22px] rounded-full bg-tp-accent text-white text-[10px]"
+                                                        : isThisMonth
+                                                            ? "text-zinc-800 dark:text-white/70"
+                                                            : "text-zinc-400 dark:text-white/15"
+                                                }`}>
                                                     {format(day, "d")}
                                                 </span>
-                                                {games.length > 0 && (
+                                                {hasGames && (
                                                     <div className="flex gap-[3px] md:hidden pt-0.5">
                                                         {[...Array(Math.min(games.length, 3))].map((_, j) => (
                                                             <span key={j} className="w-[5px] h-[5px] rounded-full bg-tp-accent" />
@@ -647,7 +673,7 @@ export default function CalendarClient() {
                                                     </div>
                                                 )}
                                             </div>
-                                            {games.length > 0 && (
+                                            {hasGames && (
                                                 <div className="hidden md:block space-y-1">
                                                     {games.slice(0, 2).map(game => (
                                                         <Link key={game.id} href={`/calendar/${game.slug}`} className="group/game flex items-center gap-1.5 rounded-md p-1 hover:bg-tp-accent/10 transition-colors">
@@ -656,13 +682,13 @@ export default function CalendarClient() {
                                                                     <Image src={game.background_image} fill sizes="36px" quality={60} className="object-cover" alt={game.name} />
                                                                 </div>
                                                             )}
-                                                            <span className="text-[10px] font-medium text-zinc-600 dark:text-[#A1A1AA] truncate group-hover/game:text-tp-accent transition-colors leading-tight">
+                                                            <span className="text-[10px] font-semibold text-zinc-700 dark:text-white/75 truncate group-hover/game:text-tp-accent transition-colors leading-tight">
                                                                 {game.name}
                                                             </span>
                                                         </Link>
                                                     ))}
                                                     {games.length > 2 && (
-                                                        <span className="text-[9px] font-bold text-tp-accent/60 pl-1">+{games.length - 2} more</span>
+                                                        <span className="text-[9px] font-bold text-tp-accent/70 pl-1">+{games.length - 2} more</span>
                                                     )}
                                                 </div>
                                             )}
