@@ -73,41 +73,79 @@ class RawgService
 
     /**
      * Get game releases in a date range (for the release calendar).
-     * Fetches up to $maxPages pages of 40 results and merges them.
+     *
+     * Fetches page 1 first to learn the total count, then fetches remaining
+     * pages concurrently via Http::pool(). $maxPages caps how many pages to
+     * fetch (pass 1 for widget/sidebar use, a large number for full-month view).
      */
     public function getReleases(string $from, string $to, string $ordering = 'released', int $maxPages = 2): ?array
     {
+        $pageSize = 40;
+
         try {
-            $results = [];
-            $count = 0;
+            // ── Page 1: discover total count ─────────────────────────────
+            $first = $this->http(15)->get("{$this->baseUrl}/games", [
+                'key'       => $this->key(),
+                'dates'     => "{$from},{$to}",
+                'ordering'  => $ordering,
+                'page_size' => $pageSize,
+                'page'      => 1,
+            ]);
 
-            for ($page = 1; $page <= $maxPages; $page++) {
-                $response = $this->http(15)->get("{$this->baseUrl}/games", [
-                    'key' => $this->key(),
-                    'dates' => "{$from},{$to}",
-                    'ordering' => $ordering,
-                    'page_size' => 40,
-                    'page' => $page,
-                ]);
-
-                if (! $response->successful()) {
-                    break;
-                }
-
-                $json = $response->json();
-                $count = $json['count'] ?? 0;
-                $results = array_merge($results, $json['results'] ?? []);
-
-                if (empty($json['next'])) {
-                    break;
-                }
+            if (! $first->successful()) {
+                return null;
             }
+
+            $json    = $first->json();
+            $total   = $json['count'] ?? 0;
+            $results = $json['results'] ?? [];
 
             if (empty($results)) {
                 return null;
             }
 
-            return ['count' => $count, 'results' => $results];
+            // Clamp to pages actually available and the caller's cap
+            $pagesAvailable = (int) ceil($total / $pageSize);
+            $pagesNeeded    = min($pagesAvailable, $maxPages);
+
+            if ($pagesNeeded <= 1) {
+                return ['count' => $total, 'results' => $results];
+            }
+
+            // ── Pages 2-N in parallel ────────────────────────────────────
+            $baseUrl = $this->baseUrl;
+            $key     = $this->key();
+            $ssl     = $this->verifySSL;
+
+            $responses = Http::pool(function ($pool) use ($baseUrl, $key, $from, $to, $ordering, $pageSize, $pagesNeeded, $ssl) {
+                $requests = [];
+                for ($p = 2; $p <= $pagesNeeded; $p++) {
+                    $opts = ['force_ip_resolve' => 'v4'];
+                    if (! $ssl) {
+                        $opts['verify'] = false;
+                    }
+                    $requests[] = $pool->timeout(20)
+                        ->withOptions($opts)
+                        ->get("{$baseUrl}/games", [
+                            'key'       => $key,
+                            'dates'     => "{$from},{$to}",
+                            'ordering'  => $ordering,
+                            'page_size' => $pageSize,
+                            'page'      => $p,
+                        ]);
+                }
+
+                return $requests;
+            });
+
+            foreach ($responses as $response) {
+                if (! ($response instanceof \Throwable) && $response->successful()) {
+                    $results = array_merge($results, $response->json()['results'] ?? []);
+                }
+            }
+
+            return ['count' => $total, 'results' => $results];
+
         } catch (\Exception $e) {
             Log::error('RawgService getReleases: '.$e->getMessage());
 

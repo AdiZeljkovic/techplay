@@ -204,7 +204,7 @@ class GameController extends Controller
         if ($validDate($start) && $validDate($end)) {
             $from = $start;
             $to = $end;
-            $maxPages = 3; // up to 120 games for a month view
+            $maxPages = 15; // up to 600 games (pages fetched in parallel)
         } else {
             // Widget mode: upcoming releases, next 90 days
             $from = now()->toDateString();
