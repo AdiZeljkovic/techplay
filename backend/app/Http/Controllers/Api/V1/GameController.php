@@ -187,6 +187,48 @@ class GameController extends Controller
             ->header('Cache-Control', 'public, max-age=3600, stale-while-revalidate=43200');
     }
 
+    public function rawgScreenshots(string $slug, \App\Services\RawgService $rawg)
+    {
+        $data = \Illuminate\Support\Facades\Cache::remember("rawg.screenshots.{$slug}", 3600 * 24, function () use ($slug, $rawg) {
+            return $rawg->getScreenshots($slug);
+        });
+
+        if (! $data) {
+            return response()->json(['count' => 0, 'results' => []]);
+        }
+
+        return response()->json($data)
+            ->header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=86400');
+    }
+
+    public function rawgMovies(string $slug, \App\Services\RawgService $rawg)
+    {
+        $data = \Illuminate\Support\Facades\Cache::remember("rawg.movies.{$slug}", 3600 * 24, function () use ($slug, $rawg) {
+            return $rawg->getMovies($slug);
+        });
+
+        if (! $data) {
+            return response()->json(['count' => 0, 'results' => []]);
+        }
+
+        return response()->json($data)
+            ->header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=86400');
+    }
+
+    public function rawgSuggested(string $slug, \App\Services\RawgService $rawg)
+    {
+        $data = \Illuminate\Support\Facades\Cache::remember("rawg.suggested.{$slug}", 3600 * 6, function () use ($slug, $rawg) {
+            return $rawg->getSuggestedGames($slug);
+        });
+
+        if (! $data) {
+            return response()->json(['count' => 0, 'results' => []]);
+        }
+
+        return response()->json($data)
+            ->header('Cache-Control', 'public, max-age=21600, stale-while-revalidate=21600');
+    }
+
     /**
      * Game release calendar — powered by the RAWG.io API.
      *

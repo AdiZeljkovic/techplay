@@ -71,6 +71,69 @@ class RawgService
         }
     }
 
+    public function getScreenshots(string $slug): ?array
+    {
+        try {
+            $response = $this->http(15)->get("{$this->baseUrl}/games/{$slug}/screenshots", [
+                'key'       => $this->key(),
+                'page_size' => 20,
+            ]);
+
+            return $response->successful() ? $response->json() : null;
+        } catch (\Exception $e) {
+            Log::error('RawgService getScreenshots: '.$e->getMessage());
+
+            return null;
+        }
+    }
+
+    public function getMovies(string $slug): ?array
+    {
+        try {
+            $response = $this->http(15)->get("{$this->baseUrl}/games/{$slug}/movies", [
+                'key' => $this->key(),
+            ]);
+
+            return $response->successful() ? $response->json() : null;
+        } catch (\Exception $e) {
+            Log::error('RawgService getMovies: '.$e->getMessage());
+
+            return null;
+        }
+    }
+
+    public function getSuggestedGames(string $slug): ?array
+    {
+        try {
+            $response = $this->http(15)->get("{$this->baseUrl}/games/{$slug}/suggested", [
+                'key'       => $this->key(),
+                'page_size' => 12,
+            ]);
+
+            if (! $response->successful()) {
+                return null;
+            }
+
+            $json    = $response->json();
+            $results = array_map(fn ($g) => [
+                'id'               => $g['id'] ?? null,
+                'slug'             => $g['slug'] ?? '',
+                'name'             => $g['name'] ?? '',
+                'released'         => $g['released'] ?? null,
+                'background_image' => $g['background_image'] ?? null,
+                'rating'           => $g['rating'] ?? 0,
+                'genres'           => array_map(fn ($genre) => ['name' => $genre['name'] ?? ''], $g['genres'] ?? []),
+                'platforms'        => array_map(fn ($p) => ['platform' => ['name' => $p['platform']['name'] ?? '', 'slug' => $p['platform']['slug'] ?? '']], $g['platforms'] ?? []),
+            ], $json['results'] ?? []);
+
+            return ['count' => $json['count'] ?? 0, 'results' => $results];
+        } catch (\Exception $e) {
+            Log::error('RawgService getSuggestedGames: '.$e->getMessage());
+
+            return null;
+        }
+    }
+
     /**
      * Get game releases in a date range (for the release calendar).
      *
