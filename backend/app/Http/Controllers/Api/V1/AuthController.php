@@ -276,6 +276,16 @@ class AuthController extends Controller
             'playing_now' => $profileService->playingNow($user),
             'platforms_genres' => $profileService->platformsAndGenres($user),
             'gamer_dna' => $profileService->gamerDna($user),
+            // Phase 2 — reputation, ranking, recognitions, milestones
+            'reputation' => $profileService->reputation($user),
+            'recognitions' => $profileService->recognitions($user),
+            'milestones' => $profileService->milestones([
+                'forum_posts' => $stats['posts_count'],
+                'threads' => $stats['threads_count'],
+                'wishlist' => $stats['wishlist_count'],
+                'games' => $stats['games_count'],
+                'reputation' => $stats['reputation'],
+            ]),
         ]);
     }
 

@@ -1,20 +1,22 @@
 "use client";
 
-import { TrendingUp, Star, Coins, Award } from "lucide-react";
-import type { ProfileStats, ProfileUser } from "@/lib/types/profile";
+import { TrendingUp, TrendingDown, Star, Coins, Award } from "lucide-react";
+import type { ProfileStats, ProfileUser, ReputationData } from "@/lib/types/profile";
 
 interface Props {
     stats: ProfileStats;
     userData: ProfileUser;
+    reputation?: ReputationData;
 }
 
 /**
  * "Reputation & Power" glass card shown top-right in the profile header.
- * Reputation MoM delta + percentile arrive in Phase 2; bounty in Phase 3.
- * Until then those slots render neutral placeholders.
+ * Reputation MoM delta + percentile from Phase 2; bounty arrives in Phase 3.
  */
-export default function ReputationPowerCard({ stats, userData }: Props) {
-    const reputation = stats?.reputation ?? 0;
+export default function ReputationPowerCard({ stats, userData, reputation }: Props) {
+    const rep = reputation?.reputation ?? stats?.reputation ?? 0;
+    const delta = reputation?.reputation_delta_percent ?? null;
+    const percentile = reputation?.percentile ?? null;
     const loyaltyTier = userData.active_support?.tier?.name ?? "Free";
     const loyaltyColor = userData.active_support?.tier?.color ?? "#A1A1AA";
 
@@ -28,16 +30,19 @@ export default function ReputationPowerCard({ stats, userData }: Props) {
             <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <span className="block text-[9px] font-bold uppercase tracking-[0.14em] text-white/35 mb-1">Reputation</span>
-                    <div className="flex items-end gap-2">
-                        <span className="text-2xl font-black text-white tabular-nums leading-none">{reputation.toLocaleString()}</span>
-                    </div>
-                    <span className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-white/25">
-                        <TrendingUp className="w-3 h-3" /> trend soon
-                    </span>
+                    <span className="text-2xl font-black text-white tabular-nums leading-none">{rep.toLocaleString()}</span>
+                    {delta !== null ? (
+                        <span className={`mt-1 inline-flex items-center gap-1 text-[10px] font-bold ${delta >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                            {delta >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                            {delta >= 0 ? "+" : ""}{delta}% <span className="text-white/30 font-semibold">vs last month</span>
+                        </span>
+                    ) : (
+                        <span className="mt-1 block text-[10px] font-semibold text-white/25">from last month</span>
+                    )}
                 </div>
                 <div>
                     <span className="block text-[9px] font-bold uppercase tracking-[0.14em] text-white/35 mb-1">Top Percentile</span>
-                    <span className="text-2xl font-black text-white/40 tabular-nums leading-none">—</span>
+                    <span className="text-2xl font-black text-white tabular-nums leading-none">{percentile !== null ? `${percentile}%` : "—"}</span>
                     <span className="block mt-1 text-[10px] font-semibold text-white/25">of the community</span>
                 </div>
             </div>

@@ -113,6 +113,7 @@ function ProfilePageInner() {
                 loadingAction={loadingAction}
                 onSendRequest={handleSendRequest}
                 onOpenMessage={() => setIsMessageModalOpen(true)}
+                reputation={profile.reputation}
             />
 
             <ProfileStatStrip stats={stats} />
@@ -131,6 +132,9 @@ function ProfilePageInner() {
                         playingNow={profile.playing_now}
                         platformsGenres={profile.platforms_genres}
                         gamerDna={profile.gamer_dna}
+                        reputation={profile.reputation}
+                        recognitions={profile.recognitions}
+                        milestones={profile.milestones}
                     />
                 )}
 

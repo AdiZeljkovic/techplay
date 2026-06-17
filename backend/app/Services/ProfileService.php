@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\ReputationSnapshot;
 use App\Models\User;
 use App\Models\UserGame;
 use Illuminate\Support\Facades\DB;
@@ -142,5 +143,127 @@ class ProfileService
             'playstyle' => $user->playstyle_tags ?? [],
             'franchises' => $franchises,
         ];
+    }
+
+    /**
+     * Reputation & Power data: current reputation, month-over-month delta,
+     * community percentile, ranking tier/division, and monthly contribution.
+     */
+    public function reputation(User $user): array
+    {
+        $rep = (int) ($user->forum_reputation ?? 0);
+
+        // Percentile — "Top X%" of the community by reputation.
+        $total = User::count();
+        $higher = User::where('forum_reputation', '>', $rep)->count();
+        $percentile = $total > 0 ? max(1, (int) ceil((($higher + 1) / $total) * 100)) : 100;
+
+        // Community ranking tier + division.
+        [$tierName, $tierColor, $division] = $this->rankingTier($rep);
+
+        // Monthly contribution (current month-to-date).
+        $weights = config('ranking.contribution_weights');
+        $start = now()->startOfMonth();
+        $posts = $user->posts()->where('created_at', '>=', $start)->count();
+        $comments = $user->comments()->where('status', 'approved')->where('created_at', '>=', $start)->count();
+        $threads = $user->threads()->where('created_at', '>=', $start)->count();
+        $contribution = $posts * $weights['post'] + $comments * $weights['comment'] + $threads * $weights['thread'];
+
+        // Deltas vs the last completed month's snapshot.
+        $lastPeriod = now()->subMonth()->format('Y-m');
+        $snap = ReputationSnapshot::where('user_id', $user->id)->where('period', $lastPeriod)->first();
+        $repDelta = ($snap && $snap->reputation > 0) ? (int) round((($rep - $snap->reputation) / $snap->reputation) * 100) : null;
+        $contribDelta = ($snap && $snap->contribution_points > 0) ? (int) round((($contribution - $snap->contribution_points) / $snap->contribution_points) * 100) : null;
+
+        return [
+            'reputation' => $rep,
+            'reputation_delta_percent' => $repDelta,
+            'percentile' => $percentile,
+            'tier' => $tierName,
+            'tier_color' => $tierColor,
+            'division' => $division,
+            'monthly_contribution' => $contribution,
+            'monthly_contribution_delta_percent' => $contribDelta,
+        ];
+    }
+
+    /**
+     * Resolve a reputation value to a tier name, color, and Roman division (III→I).
+     *
+     * @return array{0:string,1:string,2:string}
+     */
+    public function rankingTier(int $rep): array
+    {
+        $tiers = config('ranking.tiers');
+        $current = $tiers[0];
+        $nextMin = null;
+
+        foreach ($tiers as $i => $tier) {
+            if ($rep >= $tier['min']) {
+                $current = $tier;
+                $nextMin = $tiers[$i + 1]['min'] ?? null;
+            }
+        }
+
+        $band = $nextMin !== null ? ($nextMin - $current['min']) : max(1, $current['min']);
+        $frac = $band > 0 ? ($rep - $current['min']) / $band : 1;
+        $division = ['III', 'II', 'I'][min(2, max(0, (int) floor($frac * 3)))];
+
+        return [$current['name'], $current['color'], $division];
+    }
+
+    /**
+     * Top Recognitions — derived from existing community signals.
+     */
+    public function recognitions(User $user): array
+    {
+        $helpful = DB::table('comment_likes')
+            ->join('comments', 'comments.id', '=', 'comment_likes.comment_id')
+            ->where('comments.user_id', $user->id)
+            ->where('comment_likes.type', 'up')
+            ->count();
+
+        $insightful = DB::table('thread_upvotes')
+            ->join('threads', 'threads.id', '=', 'thread_upvotes.thread_id')
+            ->where('threads.author_id', $user->id)
+            ->count();
+
+        $friendly = DB::table('friendships')
+            ->where('status', 'accepted')
+            ->where(fn ($q) => $q->where('sender_id', $user->id)->orWhere('receiver_id', $user->id))
+            ->count();
+
+        $leader = $user->threads()->count();
+
+        return [
+            ['type' => 'helpful', 'label' => 'Helpful', 'count' => $helpful],
+            ['type' => 'insightful', 'label' => 'Insightful', 'count' => $insightful],
+            ['type' => 'friendly', 'label' => 'Friendly', 'count' => $friendly],
+            ['type' => 'leader', 'label' => 'Leader', 'count' => $leader],
+        ];
+    }
+
+    /**
+     * Contribution milestones — config-defined targets vs live metric values.
+     *
+     * @param  array<string,int>  $metrics  keyed by metric name (forum_posts, threads, wishlist, games, reputation)
+     */
+    public function milestones(array $metrics): array
+    {
+        return array_map(function (array $m) use ($metrics) {
+            $current = (int) ($metrics[$m['metric']] ?? 0);
+            $target = (int) $m['target'];
+            $percent = $target > 0 ? min(100, (int) round(($current / $target) * 100)) : 0;
+
+            return [
+                'key' => $m['key'],
+                'label' => $m['label'],
+                'icon' => $m['icon'] ?? null,
+                'current' => $current,
+                'target' => $target,
+                'percent' => $percent,
+                'completed' => $current >= $target,
+            ];
+        }, config('milestones'));
     }
 }

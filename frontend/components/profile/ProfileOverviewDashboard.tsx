@@ -11,9 +11,12 @@ import EmptyState from "./dashboard/EmptyState";
 import PlayingNow from "./dashboard/PlayingNow";
 import DistributionBars from "./dashboard/DistributionBars";
 import GamerDnaPanel from "./dashboard/GamerDnaPanel";
+import CommunityRanking from "./dashboard/CommunityRanking";
+import ReputationBountyCard from "./dashboard/ReputationBountyCard";
+import ContributionMilestones from "./dashboard/ContributionMilestones";
 import ProfileActivity from "./ProfileActivity";
 import ProfileArticles from "./ProfileArticles";
-import type { ProfileUser, ProfileStats, RecentArticle, Achievement, PlayingNowGame, PlatformsGenres, GamerDna } from "@/lib/types/profile";
+import type { ProfileUser, ProfileStats, RecentArticle, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone } from "@/lib/types/profile";
 
 interface Props {
     userData: ProfileUser;
@@ -25,10 +28,13 @@ interface Props {
     playingNow?: PlayingNowGame[];
     platformsGenres?: PlatformsGenres;
     gamerDna?: GamerDna;
+    reputation?: ReputationData;
+    recognitions?: Recognition[];
+    milestones?: Milestone[];
     onOpenTab?: (tab: string) => void;
 }
 
-export default function ProfileOverviewDashboard({ userData, stats, achievements, recentArticles, isStaff, isOwnProfile, playingNow = [], platformsGenres, gamerDna }: Props) {
+export default function ProfileOverviewDashboard({ userData, stats, achievements, recentArticles, isStaff, isOwnProfile, playingNow = [], platformsGenres, gamerDna, reputation, recognitions = [], milestones = [] }: Props) {
     const recentUnlocked = (achievements || [])
         .filter((a) => a.is_unlocked)
         .sort((a, b) => new Date(b.unlocked_at || "").getTime() - new Date(a.unlocked_at || "").getTime())
@@ -124,12 +130,20 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
             <div className="space-y-6 min-w-0">
                 {/* Reputation & Bounty */}
                 <SectionCard title="Reputation & Bounty" icon={<Coins className="w-4 h-4 text-amber-400/70" />}>
-                    <EmptyState icon={<Coins className="w-6 h-6" />} title="Reputation insights coming soon" compact />
+                    {recognitions.length > 0 ? (
+                        <ReputationBountyCard recognitions={recognitions} />
+                    ) : (
+                        <EmptyState icon={<Coins className="w-6 h-6" />} title="Reputation insights coming soon" compact />
+                    )}
                 </SectionCard>
 
                 {/* Community Ranking */}
                 <SectionCard title="Community Ranking" icon={<Medal className="w-4 h-4 text-orange-400/70" />}>
-                    <EmptyState icon={<Medal className="w-6 h-6" />} title="Ranking not available yet" compact />
+                    {reputation ? (
+                        <CommunityRanking reputation={reputation} />
+                    ) : (
+                        <EmptyState icon={<Medal className="w-6 h-6" />} title="Ranking not available yet" compact />
+                    )}
                 </SectionCard>
 
                 {/* Platforms & Genres */}
@@ -156,7 +170,11 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
 
                 {/* Contribution Milestones */}
                 <SectionCard title="Contribution Milestones" icon={<Target className="w-4 h-4 text-emerald-400/70" />}>
-                    <EmptyState icon={<Target className="w-6 h-6" />} title="Milestones coming soon" compact />
+                    {milestones.length > 0 ? (
+                        <ContributionMilestones milestones={milestones} />
+                    ) : (
+                        <EmptyState icon={<Target className="w-6 h-6" />} title="Milestones coming soon" compact />
+                    )}
                 </SectionCard>
 
                 {/* Loyalty & Customization */}

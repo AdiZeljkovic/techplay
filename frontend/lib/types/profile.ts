@@ -128,6 +128,33 @@ export interface CollectionEntry {
     } | null;
 }
 
+export interface ReputationData {
+    reputation: number;
+    reputation_delta_percent: number | null;
+    percentile: number;
+    tier: string;
+    tier_color: string;
+    division: string;
+    monthly_contribution: number;
+    monthly_contribution_delta_percent: number | null;
+}
+
+export interface Recognition {
+    type: string;
+    label: string;
+    count: number;
+}
+
+export interface Milestone {
+    key: string;
+    label: string;
+    icon: string | null;
+    current: number;
+    target: number;
+    percent: number;
+    completed: boolean;
+}
+
 export interface UserProfile {
     user: ProfileUser;
     stats: ProfileStats;
@@ -138,4 +165,7 @@ export interface UserProfile {
     playing_now?: PlayingNowGame[];
     platforms_genres?: PlatformsGenres;
     gamer_dna?: GamerDna;
+    reputation?: ReputationData;
+    recognitions?: Recognition[];
+    milestones?: Milestone[];
 }

@@ -8,7 +8,7 @@ import {
     UserPlus, Clock, Mail,
 } from "lucide-react";
 import ReputationPowerCard from "./dashboard/ReputationPowerCard";
-import type { ProfileUser, ProfileStats, UserProfile } from "@/lib/types/profile";
+import type { ProfileUser, ProfileStats, UserProfile, ReputationData } from "@/lib/types/profile";
 
 interface ProfileHeaderProps {
     userData: ProfileUser;
@@ -19,6 +19,7 @@ interface ProfileHeaderProps {
     loadingAction: boolean;
     onSendRequest: () => void;
     onOpenMessage: () => void;
+    reputation?: ReputationData;
 }
 
 const roleConfig: Record<string, { color: string; bg: string; border: string; icon: any; label: string }> = {
@@ -39,6 +40,7 @@ export default function ProfileHeader({
     loadingAction,
     onSendRequest,
     onOpenMessage,
+    reputation,
 }: ProfileHeaderProps) {
     const currentXP = stats?.xp || 0;
     const level = stats?.level || 1;
@@ -168,7 +170,7 @@ export default function ProfileHeader({
                     </div>
 
                     {/* Right: Reputation & Power card */}
-                    <ReputationPowerCard stats={stats} userData={userData} />
+                    <ReputationPowerCard stats={stats} userData={userData} reputation={reputation} />
                 </div>
 
                 {/* === LEVEL / TIER PROGRESS BAR === */}
