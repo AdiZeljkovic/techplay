@@ -20,6 +20,12 @@ import ListingEmptyState from "@/components/ui/ListingEmptyState";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
+// Upscale RAWG image URL using their built-in CDN resize API
+function rawgImg(url: string | null, width = 1920): string {
+    if (!url) return "";
+    return url.replace("/media/", `/media/resize/${width}/-/`);
+}
+
 function HeroCountdown({ releaseDate }: { releaseDate: string }) {
     const [t, setT] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, past: false, today: false });
     useEffect(() => {
@@ -156,7 +162,7 @@ function GameCard({ game }: { game: GameRelease }) {
             <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-tp-accent scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300 z-20" />
             <div className="relative aspect-video overflow-hidden bg-zinc-100 dark:bg-[#1A1F26]">
                 {game.background_image ? (
-                    <Image src={game.background_image} alt={game.name} fill sizes="(max-width: 640px) 50vw, 33vw" quality={70} className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <Image src={rawgImg(game.background_image, 600)} alt={game.name} fill sizes="(max-width: 640px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center">
                         <Gamepad2 className="w-8 h-8 text-zinc-400 dark:text-white/15" />
@@ -293,7 +299,7 @@ export default function CalendarClient() {
                                 transition={{ duration: 9, ease: "linear" }}
                                 className="absolute inset-0"
                             >
-                                <Image src={hero.background_image} alt={hero.name} fill priority quality={90} sizes="100vw" className="object-cover" />
+                                <Image src={rawgImg(hero.background_image, 1920)} alt={hero.name} fill priority sizes="100vw" className="object-cover" />
                             </motion.div>
                         </motion.div>
                     )}
@@ -303,9 +309,9 @@ export default function CalendarClient() {
                     <div className="absolute inset-0 bg-gradient-to-br from-tp-accent/5 via-transparent to-transparent animate-pulse" />
                 )}
 
-                {/* Gradients */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/70 to-[#05070A]/5" />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#05070A]/95 via-[#05070A]/50 to-transparent" />
+                {/* Gradients — bottom fade keeps text readable, left fade is lighter so image shows through */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/55 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#05070A]/85 via-[#05070A]/35 to-transparent" />
 
                 {/* Top orange line */}
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-tp-accent/70 via-tp-accent/20 to-transparent" />
@@ -470,7 +476,7 @@ export default function CalendarClient() {
                                                         {/* Thumbnail */}
                                                         <div className="relative w-14 h-9 rounded-lg overflow-hidden shrink-0 bg-white/5">
                                                             {game.background_image && (
-                                                                <Image src={game.background_image} fill sizes="56px" quality={60} className="object-cover" alt={game.name} />
+                                                                <Image src={rawgImg(game.background_image, 300)} fill sizes="56px" className="object-cover" alt={game.name} />
                                                             )}
                                                         </div>
                                                         {/* Name + chips */}
@@ -545,7 +551,7 @@ export default function CalendarClient() {
                                         className="group relative aspect-[2/3] rounded-2xl overflow-hidden border border-zinc-200 dark:border-[#161B22] bg-zinc-100 dark:bg-[#0B0E14] hover:border-tp-accent/50 hover:-translate-y-1.5 hover:shadow-[0_16px_48px_rgba(252,65,0,0.2)] transition-all duration-300"
                                     >
                                         {game.background_image && (
-                                            <Image src={game.background_image} alt={game.name} fill sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 220px" quality={75} className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
+                                            <Image src={rawgImg(game.background_image, 640)} alt={game.name} fill sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 220px" className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
                                         )}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
                                         <span className="absolute top-2 left-3 font-display text-[56px] font-black leading-none text-white/[0.07] group-hover:text-tp-accent/15 transition-colors duration-300 select-none">
@@ -679,7 +685,7 @@ export default function CalendarClient() {
                                                         <Link key={game.id} href={`/calendar/${game.slug}`} className="group/game flex items-center gap-1.5 rounded-md p-1 hover:bg-tp-accent/10 transition-colors">
                                                             {game.background_image && (
                                                                 <div className="relative w-9 h-5 rounded overflow-hidden shrink-0">
-                                                                    <Image src={game.background_image} fill sizes="36px" quality={60} className="object-cover" alt={game.name} />
+                                                                    <Image src={rawgImg(game.background_image, 200)} fill sizes="36px" className="object-cover" alt={game.name} />
                                                                 </div>
                                                             )}
                                                             <span className="text-[10px] font-semibold text-zinc-700 dark:text-white/75 truncate group-hover/game:text-tp-accent transition-colors leading-tight">
