@@ -8,7 +8,6 @@ import {
     ChevronLeft, Star, Flame, Globe, Users, Shield,
     Calendar, Bell, Play, CheckCircle2, Circle, Clock3,
 } from "lucide-react";
-import { useState, useEffect } from "react";
 import GameDetailClient, { AddToCalendarButton } from "./GameDetailClient";
 
 export const revalidate = 43200; // 12h ISR
