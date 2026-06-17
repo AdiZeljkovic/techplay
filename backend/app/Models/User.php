@@ -2,19 +2,20 @@
 
 namespace App\Models;
 
+use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    /** @use HasFactory<UserFactory> */
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     public function canAccessPanel(Panel $panel): bool
     {
@@ -77,7 +78,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         // 'email' removed - needed for authenticated user's own settings page
         'email_verified_at',        // Internal
         'two_factor_secret',        // Security
-        'two_factor_recovery_codes',// Security
+        'two_factor_recovery_codes', // Security
         'paypal_subscription_id',   // Payment sensitive
         'paypal_customer_id',       // Payment sensitive
         'subscription_ends_at',     // Internal
@@ -123,6 +124,18 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     {
         return $this->belongsToMany(Achievement::class, 'user_achievements')
             ->withPivot('unlocked_at')
+            ->withTimestamps();
+    }
+
+    public function userGames()
+    {
+        return $this->hasMany(UserGame::class);
+    }
+
+    public function games()
+    {
+        return $this->belongsToMany(Game::class, 'user_games')
+            ->withPivot(['status', 'is_favorite', 'progress', 'hours_played', 'platform', 'started_at', 'completed_at'])
             ->withTimestamps();
     }
 

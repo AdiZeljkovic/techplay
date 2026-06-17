@@ -16,6 +16,7 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileTabs, { type ProfileTab, PROFILE_TABS } from "@/components/profile/ProfileTabs";
 import ProfileStatStrip from "@/components/profile/ProfileStatStrip";
 import ProfileOverviewDashboard from "@/components/profile/ProfileOverviewDashboard";
+import CollectionGrid from "@/components/profile/CollectionGrid";
 import ProfileActivity from "@/components/profile/ProfileActivity";
 import SectionCard from "@/components/profile/dashboard/SectionCard";
 import EmptyState from "@/components/profile/dashboard/EmptyState";
@@ -127,17 +128,14 @@ function ProfilePageInner() {
                         recentArticles={profile.recent_articles}
                         isStaff={isStaffUser}
                         isOwnProfile={isOwnProfile}
+                        playingNow={profile.playing_now}
+                        platformsGenres={profile.platforms_genres}
+                        gamerDna={profile.gamer_dna}
                     />
                 )}
 
                 {activeTab === "collection" && (
-                    <SectionCard title="Game Collection" icon={<Library className="w-4 h-4 text-violet-400/70" />}>
-                        <EmptyState
-                            icon={<Library className="w-6 h-6" />}
-                            title={isOwnProfile ? "Your collection is empty" : "No games in collection"}
-                            hint={isOwnProfile ? "Coming soon — add games and track Playing, Backlog, Completed, Wishlist & Favorites." : undefined}
-                        />
-                    </SectionCard>
+                    <CollectionGrid username={userData.username} isOwnProfile={isOwnProfile} />
                 )}
 
                 {activeTab === "activity" && (

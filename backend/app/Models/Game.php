@@ -40,28 +40,28 @@ class Game extends Model
     ];
 
     protected $casts = [
-        'platforms'              => 'array',
-        'short_screenshots'      => 'array',
-        'details_data'           => 'array',
-        'screenshots_data'       => 'array',
-        'movies_data'            => 'array',
-        'series_data'            => 'array',
-        'suggested_data'         => 'array',
-        'additions_data'         => 'array',
-        'genre_names'            => PostgresArray::class,
-        'platform_names'         => PostgresArray::class,
-        'tag_names'              => PostgresArray::class,
-        'has_description'        => 'boolean',
-        'details_crawled_at'     => 'datetime',
+        'platforms' => 'array',
+        'short_screenshots' => 'array',
+        'details_data' => 'array',
+        'screenshots_data' => 'array',
+        'movies_data' => 'array',
+        'series_data' => 'array',
+        'suggested_data' => 'array',
+        'additions_data' => 'array',
+        'genre_names' => PostgresArray::class,
+        'platform_names' => PostgresArray::class,
+        'tag_names' => PostgresArray::class,
+        'has_description' => 'boolean',
+        'details_crawled_at' => 'datetime',
         'screenshots_crawled_at' => 'datetime',
-        'movies_crawled_at'      => 'datetime',
-        'series_crawled_at'      => 'datetime',
-        'suggested_crawled_at'   => 'datetime',
-        'additions_crawled_at'   => 'datetime',
-        'released'               => 'date',
-        'rating'                 => 'float',
-        'moby_id'                => 'integer',
-        'moby_group_id'          => 'integer',
+        'movies_crawled_at' => 'datetime',
+        'series_crawled_at' => 'datetime',
+        'suggested_crawled_at' => 'datetime',
+        'additions_crawled_at' => 'datetime',
+        'released' => 'date',
+        'rating' => 'float',
+        'moby_id' => 'integer',
+        'moby_group_id' => 'integer',
     ];
 
     public function getDescriptionAttribute(): ?string
@@ -81,5 +81,10 @@ class Game extends Model
     {
         return $this->belongsToMany(GameCompany::class, 'game_company', 'game_id', 'game_company_id')
             ->withPivot('role');
+    }
+
+    public function userGames()
+    {
+        return $this->hasMany(UserGame::class);
     }
 }

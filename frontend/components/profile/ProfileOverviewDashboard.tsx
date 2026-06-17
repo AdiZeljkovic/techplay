@@ -8,9 +8,12 @@ import {
 } from "lucide-react";
 import SectionCard from "./dashboard/SectionCard";
 import EmptyState from "./dashboard/EmptyState";
+import PlayingNow from "./dashboard/PlayingNow";
+import DistributionBars from "./dashboard/DistributionBars";
+import GamerDnaPanel from "./dashboard/GamerDnaPanel";
 import ProfileActivity from "./ProfileActivity";
 import ProfileArticles from "./ProfileArticles";
-import type { ProfileUser, ProfileStats, RecentArticle, Achievement } from "@/lib/types/profile";
+import type { ProfileUser, ProfileStats, RecentArticle, Achievement, PlayingNowGame, PlatformsGenres, GamerDna } from "@/lib/types/profile";
 
 interface Props {
     userData: ProfileUser;
@@ -19,9 +22,13 @@ interface Props {
     recentArticles?: RecentArticle[];
     isStaff: boolean;
     isOwnProfile: boolean;
+    playingNow?: PlayingNowGame[];
+    platformsGenres?: PlatformsGenres;
+    gamerDna?: GamerDna;
+    onOpenTab?: (tab: string) => void;
 }
 
-export default function ProfileOverviewDashboard({ userData, stats, achievements, recentArticles, isStaff, isOwnProfile }: Props) {
+export default function ProfileOverviewDashboard({ userData, stats, achievements, recentArticles, isStaff, isOwnProfile, playingNow = [], platformsGenres, gamerDna }: Props) {
     const recentUnlocked = (achievements || [])
         .filter((a) => a.is_unlocked)
         .sort((a, b) => new Date(b.unlocked_at || "").getTime() - new Date(a.unlocked_at || "").getTime())
@@ -38,13 +45,17 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
             {/* === LEFT COLUMN === */}
             <div className="space-y-6 min-w-0">
                 {/* Playing Now */}
-                <SectionCard title="Playing Now" icon={<Gamepad2 className="w-4 h-4 text-emerald-400/70" />}>
-                    <EmptyState
-                        icon={<Gamepad2 className="w-6 h-6" />}
-                        title={isOwnProfile ? "You're not playing anything yet" : "Nothing being played right now"}
-                        hint={isOwnProfile ? "Mark games as \"Playing\" to track your progress here." : undefined}
-                        cta={addCta}
-                    />
+                <SectionCard title="Playing Now" icon={<Gamepad2 className="w-4 h-4 text-emerald-400/70" />} action={playingNow.length > 0 ? { label: "Collection", href: "?tab=collection" } : undefined}>
+                    {playingNow.length > 0 ? (
+                        <PlayingNow games={playingNow} />
+                    ) : (
+                        <EmptyState
+                            icon={<Gamepad2 className="w-6 h-6" />}
+                            title={isOwnProfile ? "You're not playing anything yet" : "Nothing being played right now"}
+                            hint={isOwnProfile ? "Mark games as \"Playing\" to track your progress here." : undefined}
+                            cta={addCta}
+                        />
+                    )}
                 </SectionCard>
 
                 {/* Collection Snapshot */}
@@ -105,7 +116,7 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
 
                 {/* Gamer DNA */}
                 <SectionCard title="Gamer DNA" icon={<Dna className="w-4 h-4 text-pink-400/70" />}>
-                    <EmptyState icon={<Dna className="w-6 h-6" />} title="Not enough data yet" hint="Add games to your collection to reveal your taste profile." />
+                    <GamerDnaPanel dna={gamerDna ?? { genres: [], platforms: [], playstyle: [], franchises: [] }} />
                 </SectionCard>
             </div>
 
@@ -123,7 +134,24 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
 
                 {/* Platforms & Genres */}
                 <SectionCard title="Platforms & Genres" icon={<BarChart3 className="w-4 h-4 text-blue-400/70" />}>
-                    <EmptyState icon={<BarChart3 className="w-6 h-6" />} title="No collection data yet" compact />
+                    {platformsGenres && platformsGenres.total > 0 ? (
+                        <div className="space-y-5">
+                            {platformsGenres.platforms.length > 0 && (
+                                <div>
+                                    <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 mb-3">Platforms</h4>
+                                    <DistributionBars items={platformsGenres.platforms} barClassName="bg-gradient-to-r from-blue-500 to-cyan-400" />
+                                </div>
+                            )}
+                            {platformsGenres.genres.length > 0 && (
+                                <div>
+                                    <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 mb-3">Genres</h4>
+                                    <DistributionBars items={platformsGenres.genres} />
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <EmptyState icon={<BarChart3 className="w-6 h-6" />} title="No collection data yet" compact />
+                    )}
                 </SectionCard>
 
                 {/* Contribution Milestones */}

@@ -76,6 +76,58 @@ export interface RecentArticle {
     views: number;
 }
 
+export interface PlayingNowGame {
+    slug: string;
+    name: string;
+    background_image: string | null;
+    platform_names: string[];
+    progress: number;
+    hours_played: number;
+}
+
+export interface DistributionStat {
+    name: string;
+    count: number;
+    percent: number;
+}
+
+export interface PlatformsGenres {
+    platforms: DistributionStat[];
+    genres: DistributionStat[];
+    total: number;
+}
+
+export interface GamerDna {
+    genres: DistributionStat[];
+    platforms: DistributionStat[];
+    playstyle: string[];
+    franchises: string[];
+}
+
+export type CollectionStatus = "playing" | "backlog" | "completed" | "wishlist" | "dropped";
+
+export interface CollectionEntry {
+    id: number;
+    status: CollectionStatus;
+    is_favorite: boolean;
+    progress: number;
+    hours_played: number;
+    platform: string | null;
+    started_at: string | null;
+    completed_at: string | null;
+    updated_at: string;
+    game: {
+        id: number;
+        slug: string;
+        name: string;
+        released: string | null;
+        rating: number;
+        background_image: string | null;
+        platform_names: string[];
+        genre_names: string[];
+    } | null;
+}
+
 export interface UserProfile {
     user: ProfileUser;
     stats: ProfileStats;
@@ -83,4 +135,7 @@ export interface UserProfile {
     next_rank: { name: string; min_xp: number } | null;
     recent_articles?: RecentArticle[];
     is_staff?: boolean;
+    playing_now?: PlayingNowGame[];
+    platforms_genres?: PlatformsGenres;
+    gamer_dna?: GamerDna;
 }

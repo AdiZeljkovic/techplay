@@ -3,16 +3,23 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Resources\V1\PublicUserResource;
+use App\Http\Resources\V1\UserResource;
+use App\Models\Achievement;
+use App\Models\Order;
 use App\Models\User;
+use App\Services\ProfileService;
 use App\Services\ReCaptchaService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    use \App\Traits\ApiResponse;
+    use ApiResponse;
 
     protected ReCaptchaService $recaptcha;
 
@@ -21,16 +28,16 @@ class AuthController extends Controller
         $this->recaptcha = $recaptcha;
     }
 
-    public function register(\App\Http\Requests\Auth\RegisterRequest $request)
+    public function register(RegisterRequest $request)
     {
         // Validate reCAPTCHA/Turnstile token (can be disabled via TURNSTILE_ENABLED=false)
         if (config('services.turnstile.enabled', true)) {
-            if (!$request->filled('recaptcha_token')) {
+            if (! $request->filled('recaptcha_token')) {
                 return $this->error('Cloudflare Turnstile token is missing', 422);
             }
 
             $captchaResult = $this->recaptcha->verify($request->recaptcha_token, 'register');
-            if (!$captchaResult['success']) {
+            if (! $captchaResult['success']) {
                 return $this->error($captchaResult['error'] ?? 'Security check failed. Please refresh the page.', 422);
             }
         }
@@ -52,7 +59,7 @@ class AuthController extends Controller
         try {
             $user->sendEmailVerificationNotification();
         } catch (\Exception $e) {
-            \Log::warning('Failed to send verification email: ' . $e->getMessage());
+            \Log::warning('Failed to send verification email: '.$e->getMessage());
         }
 
         // Create token to allow access to verification page
@@ -65,22 +72,21 @@ class AuthController extends Controller
         ], 'User registered successfully. Please verify your email.');
     }
 
-
     public function login(Request $request)
     {
         // Validate reCAPTCHA/Turnstile token (can be disabled via TURNSTILE_ENABLED=false)
         // Allow 'staff-bypass' token for maintenance mode staff access
         $bypassToken = $request->input('recaptcha_token') === 'staff-bypass';
 
-        if (config('services.turnstile.enabled', true) && !$bypassToken) {
-            if (!$request->filled('recaptcha_token')) {
+        if (config('services.turnstile.enabled', true) && ! $bypassToken) {
+            if (! $request->filled('recaptcha_token')) {
                 throw ValidationException::withMessages([
                     'recaptcha' => ['Security check missing. Please refresh the page.'],
                 ]);
             }
 
             $captchaResult = $this->recaptcha->verify($request->recaptcha_token, 'login');
-            if (!$captchaResult['success']) {
+            if (! $captchaResult['success']) {
                 throw ValidationException::withMessages([
                     'recaptcha' => [$captchaResult['error'] ?? 'Security check failed. Please refresh the page.'],
                 ]);
@@ -94,14 +100,14 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['Invalid credentials provided.'],
             ]);
         }
 
         // Check email verification
-        $requiresVerification = !$user->hasVerifiedEmail();
+        $requiresVerification = ! $user->hasVerifiedEmail();
 
         if ($requiresVerification) {
             return $this->success([
@@ -115,7 +121,7 @@ class AuthController extends Controller
         return $this->success([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'user' => new \App\Http\Resources\V1\UserResource($user),
+            'user' => new UserResource($user),
             'requires_verification' => false,
         ], 'Login successful');
     }
@@ -144,7 +150,7 @@ class AuthController extends Controller
         return $this->success([
             'token' => $newToken,
             'token_type' => 'Bearer',
-            'user' => new \App\Http\Resources\V1\UserResource($user),
+            'user' => new UserResource($user),
         ], 'Token refreshed successfully');
     }
 
@@ -153,7 +159,8 @@ class AuthController extends Controller
         $user = $request->user()->makeVisible('email')->load('rank')->loadCount(['posts', 'threads']);
 
         $user->next_rank = $user->nextRank();
-        return new \App\Http\Resources\V1\UserResource($user);
+
+        return new UserResource($user);
     }
 
     public function show(string $username)
@@ -164,8 +171,8 @@ class AuthController extends Controller
             ->withCount([
                 'threads',
                 'posts',
-                'comments as approved_comments_count' => fn($q) => $q->where('status', 'approved'),
-                'articles as published_articles_count' => fn($q) => $q->where('status', 'published'),
+                'comments as approved_comments_count' => fn ($q) => $q->where('status', 'approved'),
+                'articles as published_articles_count' => fn ($q) => $q->where('status', 'published'),
             ])
             ->firstOrFail();
 
@@ -209,11 +216,11 @@ class AuthController extends Controller
 
         // PERFORMANCE: Use already-loaded achievements instead of N+1 queries
         // Build a map of user's unlocked achievements with their pivot data
-        $userAchievementsMap = $user->achievements->keyBy('id')->map(fn($a) => $a->pivot->unlocked_at);
+        $userAchievementsMap = $user->achievements->keyBy('id')->map(fn ($a) => $a->pivot->unlocked_at);
         $userUnlockedIds = $userAchievementsMap->keys()->toArray();
 
         // Get all achievements and merge with user's unlocked status
-        $allAchievements = \App\Models\Achievement::all()->map(function ($achievement) use ($userAchievementsMap) {
+        $allAchievements = Achievement::all()->map(function ($achievement) use ($userAchievementsMap) {
             $isUnlocked = $userAchievementsMap->has($achievement->id);
 
             return [
@@ -229,6 +236,10 @@ class AuthController extends Controller
 
         $unlockedCount = count($userUnlockedIds);
 
+        // Game collection aggregates (Phase 1)
+        $profileService = new ProfileService;
+        $collectionCounts = $profileService->collectionCounts($user);
+
         // Calculate Stats - PERFORMANCE: Use already-loaded counts from withCount()
         $stats = [
             'threads_count' => $user->threads_count,
@@ -240,17 +251,17 @@ class AuthController extends Controller
             'level' => floor(($user->xp ?? 0) / 1000) + 1,
             'xp' => $user->xp ?? 0,
             'reviews_count' => $isStaff ? $user->published_articles_count : 0,
-            // Game collection counts — populated in Phase 1 (game collection system).
-            'games_count' => 0,
-            'playing_count' => 0,
-            'backlog_count' => 0,
-            'completed_count' => 0,
-            'wishlist_count' => 0,
-            'favorites_count' => 0,
+            // Game collection counts (Phase 1).
+            'games_count' => $collectionCounts['games_count'],
+            'playing_count' => $collectionCounts['playing_count'],
+            'backlog_count' => $collectionCounts['backlog_count'],
+            'completed_count' => $collectionCounts['completed_count'],
+            'wishlist_count' => $collectionCounts['wishlist_count'],
+            'favorites_count' => $collectionCounts['favorites_count'],
         ];
 
         return response()->json([
-            'user' => new \App\Http\Resources\V1\PublicUserResource($user),
+            'user' => new PublicUserResource($user),
             'achievements' => $allAchievements,
             'next_rank' => $user->nextRank() ? [
                 'name' => $user->nextRank()->name,
@@ -260,7 +271,11 @@ class AuthController extends Controller
             'recent_comments' => $recentComments,
             'recent_articles' => $recentArticles, // For staff profiles
             'is_staff' => $isStaff,
-            'stats' => $stats
+            'stats' => $stats,
+            // Phase 1 — game collection dashboard blocks
+            'playing_now' => $profileService->playingNow($user),
+            'platforms_genres' => $profileService->platformsAndGenres($user),
+            'gamer_dna' => $profileService->gamerDna($user),
         ]);
     }
 
@@ -294,7 +309,7 @@ class AuthController extends Controller
         // Handle Avatar Upload
         if ($request->hasFile('avatar')) {
             $path = $request->file('avatar')->store('avatars', 'public');
-            $user->avatar_url = asset('storage/' . $path);
+            $user->avatar_url = asset('storage/'.$path);
         }
 
         // Handle Cover Image Upload
@@ -349,7 +364,7 @@ class AuthController extends Controller
             'new_password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
         ]);
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             throw ValidationException::withMessages([
                 'current_password' => ['The provided password does not match your current password.'],
             ]);
@@ -384,10 +399,10 @@ class AuthController extends Controller
                 'threads_count' => $user->threads()->count(),
                 'posts_count' => $user->posts()->count(),
             ],
-            'orders' => \App\Models\Order::where('user_id', $user->id)
+            'orders' => Order::where('user_id', $user->id)
                 ->select('id', 'total', 'status', 'created_at')
                 ->get(),
-            'achievements' => $user->achievements->map(fn($a) => [
+            'achievements' => $user->achievements->map(fn ($a) => [
                 'name' => $a->name,
                 'description' => $a->description,
                 'unlocked_at' => $a->pivot->created_at ?? null,
@@ -406,7 +421,7 @@ class AuthController extends Controller
 
         // Anonymize personal data
         $user->email = "deleted_{$id}@deleted.techplay.gg";
-        $user->name = "Deleted User";
+        $user->name = 'Deleted User';
         $user->username = "deleted_user_{$id}";
         $user->display_name = null;
         $user->bio = null;
