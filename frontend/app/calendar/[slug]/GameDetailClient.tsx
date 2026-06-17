@@ -186,7 +186,7 @@ export default function GameDetailClient({ game, screenshots, movies, suggested 
             {activeTab === "screenshots" && (
                 <div>
                     {screenshots.results.length > 0 ? (
-                        <GameScreenshotsLightbox screenshots={screenshots.results} />
+                        <GameScreenshotsLightbox screenshots={screenshots.results} wrapperClassName="w-full" />
                     ) : (
                         <div className="flex items-center justify-center py-20 text-zinc-400 dark:text-white/20">
                             <Images className="w-8 h-8 mr-3" />

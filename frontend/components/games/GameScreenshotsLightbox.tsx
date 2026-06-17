@@ -13,6 +13,7 @@ interface Screenshot {
 
 interface Props {
     screenshots: Screenshot[];
+    wrapperClassName?: string;
 }
 
 function Lightbox({ images, initial, onClose }: {
@@ -57,14 +58,14 @@ function Lightbox({ images, initial, onClose }: {
     );
 }
 
-export default function GameScreenshotsLightbox({ screenshots }: Props) {
+export default function GameScreenshotsLightbox({ screenshots, wrapperClassName }: Props) {
     const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
     if (screenshots.length === 0) return null;
 
     return (
         <>
-            <div className="container mx-auto px-4 -mt-12 relative z-20 mb-10">
+            <div className={wrapperClassName ?? "container mx-auto px-4 -mt-12 relative z-20 mb-10"}>
                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                     {screenshots.map((s, i) => (
                         <button key={s.id} onClick={() => setLightboxIdx(i)}
