@@ -240,6 +240,14 @@ export interface CustomizationCatalogItem {
     affordable: boolean;
 }
 
+export interface ActivityItem {
+    category: string;
+    type: string;
+    title: string;
+    url: string | null;
+    created_at: string | null;
+}
+
 export interface UserProfile {
     user: ProfileUser;
     stats: ProfileStats;

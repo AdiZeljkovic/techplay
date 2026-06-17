@@ -16,7 +16,7 @@ import ReputationBountyCard from "./dashboard/ReputationBountyCard";
 import ContributionMilestones from "./dashboard/ContributionMilestones";
 import CustomLists from "./dashboard/CustomLists";
 import LoyaltyCustomization from "./dashboard/LoyaltyCustomization";
-import ProfileActivity from "./ProfileActivity";
+import ActivityFeed from "./ActivityFeed";
 import ProfileArticles from "./ProfileArticles";
 import type { ProfileUser, ProfileStats, RecentArticle, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview, CustomizationData } from "@/lib/types/profile";
 
@@ -86,13 +86,11 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                 </SectionCard>
 
                 {/* Recent Activity */}
-                <SectionCard title={isStaff ? "Published Articles" : "Recent Activity"} icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />}>
+                <SectionCard title={isStaff ? "Published Articles" : "Recent Activity"} icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />} action={!isStaff ? { label: "View All", href: "?tab=activity" } : undefined}>
                     {isStaff ? (
                         <ProfileArticles articles={recentArticles || []} />
-                    ) : (userData.posts && userData.posts.length > 0) ? (
-                        <ProfileActivity posts={userData.posts || []} />
                     ) : (
-                        <EmptyState icon={<ActivityIcon className="w-6 h-6" />} title="No recent activity" compact />
+                        <ActivityFeed username={userData.username} compact />
                     )}
                 </SectionCard>
 

@@ -6,10 +6,8 @@ import axios from "@/lib/axios";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { User, Library, Activity as ActivityIcon } from "lucide-react";
+import { User, Activity as ActivityIcon } from "lucide-react";
 import toast from "react-hot-toast";
-import { GamertagsCard } from "@/components/profile/GamertagsCard";
-import { SpecsCard } from "@/components/profile/SpecsCard";
 import { AchievementGrid } from "@/components/profile/AchievementGrid";
 import { SendMessageModal } from "@/components/messaging/SendMessageModal";
 import ProfileHeader from "@/components/profile/ProfileHeader";
@@ -19,9 +17,9 @@ import ProfileOverviewDashboard from "@/components/profile/ProfileOverviewDashbo
 import CollectionGrid from "@/components/profile/CollectionGrid";
 import RewardsStore from "@/components/profile/RewardsStore";
 import ListsTab from "@/components/profile/ListsTab";
-import ProfileActivity from "@/components/profile/ProfileActivity";
+import ActivityFeed from "@/components/profile/ActivityFeed";
+import StatsPanel from "@/components/profile/StatsPanel";
 import SectionCard from "@/components/profile/dashboard/SectionCard";
-import EmptyState from "@/components/profile/dashboard/EmptyState";
 import type { UserProfile } from "@/lib/types/profile";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
@@ -155,9 +153,7 @@ function ProfilePageInner() {
 
                 {activeTab === "activity" && (
                     <SectionCard title="Activity" icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />}>
-                        {userData.posts && userData.posts.length > 0
-                            ? <ProfileActivity posts={userData.posts || []} />
-                            : <EmptyState icon={<ActivityIcon className="w-6 h-6" />} title="No recent activity" />}
+                        <ActivityFeed username={userData.username} />
                     </SectionCard>
                 )}
 
@@ -172,15 +168,13 @@ function ProfilePageInner() {
                 )}
 
                 {activeTab === "stats" && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {userData.gamertags && Object.keys(userData.gamertags).length > 0 && <GamertagsCard tags={userData.gamertags} />}
-                        {userData.pc_specs && Object.keys(userData.pc_specs).length > 0 && <SpecsCard specs={userData.pc_specs} />}
-                        {(!userData.gamertags || Object.keys(userData.gamertags).length === 0) && (!userData.pc_specs || Object.keys(userData.pc_specs).length === 0) && (
-                            <SectionCard title="Stats" className="lg:col-span-2">
-                                <EmptyState icon={<Library className="w-6 h-6" />} title="Detailed stats coming soon" hint="Charts, gamer IDs and PC specs will appear here." />
-                            </SectionCard>
-                        )}
-                    </div>
+                    <StatsPanel
+                        stats={stats}
+                        platformsGenres={profile.platforms_genres}
+                        milestones={profile.milestones}
+                        gamertags={userData.gamertags}
+                        pcSpecs={userData.pc_specs}
+                    />
                 )}
             </div>
 

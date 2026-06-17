@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AboutController;
+use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\AdController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BattleNetAuthController;
@@ -286,6 +287,7 @@ Route::prefix('v1')->group(function () {
         // Public Profile
         Route::get('/users/{username}/collection', [GameCollectionController::class, 'index']);
         Route::get('/users/{username}/lists', [GameListController::class, 'index']);
+        Route::get('/users/{username}/activity', [ActivityController::class, 'index']);
         Route::get('/users/{username}', [AuthController::class, 'show']);
 
         // Redirects
