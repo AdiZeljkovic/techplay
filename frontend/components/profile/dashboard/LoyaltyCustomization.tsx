@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
@@ -29,6 +30,13 @@ interface Props {
 
 export default function LoyaltyCustomization({ data, isOwnProfile, username, xp = 0, nextXp = null, nextTierName = null, tierColor = "#CD7F32" }: Props) {
     const [open, setOpen] = useState(false);
+    const searchParams = useSearchParams();
+
+    // The header's "Customize Profile" button links to ?customize=1 — auto-open.
+    useEffect(() => {
+        if (isOwnProfile && searchParams.get("customize") === "1") setOpen(true);
+    }, [isOwnProfile, searchParams]);
+
     const xpToGo = nextXp ? Math.max(0, nextXp - xp) : 0;
     const pct = nextXp && nextXp > 0 ? Math.min(100, Math.round((xp / nextXp) * 100)) : 100;
 
