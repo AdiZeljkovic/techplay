@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\GameList;
 use App\Models\ReputationSnapshot;
 use App\Models\User;
 use App\Models\UserGame;
@@ -253,6 +254,29 @@ class ProfileService
             ['type' => 'friendly', 'label' => 'Friendly', 'count' => $friendly],
             ['type' => 'leader', 'label' => 'Leader', 'count' => $leader],
         ];
+    }
+
+    /**
+     * A user's public custom lists (preview with cover collage), for the
+     * "Custom Lists" overview section.
+     */
+    public function publicLists(User $user, int $limit = 6): array
+    {
+        return GameList::where('user_id', $user->id)
+            ->where('is_public', true)
+            ->withCount('items')
+            ->with(['items' => fn ($q) => $q->limit(4)->with('game:id,background_image')])
+            ->latest()
+            ->limit($limit)
+            ->get()
+            ->map(fn (GameList $l) => [
+                'id' => $l->id,
+                'name' => $l->name,
+                'slug' => $l->slug,
+                'items_count' => $l->items_count,
+                'covers' => $l->items->map(fn ($it) => $it->game?->background_image)->filter()->take(4)->values()->all(),
+            ])
+            ->all();
     }
 
     /**

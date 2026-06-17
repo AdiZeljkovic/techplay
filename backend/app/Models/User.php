@@ -140,6 +140,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             ->withTimestamps();
     }
 
+    public function gameLists()
+    {
+        return $this->hasMany(GameList::class);
+    }
+
     public function bountyTransactions()
     {
         return $this->hasMany(BountyTransaction::class);

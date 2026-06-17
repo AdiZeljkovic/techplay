@@ -14,9 +14,10 @@ import GamerDnaPanel from "./dashboard/GamerDnaPanel";
 import CommunityRanking from "./dashboard/CommunityRanking";
 import ReputationBountyCard from "./dashboard/ReputationBountyCard";
 import ContributionMilestones from "./dashboard/ContributionMilestones";
+import CustomLists from "./dashboard/CustomLists";
 import ProfileActivity from "./ProfileActivity";
 import ProfileArticles from "./ProfileArticles";
-import type { ProfileUser, ProfileStats, RecentArticle, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone } from "@/lib/types/profile";
+import type { ProfileUser, ProfileStats, RecentArticle, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview } from "@/lib/types/profile";
 
 interface Props {
     userData: ProfileUser;
@@ -31,10 +32,11 @@ interface Props {
     reputation?: ReputationData;
     recognitions?: Recognition[];
     milestones?: Milestone[];
+    lists?: GameListPreview[];
     onOpenTab?: (tab: string) => void;
 }
 
-export default function ProfileOverviewDashboard({ userData, stats, achievements, recentArticles, isStaff, isOwnProfile, playingNow = [], platformsGenres, gamerDna, reputation, recognitions = [], milestones = [] }: Props) {
+export default function ProfileOverviewDashboard({ userData, stats, achievements, recentArticles, isStaff, isOwnProfile, playingNow = [], platformsGenres, gamerDna, reputation, recognitions = [], milestones = [], lists = [] }: Props) {
     const recentUnlocked = (achievements || [])
         .filter((a) => a.is_unlocked)
         .sort((a, b) => new Date(b.unlocked_at || "").getTime() - new Date(a.unlocked_at || "").getTime())
@@ -112,12 +114,17 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                 </SectionCard>
 
                 {/* Custom Lists */}
-                <SectionCard title="Custom Lists" icon={<ListChecks className="w-4 h-4 text-sky-400/70" />}>
-                    <EmptyState
-                        icon={<ListChecks className="w-6 h-6" />}
-                        title={isOwnProfile ? "No lists created yet" : "No public lists"}
-                        hint={isOwnProfile ? "Curate lists like \"Best RPGs\" or \"Must-Play Co-op\"." : undefined}
-                    />
+                <SectionCard title="Custom Lists" icon={<ListChecks className="w-4 h-4 text-sky-400/70" />} action={lists.length > 0 ? { label: "View All", href: "?tab=lists" } : undefined}>
+                    {lists.length > 0 ? (
+                        <CustomLists lists={lists} />
+                    ) : (
+                        <EmptyState
+                            icon={<ListChecks className="w-6 h-6" />}
+                            title={isOwnProfile ? "No lists created yet" : "No public lists"}
+                            hint={isOwnProfile ? "Curate lists like \"Best RPGs\" or \"Must-Play Co-op\"." : undefined}
+                            cta={isOwnProfile ? <a href="?tab=lists" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[11px] font-bold uppercase tracking-wider transition-colors">Create a List</a> : undefined}
+                        />
+                    )}
                 </SectionCard>
 
                 {/* Gamer DNA */}

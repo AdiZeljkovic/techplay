@@ -176,6 +176,35 @@ export interface Milestone {
     completed: boolean;
 }
 
+export interface GameListPreview {
+    id: number;
+    name: string;
+    slug: string;
+    description?: string | null;
+    is_public?: boolean;
+    items_count: number;
+    covers: string[];
+    updated_at?: string;
+}
+
+export interface GameListItemEntry {
+    id: number;
+    position: number;
+    game: {
+        slug: string;
+        name: string;
+        released: string | null;
+        rating: number;
+        background_image: string | null;
+        platform_names: string[];
+    } | null;
+}
+
+export interface GameListDetail extends GameListPreview {
+    items: GameListItemEntry[];
+    user?: { username: string; display_name?: string; avatar_url?: string };
+}
+
 export interface UserProfile {
     user: ProfileUser;
     stats: ProfileStats;
@@ -189,4 +218,5 @@ export interface UserProfile {
     reputation?: ReputationData;
     recognitions?: Recognition[];
     milestones?: Milestone[];
+    lists?: GameListPreview[];
 }

@@ -6,7 +6,7 @@ import axios from "@/lib/axios";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { User, Library, Activity as ActivityIcon, ListChecks } from "lucide-react";
+import { User, Library, Activity as ActivityIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { GamertagsCard } from "@/components/profile/GamertagsCard";
 import { SpecsCard } from "@/components/profile/SpecsCard";
@@ -18,6 +18,7 @@ import ProfileStatStrip from "@/components/profile/ProfileStatStrip";
 import ProfileOverviewDashboard from "@/components/profile/ProfileOverviewDashboard";
 import CollectionGrid from "@/components/profile/CollectionGrid";
 import RewardsStore from "@/components/profile/RewardsStore";
+import ListsTab from "@/components/profile/ListsTab";
 import ProfileActivity from "@/components/profile/ProfileActivity";
 import SectionCard from "@/components/profile/dashboard/SectionCard";
 import EmptyState from "@/components/profile/dashboard/EmptyState";
@@ -136,6 +137,7 @@ function ProfilePageInner() {
                         reputation={profile.reputation}
                         recognitions={profile.recognitions}
                         milestones={profile.milestones}
+                        lists={profile.lists}
                     />
                 )}
 
@@ -154,13 +156,7 @@ function ProfilePageInner() {
                 {activeTab === "achievements" && <AchievementGrid achievements={achievements || []} />}
 
                 {activeTab === "lists" && (
-                    <SectionCard title="Custom Lists" icon={<ListChecks className="w-4 h-4 text-sky-400/70" />}>
-                        <EmptyState
-                            icon={<ListChecks className="w-6 h-6" />}
-                            title={isOwnProfile ? "No lists yet" : "No public lists"}
-                            hint={isOwnProfile ? "Coming soon — curate and share themed game lists." : undefined}
-                        />
-                    </SectionCard>
+                    <ListsTab username={userData.username} isOwnProfile={isOwnProfile} />
                 )}
 
                 {activeTab === "rewards" && (

@@ -287,6 +287,8 @@ class AuthController extends Controller
                 'games' => $stats['games_count'],
                 'reputation' => $stats['reputation'],
             ]),
+            // Phase 4 — public custom lists
+            'lists' => $profileService->publicLists($user),
         ]);
     }
 
