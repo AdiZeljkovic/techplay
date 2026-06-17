@@ -63,6 +63,27 @@ export interface ProfileStats {
     completed_count?: number;
     wishlist_count?: number;
     favorites_count?: number;
+    bounty_balance?: number;
+}
+
+export interface RewardItem {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+    cost: number;
+    type: string;
+    image: string | null;
+    stock: number | null;
+}
+
+export interface BountyTransaction {
+    id: number;
+    amount: number;
+    type: string;
+    reason: string | null;
+    balance_after: number;
+    created_at: string;
 }
 
 export interface RecentArticle {

@@ -6,7 +6,7 @@ import axios from "@/lib/axios";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { User, Library, Activity as ActivityIcon, ListChecks, Gift } from "lucide-react";
+import { User, Library, Activity as ActivityIcon, ListChecks } from "lucide-react";
 import toast from "react-hot-toast";
 import { GamertagsCard } from "@/components/profile/GamertagsCard";
 import { SpecsCard } from "@/components/profile/SpecsCard";
@@ -17,6 +17,7 @@ import ProfileTabs, { type ProfileTab, PROFILE_TABS } from "@/components/profile
 import ProfileStatStrip from "@/components/profile/ProfileStatStrip";
 import ProfileOverviewDashboard from "@/components/profile/ProfileOverviewDashboard";
 import CollectionGrid from "@/components/profile/CollectionGrid";
+import RewardsStore from "@/components/profile/RewardsStore";
 import ProfileActivity from "@/components/profile/ProfileActivity";
 import SectionCard from "@/components/profile/dashboard/SectionCard";
 import EmptyState from "@/components/profile/dashboard/EmptyState";
@@ -163,9 +164,7 @@ function ProfilePageInner() {
                 )}
 
                 {activeTab === "rewards" && (
-                    <SectionCard title="Rewards" icon={<Gift className="w-4 h-4 text-amber-400/70" />}>
-                        <EmptyState icon={<Gift className="w-6 h-6" />} title="Rewards store coming soon" hint="Earn Bounty through activity and redeem it for perks." />
-                    </SectionCard>
+                    <RewardsStore username={userData.username} isOwnProfile={isOwnProfile} />
                 )}
 
                 {activeTab === "stats" && (

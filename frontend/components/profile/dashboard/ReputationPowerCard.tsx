@@ -17,6 +17,7 @@ export default function ReputationPowerCard({ stats, userData, reputation }: Pro
     const rep = reputation?.reputation ?? stats?.reputation ?? 0;
     const delta = reputation?.reputation_delta_percent ?? null;
     const percentile = reputation?.percentile ?? null;
+    const bounty = stats?.bounty_balance ?? 0;
     const loyaltyTier = userData.active_support?.tier?.name ?? "Free";
     const loyaltyColor = userData.active_support?.tier?.color ?? "#A1A1AA";
 
@@ -52,7 +53,7 @@ export default function ReputationPowerCard({ stats, userData, reputation }: Pro
                     <span className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
                         <Coins className="w-3 h-3 text-amber-400/70" /> Bounty
                     </span>
-                    <span className="text-lg font-black text-white/40 tabular-nums leading-none">—</span>
+                    <span className="text-lg font-black text-amber-400 tabular-nums leading-none">{bounty.toLocaleString()}</span>
                 </div>
                 <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] px-3 py-2.5">
                     <span className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">

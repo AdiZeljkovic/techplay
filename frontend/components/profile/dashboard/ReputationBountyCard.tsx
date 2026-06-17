@@ -10,16 +10,15 @@ const RECOGNITION_META: Record<string, { icon: any; color: string }> = {
     leader: { icon: Crown, color: "#FC4100" },
 };
 
-export default function ReputationBountyCard({ recognitions }: { recognitions: Recognition[] }) {
+export default function ReputationBountyCard({ recognitions, bounty = 0 }: { recognitions: Recognition[]; bounty?: number }) {
     return (
         <div className="space-y-4">
-            {/* Bounty placeholder (Phase 3) */}
-            <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] px-4 py-3 flex items-center justify-between">
+            <div className="rounded-xl bg-amber-400/[0.06] border border-amber-400/15 px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Coins className="w-4 h-4 text-amber-400/70" />
-                    <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/45">Bounty Balance</span>
+                    <Coins className="w-4 h-4 text-amber-400" />
+                    <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/55">Bounty Balance</span>
                 </div>
-                <span className="text-lg font-black text-white/40 tabular-nums">— <span className="text-[10px] font-semibold text-white/25">soon</span></span>
+                <span className="text-lg font-black text-amber-400 tabular-nums">{bounty.toLocaleString()}</span>
             </div>
 
             <div>

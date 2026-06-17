@@ -2,14 +2,18 @@
 
 namespace App\Services;
 
+use App\Models\Rank;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
 class XpService
 {
     public const XP_COMMENT = 10;
+
     public const XP_ARTICLE_READ = 5;
+
     public const DAILY_XP_CAP = 100;
+
     public const COMMENT_COOLDOWN_SECONDS = 60;
 
     /**
@@ -41,6 +45,16 @@ class XpService
         $user->increment('xp', $actualAmount);
         Cache::increment($dailyKey, $actualAmount);
 
+        // Mirror the XP gain as Bounty currency (1:1) for the rewards store.
+        if ($actualAmount > 0) {
+            try {
+                app(BountyService::class)->award($user, $actualAmount, "Earned from {$actionType}");
+            } catch (\Throwable $e) {
+                // Never let bounty accounting block XP awarding.
+                \Log::warning('Bounty award failed: '.$e->getMessage());
+            }
+        }
+
         // Update rank if needed
         $this->checkRankUpdate($user);
     }
@@ -49,7 +63,7 @@ class XpService
     {
         // Find the highest rank the user qualifies for based on XP
         // Assuming 'min_xp' is the column name as per User model usage
-        $newRank = \App\Models\Rank::where('min_xp', '<=', $user->xp)
+        $newRank = Rank::where('min_xp', '<=', $user->xp)
             ->orderBy('min_xp', 'desc')
             ->first();
 

@@ -131,7 +131,7 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                 {/* Reputation & Bounty */}
                 <SectionCard title="Reputation & Bounty" icon={<Coins className="w-4 h-4 text-amber-400/70" />}>
                     {recognitions.length > 0 ? (
-                        <ReputationBountyCard recognitions={recognitions} />
+                        <ReputationBountyCard recognitions={recognitions} bounty={stats.bounty_balance ?? 0} />
                     ) : (
                         <EmptyState icon={<Coins className="w-6 h-6" />} title="Reputation insights coming soon" compact />
                     )}

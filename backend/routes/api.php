@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AboutController;
 use App\Http\Controllers\Api\V1\AdController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BattleNetAuthController;
+use App\Http\Controllers\Api\V1\BountyController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CommentController;
 use App\Http\Controllers\Api\V1\ContactController;
@@ -34,6 +35,7 @@ use App\Http\Controllers\Api\V1\PriveeGiveawayController;
 use App\Http\Controllers\Api\V1\RedirectController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\ReviewController;
+use App\Http\Controllers\Api\V1\RewardController;
 use App\Http\Controllers\Api\V1\SearchController;
 use App\Http\Controllers\Api\V1\SeoController;
 use App\Http\Controllers\Api\V1\SettingsController;
@@ -158,6 +160,11 @@ Route::prefix('v1')->group(function () {
         Route::put('/collection/games/{slug}', [GameCollectionController::class, 'upsert']);
         Route::delete('/collection/games/{slug}', [GameCollectionController::class, 'destroy']);
 
+        // Bounty + Rewards (Auth)
+        Route::get('/bounty', [BountyController::class, 'index']);
+        Route::get('/rewards/redemptions', [RewardController::class, 'redemptions']);
+        Route::post('/rewards/{slug}/redeem', [RewardController::class, 'redeem']);
+
         // Support Plans
         Route::post('/support/create-plan', [SupportController::class, 'createPlan']);
         Route::post('/support/pledge', [SupportController::class, 'pledge']);
@@ -252,6 +259,9 @@ Route::prefix('v1')->group(function () {
         // Page SEO (Public)
         Route::get('/page-seo', [SettingsController::class, 'pageSeo']);
         Route::get('/page-seo/{path}', [SettingsController::class, 'pageSeoByPath'])->where('path', '.*');
+
+        // Rewards store catalog (Public)
+        Route::get('/rewards', [RewardController::class, 'index']);
 
         // Public Profile
         Route::get('/users/{username}/collection', [GameCollectionController::class, 'index']);

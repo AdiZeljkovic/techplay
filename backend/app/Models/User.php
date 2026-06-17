@@ -47,6 +47,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'rank_id',          // Added for Observer updates
         // 'role' removed from $fillable for security - set explicitly in controllers
         'xp',
+        'bounty_balance',
         'gamertags',
         'pc_specs',
         'cookie_preferences',
@@ -137,6 +138,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->belongsToMany(Game::class, 'user_games')
             ->withPivot(['status', 'is_favorite', 'progress', 'hours_played', 'platform', 'started_at', 'completed_at'])
             ->withTimestamps();
+    }
+
+    public function bountyTransactions()
+    {
+        return $this->hasMany(BountyTransaction::class);
+    }
+
+    public function rewardRedemptions()
+    {
+        return $this->hasMany(RewardRedemption::class);
     }
 
     public function receivedMessages()

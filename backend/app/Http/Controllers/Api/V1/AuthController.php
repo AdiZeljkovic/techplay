@@ -258,6 +258,7 @@ class AuthController extends Controller
             'completed_count' => $collectionCounts['completed_count'],
             'wishlist_count' => $collectionCounts['wishlist_count'],
             'favorites_count' => $collectionCounts['favorites_count'],
+            'bounty_balance' => (int) ($user->bounty_balance ?? 0),
         ];
 
         return response()->json([
