@@ -100,7 +100,6 @@ function ProfilePageInner() {
 
     const { user: userData, stats, achievements } = profile;
     const isOwnProfile = currentUser?.username === userData.username;
-    const isStaffUser = ["admin", "editor", "moderator", "journalist", "super_admin"].includes(userData.role?.toLowerCase() || "");
 
     // Equipped theme overrides the accent color across the whole profile.
     const themeColor = profile.customization?.equipped?.theme?.value;
@@ -133,8 +132,6 @@ function ProfilePageInner() {
                         userData={userData}
                         stats={stats}
                         achievements={achievements || []}
-                        recentArticles={profile.recent_articles}
-                        isStaff={isStaffUser}
                         isOwnProfile={isOwnProfile}
                         playingNow={profile.playing_now}
                         platformsGenres={profile.platforms_genres}

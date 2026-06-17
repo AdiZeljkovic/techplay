@@ -17,15 +17,12 @@ import ContributionMilestones from "./dashboard/ContributionMilestones";
 import CustomLists from "./dashboard/CustomLists";
 import LoyaltyCustomization from "./dashboard/LoyaltyCustomization";
 import ActivityFeed from "./ActivityFeed";
-import ProfileArticles from "./ProfileArticles";
-import type { ProfileUser, ProfileStats, RecentArticle, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview, CustomizationData } from "@/lib/types/profile";
+import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview, CustomizationData } from "@/lib/types/profile";
 
 interface Props {
     userData: ProfileUser;
     stats: ProfileStats;
     achievements: Achievement[];
-    recentArticles?: RecentArticle[];
-    isStaff: boolean;
     isOwnProfile: boolean;
     playingNow?: PlayingNowGame[];
     platformsGenres?: PlatformsGenres;
@@ -38,7 +35,7 @@ interface Props {
     onOpenTab?: (tab: string) => void;
 }
 
-export default function ProfileOverviewDashboard({ userData, stats, achievements, recentArticles, isStaff, isOwnProfile, playingNow = [], platformsGenres, gamerDna, reputation, recognitions = [], milestones = [], lists = [], customization }: Props) {
+export default function ProfileOverviewDashboard({ userData, stats, achievements, isOwnProfile, playingNow = [], platformsGenres, gamerDna, reputation, recognitions = [], milestones = [], lists = [], customization }: Props) {
     const recentUnlocked = (achievements || [])
         .filter((a) => a.is_unlocked)
         .sort((a, b) => new Date(b.unlocked_at || "").getTime() - new Date(a.unlocked_at || "").getTime())
@@ -86,12 +83,8 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                 </SectionCard>
 
                 {/* Recent Activity */}
-                <SectionCard title={isStaff ? "Published Articles" : "Recent Activity"} icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />} action={!isStaff ? { label: "View All", href: "?tab=activity" } : undefined}>
-                    {isStaff ? (
-                        <ProfileArticles articles={recentArticles || []} />
-                    ) : (
-                        <ActivityFeed username={userData.username} compact />
-                    )}
+                <SectionCard title="Recent Activity" icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View All", href: "?tab=activity" }}>
+                    <ActivityFeed username={userData.username} compact />
                 </SectionCard>
 
                 {/* Achievement Spotlight */}
