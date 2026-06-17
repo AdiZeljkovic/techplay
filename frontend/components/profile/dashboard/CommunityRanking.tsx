@@ -1,6 +1,7 @@
 "use client";
 
 import { Medal, TrendingUp, TrendingDown } from "lucide-react";
+import HexBadge from "./HexBadge";
 import type { ReputationData } from "@/lib/types/profile";
 
 export default function CommunityRanking({ reputation }: { reputation: ReputationData }) {
@@ -9,9 +10,9 @@ export default function CommunityRanking({ reputation }: { reputation: Reputatio
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl flex flex-col items-center justify-center shrink-0 border" style={{ backgroundColor: `${tier_color}1A`, borderColor: `${tier_color}40` }}>
-                    <Medal className="w-6 h-6" style={{ color: tier_color }} />
-                </div>
+                <HexBadge size={64} color={tier_color}>
+                    <Medal className="w-7 h-7" />
+                </HexBadge>
                 <div className="min-w-0">
                     <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/40">Current Rank</div>
                     <div className="text-xl font-black text-white leading-tight">{tier} {division}</div>

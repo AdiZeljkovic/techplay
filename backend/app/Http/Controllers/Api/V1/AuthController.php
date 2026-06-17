@@ -274,6 +274,7 @@ class AuthController extends Controller
             'is_staff' => $isStaff,
             'stats' => $stats,
             // Phase 1 — game collection dashboard blocks
+            'collection_snapshot' => $profileService->collectionSnapshot($user),
             'playing_now' => $profileService->playingNow($user),
             'platforms_genres' => $profileService->platformsAndGenres($user),
             'gamer_dna' => $profileService->gamerDna($user),

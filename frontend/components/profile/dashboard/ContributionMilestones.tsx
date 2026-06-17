@@ -1,28 +1,22 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Circle } from "lucide-react";
 import type { Milestone } from "@/lib/types/profile";
 
 export default function ContributionMilestones({ milestones }: { milestones: Milestone[] }) {
     return (
-        <div className="space-y-4">
+        <div className="space-y-1">
             {milestones.map((m) => (
-                <div key={m.key}>
-                    <div className="flex items-center justify-between mb-1.5">
-                        <span className="flex items-center gap-1.5 text-[12px] font-semibold text-white/75 truncate pr-2">
-                            {m.completed && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
-                            {m.label}
-                        </span>
-                        <span className="text-[10px] font-bold tabular-nums shrink-0 text-white/40">
-                            {m.current.toLocaleString()} / {m.target.toLocaleString()}
-                        </span>
-                    </div>
-                    <div className="h-2 bg-white/[0.06] rounded-full overflow-hidden">
-                        <div
-                            className={`h-full rounded-full ${m.completed ? "bg-emerald-500" : "bg-gradient-to-r from-[var(--accent)] to-[#FF7A3D]"}`}
-                            style={{ width: `${Math.max(3, m.percent)}%` }}
-                        />
-                    </div>
+                <div key={m.key} className="flex items-center gap-2.5 py-2">
+                    {m.completed ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    ) : (
+                        <Circle className="w-4 h-4 text-white/25 shrink-0" />
+                    )}
+                    <span className="flex-1 min-w-0 text-[12.5px] text-white/70 truncate">{m.label}</span>
+                    <span className={`text-[11px] font-bold tabular-nums shrink-0 ${m.completed ? "text-emerald-400" : "text-white/45"}`}>
+                        {m.current.toLocaleString()} / {m.target.toLocaleString()}
+                    </span>
                 </div>
             ))}
         </div>

@@ -156,8 +156,17 @@ export interface ReputationData {
     tier: string;
     tier_color: string;
     division: string;
+    history?: number[];
     monthly_contribution: number;
     monthly_contribution_delta_percent: number | null;
+}
+
+export interface CollectionSnapshotTile {
+    status: string;
+    label: string;
+    color: string;
+    count: number;
+    cover: string | null;
 }
 
 export interface Recognition {
@@ -255,6 +264,7 @@ export interface UserProfile {
     next_rank: { name: string; min_xp: number } | null;
     recent_articles?: RecentArticle[];
     is_staff?: boolean;
+    collection_snapshot?: CollectionSnapshotTile[];
     playing_now?: PlayingNowGame[];
     platforms_genres?: PlatformsGenres;
     gamer_dna?: GamerDna;

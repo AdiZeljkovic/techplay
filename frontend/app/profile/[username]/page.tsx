@@ -122,7 +122,7 @@ function ProfilePageInner() {
                 customization={profile.customization}
             />
 
-            <ProfileStatStrip stats={stats} />
+            <ProfileStatStrip stats={stats} nextXp={profile.next_rank?.min_xp ?? null} />
 
             <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -133,6 +133,7 @@ function ProfilePageInner() {
                         stats={stats}
                         achievements={achievements || []}
                         isOwnProfile={isOwnProfile}
+                        collectionSnapshot={profile.collection_snapshot}
                         playingNow={profile.playing_now}
                         platformsGenres={profile.platforms_genres}
                         gamerDna={profile.gamer_dna}
@@ -141,6 +142,7 @@ function ProfilePageInner() {
                         milestones={profile.milestones}
                         lists={profile.lists}
                         customization={profile.customization}
+                        nextRank={profile.next_rank}
                     />
                 )}
 

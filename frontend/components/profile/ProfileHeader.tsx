@@ -5,9 +5,10 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import {
     Calendar, MapPin, Crown, Pen, ShieldCheck, Award, CheckCircle2,
-    UserPlus, Clock, Mail,
+    UserPlus, Clock, Mail, Shield, Hexagon,
 } from "lucide-react";
 import ReputationPowerCard from "./dashboard/ReputationPowerCard";
+import HexBadge from "./dashboard/HexBadge";
 import type { ProfileUser, ProfileStats, UserProfile, ReputationData, CustomizationData } from "@/lib/types/profile";
 
 interface ProfileHeaderProps {
@@ -187,22 +188,21 @@ export default function ProfileHeader({
                 </div>
 
                 {/* === LEVEL / TIER PROGRESS BAR === */}
-                <div className="mt-6 rounded-2xl bg-[var(--bg-card)] border border-white/[0.06] px-5 py-4 flex items-center gap-5">
-                    <div className="flex items-center gap-3 shrink-0">
-                        <div className="flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-[var(--accent)]/10 border border-[var(--accent)]/20">
-                            <span className="text-[8px] font-bold uppercase tracking-wider text-white/40 leading-none">Level</span>
-                            <span className="text-lg font-black text-[var(--accent)] leading-none mt-0.5">{level}</span>
-                        </div>
-                        {userData.rank?.name && (
-                            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/70 hidden sm:inline">{userData.rank.name}</span>
-                        )}
+                <div className="mt-6 rounded-2xl bg-[var(--bg-card)] border border-white/[0.06] px-5 py-4 flex items-center gap-4 md:gap-5">
+                    {/* Level box */}
+                    <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 shrink-0">
+                        <span className="text-[8px] font-bold uppercase tracking-wider text-white/40 leading-none">Level</span>
+                        <span className="text-xl font-black text-[var(--accent)] leading-none mt-0.5">{level}</span>
                     </div>
 
+                    {/* Current tier */}
+                    <div className="hidden sm:flex items-center gap-2 shrink-0">
+                        <HexBadge size={36} color="#CD7F32"><Hexagon className="w-4 h-4" fill="currentColor" /></HexBadge>
+                        <span className="text-[12px] font-black uppercase tracking-[0.1em] text-white">{userData.rank?.name || "Bronze"} Tier</span>
+                    </div>
+
+                    {/* Progress */}
                     <div className="flex-1 min-w-0">
-                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-white/45 mb-1.5">
-                            <span>{currentXP.toLocaleString()} / {nextRankMinXP.toLocaleString()} XP</span>
-                            <span>{Math.max(0, nextRankMinXP - currentXP).toLocaleString()} XP to <span className="text-[var(--accent)]">{nextRankName}</span></span>
-                        </div>
                         <div className="h-2.5 bg-black/40 rounded-full overflow-hidden border border-white/10">
                             <motion.div
                                 initial={{ width: 0 }}
@@ -211,6 +211,18 @@ export default function ProfileHeader({
                                 className="h-full bg-gradient-to-r from-[var(--accent)] via-[#ff6b35] to-[#FF7A3D] rounded-full shadow-[0_0_12px_rgba(252,65,0,0.5)]"
                             />
                         </div>
+                        <div className="mt-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">
+                            {currentXP.toLocaleString()} / {nextRankMinXP.toLocaleString()} XP
+                        </div>
+                    </div>
+
+                    {/* Next tier */}
+                    <div className="hidden md:flex items-center gap-2 shrink-0 text-right">
+                        <div className="flex flex-col items-end leading-tight">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">{Math.max(0, nextRankMinXP - currentXP).toLocaleString()} XP to</span>
+                            <span className="text-[12px] font-black uppercase tracking-[0.1em] text-white/80">{nextRankName}</span>
+                        </div>
+                        <Shield className="w-7 h-7 text-white/30" />
                     </div>
                 </div>
             </div>

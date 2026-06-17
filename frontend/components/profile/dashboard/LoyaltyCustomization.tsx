@@ -4,7 +4,8 @@ import { useState } from "react";
 import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { Sparkles, Award, Palette, Frame, Star, X, Lock, Check, Coins, Loader2 } from "lucide-react";
+import { Sparkles, Award, Palette, Frame, Star, X, Lock, Check, Coins, Loader2, Hexagon } from "lucide-react";
+import HexBadge from "./HexBadge";
 import type { CustomizationData, CustomizationCatalogItem } from "@/lib/types/profile";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
@@ -20,43 +21,55 @@ interface Props {
     data: CustomizationData;
     isOwnProfile: boolean;
     username: string;
+    xp?: number;
+    nextXp?: number | null;
+    nextTierName?: string | null;
+    tierColor?: string;
 }
 
-export default function LoyaltyCustomization({ data, isOwnProfile, username }: Props) {
+export default function LoyaltyCustomization({ data, isOwnProfile, username, xp = 0, nextXp = null, nextTierName = null, tierColor = "#CD7F32" }: Props) {
     const [open, setOpen] = useState(false);
+    const xpToGo = nextXp ? Math.max(0, nextXp - xp) : 0;
+    const pct = nextXp && nextXp > 0 ? Math.min(100, Math.round((xp / nextXp) * 100)) : 100;
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between rounded-xl bg-white/[0.03] border border-white/[0.06] px-4 py-3">
-                <div>
-                    <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">Loyalty Tier</div>
-                    <div className="text-base font-black text-white">{data.tier ?? "Free"}</div>
-                </div>
-                <Sparkles className="w-5 h-5 text-fuchsia-400/70" />
-            </div>
-
-            <div className="space-y-2.5">
-                {data.summary.map((s) => {
-                    const meta = TYPE_META[s.type] ?? TYPE_META.perk;
-                    const Icon = meta.icon;
-                    const pct = s.total > 0 ? Math.round((s.owned / s.total) * 100) : 0;
-                    return (
-                        <div key={s.type}>
-                            <div className="flex items-center justify-between mb-1">
-                                <span className="flex items-center gap-1.5 text-[12px] font-semibold text-white/70"><Icon className="w-3.5 h-3.5 text-white/40" /> {s.label}</span>
-                                <span className="text-[10px] font-bold text-white/40 tabular-nums">{s.owned}/{s.total}</span>
-                            </div>
+            {/* Tier + next-tier progress */}
+            <div className="flex items-center gap-3">
+                <HexBadge size={52} color={tierColor}><Hexagon className="w-5 h-5" fill="currentColor" /></HexBadge>
+                <div className="flex-1 min-w-0">
+                    <div className="text-[13px] font-black uppercase tracking-[0.1em] text-white">{data.tier ?? "Bronze"} Tier</div>
+                    {nextTierName ? (
+                        <>
+                            <div className="text-[10px] font-semibold text-white/40 mb-1.5">Next Tier: {nextTierName} · {xpToGo.toLocaleString()} XP to go</div>
                             <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                                 <div className="h-full bg-gradient-to-r from-fuchsia-500 to-[var(--accent)] rounded-full" style={{ width: `${Math.max(3, pct)}%` }} />
                             </div>
+                        </>
+                    ) : (
+                        <div className="text-[10px] font-semibold text-white/40">Max tier reached</div>
+                    )}
+                </div>
+            </div>
+
+            {/* Owned/total counts */}
+            <div className="grid grid-cols-2 gap-2.5">
+                {data.summary.map((s) => {
+                    const meta = TYPE_META[s.type] ?? TYPE_META.perk;
+                    const Icon = meta.icon;
+                    return (
+                        <div key={s.type} className="flex items-center gap-2 rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2">
+                            <Icon className="w-3.5 h-3.5 text-white/40 shrink-0" />
+                            <span className="text-[11px] font-semibold text-white/60 truncate flex-1">{s.label}</span>
+                            <span className="text-[11px] font-bold text-white tabular-nums">{s.owned}/{s.total}</span>
                         </div>
                     );
                 })}
             </div>
 
             {isOwnProfile && (
-                <button onClick={() => setOpen(true)} className="w-full py-2.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-white text-[11px] font-bold uppercase tracking-wider transition-colors">
-                    Manage Customization
+                <button onClick={() => setOpen(true)} className="w-full py-2.5 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[11px] font-bold uppercase tracking-wider transition-colors">
+                    Customize Profile
                 </button>
             )}
 

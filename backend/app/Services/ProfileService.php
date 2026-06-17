@@ -55,6 +55,37 @@ class ProfileService
     }
 
     /**
+     * Collection snapshot tiles (Backlog / Completed / Wishlist / Favorites)
+     * with a representative cover image for each bucket.
+     */
+    public function collectionSnapshot(User $user): array
+    {
+        $buckets = [
+            ['status' => 'backlog', 'label' => 'Backlog', 'color' => '#60a5fa', 'favorite' => false],
+            ['status' => 'completed', 'label' => 'Completed', 'color' => '#22c55e', 'favorite' => false],
+            ['status' => 'wishlist', 'label' => 'Wishlist', 'color' => '#f472b6', 'favorite' => false],
+            ['status' => 'favorites', 'label' => 'Favorites', 'color' => '#facc15', 'favorite' => true],
+        ];
+
+        return array_map(function ($b) use ($user) {
+            $q = UserGame::where('user_id', $user->id)
+                ->when($b['favorite'], fn ($q) => $q->where('is_favorite', true), fn ($q) => $q->where('status', $b['status']));
+
+            $count = (clone $q)->count();
+            $cover = (clone $q)->with('game:id,background_image')
+                ->orderByDesc('updated_at')->first()?->game?->background_image;
+
+            return [
+                'status' => $b['status'],
+                'label' => $b['label'],
+                'color' => $b['color'],
+                'count' => $count,
+                'cover' => $cover,
+            ];
+        }, $buckets);
+    }
+
+    /**
      * The "Playing Now" rail — in-progress games with progress %.
      */
     public function playingNow(User $user, int $limit = 6): array
@@ -190,6 +221,16 @@ class ProfileService
         $repDelta = ($snap && $snap->reputation > 0) ? (int) round((($rep - $snap->reputation) / $snap->reputation) * 100) : null;
         $contribDelta = ($snap && $snap->contribution_points > 0) ? (int) round((($contribution - $snap->contribution_points) / $snap->contribution_points) * 100) : null;
 
+        // Sparkline series — last 6 monthly snapshots + the current value.
+        $history = ReputationSnapshot::where('user_id', $user->id)
+            ->orderBy('period')
+            ->limit(6)
+            ->pluck('reputation')
+            ->map(fn ($v) => (int) $v)
+            ->push($rep)
+            ->values()
+            ->all();
+
         return [
             'reputation' => $rep,
             'reputation_delta_percent' => $repDelta,
@@ -197,6 +238,7 @@ class ProfileService
             'tier' => $tierName,
             'tier_color' => $tierColor,
             'division' => $division,
+            'history' => $history,
             'monthly_contribution' => $contribution,
             'monthly_contribution_delta_percent' => $contribDelta,
         ];

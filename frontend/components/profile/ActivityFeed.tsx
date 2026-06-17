@@ -74,21 +74,25 @@ export default function ActivityFeed({ username, compact }: Props) {
                     <span className="text-[13px]">No activity yet</span>
                 </div>
             ) : (
-                <div className="space-y-1.5">
-                    {items.map((it, i) => {
-                        const meta = TYPE_META[it.type] ?? { icon: ActivityIcon, color: "#9ca3af" };
-                        const Icon = meta.icon;
-                        const body = (
-                            <div className="flex items-center gap-3 rounded-lg bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.05] px-3.5 py-2.5 transition-colors">
-                                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${meta.color}1A` }}>
-                                    <Icon className="w-4 h-4" style={{ color: meta.color }} />
+                <div className="relative pl-5">
+                    {/* vertical timeline line */}
+                    <div className="absolute left-[5px] top-2 bottom-2 w-px bg-white/[0.08]" />
+                    <div className="space-y-0.5">
+                        {items.map((it, i) => {
+                            const meta = TYPE_META[it.type] ?? { icon: ActivityIcon, color: "#9ca3af" };
+                            const Icon = meta.icon;
+                            const body = (
+                                <div className="relative flex items-center gap-2.5 rounded-lg hover:bg-white/[0.03] px-2 py-2 transition-colors">
+                                    {/* dot on the line */}
+                                    <span className="absolute -left-[18px] top-1/2 -translate-y-1/2 w-[11px] h-[11px] rounded-full border-2 border-[var(--bg-card)]" style={{ backgroundColor: meta.color }} />
+                                    <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: meta.color }} />
+                                    <span className="flex-1 min-w-0 text-[13px] text-white/75 truncate">{it.title}</span>
+                                    {it.created_at && <span className="text-[10px] text-white/30 shrink-0">{formatDistanceToNow(new Date(it.created_at), { addSuffix: true })}</span>}
                                 </div>
-                                <span className="flex-1 min-w-0 text-[13px] text-white/75 truncate">{it.title}</span>
-                                {it.created_at && <span className="text-[10px] text-white/30 shrink-0">{formatDistanceToNow(new Date(it.created_at), { addSuffix: true })}</span>}
-                            </div>
-                        );
-                        return it.url ? <Link key={i} href={it.url} className="block">{body}</Link> : <div key={i}>{body}</div>;
-                    })}
+                            );
+                            return it.url ? <Link key={i} href={it.url} className="block">{body}</Link> : <div key={i}>{body}</div>;
+                        })}
+                    </div>
                 </div>
             )}
 

@@ -9,6 +9,7 @@ import {
 import SectionCard from "./dashboard/SectionCard";
 import EmptyState from "./dashboard/EmptyState";
 import PlayingNow from "./dashboard/PlayingNow";
+import CollectionSnapshot from "./dashboard/CollectionSnapshot";
 import DistributionBars from "./dashboard/DistributionBars";
 import GamerDnaPanel from "./dashboard/GamerDnaPanel";
 import CommunityRanking from "./dashboard/CommunityRanking";
@@ -17,13 +18,14 @@ import ContributionMilestones from "./dashboard/ContributionMilestones";
 import CustomLists from "./dashboard/CustomLists";
 import LoyaltyCustomization from "./dashboard/LoyaltyCustomization";
 import ActivityFeed from "./ActivityFeed";
-import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview, CustomizationData } from "@/lib/types/profile";
+import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview, CustomizationData, CollectionSnapshotTile } from "@/lib/types/profile";
 
 interface Props {
     userData: ProfileUser;
     stats: ProfileStats;
     achievements: Achievement[];
     isOwnProfile: boolean;
+    collectionSnapshot?: CollectionSnapshotTile[];
     playingNow?: PlayingNowGame[];
     platformsGenres?: PlatformsGenres;
     gamerDna?: GamerDna;
@@ -32,10 +34,11 @@ interface Props {
     milestones?: Milestone[];
     lists?: GameListPreview[];
     customization?: CustomizationData;
+    nextRank?: { name: string; min_xp: number } | null;
     onOpenTab?: (tab: string) => void;
 }
 
-export default function ProfileOverviewDashboard({ userData, stats, achievements, isOwnProfile, playingNow = [], platformsGenres, gamerDna, reputation, recognitions = [], milestones = [], lists = [], customization }: Props) {
+export default function ProfileOverviewDashboard({ userData, stats, achievements, isOwnProfile, collectionSnapshot = [], playingNow = [], platformsGenres, gamerDna, reputation, recognitions = [], milestones = [], lists = [], customization, nextRank }: Props) {
     const recentUnlocked = (achievements || [])
         .filter((a) => a.is_unlocked)
         .sort((a, b) => new Date(b.unlocked_at || "").getTime() - new Date(a.unlocked_at || "").getTime())
@@ -52,7 +55,7 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
             {/* === LEFT COLUMN === */}
             <div className="space-y-6 min-w-0">
                 {/* Playing Now */}
-                <SectionCard title="Playing Now" icon={<Gamepad2 className="w-4 h-4 text-emerald-400/70" />} action={playingNow.length > 0 ? { label: "Collection", href: "?tab=collection" } : undefined}>
+                <SectionCard title="Playing Now" icon={<Gamepad2 className="w-4 h-4 text-emerald-400/70" />} action={playingNow.length > 0 ? { label: `View All (${stats.playing_count ?? playingNow.length})`, href: "?tab=collection" } : undefined}>
                     {playingNow.length > 0 ? (
                         <PlayingNow games={playingNow} />
                     ) : (
@@ -66,38 +69,34 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                 </SectionCard>
 
                 {/* Collection Snapshot */}
-                <SectionCard title="Your Collection Snapshot" icon={<Library className="w-4 h-4 text-violet-400/70" />}>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        {[
-                            { label: "Backlog", value: stats.backlog_count ?? 0, color: "#60a5fa" },
-                            { label: "Completed", value: stats.completed_count ?? 0, color: "#22c55e" },
-                            { label: "Wishlist", value: stats.wishlist_count ?? 0, color: "#f472b6" },
-                            { label: "Favorites", value: stats.favorites_count ?? 0, color: "#facc15" },
-                        ].map((t) => (
-                            <div key={t.label} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 text-center">
-                                <span className="block text-2xl font-black text-white tabular-nums leading-none">{t.value}</span>
-                                <span className="block mt-1.5 text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: t.color }}>{t.label}</span>
-                            </div>
-                        ))}
-                    </div>
+                <SectionCard title="Your Collection Snapshot" icon={<Library className="w-4 h-4 text-violet-400/70" />} action={{ label: "Manage Collection", href: "?tab=collection" }}>
+                    <CollectionSnapshot tiles={collectionSnapshot.length > 0 ? collectionSnapshot : [
+                        { status: "backlog", label: "Backlog", color: "#60a5fa", count: stats.backlog_count ?? 0, cover: null },
+                        { status: "completed", label: "Completed", color: "#22c55e", count: stats.completed_count ?? 0, cover: null },
+                        { status: "wishlist", label: "Wishlist", color: "#f472b6", count: stats.wishlist_count ?? 0, cover: null },
+                        { status: "favorites", label: "Favorites", color: "#facc15", count: stats.favorites_count ?? 0, cover: null },
+                    ]} />
                 </SectionCard>
 
                 {/* Recent Activity */}
-                <SectionCard title="Recent Activity" icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View All", href: "?tab=activity" }}>
+                <SectionCard title="Recent Activity" icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View All Activity", href: "?tab=activity" }}>
                     <ActivityFeed username={userData.username} compact />
                 </SectionCard>
 
                 {/* Achievement Spotlight */}
-                <SectionCard title="Achievement Spotlight" icon={<Trophy className="w-4 h-4 text-yellow-400" />} action={{ label: "View All", href: "?tab=achievements" }}>
+                <SectionCard title="Achievement Spotlight" icon={<Trophy className="w-4 h-4 text-yellow-400" />} action={{ label: "View All Achievements", href: "?tab=achievements" }}>
                     {recentUnlocked.length > 0 ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {recentUnlocked.map((ach) => (
-                                <div key={ach.id} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 flex flex-col items-center text-center">
-                                    <div className="w-12 h-12 rounded-full bg-[var(--accent)]/10 flex items-center justify-center mb-2.5">
-                                        {ach.icon_path ? <img src={ach.icon_path} alt={ach.name} className="w-8 h-8 object-contain" /> : <Trophy className="w-6 h-6 text-[var(--accent)]" />}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                            {recentUnlocked.slice(0, 5).map((ach) => (
+                                <div key={ach.id} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 flex flex-col items-center text-center">
+                                    <div className="w-14 h-14 rounded-full p-[2px] mb-2.5" style={{ background: "conic-gradient(from 180deg, #facc15, #FC4100, #facc15)" }}>
+                                        <div className="w-full h-full rounded-full bg-[var(--bg-card)] flex items-center justify-center">
+                                            {ach.icon_path ? <img src={ach.icon_path} alt={ach.name} className="w-8 h-8 object-contain" /> : <Trophy className="w-6 h-6 text-yellow-400" />}
+                                        </div>
                                     </div>
                                     <h4 className="font-bold text-[12px] text-white line-clamp-1 mb-0.5">{ach.name}</h4>
-                                    <span className="text-[10px] font-mono font-bold text-[var(--accent)]">+{ach.points} XP</span>
+                                    {ach.description && <p className="text-[9px] text-white/40 line-clamp-1 leading-tight">{ach.description}</p>}
+                                    {ach.unlocked_at && <span className="text-[9px] text-white/25 mt-1">{format(new Date(ach.unlocked_at), "MMM d, yyyy")}</span>}
                                 </div>
                             ))}
                         </div>
@@ -107,7 +106,7 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                 </SectionCard>
 
                 {/* Custom Lists */}
-                <SectionCard title="Custom Lists" icon={<ListChecks className="w-4 h-4 text-sky-400/70" />} action={lists.length > 0 ? { label: "View All", href: "?tab=lists" } : undefined}>
+                <SectionCard title="Custom Lists" icon={<ListChecks className="w-4 h-4 text-sky-400/70" />} action={lists.length > 0 ? { label: "View All Lists", href: "?tab=lists" } : undefined}>
                     {lists.length > 0 ? (
                         <CustomLists lists={lists} />
                     ) : (
@@ -129,16 +128,16 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
             {/* === RIGHT COLUMN === */}
             <div className="space-y-6 min-w-0">
                 {/* Reputation & Bounty */}
-                <SectionCard title="Reputation & Bounty" icon={<Coins className="w-4 h-4 text-amber-400/70" />}>
+                <SectionCard title="Reputation & Bounty" icon={<Coins className="w-4 h-4 text-amber-400/70" />} action={{ label: "View Details", href: "?tab=stats" }}>
                     {recognitions.length > 0 ? (
-                        <ReputationBountyCard recognitions={recognitions} bounty={stats.bounty_balance ?? 0} />
+                        <ReputationBountyCard recognitions={recognitions} bounty={stats.bounty_balance ?? 0} reputation={reputation} />
                     ) : (
                         <EmptyState icon={<Coins className="w-6 h-6" />} title="Reputation insights coming soon" compact />
                     )}
                 </SectionCard>
 
                 {/* Community Ranking */}
-                <SectionCard title="Community Ranking" icon={<Medal className="w-4 h-4 text-orange-400/70" />}>
+                <SectionCard title="Community Ranking" icon={<Medal className="w-4 h-4 text-orange-400/70" />} action={{ label: "View Leaderboard", href: "?tab=stats" }}>
                     {reputation ? (
                         <CommunityRanking reputation={reputation} />
                     ) : (
@@ -147,7 +146,7 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                 </SectionCard>
 
                 {/* Platforms & Genres */}
-                <SectionCard title="Platforms & Genres" icon={<BarChart3 className="w-4 h-4 text-blue-400/70" />}>
+                <SectionCard title="Platforms & Genres" icon={<BarChart3 className="w-4 h-4 text-blue-400/70" />} action={{ label: "View Stats", href: "?tab=stats" }}>
                     {platformsGenres && platformsGenres.total > 0 ? (
                         <div className="space-y-5">
                             {platformsGenres.platforms.length > 0 && (
@@ -178,9 +177,17 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                 </SectionCard>
 
                 {/* Loyalty & Customization */}
-                <SectionCard title="Loyalty & Customization" icon={<Sparkles className="w-4 h-4 text-fuchsia-400/70" />}>
+                <SectionCard title="Loyalty & Customization" icon={<Sparkles className="w-4 h-4 text-fuchsia-400/70" />} action={{ label: "View Perks", href: "?tab=rewards" }}>
                     {customization ? (
-                        <LoyaltyCustomization data={customization} isOwnProfile={isOwnProfile} username={userData.username} />
+                        <LoyaltyCustomization
+                            data={customization}
+                            isOwnProfile={isOwnProfile}
+                            username={userData.username}
+                            xp={stats.xp ?? 0}
+                            nextXp={nextRank?.min_xp ?? null}
+                            nextTierName={nextRank?.name ?? null}
+                            tierColor={reputation?.tier_color}
+                        />
                     ) : (
                         <EmptyState icon={<Sparkles className="w-6 h-6" />} title="Customization unlocks coming soon" compact />
                     )}
