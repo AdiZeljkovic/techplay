@@ -39,6 +39,9 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'avatar_url',
         'cover_image',
         'bio',
+        'location',
+        'tagline',
+        'playstyle_tags',
         'forum_reputation', // Added for Observer updates
         'rank_id',          // Added for Observer updates
         // 'role' removed from $fillable for security - set explicitly in controllers
@@ -102,6 +105,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'is_banned' => 'boolean',
             'gamertags' => 'array',
             'pc_specs' => 'array',
+            'playstyle_tags' => 'array',
             'settings' => 'array',
             'cookie_preferences' => 'array',
             'subscription_ends_at' => 'datetime',

@@ -38,6 +38,10 @@ export interface ProfileUser {
     avatar_url?: string;
     cover_image?: string;
     bio?: string;
+    location?: string;
+    tagline?: string;
+    playstyle_tags?: string[];
+    forum_reputation?: number;
     rank?: UserRank;
     active_support?: ActiveSupport;
 }
@@ -52,6 +56,13 @@ export interface ProfileStats {
     achievements_count: number;
     level: number;
     reviews_count?: number;
+    // Game collection counts (Phase 1 — default 0 until populated)
+    games_count?: number;
+    playing_count?: number;
+    backlog_count?: number;
+    completed_count?: number;
+    wishlist_count?: number;
+    favorites_count?: number;
 }
 
 export interface RecentArticle {

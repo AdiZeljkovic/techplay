@@ -240,6 +240,13 @@ class AuthController extends Controller
             'level' => floor(($user->xp ?? 0) / 1000) + 1,
             'xp' => $user->xp ?? 0,
             'reviews_count' => $isStaff ? $user->published_articles_count : 0,
+            // Game collection counts — populated in Phase 1 (game collection system).
+            'games_count' => 0,
+            'playing_count' => 0,
+            'backlog_count' => 0,
+            'completed_count' => 0,
+            'wishlist_count' => 0,
+            'favorites_count' => 0,
         ];
 
         return response()->json([
@@ -264,6 +271,10 @@ class AuthController extends Controller
         $validated = $request->validate([
             'bio' => 'nullable|string|max:500',
             'display_name' => 'nullable|string|max:50', // Removed alpha_dash to allow spaces
+            'location' => 'nullable|string|max:100',
+            'tagline' => 'nullable|string|max:120',
+            'playstyle_tags' => 'nullable|array',
+            'playstyle_tags.*' => 'string|max:40',
             'gamertags' => 'nullable|array',
             'gamertags.steam' => 'nullable|string|max:255',
             'gamertags.epic' => 'nullable|string|max:255',
@@ -295,6 +306,9 @@ class AuthController extends Controller
         $user->update([
             'bio' => $validated['bio'] ?? $user->bio,
             'display_name' => $validated['display_name'] ?? $user->display_name,
+            'location' => $validated['location'] ?? $user->location,
+            'tagline' => $validated['tagline'] ?? $user->tagline,
+            'playstyle_tags' => $validated['playstyle_tags'] ?? $user->playstyle_tags,
             'gamertags' => $validated['gamertags'] ?? $user->gamertags,
             'pc_specs' => $validated['pc_specs'] ?? $user->pc_specs,
         ]);
