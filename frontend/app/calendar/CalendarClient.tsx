@@ -312,7 +312,7 @@ export default function CalendarClient() {
 
                 {/* Content */}
                 <div className="absolute inset-0 flex items-center">
-                    <div className="max-w-[1320px] mx-auto px-4 xl:px-0 w-full">
+                    <div className="max-w-[1320px] mx-auto px-8 xl:px-10 w-full">
                         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-center">
 
                             {/* ── LEFT ── */}
