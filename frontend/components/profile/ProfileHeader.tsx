@@ -8,7 +8,7 @@ import {
     UserPlus, Clock, Mail,
 } from "lucide-react";
 import ReputationPowerCard from "./dashboard/ReputationPowerCard";
-import type { ProfileUser, ProfileStats, UserProfile, ReputationData } from "@/lib/types/profile";
+import type { ProfileUser, ProfileStats, UserProfile, ReputationData, CustomizationData } from "@/lib/types/profile";
 
 interface ProfileHeaderProps {
     userData: ProfileUser;
@@ -20,6 +20,7 @@ interface ProfileHeaderProps {
     onSendRequest: () => void;
     onOpenMessage: () => void;
     reputation?: ReputationData;
+    customization?: CustomizationData;
 }
 
 const roleConfig: Record<string, { color: string; bg: string; border: string; icon: any; label: string }> = {
@@ -41,6 +42,7 @@ export default function ProfileHeader({
     onSendRequest,
     onOpenMessage,
     reputation,
+    customization,
 }: ProfileHeaderProps) {
     const currentXP = stats?.xp || 0;
     const level = stats?.level || 1;
@@ -52,6 +54,9 @@ export default function ProfileHeader({
     const nextRankName = nextRank?.name || "Next Tier";
     const config = roleConfig[userData.role?.toLowerCase()];
     const isStaffRole = !!config;
+    const frame = customization?.equipped?.frame;
+    const badge = customization?.equipped?.badge;
+    const avatarRing = frame?.value ?? "conic-gradient(from 0deg, #FC4100, #d43600, #FF7A3D, #FC4100)";
 
     return (
         <div className="relative -mt-[120px] md:-mt-[116px]">
@@ -97,7 +102,7 @@ export default function ProfileHeader({
                         <div className="relative flex-shrink-0">
                             <div
                                 className="absolute -inset-1.5 rounded-full opacity-80"
-                                style={{ background: "conic-gradient(from 0deg, #FC4100, #d43600, #FF7A3D, #FC4100)", animation: "spin-ring 6s linear infinite" }}
+                                style={{ background: avatarRing, animation: frame ? undefined : "spin-ring 6s linear infinite" }}
                             />
                             <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full bg-[var(--bg-elevated)] border-[3px] border-[var(--bg-primary)] flex items-center justify-center overflow-hidden shadow-2xl">
                                 {userData.avatar_url ? (
@@ -126,6 +131,14 @@ export default function ProfileHeader({
                                     );
                                 })()}
                                 {isStaffRole && <CheckCircle2 className="w-5 h-5 text-[var(--accent)] drop-shadow" />}
+                                {badge && (
+                                    <span
+                                        className="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border flex items-center gap-1.5 backdrop-blur-sm shadow-lg"
+                                        style={{ color: badge.value ?? "#fff", borderColor: `${badge.value ?? "#fff"}55`, backgroundColor: `${badge.value ?? "#fff"}1A` }}
+                                    >
+                                        <Award className="w-3 h-3" /> {badge.name}
+                                    </span>
+                                )}
                                 {userData.active_support && (
                                     <span
                                         className="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border flex items-center gap-1 shadow-[0_0_15px_-3px_var(--glow)]"

@@ -104,8 +104,14 @@ function ProfilePageInner() {
     const isOwnProfile = currentUser?.username === userData.username;
     const isStaffUser = ["admin", "editor", "moderator", "journalist", "super_admin"].includes(userData.role?.toLowerCase() || "");
 
+    // Equipped theme overrides the accent color across the whole profile.
+    const themeColor = profile.customization?.equipped?.theme?.value;
+    const rootStyle = themeColor
+        ? ({ ["--accent" as any]: themeColor, ["--accent-hover" as any]: themeColor } as React.CSSProperties)
+        : undefined;
+
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen" style={rootStyle}>
             <ProfileHeader
                 userData={userData}
                 stats={stats}
@@ -116,6 +122,7 @@ function ProfilePageInner() {
                 onSendRequest={handleSendRequest}
                 onOpenMessage={() => setIsMessageModalOpen(true)}
                 reputation={profile.reputation}
+                customization={profile.customization}
             />
 
             <ProfileStatStrip stats={stats} />
@@ -138,6 +145,7 @@ function ProfilePageInner() {
                         recognitions={profile.recognitions}
                         milestones={profile.milestones}
                         lists={profile.lists}
+                        customization={profile.customization}
                     />
                 )}
 

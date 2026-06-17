@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Customization;
 use App\Models\GameList;
 use App\Models\ReputationSnapshot;
 use App\Models\User;
+use App\Models\UserCustomization;
 use App\Models\UserGame;
 use Illuminate\Support\Facades\DB;
 
@@ -277,6 +279,49 @@ class ProfileService
                 'covers' => $l->items->map(fn ($it) => $it->game?->background_image)->filter()->take(4)->values()->all(),
             ])
             ->all();
+    }
+
+    /**
+     * Loyalty & Customization: equipped cosmetics (applied to the profile) +
+     * per-type owned/total summary. Public (read-only) data.
+     */
+    public function customization(User $user): array
+    {
+        $equippedRows = UserCustomization::where('user_id', $user->id)
+            ->where('is_equipped', true)
+            ->with('customization:id,name,type,value,asset')
+            ->get();
+
+        $equipped = ['theme' => null, 'frame' => null, 'badge' => null];
+        foreach ($equippedRows as $row) {
+            $c = $row->customization;
+            if ($c && array_key_exists($c->type, $equipped)) {
+                $equipped[$c->type] = ['name' => $c->name, 'value' => $c->value, 'asset' => $c->asset];
+            }
+        }
+
+        $totals = Customization::where('is_active', true)
+            ->select('type', DB::raw('count(*) as c'))->groupBy('type')->pluck('c', 'type');
+        $owned = UserCustomization::where('user_id', $user->id)
+            ->join('customizations', 'customizations.id', '=', 'user_customizations.customization_id')
+            ->select('customizations.type', DB::raw('count(*) as c'))->groupBy('customizations.type')->pluck('c', 'type');
+
+        $labels = ['theme' => 'Profile Themes', 'frame' => 'Avatar Frames', 'badge' => 'Custom Badges', 'perk' => 'Exclusive Perks'];
+        $summary = [];
+        foreach ($labels as $type => $label) {
+            $summary[] = [
+                'type' => $type,
+                'label' => $label,
+                'owned' => (int) ($owned[$type] ?? 0),
+                'total' => (int) ($totals[$type] ?? 0),
+            ];
+        }
+
+        return [
+            'equipped' => $equipped,
+            'summary' => $summary,
+            'tier' => optional(optional($user->activeSupport()->with('tier')->first())->tier)->name,
+        ];
     }
 
     /**

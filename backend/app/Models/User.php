@@ -145,6 +145,18 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(GameList::class);
     }
 
+    public function customizations()
+    {
+        return $this->belongsToMany(Customization::class, 'user_customizations')
+            ->withPivot(['is_equipped', 'acquired_via'])
+            ->withTimestamps();
+    }
+
+    public function userCustomizations()
+    {
+        return $this->hasMany(UserCustomization::class);
+    }
+
     public function bountyTransactions()
     {
         return $this->hasMany(BountyTransaction::class);

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\BountyController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CommentController;
 use App\Http\Controllers\Api\V1\ContactController;
+use App\Http\Controllers\Api\V1\CustomizationController;
 use App\Http\Controllers\Api\V1\DiscordAdminController;
 use App\Http\Controllers\Api\V1\DiscordDailyController;
 use App\Http\Controllers\Api\V1\DiscordGiftController;
@@ -165,6 +166,12 @@ Route::prefix('v1')->group(function () {
         Route::get('/bounty', [BountyController::class, 'index']);
         Route::get('/rewards/redemptions', [RewardController::class, 'redemptions']);
         Route::post('/rewards/{slug}/redeem', [RewardController::class, 'redeem']);
+
+        // Loyalty & Customization (Auth)
+        Route::get('/customizations', [CustomizationController::class, 'index']);
+        Route::post('/customizations/{id}/acquire', [CustomizationController::class, 'acquire']);
+        Route::post('/customizations/{id}/equip', [CustomizationController::class, 'equip']);
+        Route::post('/customizations/{id}/unequip', [CustomizationController::class, 'unequip']);
 
         // Custom Game Lists (Auth)
         Route::get('/game-lists/mine', [GameListController::class, 'mine']);

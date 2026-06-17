@@ -289,6 +289,8 @@ class AuthController extends Controller
             ]),
             // Phase 4 — public custom lists
             'lists' => $profileService->publicLists($user),
+            // Phase 5 — loyalty & customization
+            'customization' => $profileService->customization($user),
         ]);
     }
 

@@ -15,9 +15,10 @@ import CommunityRanking from "./dashboard/CommunityRanking";
 import ReputationBountyCard from "./dashboard/ReputationBountyCard";
 import ContributionMilestones from "./dashboard/ContributionMilestones";
 import CustomLists from "./dashboard/CustomLists";
+import LoyaltyCustomization from "./dashboard/LoyaltyCustomization";
 import ProfileActivity from "./ProfileActivity";
 import ProfileArticles from "./ProfileArticles";
-import type { ProfileUser, ProfileStats, RecentArticle, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview } from "@/lib/types/profile";
+import type { ProfileUser, ProfileStats, RecentArticle, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview, CustomizationData } from "@/lib/types/profile";
 
 interface Props {
     userData: ProfileUser;
@@ -33,10 +34,11 @@ interface Props {
     recognitions?: Recognition[];
     milestones?: Milestone[];
     lists?: GameListPreview[];
+    customization?: CustomizationData;
     onOpenTab?: (tab: string) => void;
 }
 
-export default function ProfileOverviewDashboard({ userData, stats, achievements, recentArticles, isStaff, isOwnProfile, playingNow = [], platformsGenres, gamerDna, reputation, recognitions = [], milestones = [], lists = [] }: Props) {
+export default function ProfileOverviewDashboard({ userData, stats, achievements, recentArticles, isStaff, isOwnProfile, playingNow = [], platformsGenres, gamerDna, reputation, recognitions = [], milestones = [], lists = [], customization }: Props) {
     const recentUnlocked = (achievements || [])
         .filter((a) => a.is_unlocked)
         .sort((a, b) => new Date(b.unlocked_at || "").getTime() - new Date(a.unlocked_at || "").getTime())
@@ -186,7 +188,11 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
 
                 {/* Loyalty & Customization */}
                 <SectionCard title="Loyalty & Customization" icon={<Sparkles className="w-4 h-4 text-fuchsia-400/70" />}>
-                    <EmptyState icon={<Sparkles className="w-6 h-6" />} title="Customization unlocks coming soon" compact />
+                    {customization ? (
+                        <LoyaltyCustomization data={customization} isOwnProfile={isOwnProfile} username={userData.username} />
+                    ) : (
+                        <EmptyState icon={<Sparkles className="w-6 h-6" />} title="Customization unlocks coming soon" compact />
+                    )}
                 </SectionCard>
             </div>
         </div>

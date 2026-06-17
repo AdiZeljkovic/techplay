@@ -205,6 +205,41 @@ export interface GameListDetail extends GameListPreview {
     user?: { username: string; display_name?: string; avatar_url?: string };
 }
 
+export interface EquippedCosmetic {
+    name: string;
+    value: string | null;
+    asset: string | null;
+}
+
+export interface CustomizationSummaryRow {
+    type: string;
+    label: string;
+    owned: number;
+    total: number;
+}
+
+export interface CustomizationData {
+    equipped: { theme: EquippedCosmetic | null; frame: EquippedCosmetic | null; badge: EquippedCosmetic | null };
+    summary: CustomizationSummaryRow[];
+    tier: string | null;
+}
+
+export interface CustomizationCatalogItem {
+    id: number;
+    name: string;
+    slug: string;
+    type: string;
+    description: string | null;
+    cost: number;
+    required_tier: string | null;
+    value: string | null;
+    asset: string | null;
+    owned: boolean;
+    equipped: boolean;
+    tier_locked: boolean;
+    affordable: boolean;
+}
+
 export interface UserProfile {
     user: ProfileUser;
     stats: ProfileStats;
@@ -219,4 +254,5 @@ export interface UserProfile {
     recognitions?: Recognition[];
     milestones?: Milestone[];
     lists?: GameListPreview[];
+    customization?: CustomizationData;
 }
