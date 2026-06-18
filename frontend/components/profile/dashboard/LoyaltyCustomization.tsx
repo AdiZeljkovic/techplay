@@ -5,8 +5,8 @@ import { useSearchParams } from "next/navigation";
 import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { Sparkles, Award, Palette, Frame, Star, X, Lock, Check, Coins, Loader2, Hexagon } from "lucide-react";
-import HexBadge from "./HexBadge";
+import { Sparkles, Award, Palette, Frame, Star, X, Lock, Check, Coins, Loader2, Box } from "lucide-react";
+import HexMedal from "./HexMedal";
 import type { CustomizationData, CustomizationCatalogItem } from "@/lib/types/profile";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
@@ -42,41 +42,47 @@ export default function LoyaltyCustomization({ data, isOwnProfile, username, xp 
 
     return (
         <div className="space-y-4">
-            {/* Tier + next-tier progress */}
-            <div className="flex items-center gap-3">
-                <HexBadge size={52} color={tierColor}><Hexagon className="w-5 h-5" fill="currentColor" /></HexBadge>
-                <div className="flex-1 min-w-0">
-                    <div className="text-[13px] font-black uppercase tracking-[0.1em] text-white">{data.tier ?? "Bronze"} Tier</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {/* Left: tier + next-tier progress */}
+                <div>
+                    <div className="flex items-center gap-3 mb-3">
+                        <HexMedal size={56} color={tierColor}><Box className="w-5 h-5" strokeWidth={2.2} /></HexMedal>
+                        <div className="min-w-0">
+                            <div className="text-xl font-black uppercase tracking-wide leading-none" style={{ color: tierColor }}>{data.tier ?? "Bronze"}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40 mt-1">Tier</div>
+                        </div>
+                    </div>
                     {nextTierName ? (
                         <>
-                            <div className="text-[10px] font-semibold text-white/40 mb-1.5">Next Tier: {nextTierName} · {xpToGo.toLocaleString()} XP to go</div>
+                            <div className="text-[11px] text-white/45">Next Tier: {nextTierName}</div>
+                            <div className="text-[12px] font-bold text-[var(--accent)] mb-1.5"><span className="text-white">{xpToGo.toLocaleString()} XP</span> to go</div>
                             <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                                <div className="h-full bg-gradient-to-r from-fuchsia-500 to-[var(--accent)] rounded-full" style={{ width: `${Math.max(3, pct)}%` }} />
+                                <div className="h-full bg-gradient-to-r from-[var(--accent)] to-[#FF7A3D] rounded-full" style={{ width: `${Math.max(3, pct)}%` }} />
                             </div>
                         </>
                     ) : (
-                        <div className="text-[10px] font-semibold text-white/40">Max tier reached</div>
+                        <div className="text-[11px] font-semibold text-white/40">Max tier reached</div>
                     )}
+                </div>
+
+                {/* Right: owned/total counts */}
+                <div className="space-y-2.5">
+                    {data.summary.map((s) => {
+                        const meta = TYPE_META[s.type] ?? TYPE_META.perk;
+                        const Icon = meta.icon;
+                        return (
+                            <div key={s.type} className="flex items-center gap-2">
+                                <Icon className="w-3.5 h-3.5 text-[var(--accent)] shrink-0" />
+                                <span className="text-[12px] font-medium text-white/65 truncate flex-1">{s.label}</span>
+                                <span className="text-[11px] font-bold text-white tabular-nums">{s.owned} / {s.total}</span>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* Owned/total counts */}
-            <div className="grid grid-cols-2 gap-2.5">
-                {data.summary.map((s) => {
-                    const meta = TYPE_META[s.type] ?? TYPE_META.perk;
-                    const Icon = meta.icon;
-                    return (
-                        <div key={s.type} className="flex items-center gap-2 rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2">
-                            <Icon className="w-3.5 h-3.5 text-white/40 shrink-0" />
-                            <span className="text-[11px] font-semibold text-white/60 truncate flex-1">{s.label}</span>
-                            <span className="text-[11px] font-bold text-white tabular-nums">{s.owned}/{s.total}</span>
-                        </div>
-                    );
-                })}
-            </div>
-
             {isOwnProfile && (
-                <button onClick={() => setOpen(true)} className="w-full py-2.5 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[11px] font-bold uppercase tracking-wider transition-colors">
+                <button onClick={() => setOpen(true)} className="w-full py-2.5 rounded-lg border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors">
                     Customize Profile
                 </button>
             )}

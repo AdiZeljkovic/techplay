@@ -127,7 +127,7 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                 </SectionCard>
 
                 {/* Gamer DNA */}
-                <SectionCard title="Gamer DNA" icon={<Dna className="w-4 h-4 text-pink-400/70" />}>
+                <SectionCard title="Gamer DNA" icon={<Dna className="w-4 h-4 text-pink-400/70" />} action={{ label: "Your Taste Profile" }}>
                     <GamerDnaPanel dna={gamerDna ?? { genres: [], platforms: [], playstyle: [], franchises: [] }} />
                 </SectionCard>
             </div>

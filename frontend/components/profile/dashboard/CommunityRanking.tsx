@@ -1,9 +1,8 @@
 "use client";
 
 import { Box, TrendingUp, TrendingDown } from "lucide-react";
+import HexMedal from "./HexMedal";
 import type { ReputationData } from "@/lib/types/profile";
-
-const HEX = "polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%)";
 
 export default function CommunityRanking({ reputation }: { reputation: ReputationData }) {
     const { tier, tier_color, division, percentile, monthly_contribution, monthly_contribution_delta_percent: contribDelta } = reputation;
@@ -12,13 +11,9 @@ export default function CommunityRanking({ reputation }: { reputation: Reputatio
         <div className="space-y-5">
             <div className="flex items-center gap-5">
                 {/* Layered hexagon medal */}
-                <div className="relative w-20 h-[88px] shrink-0 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
-                    <div className="absolute inset-0" style={{ clipPath: HEX, background: `linear-gradient(145deg, ${tier_color}, ${tier_color}77)` }} />
-                    <div className="absolute inset-[5px]" style={{ clipPath: HEX, background: "linear-gradient(145deg, rgba(0,0,0,0.45), rgba(0,0,0,0.8))" }} />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <Box className="w-8 h-8" style={{ color: tier_color }} strokeWidth={2.2} />
-                    </div>
-                </div>
+                <HexMedal size={84} color={tier_color}>
+                    <Box className="w-8 h-8" strokeWidth={2.2} />
+                </HexMedal>
 
                 {/* Rank + percentile */}
                 <div className="flex-1 flex items-start justify-between gap-3 min-w-0">
