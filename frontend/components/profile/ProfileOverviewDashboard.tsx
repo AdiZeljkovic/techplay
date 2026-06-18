@@ -55,7 +55,7 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
             {/* === LEFT COLUMN === */}
             <div className="space-y-6 min-w-0">
                 {/* Playing Now */}
-                <SectionCard title="Playing Now" icon={<Gamepad2 className="w-4 h-4 text-emerald-400/70" />} action={playingNow.length > 0 ? { label: `View All (${stats.playing_count ?? playingNow.length})`, href: "?tab=collection" } : undefined}>
+                <SectionCard title="Playing Now" action={playingNow.length > 0 ? { label: `View All (${stats.playing_count ?? playingNow.length})`, href: "?tab=collection" } : undefined}>
                     {playingNow.length > 0 ? (
                         <PlayingNow games={playingNow} />
                     ) : (

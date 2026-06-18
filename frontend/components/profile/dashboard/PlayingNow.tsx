@@ -16,6 +16,10 @@ function platformLabel(names: string[]): string | null {
     return names[0];
 }
 
+const Badge = ({ children }: { children: React.ReactNode }) => (
+    <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-1 rounded bg-black/60 text-white/90 backdrop-blur-sm">{children}</span>
+);
+
 export default function PlayingNow({ games }: { games: PlayingNowGame[] }) {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -33,24 +37,26 @@ export default function PlayingNow({ games }: { games: PlayingNowGame[] }) {
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-white/15"><Gamepad2 className="w-8 h-8" /></div>
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                            {plat && (
-                                <span className="absolute top-2 right-2 text-[9px] font-bold uppercase tracking-wider px-1.5 py-1 rounded bg-black/60 text-white/90 backdrop-blur-sm">{plat}</span>
-                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
 
+                            {/* corner platform badge */}
+                            {plat && <div className="absolute top-2 right-2"><Badge>{plat}</Badge></div>}
+
+                            {/* bottom overlay */}
                             <div className="absolute bottom-0 left-0 right-0 p-3">
-                                <h4 className="text-[14px] font-bold text-white line-clamp-1 mb-2 group-hover:text-[var(--accent)] transition-colors">{g.name}</h4>
-                                <div className="flex items-center gap-2 mb-1.5">
+                                <div className="flex items-center justify-between gap-2 mb-2">
+                                    <h4 className="text-[14px] font-bold text-white line-clamp-1 group-hover:text-[var(--accent)] transition-colors">{g.name}</h4>
+                                    {plat && <Badge>{plat}</Badge>}
+                                </div>
+                                <div className="flex items-center gap-2.5">
+                                    <span className="flex items-center gap-1 text-[10px] font-semibold text-white/60 shrink-0">
+                                        <Clock className="w-3 h-3" /> {g.hours_played}h
+                                    </span>
                                     <div className="flex-1 h-1.5 bg-white/15 rounded-full overflow-hidden">
                                         <div className="h-full bg-gradient-to-r from-[var(--accent)] to-[#FF7A3D] rounded-full" style={{ width: `${g.progress}%` }} />
                                     </div>
-                                    <span className="text-[11px] font-bold text-white/90 tabular-nums">{g.progress}%</span>
+                                    <span className="text-[11px] font-bold text-white/90 tabular-nums shrink-0">{g.progress}%</span>
                                 </div>
-                                {g.hours_played > 0 && (
-                                    <span className="flex items-center gap-1 text-[10px] font-semibold text-white/55">
-                                        <Clock className="w-3 h-3" /> {g.hours_played}h
-                                    </span>
-                                )}
                             </div>
                         </div>
                     </Link>
