@@ -4,7 +4,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import {
     Gamepad2, Library, Trophy, Activity as ActivityIcon, ListChecks,
-    Dna, Coins, Medal, BarChart3, Target, Sparkles, Plus,
+    Dna, Coins, Hexagon, BarChart3, Target, Sparkles, Plus,
 } from "lucide-react";
 import SectionCard from "./dashboard/SectionCard";
 import EmptyState from "./dashboard/EmptyState";
@@ -137,11 +137,11 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                 </SectionCard>
 
                 {/* Community Ranking */}
-                <SectionCard title="Community Ranking" icon={<Medal className="w-4 h-4 text-orange-400/70" />} action={{ label: "View Leaderboard", href: "?tab=stats" }}>
+                <SectionCard title="Community Ranking" icon={<Hexagon className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View Leaderboard", href: "?tab=stats" }}>
                     {reputation ? (
                         <CommunityRanking reputation={reputation} />
                     ) : (
-                        <EmptyState icon={<Medal className="w-6 h-6" />} title="Ranking not available yet" compact />
+                        <EmptyState icon={<Hexagon className="w-6 h-6" />} title="Ranking not available yet" compact />
                     )}
                 </SectionCard>
 
