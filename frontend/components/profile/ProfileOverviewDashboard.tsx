@@ -18,7 +18,11 @@ import ContributionMilestones from "./dashboard/ContributionMilestones";
 import CustomLists from "./dashboard/CustomLists";
 import LoyaltyCustomization from "./dashboard/LoyaltyCustomization";
 import ActivityFeed from "./ActivityFeed";
-import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview, CustomizationData, CollectionSnapshotTile } from "@/lib/types/profile";
+import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview, CustomizationData, CollectionSnapshotTile, DistributionStat } from "@/lib/types/profile";
+
+/** Leaders (top half) orange, the tail green — matches the reference bars. */
+const rankColor = (_item: DistributionStat, i: number, total: number) =>
+    i < Math.ceil(total / 2) ? "var(--accent)" : "#22c55e";
 
 interface Props {
     userData: ProfileUser;
@@ -152,13 +156,13 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                             {platformsGenres.platforms.length > 0 && (
                                 <div>
                                     <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 mb-3">Platforms</h4>
-                                    <DistributionBars items={platformsGenres.platforms} barClassName="bg-gradient-to-r from-blue-500 to-cyan-400" />
+                                    <DistributionBars items={platformsGenres.platforms} inline colorFn={rankColor} />
                                 </div>
                             )}
                             {platformsGenres.genres.length > 0 && (
                                 <div>
-                                    <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 mb-3">Genres</h4>
-                                    <DistributionBars items={platformsGenres.genres} />
+                                    <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 mb-3">Top Genres</h4>
+                                    <DistributionBars items={platformsGenres.genres} inline colorFn={rankColor} />
                                 </div>
                             )}
                         </div>
