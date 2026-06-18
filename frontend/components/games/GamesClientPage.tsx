@@ -11,6 +11,7 @@ import {
     Star, SlidersHorizontal, X
 } from "lucide-react";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
+import TrackGameButton from "@/components/games/TrackGameButton";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -456,6 +457,11 @@ function GameCard({ game }: { game: Game }) {
                         {game.released.slice(0, 4)}
                     </span>
                 )}
+
+                {/* Track button — visible on hover */}
+                <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                    <TrackGameButton slug={game.slug} gameName={game.name} variant="compact" />
+                </div>
 
                 {/* Screenshot hover dots */}
                 {screenshots.length > 0 && (

@@ -11,6 +11,7 @@ import {
 import GameScreenshotsLightbox from "@/components/games/GameScreenshotsLightbox";
 import GameCountdownTimer from "@/components/games/GameCountdownTimer";
 import GameRating from "@/components/games/GameRating";
+import TrackGameButton from "@/components/games/TrackGameButton";
 
 /* ─── Rendering: SSR on every request, Cloudflare caches at edge ─────────────
    ISR disabled — game slugs create millions of files and exhaust disk/inodes.
@@ -518,6 +519,11 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                     {/* Sidebar */}
                     <div className="space-y-6">
                         <div className="bg-gradient-to-b from-[#0f1221]/90 to-[#0f1221]/70 border border-[var(--accent)]/20 rounded-3xl p-7 backdrop-blur-xl shadow-2xl sticky top-24">
+
+                            {/* Track / Add to Collection */}
+                            <div className="mb-5">
+                                <TrackGameButton slug={slug} gameName={game.name} variant="full" />
+                            </div>
 
                             {/* MobyGames link */}
                             {game.moby_url && (
