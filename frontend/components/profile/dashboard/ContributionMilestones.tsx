@@ -13,8 +13,8 @@ export default function ContributionMilestones({ milestones }: { milestones: Mil
                     ) : (
                         <Circle className="w-4 h-4 text-white/25 shrink-0" />
                     )}
-                    <span className="flex-1 min-w-0 text-[12.5px] text-white/70 truncate">{m.label}</span>
-                    <span className={`text-[11px] font-bold tabular-nums shrink-0 ${m.completed ? "text-emerald-400" : "text-white/45"}`}>
+                    <span className="flex-1 min-w-0 text-[12.5px] text-white/65 truncate">{m.label}</span>
+                    <span className="text-[11px] font-bold tabular-nums shrink-0 text-white/45">
                         {m.current.toLocaleString()} / {m.target.toLocaleString()}
                     </span>
                 </div>

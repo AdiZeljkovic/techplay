@@ -4,7 +4,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import {
     Gamepad2, Library, Trophy, Activity as ActivityIcon, ListChecks,
-    Dna, Coins, Hexagon, BarChart3, Target, Sparkles, Plus,
+    Dna, Coins, Hexagon, BarChart3, Target, Sparkles, Plus, Flame,
 } from "lucide-react";
 import SectionCard from "./dashboard/SectionCard";
 import EmptyState from "./dashboard/EmptyState";
@@ -17,6 +17,7 @@ import ReputationBountyCard from "./dashboard/ReputationBountyCard";
 import ContributionMilestones from "./dashboard/ContributionMilestones";
 import CustomLists from "./dashboard/CustomLists";
 import LoyaltyCustomization from "./dashboard/LoyaltyCustomization";
+import HexBadge from "./dashboard/HexBadge";
 import ActivityFeed from "./ActivityFeed";
 import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview, CustomizationData, CollectionSnapshotTile, DistributionStat } from "@/lib/types/profile";
 
@@ -92,15 +93,17 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                     {recentUnlocked.length > 0 ? (
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                             {recentUnlocked.slice(0, 5).map((ach) => (
-                                <div key={ach.id} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 flex flex-col items-center text-center">
-                                    <div className="w-14 h-14 rounded-full p-[2px] mb-2.5" style={{ background: "conic-gradient(from 180deg, #facc15, #FC4100, #facc15)" }}>
-                                        <div className="w-full h-full rounded-full bg-[var(--bg-card)] flex items-center justify-center">
-                                            {ach.icon_path ? <img src={ach.icon_path} alt={ach.name} className="w-8 h-8 object-contain" /> : <Trophy className="w-6 h-6 text-yellow-400" />}
-                                        </div>
+                                <div key={ach.id} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 flex flex-col items-center text-center hover:border-white/[0.12] transition-colors">
+                                    <div className="w-16 h-16 mb-3 flex items-center justify-center">
+                                        {ach.icon_path ? (
+                                            <img src={ach.icon_path} alt={ach.name} className="w-16 h-16 object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,0.5)]" />
+                                        ) : (
+                                            <HexBadge size={56} color="#f59e0b"><Trophy className="w-6 h-6" /></HexBadge>
+                                        )}
                                     </div>
-                                    <h4 className="font-bold text-[12px] text-white line-clamp-1 mb-0.5">{ach.name}</h4>
-                                    {ach.description && <p className="text-[9px] text-white/40 line-clamp-1 leading-tight">{ach.description}</p>}
-                                    {ach.unlocked_at && <span className="text-[9px] text-white/25 mt-1">{format(new Date(ach.unlocked_at), "MMM d, yyyy")}</span>}
+                                    <h4 className="font-bold text-[13px] text-white line-clamp-1 mb-1">{ach.name}</h4>
+                                    {ach.description && <p className="text-[10px] text-white/45 line-clamp-1 leading-tight mb-1.5">{ach.description}</p>}
+                                    {ach.unlocked_at && <span className="text-[10px] text-white/30">{format(new Date(ach.unlocked_at), "MMM d, yyyy")}</span>}
                                 </div>
                             ))}
                         </div>
@@ -172,7 +175,7 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                 </SectionCard>
 
                 {/* Contribution Milestones */}
-                <SectionCard title="Contribution Milestones" icon={<Target className="w-4 h-4 text-emerald-400/70" />}>
+                <SectionCard title="Contribution Milestones" icon={<Flame className="w-4 h-4 text-[var(--accent)]" />}>
                     {milestones.length > 0 ? (
                         <ContributionMilestones milestones={milestones} />
                     ) : (
