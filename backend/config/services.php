@@ -65,6 +65,10 @@ return [
         'guild_id' => env('DISCORD_GUILD_ID'),     // Your Discord server ID
     ],
 
+    'steam' => [
+        'key' => env('STEAM_API_KEY', ''),
+    ],
+
     'battlenet' => [
         'client_id' => env('BATTLENET_CLIENT_ID'),
         'client_secret' => env('BATTLENET_CLIENT_SECRET'),

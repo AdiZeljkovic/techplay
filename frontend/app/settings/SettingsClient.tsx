@@ -6,7 +6,8 @@ import axios from "@/lib/axios";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { Loader2, Save, User, Gamepad2, Cpu, Monitor, Lock, CheckCircle, ShieldCheck, Download, Trash2 } from "lucide-react";
+import { Loader2, Save, User, Gamepad2, Cpu, Monitor, Lock, CheckCircle, ShieldCheck, Download, Trash2, Link2 } from "lucide-react";
+import ConnectedAccountsSection from "@/components/settings/ConnectedAccountsSection";
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 import { AnimatePresence, motion } from "framer-motion";
@@ -17,7 +18,7 @@ export default function SettingsClient() {
     const router = useRouter();
 
     const [saving, setSaving] = useState(false);
-    const [activeTab, setActiveTab] = useState<'bio' | 'ids' | 'specs' | 'security' | 'privacy'>('bio');
+    const [activeTab, setActiveTab] = useState<'bio' | 'ids' | 'specs' | 'platforms' | 'security' | 'privacy'>('bio');
     const [isExporting, setIsExporting] = useState(false);
     const [isDeletingAccount, setIsDeletingAccount] = useState(false);
     const [deleteConfirmText, setDeleteConfirmText] = useState("");
@@ -173,7 +174,7 @@ export default function SettingsClient() {
         );
     }
 
-    const renderTabButton = (id: 'bio' | 'ids' | 'specs' | 'security' | 'privacy', label: string, icon: any) => (
+    const renderTabButton = (id: 'bio' | 'ids' | 'specs' | 'platforms' | 'security' | 'privacy', label: string, icon: any) => (
         <button
             onClick={() => setActiveTab(id)}
             className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors w-full md:w-auto
@@ -192,7 +193,7 @@ export default function SettingsClient() {
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
                 <div className="flex items-center justify-between mb-8">
                     <h1 className="text-3xl font-bold text-[var(--text-primary)]">Profile Settings</h1>
-                    {activeTab !== 'security' && (
+                    {activeTab !== 'security' && activeTab !== 'platforms' && (
                         <Button onClick={handleSave} disabled={saving}>
                             {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                             Save Changes
@@ -206,6 +207,7 @@ export default function SettingsClient() {
                         {renderTabButton('bio', 'Basic Info', <User className="w-4 h-4" />)}
                         {renderTabButton('ids', 'Gamertags', <Gamepad2 className="w-4 h-4" />)}
                         {renderTabButton('specs', 'PC Specs', <Cpu className="w-4 h-4" />)}
+                        {renderTabButton('platforms', 'Connected Platforms', <Link2 className="w-4 h-4" />)}
                         {renderTabButton('security', 'Security', <Lock className="w-4 h-4" />)}
                         {renderTabButton('privacy', 'Privacy & Data', <ShieldCheck className="w-4 h-4" />)}
                     </div>
@@ -448,6 +450,12 @@ export default function SettingsClient() {
                                         </div>
                                     );
                                 })}
+                            </div>
+                        )}
+
+                        {activeTab === 'platforms' && (
+                            <div className="max-w-xl">
+                                <ConnectedAccountsSection />
                             </div>
                         )}
 

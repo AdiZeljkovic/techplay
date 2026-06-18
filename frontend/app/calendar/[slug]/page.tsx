@@ -9,6 +9,7 @@ import {
     Calendar, Bell, Play, CheckCircle2, Circle, Clock3,
 } from "lucide-react";
 import GameDetailClient, { AddToCalendarButton } from "./GameDetailClient";
+import TrackGameButton from "@/components/games/TrackGameButton";
 
 export const revalidate = 43200; // 12h ISR
 
@@ -334,9 +335,7 @@ export default async function CalendarGamePage({ params }: Props) {
 
                         {/* CTA buttons */}
                         <div className="flex items-center gap-3 flex-wrap">
-                            <button className="inline-flex items-center gap-2 px-6 py-3 bg-tp-accent hover:bg-tp-accent/90 text-white text-[11px] font-bold uppercase tracking-widest rounded-full transition-all shadow-lg shadow-tp-accent/25 cursor-default opacity-80">
-                                <Bell className="w-4 h-4" /> Track Game
-                            </button>
+                            <TrackGameButton slug={slug} gameName={game.name} variant="full" />
                             {game.website && (
                                 <a
                                     href={game.website}

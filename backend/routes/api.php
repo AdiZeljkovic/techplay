@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\V1\DiscordSubscriptionController;
 use App\Http\Controllers\Api\V1\DiscordXpController;
 use App\Http\Controllers\Api\V1\ForumController;
 use App\Http\Controllers\Api\V1\FriendController;
+use App\Http\Controllers\Api\V1\ConnectedAccountController;
 use App\Http\Controllers\Api\V1\GameCollectionController;
 use App\Http\Controllers\Api\V1\GameController;
 use App\Http\Controllers\Api\V1\GameListController;
@@ -163,6 +164,14 @@ Route::prefix('v1')->group(function () {
         Route::put('/collection/games/{slug}', [GameCollectionController::class, 'upsert']);
         Route::delete('/collection/games/{slug}', [GameCollectionController::class, 'destroy']);
 
+        // Connected Accounts (Auth) — platform linking and library sync
+        Route::prefix('connected-accounts')->group(function () {
+            Route::get('/', [ConnectedAccountController::class, 'index']);
+            Route::get('/steam/connect', [ConnectedAccountController::class, 'steamConnectUrl']);
+            Route::post('/{id}/sync', [ConnectedAccountController::class, 'sync']);
+            Route::delete('/{id}', [ConnectedAccountController::class, 'destroy']);
+        });
+
         // Bounty + Rewards (Auth)
         Route::get('/bounty', [BountyController::class, 'index']);
         Route::get('/rewards/redemptions', [RewardController::class, 'redemptions']);
@@ -193,6 +202,9 @@ Route::prefix('v1')->group(function () {
         // Email Verification (Public - from email link)
         Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
             ->name('verification.verify');
+
+        // Steam OpenID callback — public; user identity verified via short-lived token in URL
+        Route::get('/connected-accounts/steam/callback', [ConnectedAccountController::class, 'steamCallback']);
 
         // Newsletter (Rate limited to prevent email bombing)
         // 5 subscribes per 10 minutes per IP
