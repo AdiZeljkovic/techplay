@@ -1,6 +1,7 @@
 <?php
 
 use App\Jobs\FlushViewCounters;
+use App\Jobs\PollSteamPresence;
 use App\Jobs\SendGiveawayReminders;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -24,6 +25,9 @@ Schedule::command('views:clean')->daily();
 
 // EDITORIAL: Auto-publish scheduled articles every minute
 Schedule::command('articles:publish-scheduled')->everyMinute();
+
+// PRESENCE: Poll Steam for currently-playing status every 2 minutes
+Schedule::job(new PollSteamPresence)->everyTwoMinutes();
 
 // SEO: Regenerate XML sitemaps every 6 hours
 Schedule::command('sitemap:generate')->everySixHours();

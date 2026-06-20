@@ -93,6 +93,30 @@ class SteamService
     }
 
     /**
+     * Batch player summaries — up to 100 Steam IDs per call.
+     * Returns array of player summary objects keyed by steamid.
+     */
+    public function getPlayerSummariesBatch(array $steamIds): array
+    {
+        if (empty($steamIds)) {
+            return [];
+        }
+
+        $response = Http::timeout(15)->get("{$this->baseUrl}/ISteamUser/GetPlayerSummaries/v2/", [
+            'key' => $this->apiKey,
+            'steamids' => implode(',', $steamIds),
+        ]);
+
+        if (! $response->ok()) {
+            Log::warning('Steam GetPlayerSummaries batch failed', ['status' => $response->status()]);
+
+            return [];
+        }
+
+        return $response->json('response.players', []);
+    }
+
+    /**
      * Resolve a Steam vanity URL (custom profile name) to a Steam64 ID.
      */
     public function resolveVanityUrl(string $vanityUrl): ?string

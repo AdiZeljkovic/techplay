@@ -19,6 +19,8 @@ import CustomLists from "./dashboard/CustomLists";
 import LoyaltyCustomization from "./dashboard/LoyaltyCustomization";
 import HexBadge from "./dashboard/HexBadge";
 import ActivityFeed from "./ActivityFeed";
+import FriendActivityFeed from "./FriendActivityFeed";
+import LivePresenceBadge from "./dashboard/LivePresenceBadge";
 import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview, CustomizationData, CollectionSnapshotTile, DistributionStat } from "@/lib/types/profile";
 
 /** Leaders (top half) orange, the tail green — matches the reference bars. */
@@ -61,16 +63,20 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
             <div className="space-y-6 min-w-0">
                 {/* Playing Now */}
                 <SectionCard title="Playing Now" action={playingNow.length > 0 ? { label: `View All (${stats.playing_count ?? playingNow.length})`, href: "?tab=collection" } : undefined}>
-                    {playingNow.length > 0 ? (
-                        <PlayingNow games={playingNow} />
-                    ) : (
-                        <EmptyState
-                            icon={<Gamepad2 className="w-6 h-6" />}
-                            title={isOwnProfile ? "You're not playing anything yet" : "Nothing being played right now"}
-                            hint={isOwnProfile ? "Mark games as \"Playing\" to track your progress here." : undefined}
-                            cta={addCta}
-                        />
-                    )}
+                    <div className="space-y-4">
+                        {/* Live presence badge — real-time "what they're playing right now" */}
+                        <LivePresenceBadge username={userData.username} userId={userData.id} />
+                        {playingNow.length > 0 ? (
+                            <PlayingNow games={playingNow} />
+                        ) : (
+                            <EmptyState
+                                icon={<Gamepad2 className="w-6 h-6" />}
+                                title={isOwnProfile ? "You're not playing anything yet" : "Nothing being played right now"}
+                                hint={isOwnProfile ? "Mark games as \"Playing\" to track your progress here." : undefined}
+                                cta={addCta}
+                            />
+                        )}
+                    </div>
                 </SectionCard>
 
                 {/* Collection Snapshot */}
@@ -87,6 +93,13 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                 <SectionCard title="Recent Activity" icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View All Activity", href: "?tab=activity" }}>
                     <ActivityFeed username={userData.username} compact />
                 </SectionCard>
+
+                {/* Friend Activity — only visible on your own profile */}
+                {isOwnProfile && (
+                    <SectionCard title="Friend Activity" icon={<Sparkles className="w-4 h-4 text-sky-400/70" />} action={{ label: "All Friends", href: "/friends" }}>
+                        <FriendActivityFeed />
+                    </SectionCard>
+                )}
 
                 {/* Achievement Spotlight */}
                 <SectionCard title="Achievement Spotlight" icon={<Trophy className="w-4 h-4 text-yellow-400" />} action={{ label: "View All Achievements", href: "?tab=achievements" }}>

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\BattleNetAuthController;
 use App\Http\Controllers\Api\V1\BountyController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CommentController;
+use App\Http\Controllers\Api\V1\ConnectedAccountController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\CustomizationController;
 use App\Http\Controllers\Api\V1\DiscordAdminController;
@@ -18,16 +19,16 @@ use App\Http\Controllers\Api\V1\DiscordLeaderboardController;
 use App\Http\Controllers\Api\V1\DiscordSubscriptionController;
 use App\Http\Controllers\Api\V1\DiscordXpController;
 use App\Http\Controllers\Api\V1\ForumController;
+use App\Http\Controllers\Api\V1\FriendActivityController;
 use App\Http\Controllers\Api\V1\FriendController;
-use App\Http\Controllers\Api\V1\ConnectedAccountController;
 use App\Http\Controllers\Api\V1\GameCollectionController;
-use App\Http\Controllers\Api\V1\LeaderboardController;
 use App\Http\Controllers\Api\V1\GameController;
 use App\Http\Controllers\Api\V1\GameListController;
 use App\Http\Controllers\Api\V1\GameRatingController;
 use App\Http\Controllers\Api\V1\GiveawayController;
 use App\Http\Controllers\Api\V1\GuideController;
 use App\Http\Controllers\Api\V1\HomeController;
+use App\Http\Controllers\Api\V1\LeaderboardController;
 use App\Http\Controllers\Api\V1\MediaKitController;
 use App\Http\Controllers\Api\V1\MessageController;
 use App\Http\Controllers\Api\V1\NavigationController;
@@ -36,6 +37,7 @@ use App\Http\Controllers\Api\V1\NewsletterController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PayPalController;
 use App\Http\Controllers\Api\V1\PayPalWebhookController;
+use App\Http\Controllers\Api\V1\PresenceController;
 use App\Http\Controllers\Api\V1\PriveeGiveawayController;
 use App\Http\Controllers\Api\V1\RedirectController;
 use App\Http\Controllers\Api\V1\ReportController;
@@ -168,6 +170,13 @@ Route::prefix('v1')->group(function () {
         Route::put('/collection/games/{slug}', [GameCollectionController::class, 'upsert']);
         Route::delete('/collection/games/{slug}', [GameCollectionController::class, 'destroy']);
 
+        // Presence (Auth) — set / clear what you're currently playing
+        Route::post('/presence', [PresenceController::class, 'store']);
+        Route::delete('/presence', [PresenceController::class, 'destroy']);
+
+        // Friend activity feed
+        Route::get('/friends/activity', [FriendActivityController::class, 'index']);
+
         // Connected Accounts (Auth) — platform linking and library sync
         Route::prefix('connected-accounts')->group(function () {
             Route::get('/', [ConnectedAccountController::class, 'index']);
@@ -272,6 +281,9 @@ Route::prefix('v1')->group(function () {
 
         // Global Leaderboards (cached 5 min, public)
         Route::get('/leaderboard', [LeaderboardController::class, 'index']);
+
+        // Presence (Public) — profile page reads who's playing what
+        Route::get('/presence/{username}', [PresenceController::class, 'show']);
 
         // WoW Character Analyzer (Rate limited to 60 req/min to protect OpenAI costs)
         Route::middleware('throttle:60,1')->prefix('wow')->group(function () {
