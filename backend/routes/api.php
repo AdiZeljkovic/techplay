@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\ForumController;
 use App\Http\Controllers\Api\V1\FriendController;
 use App\Http\Controllers\Api\V1\ConnectedAccountController;
 use App\Http\Controllers\Api\V1\GameCollectionController;
+use App\Http\Controllers\Api\V1\LeaderboardController;
 use App\Http\Controllers\Api\V1\GameController;
 use App\Http\Controllers\Api\V1\GameListController;
 use App\Http\Controllers\Api\V1\GameRatingController;
@@ -265,6 +266,9 @@ Route::prefix('v1')->group(function () {
         // Tech / Hardware
         Route::get('/tech', [TechController::class, 'index']);
         Route::get('/tech/{slug}', [TechController::class, 'show']);
+
+        // Global Leaderboards (cached 5 min, public)
+        Route::get('/leaderboard', [LeaderboardController::class, 'index']);
 
         // WoW Character Analyzer (Rate limited to 60 req/min to protect OpenAI costs)
         Route::middleware('throttle:60,1')->prefix('wow')->group(function () {

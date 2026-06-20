@@ -144,7 +144,7 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                 </SectionCard>
 
                 {/* Community Ranking */}
-                <SectionCard title="Community Ranking" icon={<Hexagon className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View Leaderboard", href: "?tab=stats" }}>
+                <SectionCard title="Community Ranking" icon={<Hexagon className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View Leaderboard", href: "/leaderboard" }}>
                     {reputation ? (
                         <CommunityRanking reputation={reputation} />
                     ) : (
