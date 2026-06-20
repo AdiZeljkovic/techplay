@@ -57,6 +57,12 @@ class XpService
 
         // Update rank if needed
         $this->checkRankUpdate($user);
+
+        // Check XP-based achievements (fire-and-forget, never blocks XP)
+        try {
+            app(AchievementService::class)->checkXpAchievements($user);
+        } catch (\Throwable) {
+        }
     }
 
     protected function checkRankUpdate(User $user): void

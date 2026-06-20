@@ -3,17 +3,25 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\V1\CommentResource;
 use App\Models\Article;
 use App\Models\Comment;
+use App\Models\Guide;
+use App\Models\Review;
+use App\Services\AchievementService;
+use App\Services\SanitizationService;
+use App\Services\XpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CommentController extends Controller
 {
     public function index($type, $id)
     {
         $modelClass = $this->getModelClass($type);
-        if (!$modelClass) {
+        if (! $modelClass) {
             return response()->json(['message' => 'Invalid content type'], 400);
         }
 
@@ -23,9 +31,9 @@ class CommentController extends Controller
             ->whereNull('parent_id')
             ->with([
                 'user.rank',
-                'replies' => fn($q) => $q->with('user.rank')->limit(100), // Prevent memory overload
-                'replies.replies' => fn($q) => $q->with('user.rank')->limit(50),
-                'replies.replies.replies' => fn($q) => $q->with('user.rank')->limit(25),
+                'replies' => fn ($q) => $q->with('user.rank')->limit(100), // Prevent memory overload
+                'replies.replies' => fn ($q) => $q->with('user.rank')->limit(50),
+                'replies.replies.replies' => fn ($q) => $q->with('user.rank')->limit(25),
             ])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
@@ -39,7 +47,7 @@ class CommentController extends Controller
             $allCommentIds = $this->collectAllCommentIds($comments->items());
 
             // Single query to get all user's votes for these comments
-            $userVotes = \Illuminate\Support\Facades\DB::table('comment_likes')
+            $userVotes = DB::table('comment_likes')
                 ->whereIn('comment_id', $allCommentIds)
                 ->where('user_id', $userId)
                 ->pluck('type', 'comment_id')
@@ -51,10 +59,10 @@ class CommentController extends Controller
             });
         }
 
-        return \App\Http\Resources\V1\CommentResource::collection($comments);
+        return CommentResource::collection($comments);
     }
 
-    public function store(Request $request, \App\Services\XpService $xpService, \App\Services\SanitizationService $sanitizer)
+    public function store(Request $request, XpService $xpService, SanitizationService $sanitizer)
     {
         $request->validate([
             'content' => [
@@ -69,12 +77,12 @@ class CommentController extends Controller
         ]);
 
         $modelClass = $this->getModelClass($request->commentable_type);
-        if (!$modelClass) {
+        if (! $modelClass) {
             return response()->json(['message' => 'Invalid content type'], 400);
         }
 
         // Verify existance
-        if (!$modelClass::where('id', $request->commentable_id)->exists()) {
+        if (! $modelClass::where('id', $request->commentable_id)->exists()) {
             return response()->json(['message' => 'Target content not found'], 404);
         }
 
@@ -123,7 +131,7 @@ class CommentController extends Controller
         $urlCount = preg_match_all('#https?://#i', $cleanContent);
         if ($urlCount > 1) {
             $status = 'pending';
-            // If it was already pending from probation, the message remains appropriate, 
+            // If it was already pending from probation, the message remains appropriate,
             // but if it was approved, we downgrade to pending.
             if ($status === 'approved') {
                 $message = 'Comment submitted for approval (Link limit).';
@@ -146,13 +154,19 @@ class CommentController extends Controller
 
         // 3. Award XP via Service (Handles Cooldowns & Caps)
         if ($shouldAwardXp) {
-            $xpService->awardXp(Auth::user(), \App\Services\XpService::XP_COMMENT, 'comment');
+            $xpService->awardXp(Auth::user(), XpService::XP_COMMENT, 'comment');
         }
 
-        return (new \App\Http\Resources\V1\CommentResource($comment->load('user.rank')))
+        // 4. Check comment-count achievements (fire-and-forget)
+        try {
+            app(AchievementService::class)->check(Auth::user(), ['comments_count']);
+        } catch (\Throwable) {
+        }
+
+        return (new CommentResource($comment->load('user.rank')))
             ->additional([
                 'message' => $message,
-                'status' => $status
+                'status' => $status,
             ]);
     }
 
@@ -168,13 +182,13 @@ class CommentController extends Controller
 
             // Explicitly get user from Sanctum guard
             $user = Auth::guard('sanctum')->user();
-            if (!$user) {
+            if (! $user) {
                 return response()->json(['message' => 'Unauthenticated'], 401);
             }
             $userId = $user->id;
 
             // Check for existing vote
-            $existingVote = \Illuminate\Support\Facades\DB::table('comment_likes')
+            $existingVote = DB::table('comment_likes')
                 ->where('comment_id', $id)
                 ->where('user_id', $userId)
                 ->first();
@@ -184,7 +198,7 @@ class CommentController extends Controller
             if ($existingVote) {
                 if ($existingVote->type === $type) {
                     // Toggle off (remove vote)
-                    \Illuminate\Support\Facades\DB::table('comment_likes')
+                    DB::table('comment_likes')
                         ->where('id', $existingVote->id)
                         ->delete();
 
@@ -194,7 +208,7 @@ class CommentController extends Controller
                     $userVote = null;
                 } else {
                     // Change vote type
-                    \Illuminate\Support\Facades\DB::table('comment_likes')
+                    DB::table('comment_likes')
                         ->where('id', $existingVote->id)
                         ->update(['type' => $type, 'updated_at' => now()]);
 
@@ -205,7 +219,7 @@ class CommentController extends Controller
                 }
             } else {
                 // New vote
-                \Illuminate\Support\Facades\DB::table('comment_likes')->insert([
+                DB::table('comment_likes')->insert([
                     'comment_id' => $id,
                     'user_id' => $userId,
                     'type' => $type,
@@ -221,11 +235,12 @@ class CommentController extends Controller
             return response()->json([
                 'message' => 'Vote recorded',
                 'score' => (int) $comment->score,
-                'user_vote' => $userVote
+                'user_vote' => $userVote,
             ]);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Vote error: " . $e->getMessage());
-            return response()->json(['message' => 'Server Error: ' . $e->getMessage()], 500);
+            Log::error('Vote error: '.$e->getMessage());
+
+            return response()->json(['message' => 'Server Error: '.$e->getMessage()], 500);
         }
     }
 
@@ -233,8 +248,8 @@ class CommentController extends Controller
     {
         return match ($type) {
             'article' => Article::class,
-            'review' => \App\Models\Review::class,
-            'guide' => \App\Models\Guide::class,
+            'review' => Review::class,
+            'guide' => Guide::class,
             'tech' => Article::class,
             default => null,
         };

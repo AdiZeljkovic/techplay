@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Jobs\SyncSteamLibrary;
 use App\Models\ConnectedAccount;
+use App\Services\AchievementService;
 use App\Services\SteamService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -93,6 +94,12 @@ class ConnectedAccountController extends Controller
         );
 
         SyncSteamLibrary::dispatch($account->id)->onQueue('default');
+
+        // Check connected_accounts achievement after linking Steam
+        try {
+            app(AchievementService::class)->check($user, ['connected_accounts']);
+        } catch (\Throwable) {
+        }
 
         return redirect(config('app.frontend_url').'/settings?tab=platforms&steam_connected=1');
     }

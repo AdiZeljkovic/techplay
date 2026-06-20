@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\User;
 use App\Models\UserGame;
+use App\Services\AchievementService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -93,6 +94,13 @@ class GameCollectionController extends Controller
         $wasNew = ! $entry->exists;
         $entry->save();
         $entry->load(['game:id,slug,name,released,rating,background_image,platform_names,genre_names']);
+
+        // Trigger achievement checks after collection change (fire-and-forget)
+        try {
+            $types = ['games_added', 'games_completed', 'games_playing', 'games_wishlisted'];
+            app(AchievementService::class)->check($request->user(), $types);
+        } catch (\Throwable) {
+        }
 
         return $this->success(
             $this->present($entry),
