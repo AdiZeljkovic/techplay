@@ -270,33 +270,32 @@ class ProfileService
     }
 
     /**
-     * Top Recognitions — derived from existing community signals.
+     * Top Recognitions — explicit awards from user_recognitions table.
      */
-    public function recognitions(User $user): array
+    public function recognitions(User $user, ?int $giverId = null): array
     {
-        $helpful = DB::table('comment_likes')
-            ->join('comments', 'comments.id', '=', 'comment_likes.comment_id')
-            ->where('comments.user_id', $user->id)
-            ->where('comment_likes.type', 'up')
-            ->count();
+        $counts = DB::table('user_recognitions')
+            ->where('receiver_id', $user->id)
+            ->selectRaw('type, count(*) as count')
+            ->groupBy('type')
+            ->pluck('count', 'type');
 
-        $insightful = DB::table('thread_upvotes')
-            ->join('threads', 'threads.id', '=', 'thread_upvotes.thread_id')
-            ->where('threads.author_id', $user->id)
-            ->count();
-
-        $friendly = DB::table('friendships')
-            ->where('status', 'accepted')
-            ->where(fn ($q) => $q->where('sender_id', $user->id)->orWhere('receiver_id', $user->id))
-            ->count();
-
-        $leader = $user->threads()->count();
+        $givenByMe = [];
+        if ($giverId && $giverId !== $user->id) {
+            $givenByMe = DB::table('user_recognitions')
+                ->where('giver_id', $giverId)
+                ->where('receiver_id', $user->id)
+                ->pluck('type')
+                ->flip()
+                ->map(fn () => true)
+                ->all();
+        }
 
         return [
-            ['type' => 'helpful', 'label' => 'Helpful', 'count' => $helpful],
-            ['type' => 'insightful', 'label' => 'Insightful', 'count' => $insightful],
-            ['type' => 'friendly', 'label' => 'Friendly', 'count' => $friendly],
-            ['type' => 'leader', 'label' => 'Leader', 'count' => $leader],
+            ['type' => 'helpful', 'label' => 'Helpful', 'count' => $counts['helpful'] ?? 0, 'given_by_me' => (bool) ($givenByMe['helpful'] ?? false)],
+            ['type' => 'insightful', 'label' => 'Insightful', 'count' => $counts['insightful'] ?? 0, 'given_by_me' => (bool) ($givenByMe['insightful'] ?? false)],
+            ['type' => 'friendly', 'label' => 'Friendly', 'count' => $counts['friendly'] ?? 0, 'given_by_me' => (bool) ($givenByMe['friendly'] ?? false)],
+            ['type' => 'leader', 'label' => 'Leader', 'count' => $counts['leader'] ?? 0, 'given_by_me' => (bool) ($givenByMe['leader'] ?? false)],
         ];
     }
 

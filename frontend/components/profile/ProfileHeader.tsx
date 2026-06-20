@@ -5,10 +5,12 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import {
     Calendar, MapPin, Crown, Pen, ShieldCheck, Award, CheckCircle2,
-    UserPlus, Clock, Mail, Shield, Hexagon, Sparkles,
+    UserPlus, Clock, Mail, Shield, Hexagon, Sparkles, Share2,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import ReputationPowerCard from "./dashboard/ReputationPowerCard";
 import HexBadge from "./dashboard/HexBadge";
+import GiveRecognitionButton from "./GiveRecognitionButton";
 import type { ProfileUser, ProfileStats, UserProfile, ReputationData, CustomizationData } from "@/lib/types/profile";
 
 interface ProfileHeaderProps {
@@ -167,11 +169,27 @@ export default function ProfileHeader({
                                     <p className="text-[13px] text-white/25 italic">No bio yet.</p>
                                 ) : null}
 
-                                {isOwnProfile && (
-                                    <Link href="/settings" className="inline-flex items-center gap-1.5 mt-2 text-[11px] font-bold uppercase tracking-wider text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors">
-                                        <Pen className="w-3 h-3" /> Edit Bio
-                                    </Link>
-                                )}
+                                <div className="flex items-center gap-2 mt-3 flex-wrap">
+                                    {isOwnProfile && (
+                                        <Link href="/settings" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-white/70 hover:text-white text-[12px] font-semibold transition-colors">
+                                            <Pen className="w-3.5 h-3.5" /> Edit Bio
+                                        </Link>
+                                    )}
+                                    {/* Give Recognition — only for other profiles */}
+                                    {!isOwnProfile && (
+                                        <GiveRecognitionButton username={userData.username} />
+                                    )}
+                                    {/* Share profile */}
+                                    <button
+                                        onClick={() => {
+                                            const url = `${window.location.origin}/profile/${userData.username}`;
+                                            navigator.clipboard.writeText(url).then(() => toast.success("Profile link copied!"));
+                                        }}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-white/70 hover:text-white text-[12px] font-semibold transition-colors"
+                                    >
+                                        <Share2 className="w-3.5 h-3.5" /> Share
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

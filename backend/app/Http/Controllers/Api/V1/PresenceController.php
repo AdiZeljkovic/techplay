@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\ConnectedAccount;
 use App\Models\Presence;
 use App\Models\User;
 use App\Services\PresenceService;
@@ -65,5 +66,39 @@ class PresenceController extends Controller
         $this->presenceService->clear(Auth::user());
 
         return $this->success(['message' => 'Presence cleared']);
+    }
+
+    /**
+     * POST /discord/presence — Discord bot reports game activity via Rich Presence.
+     * Uses the bot's shared secret, not Sanctum.
+     */
+    public function discordUpdate(Request $request): JsonResponse
+    {
+        $request->validate([
+            'discord_id' => 'required|string',
+            'game_name' => 'nullable|string|max:200',
+        ]);
+
+        // Resolve Discord ID → TechPlay user via connected_accounts or discord_id column.
+        $user = User::where('discord_id', $request->discord_id)->first()
+            ?? ConnectedAccount::where('provider', 'discord')
+                ->where('provider_user_id', $request->discord_id)
+                ->first()
+                ?->user;
+
+        if (! $user) {
+            return $this->success(['message' => 'User not found — skipped']);
+        }
+
+        if ($request->filled('game_name')) {
+            $this->presenceService->set($user, $request->game_name, 'discord');
+        } else {
+            $active = $this->presenceService->getActive($user);
+            if ($active && $active->source === 'discord') {
+                $this->presenceService->clear($user);
+            }
+        }
+
+        return $this->success(['message' => 'ok']);
     }
 }

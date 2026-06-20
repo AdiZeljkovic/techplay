@@ -13,6 +13,7 @@ use App\Services\ProfileService;
 use App\Services\ReCaptchaService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
@@ -280,7 +281,7 @@ class AuthController extends Controller
             'gamer_dna' => $profileService->gamerDna($user),
             // Phase 2 — reputation, ranking, recognitions, milestones
             'reputation' => $profileService->reputation($user),
-            'recognitions' => $profileService->recognitions($user),
+            'recognitions' => $profileService->recognitions($user, Auth::id()),
             'milestones' => $profileService->milestones([
                 'forum_posts' => $stats['posts_count'],
                 'threads' => $stats['threads_count'],

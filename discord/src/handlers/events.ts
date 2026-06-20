@@ -1,4 +1,6 @@
-import { Client, Events, GuildMember, Message, TextChannel } from 'discord.js';
+import { Client, Events, GuildMember, Message, Presence, TextChannel } from 'discord.js';
+import axios from 'axios';
+import { config } from '../config';
 import { BuffyService } from '../services/BuffyService';
 import { ChallengeService } from '../services/ChallengeService';
 
@@ -84,6 +86,46 @@ export function setupModeration(client: Client) {
     });
 
     console.log('🛡️ Auto-moderation handler registered');
+}
+
+/**
+ * Sets up Discord Rich Presence tracking → syncs "Playing Now" to TechPlay backend.
+ * Only fires for guild members (not DMs). Throttled: one API call per user per 30s.
+ */
+export function setupPresenceTracking(client: Client) {
+    const lastReported = new Map<string, { game: string | null; ts: number }>();
+    const THROTTLE_MS = 30_000;
+
+    client.on(Events.PresenceUpdate, async (_old: Presence | null, newPresence: Presence) => {
+        const userId = newPresence.userId;
+        if (!userId || newPresence.user?.bot) return;
+
+        // Find the first PLAYING (type 0) activity
+        const gameActivity = newPresence.activities.find(a => a.type === 0);
+        const gameName = gameActivity?.name ?? null;
+
+        const prev = lastReported.get(userId);
+        const now = Date.now();
+
+        // Skip if same state reported within throttle window
+        if (prev && prev.game === gameName && now - prev.ts < THROTTLE_MS) return;
+
+        lastReported.set(userId, { game: gameName, ts: now });
+
+        try {
+            await axios.post(`${config.apiUrl}/discord/presence`, {
+                discord_id: userId,
+                game_name: gameName,
+            }, {
+                headers: { 'X-Bot-Secret': config.botSecret },
+                timeout: 5000,
+            });
+        } catch {
+            // Non-critical — presence update failures are silent
+        }
+    });
+
+    console.log('🎮 Presence tracking handler registered');
 }
 
 /**

@@ -39,6 +39,7 @@ use App\Http\Controllers\Api\V1\PayPalController;
 use App\Http\Controllers\Api\V1\PayPalWebhookController;
 use App\Http\Controllers\Api\V1\PresenceController;
 use App\Http\Controllers\Api\V1\PriveeGiveawayController;
+use App\Http\Controllers\Api\V1\RecognitionController;
 use App\Http\Controllers\Api\V1\RedirectController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\ReviewController;
@@ -86,6 +87,8 @@ Route::prefix('v1')->group(function () {
         // User & XP
         Route::get('/user/{discordId}', [DiscordIntegrationController::class, 'getUser']);
         Route::post('/xp', [DiscordXpController::class, 'addXp']);
+        // Presence from Discord Rich Presence (bot reports game activity)
+        Route::post('/presence', [PresenceController::class, 'discordUpdate']);
         Route::get('/leaderboard', [DiscordLeaderboardController::class, 'top']);
         Route::post('/daily', [DiscordDailyController::class, 'claim']);
 
@@ -173,6 +176,10 @@ Route::prefix('v1')->group(function () {
         // Presence (Auth) — set / clear what you're currently playing
         Route::post('/presence', [PresenceController::class, 'store']);
         Route::delete('/presence', [PresenceController::class, 'destroy']);
+
+        // Recognitions (Auth)
+        Route::post('/users/{username}/recognitions', [RecognitionController::class, 'store']);
+        Route::delete('/users/{username}/recognitions/{type}', [RecognitionController::class, 'destroy']);
 
         // Friend activity feed
         Route::get('/friends/activity', [FriendActivityController::class, 'index']);
@@ -319,6 +326,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/users/{username}/collection', [GameCollectionController::class, 'index']);
         Route::get('/users/{username}/lists', [GameListController::class, 'index']);
         Route::get('/users/{username}/activity', [ActivityController::class, 'index']);
+        Route::get('/users/{username}/recognitions', [RecognitionController::class, 'index']);
         Route::get('/users/{username}', [AuthController::class, 'show']);
 
         // Redirects
