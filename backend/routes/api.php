@@ -41,16 +41,19 @@ use App\Http\Controllers\Api\V1\PayPalController;
 use App\Http\Controllers\Api\V1\PayPalWebhookController;
 use App\Http\Controllers\Api\V1\PresenceController;
 use App\Http\Controllers\Api\V1\PriveeGiveawayController;
+use App\Http\Controllers\Api\V1\QuestController;
 use App\Http\Controllers\Api\V1\RecognitionController;
 use App\Http\Controllers\Api\V1\RedirectController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\ReviewController;
 use App\Http\Controllers\Api\V1\RewardController;
 use App\Http\Controllers\Api\V1\SearchController;
+use App\Http\Controllers\Api\V1\SeasonController;
 use App\Http\Controllers\Api\V1\SeoController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\ShopController;
 use App\Http\Controllers\Api\V1\SocialAuthController;
+use App\Http\Controllers\Api\V1\StreakController;
 use App\Http\Controllers\Api\V1\SupportController;
 use App\Http\Controllers\Api\V1\SystemController;
 use App\Http\Controllers\Api\V1\TechController;
@@ -188,6 +191,13 @@ Route::prefix('v1')->group(function () {
 
         // AI Backlog Advisor
         Route::post('/backlog/suggest', [BacklogAdvisorController::class, 'suggest']);
+
+        // Daily streak
+        Route::get('/user/streak', [StreakController::class, 'show']);
+        Route::post('/user/streak/claim', [StreakController::class, 'claim']);
+
+        // Quests
+        Route::get('/user/quests', [QuestController::class, 'index']);
 
         // Recognitions (Auth)
         Route::post('/users/{username}/recognitions', [RecognitionController::class, 'store']);
@@ -333,6 +343,10 @@ Route::prefix('v1')->group(function () {
 
         // Custom Game Lists (Public read)
         Route::get('/game-lists/{id}', [GameListController::class, 'show'])->whereNumber('id');
+
+        // Seasons — public
+        Route::get('/seasons', [SeasonController::class, 'index']);
+        Route::get('/seasons/active', [SeasonController::class, 'active']);
 
         // Public Profile
         Route::get('/users/{username}/wrapped/{year}', [WrappedController::class, 'show']);

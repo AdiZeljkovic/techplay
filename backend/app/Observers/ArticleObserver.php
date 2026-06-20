@@ -6,6 +6,8 @@ use App\Http\Controllers\SitemapController;
 use App\Models\Article;
 use App\Models\UserGame;
 use App\Notifications\WishlistGameReviewedNotification;
+use App\Services\BountyService;
+use App\Services\QuestService;
 use App\Services\RevalidationService;
 use App\Services\SanitizationService;
 use Illuminate\Support\Facades\Cache;
@@ -71,6 +73,9 @@ class ArticleObserver
                     if ($article->game_id && $article->review_score && in_array($article->category->type, ['review', 'reviews'])) {
                         $this->notifyWishlisters($article);
                     }
+
+                    // Award bounty + quest progress to the author on first publish.
+                    $this->rewardAuthor($article);
                 }
             }
         }
@@ -155,6 +160,37 @@ class ArticleObserver
             File::put(public_path('sitemap-news.xml'), $content);
         } catch (\Throwable $e) {
             \Log::warning('News sitemap regeneration failed', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Reward the article author on first publish with bounty + quest progress.
+     */
+    protected function rewardAuthor(Article $article): void
+    {
+        try {
+            if (! $article->author_id) {
+                return;
+            }
+            if (! $article->relationLoaded('author')) {
+                $article->load('author');
+            }
+            if (! $article->author) {
+                return;
+            }
+
+            $isReview = $article->category && in_array($article->category->type, ['review', 'reviews']);
+            $bounty = $isReview ? 75 : 30;
+            $reason = $isReview ? "Review published: {$article->title}" : "Article published: {$article->title}";
+
+            app(BountyService::class)->award($article->author, $bounty, $reason, 'milestone');
+            app(QuestService::class)->progress($article->author, 'article_published', 1);
+
+            if ($isReview) {
+                app(QuestService::class)->progress($article->author, 'review_published', 1);
+            }
+        } catch (\Throwable) {
+            // Never block article publish
         }
     }
 

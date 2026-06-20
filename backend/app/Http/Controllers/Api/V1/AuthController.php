@@ -9,9 +9,11 @@ use App\Http\Resources\V1\UserResource;
 use App\Models\Achievement;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\PremiumService;
 use App\Services\ProfileService;
 use App\Services\ReCaptchaService;
 use App\Traits\ApiResponse;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -293,6 +295,13 @@ class AuthController extends Controller
             'lists' => $profileService->publicLists($user),
             // Phase 5 — loyalty & customization
             'customization' => $profileService->customization($user),
+            // Phase D — premium + streak
+            'is_premium' => app(PremiumService::class)->isPremium($user),
+            'premium_tier' => app(PremiumService::class)->tierName($user),
+            'streak' => [
+                'days' => $user->daily_streak ?? 0,
+                'claimed_today' => $user->last_daily_claim && Carbon::parse($user->last_daily_claim)->isToday(),
+            ],
         ]);
     }
 

@@ -7,6 +7,8 @@ use App\Models\Game;
 use App\Models\User;
 use App\Models\UserGame;
 use App\Services\AchievementService;
+use App\Services\BountyService;
+use App\Services\QuestService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -102,6 +104,26 @@ class GameCollectionController extends Controller
             $types = ['games_added', 'games_completed', 'games_playing', 'games_wishlisted'];
             app(AchievementService::class)->check($request->user(), $types);
         } catch (\Throwable) {
+        }
+
+        // Bounty bonus for completing a game + quest progress
+        if ($data['status'] === 'completed') {
+            try {
+                $wasAlreadyCompleted = ! $wasNew && $entry->getOriginal('status') === 'completed';
+                if (! $wasAlreadyCompleted) {
+                    app(BountyService::class)->award($request->user(), 50, "Game completed: {$game->name}", 'milestone');
+                    app(QuestService::class)->progress($request->user(), 'game_completed', 1);
+                }
+            } catch (\Throwable) {
+            }
+        }
+
+        // Quest: game added to collection
+        if ($wasNew) {
+            try {
+                app(QuestService::class)->progress($request->user(), 'game_added', 1);
+            } catch (\Throwable) {
+            }
         }
 
         return $this->success(

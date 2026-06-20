@@ -21,6 +21,9 @@ import HexBadge from "./dashboard/HexBadge";
 import ActivityFeed from "./ActivityFeed";
 import FriendActivityFeed from "./FriendActivityFeed";
 import LivePresenceBadge from "./dashboard/LivePresenceBadge";
+import DailyStreakWidget from "./dashboard/DailyStreakWidget";
+import QuestPanel from "./dashboard/QuestPanel";
+import SeasonBanner from "@/components/ui/SeasonBanner";
 import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview, CustomizationData, CollectionSnapshotTile, DistributionStat } from "@/lib/types/profile";
 
 /** Leaders (top half) orange, the tail green — matches the reference bars. */
@@ -94,6 +97,18 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                     <ActivityFeed username={userData.username} compact />
                 </SectionCard>
 
+                {/* Daily Streak — only own profile */}
+                {isOwnProfile && (
+                    <DailyStreakWidget />
+                )}
+
+                {/* Active Quests — only own profile */}
+                {isOwnProfile && (
+                    <SectionCard title="Quests" icon={<Target className="w-4 h-4 text-tp-accent" />}>
+                        <QuestPanel isOwnProfile={isOwnProfile} />
+                    </SectionCard>
+                )}
+
                 {/* Friend Activity — only visible on your own profile */}
                 {isOwnProfile && (
                     <SectionCard title="Friend Activity" icon={<Sparkles className="w-4 h-4 text-sky-400/70" />} action={{ label: "All Friends", href: "/friends" }}>
@@ -147,6 +162,9 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
 
             {/* === RIGHT COLUMN === */}
             <div className="space-y-6 min-w-0">
+                {/* Active Season banner */}
+                <SeasonBanner />
+
                 {/* Reputation & Bounty */}
                 <SectionCard title="Reputation & Bounty" icon={<Coins className="w-4 h-4 text-amber-400/70" />} action={{ label: "View Details", href: "?tab=stats" }}>
                     {recognitions.length > 0 ? (
