@@ -3,9 +3,11 @@
 namespace App\Jobs;
 
 use App\Models\ConnectedAccount;
+use App\Models\SteamAchievement;
 use App\Models\UserGame;
 use App\Services\GameMatchingService;
 use App\Services\SteamService;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -76,6 +78,38 @@ class SyncSteamLibrary implements ShouldQueue
                         'status' => $status,
                         'hours_played' => $hoursPlayed,
                     ]);
+                }
+            }
+
+            // Sync achievements for top 10 most-played matched games
+            $topGames = collect($ownedGames)
+                ->sortByDesc('playtime_forever')
+                ->take(10)
+                ->all();
+
+            foreach ($topGames as $steamGame) {
+                $appId = (int) $steamGame['appid'];
+                $game = $matcher->matchSteamGame($appId, $steamGame['name'] ?? '');
+
+                try {
+                    $achievements = $steam->getPlayerAchievements($steamId, $appId);
+                    foreach ($achievements as $ach) {
+                        SteamAchievement::updateOrCreate(
+                            ['user_id' => $account->user_id, 'steam_appid' => $appId, 'api_name' => $ach['apiname'] ?? $ach['name'] ?? ''],
+                            [
+                                'game_id' => $game?->id,
+                                'display_name' => $ach['name'] ?? null,
+                                'description' => $ach['description'] ?? null,
+                                'icon_url' => $ach['icon'] ?? null,
+                                'achieved' => (bool) ($ach['achieved'] ?? false),
+                                'achieved_at' => ! empty($ach['unlocktime']) && $ach['unlocktime'] > 0
+                                    ? Carbon::createFromTimestamp($ach['unlocktime'])
+                                    : null,
+                            ]
+                        );
+                    }
+                } catch (\Throwable $e) {
+                    Log::debug("Steam achievements skipped for appid={$appId}: {$e->getMessage()}");
                 }
             }
 

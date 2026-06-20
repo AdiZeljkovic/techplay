@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\UserGame;
+use App\Services\PremiumService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -19,8 +20,9 @@ class BacklogAdvisorController extends Controller
 
     /**
      * POST /backlog/suggest — AI picks the best backlog game based on mood + time.
+     * Free users: 3 requests/day. Premium: unlimited.
      */
-    public function suggest(Request $request): JsonResponse
+    public function suggest(Request $request, PremiumService $premium): JsonResponse
     {
         $request->validate([
             'mood' => 'nullable|in:action,relaxed,story,competitive,any',
@@ -28,11 +30,24 @@ class BacklogAdvisorController extends Controller
             'platform' => 'nullable|string|max:60',
         ]);
 
+        $user = $request->user();
+
+        if (! $premium->isPremium($user)) {
+            $cacheKey = "backlog_advisor_uses:{$user->id}:".now()->format('Y-m-d');
+            $uses = (int) Cache::get($cacheKey, 0);
+
+            if ($uses >= 3) {
+                return $this->error('Free users can use the Backlog Advisor 3 times per day. Upgrade to Premium for unlimited access!', 429);
+            }
+
+            Cache::put($cacheKey, $uses + 1, now()->endOfDay());
+        }
+
         $mood = $request->input('mood', 'any');
         $timeAvailable = $request->input('time_available', 3);
         $platform = $request->input('platform', '');
 
-        $backlog = UserGame::where('user_id', Auth::id())
+        $backlog = UserGame::where('user_id', $user->id)
             ->where('status', 'backlog')
             ->with('game:id,name,slug,background_image,genre_names,platform_names,rating')
             ->orderByDesc('updated_at')

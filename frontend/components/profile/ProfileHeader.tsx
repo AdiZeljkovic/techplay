@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import {
     Calendar, MapPin, Crown, Pen, ShieldCheck, Award, CheckCircle2,
-    UserPlus, Clock, Mail, Shield, Hexagon, Sparkles, Share2,
+    UserPlus, Clock, Mail, Shield, Hexagon, Sparkles, Share2, Swords,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import ReputationPowerCard from "./dashboard/ReputationPowerCard";
@@ -18,6 +18,7 @@ interface ProfileHeaderProps {
     stats: ProfileStats;
     nextRank: UserProfile["next_rank"];
     isOwnProfile: boolean;
+    currentUsername?: string;
     friendStatus: "none" | "pending" | "accepted";
     loadingAction: boolean;
     onSendRequest: () => void;
@@ -40,6 +41,7 @@ export default function ProfileHeader({
     stats,
     nextRank,
     isOwnProfile,
+    currentUsername,
     friendStatus,
     loadingAction,
     onSendRequest,
@@ -60,6 +62,8 @@ export default function ProfileHeader({
     const frame = customization?.equipped?.frame;
     const badge = customization?.equipped?.badge;
     const tierColor = reputation?.tier_color ?? "#CD7F32";
+    const hasAnimatedAvatar = customization?.perks?.animated_avatar === true;
+    const hasSpotlight = customization?.perks?.profile_spotlight === true;
 
     // Action buttons live in the Reputation & Power card footer.
     const cardFooter = isOwnProfile ? (
@@ -89,7 +93,7 @@ export default function ProfileHeader({
     );
 
     return (
-        <div className="relative -mt-[120px] md:-mt-[116px]">
+        <div className={`relative -mt-[120px] md:-mt-[116px]${hasSpotlight ? " ring-2 ring-[--accent] ring-offset-0 shadow-[0_0_60px_rgba(252,65,0,0.25)]" : ""}`}>
             {/* === COVER BANNER (background) === */}
             <div className="absolute inset-0 overflow-hidden">
                 {userData.cover_image ? (
@@ -116,7 +120,7 @@ export default function ProfileHeader({
                                     className="absolute -inset-1.5 rounded-full"
                                     style={{ background: frame?.value ?? "var(--accent)", boxShadow: "0 0 28px rgba(252,65,0,0.55)" }}
                                 />
-                                <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full bg-[var(--bg-elevated)] border-[4px] border-[var(--bg-primary)] flex items-center justify-center overflow-hidden shadow-2xl">
+                                <div className={`relative w-28 h-28 md:w-36 md:h-36 rounded-full bg-[var(--bg-elevated)] border-[4px] border-[var(--bg-primary)] flex items-center justify-center overflow-hidden shadow-2xl${hasAnimatedAvatar ? " animate-spin-slow" : ""}`}>
                                     {userData.avatar_url ? (
                                         <img src={userData.avatar_url} alt={userData.username} className="w-full h-full object-cover" />
                                     ) : (
@@ -183,6 +187,13 @@ export default function ProfileHeader({
                                     {/* Give Recognition — only for other profiles */}
                                     {!isOwnProfile && (
                                         <GiveRecognitionButton username={userData.username} />
+                                    )}
+                                    {/* Compare — for other profiles when logged in */}
+                                    {!isOwnProfile && currentUsername && (
+                                        <Link href={`/compare/${currentUsername}/${userData.username}`}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-white/70 hover:text-white text-[12px] font-semibold transition-colors">
+                                            <Swords className="w-3.5 h-3.5" /> Compare
+                                        </Link>
                                     )}
                                     {/* Share profile */}
                                     <button

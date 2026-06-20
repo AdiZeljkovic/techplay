@@ -20,6 +20,7 @@ import ListsTab from "@/components/profile/ListsTab";
 import ActivityFeed from "@/components/profile/ActivityFeed";
 import StatsPanel from "@/components/profile/StatsPanel";
 import SectionCard from "@/components/profile/dashboard/SectionCard";
+import SteamAchievements from "@/components/profile/dashboard/SteamAchievements";
 import type { UserProfile } from "@/lib/types/profile";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
@@ -114,6 +115,7 @@ function ProfilePageInner() {
                 stats={stats}
                 nextRank={profile.next_rank}
                 isOwnProfile={isOwnProfile}
+                currentUsername={currentUser?.username}
                 friendStatus={friendStatus}
                 loadingAction={loadingAction}
                 onSendRequest={handleSendRequest}
@@ -156,7 +158,14 @@ function ProfilePageInner() {
                     </SectionCard>
                 )}
 
-                {activeTab === "achievements" && <AchievementGrid achievements={achievements || []} />}
+                {activeTab === "achievements" && (
+                    <div className="space-y-6">
+                        <AchievementGrid achievements={achievements || []} />
+                        <SectionCard title="Steam Achievements" icon={<User className="w-4 h-4 text-[var(--accent)]" />}>
+                            <SteamAchievements username={userData.username} />
+                        </SectionCard>
+                    </div>
+                )}
 
                 {activeTab === "lists" && (
                     <ListsTab username={userData.username} isOwnProfile={isOwnProfile} />

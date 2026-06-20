@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customization;
 use App\Models\RewardItem;
 use App\Models\RewardRedemption;
+use App\Models\User;
+use App\Models\UserCustomization;
 use App\Services\BountyService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class RewardController extends Controller
 {
@@ -66,6 +70,8 @@ class RewardController extends Controller
             $item->decrement('stock');
         }
 
+        $this->grantCosmetic($user, $item);
+
         return $this->success([
             'balance' => $balance,
             'redemption' => $redemption->only(['id', 'reward_item_id', 'cost', 'status', 'created_at']),
@@ -85,5 +91,42 @@ class RewardController extends Controller
             ->get(['id', 'reward_item_id', 'cost', 'status', 'created_at']);
 
         return $this->success($items);
+    }
+
+    /**
+     * Map a RewardItem to its Customization counterpart and grant it to the user.
+     * Cosmetic types (badge, frame, theme, perk) auto-unlock the matching Customization.
+     */
+    private function grantCosmetic(User $user, RewardItem $item): void
+    {
+        $cosmeticTypes = ['badge', 'frame', 'theme', 'perk'];
+
+        if (! in_array($item->type, $cosmeticTypes, true)) {
+            return;
+        }
+
+        // Map reward item slug → customization slug
+        $slugMap = [
+            'bronze-profile-frame' => 'bronze-ring',
+            'neon-profile-theme' => 'neon-cyan',
+            'early-supporter-badge' => 'early-adopter',
+            'animated-avatar' => 'animated-avatar',
+            'featured-profile-spotlight' => 'profile-spotlight',
+        ];
+
+        $customizationSlug = $slugMap[$item->slug] ?? $item->slug;
+
+        $customization = Customization::where('slug', $customizationSlug)->where('is_active', true)->first();
+
+        if (! $customization) {
+            Log::debug("No matching customization for reward slug [{$item->slug}]");
+
+            return;
+        }
+
+        UserCustomization::firstOrCreate(
+            ['user_id' => $user->id, 'customization_id' => $customization->id],
+            ['is_equipped' => false, 'acquired_via' => 'bounty_store']
+        );
     }
 }

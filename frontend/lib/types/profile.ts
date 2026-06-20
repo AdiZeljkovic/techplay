@@ -229,6 +229,7 @@ export interface CustomizationSummaryRow {
 
 export interface CustomizationData {
     equipped: { theme: EquippedCosmetic | null; frame: EquippedCosmetic | null; badge: EquippedCosmetic | null };
+    perks?: { active: string[]; animated_avatar: boolean; profile_spotlight: boolean };
     summary: CustomizationSummaryRow[];
     tier: string | null;
 }

@@ -334,12 +334,26 @@ class ProfileService
             ->get();
 
         $equipped = ['theme' => null, 'frame' => null, 'badge' => null];
+        $perks = [];
+
         foreach ($equippedRows as $row) {
             $c = $row->customization;
-            if ($c && array_key_exists($c->type, $equipped)) {
+            if (! $c) {
+                continue;
+            }
+            if (array_key_exists($c->type, $equipped)) {
                 $equipped[$c->type] = ['name' => $c->name, 'value' => $c->value, 'asset' => $c->asset];
+            } elseif ($c->type === 'perk') {
+                $perks[] = $c->slug;
             }
         }
+
+        // Owned perks (equipped or not) — for unlocked check
+        $ownedPerkSlugs = UserCustomization::where('user_id', $user->id)
+            ->join('customizations', 'customizations.id', '=', 'user_customizations.customization_id')
+            ->where('customizations.type', 'perk')
+            ->pluck('customizations.slug')
+            ->all();
 
         $totals = Customization::where('is_active', true)
             ->select('type', DB::raw('count(*) as c'))->groupBy('type')->pluck('c', 'type');
@@ -360,6 +374,11 @@ class ProfileService
 
         return [
             'equipped' => $equipped,
+            'perks' => [
+                'active' => $perks,
+                'animated_avatar' => in_array('animated-avatar', $ownedPerkSlugs, true),
+                'profile_spotlight' => in_array('profile-spotlight', $ownedPerkSlugs, true),
+            ],
             'summary' => $summary,
             'tier' => optional(optional($user->activeSupport()->with('tier')->first())->tier)->name,
         ];

@@ -56,6 +56,9 @@ use App\Http\Controllers\Api\V1\SocialAuthController;
 use App\Http\Controllers\Api\V1\StreakController;
 use App\Http\Controllers\Api\V1\SupportController;
 use App\Http\Controllers\Api\V1\SystemController;
+use App\Http\Controllers\Api\V1\ClanController;
+use App\Http\Controllers\Api\V1\ProfileCompareController;
+use App\Http\Controllers\Api\V1\SteamAchievementController;
 use App\Http\Controllers\Api\V1\TechController;
 use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\UserWowCharactersController;
@@ -198,6 +201,14 @@ Route::prefix('v1')->group(function () {
 
         // Quests
         Route::get('/user/quests', [QuestController::class, 'index']);
+
+        // Clans
+        Route::get('/user/clan', [ClanController::class, 'myClan']);
+        Route::post('/clans', [ClanController::class, 'store']);
+        Route::post('/clans/{slug}/join', [ClanController::class, 'join']);
+        Route::delete('/clans/{slug}/leave', [ClanController::class, 'leave']);
+        Route::post('/clans/{slug}/invite', [ClanController::class, 'invite']);
+        Route::post('/clans/invites/{id}/respond', [ClanController::class, 'respondInvite']);
 
         // Recognitions (Auth)
         Route::post('/users/{username}/recognitions', [RecognitionController::class, 'store']);
@@ -348,12 +359,20 @@ Route::prefix('v1')->group(function () {
         Route::get('/seasons', [SeasonController::class, 'index']);
         Route::get('/seasons/active', [SeasonController::class, 'active']);
 
+        // Clans public
+        Route::get('/clans', [ClanController::class, 'index']);
+        Route::get('/clans/{slug}', [ClanController::class, 'show']);
+
+        // Profile comparison
+        Route::get('/compare/{username}/{other}', [ProfileCompareController::class, 'compare']);
+
         // Public Profile
         Route::get('/users/{username}/wrapped/{year}', [WrappedController::class, 'show']);
         Route::get('/users/{username}/collection', [GameCollectionController::class, 'index']);
         Route::get('/users/{username}/lists', [GameListController::class, 'index']);
         Route::get('/users/{username}/activity', [ActivityController::class, 'index']);
         Route::get('/users/{username}/recognitions', [RecognitionController::class, 'index']);
+        Route::get('/users/{username}/steam-achievements', [SteamAchievementController::class, 'index']);
         Route::get('/users/{username}', [AuthController::class, 'show']);
 
         // Redirects

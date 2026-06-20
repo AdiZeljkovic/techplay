@@ -79,11 +79,16 @@ const config: Config = {
                     "0%": { transform: "translateX(0)" },
                     "100%": { transform: "translateX(-50%)" },
                 },
+                "spin-slow": {
+                    "0%": { filter: "hue-rotate(0deg)" },
+                    "100%": { filter: "hue-rotate(360deg)" },
+                },
             },
             animation: {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
                 ticker: "ticker 40s linear infinite",
+                "spin-slow": "spin-slow 4s linear infinite",
             },
         },
     },
