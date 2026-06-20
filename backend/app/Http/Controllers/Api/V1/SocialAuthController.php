@@ -4,15 +4,15 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
-use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Laravel\Socialite\Facades\Socialite;
 
 class SocialAuthController extends Controller
 {
-    use \App\Traits\ApiResponse;
+    use ApiResponse;
 
     /**
      * Redirect the user to the Discord authentication page.
@@ -38,14 +38,15 @@ class SocialAuthController extends Controller
         $guildId = config('services.discord.guild_id');
         $botToken = config('services.discord.bot_token');
 
-        if (!$guildId || !$botToken) {
+        if (! $guildId || ! $botToken) {
             Log::warning('Discord guild auto-join disabled: missing guild_id or bot_token');
+
             return false;
         }
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bot ' . $botToken,
+                'Authorization' => 'Bot '.$botToken,
                 'Content-Type' => 'application/json',
             ])->put("https://discord.com/api/v10/guilds/{$guildId}/members/{$userId}", [
                 'access_token' => $accessToken,
@@ -53,6 +54,7 @@ class SocialAuthController extends Controller
 
             if ($response->successful() || $response->status() === 204) {
                 Log::info("User {$userId} added to Discord guild");
+
                 return true;
             }
 
@@ -61,13 +63,15 @@ class SocialAuthController extends Controller
                 return true;
             }
 
-            Log::warning("Failed to add user to guild", [
+            Log::warning('Failed to add user to guild', [
                 'status' => $response->status(),
-                'body' => $response->body()
+                'body' => $response->body(),
             ]);
+
             return false;
         } catch (\Exception $e) {
-            Log::error("Error adding user to guild: " . $e->getMessage());
+            Log::error('Error adding user to guild: '.$e->getMessage());
+
             return false;
         }
     }
@@ -80,9 +84,10 @@ class SocialAuthController extends Controller
         try {
             $discordUser = Socialite::driver('discord')->stateless()->user();
         } catch (\Exception $e) {
-            Log::error('Discord OAuth failed: ' . $e->getMessage());
+            Log::error('Discord OAuth failed: '.$e->getMessage());
+
             // Redirect to frontend with error instead of JSON (browser redirect)
-            return redirect(config('app.frontend_url') . '/login?error=' . urlencode('Discord authentication failed. Please try again.'));
+            return redirect(config('app.frontend_url').'/login?error='.urlencode('Discord authentication failed. Please try again.'));
         }
 
         // Logic A: Linking to existing logged-in user
@@ -102,7 +107,7 @@ class SocialAuthController extends Controller
 
             // Check if email matches and verify it if needed?
             // Trusting Discord email? Generally yes.
-            if (!$existingUser->email_verified_at && $discordUser->getEmail()) {
+            if (! $existingUser->email_verified_at && $discordUser->getEmail()) {
                 $existingUser->update(['email_verified_at' => now()]);
             }
 
@@ -110,7 +115,7 @@ class SocialAuthController extends Controller
             $this->addUserToGuild($discordUser->getId(), $discordUser->token);
 
             // Redirect to frontend with token
-            return redirect(config('app.frontend_url') . '/auth/callback?token=' . $token);
+            return redirect(config('app.frontend_url').'/auth/callback?token='.$token);
         }
 
         // SCENARIO 2: Registering or Linking?
@@ -126,21 +131,22 @@ class SocialAuthController extends Controller
                 'discord_token' => $discordUser->token,
                 'discord_refresh_token' => $discordUser->refreshToken,
                 'discord_avatar' => $discordUser->getAvatar(),
-                'gamertags' => array_merge($userWithEmail->gamertags ?? [], ['discord' => $discordUser->getNickname() ?? $discordUser->getName()])
+                'gamertags' => array_merge($userWithEmail->gamertags ?? [], ['discord' => $discordUser->getNickname() ?? $discordUser->getName()]),
             ]);
 
             // Auto-join user to our Discord server
             $this->addUserToGuild($discordUser->getId(), $discordUser->token);
 
             $token = $userWithEmail->createToken('auth_token')->plainTextToken;
-            return redirect(config('app.frontend_url') . '/auth/callback?token=' . $token);
+
+            return redirect(config('app.frontend_url').'/auth/callback?token='.$token);
         }
 
         // SCENARIO 3: New User Registration
         // Create new user
         $newUser = User::create([
             'name' => $discordUser->getName(),
-            'username' => strtolower(str_replace(' ', '', $discordUser->getNickname() ?? $discordUser->getName())) . rand(1000, 9999), // Temporary username
+            'username' => strtolower(str_replace(' ', '', $discordUser->getNickname() ?? $discordUser->getName())).rand(1000, 9999), // Temporary username
             'email' => $discordUser->getEmail(),
             'password' => bcrypt(str()->random(16)), // Random password
             'email_verified_at' => now(), // Verified via Discord
@@ -149,13 +155,14 @@ class SocialAuthController extends Controller
             'discord_refresh_token' => $discordUser->refreshToken,
             'discord_avatar' => $discordUser->getAvatar(),
             'gamertags' => ['discord' => $discordUser->getNickname() ?? $discordUser->getName()],
-            'role' => 'user'
+            'role' => 'user',
         ]);
 
         // Auto-join new user to our Discord server
         $this->addUserToGuild($discordUser->getId(), $discordUser->token);
 
         $token = $newUser->createToken('auth_token')->plainTextToken;
-        return redirect(config('app.frontend_url') . '/auth/callback?token=' . $token);
+
+        return redirect(config('app.frontend_url').'/auth/callback?token='.$token);
     }
 }

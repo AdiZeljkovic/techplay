@@ -4,24 +4,24 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\GameResource\Pages;
 use App\Models\Game;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
-use Filament\Actions\CreateAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\BulkActionGroup;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 
 class GameResource extends Resource
 {
@@ -48,7 +48,7 @@ class GameResource extends Resource
         return 'Game';
     }
 
-public static function form(Schema $schema): Schema
+    public static function form(Schema $schema): Schema
     {
         return $schema
             ->columns(['default' => 1, 'lg' => 3])
@@ -65,7 +65,7 @@ public static function form(Schema $schema): Schema
                                     ->required()
                                     ->maxLength(500)
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(fn($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state))),
+                                    ->afterStateUpdated(fn ($state, $set) => $set('slug', Str::slug($state))),
 
                                 Forms\Components\TextInput::make('slug')
                                     ->label('Slug')
@@ -96,9 +96,9 @@ public static function form(Schema $schema): Schema
 
                                 Forms\Components\Placeholder::make('background_image_preview')
                                     ->label('Preview')
-                                    ->content(fn($get) => new \Illuminate\Support\HtmlString(
+                                    ->content(fn ($get) => new HtmlString(
                                         $get('background_image')
-                                            ? '<img src="' . e($get('background_image')) . '" style="max-height:200px;border-radius:6px;object-fit:cover;" />'
+                                            ? '<img src="'.e($get('background_image')).'" style="max-height:200px;border-radius:6px;object-fit:cover;" />'
                                             : '<span style="color:#6b7280">No image set</span>'
                                     )),
                             ]),
@@ -216,27 +216,27 @@ public static function form(Schema $schema): Schema
                     ->searchable()
                     ->sortable()
                     ->limit(45)
-                    ->tooltip(fn($record) => $record->name),
+                    ->tooltip(fn ($record) => $record->name),
 
                 TextColumn::make('rating')
                     ->sortable()
                     ->badge()
-                    ->color(fn($state) => match (true) {
+                    ->color(fn ($state) => match (true) {
                         $state >= 4.0 => 'success',
                         $state >= 2.5 => 'warning',
-                        default       => 'danger',
+                        default => 'danger',
                     })
-                    ->formatStateUsing(fn($state) => $state ? number_format($state, 2) : '—'),
+                    ->formatStateUsing(fn ($state) => $state ? number_format($state, 2) : '—'),
 
                 TextColumn::make('metacritic')
                     ->sortable()
                     ->badge()
-                    ->color(fn($state) => match (true) {
+                    ->color(fn ($state) => match (true) {
                         $state >= 75 => 'success',
                         $state >= 50 => 'warning',
-                        default      => 'danger',
+                        default => 'danger',
                     })
-                    ->formatStateUsing(fn($state) => $state ?: '—')
+                    ->formatStateUsing(fn ($state) => $state ?: '—')
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('released')
@@ -288,8 +288,8 @@ public static function form(Schema $schema): Schema
                 TernaryFilter::make('screenshots_crawled_at')
                     ->label('Screenshots')
                     ->queries(
-                        true: fn(Builder $q) => $q->whereNotNull('screenshots_crawled_at'),
-                        false: fn(Builder $q) => $q->whereNull('screenshots_crawled_at'),
+                        true: fn (Builder $q) => $q->whereNotNull('screenshots_crawled_at'),
+                        false: fn (Builder $q) => $q->whereNull('screenshots_crawled_at'),
                     )
                     ->trueLabel('Has screenshots')
                     ->falseLabel('No screenshots')

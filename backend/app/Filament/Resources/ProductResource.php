@@ -4,17 +4,16 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
 use App\Models\Product;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Schemas\Schema;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Illuminate\Support\Str;
-use Closure;
 
 class ProductResource extends Resource
 {
@@ -59,6 +58,7 @@ class ProductResource extends Resource
     {
         return 'Shop & Monetization';
     }
+
     protected static ?int $navigationSort = 1;
 
     public static function table(Table $table): Table
@@ -70,7 +70,7 @@ class ProductResource extends Resource
                     ->circular(),
                 Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('price')
-                    ->formatStateUsing(fn($state) => number_format($state, 2) . ' KM')
+                    ->formatStateUsing(fn ($state) => number_format($state, 2).' KM')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('stock')->sortable(),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),

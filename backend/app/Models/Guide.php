@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class Guide extends Model
 {
@@ -54,7 +56,7 @@ class Guide extends Model
         // Layer 1: Cache-based throttling (fastest, 30 minutes)
         $cacheKey = "guide_view_{$this->id}_{$fingerprint}";
 
-        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+        if (Cache::has($cacheKey)) {
             return false;
         }
 
@@ -67,7 +69,7 @@ class Guide extends Model
         }
 
         // Layer 3: Database throttling (ultimate fallback)
-        $recentView = \Illuminate\Support\Facades\DB::table('guide_views')
+        $recentView = DB::table('guide_views')
             ->where('guide_id', $this->id)
             ->where('fingerprint', $fingerprint)
             ->where('created_at', '>', now()->subMinutes(30))
@@ -78,13 +80,13 @@ class Guide extends Model
         }
 
         // Increment view count
-        \Illuminate\Support\Facades\DB::table('guides')
+        DB::table('guides')
             ->where('id', $this->id)
-            ->update(['views' => \Illuminate\Support\Facades\DB::raw('COALESCE(views, 0) + 1')]);
+            ->update(['views' => DB::raw('COALESCE(views, 0) + 1')]);
 
         // Record view in tracking table (async, non-blocking)
         try {
-            \Illuminate\Support\Facades\DB::table('guide_views')->insert([
+            DB::table('guide_views')->insert([
                 'guide_id' => $this->id,
                 'ip_address' => $ip,
                 'fingerprint' => $fingerprint,
@@ -95,7 +97,7 @@ class Guide extends Model
         }
 
         // Set throttle markers
-        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 30);
+        Cache::put($cacheKey, true, 30);
         session([$sessionKey => now()]);
 
         return true;
@@ -118,7 +120,7 @@ class Guide extends Model
     protected static function clearCache($guide)
     {
         // Clear specific guide cache
-        \Illuminate\Support\Facades\Cache::forget("guide.show.{$guide->slug}");
+        Cache::forget("guide.show.{$guide->slug}");
 
         // Clear pagination cache for common combinations
         $difficulties = ['all', 'beginner', 'intermediate', 'advanced'];
@@ -127,7 +129,7 @@ class Guide extends Model
         foreach ($difficulties as $diff) {
             // Clear first 5 pages for each difficulty
             for ($i = 1; $i <= 5; $i++) {
-                \Illuminate\Support\Facades\Cache::forget("guides.index.page_{$i}.diff_{$diff}.search_{$emptySearchHash}");
+                Cache::forget("guides.index.page_{$i}.diff_{$diff}.search_{$emptySearchHash}");
             }
         }
     }

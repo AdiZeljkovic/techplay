@@ -16,8 +16,7 @@ class GiveawayWinnerNotification extends Notification implements ShouldQueue
     public function __construct(
         public Giveaway $giveaway,
         public ?GiveawayPrizeTier $tier = null
-    ) {
-    }
+    ) {}
 
     /**
      * Get the notification's delivery channels.
@@ -33,15 +32,15 @@ class GiveawayWinnerNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $prizeName = $this->tier
-            ? $this->tier->tier_name . ' - ' . $this->tier->prize_description
+            ? $this->tier->tier_name.' - '.$this->tier->prize_description
             : $this->giveaway->prize_name;
 
         return (new MailMessage)
-            ->subject('🎉 YOU WON: ' . $this->giveaway->title)
-            ->greeting('🏆 CONGRATULATIONS ' . strtoupper($notifiable->username) . '! 🏆')
+            ->subject('🎉 YOU WON: '.$this->giveaway->title)
+            ->greeting('🏆 CONGRATULATIONS '.strtoupper($notifiable->username).'! 🏆')
             ->line('**You are the winner of:**')
-            ->line('# ' . $prizeName)
-            ->line('You won our ' . $this->giveaway->title . ' giveaway!')
+            ->line('# '.$prizeName)
+            ->line('You won our '.$this->giveaway->title.' giveaway!')
             ->line('---')
             ->line('**What happens next?**')
             ->line('Our team will contact you within 24-48 hours via email with instructions on how to claim your prize.')

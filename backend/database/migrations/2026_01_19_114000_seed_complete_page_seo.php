@@ -1,14 +1,14 @@
 <?php
 
+use App\Models\PageSeo;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
-use App\Models\PageSeo;
-use App\Models\Category;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * COMPREHENSIVE PAGE SEO SEEDING
-     * 
+     *
      * This migration will:
      * 1. Clear any orphaned/incorrect PageSeo entries
      * 2. Seed ALL static pages

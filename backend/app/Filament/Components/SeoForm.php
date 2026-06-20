@@ -3,13 +3,13 @@
 namespace App\Filament\Components;
 
 use App\Services\SeoAnalyzerService;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ViewField;
-use Filament\Actions\Action;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 
 class SeoForm
 {
@@ -30,7 +30,7 @@ class SeoForm
                     TextInput::make('seo_title')
                         ->label('SEO Title')
                         ->placeholder('Auto-generated from article title')
-                        ->helperText(fn($state) => 'Characters: ' . mb_strlen($state ?? '') . '/60')
+                        ->helperText(fn ($state) => 'Characters: '.mb_strlen($state ?? '').'/60')
                         ->maxLength(70)
                         ->live(onBlur: true)
                         ->suffixAction(
@@ -67,7 +67,7 @@ class SeoForm
                 Textarea::make('seo_description')
                     ->label('Meta Description')
                     ->placeholder('Auto-generated from excerpt')
-                    ->helperText(fn($state) => 'Characters: ' . mb_strlen($state ?? '') . '/160 (optimal: 150-160)')
+                    ->helperText(fn ($state) => 'Characters: '.mb_strlen($state ?? '').'/160 (optimal: 150-160)')
                     ->maxLength(170)
                     ->rows(3)
                     ->live(onBlur: true)

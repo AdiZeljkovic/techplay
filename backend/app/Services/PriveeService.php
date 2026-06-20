@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -9,12 +10,13 @@ use RuntimeException;
 class PriveeService
 {
     private string $baseUrl;
+
     private string $apiKey;
 
     public function __construct()
     {
         $this->baseUrl = rtrim(config('services.privee.base_url', 'https://38wzs9wt1a.execute-api.eu-central-1.amazonaws.com/'), '/');
-        $this->apiKey  = config('services.privee.api_key') ?? '';
+        $this->apiKey = config('services.privee.api_key') ?? '';
     }
 
     /**
@@ -25,16 +27,17 @@ class PriveeService
     public function login(string $email, string $password): array
     {
         $response = Http::withHeaders([
-            'x-api-key'    => $this->apiKey,
+            'x-api-key' => $this->apiKey,
             'Content-Type' => 'application/json',
-            'Accept'       => 'application/json',
+            'Accept' => 'application/json',
         ])->timeout(15)->post("{$this->baseUrl}/auth/login", [
-            'email'    => $email,
+            'email' => $email,
             'password' => $password,
         ]);
 
         $data = $this->parseResponse($response, 'email login');
         $data['email'] = $email; // Include submitted email for entry creation (API doesn't return user info)
+
         return $data;
     }
 
@@ -46,9 +49,9 @@ class PriveeService
     public function googleLogin(string $googleToken): array
     {
         $response = Http::withHeaders([
-            'x-api-key'    => $this->apiKey,
+            'x-api-key' => $this->apiKey,
             'Content-Type' => 'application/json',
-            'Accept'       => 'application/json',
+            'Accept' => 'application/json',
         ])->timeout(15)->post("{$this->baseUrl}/auth/google-login", [
             'googleIdToken' => $googleToken,
         ]);
@@ -61,12 +64,12 @@ class PriveeService
      *
      * @throws RuntimeException on failure
      */
-    private function parseResponse(\Illuminate\Http\Client\Response $response, string $context): array
+    private function parseResponse(Response $response, string $context): array
     {
         if ($response->failed()) {
             Log::warning("Privee API {$context} failed", [
                 'status' => $response->status(),
-                'body'   => $response->body(),
+                'body' => $response->body(),
             ]);
             throw new RuntimeException('Authentication failed. Please check your credentials and try again.');
         }

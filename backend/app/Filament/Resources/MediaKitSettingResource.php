@@ -79,25 +79,25 @@ class MediaKitSettingResource extends Resource
                         Forms\Components\Textarea::make('value')
                             ->label('Value')
                             ->rows(5)
-                            ->visible(fn($get) => in_array($get('type'), ['text', 'json']))
-                            ->helperText(fn($get) => $get('type') === 'json' ? 'Enter valid JSON: {"key": "value"} or ["item1", "item2"]' : 'Enter text value')
+                            ->visible(fn ($get) => in_array($get('type'), ['text', 'json']))
+                            ->helperText(fn ($get) => $get('type') === 'json' ? 'Enter valid JSON: {"key": "value"} or ["item1", "item2"]' : 'Enter text value')
                             ->columnSpanFull(),
 
                         // Number input
                         Forms\Components\TextInput::make('value')
                             ->label('Value')
                             ->numeric()
-                            ->visible(fn($get) => $get('type') === 'number')
+                            ->visible(fn ($get) => $get('type') === 'number')
                             ->helperText('Enter numbers only')
                             ->columnSpanFull(),
 
                         // Toggle for boolean
                         Forms\Components\Toggle::make('value')
                             ->label('Value')
-                            ->visible(fn($get) => $get('type') === 'boolean')
+                            ->visible(fn ($get) => $get('type') === 'boolean')
                             ->helperText('Enable/Disable this setting')
-                            ->formatStateUsing(fn($state) => $state === '1' || $state === 'true' || $state === true)
-                            ->dehydrateStateUsing(fn($state) => $state ? '1' : '0')
+                            ->formatStateUsing(fn ($state) => $state === '1' || $state === 'true' || $state === true)
+                            ->dehydrateStateUsing(fn ($state) => $state ? '1' : '0')
                             ->columnSpanFull(),
                     ]),
 
@@ -151,7 +151,7 @@ class MediaKitSettingResource extends Resource
 
                 Tables\Columns\TextColumn::make('value')
                     ->limit(50)
-                    ->tooltip(fn($record) => $record->value)
+                    ->tooltip(fn ($record) => $record->value)
                     ->wrap(),
 
                 Tables\Columns\TextColumn::make('type')

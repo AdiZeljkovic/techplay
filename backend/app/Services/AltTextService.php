@@ -28,7 +28,7 @@ class AltTextService
 
         // Priority 3: Use article title + generic suffix
         if ($articleTitle) {
-            return $articleTitle . ' - image';
+            return $articleTitle.' - image';
         }
 
         // Fallback
@@ -93,7 +93,7 @@ class AltTextService
 
         foreach ($patterns as $pattern => $description) {
             if (preg_match($pattern, $baseName)) {
-                return ucfirst($category) . ' - ' . $description;
+                return ucfirst($category).' - '.$description;
             }
         }
 

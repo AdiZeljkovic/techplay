@@ -4,23 +4,23 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\MediaResource\Pages;
 use App\Models\Media;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
-use Filament\Tables\Table;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\Action;
+use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class MediaResource extends Resource
 {
@@ -32,6 +32,7 @@ class MediaResource extends Resource
     {
         return 'Content Studio';
     }
+
     protected static ?int $navigationSort = 6;
 
     public static function getNavigationLabel(): string
@@ -99,7 +100,7 @@ class MediaResource extends Resource
                             ->columnSpanFull(),
 
                         Forms\Components\Hidden::make('uploaded_by')
-                            ->default(fn() => auth()->id()),
+                            ->default(fn () => auth()->id()),
                     ]),
             ]);
     }
@@ -120,12 +121,12 @@ class MediaResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->placeholder('Untitled')
-                    ->description(fn($record) => $record->alt_text ? '🔤 ' . \Illuminate\Support\Str::limit($record->alt_text, 30) : null),
+                    ->description(fn ($record) => $record->alt_text ? '🔤 '.Str::limit($record->alt_text, 30) : null),
 
                 TextColumn::make('collection')
                     ->label('Collection')
                     ->badge()
-                    ->color(fn($state) => match ($state) {
+                    ->color(fn ($state) => match ($state) {
                         'articles' => 'info',
                         'reviews' => 'success',
                         'guides' => 'warning',
@@ -133,7 +134,7 @@ class MediaResource extends Resource
                         'banners' => 'primary',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn($state) => match ($state) {
+                    ->formatStateUsing(fn ($state) => match ($state) {
                         'articles' => '📰 Articles',
                         'reviews' => '🎮 Reviews',
                         'guides' => '📖 Guides',
@@ -146,14 +147,14 @@ class MediaResource extends Resource
                     ->label('Type')
                     ->badge()
                     ->color('gray')
-                    ->formatStateUsing(fn($state) => strtoupper(str_replace('image/', '', $state ?? ''))),
+                    ->formatStateUsing(fn ($state) => strtoupper(str_replace('image/', '', $state ?? ''))),
 
                 TextColumn::make('human_size')
                     ->label('Size'),
 
                 TextColumn::make('dimensions')
                     ->label('Dimensions')
-                    ->getStateUsing(fn($record) => $record->width && $record->height
+                    ->getStateUsing(fn ($record) => $record->width && $record->height
                         ? "{$record->width}×{$record->height}"
                         : '-'),
 
@@ -194,7 +195,7 @@ class MediaResource extends Resource
                     ->action(function ($record) {
                         // This will be handled by JS in the frontend
                     })
-                    ->url(fn($record) => Storage::disk('public')->url($record->path))
+                    ->url(fn ($record) => Storage::disk('public')->url($record->path))
                     ->openUrlInNewTab(),
                 EditAction::make(),
                 DeleteAction::make(),

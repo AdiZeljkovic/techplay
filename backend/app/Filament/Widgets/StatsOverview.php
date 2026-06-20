@@ -24,7 +24,7 @@ class StatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-m-document-text')
                 ->color('success'),
 
-            Stat::make('Total Revenue', number_format(Order::where('status', 'completed')->sum('total_price'), 2) . ' KM')
+            Stat::make('Total Revenue', number_format(Order::where('status', 'completed')->sum('total_price'), 2).' KM')
                 ->description('Lifetime earnings')
                 ->descriptionIcon('heroicon-m-currency-dollar')
                 ->chart([15, 4, 10, 2, 12, 4, 12])

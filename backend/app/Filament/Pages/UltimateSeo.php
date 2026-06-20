@@ -5,10 +5,9 @@ namespace App\Filament\Pages;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\Redirect;
-use App\Models\SeoMeta;
 use App\Models\SiteSetting;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -21,13 +20,14 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 
 class UltimateSeo extends Page implements HasForms
 {
     use InteractsWithForms;
 
     public ?array $data = [];
+
     public string $activeTab = 'global';
 
     protected string $view = 'filament.pages.ultimate-seo';
@@ -114,7 +114,7 @@ class UltimateSeo extends Page implements HasForms
                                             ->label('Default Meta Description')
                                             ->rows(3)
                                             ->maxLength(160)
-                                            ->helperText(fn($state) => strlen($state ?? '') . '/160 characters')
+                                            ->helperText(fn ($state) => strlen($state ?? '').'/160 characters')
                                             ->columnSpanFull(),
                                     ])->columns(2),
 
@@ -171,9 +171,9 @@ class UltimateSeo extends Page implements HasForms
                                 Section::make('Sitemap Actions')
                                     ->description('Use command "php artisan sitemap:generate" to regenerate')
                                     ->schema([
-                                        \Filament\Forms\Components\Placeholder::make('sitemap_info')
+                                        Placeholder::make('sitemap_info')
                                             ->label('')
-                                            ->content(fn() => 'Last sitemap: /sitemap.xml — Regenerate via CLI: php artisan sitemap:generate'),
+                                            ->content(fn () => 'Last sitemap: /sitemap.xml — Regenerate via CLI: php artisan sitemap:generate'),
                                     ]),
                             ]),
 
@@ -249,8 +249,8 @@ class UltimateSeo extends Page implements HasForms
         }
 
         // Clear SEO-related caches
-        \Illuminate\Support\Facades\Cache::forget('site_settings');
-        \Illuminate\Support\Facades\Cache::forget('page_seo.all');
+        Cache::forget('site_settings');
+        Cache::forget('page_seo.all');
 
         Notification::make()
             ->title('SEO Settings saved!')

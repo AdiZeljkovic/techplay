@@ -18,7 +18,7 @@ class PriveeGiveawayController extends Controller
     public function login(Request $request, string $slug, PriveeService $priveeService): JsonResponse
     {
         $request->validate([
-            'email'    => ['required', 'email'],
+            'email' => ['required', 'email'],
             'password' => ['required', 'string', 'min:6'],
         ]);
 
@@ -77,6 +77,7 @@ class PriveeGiveawayController extends Controller
 
         if (! $entry || $entry->giveaway_id !== $giveaway->id) {
             session()->forget("privee_entry_{$giveaway->id}");
+
             return response()->json(['entry' => null]);
         }
 
@@ -103,10 +104,10 @@ class PriveeGiveawayController extends Controller
     private function createEntry(Request $request, Giveaway $giveaway, array $priveeData): JsonResponse
     {
         // Extract user info from Privee response (flexible — handles different response shapes)
-        $user     = $priveeData['user'] ?? [];
-        $userId   = $user['id'] ?? $user['userId'] ?? $user['sub'] ?? $priveeData['userId'] ?? null;
-        $email    = $user['email'] ?? $priveeData['email'] ?? null;
-        $name     = $user['name'] ?? $user['displayName'] ?? $user['username'] ?? null;
+        $user = $priveeData['user'] ?? [];
+        $userId = $user['id'] ?? $user['userId'] ?? $user['sub'] ?? $priveeData['userId'] ?? null;
+        $email = $user['email'] ?? $priveeData['email'] ?? null;
+        $name = $user['name'] ?? $user['displayName'] ?? $user['username'] ?? null;
 
         // Fallback: use email as unique identifier if no explicit user ID
         if (! $userId) {
@@ -115,23 +116,23 @@ class PriveeGiveawayController extends Controller
 
         $entry = PriveeGiveawayEntry::firstOrCreate(
             [
-                'giveaway_id'    => $giveaway->id,
+                'giveaway_id' => $giveaway->id,
                 'privee_user_id' => $userId,
             ],
             [
-                'privee_email'        => $email,
+                'privee_email' => $email,
                 'privee_display_name' => $name,
-                'access_token'        => $priveeData['accessToken'],
-                'refresh_token'       => $priveeData['refreshToken'] ?? null,
-                'ip_address'          => $request->ip(),
-                'user_agent'          => substr($request->userAgent() ?? '', 0, 500),
+                'access_token' => $priveeData['accessToken'],
+                'refresh_token' => $priveeData['refreshToken'] ?? null,
+                'ip_address' => $request->ip(),
+                'user_agent' => substr($request->userAgent() ?? '', 0, 500),
             ]
         );
 
         // If user already had an entry, refresh their tokens
         if (! $entry->wasRecentlyCreated) {
             $entry->update([
-                'access_token'  => $priveeData['accessToken'],
+                'access_token' => $priveeData['accessToken'],
                 'refresh_token' => $priveeData['refreshToken'] ?? $entry->refresh_token,
             ]);
         }
@@ -141,17 +142,17 @@ class PriveeGiveawayController extends Controller
 
         return response()->json([
             'success' => true,
-            'entry'   => $this->formatEntry($entry),
+            'entry' => $this->formatEntry($entry),
         ]);
     }
 
     private function formatEntry(PriveeGiveawayEntry $entry): array
     {
         return [
-            'id'                  => $entry->id,
-            'privee_email'        => $entry->privee_email,
+            'id' => $entry->id,
+            'privee_email' => $entry->privee_email,
             'privee_display_name' => $entry->privee_display_name,
-            'entered_at'          => $entry->created_at?->toIso8601String(),
+            'entered_at' => $entry->created_at?->toIso8601String(),
         ];
     }
 }

@@ -10,6 +10,7 @@ import PlatformHighlights from "@/components/home/PlatformHighlights";
 import CommunityForum from "@/components/home/CommunityForum";
 import DiscordWidget from "@/components/home/DiscordWidget";
 import NewsletterCTA from "@/components/home/NewsletterCTA";
+import PersonalizedFeedSection from "@/components/home/PersonalizedFeedSection";
 import { useHome } from "@/hooks/useApi";
 
 interface HomeClientProps {
@@ -68,6 +69,8 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                     </div>
                 </div>
             </div>
+
+            <PersonalizedFeedSection />
 
             <NewsletterCTA />
 

@@ -16,22 +16,22 @@ return new class extends Migration
         // Posts table - for thread post counts and user post queries
         Schema::table('posts', function (Blueprint $table) {
             // Index for fetching posts by thread (already has FK, but explicit index helps)
-            if (!$this->hasIndex('posts', 'idx_posts_thread_created')) {
+            if (! $this->hasIndex('posts', 'idx_posts_thread_created')) {
                 $table->index(['thread_id', 'created_at'], 'idx_posts_thread_created');
             }
             // Index for user posts queries
-            if (!$this->hasIndex('posts', 'idx_posts_author')) {
+            if (! $this->hasIndex('posts', 'idx_posts_author')) {
                 $table->index('author_id', 'idx_posts_author');
             }
         });
 
         // Threads table - for author queries
         Schema::table('threads', function (Blueprint $table) {
-            if (!$this->hasIndex('threads', 'idx_threads_author')) {
+            if (! $this->hasIndex('threads', 'idx_threads_author')) {
                 $table->index('author_id', 'idx_threads_author');
             }
             // Index for updated_at sorting (active threads)
-            if (!$this->hasIndex('threads', 'idx_threads_updated')) {
+            if (! $this->hasIndex('threads', 'idx_threads_updated')) {
                 $table->index('updated_at', 'idx_threads_updated');
             }
         });
@@ -39,7 +39,7 @@ return new class extends Migration
         // Articles table - commonly queried fields
         Schema::table('articles', function (Blueprint $table) {
             // Composite index for home page hero query
-            if (!$this->hasIndex('articles', 'idx_articles_hero_published')) {
+            if (! $this->hasIndex('articles', 'idx_articles_hero_published')) {
                 $table->index(['is_featured_in_hero', 'status', 'published_at'], 'idx_articles_hero_published');
             }
         });
@@ -56,6 +56,7 @@ return new class extends Migration
                 return true;
             }
         }
+
         return false;
     }
 

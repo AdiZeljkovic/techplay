@@ -13,12 +13,13 @@ class CreateMedia extends CreateRecord
     {
         // Auto-populate mime_type and size from the uploaded file
         if (isset($data['path'])) {
-            $path = storage_path('app/public/' . $data['path']);
+            $path = storage_path('app/public/'.$data['path']);
             if (file_exists($path)) {
                 $data['mime_type'] = mime_content_type($path);
                 $data['size'] = filesize($path);
             }
         }
+
         return $data;
     }
 }

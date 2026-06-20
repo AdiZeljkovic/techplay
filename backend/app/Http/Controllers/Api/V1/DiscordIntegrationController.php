@@ -16,7 +16,7 @@ class DiscordIntegrationController extends Controller
     {
         $user = User::where('discord_id', $discordId)->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not found'], 404);
         }
 

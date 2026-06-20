@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Events\GuidePublished;
 use App\Models\Guide;
 use App\Services\RevalidationService;
+use App\Services\SanitizationService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -25,7 +26,7 @@ class GuideObserver
     public function saving(Guide $guide): void
     {
         if ($guide->isDirty('content') && is_string($guide->content)) {
-            $guide->content = app(\App\Services\SanitizationService::class)
+            $guide->content = app(SanitizationService::class)
                 ->sanitizeStaffContent($guide->content);
         }
     }

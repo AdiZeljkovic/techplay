@@ -2,12 +2,17 @@
 
 namespace App\Filament\Resources\Tasks\Tables;
 
+use App\Models\Article;
+use App\Models\Task;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use App\Models\Task;
+use Illuminate\Support\Str;
+
 class TasksTable
 {
     public static function configure(Table $table): Table
@@ -18,7 +23,7 @@ class TasksTable
                     ->searchable(),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'todo' => 'gray',
                         'in_progress' => 'warning',
                         'review' => 'info',
@@ -27,7 +32,7 @@ class TasksTable
                     }),
                 TextColumn::make('priority')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'low' => 'gray',
                         'medium' => 'info',
                         'high' => 'danger',
@@ -44,14 +49,14 @@ class TasksTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                \Filament\Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->options([
                         'todo' => 'To Do',
                         'in_progress' => 'In Progress',
                         'review' => 'Review',
                         'done' => 'Done',
                     ]),
-                \Filament\Tables\Filters\SelectFilter::make('priority')
+                SelectFilter::make('priority')
                     ->options([
                         'low' => 'Low',
                         'medium' => 'Medium',
@@ -60,7 +65,7 @@ class TasksTable
             ])
             ->recordActions([
                 EditAction::make(),
-                \Filament\Actions\Action::make('start_article')
+                Action::make('start_article')
                     ->label('Start Article')
                     ->icon('heroicon-o-document-plus')
                     ->color('success')
@@ -68,12 +73,12 @@ class TasksTable
                     ->modalHeading('Start Article from Task')
                     ->modalDescription('This will create a new Article draft based on this task and redirect you to the editor.')
                     ->action(function (Task $record) {
-                        $article = \App\Models\Article::create([
+                        $article = Article::create([
                             'title' => $record->title,
                             'content' => $record->description, // Seed content with task description
                             'status' => 'draft',
                             'author_id' => $record->assigned_to ?? auth()->id(),
-                            'slug' => \Illuminate\Support\Str::slug($record->title . '-' . uniqid()),
+                            'slug' => Str::slug($record->title.'-'.uniqid()),
                             'published_at' => null,
                         ]);
 

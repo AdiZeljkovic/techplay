@@ -39,7 +39,7 @@ class SupportTierSeeder extends Seeder
                     'Everything in Fan tier',
                     'Early access to videos',
                     'Exclusive monthly newsletter',
-                    'Vote on next review topic'
+                    'Vote on next review topic',
                 ],
                 'color' => '#8B5CF6', // Purple
                 'is_active' => true,
@@ -57,7 +57,7 @@ class SupportTierSeeder extends Seeder
                     'Your name in video credits',
                     'Exclusive merchandise discounts',
                     'Direct chat access with editors',
-                    'Legendary Badge'
+                    'Legendary Badge',
                 ],
                 'color' => '#F59E0B', // Gold
                 'is_active' => true,

@@ -40,7 +40,7 @@ class PageSeoObserver
         Cache::forget('page_seo.all');
 
         // Clear specific page cache
-        $cacheKey = "page_seo.path." . md5($pageSeo->page_path);
+        $cacheKey = 'page_seo.path.'.md5($pageSeo->page_path);
         Cache::forget($cacheKey);
     }
 }

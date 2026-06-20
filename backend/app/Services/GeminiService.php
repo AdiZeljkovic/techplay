@@ -8,29 +8,32 @@ use Illuminate\Support\Facades\Log;
 class GeminiService
 {
     protected string $apiKey;
+
     protected string $model;
+
     protected bool $verifySSL;
 
     public function __construct()
     {
         $this->apiKey = config('services.gemini.api_key');
         $this->model = config('services.gemini.model', 'gemini-2.5-flash');
-        $this->verifySSL = !app()->environment('local');
+        $this->verifySSL = ! app()->environment('local');
     }
 
     protected function http(int $timeout = 60)
     {
         $client = Http::timeout($timeout);
-        if (!$this->verifySSL) {
+        if (! $this->verifySSL) {
             $client = $client->withoutVerifying();
         }
+
         return $client;
     }
 
     /**
      * Analyze WoW character for Midnight expansion readiness using Google Gemini
      *
-     * @param array $characterData Minified character data from BlizzardDataTransformer
+     * @param  array  $characterData  Minified character data from BlizzardDataTransformer
      * @return array|null {score: int, advice: string[], missing: string[], daily_priority: string[]}
      */
     public function analyzeCharacterReadiness(array $characterData): ?array
@@ -43,16 +46,16 @@ class GeminiService
                     'contents' => [
                         [
                             'parts' => [
-                                ['text' => $prompt]
-                            ]
-                        ]
+                                ['text' => $prompt],
+                            ],
+                        ],
                     ],
                     'generationConfig' => [
                         'temperature' => 0.7,
                         'maxOutputTokens' => 2048,
                         'topP' => 0.95,
-                        'topK' => 40
-                    ]
+                        'topK' => 40,
+                    ],
                 ]);
 
             if ($response->failed()) {
@@ -60,6 +63,7 @@ class GeminiService
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
+
                 return null;
             }
 
@@ -69,13 +73,14 @@ class GeminiService
             Log::warning('Gemini full response', [
                 'finishReason' => $data['candidates'][0]['finishReason'] ?? 'unknown',
                 'usageMetadata' => $data['usageMetadata'] ?? null,
-                'full_data' => $data
+                'full_data' => $data,
             ]);
 
             $content = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
-            if (!$content) {
+            if (! $content) {
                 Log::error('Gemini returned empty content', ['response' => $data]);
+
                 return null;
             }
 
@@ -91,14 +96,16 @@ class GeminiService
                 Log::error('Gemini JSON decode failed', [
                     'raw_content' => $content,
                     'extracted_json' => $jsonContent,
-                    'json_error' => json_last_error_msg()
+                    'json_error' => json_last_error_msg(),
                 ]);
+
                 return null;
             }
 
             return $result;
         } catch (\Exception $e) {
-            Log::error('Gemini Exception: ' . $e->getMessage());
+            Log::error('Gemini Exception: '.$e->getMessage());
+
             return null;
         }
     }

@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\Tasks\Schemas;
 
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
 
 class TaskForm
@@ -16,9 +18,9 @@ class TaskForm
                 TextInput::make('title')
                     ->required()
                     ->maxLength(255),
-                \Filament\Forms\Components\RichEditor::make('description')
+                RichEditor::make('description')
                     ->columnSpanFull(),
-                \Filament\Forms\Components\Select::make('status')
+                Select::make('status')
                     ->options([
                         'todo' => 'To Do',
                         'in_progress' => 'In Progress',
@@ -27,7 +29,7 @@ class TaskForm
                     ])
                     ->required()
                     ->native(false),
-                \Filament\Forms\Components\Select::make('priority')
+                Select::make('priority')
                     ->options([
                         'low' => 'Low',
                         'medium' => 'Medium',
@@ -36,7 +38,7 @@ class TaskForm
                     ->required()
                     ->native(false),
                 DatePicker::make('due_date'),
-                \Filament\Forms\Components\Select::make('assigned_to')
+                Select::make('assigned_to')
                     ->relationship('assignee', 'name', function ($query) {
                         return $query->whereHas('roles', function ($q) {
                             $q->whereIn('name', ['Super Admin', 'Editor-in-Chief', 'Editor', 'Journalist', 'Moderator']);
@@ -44,8 +46,8 @@ class TaskForm
                     })
                     ->searchable()
                     ->preload(),
-                \Filament\Forms\Components\Hidden::make('created_by')
-                    ->default(fn() => auth()->id()),
+                Hidden::make('created_by')
+                    ->default(fn () => auth()->id()),
             ]);
     }
 }

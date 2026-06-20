@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Redirects\Schemas;
 
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
@@ -22,7 +23,7 @@ class RedirectForm
                     ->label('Target URL')
                     ->placeholder('/new-page or https://...')
                     ->required(),
-                \Filament\Forms\Components\Select::make('status_code')
+                Select::make('status_code')
                     ->options([
                         301 => '301 - Permanent Redirect',
                         302 => '302 - Temporary Redirect',

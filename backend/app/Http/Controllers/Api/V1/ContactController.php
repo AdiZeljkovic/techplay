@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Mail\ContactFormMessage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class ContactController extends Controller
 {
@@ -33,20 +33,20 @@ class ContactController extends Controller
 
             Log::info('Contact form submitted', [
                 'from' => $validated['email'],
-                'subject' => $validated['subject']
+                'subject' => $validated['subject'],
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Your message has been sent successfully.'
+                'message' => 'Your message has been sent successfully.',
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Contact form error: ' . $e->getMessage());
+            Log::error('Contact form error: '.$e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to send message. Please try again later.'
+                'message' => 'Failed to send message. Please try again later.',
             ], 500);
         }
     }

@@ -270,7 +270,7 @@ class MidnightData
      */
     public static function daysUntilDeadline(string $deadlineKey): int
     {
-        if (!isset(self::DEADLINES[$deadlineKey])) {
+        if (! isset(self::DEADLINES[$deadlineKey])) {
             return 0;
         }
 
@@ -287,7 +287,7 @@ class MidnightData
      */
     public static function isContentAvailable(string $contentKey): bool
     {
-        if (!isset(self::LIMITED_CONTENT[$contentKey])) {
+        if (! isset(self::LIMITED_CONTENT[$contentKey])) {
             return false;
         }
 
@@ -302,10 +302,19 @@ class MidnightData
      */
     public static function getUrgencyLevel(int $daysRemaining): string
     {
-        if ($daysRemaining <= 0) return 'EXPIRED';
-        if ($daysRemaining <= 3) return 'CRITICAL';
-        if ($daysRemaining <= 7) return 'URGENT';
-        if ($daysRemaining <= 14) return 'HIGH';
+        if ($daysRemaining <= 0) {
+            return 'EXPIRED';
+        }
+        if ($daysRemaining <= 3) {
+            return 'CRITICAL';
+        }
+        if ($daysRemaining <= 7) {
+            return 'URGENT';
+        }
+        if ($daysRemaining <= 14) {
+            return 'HIGH';
+        }
+
         return 'NORMAL';
     }
 }

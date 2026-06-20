@@ -2,7 +2,10 @@
 
 namespace App\Observers;
 
+use App\Models\Achievement;
 use App\Models\Post;
+use App\Models\Rank;
+use Illuminate\Support\Facades\Log;
 
 class PostObserver
 {
@@ -11,22 +14,23 @@ class PostObserver
      */
     public function created(Post $post): void
     {
-        \Illuminate\Support\Facades\Log::info('PostObserver: created logic passed', ['post_id' => $post->id]);
+        Log::info('PostObserver: created logic passed', ['post_id' => $post->id]);
 
-        if (!$post->relationLoaded('author')) {
+        if (! $post->relationLoaded('author')) {
             $post->load('author');
         }
 
         $user = $post->author;
-        if (!$user)
+        if (! $user) {
             return;
+        }
 
         // 1. Award Points
         $user->increment('forum_reputation', 5);
         $user->increment('xp', 20);
 
         // 2. Check Rank Upgrade
-        $newRank = \App\Models\Rank::where('min_xp', '<=', $user->xp)
+        $newRank = Rank::where('min_xp', '<=', $user->xp)
             ->orderBy('min_xp', 'desc')
             ->first();
 
@@ -50,9 +54,9 @@ class PostObserver
 
     protected function unlockAchievement($user, $name)
     {
-        $achievement = \App\Models\Achievement::where('name', $name)->first();
+        $achievement = Achievement::where('name', $name)->first();
         if ($achievement) {
-            if (!$user->achievements()->where('achievement_id', $achievement->id)->exists()) {
+            if (! $user->achievements()->where('achievement_id', $achievement->id)->exists()) {
                 $user->achievements()->attach($achievement->id, ['unlocked_at' => now()]);
             }
         }

@@ -27,11 +27,13 @@ class MobyEnrich extends Command
             $game = Game::where('moby_id', (int) $mobyId)->first();
             if (! $game) {
                 $this->error("No game found with moby_id = {$mobyId}");
+
                 return self::FAILURE;
             }
 
             MobyEnrichmentJob::dispatch($game->id, $game->moby_id);
             $this->info("Dispatched enrichment job for: {$game->name} (moby_id={$mobyId})");
+
             return self::SUCCESS;
         }
 
@@ -53,6 +55,7 @@ class MobyEnrich extends Command
 
         if ($total === 0) {
             $this->info('No games pending enrichment.');
+
             return self::SUCCESS;
         }
 

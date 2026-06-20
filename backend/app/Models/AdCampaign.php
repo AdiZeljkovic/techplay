@@ -61,7 +61,7 @@ class AdCampaign extends Model
     {
         return $query->where(function ($q) use ($device) {
             $q->where('device_targeting', 'all')
-              ->orWhere('device_targeting', $device);
+                ->orWhere('device_targeting', $device);
         });
     }
 
@@ -69,7 +69,7 @@ class AdCampaign extends Model
     {
         return $query->where(function ($q) use ($platform) {
             $q->whereNull('platforms')
-              ->orWhereJsonContains('platforms', $platform);
+                ->orWhereJsonContains('platforms', $platform);
         });
     }
 
@@ -81,6 +81,7 @@ class AdCampaign extends Model
         if ($this->view_count == 0) {
             return 0.0;
         }
+
         return round(($this->click_count / $this->view_count) * 100, 2);
     }
 
@@ -89,9 +90,10 @@ class AdCampaign extends Model
      */
     public function getEstimatedRevenueAttribute(): float
     {
-        if (!$this->cpm_price || $this->view_count == 0) {
+        if (! $this->cpm_price || $this->view_count == 0) {
             return 0.0;
         }
+
         return round(($this->view_count / 1000) * $this->cpm_price, 2);
     }
 }

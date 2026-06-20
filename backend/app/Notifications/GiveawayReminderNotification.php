@@ -14,8 +14,7 @@ class GiveawayReminderNotification extends Notification implements ShouldQueue
 
     public function __construct(
         public Giveaway $giveaway
-    ) {
-    }
+    ) {}
 
     /**
      * Get the notification's delivery channels.
@@ -33,11 +32,11 @@ class GiveawayReminderNotification extends Notification implements ShouldQueue
         $hoursRemaining = $this->giveaway->getTimeRemaining() / 3600;
 
         return (new MailMessage)
-            ->subject('⏰ Giveaway Ending Soon: ' . $this->giveaway->title)
-            ->greeting('Hey ' . $notifiable->username . '! 👋')
-            ->line('The giveaway for **' . $this->giveaway->prize_name . '** is ending in less than 24 hours!')
-            ->line('**Time Remaining:** ' . round($hoursRemaining) . ' hours')
-            ->line('**Your Current Points:** ' . ($notifiable->entries()->where('giveaway_id', $this->giveaway->id)->first()?->total_points ?? 0))
+            ->subject('⏰ Giveaway Ending Soon: '.$this->giveaway->title)
+            ->greeting('Hey '.$notifiable->username.'! 👋')
+            ->line('The giveaway for **'.$this->giveaway->prize_name.'** is ending in less than 24 hours!')
+            ->line('**Time Remaining:** '.round($hoursRemaining).' hours')
+            ->line('**Your Current Points:** '.($notifiable->entries()->where('giveaway_id', $this->giveaway->id)->first()?->total_points ?? 0))
             ->line('This is your last chance to complete tasks and increase your chances of winning!')
             ->action('View Giveaway', $this->giveaway->getPublicUrl())
             ->line('Good luck! 🍀')

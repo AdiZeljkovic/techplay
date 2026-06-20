@@ -25,7 +25,7 @@ class Redirect extends Model
     // Auto-format source_url to start with / and remove trailing slash
     public function setSourceUrlAttribute($value)
     {
-        $this->attributes['source_url'] = '/' . ltrim(rtrim($value, '/'), '/');
+        $this->attributes['source_url'] = '/'.ltrim(rtrim($value, '/'), '/');
     }
 
     // Auto-format target_url to start with / if it's relative
@@ -34,7 +34,7 @@ class Redirect extends Model
         if (Str::startsWith($value, 'http')) {
             $this->attributes['target_url'] = $value;
         } else {
-            $this->attributes['target_url'] = '/' . ltrim(rtrim($value, '/'), '/');
+            $this->attributes['target_url'] = '/'.ltrim(rtrim($value, '/'), '/');
         }
     }
 }

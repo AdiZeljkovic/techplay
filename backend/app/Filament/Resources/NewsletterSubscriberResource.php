@@ -4,16 +4,17 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\NewsletterSubscriberResource\Pages;
 use App\Models\NewsletterSubscriber;
-use Filament\Forms;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Schemas\Schema;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkAction;
+use Filament\Forms;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 
 class NewsletterSubscriberResource extends Resource
 {
@@ -25,6 +26,7 @@ class NewsletterSubscriberResource extends Resource
     {
         return 'SEO & Marketing';
     }
+
     protected static ?int $navigationSort = 5;
 
     public static function form(Schema $schema): Schema
@@ -52,7 +54,7 @@ class NewsletterSubscriberResource extends Resource
                     ->sortable()
                     ->dateTime('d.m.Y')
                     ->placeholder('Not verified')
-                    ->color(fn($state): string => $state ? 'success' : 'danger'),
+                    ->color(fn ($state): string => $state ? 'success' : 'danger'),
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean()
                     ->sortable(),
@@ -74,7 +76,7 @@ class NewsletterSubscriberResource extends Resource
                     BulkAction::make('export')
                         ->label('Export Selected')
                         ->icon('heroicon-o-arrow-down-tray')
-                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                        ->action(function (Collection $records) {
                             return response()->streamDownload(function () use ($records) {
                                 echo "Email,Status,Subscribed At\n";
                                 foreach ($records as $record) {

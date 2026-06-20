@@ -12,7 +12,7 @@ class WebhookController extends Controller
     /**
      * Handle generic webhooks from the application itself.
      * Use this to trigger Discord notifications manually or from other parts of the app.
-     * 
+     *
      * Endpoint: POST /api/v1/webhooks/discord/notify
      * Body: { "type": "news", "data": { ... } }
      */
@@ -23,7 +23,7 @@ class WebhookController extends Controller
 
         $webhookUrl = config('services.discord.webhook_url');
 
-        if (!$webhookUrl) {
+        if (! $webhookUrl) {
             return response()->json(['message' => 'Discord Webhook URL not configured'], 500);
         }
 
@@ -37,6 +37,7 @@ class WebhookController extends Controller
             return response()->json(['message' => 'Notification sent']);
         } catch (\Exception $e) {
             Log::error('Failed to send Discord webhook', ['error' => $e->getMessage()]);
+
             return response()->json(['message' => 'Failed to send notification'], 500);
         }
     }
@@ -44,39 +45,39 @@ class WebhookController extends Controller
     private function sendNewsNotification($url, $article)
     {
         Http::post($url, [
-            'content' => "📰 **New Article Published!**",
+            'content' => '📰 **New Article Published!**',
             'embeds' => [
                 [
                     'title' => $article['title'],
                     'description' => $article['excerpt'],
-                    'url' => config('app.frontend_url') . '/news/' . $article['slug'],
+                    'url' => config('app.frontend_url').'/news/'.$article['slug'],
                     'color' => 5814783, // #5865F2
                     'image' => [
-                        'url' => $article['featured_image'] ?? null
+                        'url' => $article['featured_image'] ?? null,
                     ],
                     'footer' => [
-                        'text' => 'TechPlay.gg News'
-                    ]
-                ]
-            ]
+                        'text' => 'TechPlay.gg News',
+                    ],
+                ],
+            ],
         ]);
     }
 
     private function sendForumNotification($url, $thread)
     {
         Http::post($url, [
-            'content' => "💬 **New Forum Discussion!**",
+            'content' => '💬 **New Forum Discussion!**',
             'embeds' => [
                 [
                     'title' => $thread['title'],
-                    'description' => "Started by " . ($thread['author_name'] ?? 'Unknown'),
-                    'url' => config('app.frontend_url') . '/forum/threads/' . $thread['slug'],
+                    'description' => 'Started by '.($thread['author_name'] ?? 'Unknown'),
+                    'url' => config('app.frontend_url').'/forum/threads/'.$thread['slug'],
                     'color' => 15158332, // #E74C3C
                     'footer' => [
-                        'text' => 'TechPlay.gg Forum'
-                    ]
-                ]
-            ]
+                        'text' => 'TechPlay.gg Forum',
+                    ],
+                ],
+            ],
         ]);
     }
 }

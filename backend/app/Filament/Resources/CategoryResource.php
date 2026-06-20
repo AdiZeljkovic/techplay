@@ -4,18 +4,19 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Models\Category;
+use Closure;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
+use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Illuminate\Support\Str;
-use Filament\Forms\Get;
-use Closure;
 
 class CategoryResource extends Resource
 {
@@ -27,15 +28,16 @@ class CategoryResource extends Resource
     {
         return 'System';
     }
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                \Filament\Schemas\Components\Tabs::make('Tabs')
+                Tabs::make('Tabs')
                     ->tabs([
-                        \Filament\Schemas\Components\Tabs\Tab::make('Content')
+                        Tab::make('Content')
                             ->icon('heroicon-o-document-text')
                             ->schema([
                                 Forms\Components\TextInput::make('name')
@@ -68,14 +70,14 @@ class CategoryResource extends Resource
                                     ->preload()
                                     ->nullable()
                                     // If type is forum, we might want to restrict parents to forum type too, but let's keep it flexible for now or filter in query
-                                    ->visible(fn($get) => $get('type') === 'forum'),
+                                    ->visible(fn ($get) => $get('type') === 'forum'),
                                 Forms\Components\TextInput::make('icon')
                                     ->placeholder('heroicon-o-chat-bubble-left')
                                     ->maxLength(255),
                                 Forms\Components\Textarea::make('description')
                                     ->rows(3),
                             ]),
-                        \Filament\Schemas\Components\Tabs\Tab::make('SEO')
+                        Tab::make('SEO')
                             ->icon('heroicon-o-magnifying-glass')
                             ->schema([
                                 Forms\Components\TextInput::make('seo_title')
@@ -114,7 +116,7 @@ class CategoryResource extends Resource
                 Tables\Columns\TextColumn::make('slug'),
                 Tables\Columns\TextColumn::make('type')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'news' => 'info',
                         'reviews' => 'success',
                         'tech' => 'warning',
@@ -162,4 +164,3 @@ class CategoryResource extends Resource
         ];
     }
 }
-

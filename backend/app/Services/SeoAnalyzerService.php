@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Str;
+
 class SeoAnalyzerService
 {
     /**
@@ -30,8 +32,8 @@ class SeoAnalyzerService
             $checks['title_length'] = ['status' => 'warning', 'score' => 10, 'message' => 'SEO title length is acceptable but could be improved.'];
             $recommendations[] = 'Adjust SEO title to 50-60 characters for optimal display.';
         } else {
-            $checks['title_length'] = ['status' => 'fail', 'score' => 0, 'message' => 'SEO title is too ' . ($titleLength < 40 ? 'short' : 'long') . '.'];
-            $recommendations[] = 'SEO title should be 50-60 characters. Current: ' . $titleLength;
+            $checks['title_length'] = ['status' => 'fail', 'score' => 0, 'message' => 'SEO title is too '.($titleLength < 40 ? 'short' : 'long').'.'];
+            $recommendations[] = 'SEO title should be 50-60 characters. Current: '.$titleLength;
         }
 
         // 2. Meta Description Length (15 points)
@@ -42,15 +44,15 @@ class SeoAnalyzerService
             $checks['meta_description'] = ['status' => 'warning', 'score' => 10, 'message' => 'Meta description length is acceptable.'];
             $recommendations[] = 'Adjust meta description to 150-160 characters.';
         } elseif ($descLength > 0) {
-            $checks['meta_description'] = ['status' => 'fail', 'score' => 5, 'message' => 'Meta description is too ' . ($descLength < 120 ? 'short' : 'long') . '.'];
-            $recommendations[] = 'Meta description should be 150-160 characters. Current: ' . $descLength;
+            $checks['meta_description'] = ['status' => 'fail', 'score' => 5, 'message' => 'Meta description is too '.($descLength < 120 ? 'short' : 'long').'.'];
+            $recommendations[] = 'Meta description should be 150-160 characters. Current: '.$descLength;
         } else {
             $checks['meta_description'] = ['status' => 'fail', 'score' => 0, 'message' => 'Meta description is missing.'];
             $recommendations[] = 'Add a meta description to improve search appearance.';
         }
 
         // 3. Focus Keyword in Title (10 points)
-        if (!empty($focusKeyword)) {
+        if (! empty($focusKeyword)) {
             if (stripos($seoTitle, $focusKeyword) !== false) {
                 $checks['keyword_in_title'] = ['status' => 'pass', 'score' => 10, 'message' => 'Focus keyword appears in SEO title.'];
             } else {
@@ -63,12 +65,12 @@ class SeoAnalyzerService
         }
 
         // 4. Focus Keyword in Content (10 points)
-        if (!empty($focusKeyword)) {
+        if (! empty($focusKeyword)) {
             $keywordCount = substr_count(strtolower($content), $focusKeyword);
             if ($keywordCount >= 3) {
                 $checks['keyword_in_content'] = ['status' => 'pass', 'score' => 10, 'message' => "Focus keyword appears $keywordCount times in content."];
             } elseif ($keywordCount >= 1) {
-                $checks['keyword_in_content'] = ['status' => 'warning', 'score' => 5, 'message' => 'Focus keyword appears only ' . $keywordCount . ' time(s).'];
+                $checks['keyword_in_content'] = ['status' => 'warning', 'score' => 5, 'message' => 'Focus keyword appears only '.$keywordCount.' time(s).'];
                 $recommendations[] = 'Use focus keyword at least 3 times in content.';
             } else {
                 $checks['keyword_in_content'] = ['status' => 'fail', 'score' => 0, 'message' => 'Focus keyword not found in content.'];
@@ -79,7 +81,7 @@ class SeoAnalyzerService
         }
 
         // 5. Focus Keyword in Meta Description (10 points)
-        if (!empty($focusKeyword) && !empty($seoDescription)) {
+        if (! empty($focusKeyword) && ! empty($seoDescription)) {
             if (stripos($seoDescription, $focusKeyword) !== false) {
                 $checks['keyword_in_meta'] = ['status' => 'pass', 'score' => 10, 'message' => 'Focus keyword appears in meta description.'];
             } else {
@@ -99,11 +101,11 @@ class SeoAnalyzerService
             $recommendations[] = 'Aim for 600+ words for comprehensive coverage.';
         } else {
             $checks['content_length'] = ['status' => 'fail', 'score' => 5, 'message' => "Content is too short ($wordCount words)."];
-            $recommendations[] = 'Content should be at least 300 words. Current: ' . $wordCount;
+            $recommendations[] = 'Content should be at least 300 words. Current: '.$wordCount;
         }
 
         // 7. Has Excerpt (10 points)
-        if (!empty(trim($excerpt))) {
+        if (! empty(trim($excerpt))) {
             $checks['has_excerpt'] = ['status' => 'pass', 'score' => 10, 'message' => 'Excerpt is provided.'];
         } else {
             $checks['has_excerpt'] = ['status' => 'fail', 'score' => 0, 'message' => 'No excerpt provided.'];
@@ -111,7 +113,7 @@ class SeoAnalyzerService
         }
 
         // 8. Has Featured Image (10 points)
-        if (!empty($featuredImage)) {
+        if (! empty($featuredImage)) {
             $checks['has_image'] = ['status' => 'pass', 'score' => 10, 'message' => 'Featured image is set.'];
         } else {
             $checks['has_image'] = ['status' => 'fail', 'score' => 0, 'message' => 'No featured image.'];
@@ -119,8 +121,8 @@ class SeoAnalyzerService
         }
 
         // 9. Slug Contains Keyword (5 points)
-        if (!empty($focusKeyword) && !empty($slug)) {
-            $keywordSlug = \Illuminate\Support\Str::slug($focusKeyword);
+        if (! empty($focusKeyword) && ! empty($slug)) {
+            $keywordSlug = Str::slug($focusKeyword);
             if (stripos($slug, $keywordSlug) !== false) {
                 $checks['keyword_in_slug'] = ['status' => 'pass', 'score' => 5, 'message' => 'Focus keyword appears in URL slug.'];
             } else {
@@ -149,14 +151,19 @@ class SeoAnalyzerService
      */
     private static function getGrade(int $score): string
     {
-        if ($score >= 80)
+        if ($score >= 80) {
             return 'A';
-        if ($score >= 60)
+        }
+        if ($score >= 60) {
             return 'B';
-        if ($score >= 40)
+        }
+        if ($score >= 40) {
             return 'C';
-        if ($score >= 20)
+        }
+        if ($score >= 20) {
             return 'D';
+        }
+
         return 'F';
     }
 
@@ -167,8 +174,9 @@ class SeoAnalyzerService
     {
         $seoTitle = trim($title);
         if (mb_strlen($seoTitle) > 60) {
-            $seoTitle = mb_substr($seoTitle, 0, 57) . '...';
+            $seoTitle = mb_substr($seoTitle, 0, 57).'...';
         }
+
         return $seoTitle;
     }
 
@@ -179,8 +187,9 @@ class SeoAnalyzerService
     {
         $description = trim(strip_tags($excerpt));
         if (mb_strlen($description) > 160) {
-            $description = mb_substr($description, 0, 157) . '...';
+            $description = mb_substr($description, 0, 157).'...';
         }
+
         return $description;
     }
 
@@ -313,18 +322,18 @@ class SeoAnalyzerService
             'theirs',
             'themselves',
             'new',
-            'old'
+            'old',
         ];
 
         $words = preg_split('/\s+/', strtolower(trim($title)));
         $words = array_filter($words, function ($word) use ($stopWords) {
-            return strlen($word) > 2 && !in_array($word, $stopWords);
+            return strlen($word) > 2 && ! in_array($word, $stopWords);
         });
 
         // Return first significant word or first two words combined
         $significantWords = array_values($words);
         if (count($significantWords) >= 2) {
-            return $significantWords[0] . ' ' . $significantWords[1];
+            return $significantWords[0].' '.$significantWords[1];
         } elseif (count($significantWords) === 1) {
             return $significantWords[0];
         }

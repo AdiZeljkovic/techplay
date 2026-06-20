@@ -4,13 +4,14 @@ namespace App\Filament\Resources\ReviewResource\Pages;
 
 use App\Filament\Resources\ReviewResource;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Enums\Width;
 
 class ListReviews extends ListRecords
 {
     protected static string $resource = ReviewResource::class;
 
-    public function getMaxContentWidth(): \Filament\Support\Enums\Width
+    public function getMaxContentWidth(): Width
     {
-        return \Filament\Support\Enums\Width::Full;
+        return Width::Full;
     }
 }

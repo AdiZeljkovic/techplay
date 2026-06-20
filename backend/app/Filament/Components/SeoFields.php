@@ -7,8 +7,6 @@ use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
 use Illuminate\Support\HtmlString;
 
 class SeoFields
@@ -39,18 +37,18 @@ class SeoFields
                     // ═══════════════════════════════════════════════════════════
                     // SEO CHECKS
                     // ═══════════════════════════════════════════════════════════
-        
+
                     // 1. Title length check
                     $maxScore += 10;
                     $titleLen = strlen($title);
                     if ($titleLen >= 30 && $titleLen <= 60) {
-                        $checks[] = ['✅', 'Title length is optimal (' . $titleLen . ' chars)', 'success'];
+                        $checks[] = ['✅', 'Title length is optimal ('.$titleLen.' chars)', 'success'];
                         $score += 10;
                     } elseif ($titleLen > 0 && $titleLen < 30) {
-                        $checks[] = ['⚠️', 'Title is too short (' . $titleLen . '/30+ chars)', 'warning'];
+                        $checks[] = ['⚠️', 'Title is too short ('.$titleLen.'/30+ chars)', 'warning'];
                         $score += 5;
                     } elseif ($titleLen > 60) {
-                        $checks[] = ['⚠️', 'Title is too long (' . $titleLen . '/60 chars)', 'warning'];
+                        $checks[] = ['⚠️', 'Title is too long ('.$titleLen.'/60 chars)', 'warning'];
                         $score += 5;
                     } else {
                         $checks[] = ['❌', 'Title is missing', 'danger'];
@@ -60,10 +58,10 @@ class SeoFields
                     $maxScore += 10;
                     $metaTitleLen = strlen($metaTitle);
                     if ($metaTitleLen >= 50 && $metaTitleLen <= 60) {
-                        $checks[] = ['✅', 'Meta title length is optimal (' . $metaTitleLen . ' chars)', 'success'];
+                        $checks[] = ['✅', 'Meta title length is optimal ('.$metaTitleLen.' chars)', 'success'];
                         $score += 10;
                     } elseif ($metaTitleLen > 0) {
-                        $checks[] = ['⚠️', 'Meta title: ' . $metaTitleLen . ' chars (optimal: 50-60)', 'warning'];
+                        $checks[] = ['⚠️', 'Meta title: '.$metaTitleLen.' chars (optimal: 50-60)', 'warning'];
                         $score += 5;
                     } else {
                         $checks[] = ['💡', 'Meta title not set (will use article title)', 'info'];
@@ -74,13 +72,13 @@ class SeoFields
                     $maxScore += 15;
                     $metaDescLen = strlen($metaDescription);
                     if ($metaDescLen >= 150 && $metaDescLen <= 160) {
-                        $checks[] = ['✅', 'Meta description is optimal (' . $metaDescLen . ' chars)', 'success'];
+                        $checks[] = ['✅', 'Meta description is optimal ('.$metaDescLen.' chars)', 'success'];
                         $score += 15;
                     } elseif ($metaDescLen >= 120 && $metaDescLen < 150) {
-                        $checks[] = ['⚠️', 'Meta description could be longer (' . $metaDescLen . '/150-160 chars)', 'warning'];
+                        $checks[] = ['⚠️', 'Meta description could be longer ('.$metaDescLen.'/150-160 chars)', 'warning'];
                         $score += 10;
                     } elseif ($metaDescLen > 0) {
-                        $checks[] = ['⚠️', 'Meta description: ' . $metaDescLen . ' chars (optimal: 150-160)', 'warning'];
+                        $checks[] = ['⚠️', 'Meta description: '.$metaDescLen.' chars (optimal: 150-160)', 'warning'];
                         $score += 5;
                     } else {
                         $checks[] = ['❌', 'Meta description is missing', 'danger'];
@@ -88,7 +86,7 @@ class SeoFields
 
                     // 4. Focus Keyword check
                     $maxScore += 15;
-                    if (!empty($focusKeyword)) {
+                    if (! empty($focusKeyword)) {
                         $keywordInTitle = stripos($title, $focusKeyword) !== false;
                         $keywordInContent = stripos($content, $focusKeyword) !== false;
                         $keywordInSlug = stripos($slug, str_replace(' ', '-', strtolower($focusKeyword))) !== false;
@@ -97,7 +95,7 @@ class SeoFields
                             $checks[] = ['✅', 'Focus keyword found in title and content', 'success'];
                             $score += 15;
                         } elseif ($keywordInTitle || $keywordInContent) {
-                            $checks[] = ['⚠️', 'Focus keyword found in ' . ($keywordInTitle ? 'title' : 'content') . ' only', 'warning'];
+                            $checks[] = ['⚠️', 'Focus keyword found in '.($keywordInTitle ? 'title' : 'content').' only', 'warning'];
                             $score += 8;
                         } else {
                             $checks[] = ['❌', 'Focus keyword not found in title or content', 'danger'];
@@ -115,13 +113,13 @@ class SeoFields
                     $maxScore += 15;
                     $wordCount = str_word_count(strip_tags($content));
                     if ($wordCount >= 300) {
-                        $checks[] = ['✅', 'Content length is good (' . $wordCount . ' words)', 'success'];
+                        $checks[] = ['✅', 'Content length is good ('.$wordCount.' words)', 'success'];
                         $score += 15;
                     } elseif ($wordCount >= 150) {
-                        $checks[] = ['⚠️', 'Content is short (' . $wordCount . '/300+ words recommended)', 'warning'];
+                        $checks[] = ['⚠️', 'Content is short ('.$wordCount.'/300+ words recommended)', 'warning'];
                         $score += 8;
                     } elseif ($wordCount > 0) {
-                        $checks[] = ['❌', 'Content is too short (' . $wordCount . ' words)', 'danger'];
+                        $checks[] = ['❌', 'Content is too short ('.$wordCount.' words)', 'danger'];
                         $score += 3;
                     } else {
                         $checks[] = ['❌', 'No content yet', 'danger'];
@@ -129,7 +127,7 @@ class SeoFields
 
                     // 6. Featured Image check
                     $maxScore += 10;
-                    if (!empty($featuredImage)) {
+                    if (! empty($featuredImage)) {
                         $checks[] = ['✅', 'Featured image is set', 'success'];
                         $score += 10;
                     } else {
@@ -140,10 +138,10 @@ class SeoFields
                     $maxScore += 10;
                     $excerptLen = strlen($excerpt);
                     if ($excerptLen >= 100 && $excerptLen <= 200) {
-                        $checks[] = ['✅', 'Excerpt length is optimal (' . $excerptLen . ' chars)', 'success'];
+                        $checks[] = ['✅', 'Excerpt length is optimal ('.$excerptLen.' chars)', 'success'];
                         $score += 10;
                     } elseif ($excerptLen > 0) {
-                        $checks[] = ['⚠️', 'Excerpt: ' . $excerptLen . ' chars (optimal: 100-200)', 'warning'];
+                        $checks[] = ['⚠️', 'Excerpt: '.$excerptLen.' chars (optimal: 100-200)', 'warning'];
                         $score += 5;
                     } else {
                         $checks[] = ['💡', 'Add an excerpt for better social sharing', 'info'];
@@ -176,7 +174,7 @@ class SeoFields
                     // ═══════════════════════════════════════════════════════════
                     // BUILD OUTPUT
                     // ═══════════════════════════════════════════════════════════
-        
+
                     $percentage = $maxScore > 0 ? round(($score / $maxScore) * 100) : 0;
 
                     // Determine overall color
@@ -203,16 +201,16 @@ class SeoFields
                     // Score header
                     $html .= '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">';
                     $html .= '<span style="font-size: 14px; font-weight: 600;">SEO Score</span>';
-                    $html .= '<span style="font-size: 20px; font-weight: bold; color: ' . $overallColor . ';">' . $overallEmoji . ' ' . $percentage . '%</span>';
+                    $html .= '<span style="font-size: 20px; font-weight: bold; color: '.$overallColor.';">'.$overallEmoji.' '.$percentage.'%</span>';
                     $html .= '</div>';
 
                     // Progress bar
                     $html .= '<div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 12px;">';
-                    $html .= '<div style="height: 100%; width: ' . $percentage . '%; background: ' . $overallColor . '; border-radius: 3px; transition: width 0.3s;"></div>';
+                    $html .= '<div style="height: 100%; width: '.$percentage.'%; background: '.$overallColor.'; border-radius: 3px; transition: width 0.3s;"></div>';
                     $html .= '</div>';
 
                     // Status
-                    $html .= '<div style="font-size: 12px; color: ' . $overallColor . '; margin-bottom: 12px;">' . $overallText . '</div>';
+                    $html .= '<div style="font-size: 12px; color: '.$overallColor.'; margin-bottom: 12px;">'.$overallText.'</div>';
 
                     // Checks list
                     $html .= '<div style="font-size: 12px; line-height: 1.8;">';
@@ -224,7 +222,7 @@ class SeoFields
                             'info' => '#60a5fa',
                             default => '#9ca3af',
                         };
-                        $html .= '<div style="color: ' . $color . ';">' . $check[0] . ' ' . $check[1] . '</div>';
+                        $html .= '<div style="color: '.$color.';">'.$check[0].' '.$check[1].'</div>';
                     }
                     $html .= '</div>';
 
@@ -248,8 +246,8 @@ class SeoFields
                 ->maxLength(70)
                 ->live(onBlur: true)
                 ->helperText(
-                    fn($state) => $state
-                    ? (strlen($state) . '/70 chars' . (strlen($state) >= 50 && strlen($state) <= 60 ? ' ✓ Optimal' : ''))
+                    fn ($state) => $state
+                    ? (strlen($state).'/70 chars'.(strlen($state) >= 50 && strlen($state) <= 60 ? ' ✓ Optimal' : ''))
                     : 'Leave empty to use article title. Optimal: 50-60 chars'
                 )
                 ->suffixAction(
@@ -261,7 +259,7 @@ class SeoFields
                             if ($title) {
                                 // Truncate to 60 chars if needed
                                 $seoTitle = strlen($title) > 60
-                                    ? substr($title, 0, 57) . '...'
+                                    ? substr($title, 0, 57).'...'
                                     : $title;
                                 $set('meta_title', $seoTitle);
                             }
@@ -276,8 +274,8 @@ class SeoFields
                 ->maxLength(160)
                 ->live(onBlur: true)
                 ->helperText(
-                    fn($state) => $state
-                    ? (strlen($state) . '/160 chars' . (strlen($state) >= 150 && strlen($state) <= 160 ? ' ✓ Optimal' : ''))
+                    fn ($state) => $state
+                    ? (strlen($state).'/160 chars'.(strlen($state) >= 150 && strlen($state) <= 160 ? ' ✓ Optimal' : ''))
                     : 'Optimal: 150-160 characters'
                 )
                 ->hintAction(
@@ -289,7 +287,7 @@ class SeoFields
                             if ($excerpt) {
                                 // Truncate to 160 chars if needed
                                 $metaDesc = strlen($excerpt) > 160
-                                    ? substr($excerpt, 0, 157) . '...'
+                                    ? substr($excerpt, 0, 157).'...'
                                     : $excerpt;
                                 $set('meta_description', $metaDesc);
                             }

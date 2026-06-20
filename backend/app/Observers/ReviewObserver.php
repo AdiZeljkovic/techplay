@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Events\ReviewPublished;
 use App\Models\Review;
 use App\Services\RevalidationService;
+use App\Services\SanitizationService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -24,7 +25,7 @@ class ReviewObserver
     public function saving(Review $review): void
     {
         if ($review->isDirty('content') && is_string($review->content)) {
-            $review->content = app(\App\Services\SanitizationService::class)
+            $review->content = app(SanitizationService::class)
                 ->sanitizeStaffContent($review->content);
         }
     }

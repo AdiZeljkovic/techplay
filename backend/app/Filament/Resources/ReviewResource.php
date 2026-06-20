@@ -2,47 +2,44 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ReviewResource\Pages;
-use App\Filament\Resources\NewsResource\RelationManagers\ContentVersionsRelationManager;
-use App\Filament\Components\SeoFields;
 use App\Filament\Components\MediaPickerFields;
+use App\Filament\Components\SeoFields;
+use App\Filament\Resources\NewsResource\RelationManagers\ContentVersionsRelationManager;
+use App\Filament\Resources\ReviewResource\Pages;
 use App\Models\Article;
-use App\Models\Category;
-
 // Layout Components (from Schemas)
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Group;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Tabs;
-
+use App\Policies\ArticlePolicy;
+use App\Services\CacheService;
+use App\Services\RawgService;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 // Form Field Components (from Forms)
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TagsInput;
-use Filament\Forms\Components\RichEditor;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Components\Utilities\Set;
-use App\Services\RawgService;
 use Filament\Notifications\Notification;
-
-use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Actions\EditAction;
-use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\BulkActionGroup;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class ReviewResource extends Resource
 {
@@ -50,7 +47,7 @@ class ReviewResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-star';
 
-    protected static ?string $modelPolicy = \App\Policies\ArticlePolicy::class;
+    protected static ?string $modelPolicy = ArticlePolicy::class;
 
     protected static ?string $slug = 'review-articles';
 
@@ -58,6 +55,7 @@ class ReviewResource extends Resource
     {
         return 'Content Studio';
     }
+
     protected static ?int $navigationSort = 2;
 
     public static function getNavigationLabel(): string
@@ -96,7 +94,7 @@ class ReviewResource extends Resource
                 $average >= 9.5 => 'must_play',     // 10 = Masterpiece
                 $average >= 8.5 => 'must_play',     // 9 = Amazing - Must Play
                 $average >= 7.5 => 'recommended',   // 8 = Great - Recommended
-                $average >= 6.5 => 'recommended',   // 7 = Good - Recommended  
+                $average >= 6.5 => 'recommended',   // 7 = Good - Recommended
                 $average >= 4.5 => 'wait_sale',     // 5-6 = Average - Wait for Sale
                 $average > 0 => 'skip',             // 1-4 = Poor/Broken - Skip
                 default => 'none',
@@ -121,10 +119,10 @@ class ReviewResource extends Resource
                                     ->required()
                                     ->maxLength(100)
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(fn($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state)))
+                                    ->afterStateUpdated(fn ($state, $set) => $set('slug', Str::slug($state)))
                                     ->helperText(
-                                        fn($state) => $state
-                                        ? (strlen($state) . '/100 chars' . (strlen($state) > 60 ? ' — Consider shortening for SEO' : ' ✓'))
+                                        fn ($state) => $state
+                                        ? (strlen($state).'/100 chars'.(strlen($state) > 60 ? ' — Consider shortening for SEO' : ' ✓'))
                                         : 'Aim for 50-60 characters for optimal SEO'
                                     ),
 
@@ -143,8 +141,8 @@ class ReviewResource extends Resource
                                         ->rows(2)
                                         ->maxLength(200)
                                         ->helperText(
-                                            fn($state) => $state
-                                            ? strlen($state) . '/200 chars'
+                                            fn ($state) => $state
+                                            ? strlen($state).'/200 chars'
                                             : 'Short description shown in previews'
                                         ),
                                 ]),
@@ -197,21 +195,27 @@ class ReviewResource extends Resource
                                     ->placeholder('Type a game name to search...')
                                     ->searchable()
                                     ->getSearchResultsUsing(function (string $search) {
-                                        $service = new RawgService();
+                                        $service = new RawgService;
                                         $results = $service->searchGames($search);
-                                        if (!$results || !isset($results['results'])) return [];
+                                        if (! $results || ! isset($results['results'])) {
+                                            return [];
+                                        }
+
                                         return collect($results['results'])
-                                            ->mapWithKeys(fn($game) => [$game['slug'] => "{$game['name']} (" . substr($game['released'] ?? 'N/A', 0, 4) . ")"])
+                                            ->mapWithKeys(fn ($game) => [$game['slug'] => "{$game['name']} (".substr($game['released'] ?? 'N/A', 0, 4).')'])
                                             ->toArray();
                                     })
-                                    ->getOptionLabelUsing(fn($value) => $value)
+                                    ->getOptionLabelUsing(fn ($value) => $value)
                                     ->live()
                                     ->afterStateUpdated(function (?string $state, Set $set) {
-                                        if (!$state) return;
-                                        $service = new RawgService();
+                                        if (! $state) {
+                                            return;
+                                        }
+                                        $service = new RawgService;
                                         $details = $service->getGameDetails($state);
-                                        if (!$details) {
+                                        if (! $details) {
                                             Notification::make()->title('Failed to fetch data from RAWG')->danger()->send();
+
                                             return;
                                         }
                                         $set('review_data.game_title', $details['name']);
@@ -222,7 +226,7 @@ class ReviewResource extends Resource
                                             $set('review_data.platforms', collect($details['parent_platforms'])->pluck('platform.name')->toArray());
                                         }
                                         if (isset($details['genres'])) {
-                                            $set('review_data.genres', collect($details['genres'])->pluck('name')->map(fn($g) => strtolower($g))->toArray());
+                                            $set('review_data.genres', collect($details['genres'])->pluck('name')->map(fn ($g) => strtolower($g))->toArray());
                                         }
                                         Notification::make()->title('Fields filled from RAWG')->success()->send();
                                     })
@@ -467,9 +471,9 @@ class ReviewResource extends Resource
 
                                         Select::make('author_id')
                                             ->label('Author')
-                                            ->options(fn() => \App\Services\CacheService::getAuthors())
+                                            ->options(fn () => CacheService::getAuthors())
                                             ->searchable()
-                                            ->default(fn() => auth()->id())
+                                            ->default(fn () => auth()->id())
                                             ->required()
                                             ->native(false),
                                     ]),
@@ -477,7 +481,7 @@ class ReviewResource extends Resource
                                 // TAB: SEO with Live Checker
                                 Tab::make('SEO')
                                     ->icon('heroicon-o-magnifying-glass')
-                                    ->badge(fn($get) => $get('meta_title') ? '✓' : null)
+                                    ->badge(fn ($get) => $get('meta_title') ? '✓' : null)
                                     ->badgeColor('success')
                                     ->schema(SeoFields::make('techplay.gg/reviews/', false)),
 
@@ -504,16 +508,16 @@ class ReviewResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->limit(50)
-                    ->tooltip(fn($record) => $record->title),
+                    ->tooltip(fn ($record) => $record->title),
                 TextColumn::make('review_score')
                     ->label('Score')
                     ->badge()
-                    ->color(fn($state) => match (true) {
+                    ->color(fn ($state) => match (true) {
                         $state >= 8 => 'success',
                         $state >= 6 => 'warning',
                         default => 'danger',
                     })
-                    ->formatStateUsing(fn($state) => $state ? $state . '/10' : '-'),
+                    ->formatStateUsing(fn ($state) => $state ? $state.'/10' : '-'),
                 TextColumn::make('category.name')
                     ->label('Category')
                     ->badge()
@@ -526,7 +530,7 @@ class ReviewResource extends Resource
                     ->falseIcon('heroicon-o-star'),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'draft' => 'gray',
                         'ready_for_review' => 'warning',
                         'scheduled' => 'info',
@@ -548,7 +552,7 @@ class ReviewResource extends Resource
                         'published' => 'Published',
                     ]),
                 SelectFilter::make('category')
-                    ->relationship('category', 'name', fn(Builder $query) => $query->where('type', 'reviews')),
+                    ->relationship('category', 'name', fn (Builder $query) => $query->where('type', 'reviews')),
             ])
             ->headerActions([
                 CreateAction::make(),
@@ -579,4 +583,3 @@ class ReviewResource extends Resource
         ];
     }
 }
-

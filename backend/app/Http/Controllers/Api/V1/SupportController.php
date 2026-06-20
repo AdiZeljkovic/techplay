@@ -13,6 +13,7 @@ class SupportController extends Controller
     public function index()
     {
         $tiers = SupportTier::where('is_active', true)->get();
+
         return response()->json($tiers);
     }
 
@@ -51,7 +52,7 @@ class SupportController extends Controller
         return response()->json([
             'message' => 'Thank you for your support!',
             'data' => $support,
-            'tier' => $tier
+            'tier' => $tier,
         ], 201);
     }
 }

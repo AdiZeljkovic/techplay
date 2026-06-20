@@ -75,7 +75,7 @@ class RawgService
     {
         try {
             $response = $this->http(15)->get("{$this->baseUrl}/games/{$slug}/screenshots", [
-                'key'       => $this->key(),
+                'key' => $this->key(),
                 'page_size' => 20,
             ]);
 
@@ -106,7 +106,7 @@ class RawgService
     {
         try {
             $response = $this->http(15)->get("{$this->baseUrl}/games/{$slug}/suggested", [
-                'key'       => $this->key(),
+                'key' => $this->key(),
                 'page_size' => 12,
             ]);
 
@@ -114,16 +114,16 @@ class RawgService
                 return null;
             }
 
-            $json    = $response->json();
+            $json = $response->json();
             $results = array_map(fn ($g) => [
-                'id'               => $g['id'] ?? null,
-                'slug'             => $g['slug'] ?? '',
-                'name'             => $g['name'] ?? '',
-                'released'         => $g['released'] ?? null,
+                'id' => $g['id'] ?? null,
+                'slug' => $g['slug'] ?? '',
+                'name' => $g['name'] ?? '',
+                'released' => $g['released'] ?? null,
                 'background_image' => $g['background_image'] ?? null,
-                'rating'           => $g['rating'] ?? 0,
-                'genres'           => array_map(fn ($genre) => ['name' => $genre['name'] ?? ''], $g['genres'] ?? []),
-                'platforms'        => array_map(fn ($p) => ['platform' => ['name' => $p['platform']['name'] ?? '', 'slug' => $p['platform']['slug'] ?? '']], $g['platforms'] ?? []),
+                'rating' => $g['rating'] ?? 0,
+                'genres' => array_map(fn ($genre) => ['name' => $genre['name'] ?? ''], $g['genres'] ?? []),
+                'platforms' => array_map(fn ($p) => ['platform' => ['name' => $p['platform']['name'] ?? '', 'slug' => $p['platform']['slug'] ?? '']], $g['platforms'] ?? []),
             ], $json['results'] ?? []);
 
             return ['count' => $json['count'] ?? 0, 'results' => $results];
@@ -148,19 +148,19 @@ class RawgService
         try {
             // ── Page 1: discover total count ─────────────────────────────
             $first = $this->http(15)->get("{$this->baseUrl}/games", [
-                'key'       => $this->key(),
-                'dates'     => "{$from},{$to}",
-                'ordering'  => $ordering,
+                'key' => $this->key(),
+                'dates' => "{$from},{$to}",
+                'ordering' => $ordering,
                 'page_size' => $pageSize,
-                'page'      => 1,
+                'page' => 1,
             ]);
 
             if (! $first->successful()) {
                 return null;
             }
 
-            $json    = $first->json();
-            $total   = $json['count'] ?? 0;
+            $json = $first->json();
+            $total = $json['count'] ?? 0;
             $results = $json['results'] ?? [];
 
             if (empty($results)) {
@@ -169,7 +169,7 @@ class RawgService
 
             // Clamp to pages actually available and the caller's cap
             $pagesAvailable = (int) ceil($total / $pageSize);
-            $pagesNeeded    = min($pagesAvailable, $maxPages);
+            $pagesNeeded = min($pagesAvailable, $maxPages);
 
             if ($pagesNeeded <= 1) {
                 return ['count' => $total, 'results' => $results];
@@ -177,8 +177,8 @@ class RawgService
 
             // ── Pages 2-N in parallel ────────────────────────────────────
             $baseUrl = $this->baseUrl;
-            $key     = $this->key();
-            $ssl     = $this->verifySSL;
+            $key = $this->key();
+            $ssl = $this->verifySSL;
 
             $responses = Http::pool(function ($pool) use ($baseUrl, $key, $from, $to, $ordering, $pageSize, $pagesNeeded, $ssl) {
                 $requests = [];
@@ -190,11 +190,11 @@ class RawgService
                     $requests[] = $pool->timeout(20)
                         ->withOptions($opts)
                         ->get("{$baseUrl}/games", [
-                            'key'       => $key,
-                            'dates'     => "{$from},{$to}",
-                            'ordering'  => $ordering,
+                            'key' => $key,
+                            'dates' => "{$from},{$to}",
+                            'ordering' => $ordering,
                             'page_size' => $pageSize,
-                            'page'      => $p,
+                            'page' => $p,
                         ]);
                 }
 

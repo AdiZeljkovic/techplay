@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Events\CommentPosted;
 use App\Events\NotificationReceived;
 use App\Models\Comment;
+use App\Models\User;
 
 class CommentObserver
 {
@@ -40,18 +41,21 @@ class CommentObserver
     {
         $commentable = $comment->commentable;
 
-        if (!$commentable)
+        if (! $commentable) {
             return;
+        }
 
         // Get content owner (author_id for articles, user_id for other content)
         $ownerId = $commentable->author_id ?? $commentable->user_id ?? null;
 
-        if (!$ownerId || $ownerId === $comment->user_id)
-            return; // Don't notify self
-
-        $owner = \App\Models\User::find($ownerId);
-        if (!$owner)
+        if (! $ownerId || $ownerId === $comment->user_id) {
             return;
+        } // Don't notify self
+
+        $owner = User::find($ownerId);
+        if (! $owner) {
+            return;
+        }
 
         $contentType = class_basename($comment->commentable_type);
         $contentTitle = $commentable->title ?? $commentable->name ?? 'your content';

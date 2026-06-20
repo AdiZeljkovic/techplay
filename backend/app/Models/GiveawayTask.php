@@ -79,12 +79,12 @@ class GiveawayTask extends Model
 
     public function canBeCompletedBy(GiveawayEntry $entry): bool
     {
-        if (!$this->is_repeatable) {
-            return !$this->isCompletedBy($entry);
+        if (! $this->is_repeatable) {
+            return ! $this->isCompletedBy($entry);
         }
 
         // For repeatable tasks, can complete once per day
-        return !$this->completions()
+        return ! $this->completions()
             ->where('entry_id', $entry->id)
             ->whereDate('completed_date', today())
             ->exists();

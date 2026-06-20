@@ -8,6 +8,7 @@ use App\Filament\Resources\Articles\Pages\ListArticles;
 use App\Filament\Resources\Articles\Schemas\ArticleForm;
 use App\Filament\Resources\Articles\Tables\ArticlesTable;
 use App\Models\Article;
+use App\Policies\ArticlePolicy;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -17,7 +18,7 @@ class ArticleResource extends Resource
 {
     protected static ?string $model = Article::class;
 
-    protected static ?string $modelPolicy = \App\Policies\ArticlePolicy::class;
+    protected static ?string $modelPolicy = ArticlePolicy::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
 

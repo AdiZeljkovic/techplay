@@ -3,22 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\Category;
 use App\Models\Game;
 use App\Models\Guide;
-use App\Models\Video;
 use App\Models\Product;
-use App\Models\Category;
-use App\Models\Giveaway;
-use App\Services\SchemaService;
+use App\Models\Video;
 use Carbon\Carbon;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
 class SitemapController extends Controller
 {
     private string $frontendUrl;
+
     private string $apiUrl;
+
     private const CACHE_TTL = 3600; // 1 hour cache
 
     public function __construct()
@@ -33,8 +32,8 @@ class SitemapController extends Controller
      */
     public function index(): Response
     {
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
+        $xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
 
         // Always-present sitemaps (static pages, categories always have entries)
         $sitemaps = [
@@ -64,19 +63,20 @@ class SitemapController extends Controller
         // Get actual last-modified dates per sitemap type
         $lastmod = Cache::remember('sitemap.index.lastmod', 300, function () {
             $articleLastmod = Article::where('status', 'published')->max('updated_at');
-            $guideLastmod   = Guide::where('status', 'published')->max('updated_at');
-            $videoLastmod   = Video::whereNotNull('published_at')->max('published_at');
+            $guideLastmod = Guide::where('status', 'published')->max('updated_at');
+            $videoLastmod = Video::whereNotNull('published_at')->max('published_at');
             $productLastmod = Product::where('is_active', true)->max('updated_at');
+
             return [
-                'sitemap-hub.xml'        => now()->subDays(7)->toIso8601String(),
-                'sitemap-pages.xml'      => now()->subDays(7)->toIso8601String(),
-                'sitemap-articles.xml'   => $articleLastmod ? \Carbon\Carbon::parse($articleLastmod)->toIso8601String() : now()->toIso8601String(),
+                'sitemap-hub.xml' => now()->subDays(7)->toIso8601String(),
+                'sitemap-pages.xml' => now()->subDays(7)->toIso8601String(),
+                'sitemap-articles.xml' => $articleLastmod ? Carbon::parse($articleLastmod)->toIso8601String() : now()->toIso8601String(),
                 'sitemap-categories.xml' => now()->subDays(7)->toIso8601String(),
-                'sitemap-guides.xml'     => $guideLastmod ? \Carbon\Carbon::parse($guideLastmod)->toIso8601String() : now()->toIso8601String(),
-                'sitemap-videos.xml'     => $videoLastmod ? \Carbon\Carbon::parse($videoLastmod)->toIso8601String() : now()->toIso8601String(),
-                'sitemap-products.xml'   => $productLastmod ? \Carbon\Carbon::parse($productLastmod)->toIso8601String() : now()->toIso8601String(),
-                'sitemap-news.xml'       => $articleLastmod ? \Carbon\Carbon::parse($articleLastmod)->toIso8601String() : now()->toIso8601String(),
-                'sitemap-images.xml'     => $articleLastmod ? \Carbon\Carbon::parse($articleLastmod)->toIso8601String() : now()->toIso8601String(),
+                'sitemap-guides.xml' => $guideLastmod ? Carbon::parse($guideLastmod)->toIso8601String() : now()->toIso8601String(),
+                'sitemap-videos.xml' => $videoLastmod ? Carbon::parse($videoLastmod)->toIso8601String() : now()->toIso8601String(),
+                'sitemap-products.xml' => $productLastmod ? Carbon::parse($productLastmod)->toIso8601String() : now()->toIso8601String(),
+                'sitemap-news.xml' => $articleLastmod ? Carbon::parse($articleLastmod)->toIso8601String() : now()->toIso8601String(),
+                'sitemap-images.xml' => $articleLastmod ? Carbon::parse($articleLastmod)->toIso8601String() : now()->toIso8601String(),
             ];
         });
 
@@ -96,7 +96,7 @@ class SitemapController extends Controller
         foreach ($sitemaps as $sitemap) {
             $xml .= "  <sitemap>\n";
             $xml .= "    <loc>{$this->frontendUrl}/{$sitemap}</loc>\n";
-            $xml .= "    <lastmod>" . ($lastmod[$sitemap] ?? now()->toIso8601String()) . "</lastmod>\n";
+            $xml .= '    <lastmod>'.($lastmod[$sitemap] ?? now()->toIso8601String())."</lastmod>\n";
             $xml .= "  </sitemap>\n";
         }
 
@@ -141,6 +141,7 @@ class SitemapController extends Controller
         }
 
         $xml .= '</urlset>';
+
         return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
@@ -170,6 +171,7 @@ class SitemapController extends Controller
         }
 
         $xml .= '</urlset>';
+
         return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
@@ -200,6 +202,7 @@ class SitemapController extends Controller
         }
 
         $xml .= '</urlset>';
+
         return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
@@ -231,6 +234,7 @@ class SitemapController extends Controller
         }
 
         $xml .= '</urlset>';
+
         return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
@@ -239,8 +243,8 @@ class SitemapController extends Controller
      */
     public function videos(): Response
     {
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">' . "\n";
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">'."\n";
 
         $videos = Video::whereNotNull('published_at')
             ->select('slug', 'title', 'youtube_url', 'thumbnail_url', 'published_at')
@@ -260,20 +264,21 @@ class SitemapController extends Controller
             $xml .= "  <url>\n";
             $xml .= "    <loc>{$this->frontendUrl}/videos/{$video->slug}</loc>\n";
             $xml .= "    <video:video>\n";
-            $xml .= "      <video:title>" . htmlspecialchars($video->title) . "</video:title>\n";
-            $xml .= "      <video:description>" . htmlspecialchars($video->title) . "</video:description>\n";
+            $xml .= '      <video:title>'.htmlspecialchars($video->title)."</video:title>\n";
+            $xml .= '      <video:description>'.htmlspecialchars($video->title)."</video:description>\n";
             if ($video->thumbnail_url) {
                 $xml .= "      <video:thumbnail_loc>{$video->thumbnail_url}</video:thumbnail_loc>\n";
             }
             if ($video->youtube_url) {
                 $xml .= "      <video:player_loc>{$video->youtube_url}</video:player_loc>\n";
             }
-            $xml .= "      <video:publication_date>" . $video->published_at->toIso8601String() . "</video:publication_date>\n";
+            $xml .= '      <video:publication_date>'.$video->published_at->toIso8601String()."</video:publication_date>\n";
             $xml .= "    </video:video>\n";
             $xml .= "  </url>\n";
         }
 
         $xml .= '</urlset>';
+
         return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
@@ -304,6 +309,7 @@ class SitemapController extends Controller
         }
 
         $xml .= '</urlset>';
+
         return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
@@ -312,8 +318,8 @@ class SitemapController extends Controller
      */
     public function news(): Response
     {
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">' . "\n";
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">'."\n";
 
         $articles = Article::where('status', 'published')
             ->where('published_at', '>=', now()->subHours(48))
@@ -340,13 +346,14 @@ class SitemapController extends Controller
             $xml .= "        <news:name>TechPlay</news:name>\n";
             $xml .= "        <news:language>en</news:language>\n";
             $xml .= "      </news:publication>\n";
-            $xml .= "      <news:publication_date>" . $article->published_at->toIso8601String() . "</news:publication_date>\n";
-            $xml .= "      <news:title>" . htmlspecialchars($article->title) . "</news:title>\n";
+            $xml .= '      <news:publication_date>'.$article->published_at->toIso8601String()."</news:publication_date>\n";
+            $xml .= '      <news:title>'.htmlspecialchars($article->title)."</news:title>\n";
             $xml .= "    </news:news>\n";
             $xml .= "  </url>\n";
         }
 
         $xml .= '</urlset>';
+
         return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
@@ -355,8 +362,8 @@ class SitemapController extends Controller
      */
     public function images(): Response
     {
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">' . "\n";
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">'."\n";
 
         $articles = Article::where('status', 'published')
             ->whereNotNull('featured_image_url')
@@ -373,12 +380,13 @@ class SitemapController extends Controller
             $xml .= "    <loc>{$this->frontendUrl}/{$type}/{$article->slug}</loc>\n";
             $xml .= "    <image:image>\n";
             $xml .= "      <image:loc>{$article->featured_image_url}</image:loc>\n";
-            $xml .= "      <image:title>" . htmlspecialchars($article->title) . "</image:title>\n";
+            $xml .= '      <image:title>'.htmlspecialchars($article->title)."</image:title>\n";
             $xml .= "    </image:image>\n";
             $xml .= "  </url>\n";
         }
 
         $xml .= '</urlset>';
+
         return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
@@ -423,6 +431,7 @@ class SitemapController extends Controller
         }
 
         $xml .= '</urlset>';
+
         return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
@@ -449,6 +458,7 @@ class SitemapController extends Controller
             });
 
         $xml .= '</urlset>';
+
         return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
@@ -456,8 +466,8 @@ class SitemapController extends Controller
 
     private function xmlHeader(): string
     {
-        return '<?xml version="1.0" encoding="UTF-8"?>' . "\n" .
-            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        return '<?xml version="1.0" encoding="UTF-8"?>'."\n".
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
     }
 
     private function urlEntry(string $loc, ?string $lastmod = null, string $changefreq = 'weekly', string $priority = '0.5'): string
@@ -470,6 +480,7 @@ class SitemapController extends Controller
         $xml .= "    <changefreq>{$changefreq}</changefreq>\n";
         $xml .= "    <priority>{$priority}</priority>\n";
         $xml .= "  </url>\n";
+
         return $xml;
     }
 
@@ -477,9 +488,9 @@ class SitemapController extends Controller
     {
         return match ($type) {
             'review', 'reviews' => 'reviews',
-            'hardware', 'tech'  => 'hardware',
-            'guide', 'guides'   => 'guides',
-            default             => 'news',
+            'hardware', 'tech' => 'hardware',
+            'guide', 'guides' => 'guides',
+            default => 'news',
         };
     }
 }

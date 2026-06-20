@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Http;
 class ScanBrokenLinks extends Command
 {
     protected $signature = 'seo:scan-links {--limit=100 : Max articles to scan}';
+
     protected $description = 'Scan articles for broken links';
 
     public function handle()
@@ -34,7 +35,7 @@ class ScanBrokenLinks extends Command
             foreach ($links as $url) {
                 $result = $this->checkLink($url);
 
-                if (!$result['ok']) {
+                if (! $result['ok']) {
                     $brokenCount++;
                     $this->recordBrokenLink($article->id, $url, $result);
                 }
@@ -46,7 +47,7 @@ class ScanBrokenLinks extends Command
         $this->output->progressFinish();
 
         $this->newLine();
-        $this->info("📊 Scan complete!");
+        $this->info('📊 Scan complete!');
         $this->table(
             ['Metric', 'Value'],
             [

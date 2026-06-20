@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
 
 class MediaKitSetting extends Model
 {
@@ -28,7 +28,7 @@ class MediaKitSetting extends Model
     {
         return Attribute::make(
             get: function () {
-                return match($this->type) {
+                return match ($this->type) {
                     'number' => (int) $this->value,
                     'boolean' => filter_var($this->value, FILTER_VALIDATE_BOOLEAN),
                     'json' => json_decode($this->value, true),

@@ -15,7 +15,8 @@ class MobyEnrichmentJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries   = 3;
+    public int $tries = 3;
+
     public int $timeout = 120;
 
     public function __construct(
@@ -31,6 +32,7 @@ class MobyEnrichmentJob implements ShouldQueue
 
         if (! $game || ! $game->moby_id) {
             Log::warning("MobyEnrichmentJob: game {$this->gameId} not found or no moby_id");
+
             return;
         }
 
@@ -45,11 +47,12 @@ class MobyEnrichmentJob implements ShouldQueue
             Log::info("MobyEnrichmentJob: no platform for game {$this->gameId}, skipping");
             // Mark as done so we don't retry forever
             $game->update(['screenshots_crawled_at' => now()]);
+
             return;
         }
 
         $detailsData = $game->details_data ?? [];
-        $updates     = [];
+        $updates = [];
 
         // ------------------------------------------------------------------
         // Call 1: GET /v1/games/{id}/platforms/{primary_platform_id}
@@ -58,7 +61,7 @@ class MobyEnrichmentJob implements ShouldQueue
         $platformData = $moby->getPlatformData($this->mobyId, $primaryPid);
 
         if ($platformData) {
-            $detailsData['ratings']    = $platformData['ratings']    ?? [];
+            $detailsData['ratings'] = $platformData['ratings'] ?? [];
             $detailsData['attributes'] = $platformData['attributes'] ?? [];
         }
 
@@ -68,7 +71,7 @@ class MobyEnrichmentJob implements ShouldQueue
         $screenshotsData = $moby->getScreenshots($this->mobyId, $primaryPid);
 
         if ($screenshotsData) {
-            $updates['screenshots_data']       = $screenshotsData;
+            $updates['screenshots_data'] = $screenshotsData;
             $updates['screenshots_crawled_at'] = now();
         } else {
             // Mark as attempted so we don't retry indefinitely

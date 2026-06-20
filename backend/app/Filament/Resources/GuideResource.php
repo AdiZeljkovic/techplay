@@ -2,37 +2,36 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\GuideResource\Pages;
-use App\Filament\Components\SeoFields;
 use App\Filament\Components\MediaPickerFields;
+use App\Filament\Components\SeoFields;
+use App\Filament\Resources\GuideResource\Pages;
 use App\Models\Guide;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Group;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
+use App\Services\CacheService;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\BulkActionGroup;
-use Illuminate\Support\Str;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class GuideResource extends Resource
 {
@@ -46,6 +45,7 @@ class GuideResource extends Resource
     {
         return 'Content Studio';
     }
+
     protected static ?int $navigationSort = 3;
 
     public static function getNavigationLabel(): string
@@ -77,10 +77,10 @@ class GuideResource extends Resource
                                     ->required()
                                     ->maxLength(100)
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(fn($set, ?string $state) => $set('slug', Str::slug($state)))
+                                    ->afterStateUpdated(fn ($set, ?string $state) => $set('slug', Str::slug($state)))
                                     ->helperText(
-                                        fn($state) => $state
-                                        ? (strlen($state) . '/100 chars' . (strlen($state) > 60 ? ' — Consider shortening for SEO' : ' ✓'))
+                                        fn ($state) => $state
+                                        ? (strlen($state).'/100 chars'.(strlen($state) > 60 ? ' — Consider shortening for SEO' : ' ✓'))
                                         : 'Aim for 50-60 characters for optimal SEO'
                                     ),
 
@@ -99,8 +99,8 @@ class GuideResource extends Resource
                                         ->rows(2)
                                         ->maxLength(200)
                                         ->helperText(
-                                            fn($state) => $state
-                                            ? strlen($state) . '/200 chars'
+                                            fn ($state) => $state
+                                            ? strlen($state).'/200 chars'
                                             : 'Short description shown in previews'
                                         ),
                                 ]),
@@ -164,7 +164,7 @@ class GuideResource extends Resource
                                             ->directory('guides/steps')
                                             ->disk('public'),
                                     ])
-                                    ->itemLabel(fn(array $state): ?string => $state['title'] ?? null)
+                                    ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
                                     ->collapsible()
                                     ->cloneable()
                                     ->defaultItems(0)
@@ -221,9 +221,9 @@ class GuideResource extends Resource
 
                                         Select::make('author_id')
                                             ->label('Author')
-                                            ->options(fn() => \App\Services\CacheService::getAuthors())
+                                            ->options(fn () => CacheService::getAuthors())
                                             ->searchable()
-                                            ->default(fn() => auth()->id())
+                                            ->default(fn () => auth()->id())
                                             ->required()
                                             ->native(false),
                                     ]),
@@ -231,7 +231,7 @@ class GuideResource extends Resource
                                 // TAB: SEO with Live Checker
                                 Tab::make('SEO')
                                     ->icon('heroicon-o-magnifying-glass')
-                                    ->badge(fn($get) => $get('meta_title') ? '✓' : null)
+                                    ->badge(fn ($get) => $get('meta_title') ? '✓' : null)
                                     ->badgeColor('success')
                                     ->schema(SeoFields::make('techplay.gg/guides/', false)),
 
@@ -258,13 +258,13 @@ class GuideResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->limit(50)
-                    ->tooltip(fn($record) => $record->title),
+                    ->tooltip(fn ($record) => $record->title),
                 TextColumn::make('author.username')
                     ->label('Author')
                     ->sortable(),
                 TextColumn::make('difficulty')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'beginner' => 'success',
                         'intermediate' => 'warning',
                         'advanced' => 'danger',
@@ -318,4 +318,3 @@ class GuideResource extends Resource
         ];
     }
 }
-

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Article;
+use Illuminate\Support\Collection;
 
 class HreflangService
 {
@@ -56,7 +57,7 @@ class HreflangService
     /**
      * Get all translations of an article
      */
-    public static function getTranslations(Article $article): \Illuminate\Support\Collection
+    public static function getTranslations(Article $article): Collection
     {
         // If this is a translation, get the original and its other translations
         if ($article->translation_of_id) {
@@ -81,7 +82,7 @@ class HreflangService
         $tags = self::getHreflangTags($article);
 
         return collect($tags)
-            ->map(fn($tag) => sprintf(
+            ->map(fn ($tag) => sprintf(
                 '<link rel="alternate" hreflang="%s" href="%s" />',
                 $tag['lang'],
                 $tag['url']
@@ -96,7 +97,7 @@ class HreflangService
     {
         $existingLangs = collect(self::getHreflangTags($article))
             ->pluck('lang')
-            ->filter(fn($l) => $l !== 'x-default')
+            ->filter(fn ($l) => $l !== 'x-default')
             ->toArray();
 
         return array_diff(array_keys(self::LANGUAGES), $existingLangs);

@@ -2,15 +2,18 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class BlizzardService
 {
     protected string $clientId;
+
     protected string $clientSecret;
+
     protected string $defaultRegion;
+
     protected bool $verifySSL;
 
     // Region-specific base URLs
@@ -33,7 +36,7 @@ class BlizzardService
         $this->clientId = config('services.blizzard.client_id');
         $this->clientSecret = config('services.blizzard.client_secret');
         $this->defaultRegion = config('services.blizzard.region', 'us');
-        $this->verifySSL = !app()->environment('local');
+        $this->verifySSL = ! app()->environment('local');
     }
 
     /**
@@ -42,9 +45,10 @@ class BlizzardService
     protected function http(int $timeout = 30)
     {
         $client = Http::timeout($timeout);
-        if (!$this->verifySSL) {
+        if (! $this->verifySSL) {
             $client = $client->withoutVerifying();
         }
+
         return $client;
     }
 
@@ -76,7 +80,7 @@ class BlizzardService
 
                 return $response->json()['access_token'];
             } catch (\Exception $e) {
-                Log::error('Blizzard OAuth Exception: ' . $e->getMessage());
+                Log::error('Blizzard OAuth Exception: '.$e->getMessage());
                 throw $e;
             }
         });
@@ -114,7 +118,8 @@ class BlizzardService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Blizzard Profile Exception: ' . $e->getMessage());
+            Log::error('Blizzard Profile Exception: '.$e->getMessage());
+
             return null;
         }
     }
@@ -147,7 +152,8 @@ class BlizzardService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Blizzard Achievements Exception: ' . $e->getMessage());
+            Log::error('Blizzard Achievements Exception: '.$e->getMessage());
+
             return null;
         }
     }
@@ -180,7 +186,8 @@ class BlizzardService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Blizzard Mounts Exception: ' . $e->getMessage());
+            Log::error('Blizzard Mounts Exception: '.$e->getMessage());
+
             return null;
         }
     }
@@ -213,7 +220,8 @@ class BlizzardService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Blizzard Character Media Exception: ' . $e->getMessage());
+            Log::error('Blizzard Character Media Exception: '.$e->getMessage());
+
             return null;
         }
     }
@@ -246,7 +254,8 @@ class BlizzardService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Blizzard Equipment Exception: ' . $e->getMessage());
+            Log::error('Blizzard Equipment Exception: '.$e->getMessage());
+
             return null;
         }
     }
@@ -279,7 +288,8 @@ class BlizzardService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Blizzard Mythic Keystone Profile Exception: ' . $e->getMessage());
+            Log::error('Blizzard Mythic Keystone Profile Exception: '.$e->getMessage());
+
             return null;
         }
     }
@@ -312,7 +322,8 @@ class BlizzardService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Blizzard Raid Encounters Exception: ' . $e->getMessage());
+            Log::error('Blizzard Raid Encounters Exception: '.$e->getMessage());
+
             return null;
         }
     }
@@ -345,7 +356,8 @@ class BlizzardService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Blizzard PvP Summary Exception: ' . $e->getMessage());
+            Log::error('Blizzard PvP Summary Exception: '.$e->getMessage());
+
             return null;
         }
     }
@@ -378,7 +390,8 @@ class BlizzardService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Blizzard Reputations Exception: ' . $e->getMessage());
+            Log::error('Blizzard Reputations Exception: '.$e->getMessage());
+
             return null;
         }
     }
@@ -411,7 +424,8 @@ class BlizzardService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Blizzard Pets Exception: ' . $e->getMessage());
+            Log::error('Blizzard Pets Exception: '.$e->getMessage());
+
             return null;
         }
     }
@@ -444,7 +458,8 @@ class BlizzardService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Blizzard Toys Exception: ' . $e->getMessage());
+            Log::error('Blizzard Toys Exception: '.$e->getMessage());
+
             return null;
         }
     }
@@ -477,7 +492,8 @@ class BlizzardService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Blizzard Appearances Exception: ' . $e->getMessage());
+            Log::error('Blizzard Appearances Exception: '.$e->getMessage());
+
             return null;
         }
     }
@@ -510,7 +526,8 @@ class BlizzardService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Blizzard Professions Exception: ' . $e->getMessage());
+            Log::error('Blizzard Professions Exception: '.$e->getMessage());
+
             return null;
         }
     }
@@ -545,7 +562,8 @@ class BlizzardService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('Blizzard Realm Index Exception: ' . $e->getMessage());
+            Log::error('Blizzard Realm Index Exception: '.$e->getMessage());
+
             return null;
         }
     }
@@ -554,9 +572,9 @@ class BlizzardService
      * Fetch all character data in parallel using Http::pool()
      * Performance: ~1-2s vs 4-8s sequential
      *
-     * @param string $region Region code (us/eu/kr/tw)
-     * @param string $realmSlug Realm slug (lowercase, dashes)
-     * @param string $characterName Character name (lowercase)
+     * @param  string  $region  Region code (us/eu/kr/tw)
+     * @param  string  $realmSlug  Realm slug (lowercase, dashes)
+     * @param  string  $characterName  Character name (lowercase)
      * @return array All endpoint responses (null if failed)
      */
     public function fetchAllCharacterData(string $region, string $realmSlug, string $characterName): array
@@ -660,7 +678,7 @@ class BlizzardService
                 'professions' => $responses['professions']->successful() ? $responses['professions']->json() : null,
             ];
         } catch (\Exception $e) {
-            Log::error('Blizzard Parallel Fetch Exception: ' . $e->getMessage(), [
+            Log::error('Blizzard Parallel Fetch Exception: '.$e->getMessage(), [
                 'region' => $region,
                 'realm' => $realmSlug,
                 'character' => $characterName,

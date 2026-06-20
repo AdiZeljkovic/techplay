@@ -13,9 +13,11 @@ use Illuminate\Console\Command;
 class ValidateEnv extends Command
 {
     protected $signature = 'env:validate';
+
     protected $description = 'Validate required environment variables';
 
     private $errors = [];
+
     private $warnings = [];
 
     public function handle(): int
@@ -65,7 +67,7 @@ class ValidateEnv extends Command
 
     private function validateMail(): void
     {
-        if (!env('MAIL_MAILER')) {
+        if (! env('MAIL_MAILER')) {
             $this->warnings[] = '⚠️  MAIL_MAILER not set - email features will not work';
         }
     }
@@ -73,7 +75,7 @@ class ValidateEnv extends Command
     private function validateSecurity(): void
     {
         // Sanctum stateful domains
-        if (env('APP_ENV') === 'production' && !env('SANCTUM_STATEFUL_DOMAINS')) {
+        if (env('APP_ENV') === 'production' && ! env('SANCTUM_STATEFUL_DOMAINS')) {
             $this->warnings[] = '⚠️  SANCTUM_STATEFUL_DOMAINS not set - CSRF protection may not work';
         }
 
@@ -104,7 +106,7 @@ class ValidateEnv extends Command
 
     private function displayResults(): void
     {
-        if (!empty($this->errors)) {
+        if (! empty($this->errors)) {
             $this->newLine();
             $this->error('ERRORS FOUND:');
             foreach ($this->errors as $error) {
@@ -112,7 +114,7 @@ class ValidateEnv extends Command
             }
         }
 
-        if (!empty($this->warnings)) {
+        if (! empty($this->warnings)) {
             $this->newLine();
             $this->warn('WARNINGS:');
             foreach ($this->warnings as $warning) {

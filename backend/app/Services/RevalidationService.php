@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class RevalidationService
 {
     protected ?string $frontendUrl;
+
     protected ?string $revalidateToken;
 
     public function __construct()
@@ -19,14 +20,15 @@ class RevalidationService
     /**
      * Trigger Next.js on-demand revalidation for an article
      *
-     * @param string $slug Article slug
-     * @param string $category Category (news, reviews, tech, guides)
+     * @param  string  $slug  Article slug
+     * @param  string  $category  Category (news, reviews, tech, guides)
      * @return bool Success status
      */
     public function revalidateArticle(string $slug, string $category): bool
     {
-        if (!$this->revalidateToken || !$this->frontendUrl) {
+        if (! $this->revalidateToken || ! $this->frontendUrl) {
             Log::warning('Revalidation skipped: Missing REVALIDATE_SECRET_TOKEN or FRONTEND_URL');
+
             return false;
         }
 
@@ -44,6 +46,7 @@ class RevalidationService
 
             if ($response->successful()) {
                 Log::info("Revalidated article: {$category}/{$slug}");
+
                 return true;
             }
 
@@ -51,9 +54,11 @@ class RevalidationService
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
+
             return false;
         } catch (\Exception $e) {
-            Log::error('Revalidation exception: ' . $e->getMessage());
+            Log::error('Revalidation exception: '.$e->getMessage());
+
             return false;
         }
     }
@@ -63,7 +68,7 @@ class RevalidationService
      */
     public function revalidateHomepage(): bool
     {
-        if (!$this->revalidateToken || !$this->frontendUrl) {
+        if (! $this->revalidateToken || ! $this->frontendUrl) {
             return false;
         }
 
@@ -78,7 +83,8 @@ class RevalidationService
 
             return $response->successful();
         } catch (\Exception $e) {
-            Log::error('Homepage revalidation exception: ' . $e->getMessage());
+            Log::error('Homepage revalidation exception: '.$e->getMessage());
+
             return false;
         }
     }
@@ -88,7 +94,7 @@ class RevalidationService
      */
     public function revalidateCategory(string $category): bool
     {
-        if (!$this->revalidateToken || !$this->frontendUrl) {
+        if (! $this->revalidateToken || ! $this->frontendUrl) {
             return false;
         }
 
@@ -104,7 +110,8 @@ class RevalidationService
 
             return $response->successful();
         } catch (\Exception $e) {
-            Log::error('Category revalidation exception: ' . $e->getMessage());
+            Log::error('Category revalidation exception: '.$e->getMessage());
+
             return false;
         }
     }

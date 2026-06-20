@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Widgets\StatsOverview;
 use Filafly\Themes\Brisk\BriskTheme;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
@@ -16,6 +17,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -41,7 +43,7 @@ class AdminPanelProvider extends PanelProvider
             // )
             ->renderHook(
                 'panels::body.end',
-                fn () => new \Illuminate\Support\HtmlString(<<<'HTML'
+                fn () => new HtmlString(<<<'HTML'
 <script>
 // Fix: prevent RichEditor toolbar buttons from stealing focus off the editor.
 // Without this, clicking a toolbar button blurs the contenteditable which can
@@ -70,7 +72,7 @@ HTML)
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                \App\Filament\Widgets\StatsOverview::class,
+                StatsOverview::class,
             ])
             ->middleware([
                 EncryptCookies::class,

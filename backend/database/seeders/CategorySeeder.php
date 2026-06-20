@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Category;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
@@ -18,7 +18,7 @@ class CategorySeeder extends Seeder
             'name' => 'News',
             'slug' => 'news',
             'type' => 'news',
-            'icon' => 'file-text'
+            'icon' => 'file-text',
         ]);
 
         $newsSubs = ['Gaming', 'Consoles', 'PC', 'Movies & TV', 'Industry', 'E-sport', 'Opinions', 'Interviews'];
@@ -27,7 +27,7 @@ class CategorySeeder extends Seeder
                 'name' => $sub,
                 'slug' => Str::slug("news-$sub"), // unique slug
                 'parent_id' => $news->id,
-                'type' => 'news'
+                'type' => 'news',
             ]);
         }
 
@@ -36,7 +36,7 @@ class CategorySeeder extends Seeder
             'name' => 'Reviews',
             'slug' => 'reviews',
             'type' => 'reviews',
-            'icon' => 'star'
+            'icon' => 'star',
         ]);
 
         $reviewSubs = ['Latest', "Editor's Choice", 'AAA Titles', 'Indie Gems', 'Retro'];
@@ -45,7 +45,7 @@ class CategorySeeder extends Seeder
                 'name' => $sub,
                 'slug' => Str::slug("reviews-$sub"),
                 'parent_id' => $reviews->id,
-                'type' => 'reviews'
+                'type' => 'reviews',
             ]);
         }
 
@@ -54,7 +54,7 @@ class CategorySeeder extends Seeder
             'name' => 'Tech',
             'slug' => 'tech',
             'type' => 'tech',
-            'icon' => 'cpu'
+            'icon' => 'cpu',
         ]);
 
         $techSubs = ['News', 'Reviews', 'Benchmarks', 'Guides'];
@@ -63,7 +63,7 @@ class CategorySeeder extends Seeder
                 'name' => $sub,
                 'slug' => Str::slug("tech-$sub"),
                 'parent_id' => $tech->id,
-                'type' => 'tech'
+                'type' => 'tech',
             ]);
         }
     }

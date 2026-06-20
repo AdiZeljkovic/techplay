@@ -8,12 +8,14 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class FetchOgData implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 2;
+
     public int $timeout = 10;
 
     public function __construct(
@@ -24,16 +26,20 @@ class FetchOgData implements ShouldQueue
     public function handle(): void
     {
         $message = EditorialMessage::find($this->messageId);
-        if (!$message) return;
+        if (! $message) {
+            return;
+        }
 
         try {
             $html = $this->fetchUrl($this->url);
-            if (!$html) return;
+            if (! $html) {
+                return;
+            }
 
             $ogData = $this->parseOgTags($html);
 
             // Fallback: try JSON-LD schema if OG tags missing
-            if (!$ogData['title']) {
+            if (! $ogData['title']) {
                 $ogData = $this->mergeJsonLd($html, $ogData);
             }
 
@@ -41,7 +47,7 @@ class FetchOgData implements ShouldQueue
                 $message->update(['og_data' => $ogData]);
             }
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::debug('OG fetch failed for: ' . $this->url . ' - ' . $e->getMessage());
+            Log::debug('OG fetch failed for: '.$this->url.' - '.$e->getMessage());
         }
     }
 
@@ -123,27 +129,27 @@ class FetchOgData implements ShouldQueue
             }
 
             // Twitter card fallbacks
-            if ($name === 'twitter:title' && $content && !$data['title']) {
+            if ($name === 'twitter:title' && $content && ! $data['title']) {
                 $data['title'] = $content;
             }
-            if ($name === 'twitter:description' && $content && !$data['description']) {
+            if ($name === 'twitter:description' && $content && ! $data['description']) {
                 $data['description'] = $content;
             }
-            if ($name === 'twitter:image' && $content && !$data['image']) {
+            if ($name === 'twitter:image' && $content && ! $data['image']) {
                 $data['image'] = $content;
             }
 
             // Standard meta fallbacks
-            if ($name === 'description' && $content && !$data['description']) {
+            if ($name === 'description' && $content && ! $data['description']) {
                 $data['description'] = $content;
             }
-            if ($name === 'title' && $content && !$data['title']) {
+            if ($name === 'title' && $content && ! $data['title']) {
                 $data['title'] = $content;
             }
         }
 
         // Fallback to <title> tag
-        if (!$data['title'] && preg_match('/<title[^>]*>([^<]+)<\/title>/is', $html, $m)) {
+        if (! $data['title'] && preg_match('/<title[^>]*>([^<]+)<\/title>/is', $html, $m)) {
             $data['title'] = html_entity_decode(trim($m[1]), ENT_QUOTES, 'UTF-8');
         }
 
@@ -157,27 +163,29 @@ class FetchOgData implements ShouldQueue
 
         foreach ($matches[1] as $json) {
             $ld = json_decode(trim($json), true);
-            if (!$ld) continue;
+            if (! $ld) {
+                continue;
+            }
 
             // Handle @graph wrapper
             $items = isset($ld['@graph']) ? $ld['@graph'] : [$ld];
 
             foreach ($items as $item) {
                 $type = $item['@type'] ?? '';
-                if (!in_array($type, ['Article', 'NewsArticle', 'BlogPosting', 'WebPage', 'Product', 'VideoObject'])) {
+                if (! in_array($type, ['Article', 'NewsArticle', 'BlogPosting', 'WebPage', 'Product', 'VideoObject'])) {
                     continue;
                 }
 
-                if (!$data['title'] && !empty($item['headline'])) {
+                if (! $data['title'] && ! empty($item['headline'])) {
                     $data['title'] = $item['headline'];
                 }
-                if (!$data['title'] && !empty($item['name'])) {
+                if (! $data['title'] && ! empty($item['name'])) {
                     $data['title'] = $item['name'];
                 }
-                if (!$data['description'] && !empty($item['description'])) {
+                if (! $data['description'] && ! empty($item['description'])) {
                     $data['description'] = $item['description'];
                 }
-                if (!$data['image']) {
+                if (! $data['image']) {
                     $img = $item['image'] ?? $item['thumbnailUrl'] ?? null;
                     if (is_array($img)) {
                         $data['image'] = $img['url'] ?? $img[0] ?? null;
@@ -185,12 +193,14 @@ class FetchOgData implements ShouldQueue
                         $data['image'] = $img;
                     }
                 }
-                if (!$data['site_name'] && !empty($item['publisher']['name'])) {
+                if (! $data['site_name'] && ! empty($item['publisher']['name'])) {
                     $data['site_name'] = $item['publisher']['name'];
                 }
 
                 // Found a match, stop
-                if ($data['title']) break 2;
+                if ($data['title']) {
+                    break 2;
+                }
             }
         }
 

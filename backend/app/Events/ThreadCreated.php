@@ -36,7 +36,7 @@ class ThreadCreated implements ShouldBroadcast
             'id' => $this->thread->id,
             'title' => $this->thread->title,
             'slug' => $this->thread->slug,
-            'content' => substr($this->thread->content, 0, 200) . '...',
+            'content' => substr($this->thread->content, 0, 200).'...',
             'category' => [
                 'id' => $this->thread->category?->id,
                 'name' => $this->thread->category?->name,

@@ -1,9 +1,15 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\AuthServiceProvider;
+use App\Providers\BroadcastServiceProvider;
+use App\Providers\EventServiceProvider;
+use App\Providers\Filament\AdminPanelProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\AuthServiceProvider::class,
-    App\Providers\EventServiceProvider::class,
-    App\Providers\Filament\AdminPanelProvider::class,
-    App\Providers\BroadcastServiceProvider::class,
+    AppServiceProvider::class,
+    AuthServiceProvider::class,
+    EventServiceProvider::class,
+    AdminPanelProvider::class,
+    BroadcastServiceProvider::class,
 ];

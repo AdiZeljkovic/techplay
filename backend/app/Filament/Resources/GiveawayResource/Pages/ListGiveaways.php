@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\GiveawayResource\Pages;
 
 use App\Filament\Resources\GiveawayResource;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListGiveaways extends ListRecords
@@ -12,7 +13,7 @@ class ListGiveaways extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\CreateAction::make(),
+            CreateAction::make(),
         ];
     }
 }

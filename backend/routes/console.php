@@ -29,6 +29,9 @@ Schedule::command('articles:publish-scheduled')->everyMinute();
 // PRESENCE: Poll Steam for currently-playing status every 2 minutes
 Schedule::job(new PollSteamPresence)->everyTwoMinutes();
 
+// WISHLIST: Notify users when wishlisted games release today (runs at 09:00 daily)
+Schedule::command('wishlist:check-releases')->dailyAt('09:00');
+
 // SEO: Regenerate XML sitemaps every 6 hours
 Schedule::command('sitemap:generate')->everySixHours();
 

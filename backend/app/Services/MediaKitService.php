@@ -3,11 +3,11 @@
 namespace App\Services;
 
 use App\Models\Article;
-use App\Models\Review;
-use App\Models\Guide;
-use App\Models\User;
 use App\Models\Comment;
+use App\Models\Guide;
 use App\Models\MediaKitSetting;
+use App\Models\Review;
+use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -43,7 +43,7 @@ class MediaKitService
 
         $articlesThisMonth = Article::whereBetween('published_at', [
             now()->startOfMonth(),
-            now()
+            now(),
         ])->count();
 
         return [

@@ -3,13 +3,15 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\V1\ArticleResource;
 use App\Models\Article;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
-    use \App\Traits\ApiResponse;
+    use ApiResponse;
 
     public function index(): JsonResponse
     {
@@ -70,12 +72,12 @@ class HomeController extends Controller
 
             // Wrap in Resource to exclude heavy content and standardise format
             return [
-                'hero' => \App\Http\Resources\V1\ArticleResource::collection($hero),
-                'news' => \App\Http\Resources\V1\ArticleResource::collection($news),
-                'reviews' => \App\Http\Resources\V1\ArticleResource::collection($reviews),
-                'tech' => \App\Http\Resources\V1\ArticleResource::collection($tech),
-                'latest_global' => \App\Http\Resources\V1\ArticleResource::collection($latestGlobal),
-                'popular_global' => \App\Http\Resources\V1\ArticleResource::collection($popularGlobal),
+                'hero' => ArticleResource::collection($hero),
+                'news' => ArticleResource::collection($news),
+                'reviews' => ArticleResource::collection($reviews),
+                'tech' => ArticleResource::collection($tech),
+                'latest_global' => ArticleResource::collection($latestGlobal),
+                'popular_global' => ArticleResource::collection($popularGlobal),
             ];
         });
 

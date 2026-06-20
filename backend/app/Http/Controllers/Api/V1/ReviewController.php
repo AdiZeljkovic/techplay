@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Article; // Reverted to Article
-use App\Http\Resources\V1\ReviewResource; // Use correct resource
+use App\Http\Resources\V1\ReviewResource; // Reverted to Article
+use App\Models\Article; // Use correct resource
 use App\Services\CacheService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class ReviewController extends Controller
@@ -13,7 +14,7 @@ class ReviewController extends Controller
     /**
      * Display a listing of reviews.
      */
-    public function index(\Illuminate\Http\Request $request)
+    public function index(Request $request)
     {
         $page = $request->get('page', 1);
         $category = $request->get('category', 'all');
@@ -24,7 +25,7 @@ class ReviewController extends Controller
                 ->where('status', 'published')
                 ->where('published_at', '<=', now())
                 // IMPORTANT: Only show articles with category type 'reviews'
-                ->whereHas('category', fn($q) => $q->where('type', 'reviews'))
+                ->whereHas('category', fn ($q) => $q->where('type', 'reviews'))
                 ->with(['author:id,username,display_name,avatar_url', 'category']);
 
             // Handle category filtering
@@ -62,7 +63,7 @@ class ReviewController extends Controller
             $article = Article::where('slug', $slug)
                 ->where('status', 'published')
                 // IMPORTANT: Only show articles with category type 'reviews'
-                ->whereHas('category', fn($q) => $q->where('type', 'reviews'))
+                ->whereHas('category', fn ($q) => $q->where('type', 'reviews'))
                 ->with(['author:id,username,display_name,avatar_url,bio', 'category'])
                 ->firstOrFail();
 

@@ -38,7 +38,7 @@ class SeoSettingsSeeder extends Seeder
             // ============================================
             // INDEXNOW (Generate a random key)
             // ============================================
-            'seo_indexnow_key' => 'tp' . bin2hex(random_bytes(16)),
+            'seo_indexnow_key' => 'tp'.bin2hex(random_bytes(16)),
 
             // ============================================
             // ORGANIZATION SCHEMA (for rich snippets)
@@ -75,6 +75,6 @@ class SeoSettingsSeeder extends Seeder
         }
 
         $this->command->info('✅ SEO Settings seeded successfully!');
-        $this->command->info('📌 IndexNow Key: ' . $settings['seo_indexnow_key']);
+        $this->command->info('📌 IndexNow Key: '.$settings['seo_indexnow_key']);
     }
 }

@@ -4,15 +4,14 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\SiteSettingResource\Pages;
 use App\Models\SiteSetting;
-use Filament\Forms;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Schemas\Schema;
-use Filament\Tables\Table;
-use Filament\Actions\EditAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Forms\Get;
+use Filament\Actions\EditAction;
+use Filament\Forms;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables;
+use Filament\Tables\Table;
 
 class SiteSettingResource extends Resource
 {
@@ -26,6 +25,7 @@ class SiteSettingResource extends Resource
     {
         return 'System';
     }
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
@@ -54,14 +54,14 @@ class SiteSettingResource extends Resource
                 Forms\Components\Textarea::make('value')
                     ->rows(3)
                     ->columnSpanFull()
-                    ->hidden(fn($get) => $get('type') === 'boolean'),
+                    ->hidden(fn ($get) => $get('type') === 'boolean'),
                 Forms\Components\Toggle::make('value')
                     ->label('Enabled')
-                    ->visible(fn($get) => $get('type') === 'boolean')
+                    ->visible(fn ($get) => $get('type') === 'boolean')
                     ->formatStateUsing(function ($state) {
                         return filter_var($state, FILTER_VALIDATE_BOOLEAN);
                     })
-                    ->dehydrateStateUsing(fn($state) => $state ? '1' : '0'),
+                    ->dehydrateStateUsing(fn ($state) => $state ? '1' : '0'),
             ]);
     }
 
@@ -74,7 +74,7 @@ class SiteSettingResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('group')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'general' => 'info',
                         'socials' => 'success',
                         'contact' => 'warning',

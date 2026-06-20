@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\SeoManagerResource\Pages\ListSeoPages;
 use App\Models\Article;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\IconColumn;
@@ -13,6 +14,7 @@ use Filament\Tables\Table;
 class SeoManagerResource extends Resource
 {
     protected static ?string $model = Article::class;
+
     protected static ?string $slug = 'seo-manager';
 
     public static function getNavigationIcon(): ?string
@@ -54,7 +56,7 @@ class SeoManagerResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->limit(40)
-                    ->tooltip(fn($record) => $record->title),
+                    ->tooltip(fn ($record) => $record->title),
 
                 TextColumn::make('category')
                     ->label('Type')
@@ -65,20 +67,20 @@ class SeoManagerResource extends Resource
                     ->label('Meta Title')
                     ->limit(30)
                     ->placeholder('❌ Missing')
-                    ->color(fn($state) => $state ? 'success' : 'danger')
-                    ->tooltip(fn($record) => $record->meta_title),
+                    ->color(fn ($state) => $state ? 'success' : 'danger')
+                    ->tooltip(fn ($record) => $record->meta_title),
 
                 TextColumn::make('meta_description')
                     ->label('Meta Desc')
                     ->limit(30)
                     ->placeholder('❌ Missing')
-                    ->color(fn($state) => $state ? 'success' : 'danger'),
+                    ->color(fn ($state) => $state ? 'success' : 'danger'),
 
                 TextColumn::make('meta_title_length')
                     ->label('Title Len')
-                    ->state(fn($record) => strlen($record->meta_title ?? ''))
+                    ->state(fn ($record) => strlen($record->meta_title ?? ''))
                     ->badge()
-                    ->color(fn($state) => match (true) {
+                    ->color(fn ($state) => match (true) {
                         $state == 0 => 'danger',
                         $state < 30 => 'warning',
                         $state > 60 => 'warning',
@@ -87,9 +89,9 @@ class SeoManagerResource extends Resource
 
                 TextColumn::make('meta_desc_length')
                     ->label('Desc Len')
-                    ->state(fn($record) => strlen($record->meta_description ?? ''))
+                    ->state(fn ($record) => strlen($record->meta_description ?? ''))
                     ->badge()
-                    ->color(fn($state) => match (true) {
+                    ->color(fn ($state) => match (true) {
                         $state == 0 => 'danger',
                         $state < 120 => 'warning',
                         $state > 160 => 'warning',
@@ -106,7 +108,7 @@ class SeoManagerResource extends Resource
 
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn($state) => match ($state) {
+                    ->color(fn ($state) => match ($state) {
                         'published' => 'success',
                         'draft' => 'warning',
                         default => 'gray'
@@ -125,8 +127,8 @@ class SeoManagerResource extends Resource
                 TernaryFilter::make('has_meta')
                     ->label('Has Meta Description')
                     ->queries(
-                        true: fn($query) => $query->whereNotNull('meta_description')->where('meta_description', '!=', ''),
-                        false: fn($query) => $query->whereNull('meta_description')->orWhere('meta_description', ''),
+                        true: fn ($query) => $query->whereNotNull('meta_description')->where('meta_description', '!=', ''),
+                        false: fn ($query) => $query->whereNull('meta_description')->orWhere('meta_description', ''),
                     ),
 
                 TernaryFilter::make('is_noindex')
@@ -140,7 +142,7 @@ class SeoManagerResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Resources\SeoManagerResource\Pages\ListSeoPages::route('/'),
+            'index' => ListSeoPages::route('/'),
         ];
     }
 }

@@ -5,16 +5,16 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers\OrderItemsRelationManager;
 use App\Models\Order;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Schemas\Schema;
+use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 
 class OrderResource extends Resource
 {
@@ -26,103 +26,104 @@ class OrderResource extends Resource
     {
         return 'Shop & Monetization';
     }
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                    Forms\Components\Select::make('user_id')
-                        ->relationship('user', 'username')
-                        ->required(),
-                    Forms\Components\Select::make('status')
-                        ->options([
-                                'pending' => 'Pending',
-                                'processing' => 'Processing',
-                                'completed' => 'Completed',
-                                'cancelled' => 'Cancelled',
-                            ])
-                        ->required(),
-                    Forms\Components\TextInput::make('total_price')
-                        ->numeric()
-                        ->prefix('KM')
-                        ->disabled(), // Auto-calculated usually
-                    Forms\Components\TextInput::make('payment_method')
-                        ->disabled(),
-                    Forms\Components\Select::make('payment_status')
-                        ->options([
-                            'pending' => 'Pending',
-                            'paid' => 'Paid',
-                            'failed' => 'Failed',
-                            'refunded' => 'Refunded',
-                        ])
-                        ->default('pending'),
-                    Forms\Components\Textarea::make('shipping_address')
-                        ->rows(3),
-                    Forms\Components\Textarea::make('notes')
-                        ->rows(2),
-                ]);
+                Forms\Components\Select::make('user_id')
+                    ->relationship('user', 'username')
+                    ->required(),
+                Forms\Components\Select::make('status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'processing' => 'Processing',
+                        'completed' => 'Completed',
+                        'cancelled' => 'Cancelled',
+                    ])
+                    ->required(),
+                Forms\Components\TextInput::make('total_price')
+                    ->numeric()
+                    ->prefix('KM')
+                    ->disabled(), // Auto-calculated usually
+                Forms\Components\TextInput::make('payment_method')
+                    ->disabled(),
+                Forms\Components\Select::make('payment_status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'paid' => 'Paid',
+                        'failed' => 'Failed',
+                        'refunded' => 'Refunded',
+                    ])
+                    ->default('pending'),
+                Forms\Components\Textarea::make('shipping_address')
+                    ->rows(3),
+                Forms\Components\Textarea::make('notes')
+                    ->rows(2),
+            ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                    Tables\Columns\TextColumn::make('id')->sortable(),
-                    Tables\Columns\TextColumn::make('user.username')->label('Customer')->searchable(),
-                    Tables\Columns\TextColumn::make('status')
-                        ->badge()
-                        ->color(fn(string $state): string => match ($state) {
-                            'pending' => 'gray',
-                            'processing' => 'warning',
-                            'completed' => 'success',
-                            'cancelled' => 'danger',
-                        }),
-                    Tables\Columns\TextColumn::make('total_price')
-                        ->formatStateUsing(fn($state) => number_format($state, 2) . ' KM')
-                        ->sortable(),
-                    Tables\Columns\TextColumn::make('payment_method')
-                        ->toggleable(isToggledHiddenByDefault: true),
-                    Tables\Columns\TextColumn::make('payment_status')
-                        ->label('Payment')
-                        ->badge()
-                        ->color(fn(?string $state): string => match ($state) {
-                            'paid' => 'success',
-                            'pending' => 'warning',
-                            'failed' => 'danger',
-                            'refunded' => 'gray',
-                            default => 'gray',
-                        }),
-                    Tables\Columns\TextColumn::make('created_at')
-                        ->dateTime()
-                        ->sortable(),
-                ])
+                Tables\Columns\TextColumn::make('id')->sortable(),
+                Tables\Columns\TextColumn::make('user.username')->label('Customer')->searchable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'gray',
+                        'processing' => 'warning',
+                        'completed' => 'success',
+                        'cancelled' => 'danger',
+                    }),
+                Tables\Columns\TextColumn::make('total_price')
+                    ->formatStateUsing(fn ($state) => number_format($state, 2).' KM')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('payment_method')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('payment_status')
+                    ->label('Payment')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'paid' => 'success',
+                        'pending' => 'warning',
+                        'failed' => 'danger',
+                        'refunded' => 'gray',
+                        default => 'gray',
+                    }),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable(),
+            ])
             ->filters([
-                    SelectFilter::make('status')
-                        ->options([
-                            'pending' => 'Pending',
-                            'processing' => 'Processing',
-                            'completed' => 'Completed',
-                            'cancelled' => 'Cancelled',
-                        ]),
-                    SelectFilter::make('payment_status')
-                        ->label('Payment Status')
-                        ->options([
-                            'pending' => 'Pending',
-                            'paid' => 'Paid',
-                            'failed' => 'Failed',
-                            'refunded' => 'Refunded',
-                        ]),
-                ])
-            ->actions([
-                    EditAction::make(),
-                    DeleteAction::make(),
-                ])
-            ->bulkActions([
-                    BulkActionGroup::make([
-                        DeleteBulkAction::make(),
+                SelectFilter::make('status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'processing' => 'Processing',
+                        'completed' => 'Completed',
+                        'cancelled' => 'Cancelled',
                     ]),
-                ]);
+                SelectFilter::make('payment_status')
+                    ->label('Payment Status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'paid' => 'Paid',
+                        'failed' => 'Failed',
+                        'refunded' => 'Refunded',
+                    ]),
+            ])
+            ->actions([
+                EditAction::make(),
+                DeleteAction::make(),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
     }
 
     public static function getRelations(): array

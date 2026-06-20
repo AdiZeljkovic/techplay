@@ -23,31 +23,31 @@ class CacheRevalidationService
     /**
      * Trigger Next.js revalidation for article changes
      *
-     * @param string $type - news, review, tech, guide, video
-     * @param string $slug - article slug
-     * @param array $additionalPaths - additional paths to revalidate
-     * @return bool
+     * @param  string  $type  - news, review, tech, guide, video
+     * @param  string  $slug  - article slug
+     * @param  array  $additionalPaths  - additional paths to revalidate
      */
     public static function revalidateArticle(string $type, string $slug, array $additionalPaths = []): bool
     {
         $frontendUrl = config('app.frontend_url');
         $revalidationSecret = config('app.revalidation_secret');
 
-        if (!$frontendUrl || !$revalidationSecret) {
+        if (! $frontendUrl || ! $revalidationSecret) {
             Log::warning('[Revalidation] Missing configuration', [
                 'frontend_url' => $frontendUrl,
-                'has_secret' => !empty($revalidationSecret)
+                'has_secret' => ! empty($revalidationSecret),
             ]);
+
             return false;
         }
 
-        $endpoint = rtrim($frontendUrl, '/') . '/api/revalidate';
+        $endpoint = rtrim($frontendUrl, '/').'/api/revalidate';
 
         $payload = [
             'type' => $type,
             'slug' => $slug,
             'paths' => $additionalPaths,
-            'timestamp' => now()->toIso8601String()
+            'timestamp' => now()->toIso8601String(),
         ];
 
         try {
@@ -62,24 +62,27 @@ class CacheRevalidationService
                 Log::info('[Revalidation] Success', [
                     'type' => $type,
                     'slug' => $slug,
-                    'status' => $response->status()
+                    'status' => $response->status(),
                 ]);
+
                 return true;
             } else {
                 Log::warning('[Revalidation] Failed', [
                     'type' => $type,
                     'slug' => $slug,
                     'status' => $response->status(),
-                    'body' => $response->body()
+                    'body' => $response->body(),
                 ]);
+
                 return false;
             }
         } catch (\Exception $e) {
             Log::error('[Revalidation] Exception', [
                 'type' => $type,
                 'slug' => $slug,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -108,11 +111,11 @@ class CacheRevalidationService
         $frontendUrl = config('app.frontend_url');
         $revalidationSecret = config('app.revalidation_secret');
 
-        if (!$frontendUrl || !$revalidationSecret) {
+        if (! $frontendUrl || ! $revalidationSecret) {
             return false;
         }
 
-        $endpoint = rtrim($frontendUrl, '/') . '/api/revalidate';
+        $endpoint = rtrim($frontendUrl, '/').'/api/revalidate';
 
         try {
             $response = Http::timeout(5)
@@ -122,15 +125,16 @@ class CacheRevalidationService
                 ->post($endpoint, [
                     'type' => $type,
                     'paths' => $paths,
-                    'timestamp' => now()->toIso8601String()
+                    'timestamp' => now()->toIso8601String(),
                 ]);
 
             return $response->successful();
         } catch (\Exception $e) {
             Log::error('[Revalidation] Exception', [
                 'type' => $type,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -143,11 +147,11 @@ class CacheRevalidationService
         $frontendUrl = config('app.frontend_url');
         $revalidationSecret = config('app.revalidation_secret');
 
-        if (!$frontendUrl || !$revalidationSecret || empty($paths)) {
+        if (! $frontendUrl || ! $revalidationSecret || empty($paths)) {
             return false;
         }
 
-        $endpoint = rtrim($frontendUrl, '/') . '/api/revalidate';
+        $endpoint = rtrim($frontendUrl, '/').'/api/revalidate';
 
         try {
             $response = Http::timeout(5)
@@ -156,15 +160,16 @@ class CacheRevalidationService
                 ])
                 ->post($endpoint, [
                     'paths' => $paths,
-                    'timestamp' => now()->toIso8601String()
+                    'timestamp' => now()->toIso8601String(),
                 ]);
 
             return $response->successful();
         } catch (\Exception $e) {
             Log::error('[Revalidation] Paths exception', [
                 'paths' => $paths,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }

@@ -15,6 +15,6 @@ class EditPageSeo extends EditRecord
         // Clear page SEO caches
         Cache::forget('page_seo.all');
         $path = $this->record->page_path;
-        Cache::forget('page_seo.path.' . md5($path));
+        Cache::forget('page_seo.path.'.md5($path));
     }
 }

@@ -3,12 +3,12 @@
 namespace App\Filament\Components;
 
 use App\Models\Media;
-use Filament\Schemas\Components\Actions;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Placeholder;
+use Filament\Schemas\Components\Actions;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 
@@ -42,13 +42,15 @@ class MediaPickerFields
                         } else {
                             $url = Storage::disk('public')->url($path);
                         }
+
                         return new HtmlString(
-                            '<div style="position: relative; display: inline-block;">' .
-                            '<img src="' . e($url) . '" alt="Current" style="max-width: 100%; max-height: 200px; border-radius: 8px; object-fit: cover;" />' .
-                            '<div style="margin-top: 8px; font-size: 12px; color: #6b7280;">📷 ' . basename($path) . '</div>' .
+                            '<div style="position: relative; display: inline-block;">'.
+                            '<img src="'.e($url).'" alt="Current" style="max-width: 100%; max-height: 200px; border-radius: 8px; object-fit: cover;" />'.
+                            '<div style="margin-top: 8px; font-size: 12px; color: #6b7280;">📷 '.basename($path).'</div>'.
                             '</div>'
                         );
                     }
+
                     return new HtmlString('<div style="padding: 24px; background: rgba(0,0,0,0.2); border-radius: 8px; text-align: center; color: #6b7280;"><span style="font-size: 32px;">🖼️</span><br/>No image selected</div>');
                 })
                 ->columnSpanFull(),
@@ -78,7 +80,7 @@ class MediaPickerFields
                             ->helperText('Recommended: 1200×630px for social sharing'),
                     ])
                     ->action(function (array $data, $set) use ($pathField) {
-                        if (!empty($data['new_image'])) {
+                        if (! empty($data['new_image'])) {
                             $set($pathField, $data['new_image']);
                         }
                     }),
@@ -103,11 +105,12 @@ class MediaPickerFields
                                     ->get()
                                     ->mapWithKeys(function ($media) {
                                         $title = $media->title ?: basename($media->path);
+
                                         return [$media->path => "📷 {$title}"];
                                     })
                                     ->toArray();
                             })
-                            ->getOptionLabelUsing(fn($value) => "📷 " . basename($value))
+                            ->getOptionLabelUsing(fn ($value) => '📷 '.basename($value))
                             ->helperText('Start typing to search for images'),
 
                         Placeholder::make('selected_preview')
@@ -116,15 +119,17 @@ class MediaPickerFields
                                 $path = $get('selected_path');
                                 if ($path) {
                                     $url = Storage::disk('public')->url($path);
+
                                     return new HtmlString(
-                                        '<img src="' . e($url) . '" alt="Preview" style="max-width: 300px; max-height: 200px; border-radius: 8px; object-fit: cover;" />'
+                                        '<img src="'.e($url).'" alt="Preview" style="max-width: 300px; max-height: 200px; border-radius: 8px; object-fit: cover;" />'
                                     );
                                 }
+
                                 return new HtmlString('<span style="color: #6b7280;">Select an image above to see preview</span>');
                             }),
                     ])
                     ->action(function (array $data, $set) use ($pathField, $altField) {
-                        if (!empty($data['selected_path'])) {
+                        if (! empty($data['selected_path'])) {
                             $set($pathField, $data['selected_path']);
 
                             // Also set alt text if available
@@ -136,7 +141,7 @@ class MediaPickerFields
                     })
                     ->modalSubmitActionLabel('✓ Use This Image'),
 
-                // Clear image button  
+                // Clear image button
                 Action::make('clear_image')
                     ->label('🗑️ Remove')
                     ->color('danger')
@@ -147,7 +152,7 @@ class MediaPickerFields
                         $set($pathField, null);
                         $set($altField, null);
                     })
-                    ->visible(fn($get) => !empty($get($pathField))),
+                    ->visible(fn ($get) => ! empty($get($pathField))),
             ])->columnSpanFull(),
 
             // Alt text field

@@ -11,7 +11,7 @@ class ArticleVersionObserver
     public function updating(Article $article): void
     {
         // Save a snapshot only if title or content is changing
-        if (!$article->isDirty(['title', 'content'])) {
+        if (! $article->isDirty(['title', 'content'])) {
             return;
         }
 

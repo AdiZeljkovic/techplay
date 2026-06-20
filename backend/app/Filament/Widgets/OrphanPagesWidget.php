@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Article;
 use App\Services\InternalLinkService;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -10,6 +11,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class OrphanPagesWidget extends BaseWidget
 {
     protected static ?string $heading = 'Orphan Pages (No Inbound Links)';
+
     protected int|string|array $columnSpan = 'full';
 
     public static function getSort(): int
@@ -24,7 +26,7 @@ class OrphanPagesWidget extends BaseWidget
 
         return $table
             ->query(
-                \App\Models\Article::query()
+                Article::query()
                     ->whereIn('id', $orphanIds)
                     ->orderBy('views', 'desc')
             )

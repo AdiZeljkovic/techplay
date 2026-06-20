@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      * Ensures Tech subcategories exist with correct parent_id
@@ -17,7 +18,7 @@ return new class extends Migration {
             ->whereNull('parent_id')
             ->first();
 
-        if (!$techParent) {
+        if (! $techParent) {
             $techParentId = DB::table('categories')->insertGetId([
                 'name' => 'Tech',
                 'slug' => 'tech',
@@ -42,7 +43,7 @@ return new class extends Migration {
                 ->where('slug', $slug)
                 ->first();
 
-            if (!$exists) {
+            if (! $exists) {
                 DB::table('categories')->insert([
                     'name' => $sub,
                     'slug' => $slug,

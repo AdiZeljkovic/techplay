@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * Raider.IO API Service
@@ -15,15 +15,15 @@ use Illuminate\Support\Facades\Cache;
 class RaiderIOService
 {
     private const BASE_URL = 'https://raider.io/api/v1';
+
     private const CACHE_TTL = 3600; // 1 hour (RIO data updates hourly)
 
     /**
      * Get character M+ profile from Raider.IO
      *
-     * @param string $region us|eu|kr|tw
-     * @param string $realm silvermoon
-     * @param string $name character name
-     * @return array|null
+     * @param  string  $region  us|eu|kr|tw
+     * @param  string  $realm  silvermoon
+     * @param  string  $name  character name
      */
     public function getCharacterMythicPlusProfile(string $region, string $realm, string $name): ?array
     {
@@ -31,20 +31,21 @@ class RaiderIOService
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($region, $realm, $name) {
             try {
-                $response = Http::timeout(10)->get(self::BASE_URL . '/characters/profile', [
+                $response = Http::timeout(10)->get(self::BASE_URL.'/characters/profile', [
                     'region' => $region,
                     'realm' => $realm,
                     'name' => $name,
                     'fields' => 'mythic_plus_scores_by_season:current,mythic_plus_ranks,mythic_plus_recent_runs,gear',
                 ]);
 
-                if (!$response->successful()) {
+                if (! $response->successful()) {
                     Log::warning('Raider.IO API request failed', [
                         'status' => $response->status(),
                         'region' => $region,
                         'realm' => $realm,
                         'name' => $name,
                     ]);
+
                     return null;
                 }
 
@@ -56,6 +57,7 @@ class RaiderIOService
                     'realm' => $realm,
                     'name' => $name,
                 ]);
+
                 return null;
             }
         });
@@ -63,13 +65,10 @@ class RaiderIOService
 
     /**
      * Transform Raider.IO response to our format
-     *
-     * @param array|null $rioData
-     * @return array
      */
     public function transformMythicPlusData(?array $rioData): array
     {
-        if (!$rioData) {
+        if (! $rioData) {
             return [
                 'rio_score' => null,
                 'rio_color' => null,
@@ -107,25 +106,38 @@ class RaiderIOService
     /**
      * Calculate percentile from rank and total players
      *
-     * @param int|null $rank
-     * @param int $totalPlayers Approximate total active M+ players
+     * @param  int  $totalPlayers  Approximate total active M+ players
      * @return string|null "Top 1%", "Top 10%", etc.
      */
     public function calculatePercentile(?int $rank, int $totalPlayers = 2000000): ?string
     {
-        if (!$rank) {
+        if (! $rank) {
             return null;
         }
 
         $percentile = ($rank / $totalPlayers) * 100;
 
-        if ($percentile <= 0.1) return 'Top 0.1%';
-        if ($percentile <= 1) return 'Top 1%';
-        if ($percentile <= 3) return 'Top 3%';
-        if ($percentile <= 5) return 'Top 5%';
-        if ($percentile <= 10) return 'Top 10%';
-        if ($percentile <= 25) return 'Top 25%';
-        if ($percentile <= 50) return 'Top 50%';
+        if ($percentile <= 0.1) {
+            return 'Top 0.1%';
+        }
+        if ($percentile <= 1) {
+            return 'Top 1%';
+        }
+        if ($percentile <= 3) {
+            return 'Top 3%';
+        }
+        if ($percentile <= 5) {
+            return 'Top 5%';
+        }
+        if ($percentile <= 10) {
+            return 'Top 10%';
+        }
+        if ($percentile <= 25) {
+            return 'Top 25%';
+        }
+        if ($percentile <= 50) {
+            return 'Top 50%';
+        }
 
         return 'Below Average';
     }
@@ -133,7 +145,7 @@ class RaiderIOService
     /**
      * Get RIO score color hex
      *
-     * @param string|null $colorName grey|white|green|blue|purple|orange
+     * @param  string|null  $colorName  grey|white|green|blue|purple|orange
      * @return string Hex color
      */
     public function getScoreColorHex(?string $colorName): string

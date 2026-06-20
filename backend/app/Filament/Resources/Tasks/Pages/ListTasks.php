@@ -16,5 +16,4 @@ class ListTasks extends ListRecords
             CreateAction::make(),
         ];
     }
-
 }

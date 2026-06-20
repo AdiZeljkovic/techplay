@@ -4,13 +4,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        if (!Schema::hasTable('jobs')) {
+        if (! Schema::hasTable('jobs')) {
             Schema::create('jobs', function (Blueprint $table) {
                 $table->id();
                 $table->string('queue')->index();
@@ -22,7 +23,7 @@ return new class extends Migration {
             });
         }
 
-        if (!Schema::hasTable('job_batches')) {
+        if (! Schema::hasTable('job_batches')) {
             Schema::create('job_batches', function (Blueprint $table) {
                 $table->string('id')->primary();
                 $table->string('name');
@@ -37,7 +38,7 @@ return new class extends Migration {
             });
         }
 
-        if (!Schema::hasTable('failed_jobs')) {
+        if (! Schema::hasTable('failed_jobs')) {
             Schema::create('failed_jobs', function (Blueprint $table) {
                 $table->id();
                 $table->string('uuid')->unique();

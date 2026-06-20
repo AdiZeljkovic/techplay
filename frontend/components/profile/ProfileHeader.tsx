@@ -175,6 +175,11 @@ export default function ProfileHeader({
                                             <Pen className="w-3.5 h-3.5" /> Edit Bio
                                         </Link>
                                     )}
+                                    {isOwnProfile && (
+                                        <Link href="/backlog-advisor" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-tp-accent/30 bg-tp-accent/5 hover:bg-tp-accent/10 text-tp-accent text-[12px] font-semibold transition-colors">
+                                            <Sparkles className="w-3.5 h-3.5" /> Backlog Advisor
+                                        </Link>
+                                    )}
                                     {/* Give Recognition — only for other profiles */}
                                     {!isOwnProfile && (
                                         <GiveRecognitionButton username={userData.username} />
@@ -189,6 +194,12 @@ export default function ProfileHeader({
                                     >
                                         <Share2 className="w-3.5 h-3.5" /> Share
                                     </button>
+                                    {/* Wrapped — for own profile */}
+                                    {isOwnProfile && (
+                                        <Link href={`/wrapped/${userData.username}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-white/70 hover:text-white text-[12px] font-semibold transition-colors">
+                                            <Award className="w-3.5 h-3.5" /> {new Date().getFullYear()} Wrapped
+                                        </Link>
+                                    )}
                                 </div>
                             </div>
                         </div>

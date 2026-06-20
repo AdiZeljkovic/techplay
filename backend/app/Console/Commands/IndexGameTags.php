@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 class IndexGameTags extends Command
 {
-    protected $signature   = 'games:index-tags';
+    protected $signature = 'games:index-tags';
+
     protected $description = 'Backfill genre_names, platform_names, tag_names arrays from JSON columns';
 
     public function handle(): int
@@ -17,11 +18,12 @@ class IndexGameTags extends Command
 
         if (! $min) {
             $this->info('No games found.');
+
             return self::SUCCESS;
         }
 
         $chunkSize = 10000;
-        $total     = (int) ceil(($max - $min + 1) / $chunkSize);
+        $total = (int) ceil(($max - $min + 1) / $chunkSize);
 
         $this->info("Backfilling IDs {$min}–{$max} in chunks of {$chunkSize}...");
         $bar = $this->output->createProgressBar($total);

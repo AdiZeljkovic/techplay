@@ -12,6 +12,7 @@ class CreateForumCategory extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['type'] = 'forum';
+
         return $data;
     }
 }

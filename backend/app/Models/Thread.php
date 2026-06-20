@@ -10,7 +10,9 @@ class Thread extends Model
     use HasFactory;
 
     protected $primaryKey = 'id';
+
     public $incrementing = true;
+
     protected $keyType = 'int';
 
     protected $fillable = [
@@ -21,7 +23,7 @@ class Thread extends Model
         'category_id',
         'is_pinned',
         'is_locked',
-        'view_count'
+        'view_count',
     ];
 
     public function category()

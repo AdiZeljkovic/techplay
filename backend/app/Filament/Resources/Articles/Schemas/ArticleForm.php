@@ -2,25 +2,24 @@
 
 namespace App\Filament\Resources\Articles\Schemas;
 
-use Filament\Schemas\Schema;
-
+use App\Services\ImageOptimizer;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Split;
+use Filament\Forms\Get;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
-use Illuminate\Support\HtmlString;
 
 class ArticleForm
 {
@@ -42,11 +41,11 @@ class ArticleForm
                                     ->required()
                                     ->maxLength(100)
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state)))
+                                    ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state)))
                                     ->extraAttributes(['class' => 'text-xl font-bold'])
                                     ->helperText(
-                                        fn($state) => $state
-                                        ? (strlen($state) . '/100 characters' . (strlen($state) > 60 ? ' — Consider shortening for SEO' : ' ✓'))
+                                        fn ($state) => $state
+                                        ? (strlen($state).'/100 characters'.(strlen($state) > 60 ? ' — Consider shortening for SEO' : ' ✓'))
                                         : 'Aim for 50-60 characters for optimal SEO'
                                     ),
 
@@ -65,8 +64,8 @@ class ArticleForm
                                         ->rows(2)
                                         ->maxLength(200)
                                         ->helperText(
-                                            fn($state) => $state
-                                            ? strlen($state) . '/200 characters'
+                                            fn ($state) => $state
+                                            ? strlen($state).'/200 characters'
                                             : 'Short description shown in cards and social shares'
                                         ),
                                 ]),
@@ -120,7 +119,7 @@ class ArticleForm
                                     ->label('This is a Game Review')
                                     ->live()
                                     ->dehydrated(false)
-                                    ->afterStateHydrated(fn($component, $state) => $component->state((bool) ($component->getRecord()?->review_data)))
+                                    ->afterStateHydrated(fn ($component, $state) => $component->state((bool) ($component->getRecord()?->review_data)))
                                     ->helperText('Enable to show review fields: ratings, pros/cons, and game info'),
 
                                 Group::make()
@@ -213,12 +212,12 @@ class ArticleForm
 
                                         // Pros & Cons
                                         Grid::make(2)->schema([
-                                            \Filament\Forms\Components\Repeater::make('review_data.pros')
+                                            Repeater::make('review_data.pros')
                                                 ->label('✅ The Good')
                                                 ->simple(TextInput::make('item')->placeholder('Add positive point...'))
                                                 ->defaultItems(3)
                                                 ->addActionLabel('Add Pro'),
-                                            \Filament\Forms\Components\Repeater::make('review_data.cons')
+                                            Repeater::make('review_data.cons')
                                                 ->label('❌ The Bad')
                                                 ->simple(TextInput::make('item')->placeholder('Add negative point...'))
                                                 ->defaultItems(3)
@@ -242,7 +241,7 @@ class ArticleForm
                                             ->default('none')
                                             ->native(true),
                                     ])
-                                    ->visible(fn(\Filament\Forms\Get $get) => $get('is_review_article')),
+                                    ->visible(fn (Get $get) => $get('is_review_article')),
                             ]),
                     ])
                     ->columnSpan(['lg' => 2]),
@@ -282,7 +281,7 @@ class ArticleForm
                                         Select::make('category_id')
                                             ->label('Category')
                                             ->relationship('category', 'name')
-                                            ->getOptionLabelFromRecordUsing(fn($record) => $record->parent_id
+                                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->parent_id
                                                 ? "{$record->parent->name} → {$record->name}"
                                                 : $record->name)
                                             ->preload()
@@ -313,7 +312,7 @@ class ArticleForm
                                 // ─────────────────────────────────────────────
                                 Tabs\Tab::make('SEO')
                                     ->icon('heroicon-o-magnifying-glass')
-                                    ->badge(fn($get) => $get('focus_keyword') ? '✓' : null)
+                                    ->badge(fn ($get) => $get('focus_keyword') ? '✓' : null)
                                     ->badgeColor('success')
                                     ->schema([
                                         TextInput::make('focus_keyword')
@@ -326,8 +325,8 @@ class ArticleForm
                                             ->placeholder('Custom title for search engines...')
                                             ->maxLength(70)
                                             ->helperText(
-                                                fn($state) => $state
-                                                ? (strlen($state) . '/70 chars' . (strlen($state) >= 50 && strlen($state) <= 60 ? ' ✓ Optimal' : ''))
+                                                fn ($state) => $state
+                                                ? (strlen($state).'/70 chars'.(strlen($state) >= 50 && strlen($state) <= 60 ? ' ✓ Optimal' : ''))
                                                 : 'Leave empty to use article title. Optimal: 50-60 chars'
                                             ),
 
@@ -337,8 +336,8 @@ class ArticleForm
                                             ->rows(3)
                                             ->maxLength(160)
                                             ->helperText(
-                                                fn($state) => $state
-                                                ? (strlen($state) . '/160 chars' . (strlen($state) >= 150 && strlen($state) <= 160 ? ' ✓ Optimal' : ''))
+                                                fn ($state) => $state
+                                                ? (strlen($state).'/160 chars'.(strlen($state) >= 150 && strlen($state) <= 160 ? ' ✓ Optimal' : ''))
                                                 : 'Optimal: 150-160 characters'
                                             ),
 
@@ -378,7 +377,7 @@ class ArticleForm
                                                 $path = $file->store('articles', 'public');
 
                                                 // Optimize the image (resize, convert to WebP, compress)
-                                                $optimizer = new \App\Services\ImageOptimizer();
+                                                $optimizer = new ImageOptimizer;
                                                 $optimizedPath = $optimizer->optimize($path, 'public');
 
                                                 return $optimizedPath;
@@ -398,4 +397,3 @@ class ArticleForm
             ->columns(3);
     }
 }
-

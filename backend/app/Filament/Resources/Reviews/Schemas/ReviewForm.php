@@ -2,21 +2,23 @@
 
 namespace App\Filament\Resources\Reviews\Schemas;
 
+use App\Services\ImageOptimizer;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
-use Illuminate\Support\Str;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Illuminate\Support\Str;
 
 class ReviewForm
 {
@@ -31,7 +33,7 @@ class ReviewForm
                                 TextInput::make('title')
                                     ->required()
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(fn(Set $set, ?string $state) => $set('slug', Str::slug($state))),
+                                    ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state))),
 
                                 TextInput::make('slug')
                                     ->required()
@@ -66,7 +68,7 @@ class ReviewForm
                                     ->schema([
                                         Section::make('Game / Product Info')
                                             ->schema([
-                                                \Filament\Forms\Components\Grid::make(3)
+                                                Grid::make(3)
                                                     ->schema([
                                                         TextInput::make('review_data.game_title')->label('Title')->required(),
                                                         TextInput::make('review_data.developer')->label('Developer'),
@@ -88,7 +90,7 @@ class ReviewForm
 
                                         Section::make('Ratings & Score')
                                             ->schema([
-                                                \Filament\Forms\Components\Grid::make(2)
+                                                Grid::make(2)
                                                     ->schema([
                                                         TextInput::make('review_score') // Maps to review_score column
                                                             ->label('Final Score (0.0 - 10.0)')
@@ -109,12 +111,12 @@ class ReviewForm
 
                                         Section::make('Pros & Cons')
                                             ->schema([
-                                                \Filament\Forms\Components\Grid::make(2)
+                                                Grid::make(2)
                                                     ->schema([
-                                                        \Filament\Forms\Components\Repeater::make('review_data.pros')
+                                                        Repeater::make('review_data.pros')
                                                             ->label('Positives')
                                                             ->simple(TextInput::make('item')->required()),
-                                                        \Filament\Forms\Components\Repeater::make('review_data.cons')
+                                                        Repeater::make('review_data.cons')
                                                             ->label('Negatives')
                                                             ->simple(TextInput::make('item')->required()),
                                                     ]),
@@ -129,10 +131,10 @@ class ReviewForm
                                                 'recommended' => 'Recommended',
                                                 'must_play' => 'Must Play',
                                                 'skip' => 'Skip',
-                                                'wait_sale' => 'Wait for Sale'
+                                                'wait_sale' => 'Wait for Sale',
                                             ])
                                             ->default('none'),
-                                    ])
+                                    ]),
                             ])
                             ->collapsible(),
 
@@ -145,7 +147,7 @@ class ReviewForm
                                     ->valueLabel('Value')
                                     ->columnSpanFull(),
                             ])
-                            ->visible(fn(Get $get) => in_array($get('category'), ['hardware', 'peripheral']))
+                            ->visible(fn (Get $get) => in_array($get('category'), ['hardware', 'peripheral']))
                             ->collapsed(),
                     ])
                     ->columnSpan(['lg' => 2]),
@@ -182,7 +184,8 @@ class ReviewForm
                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
                                     ->saveUploadedFileUsing(function ($file) {
                                         $path = $file->store('reviews', 'public');
-                                        $optimizer = new \App\Services\ImageOptimizer();
+                                        $optimizer = new ImageOptimizer;
+
                                         return $optimizer->optimize($path, 'public');
                                     })
                                     ->helperText('Auto-optimized to WebP (max 1920×1080, ~200KB)')

@@ -44,20 +44,20 @@ class GiveawayController extends Controller
         $giveaways = $query->paginate(12);
 
         return response()->json([
-            'data' => $giveaways->map(fn($giveaway) => [
+            'data' => $giveaways->map(fn ($giveaway) => [
                 'id' => $giveaway->id,
                 'title' => $giveaway->title,
                 'slug' => $giveaway->slug,
                 'description' => $giveaway->description ? strip_tags($giveaway->description) : null,
                 'featured_image' => $giveaway->featured_image
-                    ? asset('storage/' . $giveaway->featured_image)
+                    ? asset('storage/'.$giveaway->featured_image)
                     : null,
 
                 'prize' => [
                     'name' => $giveaway->prize_name,
                     'value' => $giveaway->prize_value,
                     'image' => $giveaway->prize_image
-                        ? asset('storage/' . $giveaway->prize_image)
+                        ? asset('storage/'.$giveaway->prize_image)
                         : null,
                 ],
 
@@ -100,8 +100,8 @@ class GiveawayController extends Controller
         $giveaway = Giveaway::where('slug', $slug)
             ->where('is_public', true)
             ->with([
-                'tasks' => fn($q) => $q->orderBy('sort_order'),
-                'prizeTiers' => fn($q) => $q->orderBy('sort_order'),
+                'tasks' => fn ($q) => $q->orderBy('sort_order'),
+                'prizeTiers' => fn ($q) => $q->orderBy('sort_order'),
             ])
             ->firstOrFail();
 
@@ -113,14 +113,14 @@ class GiveawayController extends Controller
                 'description' => $giveaway->description,
                 'rules' => $giveaway->rules,
                 'featured_image' => $giveaway->featured_image
-                    ? asset('storage/' . $giveaway->featured_image)
+                    ? asset('storage/'.$giveaway->featured_image)
                     : null,
 
                 'prize' => [
                     'name' => $giveaway->prize_name,
                     'value' => $giveaway->prize_value,
                     'image' => $giveaway->prize_image
-                        ? asset('storage/' . $giveaway->prize_image)
+                        ? asset('storage/'.$giveaway->prize_image)
                         : null,
                 ],
 
@@ -137,7 +137,7 @@ class GiveawayController extends Controller
                     'total_points_pool' => $giveaway->getTotalEntryPool(),
                 ],
 
-                'tasks' => $giveaway->tasks->map(fn($task) => [
+                'tasks' => $giveaway->tasks->map(fn ($task) => [
                     'id' => $task->id,
                     'type' => $task->type,
                     'title' => $task->title,
@@ -149,7 +149,7 @@ class GiveawayController extends Controller
                     'is_repeatable' => $task->is_repeatable,
                 ]),
 
-                'prize_tiers' => $giveaway->prizeTiers->map(fn($tier) => [
+                'prize_tiers' => $giveaway->prizeTiers->map(fn ($tier) => [
                     'id' => $tier->id,
                     'tier_name' => $tier->tier_name,
                     'prize_description' => $tier->prize_description,
@@ -178,7 +178,7 @@ class GiveawayController extends Controller
             ->where('is_public', true)
             ->firstOrFail();
 
-        if (!$giveaway->isActive()) {
+        if (! $giveaway->isActive()) {
             return response()->json([
                 'message' => 'This giveaway is not currently active.',
             ], 422);
@@ -212,7 +212,7 @@ class GiveawayController extends Controller
 
         // Handle referral if provided
         $referralCode = $request->input('referral_code');
-        if ($referralCode && !$entry->referred_by) {
+        if ($referralCode && ! $entry->referred_by) {
             $referrer = GiveawayEntry::where('giveaway_id', $giveaway->id)
                 ->where('referral_code', $referralCode)
                 ->where('user_id', '!=', $user->id)
@@ -249,7 +249,7 @@ class GiveawayController extends Controller
             ->with('completions')
             ->first();
 
-        if (!$entry) {
+        if (! $entry) {
             return response()->json([
                 'data' => null,
                 'message' => 'You have not entered this giveaway yet.',
@@ -269,7 +269,7 @@ class GiveawayController extends Controller
         $giveaway = Giveaway::where('slug', $slug)->firstOrFail();
         $user = $request->user();
 
-        if (!$giveaway->isActive()) {
+        if (! $giveaway->isActive()) {
             return response()->json([
                 'message' => 'This giveaway is not currently active.',
             ], 422);
@@ -293,7 +293,7 @@ class GiveawayController extends Controller
             ->firstOrFail();
 
         // Check if already completed
-        if (!$task->canBeCompletedBy($entry)) {
+        if (! $task->canBeCompletedBy($entry)) {
             return response()->json([
                 'message' => 'You have already completed this task.',
             ], 422);
@@ -347,11 +347,11 @@ class GiveawayController extends Controller
                     ->orderBy('created_at')
                     ->limit(10)
                     ->get()
-                    ->map(fn($entry, $index) => [
-                        'rank'     => $index + 1,
+                    ->map(fn ($entry, $index) => [
+                        'rank' => $index + 1,
                         'username' => $entry->privee_display_name ?? $entry->privee_email,
-                        'avatar'   => null,
-                        'points'   => null,
+                        'avatar' => null,
+                        'points' => null,
                     ]);
             }
 
@@ -360,11 +360,11 @@ class GiveawayController extends Controller
                 ->orderByDesc('total_points')
                 ->limit(10)
                 ->get()
-                ->map(fn($entry, $index) => [
-                    'rank'     => $index + 1,
+                ->map(fn ($entry, $index) => [
+                    'rank' => $index + 1,
                     'username' => $entry->user->username,
-                    'avatar'   => $entry->user->avatar_url,
-                    'points'   => $entry->total_points,
+                    'avatar' => $entry->user->avatar_url,
+                    'points' => $entry->total_points,
                 ]);
         });
 
@@ -381,7 +381,7 @@ class GiveawayController extends Controller
         $giveaway = Giveaway::where('slug', $slug)->firstOrFail();
         $user = $request->user();
 
-        if (!$giveaway->isActive()) {
+        if (! $giveaway->isActive()) {
             return response()->json([
                 'message' => 'This giveaway is not currently active.',
             ], 422);

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class ReCaptchaService
 {
     protected string $secretKey;
+
     protected bool $enabled;
 
     public function __construct()
@@ -19,19 +20,21 @@ class ReCaptchaService
     /**
      * Verify Cloudflare Turnstile token
      *
-     * @param string $token The token from frontend
-     * @param string $action Expected action name (unused for Turnstile but kept for API compatibility)
+     * @param  string  $token  The token from frontend
+     * @param  string  $action  Expected action name (unused for Turnstile but kept for API compatibility)
      * @return array{success: bool, score: ?float, error: ?string}
      */
     public function verify(string $token, string $action = 'submit'): array
     {
-        if (!$this->enabled) {
+        if (! $this->enabled) {
             Log::info('Turnstile verification disabled');
+
             return ['success' => true, 'score' => 1.0, 'error' => null];
         }
 
         if (empty($this->secretKey)) {
             Log::warning('Turnstile secret key not configured');
+
             return ['success' => true, 'score' => 1.0, 'error' => null];
         }
 
@@ -43,30 +46,32 @@ class ReCaptchaService
 
             $data = $response->json();
 
-            if (!($data['success'] ?? false)) {
+            if (! ($data['success'] ?? false)) {
                 Log::warning('Turnstile verification failed', [
                     'errors' => $data['error-codes'] ?? [],
-                    'token_length' => strlen($token)
+                    'token_length' => strlen($token),
                 ]);
+
                 return [
                     'success' => false,
                     'score' => null,
-                    'error' => 'Security verification failed'
+                    'error' => 'Security verification failed',
                 ];
             }
 
             return [
                 'success' => true,
                 'score' => 1.0,
-                'error' => null
+                'error' => null,
             ];
 
         } catch (\Exception $e) {
-            Log::error('Turnstile verification exception: ' . $e->getMessage());
+            Log::error('Turnstile verification exception: '.$e->getMessage());
+
             return [
                 'success' => false,
                 'score' => null,
-                'error' => 'Verification service unavailable'
+                'error' => 'Verification service unavailable',
             ];
         }
     }

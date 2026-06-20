@@ -53,7 +53,7 @@ class LoggingService
     public function logSlowQuery(string $sql, float $time, array $bindings = []): void
     {
         if ($time > config('logging.slow_query_threshold', 1000)) {
-            Log::warning('[SLOW QUERY] Query took ' . round($time, 2) . 'ms', [
+            Log::warning('[SLOW QUERY] Query took '.round($time, 2).'ms', [
                 'sql' => $sql,
                 'bindings' => $bindings,
                 'time_ms' => round($time, 2),
@@ -99,7 +99,7 @@ class LoggingService
     public function logPerformance(string $operation, float $duration, array $metrics = []): void
     {
         if (config('logging.log_performance', false)) {
-            Log::info("[PERFORMANCE] {$operation} took " . round($duration, 2) . 'ms', array_merge([
+            Log::info("[PERFORMANCE] {$operation} took ".round($duration, 2).'ms', array_merge([
                 'operation' => $operation,
                 'duration_ms' => round($duration, 2),
             ], $metrics));
@@ -129,7 +129,7 @@ class LoggingService
             return [
                 'file' => $frame['file'] ?? 'unknown',
                 'line' => $frame['line'] ?? 0,
-                'function' => ($frame['class'] ?? '') . ($frame['type'] ?? '') . ($frame['function'] ?? ''),
+                'function' => ($frame['class'] ?? '').($frame['type'] ?? '').($frame['function'] ?? ''),
             ];
         })->toArray();
 

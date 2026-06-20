@@ -16,23 +16,23 @@ return new class extends Migration
             $table->string('title');
             $table->string('slug')->unique();
             $table->foreignId('author_id')->constrained('users')->cascadeOnDelete();
-            
+
             // Content
             $table->string('featured_image_url')->nullable();
             $table->text('excerpt')->nullable();
             $table->longText('content');
-            
+
             // Categorization
             $table->string('category')->default('general'); // Fallback if no relation
-            
+
             // Status & SEO
             $table->boolean('is_featured')->default(false);
             $table->enum('status', ['draft', 'published', 'scheduled'])->default('draft');
             $table->timestamp('published_at')->nullable();
-            
+
             $table->string('meta_title')->nullable();
             $table->text('meta_description')->nullable();
-            
+
             $table->timestamps();
             $table->softDeletes();
         });

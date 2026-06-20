@@ -4,13 +4,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * DEFINITIVE CATEGORY CLEANUP
-     * 
+     *
      * This migration will:
      * 1. Keep only News, Reviews, Tech as parent categories
-     * 2. Delete ALL other root categories  
+     * 2. Delete ALL other root categories
      * 3. Create exact subcategories specified
      * 4. Remove any orphaned/extra categories
      */
@@ -21,17 +22,17 @@ return new class extends Migration {
             'news' => [
                 'name' => 'News',
                 'icon' => 'file-text',
-                'children' => ['Gaming', 'PC', 'Consoles', 'Movies & TV', 'Industry', 'E-sport', 'Opinions']
+                'children' => ['Gaming', 'PC', 'Consoles', 'Movies & TV', 'Industry', 'E-sport', 'Opinions'],
             ],
             'reviews' => [
                 'name' => 'Reviews',
                 'icon' => 'star',
-                'children' => ["Editor's Choice", 'Retro', 'Latest', 'AAA Titles', 'Indie Gems']
+                'children' => ["Editor's Choice", 'Retro', 'Latest', 'AAA Titles', 'Indie Gems'],
             ],
             'tech' => [
                 'name' => 'Tech',
                 'icon' => 'cpu',
-                'children' => ['Reviews', 'Benchmarks', 'Guides', 'Tech News']
+                'children' => ['Reviews', 'Benchmarks', 'Guides', 'Tech News'],
             ],
         ];
 
@@ -45,7 +46,7 @@ return new class extends Migration {
                 ->where('slug', $type)
                 ->first();
 
-            if (!$parent) {
+            if (! $parent) {
                 $parentIds[$type] = DB::table('categories')->insertGetId([
                     'name' => $config['name'],
                     'slug' => $type,
@@ -77,7 +78,7 @@ return new class extends Migration {
                     ->where('slug', $slug)
                     ->first();
 
-                if (!$exists) {
+                if (! $exists) {
                     DB::table('categories')->insert([
                         'name' => $childName,
                         'slug' => $slug,

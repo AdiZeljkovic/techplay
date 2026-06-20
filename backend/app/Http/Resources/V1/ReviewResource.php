@@ -17,7 +17,7 @@ class ReviewResource extends JsonResource
     {
         // Build featured image URL
         $imageUrl = $this->featured_image_url;
-        if ($imageUrl && !str_starts_with($imageUrl, 'http')) {
+        if ($imageUrl && ! str_starts_with($imageUrl, 'http')) {
             $imageUrl = Storage::disk('public')->url($imageUrl);
         }
 
@@ -33,7 +33,7 @@ class ReviewResource extends JsonResource
             'category' => [
                 'name' => $this->category?->name ? ucfirst($this->category->name) : 'Reviews',
                 'slug' => $this->category?->slug ?? 'reviews',
-                'type' => 'review'
+                'type' => 'review',
             ],
 
             'content' => $this->content,

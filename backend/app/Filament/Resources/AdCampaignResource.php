@@ -4,18 +4,17 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\AdCampaignResource\Pages;
 use App\Models\AdCampaign;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Actions\EditAction;
-use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\BulkActionGroup;
+use Filament\Tables\Table;
 
 class AdCampaignResource extends Resource
 {
@@ -29,6 +28,7 @@ class AdCampaignResource extends Resource
     {
         return 'Shop & Monetization';
     }
+
     protected static ?int $navigationSort = 5;
 
     public static function getNavigationLabel(): string
@@ -78,14 +78,14 @@ class AdCampaignResource extends Resource
                     ->label('Width (px)')
                     ->helperText('Image width in pixels')
                     ->columnSpan(1)
-                    ->visible(fn($get) => $get('type') === 'image'),
+                    ->visible(fn ($get) => $get('type') === 'image'),
 
                 Forms\Components\TextInput::make('height')
                     ->numeric()
                     ->label('Height (px)')
                     ->helperText('Image height in pixels')
                     ->columnSpan(1)
-                    ->visible(fn($get) => $get('type') === 'image'),
+                    ->visible(fn ($get) => $get('type') === 'image'),
 
                 Forms\Components\CheckboxList::make('platforms')
                     ->options([
@@ -112,12 +112,12 @@ class AdCampaignResource extends Resource
                     ->disk('public')
                     ->directory('ads')
                     ->image()
-                    ->visible(fn($get) => $get('type') === 'image'),
+                    ->visible(fn ($get) => $get('type') === 'image'),
 
                 Forms\Components\Textarea::make('code_block')
                     ->label('Custom Ad Code')
                     ->rows(6)
-                    ->visible(fn($get) => $get('type') === 'code'),
+                    ->visible(fn ($get) => $get('type') === 'code'),
 
                 Forms\Components\TextInput::make('target_url')
                     ->label('Click URL')
@@ -184,20 +184,20 @@ class AdCampaignResource extends Resource
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable()
-                    ->description(fn($record) => $record->format ? strtoupper($record->format) : null),
+                    ->description(fn ($record) => $record->format ? strtoupper($record->format) : null),
                 TextColumn::make('position')
                     ->badge()
                     ->color('info'),
                 TextColumn::make('device_targeting')
                     ->label('Device')
                     ->badge()
-                    ->color(fn($state) => match($state) {
+                    ->color(fn ($state) => match ($state) {
                         'all' => 'success',
                         'desktop_only' => 'info',
                         'mobile_only' => 'warning',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn($state) => match($state) {
+                    ->formatStateUsing(fn ($state) => match ($state) {
                         'all' => 'All',
                         'desktop_only' => 'Desktop',
                         'mobile_only' => 'Mobile',
@@ -220,7 +220,7 @@ class AdCampaignResource extends Resource
                     ->sortable(query: function ($query, $direction) {
                         return $query->orderByRaw("CASE WHEN view_count = 0 THEN 0 ELSE (click_count::float / view_count::float) * 100 END {$direction}");
                     })
-                    ->color(fn($state) => $state > 5 ? 'success' : ($state > 2 ? 'warning' : 'danger')),
+                    ->color(fn ($state) => $state > 5 ? 'success' : ($state > 2 ? 'warning' : 'danger')),
                 TextColumn::make('estimated_revenue')
                     ->label('Revenue')
                     ->money('BAM')

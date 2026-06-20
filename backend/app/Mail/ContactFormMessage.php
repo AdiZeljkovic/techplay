@@ -3,17 +3,20 @@
 namespace App\Mail;
 
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Mail\Mailables\Address;
 
 class ContactFormMessage extends Mailable
 {
     // Removed Queueable to send emails synchronously
 
     public string $senderName;
+
     public string $senderEmail;
+
     public string $contactSubject;
+
     public string $messageContent;
 
     /**

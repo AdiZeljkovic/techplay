@@ -25,11 +25,12 @@ class CrawlIgdbGames extends Command
             $this->error('Could not fetch total count. Check your IGDB credentials in .env:');
             $this->line('  IGDB_CLIENT_ID=...');
             $this->line('  IGDB_CLIENT_SECRET=...');
+
             return self::FAILURE;
         }
 
-        $batches    = (int) ceil($total / 500);
-        $inDb       = Game::count();
+        $batches = (int) ceil($total / 500);
+        $inDb = Game::count();
         $withDetails = Game::whereNotNull('details_crawled_at')->count();
 
         $this->info("IGDB total games: ~{$total}");
@@ -38,20 +39,21 @@ class CrawlIgdbGames extends Command
         $this->newLine();
 
         $dispatched = 0;
-        $skipped    = 0;
+        $skipped = 0;
 
         for ($offset = 0; $offset < $total; $offset += 500) {
             if ($this->option('resume') && ! $this->option('force')) {
                 // Skip if games in this offset range are already crawled
                 $batchStart = $offset;
-                $batchEnd   = $offset + 500;
-                $count      = Game::whereNotNull('details_crawled_at')
+                $batchEnd = $offset + 500;
+                $count = Game::whereNotNull('details_crawled_at')
                     ->skip($batchStart)
                     ->take(500)
                     ->count();
 
                 if ($count >= 500) {
                     $skipped++;
+
                     continue;
                 }
             }
@@ -60,7 +62,7 @@ class CrawlIgdbGames extends Command
             $dispatched++;
         }
 
-        $this->info("Dispatched {$dispatched} jobs" . ($skipped > 0 ? " ({$skipped} skipped)" : '') . '.');
+        $this->info("Dispatched {$dispatched} jobs".($skipped > 0 ? " ({$skipped} skipped)" : '').'.');
         $this->newLine();
         $this->info('Start queue worker:');
         $this->line('  php artisan queue:work --queue=igdb-crawl --sleep=1 --tries=5 --timeout=60');

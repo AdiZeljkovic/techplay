@@ -7,8 +7,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 
 /**
  * Flush view counters from Redis to database.
@@ -20,16 +20,16 @@ class FlushViewCounters implements ShouldQueue
 
     public function handle(): void
     {
-        $this->flushPattern('views:thread:*',  'threads',      'view_count');
-        $this->flushPattern('views:article:*', 'articles',     'views');
-        $this->flushPattern('views:ad:*',      'ad_campaigns', 'view_count');
-        $this->flushPattern('clicks:ad:*',     'ad_campaigns', 'click_count');
+        $this->flushPattern('views:thread:*', 'threads', 'view_count');
+        $this->flushPattern('views:article:*', 'articles', 'views');
+        $this->flushPattern('views:ad:*', 'ad_campaigns', 'view_count');
+        $this->flushPattern('clicks:ad:*', 'ad_campaigns', 'click_count');
     }
 
     private function flushPattern(string $pattern, string $table, string $column): void
     {
-        $prefix  = config('database.redis.options.prefix', '');
-        $cursor  = '0';
+        $prefix = config('database.redis.options.prefix', '');
+        $cursor = '0';
 
         do {
             [$cursor, $keys] = Redis::scan($cursor, ['match' => $pattern, 'count' => 100]);

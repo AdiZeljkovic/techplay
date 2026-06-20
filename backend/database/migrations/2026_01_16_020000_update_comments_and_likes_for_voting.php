@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -16,7 +17,7 @@ return new class extends Migration {
 
         Schema::table('comments', function (Blueprint $table) {
             $table->integer('score')->default(0)->after('content');
-            // We keep likes_count for now to avoid immediate breakage if accessed dynamically, 
+            // We keep likes_count for now to avoid immediate breakage if accessed dynamically,
             // but effectively we will stop using it or sync it.
             // Plan said drop, but safer to keep and maybe drop later.
             // Actually, let's look at implementation plan: "Drop likes_count".

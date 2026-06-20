@@ -2,10 +2,11 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -16,7 +17,7 @@ return new class extends Migration {
         DB::statement('CREATE INDEX IF NOT EXISTS articles_views_index ON articles (views)');
         // Note: boolean casting to int might be needed for some DBs but Postgres handles bool index fine usually.
         // Actually, for pure boolean index in Postgres:
-        // CREATE INDEX ... ON articles (is_featured_in_hero) works. 
+        // CREATE INDEX ... ON articles (is_featured_in_hero) works.
         // Let's stick to standard syntax first.
         DB::statement('CREATE INDEX IF NOT EXISTS articles_is_featured_in_hero_index ON articles (is_featured_in_hero)');
     }

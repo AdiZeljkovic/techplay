@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\Product;
 use App\Services\PayPalService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -62,8 +63,8 @@ class PayPalController extends Controller
             $total = 0;
             foreach ($request->items as $item) {
                 // Check if Product model exists, otherwise fallback to item['price']
-                if (class_exists(\App\Models\Product::class)) {
-                    $product = \App\Models\Product::find($item['product_id']);
+                if (class_exists(Product::class)) {
+                    $product = Product::find($item['product_id']);
                     if ($product) {
                         $price = $product->price;
                         $total += $price * $item['quantity'];

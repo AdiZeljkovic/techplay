@@ -5,7 +5,6 @@ namespace App\Events;
 use App\Models\EditorialMessage;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -28,13 +27,13 @@ class EditorialMessageSent implements ShouldBroadcast
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
+     * @return array<int, Channel>
      */
     public function broadcastOn(): array
     {
         if ($this->message->channel) {
             return [
-                new PrivateChannel('editorial.channel.' . $this->message->channel),
+                new PrivateChannel('editorial.channel.'.$this->message->channel),
             ];
         }
 
@@ -44,8 +43,8 @@ class EditorialMessageSent implements ShouldBroadcast
             // We can broadcast to a dedicated user channel or a specific conversation channel.
             // Let's use user-specific channels for simplicity: user.{id}
             return [
-                new PrivateChannel('editorial.user.' . $this->message->recipient_id),
-                new PrivateChannel('editorial.user.' . $this->message->user_id),
+                new PrivateChannel('editorial.user.'.$this->message->recipient_id),
+                new PrivateChannel('editorial.user.'.$this->message->user_id),
             ];
         }
 

@@ -2,6 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Models\AdCampaign;
+use App\Models\Article;
+use App\Models\Giveaway;
+use App\Models\Review;
 use App\Services\ImageOptimizer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
@@ -55,7 +59,7 @@ class OptimizeExistingImages extends Command
             ? $this->imageDirectories
             : [$directory];
 
-        $optimizer = new ImageOptimizer();
+        $optimizer = new ImageOptimizer;
         $stats = [
             'processed' => 0,
             'skipped' => 0,
@@ -64,8 +68,9 @@ class OptimizeExistingImages extends Command
         ];
 
         foreach ($directories as $dir) {
-            if (!Storage::disk('public')->exists($dir)) {
+            if (! Storage::disk('public')->exists($dir)) {
                 $this->warn("⚠️  Directory '{$dir}' does not exist, skipping...");
+
                 continue;
             }
 
@@ -79,15 +84,17 @@ class OptimizeExistingImages extends Command
                 $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
                 // Skip non-image files
-                if (!in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                if (! in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
                     $progressBar->advance();
+
                     continue;
                 }
 
                 // Skip WebP if not forcing
-                if ($extension === 'webp' && !$force) {
+                if ($extension === 'webp' && ! $force) {
                     $stats['skipped']++;
                     $progressBar->advance();
+
                     continue;
                 }
 
@@ -100,6 +107,7 @@ class OptimizeExistingImages extends Command
                     $this->line("  Would optimize: {$file} ({$originalSizeKb} KB)");
                     $stats['processed']++;
                     $progressBar->advance();
+
                     continue;
                 }
 
@@ -141,7 +149,7 @@ class OptimizeExistingImages extends Command
                 ['Processed', $stats['processed']],
                 ['Skipped (already WebP)', $stats['skipped']],
                 ['Errors', $stats['errors']],
-                ['Space Saved', round($stats['saved_bytes'] / 1024 / 1024, 2) . ' MB'],
+                ['Space Saved', round($stats['saved_bytes'] / 1024 / 1024, 2).' MB'],
             ]
         );
 
@@ -161,7 +169,7 @@ class OptimizeExistingImages extends Command
     {
         // Update articles - featured_image_url is the correct column
         try {
-            \App\Models\Article::where('featured_image_url', $oldPath)
+            Article::where('featured_image_url', $oldPath)
                 ->update(['featured_image_url' => $newPath]);
         } catch (\Exception $e) {
             // Column might not exist, ignore
@@ -169,8 +177,8 @@ class OptimizeExistingImages extends Command
 
         // Update reviews - cover_image column
         try {
-            if (class_exists(\App\Models\Review::class)) {
-                \App\Models\Review::where('cover_image', $oldPath)
+            if (class_exists(Review::class)) {
+                Review::where('cover_image', $oldPath)
                     ->update(['cover_image' => $newPath]);
             }
         } catch (\Exception $e) {
@@ -179,10 +187,10 @@ class OptimizeExistingImages extends Command
 
         // Update giveaways
         try {
-            if (class_exists(\App\Models\Giveaway::class)) {
-                \App\Models\Giveaway::where('featured_image', $oldPath)
+            if (class_exists(Giveaway::class)) {
+                Giveaway::where('featured_image', $oldPath)
                     ->update(['featured_image' => $newPath]);
-                \App\Models\Giveaway::where('prize_image', $oldPath)
+                Giveaway::where('prize_image', $oldPath)
                     ->update(['prize_image' => $newPath]);
             }
         } catch (\Exception $e) {
@@ -191,8 +199,8 @@ class OptimizeExistingImages extends Command
 
         // Update ad campaigns
         try {
-            if (class_exists(\App\Models\AdCampaign::class)) {
-                \App\Models\AdCampaign::where('image_url', $oldPath)
+            if (class_exists(AdCampaign::class)) {
+                AdCampaign::where('image_url', $oldPath)
                     ->update(['image_url' => $newPath]);
             }
         } catch (\Exception $e) {

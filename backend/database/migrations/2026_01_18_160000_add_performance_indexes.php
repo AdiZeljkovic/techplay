@@ -1,10 +1,12 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Disable transaction wrapping so each index creation is independent.
      * This allows us to skip indexes that already exist.
@@ -45,9 +47,9 @@ return new class extends Migration {
             Schema::table($table, function (Blueprint $t) use ($columns) {
                 $t->index($columns);
             });
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             // Index already exists - ignore
-            if (!str_contains($e->getMessage(), 'already exists')) {
+            if (! str_contains($e->getMessage(), 'already exists')) {
                 throw $e;
             }
         }
@@ -82,7 +84,7 @@ return new class extends Migration {
             Schema::table($table, function (Blueprint $t) use ($columns) {
                 $t->dropIndex($columns);
             });
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             // Index doesn't exist - ignore
         }
     }

@@ -45,11 +45,11 @@ class OrderItemsRelationManager extends RelationManager
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('price')
-                    ->formatStateUsing(fn($state) => number_format($state, 2) . ' KM')
+                    ->formatStateUsing(fn ($state) => number_format($state, 2).' KM')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('subtotal')
                     ->label('Subtotal')
-                    ->getStateUsing(fn($record) => number_format($record->price * $record->quantity, 2) . ' KM'),
+                    ->getStateUsing(fn ($record) => number_format($record->price * $record->quantity, 2).' KM'),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),

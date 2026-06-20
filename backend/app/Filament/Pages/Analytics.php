@@ -2,8 +2,8 @@
 
 namespace App\Filament\Pages;
 
-use Filament\Pages\Page;
 use App\Filament\Widgets\MostViewedArticles;
+use Filament\Pages\Page;
 
 class Analytics extends Page
 {

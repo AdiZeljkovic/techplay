@@ -4,28 +4,31 @@ namespace App\Console\Commands;
 
 use App\Models\Game;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class CrawlIgdbStatus extends Command
 {
     protected $signature = 'igdb:status';
+
     protected $description = 'Show IGDB crawl progress';
 
     public function handle(): int
     {
-        $total      = Game::count();
+        $total = Game::count();
         $withDetails = Game::whereNotNull('details_crawled_at')->count();
         $withScreens = Game::whereNotNull('screenshots_crawled_at')->count();
-        $withVideos  = Game::whereNotNull('movies_crawled_at')->count();
+        $withVideos = Game::whereNotNull('movies_crawled_at')->count();
         $withSuggest = Game::whereNotNull('suggested_crawled_at')->count();
-        $withDlcs    = Game::whereNotNull('additions_crawled_at')->count();
+        $withDlcs = Game::whereNotNull('additions_crawled_at')->count();
 
         $igdbTotal = 230000; // approximate
 
         $bar = function (int $count, int $of) {
-            if ($of <= 0) return str_repeat('░', 10);
+            if ($of <= 0) {
+                return str_repeat('░', 10);
+            }
             $filled = min(10, (int) round($count / $of * 10));
-            return str_repeat('█', $filled) . str_repeat('░', 10 - $filled);
+
+            return str_repeat('█', $filled).str_repeat('░', 10 - $filled);
         };
 
         $pct = fn (int $count, int $of) => $of > 0 ? number_format($count / $of * 100, 1) : '0.0';

@@ -4,16 +4,17 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PostResource\Pages;
 use App\Models\Post;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Schemas\Schema;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-
 
 class PostResource extends Resource
 {
@@ -25,15 +26,16 @@ class PostResource extends Resource
     {
         return 'Community';
     }
+
     protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                \Filament\Schemas\Components\Tabs::make('Tabs')
+                Tabs::make('Tabs')
                     ->tabs([
-                        \Filament\Schemas\Components\Tabs\Tab::make('Content')
+                        Tab::make('Content')
                             ->icon('heroicon-o-document-text')
                             ->schema([
                                 Forms\Components\Select::make('thread_id')

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\GuideResource\Pages;
 use App\Filament\Resources\GuideResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Enums\Width;
 
 class ListGuides extends ListRecords
 {
@@ -17,8 +18,8 @@ class ListGuides extends ListRecords
         ];
     }
 
-    public function getMaxContentWidth(): \Filament\Support\Enums\Width
+    public function getMaxContentWidth(): Width
     {
-        return \Filament\Support\Enums\Width::Full;
+        return Width::Full;
     }
 }

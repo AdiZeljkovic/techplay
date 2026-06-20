@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Article;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
 
 class InternalLinkService
 {
@@ -62,7 +61,7 @@ class InternalLinkService
                 'id' => $article->id,
                 'title' => $article->title,
                 'slug' => $article->slug,
-                'url' => '/news/' . $article->slug,
+                'url' => '/news/'.$article->slug,
                 'excerpt' => Str::limit($article->excerpt, 100),
                 'category' => $article->category,
                 'score' => $score,
@@ -91,7 +90,7 @@ class InternalLinkService
         // Filter: min 4 chars, not a stopword
         $stopwords = self::getStopwords();
         $filtered = array_filter($words, function ($word) use ($stopwords) {
-            return strlen($word) >= 4 && !in_array($word, $stopwords);
+            return strlen($word) >= 4 && ! in_array($word, $stopwords);
         });
 
         // Count frequency
@@ -199,8 +198,9 @@ class InternalLinkService
     public static function findInboundLinks(int $articleId): array
     {
         $article = Article::find($articleId);
-        if (!$article)
+        if (! $article) {
             return [];
+        }
 
         $slug = $article->slug;
 
@@ -236,7 +236,7 @@ class InternalLinkService
                 "href=\"{$article->slug}\"",
             ]);
 
-            if (!$isLinked) {
+            if (! $isLinked) {
                 $orphans[] = [
                     'id' => $article->id,
                     'title' => $article->title,

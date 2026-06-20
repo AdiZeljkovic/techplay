@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\User;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -24,15 +25,17 @@ class SendChatReminder implements ShouldQueue
     public function handle(): void
     {
         $user = User::find($this->userId);
-        if (!$user) return;
+        if (! $user) {
+            return;
+        }
 
-        $url = '/admin/editorial-chat?msg=' . $this->messageId;
+        $url = '/admin/editorial-chat?msg='.$this->messageId;
 
         Notification::make()
             ->title('Chat Reminder')
             ->body("From {$this->authorName}: {$this->messagePreview}")
             ->actions([
-                \Filament\Actions\Action::make('view')
+                Action::make('view')
                     ->label('View Message')
                     ->url($url),
             ])

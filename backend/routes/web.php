@@ -1,14 +1,18 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\RssController;
 use App\Http\Controllers\SitemapController;
+use App\Models\SiteSetting;
+use App\Services\GeminiService;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 // Sitemaps
-Route::get('/feed', [App\Http\Controllers\RssController::class, 'index']);
+Route::get('/feed', [RssController::class, 'index']);
 Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 Route::get('/sitemap-pages.xml', [SitemapController::class, 'pages']);
 Route::get('/sitemap-articles.xml', [SitemapController::class, 'articles']);
@@ -22,12 +26,12 @@ Route::get('/sitemap-games-{page}.xml', [SitemapController::class, 'games'])->wh
 
 // Dynamic robots.txt from admin panel
 Route::get('/robots.txt', function () {
-    $content = \App\Models\SiteSetting::get('seo_robots_txt_content', "User-agent: *\nAllow: /");
+    $content = SiteSetting::get('seo_robots_txt_content', "User-agent: *\nAllow: /");
 
     // Append sitemap URL (use frontend URL, not backend API URL)
-    $sitemapUrl = rtrim(env('FRONTEND_URL', config('app.url')), '/') . '/sitemap.xml';
-    if (!str_contains($content, 'Sitemap:')) {
-        $content .= "\n\nSitemap: " . $sitemapUrl;
+    $sitemapUrl = rtrim(env('FRONTEND_URL', config('app.url')), '/').'/sitemap.xml';
+    if (! str_contains($content, 'Sitemap:')) {
+        $content .= "\n\nSitemap: ".$sitemapUrl;
     }
 
     return response($content, 200)
@@ -35,7 +39,7 @@ Route::get('/robots.txt', function () {
 });
 
 Route::get('/{key}.txt', function ($key) {
-    $configuredKey = \App\Models\SiteSetting::get('seo_indexnow_key');
+    $configuredKey = SiteSetting::get('seo_indexnow_key');
     if ($key === $configuredKey) {
         return response($key, 200)
             ->header('Content-Type', 'text/plain');
@@ -45,9 +49,9 @@ Route::get('/{key}.txt', function ($key) {
 
 // DEBUG: Test Gemini API directly (no cache, hardcoded data)
 Route::get('/debug-gemini-test', function () {
-    $geminiService = app(\App\Services\GeminiService::class);
+    $geminiService = app(GeminiService::class);
 
-    \Illuminate\Support\Facades\Log::info('=== GEMINI DEBUG TEST STARTED ===');
+    Log::info('=== GEMINI DEBUG TEST STARTED ===');
 
     $testData = [
         'character' => [
@@ -73,13 +77,12 @@ Route::get('/debug-gemini-test', function () {
 
     $result = $geminiService->analyzeCharacterReadiness($testData);
 
-    \Illuminate\Support\Facades\Log::info('=== GEMINI DEBUG TEST FINISHED ===', ['result' => $result]);
+    Log::info('=== GEMINI DEBUG TEST FINISHED ===', ['result' => $result]);
 
     return response()->json([
         'success' => $result !== null,
         'result' => $result,
         'message' => $result ? 'Gemini API works!' : 'Gemini failed - check tail -f logs',
-        'check_logs' => 'tail -f storage/logs/laravel.log'
+        'check_logs' => 'tail -f storage/logs/laravel.log',
     ]);
 });
-

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Article;
 use App\Http\Resources\V1\ArticleResource;
+use App\Models\Article;
 use App\Services\CacheService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -25,7 +25,7 @@ class TechController extends Controller
                 ->where('status', 'published')
                 ->where('published_at', '<=', now())
                 // IMPORTANT: Only show articles with category type 'tech'
-                ->whereHas('category', fn($q) => $q->where('type', 'tech'))
+                ->whereHas('category', fn ($q) => $q->where('type', 'tech'))
                 ->with(['author:id,username,display_name,avatar_url', 'category']);
 
             if ($request->has('category') && $request->category !== 'all') {
@@ -59,7 +59,7 @@ class TechController extends Controller
         $resource = Cache::remember($cacheKey, CacheService::TTL_LONG, function () use ($slug) {
             $article = Article::where('slug', $slug)
                 ->where('status', 'published')
-                ->whereHas('category', fn($q) => $q->where('type', 'tech'))
+                ->whereHas('category', fn ($q) => $q->where('type', 'tech'))
                 // Added display_name
                 ->with(['author:id,username,display_name,avatar_url,bio', 'category'])
                 ->firstOrFail();

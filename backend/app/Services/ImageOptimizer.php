@@ -25,20 +25,20 @@ class ImageOptimizer
      * Optimize an uploaded image and generate all size variants
      * Returns the base path (without suffix) - variants are accessed by appending _thumb, _medium, etc.
      *
-     * @param string $path Path to the image on the storage disk
-     * @param string $disk Storage disk name
+     * @param  string  $path  Path to the image on the storage disk
+     * @param  string  $disk  Storage disk name
      * @return string Base path of optimized image (e.g., "articles/filename.webp")
      */
     public function optimize(string $path, string $disk = 'public'): string
     {
         $fullPath = Storage::disk($disk)->path($path);
 
-        if (!file_exists($fullPath)) {
+        if (! file_exists($fullPath)) {
             return $path;
         }
 
         $imageInfo = @getimagesize($fullPath);
-        if (!$imageInfo) {
+        if (! $imageInfo) {
             return $path;
         }
 
@@ -48,14 +48,14 @@ class ImageOptimizer
 
         // Create image resource from original
         $sourceImage = $this->createImageFromFile($fullPath, $mimeType);
-        if (!$sourceImage) {
+        if (! $sourceImage) {
             return $path;
         }
 
         // Generate base path for WebP
         $directory = dirname($path);
         $filename = pathinfo($path, PATHINFO_FILENAME);
-        $basePath = $directory . '/' . $filename;
+        $basePath = $directory.'/'.$filename;
 
         // Generate all variants
         foreach ($this->variants as $variantName => $config) {
@@ -80,7 +80,7 @@ class ImageOptimizer
         }
 
         // Return the base path with .webp extension (original variant)
-        return $basePath . '.webp';
+        return $basePath.'.webp';
     }
 
     /**
@@ -125,8 +125,8 @@ class ImageOptimizer
         );
 
         // Generate filename with suffix for variants (except 'original')
-        $suffix = $variantName === 'original' ? '' : '_' . $variantName;
-        $variantPath = $basePath . $suffix . '.webp';
+        $suffix = $variantName === 'original' ? '' : '_'.$variantName;
+        $variantPath = $basePath.$suffix.'.webp';
         $fullPath = Storage::disk($disk)->path($variantPath);
 
         // Save as WebP
@@ -143,12 +143,12 @@ class ImageOptimizer
     {
         $fullPath = Storage::disk($disk)->path($path);
 
-        if (!file_exists($fullPath)) {
+        if (! file_exists($fullPath)) {
             return false;
         }
 
         $imageInfo = @getimagesize($fullPath);
-        if (!$imageInfo) {
+        if (! $imageInfo) {
             return false;
         }
 
@@ -158,7 +158,7 @@ class ImageOptimizer
 
         // Create image resource
         $sourceImage = $this->createImageFromFile($fullPath, $mimeType);
-        if (!$sourceImage) {
+        if (! $sourceImage) {
             return false;
         }
 
@@ -168,7 +168,7 @@ class ImageOptimizer
 
         // Remove any existing suffix (_thumb, _medium, _large)
         $filename = preg_replace('/_(thumb|medium|large)$/', '', $filename);
-        $basePath = $directory . '/' . $filename;
+        $basePath = $directory.'/'.$filename;
 
         // Generate only the smaller variants (thumb, medium, large)
         // Skip 'original' as it already exists
@@ -176,7 +176,7 @@ class ImageOptimizer
 
         foreach ($variantsToGenerate as $variantName) {
             $config = $this->variants[$variantName];
-            $variantFilePath = $basePath . '_' . $variantName . '.webp';
+            $variantFilePath = $basePath.'_'.$variantName.'.webp';
 
             // Skip if variant already exists
             if (Storage::disk($disk)->exists($variantFilePath)) {
@@ -195,6 +195,7 @@ class ImageOptimizer
         }
 
         imagedestroy($sourceImage);
+
         return true;
     }
 
@@ -261,6 +262,6 @@ class ImageOptimizer
         }
 
         // Insert variant suffix before .webp extension
-        return preg_replace('/\.webp$/', '_' . $variant . '.webp', $baseUrl);
+        return preg_replace('/\.webp$/', '_'.$variant.'.webp', $baseUrl);
     }
 }

@@ -30,18 +30,18 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
 
     // Enchantable slots
     protected const ENCHANTABLE_SLOTS = [
-        'CHEST', 'LEGS', 'FEET', 'WRIST', 'HANDS', 'BACK', 'MAIN_HAND', 'OFF_HAND', 'FINGER_1', 'FINGER_2'
+        'CHEST', 'LEGS', 'FEET', 'WRIST', 'HANDS', 'BACK', 'MAIN_HAND', 'OFF_HAND', 'FINGER_1', 'FINGER_2',
     ];
 
     /**
      * Transform equipment data
      *
-     * @param array|null $equipment Raw equipment API response
+     * @param  array|null  $equipment  Raw equipment API response
      * @return array Compact equipment data with iLvL, enchants, gems, tier progress
      */
     public function transformEquipment(?array $equipment): array
     {
-        if (!$equipment || !isset($equipment['equipped_items'])) {
+        if (! $equipment || ! isset($equipment['equipped_items'])) {
             return [
                 'item_level' => 0,
                 'slots' => [],
@@ -79,14 +79,14 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
             $hasEnchant = isset($item['enchantments']) && count($item['enchantments']) > 0;
             $needsEnchant = in_array($slotType, self::ENCHANTABLE_SLOTS);
 
-            if ($needsEnchant && !$hasEnchant) {
+            if ($needsEnchant && ! $hasEnchant) {
                 $missingEnchants[] = $this->formatSlotName($slotType);
             }
 
             // Check gem sockets
             $sockets = $item['sockets'] ?? [];
             foreach ($sockets as $socket) {
-                if (!isset($socket['item']) || empty($socket['item'])) {
+                if (! isset($socket['item']) || empty($socket['item'])) {
                     $missingGems[] = $this->formatSlotName($slotType);
                     break; // Only report once per item
                 }
@@ -123,7 +123,7 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
     /**
      * Extract item stats from Blizzard API item data
      *
-     * @param array $item Raw item data from equipment API
+     * @param  array  $item  Raw item data from equipment API
      * @return array Item stats (strength, agility, stamina, etc.)
      */
     protected function extractItemStats(array $item): array
@@ -142,7 +142,7 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
                 $statType = $stat['type']['type'] ?? null;
                 $statValue = $stat['value'] ?? 0;
 
-                if (!$statType || $statValue === 0) {
+                if (! $statType || $statValue === 0) {
                     continue;
                 }
 
@@ -169,7 +169,7 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
     /**
      * Map Blizzard API stat type to our format
      *
-     * @param string $blizzardType Blizzard stat type (e.g., "STRENGTH", "CRIT_RATING")
+     * @param  string  $blizzardType  Blizzard stat type (e.g., "STRENGTH", "CRIT_RATING")
      * @return string|null Our stat key (e.g., "strength", "critical_strike")
      */
     protected function mapStatType(string $blizzardType): ?string
@@ -192,12 +192,12 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
     /**
      * Transform Mythic+ data
      *
-     * @param array|null $mythic Raw mythic-keystone-profile API response
+     * @param  array|null  $mythic  Raw mythic-keystone-profile API response
      * @return array Custom M+ score, best runs, vault status
      */
     public function transformMythicPlus(?array $mythic): array
     {
-        if (!$mythic) {
+        if (! $mythic) {
             return [
                 'score' => 0,
                 'best_runs' => [],
@@ -239,12 +239,12 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
     /**
      * Transform raid encounter data
      *
-     * @param array|null $raids Raw encounters/raids API response
+     * @param  array|null  $raids  Raw encounters/raids API response
      * @return array Boss kill matrix, raid progress summary
      */
     public function transformRaids(?array $raids): array
     {
-        if (!$raids || !isset($raids['expansions'])) {
+        if (! $raids || ! isset($raids['expansions'])) {
             return [
                 'current_tier' => 'Unknown',
                 'bosses' => [],
@@ -261,7 +261,7 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
             }
         }
 
-        if (!$currentExpansion || !isset($currentExpansion['instances'])) {
+        if (! $currentExpansion || ! isset($currentExpansion['instances'])) {
             return [
                 'current_tier' => 'Unknown',
                 'bosses' => [],
@@ -278,7 +278,7 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
             }
         }
 
-        if (!$currentTier) {
+        if (! $currentTier) {
             // Fallback to latest instance
             $currentTier = end($currentExpansion['instances']);
         }
@@ -302,7 +302,7 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
                 $completed = $encounter['completed_count'] ?? 0;
 
                 // Initialize boss if not exists
-                if (!isset($bossMatrix[$bossName])) {
+                if (! isset($bossMatrix[$bossName])) {
                     $bossMatrix[$bossName] = [
                         'name' => $bossName,
                         'normal' => false,
@@ -340,7 +340,7 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
             $summaryParts[] = "{$normalKills}/{$totalBosses}N";
         }
 
-        $summary = !empty($summaryParts) ? implode(', ', $summaryParts) : '0/' . $totalBosses;
+        $summary = ! empty($summaryParts) ? implode(', ', $summaryParts) : '0/'.$totalBosses;
 
         return [
             'current_tier' => $tierName,
@@ -352,12 +352,12 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
     /**
      * Transform PvP summary data
      *
-     * @param array|null $pvp Raw pvp-summary API response
+     * @param  array|null  $pvp  Raw pvp-summary API response
      * @return array Arena ratings, Honor level, seasonal ranking
      */
     public function transformPvP(?array $pvp): array
     {
-        if (!$pvp) {
+        if (! $pvp) {
             return [
                 'honor_level' => 0,
                 'arena_2v2' => null,
@@ -398,12 +398,12 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
     /**
      * Transform reputations data
      *
-     * @param array|null $reps Raw reputations API response
+     * @param  array|null  $reps  Raw reputations API response
      * @return array Quel'Thalas factions (Midnight critical), exalted count
      */
     public function transformReputations(?array $reps): array
     {
-        if (!$reps || !isset($reps['reputations'])) {
+        if (! $reps || ! isset($reps['reputations'])) {
             return [
                 'exalted_count' => 0,
                 'midnight_factions' => [],
@@ -468,7 +468,7 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
         }
 
         // Sort top factions by tier desc
-        usort($topFactions, fn($a, $b) => $b['tier'] <=> $a['tier']);
+        usort($topFactions, fn ($a, $b) => $b['tier'] <=> $a['tier']);
         $topFactions = array_slice($topFactions, 0, 5);
 
         return [
@@ -481,12 +481,12 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
     /**
      * Transform pets collection data
      *
-     * @param array|null $pets Raw pets collection API response
+     * @param  array|null  $pets  Raw pets collection API response
      * @return array Pet statistics (total, unique, max level)
      */
     public function transformPets(?array $pets): array
     {
-        if (!$pets || !isset($pets['pets'])) {
+        if (! $pets || ! isset($pets['pets'])) {
             return [
                 'total' => 0,
                 'unique' => 0,
@@ -497,7 +497,7 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
         $totalPets = count($pets['pets']);
 
         // Extract species IDs (not the entire species object)
-        $speciesIds = array_map(fn($pet) => $pet['species']['id'] ?? 0, $pets['pets']);
+        $speciesIds = array_map(fn ($pet) => $pet['species']['id'] ?? 0, $pets['pets']);
         $uniquePets = count(array_unique($speciesIds));
 
         $maxLevelPets = 0;
@@ -518,12 +518,12 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
     /**
      * Transform toys collection data
      *
-     * @param array|null $toys Raw toys collection API response
+     * @param  array|null  $toys  Raw toys collection API response
      * @return array Toy statistics (collected count)
      */
     public function transformToys(?array $toys): array
     {
-        if (!$toys || !isset($toys['toys'])) {
+        if (! $toys || ! isset($toys['toys'])) {
             return [
                 'collected' => 0,
             ];
@@ -537,12 +537,12 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
     /**
      * Transform transmog appearances data
      *
-     * @param array|null $appearances Raw appearances API response
+     * @param  array|null  $appearances  Raw appearances API response
      * @return array Transmog statistics (slots unlocked)
      */
     public function transformAppearances(?array $appearances): array
     {
-        if (!$appearances || !isset($appearances['slots'])) {
+        if (! $appearances || ! isset($appearances['slots'])) {
             return [
                 'slots_unlocked' => 0,
                 'total_appearances' => 0,
@@ -567,12 +567,12 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
     /**
      * Transform professions data
      *
-     * @param array|null $profs Raw professions API response
+     * @param  array|null  $profs  Raw professions API response
      * @return array Profession skills (primary, secondary)
      */
     public function transformProfessions(?array $profs): array
     {
-        if (!$profs) {
+        if (! $profs) {
             return [
                 'primary' => [],
                 'secondary' => [],
@@ -671,6 +671,7 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
                 return true;
             }
         }
+
         return false;
     }
 
@@ -681,10 +682,11 @@ class BlizzardDataTransformerV2 extends BlizzardDataTransformer
     {
         $filled = 0;
         foreach ($sockets as $socket) {
-            if (isset($socket['item']) && !empty($socket['item'])) {
+            if (isset($socket['item']) && ! empty($socket['item'])) {
                 $filled++;
             }
         }
+
         return $filled;
     }
 

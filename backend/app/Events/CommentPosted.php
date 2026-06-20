@@ -27,7 +27,7 @@ class CommentPosted implements ShouldBroadcast
     public function broadcastOn(): Channel
     {
         $type = class_basename($this->comment->commentable_type);
-        $type = strtolower($type) . 's'; // articles, reviews, videos, etc.
+        $type = strtolower($type).'s'; // articles, reviews, videos, etc.
 
         return new Channel("comments.{$type}.{$this->comment->commentable_id}");
     }

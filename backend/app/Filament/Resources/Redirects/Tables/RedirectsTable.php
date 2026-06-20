@@ -21,7 +21,7 @@ class RedirectsTable
                     ->searchable(),
                 TextColumn::make('status_code')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         '301', '308' => 'success',
                         '302', '307' => 'warning',
                         default => 'gray',

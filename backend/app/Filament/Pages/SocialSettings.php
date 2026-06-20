@@ -10,6 +10,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Cache;
 
 class SocialSettings extends Page implements HasForms
 {
@@ -42,12 +43,12 @@ class SocialSettings extends Page implements HasForms
     public function mount(): void
     {
         $this->form->fill([
-            'twitter_url'   => SiteSetting::get('twitter_url'),
-            'facebook_url'  => SiteSetting::get('facebook_url'),
+            'twitter_url' => SiteSetting::get('twitter_url'),
+            'facebook_url' => SiteSetting::get('facebook_url'),
             'instagram_url' => SiteSetting::get('instagram_url'),
-            'youtube_url'   => SiteSetting::get('youtube_url'),
-            'discord_url'   => SiteSetting::get('discord_url'),
-            'tiktok_url'    => SiteSetting::get('tiktok_url'),
+            'youtube_url' => SiteSetting::get('youtube_url'),
+            'discord_url' => SiteSetting::get('discord_url'),
+            'tiktok_url' => SiteSetting::get('tiktok_url'),
         ]);
     }
 
@@ -108,7 +109,7 @@ class SocialSettings extends Page implements HasForms
             SiteSetting::set($key, $value ?? '', 'text', 'socials');
         }
 
-        \Illuminate\Support\Facades\Cache::forget('site_settings');
+        Cache::forget('site_settings');
 
         Notification::make()
             ->title('Social links saved!')

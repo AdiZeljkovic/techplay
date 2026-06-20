@@ -17,7 +17,7 @@ class GuideController extends Controller
         $page = $request->get('page', 1);
         $difficulty = $request->get('difficulty', 'all');
         $search = $request->get('search', '');
-        $cacheKey = "guides.index.v2.page_{$page}.diff_{$difficulty}.search_" . md5($search);
+        $cacheKey = "guides.index.v2.page_{$page}.diff_{$difficulty}.search_".md5($search);
 
         $resource = Cache::remember($cacheKey, CacheService::TTL_MEDIUM, function () use ($request, $search) {
             $query = Guide::with('author:id,username,display_name,avatar_url');
@@ -27,7 +27,7 @@ class GuideController extends Controller
             }
 
             // Search support
-            if (!empty($search)) {
+            if (! empty($search)) {
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'ILIKE', "%{$search}%")
                         ->orWhere('excerpt', 'ILIKE', "%{$search}%")
@@ -53,7 +53,7 @@ class GuideController extends Controller
                 ->withCount([
                     'votes as helpful_count' => function ($query) {
                         $query->where('is_helpful', true);
-                    }
+                    },
                 ])
                 ->firstOrFail();
         });
@@ -69,14 +69,14 @@ class GuideController extends Controller
 
         return response()->json([
             'guide' => $guide,
-            'user_vote' => $userVote
+            'user_vote' => $userVote,
         ], 200, ['Cache-Control' => 'no-cache, no-store, must-revalidate']);
     }
 
     public function vote(Request $request, $slug)
     {
         $request->validate([
-            'is_helpful' => 'required|boolean'
+            'is_helpful' => 'required|boolean',
         ]);
 
         $guide = Guide::where('slug', $slug)->firstOrFail();

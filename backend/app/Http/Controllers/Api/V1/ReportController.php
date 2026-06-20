@@ -3,16 +3,17 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Post;
 use App\Models\Report;
 use App\Models\Thread;
-use App\Models\Post;
+use App\Services\SanitizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class ReportController extends Controller
 {
-    public function store(Request $request, \App\Services\SanitizationService $sanitizer)
+    public function store(Request $request, SanitizationService $sanitizer)
     {
         $request->validate([
             'reportable_type' => ['required', 'string', Rule::in(['thread', 'post'])],
@@ -31,13 +32,13 @@ class ReportController extends Controller
                 break;
         }
 
-        if (!$modelClass) {
+        if (! $modelClass) {
             return response()->json(['message' => 'Invalid reportable type.'], 400);
         }
 
         $model = $modelClass::find($request->reportable_id);
 
-        if (!$model) {
+        if (! $model) {
             return response()->json(['message' => 'Content not found.'], 404);
         }
 
@@ -60,10 +61,11 @@ class ReportController extends Controller
             'reason' => $cleanReason,
             'status' => 'pending',
         ]);
+
         // SECURITY: Only return report ID, not full model data
         return response()->json([
             'message' => 'Report submitted successfully.',
-            'report_id' => $report->id
+            'report_id' => $report->id,
         ], 201);
     }
 }

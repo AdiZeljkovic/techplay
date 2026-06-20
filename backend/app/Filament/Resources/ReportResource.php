@@ -4,20 +4,16 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ReportResource\Pages;
 use App\Models\Report;
-use Filament\Forms;
-use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\BulkActionGroup;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class ReportResource extends Resource
 {
@@ -71,7 +67,7 @@ class ReportResource extends Resource
 
                 TextColumn::make('reportable_type')
                     ->label('Type')
-                    ->formatStateUsing(fn(string $state): string => class_basename($state))
+                    ->formatStateUsing(fn (string $state): string => class_basename($state))
                     ->badge(),
 
                 TextColumn::make('reason')
@@ -80,7 +76,7 @@ class ReportResource extends Resource
 
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'pending' => 'warning',
                         'resolved' => 'success',
                         'dismissed' => 'gray',

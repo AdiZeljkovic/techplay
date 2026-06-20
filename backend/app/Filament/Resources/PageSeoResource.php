@@ -5,14 +5,14 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PageSeoResource\Pages;
 use App\Filament\Resources\PageSeoResource\Schemas\PageSeoForm;
 use App\Models\PageSeo;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\CreateAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class PageSeoResource extends Resource
 {
@@ -56,7 +56,7 @@ class PageSeoResource extends Resource
                 TextColumn::make('meta_title')
                     ->label('Title')
                     ->limit(40)
-                    ->tooltip(fn($record) => $record->meta_title),
+                    ->tooltip(fn ($record) => $record->meta_title),
                 TextColumn::make('meta_description')
                     ->label('Description')
                     ->limit(50)

@@ -17,10 +17,9 @@ class ImageService
     /**
      * Upload and process image
      *
-     * @param UploadedFile $file
-     * @param string $folder Target folder in storage (e.g., 'avatars', 'articles')
-     * @param int|null $maxWidth Optional max width for resize
-     * @param int|null $maxHeight Optional max height for resize
+     * @param  string  $folder  Target folder in storage (e.g., 'avatars', 'articles')
+     * @param  int|null  $maxWidth  Optional max width for resize
+     * @param  int|null  $maxHeight  Optional max height for resize
      * @return string Stored file path
      */
     public function upload(
@@ -80,7 +79,7 @@ class ImageService
         $basename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
 
         // Add timestamp and random string for uniqueness
-        $unique = time() . '-' . Str::random(8);
+        $unique = time().'-'.Str::random(8);
 
         return "{$basename}-{$unique}.{$extension}";
     }

@@ -5,22 +5,29 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\SimpleThreadResource\Pages;
 use App\Models\Thread;
 use BackedEnum;
-use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class SimpleThreadResource extends Resource
 {
     protected static ?string $model = Thread::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-left-right';
+
     public static function getNavigationGroup(): ?string
     {
         return 'Community';
     }
+
     protected static ?int $navigationSort = 3;
+
     protected static ?string $navigationLabel = 'Threads';
 
     public static function form(Schema $schema): Schema
@@ -45,22 +52,22 @@ class SimpleThreadResource extends Resource
     {
         return $table
             ->columns([
-                \Filament\Tables\Columns\TextColumn::make('title')
+                TextColumn::make('title')
                     ->searchable()
                     ->sortable(),
-                \Filament\Tables\Columns\TextColumn::make('category.name')
+                TextColumn::make('category.name')
                     ->label('Category')
                     ->sortable(),
-                \Filament\Tables\Columns\TextColumn::make('author.username')
+                TextColumn::make('author.username')
                     ->label('Author')
                     ->sortable(),
-                \Filament\Tables\Columns\IconColumn::make('is_pinned')
+                IconColumn::make('is_pinned')
                     ->boolean(),
-                \Filament\Tables\Columns\IconColumn::make('is_locked')
+                IconColumn::make('is_locked')
                     ->boolean(),
-                \Filament\Tables\Columns\TextColumn::make('view_count')
+                TextColumn::make('view_count')
                     ->sortable(),
-                \Filament\Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -69,11 +76,11 @@ class SimpleThreadResource extends Resource
                 //
             ])
             ->actions([
-                \Filament\Actions\EditAction::make(),
+                EditAction::make(),
             ])
             ->bulkActions([
-                \Filament\Actions\BulkActionGroup::make([
-                    \Filament\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }

@@ -5,14 +5,15 @@ namespace App\Filament\Resources\GameResource\Pages;
 use App\Filament\Resources\GameResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Support\Enums\Width;
 
 class EditGame extends EditRecord
 {
     protected static string $resource = GameResource::class;
 
-    public function getMaxContentWidth(): \Filament\Support\Enums\Width
+    public function getMaxContentWidth(): Width
     {
-        return \Filament\Support\Enums\Width::Full;
+        return Width::Full;
     }
 
     protected function getHeaderActions(): array

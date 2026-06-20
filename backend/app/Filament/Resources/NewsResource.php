@@ -2,30 +2,31 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Components\MediaPickerFields;
+use App\Filament\Components\SeoFields;
 use App\Filament\Resources\NewsResource\Pages;
 use App\Filament\Resources\NewsResource\RelationManagers\ContentVersionsRelationManager;
-use App\Filament\Components\SeoFields;
-use App\Filament\Components\MediaPickerFields;
 use App\Models\Article;
-use App\Models\Category;
-use Filament\Forms;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Group;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use Filament\Forms\Set;
-use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Actions\EditAction;
+use App\Policies\NewsPolicy;
+use App\Services\CacheService;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\BulkActionGroup;
+use Filament\Actions\EditAction;
+use Filament\Forms;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class NewsResource extends Resource
 {
@@ -33,7 +34,7 @@ class NewsResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-newspaper';
 
-    protected static ?string $modelPolicy = \App\Policies\NewsPolicy::class;
+    protected static ?string $modelPolicy = NewsPolicy::class;
 
     protected static ?string $slug = 'news-articles';
 
@@ -41,6 +42,7 @@ class NewsResource extends Resource
     {
         return 'Content Studio';
     }
+
     protected static ?int $navigationSort = 1;
 
     public static function getNavigationLabel(): string
@@ -81,10 +83,10 @@ class NewsResource extends Resource
                                     ->required()
                                     ->maxLength(100)
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(fn($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state)))
+                                    ->afterStateUpdated(fn ($state, $set) => $set('slug', Str::slug($state)))
                                     ->helperText(
-                                        fn($state) => $state
-                                        ? (strlen($state) . '/100 chars' . (strlen($state) > 60 ? ' — Consider shortening for SEO' : ' ✓'))
+                                        fn ($state) => $state
+                                        ? (strlen($state).'/100 chars'.(strlen($state) > 60 ? ' — Consider shortening for SEO' : ' ✓'))
                                         : 'Aim for 50-60 characters for optimal SEO'
                                     ),
 
@@ -103,8 +105,8 @@ class NewsResource extends Resource
                                         ->rows(2)
                                         ->maxLength(200)
                                         ->helperText(
-                                            fn($state) => $state
-                                            ? strlen($state) . '/200 chars'
+                                            fn ($state) => $state
+                                            ? strlen($state).'/200 chars'
                                             : 'Short description shown in previews'
                                         ),
                                 ]),
@@ -203,9 +205,9 @@ class NewsResource extends Resource
 
                                         Forms\Components\Select::make('author_id')
                                             ->label('Author')
-                                            ->options(fn() => \App\Services\CacheService::getAuthors())
+                                            ->options(fn () => CacheService::getAuthors())
                                             ->searchable()
-                                            ->default(fn() => auth()->id())
+                                            ->default(fn () => auth()->id())
                                             ->required()
                                             ->native(false),
                                     ]),
@@ -215,7 +217,7 @@ class NewsResource extends Resource
                                 // ─────────────────────────────────────────────
                                 Tabs\Tab::make('SEO')
                                     ->icon('heroicon-o-magnifying-glass')
-                                    ->badge(fn($get) => $get('meta_title') ? '✓' : null)
+                                    ->badge(fn ($get) => $get('meta_title') ? '✓' : null)
                                     ->badgeColor('success')
                                     ->schema(SeoFields::make('techplay.gg/news/')),
 
@@ -244,7 +246,7 @@ class NewsResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->limit(50)
-                    ->tooltip(fn($record) => $record->title),
+                    ->tooltip(fn ($record) => $record->title),
                 TextColumn::make('category.name')
                     ->label('Category')
                     ->badge()
@@ -257,7 +259,7 @@ class NewsResource extends Resource
                     ->falseIcon('heroicon-o-star'),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'draft' => 'gray',
                         'ready_for_review' => 'warning',
                         'scheduled' => 'info',
@@ -283,7 +285,7 @@ class NewsResource extends Resource
                         'published' => 'Published',
                     ]),
                 SelectFilter::make('category')
-                    ->relationship('category', 'name', fn(Builder $query) => $query->where('type', 'news')),
+                    ->relationship('category', 'name', fn (Builder $query) => $query->where('type', 'news')),
             ])
             ->headerActions([
                 CreateAction::make(),
@@ -314,4 +316,3 @@ class NewsResource extends Resource
         ];
     }
 }
-

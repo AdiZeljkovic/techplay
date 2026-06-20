@@ -35,12 +35,16 @@ class SeoMeta extends Model
     public function getTitleStatusAttribute(): string
     {
         $len = strlen($this->meta_title ?? '');
-        if ($len === 0)
+        if ($len === 0) {
             return 'missing';
-        if ($len < 30)
+        }
+        if ($len < 30) {
             return 'too_short';
-        if ($len > 60)
+        }
+        if ($len > 60) {
             return 'too_long';
+        }
+
         return 'good';
     }
 
@@ -50,12 +54,16 @@ class SeoMeta extends Model
     public function getDescriptionStatusAttribute(): string
     {
         $len = strlen($this->meta_description ?? '');
-        if ($len === 0)
+        if ($len === 0) {
             return 'missing';
-        if ($len < 120)
+        }
+        if ($len < 120) {
             return 'too_short';
-        if ($len > 160)
+        }
+        if ($len > 160) {
             return 'too_long';
+        }
+
         return 'good';
     }
 }

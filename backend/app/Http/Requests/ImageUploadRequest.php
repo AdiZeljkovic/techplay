@@ -71,7 +71,7 @@ class ImageUploadRequest extends FormRequest
                 finfo_close($finfo);
 
                 $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                if (!in_array($mimeType, $allowedMimes)) {
+                if (! in_array($mimeType, $allowedMimes)) {
                     $validator->errors()->add('image', 'File content does not match allowed image types.');
                 }
 

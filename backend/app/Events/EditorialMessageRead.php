@@ -2,7 +2,6 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -14,7 +13,9 @@ class EditorialMessageRead implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $userId;     // Who read the messages
+
     public $senderId;   // Whose messages were read (the recipient of this event)
+
     public $readAt;
 
     public function __construct($userId, $senderId)
@@ -28,7 +29,7 @@ class EditorialMessageRead implements ShouldBroadcast
     {
         // Broadcast to the SENDER of the messages, so they know I read them.
         return [
-            new PrivateChannel('editorial.user.' . $this->senderId),
+            new PrivateChannel('editorial.user.'.$this->senderId),
         ];
     }
 

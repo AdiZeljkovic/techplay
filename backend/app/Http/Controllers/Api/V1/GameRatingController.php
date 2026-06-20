@@ -17,11 +17,11 @@ class GameRatingController extends Controller
     public function index(string $slug)
     {
         $aggregate = GameRating::where('game_slug', $slug)
-            ->selectRaw('COUNT(*) as count, AVG(rating) as average, ' .
-                'SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) as r5, ' .
-                'SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) as r4, ' .
-                'SUM(CASE WHEN rating = 3 THEN 1 ELSE 0 END) as r3, ' .
-                'SUM(CASE WHEN rating = 2 THEN 1 ELSE 0 END) as r2, ' .
+            ->selectRaw('COUNT(*) as count, AVG(rating) as average, '.
+                'SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) as r5, '.
+                'SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) as r4, '.
+                'SUM(CASE WHEN rating = 3 THEN 1 ELSE 0 END) as r3, '.
+                'SUM(CASE WHEN rating = 2 THEN 1 ELSE 0 END) as r2, '.
                 'SUM(CASE WHEN rating = 1 THEN 1 ELSE 0 END) as r1')
             ->first();
 
@@ -33,7 +33,7 @@ class GameRatingController extends Controller
 
         return response()->json([
             'aggregate' => [
-                'count'   => (int) $aggregate->count,
+                'count' => (int) $aggregate->count,
                 'average' => $aggregate->count > 0 ? round((float) $aggregate->average, 2) : null,
                 'distribution' => [
                     5 => (int) $aggregate->r5,
@@ -98,13 +98,13 @@ class GameRatingController extends Controller
      */
     public function hub(Request $request, string $type, string $value)
     {
-        $page          = max(1, (int) $request->input('page', 1));
-        $perPage       = 24;
-        $sort          = $request->input('sort', 'rating');
+        $page = max(1, (int) $request->input('page', 1));
+        $perPage = 24;
+        $sort = $request->input('sort', 'rating');
         $metacriticMin = (int) $request->input('metacritic_min', 0);
-        $yearFrom      = (int) $request->input('year_from', 0);
-        $yearTo        = (int) $request->input('year_to', 0);
-        $platform      = trim((string) $request->input('platform', ''));
+        $yearFrom = (int) $request->input('year_from', 0);
+        $yearTo = (int) $request->input('year_to', 0);
+        $platform = trim((string) $request->input('platform', ''));
 
         $allowed = ['genre', 'platform', 'year', 'tag'];
         if (! in_array($type, $allowed)) {
@@ -115,85 +115,85 @@ class GameRatingController extends Controller
 
         $result = Cache::remember($cacheKey, 600, function () use ($type, $value, $sort, $page, $perPage, $metacriticMin, $yearFrom, $yearTo, $platform) {
             $genreMap = [
-                'action'                => 'Action',
-                'indie'                 => 'Indie',
-                'adventure'             => 'Adventure',
-                'rpg'                   => 'RPG',
-                'strategy'              => 'Strategy',
-                'shooter'               => 'Shooter',
-                'casual'                => 'Casual',
-                'simulation'            => 'Simulation',
-                'puzzle'                => 'Puzzle',
-                'arcade'                => 'Arcade',
-                'platformer'            => 'Platformer',
-                'racing'                => 'Racing',
-                'sports'                => 'Sports',
+                'action' => 'Action',
+                'indie' => 'Indie',
+                'adventure' => 'Adventure',
+                'rpg' => 'RPG',
+                'strategy' => 'Strategy',
+                'shooter' => 'Shooter',
+                'casual' => 'Casual',
+                'simulation' => 'Simulation',
+                'puzzle' => 'Puzzle',
+                'arcade' => 'Arcade',
+                'platformer' => 'Platformer',
+                'racing' => 'Racing',
+                'sports' => 'Sports',
                 'massively-multiplayer' => 'Massively Multiplayer',
-                'family'                => 'Family',
-                'fighting'              => 'Fighting',
-                'board-games'           => 'Board Games',
-                'educational'           => 'Educational',
-                'card'                  => 'Card',
-                'dungeon-crawler'       => 'Dungeon Crawler',
-                'point-and-click'       => 'Point & Click',
-                'horror'                => 'Horror',
-                'first-person'          => 'First-Person',
+                'family' => 'Family',
+                'fighting' => 'Fighting',
+                'board-games' => 'Board Games',
+                'educational' => 'Educational',
+                'card' => 'Card',
+                'dungeon-crawler' => 'Dungeon Crawler',
+                'point-and-click' => 'Point & Click',
+                'horror' => 'Horror',
+                'first-person' => 'First-Person',
             ];
 
             // Platform label → stored platform_names value (lowercase partial)
             $platformMap = [
-                'pc'          => 'pc',
+                'pc' => 'pc',
                 'playstation' => 'playstation',
-                'xbox'        => 'xbox',
-                'nintendo'    => 'nintendo',
-                'mobile'      => 'android', // stored as android/ios
+                'xbox' => 'xbox',
+                'nintendo' => 'nintendo',
+                'mobile' => 'android', // stored as android/ios
             ];
 
             $orderCol = match ($sort) {
                 'metacritic' => 'metacritic',
-                'released'   => 'released',
-                'name'       => 'name',
-                default      => 'rating',
+                'released' => 'released',
+                'name' => 'name',
+                default => 'rating',
             };
 
-            $where    = 'has_description = true';
+            $where = 'has_description = true';
             $bindings = [];
 
             // Primary hub filter
             if ($type === 'genre') {
-                $where     .= ' AND genre_names @> ARRAY[?]::text[]';
+                $where .= ' AND genre_names @> ARRAY[?]::text[]';
                 $bindings[] = $genreMap[$value] ?? ucwords(str_replace('-', ' ', $value));
             } elseif ($type === 'platform') {
-                $where     .= ' AND platform_names @> ARRAY[?]::text[]';
+                $where .= ' AND platform_names @> ARRAY[?]::text[]';
                 $bindings[] = strtolower(str_replace('-', ' ', $value));
             } elseif ($type === 'year') {
-                $where     .= ' AND EXTRACT(YEAR FROM released) = ?';
+                $where .= ' AND EXTRACT(YEAR FROM released) = ?';
                 $bindings[] = (int) $value;
             } elseif ($type === 'tag') {
-                $where     .= ' AND tag_names @> ARRAY[?]::text[]';
+                $where .= ' AND tag_names @> ARRAY[?]::text[]';
                 $bindings[] = strtolower(str_replace('-', ' ', $value));
             }
 
             // Additional filters
             if ($metacriticMin > 0) {
-                $where     .= ' AND metacritic >= ?';
+                $where .= ' AND metacritic >= ?';
                 $bindings[] = $metacriticMin;
             }
             if ($yearFrom > 0) {
-                $where     .= ' AND EXTRACT(YEAR FROM released) >= ?';
+                $where .= ' AND EXTRACT(YEAR FROM released) >= ?';
                 $bindings[] = $yearFrom;
             }
             if ($yearTo > 0) {
-                $where     .= ' AND EXTRACT(YEAR FROM released) <= ?';
+                $where .= ' AND EXTRACT(YEAR FROM released) <= ?';
                 $bindings[] = $yearTo;
             }
             if ($platform !== '' && $type !== 'platform') {
-                $mapped     = $platformMap[$platform] ?? strtolower($platform);
-                $where     .= ' AND EXISTS (SELECT 1 FROM unnest(platform_names) p WHERE p LIKE ?)';
-                $bindings[] = '%' . $mapped . '%';
+                $mapped = $platformMap[$platform] ?? strtolower($platform);
+                $where .= ' AND EXISTS (SELECT 1 FROM unnest(platform_names) p WHERE p LIKE ?)';
+                $bindings[] = '%'.$mapped.'%';
             }
 
-            $offset   = ($page - 1) * $perPage;
+            $offset = ($page - 1) * $perPage;
             $orderDir = ($orderCol === 'name') ? 'ASC' : 'DESC NULLS LAST';
 
             $rows = DB::select("
@@ -209,24 +209,24 @@ class GameRatingController extends Controller
             $total = empty($rows) ? 0 : (int) $rows[0]->total_count;
 
             $games = array_map(fn ($r) => [
-                'id'               => $r->id,
-                'name'             => $r->name,
-                'slug'             => $r->slug,
-                'released'         => $r->released,
+                'id' => $r->id,
+                'name' => $r->name,
+                'slug' => $r->slug,
+                'released' => $r->released,
                 'background_image' => $r->background_image,
-                'rating'           => $r->rating ? (float) $r->rating : null,
-                'metacritic'       => $r->metacritic ? (int) $r->metacritic : null,
-                'platforms'        => json_decode($r->platforms ?? '[]', true) ?? [],
+                'rating' => $r->rating ? (float) $r->rating : null,
+                'metacritic' => $r->metacritic ? (int) $r->metacritic : null,
+                'platforms' => json_decode($r->platforms ?? '[]', true) ?? [],
             ], $rows);
 
             return [
-                'type'      => $type,
-                'value'     => $value,
-                'total'     => $total,
-                'page'      => $page,
-                'per_page'  => $perPage,
+                'type' => $type,
+                'value' => $value,
+                'total' => $total,
+                'page' => $page,
+                'per_page' => $perPage,
                 'last_page' => $total > 0 ? (int) ceil($total / $perPage) : 1,
-                'results'   => $games,
+                'results' => $games,
             ];
         });
 

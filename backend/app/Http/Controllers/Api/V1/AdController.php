@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\AdCampaign;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 
 class AdController extends Controller
 {
@@ -35,12 +36,12 @@ class AdController extends Controller
             ->orderBy('priority', 'desc')
             ->first();
 
-        if (!$ad) {
+        if (! $ad) {
             return response()->json(null);
         }
 
         // PERFORMANCE: Use Redis atomic increment instead of sync DB write
-        \Illuminate\Support\Facades\Redis::incr("views:ad:{$ad->id}");
+        Redis::incr("views:ad:{$ad->id}");
 
         return response()->json([
             'id' => $ad->id,
@@ -48,7 +49,7 @@ class AdController extends Controller
             'format' => $ad->format,
             'width' => $ad->width,
             'height' => $ad->height,
-            'image_url' => $ad->image_url ? asset('storage/' . $ad->image_url) : null,
+            'image_url' => $ad->image_url ? asset('storage/'.$ad->image_url) : null,
             'code_block' => $ad->code_block,
             'target_url' => $ad->target_url,
             'position' => $ad->position,
@@ -63,8 +64,9 @@ class AdController extends Controller
         $ad = AdCampaign::find($id);
         if ($ad) {
             // PERFORMANCE: Use Redis atomic increment instead of sync DB write
-            \Illuminate\Support\Facades\Redis::incr("clicks:ad:{$ad->id}");
+            Redis::incr("clicks:ad:{$ad->id}");
         }
+
         return response()->json(['success' => true]);
     }
 }

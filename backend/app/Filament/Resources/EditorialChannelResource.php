@@ -4,22 +4,21 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\EditorialChannelResource\Pages;
 use App\Models\EditorialChannel;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
-use Filament\Tables\Table;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ColorColumn;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\BulkActionGroup;
+use Filament\Tables\Table;
 use Illuminate\Support\Str;
 
 class EditorialChannelResource extends Resource
@@ -35,6 +34,7 @@ class EditorialChannelResource extends Resource
     {
         return 'System';
     }
+
     protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema
@@ -44,7 +44,7 @@ class EditorialChannelResource extends Resource
                 TextInput::make('name')
                     ->required()
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn(string $operation, $state, Forms\Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null),
+                    ->afterStateUpdated(fn (string $operation, $state, Forms\Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null),
 
                 TextInput::make('slug')
                     ->required()
@@ -83,7 +83,7 @@ class EditorialChannelResource extends Resource
                         'Journalist' => 'Journalist',
                         'Moderator' => 'Moderator',
                     ])
-                    ->visible(fn(Forms\Get $get) => $get('is_private')),
+                    ->visible(fn (Forms\Get $get) => $get('is_private')),
             ]);
     }
 

@@ -4,13 +4,17 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Article;
+use App\Models\Guide;
+use App\Models\Review;
 use App\Services\RevalidationService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class TrackingController extends Controller
 {
-    use \App\Traits\ApiResponse;
+    use ApiResponse;
 
     protected RevalidationService $revalidationService;
 
@@ -28,20 +32,20 @@ class TrackingController extends Controller
         try {
             $article = Article::where('slug', $slug)->first();
 
-            if (!$article) {
-                $article = \App\Models\Guide::where('slug', $slug)->first();
+            if (! $article) {
+                $article = Guide::where('slug', $slug)->first();
             }
 
-            if (!$article) {
-                $article = \App\Models\Review::where('slug', $slug)->first();
+            if (! $article) {
+                $article = Review::where('slug', $slug)->first();
             }
 
-            if (!$article) {
+            if (! $article) {
                 return $this->error('Article not found', 404);
             }
 
             return $this->success([
-                'views' => $article->views ?? 0
+                'views' => $article->views ?? 0,
             ]);
         } catch (\Exception $e) {
             return $this->success(['views' => 0]);
@@ -53,12 +57,12 @@ class TrackingController extends Controller
         try {
             $article = Article::where('slug', $slug)->first();
 
-            if (!$article) {
-                $article = \App\Models\Guide::where('slug', $slug)->first();
+            if (! $article) {
+                $article = Guide::where('slug', $slug)->first();
             }
 
-            if (!$article) {
-                $article = \App\Models\Review::where('slug', $slug)->firstOrFail();
+            if (! $article) {
+                $article = Review::where('slug', $slug)->firstOrFail();
             }
 
             // SECURITY: Multiple identifiers for robust throttling
@@ -67,16 +71,16 @@ class TrackingController extends Controller
 
             // Create fingerprint: IP + partial user agent (browser family)
             // This prevents counting same user multiple times even if cache fails
-            $fingerprint = md5($ip . substr($userAgent, 0, 50));
+            $fingerprint = md5($ip.substr($userAgent, 0, 50));
 
             $incremented = $article->incrementViews($ip, $fingerprint);
 
             if ($incremented) {
                 // Clear the article's show cache so next page load gets fresh views
-                \Illuminate\Support\Facades\Cache::forget("news.show.v2.{$slug}");
-                \Illuminate\Support\Facades\Cache::forget("reviews.show.v2.{$slug}");
-                \Illuminate\Support\Facades\Cache::forget("tech.show.v2.{$slug}");
-                \Illuminate\Support\Facades\Cache::forget("guide.show.v2.{$slug}");
+                Cache::forget("news.show.v2.{$slug}");
+                Cache::forget("reviews.show.v2.{$slug}");
+                Cache::forget("tech.show.v2.{$slug}");
+                Cache::forget("guide.show.v2.{$slug}");
 
                 // Trigger Next.js ISR revalidation for updated view count
                 $categoryPath = $this->getCategoryPath($article);
@@ -91,19 +95,19 @@ class TrackingController extends Controller
             return $this->success([
                 'message' => $incremented ? 'View counted' : 'View throttled',
                 'views' => $article->views ?? 0,
-                'throttled' => !$incremented
+                'throttled' => ! $incremented,
             ]);
         } catch (\Exception $e) {
             Log::error('View tracking error', [
                 'slug' => $slug,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             // Return success anyway to not break frontend
             return $this->success([
                 'message' => 'View tracking unavailable',
                 'views' => 0,
-                'throttled' => true
+                'throttled' => true,
             ]);
         }
     }
@@ -111,26 +115,25 @@ class TrackingController extends Controller
     /**
      * Determine category path for revalidation based on model type
      *
-     * @param \App\Models\Article|\App\Models\Review|\App\Models\Guide $article
-     * @return string|null
+     * @param  Article|Review|Guide  $article
      */
     protected function getCategoryPath($article): ?string
     {
-        if ($article instanceof \App\Models\Review) {
+        if ($article instanceof Review) {
             return 'reviews';
         }
 
-        if ($article instanceof \App\Models\Guide) {
+        if ($article instanceof Guide) {
             return 'guides';
         }
 
         if ($article instanceof Article) {
             // Load category if not already loaded
-            if (!$article->relationLoaded('category')) {
+            if (! $article->relationLoaded('category')) {
                 $article->load('category');
             }
 
-            if (!$article->category) {
+            if (! $article->category) {
                 return null;
             }
 

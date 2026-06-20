@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Str;
+use Pdo\Mysql;
 
 return [
 
@@ -59,13 +60,13 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
+                (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
                 // PERFORMANCE: Connection pooling and optimization
-                \PDO::ATTR_PERSISTENT => env('DB_PERSISTENT_CONNECTION', false), // Enable in production for pooling
-                \PDO::ATTR_TIMEOUT => 5, // 5 second connection timeout
-                \PDO::ATTR_EMULATE_PREPARES => false, // Use real prepared statements
-                \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, // Buffer queries for better memory usage
-                \PDO::MYSQL_ATTR_INIT_COMMAND => "SET sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
+                PDO::ATTR_PERSISTENT => env('DB_PERSISTENT_CONNECTION', false), // Enable in production for pooling
+                PDO::ATTR_TIMEOUT => 5, // 5 second connection timeout
+                PDO::ATTR_EMULATE_PREPARES => false, // Use real prepared statements
+                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true, // Buffer queries for better memory usage
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
             ]) : [],
             // PERFORMANCE: Connection pool size (for persistent connections)
             'pool' => [
@@ -90,7 +91,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
+                (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
@@ -108,7 +109,7 @@ return [
             'search_path' => 'public',
             'sslmode' => 'prefer',
             'options' => [
-                \PDO::ATTR_PERSISTENT => true,
+                PDO::ATTR_PERSISTENT => true,
             ],
         ],
 
@@ -162,7 +163,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')) . '-database-'),
+            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-database-'),
             'persistent' => env('REDIS_PERSISTENT', false),
         ],
 

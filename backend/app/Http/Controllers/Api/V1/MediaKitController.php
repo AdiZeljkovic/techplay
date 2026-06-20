@@ -24,7 +24,7 @@ class MediaKitController extends Controller
                     ->where('is_visible', true)
                     ->orderBy('order')
                     ->get()
-                    ->mapWithKeys(fn($s) => [$s->key => $s->typed_value]),
+                    ->mapWithKeys(fn ($s) => [$s->key => $s->typed_value]),
 
                 'statistics' => $this->mediaKitService->getStatistics(),
 
@@ -32,25 +32,25 @@ class MediaKitController extends Controller
                     ->where('is_visible', true)
                     ->orderBy('order')
                     ->get()
-                    ->mapWithKeys(fn($s) => [$s->key => $s->typed_value]),
+                    ->mapWithKeys(fn ($s) => [$s->key => $s->typed_value]),
 
                 'audience' => MediaKitSetting::where('section', 'audience')
                     ->where('is_visible', true)
                     ->orderBy('order')
                     ->get()
-                    ->mapWithKeys(fn($s) => [$s->key => $s->typed_value]),
+                    ->mapWithKeys(fn ($s) => [$s->key => $s->typed_value]),
 
                 'content' => MediaKitSetting::where('section', 'content')
                     ->where('is_visible', true)
                     ->orderBy('order')
                     ->get()
-                    ->mapWithKeys(fn($s) => [$s->key => $s->typed_value]),
+                    ->mapWithKeys(fn ($s) => [$s->key => $s->typed_value]),
 
                 'development' => MediaKitSetting::where('section', 'development')
                     ->where('is_visible', true)
                     ->orderBy('order')
                     ->get()
-                    ->mapWithKeys(fn($s) => [$s->key => $s->typed_value]),
+                    ->mapWithKeys(fn ($s) => [$s->key => $s->typed_value]),
             ];
         });
 

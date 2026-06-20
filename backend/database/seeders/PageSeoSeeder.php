@@ -83,6 +83,6 @@ class PageSeoSeeder extends Seeder
             );
         }
 
-        $this->command->info('✅ Page SEO data seeded for ' . count($pages) . ' pages!');
+        $this->command->info('✅ Page SEO data seeded for '.count($pages).' pages!');
     }
 }

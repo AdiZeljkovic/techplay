@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Http\Request;
 
 class VerificationController extends Controller
 {
@@ -32,7 +32,7 @@ class VerificationController extends Controller
     {
         $user = User::findOrFail($id);
 
-        if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+        if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
             return response()->json(['message' => 'Invalid verification link'], 403);
         }
 
@@ -46,7 +46,8 @@ class VerificationController extends Controller
 
         // Redirect to frontend verification page with query param
         $frontendUrl = config('app.frontend_url', 'https://beta.techplay.gg');
-        return redirect()->away($frontendUrl . '/verify-email?verified=1');
+
+        return redirect()->away($frontendUrl.'/verify-email?verified=1');
     }
 
     /**

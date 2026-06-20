@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
+use App\Services\RawgService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class GameController extends Controller
@@ -173,9 +175,9 @@ class GameController extends Controller
      * Fetch a single game's full details from the RAWG.io API.
      * Cached for 12 hours — RAWG game details rarely change.
      */
-    public function rawgDetail(string $slug, \App\Services\RawgService $rawg)
+    public function rawgDetail(string $slug, RawgService $rawg)
     {
-        $game = \Illuminate\Support\Facades\Cache::remember("rawg.game.{$slug}", 3600 * 12, function () use ($slug, $rawg) {
+        $game = Cache::remember("rawg.game.{$slug}", 3600 * 12, function () use ($slug, $rawg) {
             return $rawg->getGameDetails($slug);
         });
 
@@ -187,9 +189,9 @@ class GameController extends Controller
             ->header('Cache-Control', 'public, max-age=3600, stale-while-revalidate=43200');
     }
 
-    public function rawgScreenshots(string $slug, \App\Services\RawgService $rawg)
+    public function rawgScreenshots(string $slug, RawgService $rawg)
     {
-        $data = \Illuminate\Support\Facades\Cache::remember("rawg.screenshots.{$slug}", 3600 * 24, function () use ($slug, $rawg) {
+        $data = Cache::remember("rawg.screenshots.{$slug}", 3600 * 24, function () use ($slug, $rawg) {
             return $rawg->getScreenshots($slug);
         });
 
@@ -201,9 +203,9 @@ class GameController extends Controller
             ->header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=86400');
     }
 
-    public function rawgMovies(string $slug, \App\Services\RawgService $rawg)
+    public function rawgMovies(string $slug, RawgService $rawg)
     {
-        $data = \Illuminate\Support\Facades\Cache::remember("rawg.movies.{$slug}", 3600 * 24, function () use ($slug, $rawg) {
+        $data = Cache::remember("rawg.movies.{$slug}", 3600 * 24, function () use ($slug, $rawg) {
             return $rawg->getMovies($slug);
         });
 
@@ -215,9 +217,9 @@ class GameController extends Controller
             ->header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=86400');
     }
 
-    public function rawgSuggested(string $slug, \App\Services\RawgService $rawg)
+    public function rawgSuggested(string $slug, RawgService $rawg)
     {
-        $data = \Illuminate\Support\Facades\Cache::remember("rawg.suggested.{$slug}", 3600 * 6, function () use ($slug, $rawg) {
+        $data = Cache::remember("rawg.suggested.{$slug}", 3600 * 6, function () use ($slug, $rawg) {
             return $rawg->getSuggestedGames($slug);
         });
 
@@ -236,7 +238,7 @@ class GameController extends Controller
      * Without params: returns upcoming releases from today (used by sidebar/home widgets).
      * Responses are cached; falls back to the local games DB if RAWG is unavailable.
      */
-    public function calendar(Request $request, \App\Services\RawgService $rawg)
+    public function calendar(Request $request, RawgService $rawg)
     {
         $start = $request->query('start_date');
         $end = $request->query('end_date');
@@ -256,7 +258,7 @@ class GameController extends Controller
 
         $cacheKey = "rawg.calendar.{$from}.{$to}";
 
-        $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, 21600, function () use ($rawg, $from, $to, $maxPages) {
+        $data = Cache::remember($cacheKey, 21600, function () use ($rawg, $from, $to, $maxPages) {
             $rawgData = $rawg->getReleases($from, $to, 'released', $maxPages);
 
             if ($rawgData === null) {

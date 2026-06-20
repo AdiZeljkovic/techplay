@@ -8,7 +8,9 @@ use App\Models\User;
 use App\Models\UserGame;
 use App\Services\AchievementService;
 use App\Traits\ApiResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class GameCollectionController extends Controller
@@ -107,6 +109,19 @@ class GameCollectionController extends Controller
             $wasNew ? 'Added to collection' : 'Collection updated',
             $wasNew ? 201 : 200
         );
+    }
+
+    /**
+     * Auth: lightweight slug→status map for the authenticated user's full library.
+     * GET /collection/index — used by frontend to show "In Library" badges everywhere.
+     */
+    public function libraryIndex(Request $request): JsonResponse
+    {
+        $map = UserGame::where('user_id', Auth::id())
+            ->join('games', 'games.id', '=', 'user_games.game_id')
+            ->pluck('user_games.status', 'games.slug');
+
+        return $this->success($map);
     }
 
     /**

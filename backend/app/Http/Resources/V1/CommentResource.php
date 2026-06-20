@@ -23,7 +23,7 @@ class CommentResource extends JsonResource
             'parent_id' => $this->parent_id,
             'replies' => CommentResource::collection($this->whenLoaded('replies')),
             // 'likes_count' => $this->likes_count ?? 0, // Ensure updated model has this
-            // 'is_liked_by_user' => $this->is_liked_by_user ?? false, 
+            // 'is_liked_by_user' => $this->is_liked_by_user ?? false,
 
             // Using logic from controller transformation if attributes exist
             'score' => (int) ($this->score ?? 0),

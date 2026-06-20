@@ -2,9 +2,14 @@
 
 namespace App\Observers;
 
+use App\Http\Controllers\SitemapController;
 use App\Models\Article;
+use App\Models\UserGame;
+use App\Notifications\WishlistGameReviewedNotification;
 use App\Services\RevalidationService;
+use App\Services\SanitizationService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
 class ArticleObserver
@@ -23,7 +28,7 @@ class ArticleObserver
     public function saving(Article $article): void
     {
         if ($article->isDirty('content') && is_string($article->content)) {
-            $article->content = app(\App\Services\SanitizationService::class)
+            $article->content = app(SanitizationService::class)
                 ->sanitizeStaffContent($article->content);
         }
     }
@@ -61,6 +66,11 @@ class ArticleObserver
                 if ($isNewlyPublished) {
                     $this->regenerateNewsSitemap();
                     $this->pingSearchEngines($article->slug, $categoryPath);
+
+                    // Notify users who wishlisted this game when a review is published.
+                    if ($article->game_id && $article->review_score && in_array($article->category->type, ['review', 'reviews'])) {
+                        $this->notifyWishlisters($article);
+                    }
                 }
             }
         }
@@ -141,10 +151,46 @@ class ArticleObserver
     protected function regenerateNewsSitemap(): void
     {
         try {
-            $content = app(\App\Http\Controllers\SitemapController::class)->news()->getContent();
-            \Illuminate\Support\Facades\File::put(public_path('sitemap-news.xml'), $content);
+            $content = app(SitemapController::class)->news()->getContent();
+            File::put(public_path('sitemap-news.xml'), $content);
         } catch (\Throwable $e) {
             \Log::warning('News sitemap regeneration failed', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Notify users who wishlisted the reviewed game.
+     */
+    protected function notifyWishlisters(Article $article): void
+    {
+        try {
+            if (! $article->relationLoaded('game')) {
+                $article->load('game');
+            }
+            if (! $article->game) {
+                return;
+            }
+
+            $wishlisters = UserGame::where('game_id', $article->game_id)
+                ->where('status', 'wishlist')
+                ->with('user')
+                ->get();
+
+            foreach ($wishlisters as $entry) {
+                if (! $entry->user) {
+                    continue;
+                }
+                try {
+                    $entry->user->notify(new WishlistGameReviewedNotification(
+                        $article->game,
+                        $article,
+                        (float) $article->review_score,
+                    ));
+                } catch (\Throwable) {
+                }
+            }
+        } catch (\Throwable) {
+            // Never block article publish
         }
     }
 

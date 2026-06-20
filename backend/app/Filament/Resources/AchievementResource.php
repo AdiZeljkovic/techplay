@@ -4,15 +4,15 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\AchievementResource\Pages;
 use App\Models\Achievement;
-use Filament\Forms;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Schemas\Schema;
-use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\BulkActionGroup; // Tentative, will verify
+use Filament\Actions\EditAction;
+use Filament\Forms;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables;
+use Filament\Tables\Table; // Tentative, will verify
 
 class AchievementResource extends Resource
 {
@@ -24,6 +24,7 @@ class AchievementResource extends Resource
     {
         return 'Community';
     }
+
     protected static ?int $navigationSort = 7;
 
     public static function form(Schema $schema): Schema

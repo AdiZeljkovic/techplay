@@ -2,17 +2,21 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Rank;
 use App\Models\User;
 use Illuminate\Console\Command;
 
 class SyncUserXP extends Command
 {
     protected $signature = 'xp:sync {--user= : Sync for specific user ID}';
+
     protected $description = 'Retroactively calculate and sync XP for all users based on their activity';
 
     // XP values per action
     const XP_PER_POST = 20;
+
     const XP_PER_THREAD = 50;
+
     const XP_PER_COMMENT = 10;
 
     public function handle()
@@ -45,7 +49,7 @@ class SyncUserXP extends Command
             }
 
             // Update rank based on new XP
-            $newRank = \App\Models\Rank::where('min_xp', '<=', $user->xp)
+            $newRank = Rank::where('min_xp', '<=', $user->xp)
                 ->orderBy('min_xp', 'desc')
                 ->first();
 
@@ -55,6 +59,6 @@ class SyncUserXP extends Command
             }
         }
 
-        $this->info("Done!");
+        $this->info('Done!');
     }
 }

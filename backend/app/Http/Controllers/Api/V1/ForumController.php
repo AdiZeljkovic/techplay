@@ -3,13 +3,21 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\V1\PostResource;
+use App\Http\Resources\V1\ThreadResource;
 use App\Models\Category;
 use App\Models\Post;
 use App\Models\Thread;
+use App\Models\User;
 use App\Notifications\ForumReplyNotification;
+use App\Services\SanitizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Str;
 
 class ForumController extends Controller
 {
@@ -20,7 +28,7 @@ class ForumController extends Controller
             return [
                 'total_threads' => Thread::count(),
                 'total_posts' => Thread::count() + Post::count(),
-                'members' => \App\Models\User::count(),
+                'members' => User::count(),
             ];
         });
 
@@ -41,7 +49,7 @@ class ForumController extends Controller
             $categoryIds = $allForumCategories->pluck('id');
 
             // PERFORMANCE: Single query to get latest thread per category (no N+1)
-            $latestThreads = \App\Models\Thread::whereIn('category_id', $categoryIds)
+            $latestThreads = Thread::whereIn('category_id', $categoryIds)
                 ->with('author:id,username,avatar_url')
                 ->select('id', 'title', 'slug', 'category_id', 'author_id', 'created_at')
                 ->orderBy('created_at', 'desc')
@@ -81,11 +89,11 @@ class ForumController extends Controller
 
         // Reduced cache time to 30 seconds for faster updates
         $data = Cache::remember($cacheKey, 30, function () use ($slug) {
-            \Illuminate\Support\Facades\Log::info('Fetching category with slug: '.$slug);
+            Log::info('Fetching category with slug: '.$slug);
             $category = Category::where('slug', $slug)->where('type', 'forum')->first();
 
             if (! $category) {
-                \Illuminate\Support\Facades\Log::error('Category not found for slug: '.$slug);
+                Log::error('Category not found for slug: '.$slug);
                 abort(404, 'Category not found');
             }
 
@@ -119,10 +127,10 @@ class ForumController extends Controller
 
         // PERFORMANCE: Use Redis atomic increment instead of sync DB write
         // Views are flushed to DB every 5 minutes by FlushViewCounters job
-        \Illuminate\Support\Facades\Redis::incr("views:thread:{$thread->id}");
+        Redis::incr("views:thread:{$thread->id}");
 
         $thread->is_upvoted = Auth::guard('sanctum')->check()
-            ? \Illuminate\Support\Facades\DB::table('thread_upvotes')
+            ? DB::table('thread_upvotes')
                 ->where('user_id', Auth::guard('sanctum')->id())
                 ->where('thread_id', $thread->id)
                 ->exists()
@@ -148,12 +156,12 @@ class ForumController extends Controller
         });
 
         return response()->json([
-            'thread' => new \App\Http\Resources\V1\ThreadResource($thread),
-            'posts' => \App\Http\Resources\V1\PostResource::collection($posts),
+            'thread' => new ThreadResource($thread),
+            'posts' => PostResource::collection($posts),
         ]);
     }
 
-    public function createPost(Request $request, $slug, \App\Services\SanitizationService $sanitizer)
+    public function createPost(Request $request, $slug, SanitizationService $sanitizer)
     {
         $request->validate([
             'content' => 'required|string|min:5|max:10000', // Max 10k chars for post
@@ -186,11 +194,11 @@ class ForumController extends Controller
             return response()->json(['message' => 'Thread is locked.'], 403);
         }
 
-        \Illuminate\Support\Facades\Log::info('createPost: Attempting to create', ['user' => Auth::id(), 'thread' => $thread->id]);
+        Log::info('createPost: Attempting to create', ['user' => Auth::id(), 'thread' => $thread->id]);
 
         try {
             // RACE CONDITION FIX: Use DB transaction with cache invalidation AFTER commit
-            $post = \Illuminate\Support\Facades\DB::transaction(function () use ($thread, $content) {
+            $post = DB::transaction(function () use ($thread, $content) {
                 $post = $thread->posts()->create([
                     'content' => $content,
                     'author_id' => Auth::id(),
@@ -206,7 +214,7 @@ class ForumController extends Controller
             // Cache invalidation AFTER successful transaction commit
             Cache::forget("forum.thread.{$slug}");
 
-            \Illuminate\Support\Facades\Log::info('createPost: Post created', ['id' => $post->id]);
+            Log::info('createPost: Post created', ['id' => $post->id]);
 
             // Notify thread author if they are not the replier
             $thread->load('author');
@@ -217,9 +225,9 @@ class ForumController extends Controller
             $post->load('author.rank');
             $post->author->loadCount(['posts', 'threads']);
 
-            return new \App\Http\Resources\V1\PostResource($post);
+            return new PostResource($post);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to create post: '.$e->getMessage());
+            Log::error('Failed to create post: '.$e->getMessage());
             try {
                 file_put_contents(storage_path('logs/custom_error.log'), $e->getMessage().PHP_EOL.$e->getTraceAsString().PHP_EOL, FILE_APPEND);
             } catch (\Throwable $t) {
@@ -229,7 +237,7 @@ class ForumController extends Controller
         }
     }
 
-    public function createThread(Request $request, \App\Services\SanitizationService $sanitizer)
+    public function createThread(Request $request, SanitizationService $sanitizer)
     {
         try {
             $validated = $request->validate([
@@ -261,10 +269,10 @@ class ForumController extends Controller
                 return response()->json(['message' => 'Thread flagged as spam.'], 422);
             }
 
-            $slug = \Illuminate\Support\Str::slug($request->title).'-'.uniqid();
+            $slug = Str::slug($request->title).'-'.uniqid();
 
             // RACE CONDITION FIX: Use DB transaction with cache invalidation AFTER commit
-            $thread = \Illuminate\Support\Facades\DB::transaction(function () use ($cleanTitle, $slug, $cleanContent, $request) {
+            $thread = DB::transaction(function () use ($cleanTitle, $slug, $cleanContent, $request) {
                 return Thread::create([
                     'title' => $cleanTitle,
                     'slug' => $slug,
@@ -274,7 +282,7 @@ class ForumController extends Controller
                 ]);
             });
 
-            \Illuminate\Support\Facades\Log::info('Thread created successfully', ['id' => $thread->id]);
+            Log::info('Thread created successfully', ['id' => $thread->id]);
 
             // Cache invalidation AFTER successful transaction commit
             Cache::forget('forum.categories');
@@ -290,9 +298,9 @@ class ForumController extends Controller
             return response()->json($thread, 201);
 
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to create thread: '.$e->getMessage(), [
+            Log::error('Failed to create thread: '.$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
-                'user_id' => \Illuminate\Support\Facades\Auth::id(),
+                'user_id' => Auth::id(),
             ]);
 
             return response()->json(['message' => 'Failed to create thread.'], 500);
@@ -317,19 +325,19 @@ class ForumController extends Controller
     {
         $thread = Thread::where('slug', $slug)->firstOrFail();
 
-        $exists = \Illuminate\Support\Facades\DB::table('thread_upvotes')
+        $exists = DB::table('thread_upvotes')
             ->where('user_id', Auth::id())
             ->where('thread_id', $thread->id)
             ->exists();
 
         if ($exists) {
-            \Illuminate\Support\Facades\DB::table('thread_upvotes')
+            DB::table('thread_upvotes')
                 ->where('user_id', Auth::id())
                 ->where('thread_id', $thread->id)
                 ->delete();
             $action = 'removed';
         } else {
-            \Illuminate\Support\Facades\DB::table('thread_upvotes')->insert([
+            DB::table('thread_upvotes')->insert([
                 'user_id' => Auth::id(),
                 'thread_id' => $thread->id,
                 'created_at' => now(),
@@ -341,7 +349,7 @@ class ForumController extends Controller
         return response()->json([
             'message' => 'Upvote updated',
             'action' => $action,
-            'count' => \Illuminate\Support\Facades\DB::table('thread_upvotes')->where('thread_id', $thread->id)->count(),
+            'count' => DB::table('thread_upvotes')->where('thread_id', $thread->id)->count(),
         ]);
     }
 
@@ -369,7 +377,7 @@ class ForumController extends Controller
         ]);
     }
 
-    public function updatePost(Request $request, string $slug, int $postId, \App\Services\SanitizationService $sanitizer)
+    public function updatePost(Request $request, string $slug, int $postId, SanitizationService $sanitizer)
     {
         $request->validate(['content' => 'required|string|min:5|max:10000']);
 
@@ -393,7 +401,7 @@ class ForumController extends Controller
         $post->load('author.rank');
         $post->author->loadCount(['posts', 'threads']);
 
-        return new \App\Http\Resources\V1\PostResource($post);
+        return new PostResource($post);
     }
 
     public function deletePost(Request $request, string $slug, int $postId)

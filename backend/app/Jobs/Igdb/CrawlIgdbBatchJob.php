@@ -14,9 +14,11 @@ class CrawlIgdbBatchJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int   $tries   = 5;
-    public int   $timeout = 60;
-    public array $backoff  = [30, 60, 120, 300, 300];
+    public int $tries = 5;
+
+    public int $timeout = 60;
+
+    public array $backoff = [30, 60, 120, 300, 300];
 
     public function __construct(public readonly int $offset) {}
 
@@ -32,6 +34,6 @@ class CrawlIgdbBatchJob implements ShouldQueue
 
     public function failed(\Throwable $e): void
     {
-        Log::error("CrawlIgdbBatchJob failed at offset {$this->offset}: " . $e->getMessage());
+        Log::error("CrawlIgdbBatchJob failed at offset {$this->offset}: ".$e->getMessage());
     }
 }

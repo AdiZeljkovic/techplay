@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class Review extends Model
 {
@@ -58,7 +60,7 @@ class Review extends Model
         // Layer 1: Cache-based throttling (fastest, 30 minutes)
         $cacheKey = "review_view_{$this->id}_{$fingerprint}";
 
-        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+        if (Cache::has($cacheKey)) {
             return false;
         }
 
@@ -71,7 +73,7 @@ class Review extends Model
         }
 
         // Layer 3: Database throttling (ultimate fallback)
-        $recentView = \Illuminate\Support\Facades\DB::table('review_views')
+        $recentView = DB::table('review_views')
             ->where('review_id', $this->id)
             ->where('fingerprint', $fingerprint)
             ->where('created_at', '>', now()->subMinutes(30))
@@ -82,13 +84,13 @@ class Review extends Model
         }
 
         // Increment view count
-        \Illuminate\Support\Facades\DB::table('reviews')
+        DB::table('reviews')
             ->where('id', $this->id)
-            ->update(['views' => \Illuminate\Support\Facades\DB::raw('COALESCE(views, 0) + 1')]);
+            ->update(['views' => DB::raw('COALESCE(views, 0) + 1')]);
 
         // Record view in tracking table (async, non-blocking)
         try {
-            \Illuminate\Support\Facades\DB::table('review_views')->insert([
+            DB::table('review_views')->insert([
                 'review_id' => $this->id,
                 'ip_address' => $ip,
                 'fingerprint' => $fingerprint,
@@ -99,7 +101,7 @@ class Review extends Model
         }
 
         // Set throttle markers
-        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 30);
+        Cache::put($cacheKey, true, 30);
         session([$sessionKey => now()]);
 
         return true;

@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Schema;
  * Performance Optimization: Add indexes for commonly queried columns.
  * This significantly improves query performance on listing pages.
  */
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -157,9 +158,8 @@ return new class extends Migration {
                     $table->dropIndex($indexName);
                 });
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Index doesn't exist, ignore
         }
     }
 };
-

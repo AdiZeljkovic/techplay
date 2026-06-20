@@ -48,7 +48,7 @@ class PayPalPlanSeeder extends Seeder
                         'Everything in Fan tier',
                         'Early access to videos',
                         'Exclusive monthly newsletter',
-                        'Vote on next review topic'
+                        'Vote on next review topic',
                     ],
                     'color' => '#8B5CF6', // Purple
                 ],
@@ -60,7 +60,7 @@ class PayPalPlanSeeder extends Seeder
                         'Your name in video credits',
                         'Exclusive merchandise discounts',
                         'Direct chat access with editors',
-                        'Legendary Badge'
+                        'Legendary Badge',
                     ],
                     'color' => '#F59E0B', // Gold
                 ],
@@ -70,6 +70,7 @@ class PayPalPlanSeeder extends Seeder
                 $existing = SupportTier::where('name', $tierData['name'])->first();
                 if ($existing && $existing->paypal_plan_id) {
                     $this->command->info("Tier {$tierData['name']} already exists.");
+
                     continue;
                 }
 
@@ -100,7 +101,7 @@ class PayPalPlanSeeder extends Seeder
             }
 
         } catch (\Exception $e) {
-            $this->command->error("Failed to seed PayPal plans: " . $e->getMessage());
+            $this->command->error('Failed to seed PayPal plans: '.$e->getMessage());
             Log::error($e);
         }
     }

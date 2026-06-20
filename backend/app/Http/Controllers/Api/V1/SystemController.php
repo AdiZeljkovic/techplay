@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
-use Illuminate\Http\Request;
 
 class SystemController extends Controller
 {

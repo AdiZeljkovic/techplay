@@ -57,7 +57,7 @@ class FaqItem extends Model
         return [
             '@context' => 'https://schema.org',
             '@type' => 'FAQPage',
-            'mainEntity' => collect($items)->map(fn($item) => [
+            'mainEntity' => collect($items)->map(fn ($item) => [
                 '@type' => 'Question',
                 'name' => $item->question,
                 'acceptedAnswer' => [

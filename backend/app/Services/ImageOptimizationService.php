@@ -5,8 +5,8 @@ namespace App\Services;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class ImageOptimizationService
 {
@@ -22,7 +22,7 @@ class ImageOptimizationService
 
     public function __construct()
     {
-        $this->manager = new ImageManager(new Driver());
+        $this->manager = new ImageManager(new Driver);
     }
 
     /**
@@ -82,7 +82,7 @@ class ImageOptimizationService
      */
     public function convertToWebp(string $imagePath): ?string
     {
-        if (!Storage::disk('public')->exists($imagePath)) {
+        if (! Storage::disk('public')->exists($imagePath)) {
             return null;
         }
 
@@ -104,6 +104,7 @@ class ImageOptimizationService
         foreach ($sizes as $size) {
             $srcset[] = "{$size['url']} {$size['width']}w";
         }
+
         return implode(', ', $srcset);
     }
 }

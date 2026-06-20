@@ -20,7 +20,7 @@ class SubmitIndexNow implements ShouldQueue
     /**
      * Create a new job instance.
      *
-     * @param array|string $urls
+     * @param  array|string  $urls
      */
     public function __construct($urls)
     {
@@ -32,16 +32,17 @@ class SubmitIndexNow implements ShouldQueue
      */
     public function handle(): void
     {
-        if (!SiteSetting::get('seo_indexnow_enabled')) {
+        if (! SiteSetting::get('seo_indexnow_enabled')) {
             return;
         }
 
         $host = parse_url(config('app.url'), PHP_URL_HOST); // e.g. techplay.gg
         $key = SiteSetting::get('seo_indexnow_key');
-        $keyLocation = config('app.url') . "/{$key}.txt";
+        $keyLocation = config('app.url')."/{$key}.txt";
 
-        if (!$key) {
+        if (! $key) {
             Log::warning('IndexNow: API Key not configured.');
+
             return;
         }
 
@@ -59,7 +60,7 @@ class SubmitIndexNow implements ShouldQueue
             $response = Http::post($endpoint, $payload);
 
             if ($response->successful()) {
-                Log::info('IndexNow: Submitted ' . count($this->urls) . ' URLs successfully.');
+                Log::info('IndexNow: Submitted '.count($this->urls).' URLs successfully.');
             } else {
                 Log::error('IndexNow: Submission failed.', ['status' => $response->status(), 'body' => $response->body()]);
             }

@@ -4,15 +4,15 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\RankResource\Pages;
 use App\Models\Rank;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Schemas\Schema;
+use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 
 class RankResource extends Resource
 {
@@ -24,6 +24,7 @@ class RankResource extends Resource
     {
         return 'Community';
     }
+
     protected static ?int $navigationSort = 6;
 
     public static function form(Schema $schema): Schema

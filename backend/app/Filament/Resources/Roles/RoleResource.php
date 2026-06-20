@@ -5,16 +5,13 @@ namespace App\Filament\Resources\Roles;
 use App\Filament\Resources\Roles\Pages\CreateRole;
 use App\Filament\Resources\Roles\Pages\EditRole;
 use App\Filament\Resources\Roles\Pages\ListRoles;
-use App\Filament\Resources\Roles\Schemas\RoleForm;
-use App\Filament\Resources\Roles\Tables\RolesTable;
 use BackedEnum;
+use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Spatie\Permission\Models\Role;
-
-use Filament\Forms;
-use Filament\Tables\Columns\TextColumn;
 
 class RoleResource extends Resource
 {
@@ -28,11 +25,13 @@ class RoleResource extends Resource
     {
         return 'System';
     }
+
     protected static ?int $navigationSort = 3;
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
+
         // Check Spatie roles OR old role column
         return $user && ($user->hasRole('Super Admin') || $user->hasRole('Editor-in-Chief') || in_array($user->role ?? '', ['admin', 'super_admin']));
     }

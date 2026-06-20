@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Category;
-
 use App\Models\PageSeo;
+use Illuminate\Database\Seeder;
 
 class CategorySeoSeeder extends Seeder
 {
@@ -17,14 +16,13 @@ class CategorySeoSeeder extends Seeder
         foreach ($categories as $category) {
             // 1. Determine Path based on Type
             $path = match ($category->type) {
-                'news' => '/news/category/' . $category->slug,
-                'reviews' => '/reviews/category/' . $category->slug,
-                'tech' => '/hardware/' . $category->slug, // 'tech' maps to '/hardware'
-                'forum' => '/forum/' . $category->slug,
-                default => '/' . $category->type . '/' . $category->slug,
+                'news' => '/news/category/'.$category->slug,
+                'reviews' => '/reviews/category/'.$category->slug,
+                'tech' => '/hardware/'.$category->slug, // 'tech' maps to '/hardware'
+                'forum' => '/forum/'.$category->slug,
+                default => '/'.$category->type.'/'.$category->slug,
             };
             // 2. Path is already constructed above
-
 
             // 3. Generate "Professional" SEO defaults if missing on the category itself
             $seoTitle = $category->seo_title;
@@ -72,4 +70,3 @@ class CategorySeoSeeder extends Seeder
         }
     }
 }
-

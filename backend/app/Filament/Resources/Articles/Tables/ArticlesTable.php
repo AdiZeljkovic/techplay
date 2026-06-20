@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Articles\Tables;
 
 use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -30,7 +30,7 @@ class ArticlesTable
 
                 TextColumn::make('category')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'gaming' => 'info',
                         'console' => 'success',
                         'pc' => 'warning',
@@ -41,7 +41,7 @@ class ArticlesTable
 
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'published' => 'success',
                         'draft' => 'gray',
                         'scheduled' => 'warning',

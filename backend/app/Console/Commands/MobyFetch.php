@@ -35,15 +35,15 @@ class MobyFetch extends Command
 
     public function handle(MobyGamesService $moby): int
     {
-        $this->moby  = $moby;
-        $offset      = (int) $this->option('offset');
-        $max         = (int) $this->option('max');
-        $batchSize   = min(100, max(1, (int) $this->option('batch')));
+        $this->moby = $moby;
+        $offset = (int) $this->option('offset');
+        $max = (int) $this->option('max');
+        $batchSize = min(100, max(1, (int) $this->option('batch')));
         $totalFetched = 0;
         $totalUpserted = 0;
 
-        $this->info("Starting MobyGames bulk fetch (offset={$offset}, max=" . ($max ?: 'unlimited') . ")");
-        $this->line('Rate limit: 0.2 req/sec = 1 call / 5 sec. Each call imports ' . $batchSize . ' games.');
+        $this->info("Starting MobyGames bulk fetch (offset={$offset}, max=".($max ?: 'unlimited').')');
+        $this->line('Rate limit: 0.2 req/sec = 1 call / 5 sec. Each call imports '.$batchSize.' games.');
         $this->newLine();
 
         while (true) {
@@ -65,9 +65,9 @@ class MobyFetch extends Command
             $count = count($games);
             $upserted = $this->processBatch($games);
 
-            $totalFetched  += $count;
+            $totalFetched += $count;
             $totalUpserted += $upserted;
-            $offset        += $count;
+            $offset += $count;
 
             $this->line("  → Batch: {$count} received, {$upserted} upserted. Total: {$totalFetched} fetched, {$totalUpserted} upserted. Next offset: {$offset}");
 
@@ -96,7 +96,7 @@ class MobyFetch extends Command
                 $this->upsertGame($data);
                 $upserted++;
             } catch (\Throwable $e) {
-                $this->warn('  Error processing game_id=' . ($data['game_id'] ?? '?') . ': ' . $e->getMessage());
+                $this->warn('  Error processing game_id='.($data['game_id'] ?? '?').': '.$e->getMessage());
             }
         }
 
@@ -111,36 +111,36 @@ class MobyFetch extends Command
         }
 
         $mobyUrl = $data['moby_url'] ?? null;
-        $slug    = $mobyUrl ? MobyGamesService::slugFromUrl($mobyUrl) : null;
+        $slug = $mobyUrl ? MobyGamesService::slugFromUrl($mobyUrl) : null;
         if (! $slug) {
-            $slug = Str::slug($data['title'] ?? 'game-' . $mobyId);
+            $slug = Str::slug($data['title'] ?? 'game-'.$mobyId);
         }
 
         // Make slug unique if it conflicts with another game
         $slug = $this->uniqueSlug($slug, $mobyId);
 
         $descriptionHtml = $data['description'] ?? null;
-        $descriptionRaw  = $descriptionHtml ? strip_tags($descriptionHtml) : null;
+        $descriptionRaw = $descriptionHtml ? strip_tags($descriptionHtml) : null;
 
         ['genre_names' => $genreNames, 'tag_names' => $tagNames] =
             MobyGamesService::splitGenres($data['genres'] ?? []);
 
         $platformNames = MobyGamesService::normalizePlatformNames($data['platforms'] ?? []);
-        $released      = MobyGamesService::earliestReleaseDate($data['platforms'] ?? []);
+        $released = MobyGamesService::earliestReleaseDate($data['platforms'] ?? []);
 
         $detailsData = [
-            'description'        => $descriptionHtml,
-            'description_raw'    => $descriptionRaw,
-            'moby_url'           => $mobyUrl,
-            'official_url'       => $data['official_url'] ?? null,
-            'num_votes'          => $data['num_votes'] ?? 0,
-            'alternate_titles'   => $data['alternate_titles'] ?? [],
+            'description' => $descriptionHtml,
+            'description_raw' => $descriptionRaw,
+            'moby_url' => $mobyUrl,
+            'official_url' => $data['official_url'] ?? null,
+            'num_votes' => $data['num_votes'] ?? 0,
+            'alternate_titles' => $data['alternate_titles'] ?? [],
             'sample_screenshots' => $data['sample_screenshots'] ?? [],
-            'developers'         => $data['developers'] ?? [],
-            'publishers'         => $data['publishers'] ?? [],
-            'ratings'            => [],  // filled by moby:enrich
-            'attributes'         => [],  // filled by moby:enrich
-            'covers'             => [],  // filled by moby:enrich
+            'developers' => $data['developers'] ?? [],
+            'publishers' => $data['publishers'] ?? [],
+            'ratings' => [],  // filled by moby:enrich
+            'attributes' => [],  // filled by moby:enrich
+            'covers' => [],  // filled by moby:enrich
         ];
 
         $backgroundImage = $data['sample_cover']['thumbnail_image']
@@ -151,12 +151,12 @@ class MobyFetch extends Command
 
         // Build the record to upsert
         $record = [
-            'moby_id'          => $mobyId,
-            'slug'             => $slug,
-            'name'             => $data['title'] ?? $slug,
-            'rating'           => $data['moby_score'] ?? null,
-            'has_description'  => ! empty($descriptionRaw),
-            'details_data'     => json_encode($detailsData),
+            'moby_id' => $mobyId,
+            'slug' => $slug,
+            'name' => $data['title'] ?? $slug,
+            'rating' => $data['moby_score'] ?? null,
+            'has_description' => ! empty($descriptionRaw),
+            'details_data' => json_encode($detailsData),
             'short_screenshots' => json_encode($shortScreenshots),
             'details_crawled_at' => now()->toDateTimeString(),
         ];
@@ -178,8 +178,8 @@ class MobyFetch extends Command
             [$record],
             ['moby_id'],
             ['name', 'slug', 'rating', 'has_description', 'details_data',
-             'short_screenshots', 'background_image', 'released', 'platforms',
-             'details_crawled_at']
+                'short_screenshots', 'background_image', 'released', 'platforms',
+                'details_crawled_at']
         );
 
         // Get the game id for array updates and company pivots
@@ -216,14 +216,14 @@ class MobyFetch extends Command
         }
 
         // Append moby_id to make it unique
-        return $slug . '-' . $mobyId;
+        return $slug.'-'.$mobyId;
     }
 
     private function upsertCompanies(int $gameId, array $companies, string $role): void
     {
         foreach ($companies as $company) {
             $mobyCompanyId = $company['company_id'] ?? null;
-            $companyName   = $company['company_name'] ?? null;
+            $companyName = $company['company_name'] ?? null;
 
             if (! $mobyCompanyId || ! $companyName) {
                 continue;
@@ -234,8 +234,8 @@ class MobyFetch extends Command
             $gc = GameCompany::updateOrCreate(
                 ['moby_company_id' => $mobyCompanyId],
                 [
-                    'name'     => $companyName,
-                    'slug'     => $slug,
+                    'name' => $companyName,
+                    'slug' => $slug,
                     'moby_url' => $company['moby_url'] ?? null,
                 ]
             );
@@ -248,19 +248,19 @@ class MobyFetch extends Command
             $gc->increment('games_count');
 
             DB::table('game_company')->insertOrIgnore([
-                'game_id'         => $gameId,
+                'game_id' => $gameId,
                 'game_company_id' => $gc->id,
-                'role'            => $role,
+                'role' => $role,
             ]);
         }
     }
 
     private function updateTextArray(int $gameId, string $column, array $values): void
     {
-        $literal = '{' . implode(',', array_map(
-            fn($v) => '"' . addslashes($v) . '"',
+        $literal = '{'.implode(',', array_map(
+            fn ($v) => '"'.addslashes($v).'"',
             $values
-        )) . '}';
+        )).'}';
 
         DB::statement("UPDATE games SET {$column} = ? WHERE id = ?", [$literal, $gameId]);
     }

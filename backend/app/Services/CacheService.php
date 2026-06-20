@@ -2,13 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\Category;
+use App\Models\User;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Cache Service
  * Centralized caching logic for API responses.
- * 
+ *
  * Usage:
  * $data = CacheService::remember('home_data', fn() => $this->getHomeData());
  */
@@ -16,16 +17,24 @@ class CacheService
 {
     // Cache TTL in seconds
     const TTL_SHORT = 60;          // 1 minute
+
     const TTL_MEDIUM = 300;        // 5 minutes
+
     const TTL_LONG = 3600;         // 1 hour
+
     const TTL_DAY = 86400;         // 24 hours
+
     const TTL_WEEK = 604800;       // 7 days (for realm list, rarely changes)
 
     // Cache key prefixes
     const PREFIX_API = 'api:';
+
     const PREFIX_HOME = 'home:';
+
     const PREFIX_NEWS = 'news:';
+
     const PREFIX_REVIEWS = 'reviews:';
+
     const PREFIX_USER = 'user:';
 
     /**
@@ -59,8 +68,8 @@ class CacheService
      */
     public static function clearHomeCache(): void
     {
-        self::forget(self::PREFIX_HOME . 'data');
-        self::forget(self::PREFIX_HOME . 'featured');
+        self::forget(self::PREFIX_HOME.'data');
+        self::forget(self::PREFIX_HOME.'featured');
     }
 
     /**
@@ -68,8 +77,8 @@ class CacheService
      */
     public static function clearNewsCache(): void
     {
-        self::forget(self::PREFIX_NEWS . 'list');
-        self::forget(self::PREFIX_NEWS . 'latest');
+        self::forget(self::PREFIX_NEWS.'list');
+        self::forget(self::PREFIX_NEWS.'latest');
     }
 
     /**
@@ -77,8 +86,8 @@ class CacheService
      */
     public static function clearReviewsCache(): void
     {
-        self::forget(self::PREFIX_REVIEWS . 'list');
-        self::forget(self::PREFIX_REVIEWS . 'featured');
+        self::forget(self::PREFIX_REVIEWS.'list');
+        self::forget(self::PREFIX_REVIEWS.'featured');
     }
 
     /**
@@ -90,6 +99,7 @@ class CacheService
         if ($filter) {
             $key .= ":filter:{$filter}";
         }
+
         return $key;
     }
 
@@ -98,6 +108,7 @@ class CacheService
     // ========================================================================
 
     const PREFIX_ADMIN = 'admin:';
+
     const TTL_ADMIN_DROPDOWN = 3600; // 1 hour for admin dropdowns
 
     /**
@@ -106,10 +117,10 @@ class CacheService
      */
     public static function getAuthors(): array
     {
-        return self::remember(self::PREFIX_ADMIN . 'authors', function () {
-            return \App\Models\User::role(['Super Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'])
+        return self::remember(self::PREFIX_ADMIN.'authors', function () {
+            return User::role(['Super Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'])
                 ->get()
-                ->mapWithKeys(fn($user) => [$user->id => $user->display_name ?: $user->username])
+                ->mapWithKeys(fn ($user) => [$user->id => $user->display_name ?: $user->username])
                 ->toArray();
         }, self::TTL_ADMIN_DROPDOWN);
     }
@@ -120,10 +131,10 @@ class CacheService
      */
     public static function getCategories(): array
     {
-        return self::remember(self::PREFIX_ADMIN . 'categories', function () {
-            return \App\Models\Category::orderBy('type')->orderBy('name')
+        return self::remember(self::PREFIX_ADMIN.'categories', function () {
+            return Category::orderBy('type')->orderBy('name')
                 ->get()
-                ->mapWithKeys(fn($category) => [$category->id => $category->name . ' (' . $category->type . ')'])
+                ->mapWithKeys(fn ($category) => [$category->id => $category->name.' ('.$category->type.')'])
                 ->toArray();
         }, self::TTL_ADMIN_DROPDOWN);
     }
@@ -134,7 +145,7 @@ class CacheService
      */
     public static function clearAdminDropdowns(): void
     {
-        self::forget(self::PREFIX_ADMIN . 'authors');
-        self::forget(self::PREFIX_ADMIN . 'categories');
+        self::forget(self::PREFIX_ADMIN.'authors');
+        self::forget(self::PREFIX_ADMIN.'categories');
     }
 }

@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Observers\ArticleObserver;
+use App\Observers\ArticleVersionObserver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class Article extends Model
@@ -20,6 +24,7 @@ class Article extends Model
         'excerpt',
         'content',
         'category_id',
+        'game_id',
         'is_featured_in_hero',
         'seo_title',
         'seo_description',
@@ -65,7 +70,7 @@ class Article extends Model
 
         // Already has /storage/ prefix (legacy format) - convert to full URL
         if (str_starts_with($value, '/storage/')) {
-            return config('app.url') . $value;
+            return config('app.url').$value;
         }
 
         // Relative path - convert using Storage facade
@@ -83,8 +88,8 @@ class Article extends Model
      * PERFORMANCE: Multi-layer throttling (cache + session + DB)
      * SECURITY: Prevents view count manipulation
      *
-     * @param string $ip User IP address
-     * @param string $fingerprint User fingerprint (IP + User Agent hash)
+     * @param  string  $ip  User IP address
+     * @param  string  $fingerprint  User fingerprint (IP + User Agent hash)
      * @return bool Whether view was counted
      */
     public function incrementViews(string $ip, string $fingerprint): bool
@@ -92,7 +97,7 @@ class Article extends Model
         // Layer 1: Cache-based throttling (fastest, 30 minutes)
         $cacheKey = "article_view_{$this->id}_{$fingerprint}";
 
-        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+        if (Cache::has($cacheKey)) {
             return false;
         }
 
@@ -106,7 +111,7 @@ class Article extends Model
 
         // Layer 3: Database throttling (ultimate fallback, check last 30 min)
         // Only for paranoid cases where cache AND session both fail
-        $recentView = \Illuminate\Support\Facades\DB::table('article_views')
+        $recentView = DB::table('article_views')
             ->where('article_id', $this->id)
             ->where('fingerprint', $fingerprint)
             ->where('created_at', '>', now()->subMinutes(30))
@@ -117,13 +122,13 @@ class Article extends Model
         }
 
         // Increment view count
-        \Illuminate\Support\Facades\DB::table('articles')
+        DB::table('articles')
             ->where('id', $this->id)
-            ->update(['views' => \Illuminate\Support\Facades\DB::raw('COALESCE(views, 0) + 1')]);
+            ->update(['views' => DB::raw('COALESCE(views, 0) + 1')]);
 
         // Record view in tracking table (async, non-blocking)
         try {
-            \Illuminate\Support\Facades\DB::table('article_views')->insert([
+            DB::table('article_views')->insert([
                 'article_id' => $this->id,
                 'ip_address' => $ip,
                 'fingerprint' => $fingerprint,
@@ -135,7 +140,7 @@ class Article extends Model
         }
 
         // Set throttle markers
-        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 30); // 30 minutes
+        Cache::put($cacheKey, true, 30); // 30 minutes
         session([$sessionKey => now()]);
 
         return true;
@@ -151,6 +156,11 @@ class Article extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function game()
+    {
+        return $this->belongsTo(Game::class);
+    }
+
     public function comments()
     {
         return $this->morphMany(Comment::class, 'commentable');
@@ -158,12 +168,12 @@ class Article extends Model
 
     public function versions()
     {
-        return $this->morphMany(\App\Models\ContentVersion::class, 'versionable')->latest();
+        return $this->morphMany(ContentVersion::class, 'versionable')->latest();
     }
 
     protected static function booted(): void
     {
-        static::observe(\App\Observers\ArticleVersionObserver::class);
-        static::observe(\App\Observers\ArticleObserver::class);
+        static::observe(ArticleVersionObserver::class);
+        static::observe(ArticleObserver::class);
     }
 }

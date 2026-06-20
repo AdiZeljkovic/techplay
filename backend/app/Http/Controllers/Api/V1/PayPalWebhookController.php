@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\PayPalService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -32,11 +34,12 @@ class PayPalWebhookController extends Controller
     public function handleWebhook(Request $request)
     {
         // 1. Verify webhook signature
-        if (!$this->verifyWebhookSignature($request)) {
+        if (! $this->verifyWebhookSignature($request)) {
             Log::warning('PayPal webhook signature verification failed', [
                 'ip' => $request->ip(),
                 'headers' => $request->headers->all(),
             ]);
+
             return response()->json(['error' => 'Invalid signature'], 401);
         }
 
@@ -70,6 +73,7 @@ class PayPalWebhookController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json(['error' => 'Processing failed'], 500);
         }
     }
@@ -87,6 +91,7 @@ class PayPalWebhookController extends Controller
         // If webhook ID not configured, skip verification in dev (UNSAFE in production!)
         if (empty($webhookId)) {
             Log::warning('PayPal webhook ID not configured - signature verification skipped');
+
             return config('app.env') === 'local'; // Only allow in local dev
         }
 
@@ -97,7 +102,7 @@ class PayPalWebhookController extends Controller
         $certUrl = $request->header('PAYPAL-CERT-URL');
         $authAlgo = $request->header('PAYPAL-AUTH-ALGO');
 
-        if (!$transmissionId || !$transmissionTime || !$transmissionSig) {
+        if (! $transmissionId || ! $transmissionTime || ! $transmissionSig) {
             return false;
         }
 
@@ -145,17 +150,18 @@ class PayPalWebhookController extends Controller
     {
         try {
             // Get PayPal access token
-            $accessToken = app(\App\Services\PayPalService::class)->getAccessToken();
+            $accessToken = app(PayPalService::class)->getAccessToken();
 
             $baseUrl = config('paypal.mode') === 'live'
                 ? 'https://api.paypal.com'
                 : 'https://api.sandbox.paypal.com';
 
-            $response = \Illuminate\Support\Facades\Http::withToken($accessToken)
-                ->post($baseUrl . '/v1/notifications/verify-webhook-signature', $data);
+            $response = Http::withToken($accessToken)
+                ->post($baseUrl.'/v1/notifications/verify-webhook-signature', $data);
 
             if ($response->successful()) {
                 $result = $response->json();
+
                 return $result['verification_status'] ?? 'FAILURE';
             }
 
@@ -170,6 +176,7 @@ class PayPalWebhookController extends Controller
             Log::error('PayPal webhook verification exception', [
                 'error' => $e->getMessage(),
             ]);
+
             return 'FAILURE';
         }
     }
@@ -183,14 +190,16 @@ class PayPalWebhookController extends Controller
         $orderId = $resource['custom_id'] ?? null; // Your internal order ID
         $paypalTransactionId = $resource['id'] ?? null;
 
-        if (!$orderId) {
+        if (! $orderId) {
             Log::warning('Payment completed but no custom_id found', ['resource' => $resource]);
+
             return;
         }
 
         $order = Order::find($orderId);
-        if (!$order) {
+        if (! $order) {
             Log::error('Order not found for completed payment', ['order_id' => $orderId]);
+
             return;
         }
 
@@ -207,8 +216,9 @@ class PayPalWebhookController extends Controller
         $paypalTransactionId = $resource['sale_id'] ?? null;
 
         $order = Order::where('paypal_transaction_id', $paypalTransactionId)->first();
-        if (!$order) {
+        if (! $order) {
             Log::error('Order not found for refund', ['transaction_id' => $paypalTransactionId]);
+
             return;
         }
 
@@ -226,8 +236,9 @@ class PayPalWebhookController extends Controller
         $subscriptionId = $resource['id'] ?? null;
 
         $user = User::where('paypal_subscription_id', $subscriptionId)->first();
-        if (!$user) {
+        if (! $user) {
             Log::error('User not found for subscription activation', ['subscription_id' => $subscriptionId]);
+
             return;
         }
 
@@ -243,8 +254,9 @@ class PayPalWebhookController extends Controller
         $subscriptionId = $resource['id'] ?? null;
 
         $user = User::where('paypal_subscription_id', $subscriptionId)->first();
-        if (!$user) {
+        if (! $user) {
             Log::error('User not found for subscription cancellation', ['subscription_id' => $subscriptionId]);
+
             return;
         }
 
@@ -266,7 +278,7 @@ class PayPalWebhookController extends Controller
         $subscriptionId = $resource['id'] ?? null;
 
         $user = User::where('paypal_subscription_id', $subscriptionId)->first();
-        if (!$user) {
+        if (! $user) {
             return;
         }
 

@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\V1\ArticleResource;
 use App\Models\Article;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class NewsController extends Controller
 {
@@ -18,12 +21,12 @@ class NewsController extends Controller
         $cacheKey = "news.index.v2.page_{$page}.cat_{$category}";
 
         // Note: Caching for 1 hour (production)
-        $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, \App\Services\CacheService::TTL_LONG, function () use ($request) {
+        $resource = Cache::remember($cacheKey, CacheService::TTL_LONG, function () use ($request) {
             $query = Article::query()
                 ->where('status', 'published')
                 ->where('published_at', '<=', now())
                 // IMPORTANT: Only show articles with category type 'news'
-                ->whereHas('category', fn($q) => $q->where('type', 'news'))
+                ->whereHas('category', fn ($q) => $q->where('type', 'news'))
                 ->with(['author:id,username,display_name,avatar_url', 'category']);
 
             if ($request->has('category') && $request->category !== 'all') {
@@ -36,7 +39,7 @@ class NewsController extends Controller
                 });
             }
 
-            return \App\Http\Resources\V1\ArticleResource::collection(
+            return ArticleResource::collection(
                 $query->latest('published_at')->paginate(12)
             );
         });
@@ -54,11 +57,11 @@ class NewsController extends Controller
 
         $cacheKey = "news.show.v2.{$slug}";
 
-        $resource = \Illuminate\Support\Facades\Cache::remember($cacheKey, 3600, function () use ($slug) {
+        $resource = Cache::remember($cacheKey, 3600, function () use ($slug) {
             $article = Article::where('slug', $slug)
                 ->where('status', 'published')
                 // IMPORTANT: Only show articles with category type 'news'
-                ->whereHas('category', fn($q) => $q->where('type', 'news'))
+                ->whereHas('category', fn ($q) => $q->where('type', 'news'))
                 ->with([
                     'author',
                     'category',
@@ -69,11 +72,11 @@ class NewsController extends Controller
                             // Limit to 20 for initial load performance
                             ->limit(20)
                             ->with(['user.rank', 'replies.user.rank']);
-                    }
+                    },
                 ])
                 ->firstOrFail();
 
-            return new \App\Http\Resources\V1\ArticleResource($article);
+            return new ArticleResource($article);
         });
 
         return $resource->response()->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
@@ -84,7 +87,7 @@ class NewsController extends Controller
      */
     public function trending()
     {
-        $resource = \Illuminate\Support\Facades\Cache::remember('news.trending', 3600, function () {
+        $resource = Cache::remember('news.trending', 3600, function () {
             $articles = Article::query()
                 ->where('status', 'published')
                 ->where('published_at', '<=', now())
@@ -93,7 +96,7 @@ class NewsController extends Controller
                 ->with(['category', 'author:id,username,avatar_url'])
                 ->get();
 
-            return \App\Http\Resources\V1\ArticleResource::collection($articles);
+            return ArticleResource::collection($articles);
         });
 
         return $resource->response()->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');

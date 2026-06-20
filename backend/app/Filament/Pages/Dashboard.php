@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Widgets\MostViewedArticles;
+use App\Filament\Widgets\StatsOverview;
 use App\Models\Article;
 use App\Models\User;
 use Filament\Pages\Dashboard as BaseDashboard;
@@ -13,14 +15,14 @@ class Dashboard extends BaseDashboard
     public function getHeaderWidgets(): array
     {
         return [
-            \App\Filament\Widgets\StatsOverview::class,
+            StatsOverview::class,
         ];
     }
 
     public function getFooterWidgets(): array
     {
         return [
-            \App\Filament\Widgets\MostViewedArticles::class,
+            MostViewedArticles::class,
         ];
     }
 

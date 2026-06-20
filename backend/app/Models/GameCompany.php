@@ -21,8 +21,8 @@ class GameCompany extends Model
 
     protected $casts = [
         'details_crawled_at' => 'datetime',
-        'games_count'        => 'integer',
-        'moby_company_id'    => 'integer',
+        'games_count' => 'integer',
+        'moby_company_id' => 'integer',
     ];
 
     public function games(): BelongsToMany

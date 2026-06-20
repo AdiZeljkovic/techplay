@@ -4,13 +4,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        if (!Schema::hasTable('personal_access_tokens')) {
+        if (! Schema::hasTable('personal_access_tokens')) {
             Schema::create('personal_access_tokens', function (Blueprint $table) {
                 $table->id();
                 $table->morphs('tokenable');

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Video;
 use App\Services\CacheService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class VideoController extends Controller
@@ -22,6 +21,7 @@ class VideoController extends Controller
             $videos->getCollection()->transform(function ($video) {
                 // Accessing the attribute to ensure any appends work if not automatically done
                 $video->youtube_id = $video->youtube_id;
+
                 return $video;
             });
 
@@ -38,6 +38,7 @@ class VideoController extends Controller
         $video = Cache::remember($cacheKey, CacheService::TTL_LONG, function () use ($slug) {
             $video = Video::where('slug', $slug)->firstOrFail();
             $video->youtube_id = $video->youtube_id; // Trigger accessor
+
             return $video;
         });
 

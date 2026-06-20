@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Mail\NewsletterVerification;
 use App\Models\NewsletterSubscriber;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use App\Mail\NewsletterVerification;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class NewsletterController extends Controller
 {
@@ -24,8 +24,8 @@ class NewsletterController extends Controller
             return response()->json(['message' => 'You are already subscribed to the newsletter.'], 409);
         }
 
-        if (!$subscriber) {
-            $subscriber = new NewsletterSubscriber();
+        if (! $subscriber) {
+            $subscriber = new NewsletterSubscriber;
             $subscriber->email = $validated['email'];
         }
 
@@ -37,7 +37,7 @@ class NewsletterController extends Controller
         try {
             Mail::to($subscriber->email)->send(new NewsletterVerification($subscriber));
         } catch (\Exception $e) {
-            Log::error('Newsletter email failed: ' . $e->getMessage());
+            Log::error('Newsletter email failed: '.$e->getMessage());
             // Continue even if email fails, or handle error?
         }
 
@@ -53,7 +53,7 @@ class NewsletterController extends Controller
 
         $subscriber = NewsletterSubscriber::where('verification_token', $request->token)->first();
 
-        if (!$subscriber) {
+        if (! $subscriber) {
             return response()->json(['message' => 'Invalid verification token.'], 404);
         }
 

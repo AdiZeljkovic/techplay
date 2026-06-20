@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Services\CacheService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
@@ -20,8 +21,8 @@ class NavigationController extends Controller
             // Fetch all generic categories (excluding forum categories if they are different model/table)
             // We use 'type' to distinguish roots.
 
-            $roots = \App\Models\Category::whereNull('parent_id')
-                ->with(['children' => fn($q) => $q->orderBy('name')])
+            $roots = Category::whereNull('parent_id')
+                ->with(['children' => fn ($q) => $q->orderBy('name')])
                 ->get();
 
             $tree = [];
@@ -51,7 +52,7 @@ class NavigationController extends Controller
 
                     return [
                         'name' => $child->name,
-                        'href' => "{$base}/{$urlSlug}"
+                        'href' => "{$base}/{$urlSlug}",
                     ];
                 });
 
@@ -59,6 +60,7 @@ class NavigationController extends Controller
                 if ($key === 'news') {
                     $children = $children->sortBy(function ($item) use ($newsOrder) {
                         $index = array_search($item['name'], $newsOrder);
+
                         return $index !== false ? $index : 999;
                     })->values();
                 }

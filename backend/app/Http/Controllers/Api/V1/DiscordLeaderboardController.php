@@ -25,12 +25,12 @@ class DiscordLeaderboardController extends Controller
                 'username' => $user->username,
                 'name' => $user->display_name ?? $user->username,
                 'xp' => $user->xp,
-                'rank_title' => $user->rank?->name ?? 'Newbie'
+                'rank_title' => $user->rank?->name ?? 'Newbie',
             ];
         });
 
         return response()->json([
-            'data' => $data
+            'data' => $data,
         ])->header('Cache-Control', 'public, max-age=60'); // Cache for 1 minute
     }
 }

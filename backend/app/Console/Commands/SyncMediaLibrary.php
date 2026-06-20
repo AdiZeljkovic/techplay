@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 class SyncMediaLibrary extends Command
 {
     protected $signature = 'media:sync {--directory=*}';
+
     protected $description = 'Scan storage and sync existing images to Media Library';
 
     public function handle(): int
@@ -27,8 +28,9 @@ class SyncMediaLibrary extends Command
         $totalSkipped = 0;
 
         foreach ($directories as $directory) {
-            if (!$disk->exists($directory)) {
+            if (! $disk->exists($directory)) {
                 $this->line("  📁 Directory '{$directory}' not found, skipping...");
+
                 continue;
             }
 
@@ -41,8 +43,9 @@ class SyncMediaLibrary extends Command
                 // Check if it's an image
                 $mimeType = $this->getMimeType($disk->path($file));
 
-                if (!str_starts_with($mimeType, 'image/')) {
+                if (! str_starts_with($mimeType, 'image/')) {
                     $progressBar->advance();
+
                     continue;
                 }
 
@@ -52,6 +55,7 @@ class SyncMediaLibrary extends Command
                 if ($exists) {
                     $totalSkipped++;
                     $progressBar->advance();
+
                     continue;
                 }
 
@@ -86,7 +90,7 @@ class SyncMediaLibrary extends Command
         }
 
         $this->newLine();
-        $this->info("✅ Sync complete!");
+        $this->info('✅ Sync complete!');
         $this->table(
             ['Metric', 'Count'],
             [
@@ -101,7 +105,7 @@ class SyncMediaLibrary extends Command
 
     private function getMimeType(string $path): string
     {
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             return '';
         }
 

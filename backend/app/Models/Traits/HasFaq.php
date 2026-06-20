@@ -29,6 +29,7 @@ trait HasFaq
     public function getFaqSchema(): array
     {
         $items = $this->activeFaq();
+
         return FaqItem::toSchemaOrg($items);
     }
 }

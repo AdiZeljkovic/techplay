@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\GiveawayWinnerNotification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -45,7 +46,7 @@ class Giveaway extends Model
 
         static::creating(function ($giveaway) {
             if (empty($giveaway->slug)) {
-                $giveaway->slug = Str::slug($giveaway->title) . '-' . Str::random(6);
+                $giveaway->slug = Str::slug($giveaway->title).'-'.Str::random(6);
             }
         });
     }
@@ -118,8 +119,10 @@ class Giveaway extends Model
 
     public function getTimeRemaining(): ?int
     {
-        if ($this->hasEnded())
+        if ($this->hasEnded()) {
             return null;
+        }
+
         return $this->ends_at->diffInSeconds(now());
     }
 
@@ -133,6 +136,7 @@ class Giveaway extends Model
         if ($this->requires_privee_auth) {
             return $this->priveeEntries()->count();
         }
+
         return $this->entries()->count();
     }
 
@@ -187,7 +191,7 @@ class Giveaway extends Model
                 }
             }
 
-            if (!$winnerId) {
+            if (! $winnerId) {
                 return null;
             }
 
@@ -203,7 +207,7 @@ class Giveaway extends Model
 
             // Send winner notification (queued, won't block transaction)
             if ($winner && $winner->email) {
-                $winner->notify(new \App\Notifications\GiveawayWinnerNotification($this));
+                $winner->notify(new GiveawayWinnerNotification($this));
             }
 
             return $winner;
@@ -235,6 +239,7 @@ class Giveaway extends Model
             if ($tiers->isEmpty()) {
                 // Fallback to single winner if no tiers defined
                 $winner = $this->pickWinner();
+
                 return $winner ? ['single' => [$winner->id]] : [];
             }
 
@@ -282,7 +287,7 @@ class Giveaway extends Model
                         }
                     }
 
-                    if (!$selectedEntry) {
+                    if (! $selectedEntry) {
                         continue;
                     }
 
@@ -292,7 +297,7 @@ class Giveaway extends Model
                     $globalSelectedUserIds[] = $winnerId;
 
                     // Remove from pool (can't win same tier twice)
-                    $qualifiedEntries = $qualifiedEntries->reject(fn($e) => $e->user_id === $winnerId);
+                    $qualifiedEntries = $qualifiedEntries->reject(fn ($e) => $e->user_id === $winnerId);
                 }
 
                 // Save tier winners and send notifications
@@ -304,7 +309,7 @@ class Giveaway extends Model
                     // Send winner notification (queued)
                     $winner = User::find($winnerId);
                     if ($winner && $winner->email) {
-                        $winner->notify(new \App\Notifications\GiveawayWinnerNotification($this, $tier));
+                        $winner->notify(new GiveawayWinnerNotification($this, $tier));
                     }
                 }
 
@@ -331,6 +336,6 @@ class Giveaway extends Model
 
     public function getPublicUrl(): string
     {
-        return config('app.frontend_url') . '/giveaway/' . $this->slug;
+        return config('app.frontend_url').'/giveaway/'.$this->slug;
     }
 }

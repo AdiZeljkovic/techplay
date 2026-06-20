@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Redis;
 class SyncAdMetrics extends Command
 {
     protected $signature = 'ads:sync-metrics';
+
     protected $description = 'Sync ad view and click counts from Redis to database';
 
     public function handle()

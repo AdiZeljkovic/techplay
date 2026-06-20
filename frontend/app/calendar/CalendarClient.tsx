@@ -17,6 +17,8 @@ import {
     startOfWeek, endOfWeek, eachDayOfInterval,
 } from "date-fns";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
+import LibraryStatusBadge from "@/components/games/LibraryStatusBadge";
+import { useLibraryIndex } from "@/hooks/useLibraryIndex";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -147,8 +149,9 @@ function metacriticColor(score: number): string {
     return "bg-red-500 text-white";
 }
 
-function GameCard({ game }: { game: GameRelease }) {
+function GameCard({ game, library }: { game: GameRelease; library: Record<string, string> }) {
     const { visible, hidden } = gameChips(game, 4);
+    const libStatus = library[game.slug] as import("@/hooks/useLibraryIndex").LibraryStatus | undefined;
     return (
         <Link
             href={`/calendar/${game.slug}`}
@@ -167,6 +170,11 @@ function GameCard({ game }: { game: GameRelease }) {
                 {game.metacritic && (
                     <div className={`absolute top-2 right-2 w-9 h-9 rounded-lg flex items-center justify-center text-[12px] font-bold shadow-lg ${metacriticColor(game.metacritic)}`}>
                         {game.metacritic}
+                    </div>
+                )}
+                {libStatus && (
+                    <div className="absolute top-2 left-2 z-10">
+                        <LibraryStatusBadge status={libStatus} />
                     </div>
                 )}
                 {(game.added || 0) > 0 && (
@@ -195,6 +203,7 @@ function GameCard({ game }: { game: GameRelease }) {
 }
 
 export default function CalendarClient() {
+    const { library } = useLibraryIndex();
     const [viewDate, setViewDate] = useState(() => startOfMonth(new Date()));
     const [platform, setPlatform] = useState("all");
     const [heroIndex, setHeroIndex] = useState(0);
@@ -681,6 +690,9 @@ export default function CalendarClient() {
                                                             {game.background_image && (
                                                                 <div className="relative w-9 h-5 rounded overflow-hidden shrink-0">
                                                                     <Image src={game.background_image!} fill sizes="36px" className="object-cover" alt={game.name} />
+                                                                    {library[game.slug] && (
+                                                                        <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-green-500 border border-black" />
+                                                                    )}
                                                                 </div>
                                                             )}
                                                             <span className="text-[10px] font-semibold text-zinc-700 dark:text-white/75 truncate group-hover/game:text-tp-accent transition-colors leading-tight">
@@ -710,7 +722,7 @@ export default function CalendarClient() {
                                         </span>
                                     </div>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 opacity-60">
-                                        {tbaGames.map(game => <GameCard key={game.id} game={game} />)}
+                                        {tbaGames.map(game => <GameCard key={game.id} game={game} library={library} />)}
                                     </div>
                                 </section>
                             )}

@@ -2,10 +2,11 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -15,8 +16,8 @@ return new class extends Migration {
         Schema::table('categories', function (Blueprint $table) {
             if (DB::getDriverName() === 'pgsql') {
                 // Postgres creates a check constraint for enums, usually named {table}_{column}_check
-                DB::statement("ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_type_check");
-                DB::statement("ALTER TABLE categories ALTER COLUMN type TYPE VARCHAR(50)");
+                DB::statement('ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_type_check');
+                DB::statement('ALTER TABLE categories ALTER COLUMN type TYPE VARCHAR(50)');
                 DB::statement("ALTER TABLE categories ALTER COLUMN type SET DEFAULT 'other'");
             } else {
                 // MySQL/MariaDB

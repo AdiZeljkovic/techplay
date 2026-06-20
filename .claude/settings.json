@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/adize/.claude/plans/**)",
+      "Read(//c//**)",
+      "Read(//c/xampp/**)",
+      "Read(//c/Users/adize/.claude/projects/c--Users-adize-OneDrive-Documents-Projekti-TechPlay/memory/**)",
+      "WebFetch(domain:filamentphp.com)",
+      "WebFetch(domain:hafiz.dev)",
+      "Read(//c/Users/adize/**)",
+      "Read(//c/ProgramData/**)",
+      "Bash(git pull origin main)",
+      "Bash(py --version)",
+      "Bash(py -3 --version)",
+      "Bash(node \"C:/Users/adize/AppData/Local/Temp/replace_style.js\")",
+      "Bash(\"C:/Users/adize/AppData/Local/Temp/new_style.css\":*)",
+      "Bash(powershell.exe -Command \"Write-Output ''PowerShell works''\")",
+      "Bash(powershell.exe -Command \":*)",
+      "Bash(powershell.exe -NoProfile -Command \":*)",
+      "Bash(powershell.exe -Command \"[System.IO.File]::WriteAllText\\(''C:\\\\Users\\\\adize\\\\AppData\\\\Local\\\\Temp\\\\new_style.css'', ''    <style>'', [System.Text.UTF8Encoding]::new\\($false\\)\\); Write-Output ''ok''\")",
+      "Bash(powershell.exe -Command \"Set-Content -Path ''C:\\\\Users\\\\adize\\\\AppData\\\\Local\\\\Temp\\\\new_style.css'' -Value ''    <style>'' -Encoding UTF8NoBOM; Write-Output ''ok''\")",
+      "Bash(powershell.exe -Command \"Set-Content -Path ''C:\\\\Users\\\\adize\\\\AppData\\\\Local\\\\Temp\\\\new_style.css'' -Value ''    <style>'' -Encoding UTF8; Get-Item ''C:\\\\Users\\\\adize\\\\AppData\\\\Local\\\\Temp\\\\new_style.css'' | Select-Object Length\")",
+      "Bash(node \"C:/Users/adize/AppData/Local/Temp/runner2.js\")",
+      "Bash(node \"C:/Users/adize/AppData/Local/Temp/runner3.js\")",
+      "Bash(node \"C:/Users/adize/AppData/Local/Temp/runner4.js\")",
+      "Bash(python3:*)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\adize\\.claude\\plans",
+      "c:\\Users\\adize\\.claude\\projects\\c--Users-adize-OneDrive-Documents-Projekti-TechPlay\\memory",
+      "\\tmp",
+      "C:\\Users\\adize\\AppData\\Local\\Temp"
+    ]
+  }
+}

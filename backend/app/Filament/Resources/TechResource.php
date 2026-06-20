@@ -2,37 +2,36 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\TechResource\Pages;
-use App\Filament\Components\SeoFields;
 use App\Filament\Components\MediaPickerFields;
+use App\Filament\Components\SeoFields;
+use App\Filament\Resources\TechResource\Pages;
 use App\Models\Article;
-use App\Models\Category;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Group;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\TagsInput;
-use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Actions\EditAction;
+use App\Services\CacheService;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\BulkActionGroup;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class TechResource extends Resource
 {
@@ -46,6 +45,7 @@ class TechResource extends Resource
     {
         return 'Content Studio';
     }
+
     protected static ?int $navigationSort = 5;
 
     public static function getNavigationLabel(): string
@@ -85,10 +85,10 @@ class TechResource extends Resource
                                     ->required()
                                     ->maxLength(100)
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(fn($state, $set) => $set('slug', \Illuminate\Support\Str::slug($state)))
+                                    ->afterStateUpdated(fn ($state, $set) => $set('slug', Str::slug($state)))
                                     ->helperText(
-                                        fn($state) => $state
-                                        ? (strlen($state) . '/100 chars' . (strlen($state) > 60 ? ' — Consider shortening for SEO' : ' ✓'))
+                                        fn ($state) => $state
+                                        ? (strlen($state).'/100 chars'.(strlen($state) > 60 ? ' — Consider shortening for SEO' : ' ✓'))
                                         : 'Aim for 50-60 characters for optimal SEO'
                                     ),
 
@@ -107,8 +107,8 @@ class TechResource extends Resource
                                         ->rows(2)
                                         ->maxLength(200)
                                         ->helperText(
-                                            fn($state) => $state
-                                            ? strlen($state) . '/200 chars'
+                                            fn ($state) => $state
+                                            ? strlen($state).'/200 chars'
                                             : 'Short description shown in previews'
                                         ),
                                 ]),
@@ -204,9 +204,9 @@ class TechResource extends Resource
 
                                         Select::make('author_id')
                                             ->label('Author')
-                                            ->options(fn() => \App\Services\CacheService::getAuthors())
+                                            ->options(fn () => CacheService::getAuthors())
                                             ->searchable()
-                                            ->default(fn() => auth()->id())
+                                            ->default(fn () => auth()->id())
                                             ->required()
                                             ->native(false),
                                     ]),
@@ -214,7 +214,7 @@ class TechResource extends Resource
                                 // TAB: SEO with Live Checker
                                 Tab::make('SEO')
                                     ->icon('heroicon-o-magnifying-glass')
-                                    ->badge(fn($get) => $get('meta_title') ? '✓' : null)
+                                    ->badge(fn ($get) => $get('meta_title') ? '✓' : null)
                                     ->badgeColor('success')
                                     ->schema(SeoFields::make('techplay.gg/tech/', false)),
 
@@ -241,7 +241,7 @@ class TechResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->limit(50)
-                    ->tooltip(fn($record) => $record->title),
+                    ->tooltip(fn ($record) => $record->title),
                 TextColumn::make('category.name')
                     ->label('Category')
                     ->badge()
@@ -254,7 +254,7 @@ class TechResource extends Resource
                     ->falseIcon('heroicon-o-star'),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'draft' => 'gray',
                         'ready_for_review' => 'warning',
                         'published' => 'success',
@@ -278,7 +278,7 @@ class TechResource extends Resource
                         'published' => 'Published',
                     ]),
                 SelectFilter::make('category')
-                    ->relationship('category', 'name', fn(Builder $query) => $query->where('type', 'tech')),
+                    ->relationship('category', 'name', fn (Builder $query) => $query->where('type', 'tech')),
             ])
             ->headerActions([
                 CreateAction::make(),
@@ -302,4 +302,3 @@ class TechResource extends Resource
         ];
     }
 }
-

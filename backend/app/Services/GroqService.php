@@ -8,29 +8,32 @@ use Illuminate\Support\Facades\Log;
 class GroqService
 {
     protected string $apiKey;
+
     protected string $model;
+
     protected bool $verifySSL;
 
     public function __construct()
     {
         $this->apiKey = config('services.groq.api_key');
         $this->model = config('services.groq.model', 'llama-3.3-70b-versatile');
-        $this->verifySSL = !app()->environment('local');
+        $this->verifySSL = ! app()->environment('local');
     }
 
     protected function http(int $timeout = 60)
     {
         $client = Http::timeout($timeout);
-        if (!$this->verifySSL) {
+        if (! $this->verifySSL) {
             $client = $client->withoutVerifying();
         }
+
         return $client;
     }
 
     /**
      * Analyze WoW character for Midnight expansion readiness using Groq
      *
-     * @param array $characterData Minified character data from BlizzardDataTransformer
+     * @param  array  $characterData  Minified character data from BlizzardDataTransformer
      * @return array|null {score: int, advice: string[], missing: string[], daily_priority: string[]}
      */
     public function analyzeCharacterReadiness(array $characterData): ?array
@@ -48,12 +51,12 @@ class GroqService
                     'messages' => [
                         [
                             'role' => 'user',
-                            'content' => $prompt
-                        ]
+                            'content' => $prompt,
+                        ],
                     ],
                     'temperature' => 0.7,
                     'max_tokens' => 2048,
-                    'response_format' => ['type' => 'json_object']
+                    'response_format' => ['type' => 'json_object'],
                 ]);
 
             if ($response->failed()) {
@@ -61,14 +64,16 @@ class GroqService
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
+
                 return null;
             }
 
             $data = $response->json();
             $content = $data['choices'][0]['message']['content'] ?? null;
 
-            if (!$content) {
+            if (! $content) {
                 Log::error('Groq returned empty content', ['response' => $data]);
+
                 return null;
             }
 
@@ -78,14 +83,16 @@ class GroqService
             if ($result === null) {
                 Log::error('Groq JSON decode failed', [
                     'content' => $content,
-                    'json_error' => json_last_error_msg()
+                    'json_error' => json_last_error_msg(),
                 ]);
+
                 return null;
             }
 
             return $result;
         } catch (\Exception $e) {
-            Log::error('Groq Exception: ' . $e->getMessage());
+            Log::error('Groq Exception: '.$e->getMessage());
+
             return null;
         }
     }
@@ -175,7 +182,7 @@ PROMPT;
                 'exalted_count' => $data['reputations']['exalted_count'] ?? 0,
                 'midnight_factions_ready' => count(array_filter(
                     $data['reputations']['midnight_factions'] ?? [],
-                    fn($f) => $f['tier'] >= 7 // Exalted
+                    fn ($f) => $f['tier'] >= 7 // Exalted
                 )),
             ],
             'collections' => [
@@ -192,7 +199,7 @@ PROMPT;
                         $data['professions']['primary'] ?? [],
                         $data['professions']['secondary'] ?? []
                     ),
-                    fn($p) => $p['skill_level'] >= $p['max_skill']
+                    fn ($p) => $p['skill_level'] >= $p['max_skill']
                 )),
             ],
             'achievements' => [

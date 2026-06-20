@@ -12,7 +12,7 @@ class SchemaService
      */
     public static function getReviewSchema(Article $article): ?array
     {
-        if (!$article->review_rating || $article->category !== 'reviews') {
+        if (! $article->review_rating || $article->category !== 'reviews') {
             return null;
         }
 
@@ -140,7 +140,7 @@ class SchemaService
             'name' => $user->display_name ?? $user->username,
             'image' => $user->avatar_url,
             'jobTitle' => $user->role === 'admin' ? 'Editor' : 'Contributor',
-            'url' => config('app.frontend_url') . '/profile/' . $user->username,
+            'url' => config('app.frontend_url').'/profile/'.$user->username,
             'sameAs' => array_filter([
                 $user->social_twitter ? "https://twitter.com/{$user->social_twitter}" : null,
                 $user->social_instagram ? "https://instagram.com/{$user->social_instagram}" : null,
@@ -168,7 +168,7 @@ class SchemaService
     public static function getProductSchema(Article $article): ?array
     {
         // Only for tech/hardware categories
-        if (!in_array($article->category, ['tech', 'hardware', 'pc'])) {
+        if (! in_array($article->category, ['tech', 'hardware', 'pc'])) {
             return null;
         }
 
@@ -227,4 +227,3 @@ class SchemaService
         return $schemas;
     }
 }
-

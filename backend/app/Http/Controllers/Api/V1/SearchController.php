@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Article;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class SearchController extends Controller
 {
@@ -20,7 +21,7 @@ class SearchController extends Controller
         ]);
 
         $query = $request->input('q');
-        $cacheKey = 'search.articles.' . md5($query);
+        $cacheKey = 'search.articles.'.md5($query);
 
         // Cache for 60 seconds to prevent hammering
         $result = Cache::remember($cacheKey, 60, function () use ($query) {
@@ -52,7 +53,7 @@ class SearchController extends Controller
                         'id' => $article->id,
                         'title' => $article->title,
                         'slug' => $article->slug,
-                        'excerpt' => $article->excerpt ? \Illuminate\Support\Str::limit(strip_tags($article->excerpt), 80) : null,
+                        'excerpt' => $article->excerpt ? Str::limit(strip_tags($article->excerpt), 80) : null,
                         'image' => $article->featured_image_url,
                         'category' => $article->category?->name,
                         'category_slug' => $article->category?->slug,

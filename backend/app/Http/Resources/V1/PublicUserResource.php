@@ -23,7 +23,7 @@ class PublicUserResource extends JsonResource
             'username' => $this->username,
             'display_name' => $this->display_name,
             'avatar_url' => $this->avatar_url,
-            'cover_image' => $this->cover_image ? asset('storage/' . $this->cover_image) : null,
+            'cover_image' => $this->cover_image ? asset('storage/'.$this->cover_image) : null,
             'bio' => $this->bio,
             'location' => $this->location,
             'tagline' => $this->tagline,
@@ -45,7 +45,7 @@ class PublicUserResource extends JsonResource
                     'tier' => [
                         'name' => $this->activeSupport->tier->name,
                         'color' => $this->activeSupport->tier->badge_color ?? $this->activeSupport->tier->color ?? '#F59E0B',
-                    ]
+                    ],
                 ] : null;
             }),
             'forum_reputation' => $this->forum_reputation ?? 0,
@@ -54,8 +54,8 @@ class PublicUserResource extends JsonResource
             'gamertags' => $this->gamertags ?? [],
             'pc_specs' => $this->pc_specs ?? [],
             // Relations when loaded
-            'threads' => $this->whenLoaded('threads', fn() => $this->threads),
-            'posts' => $this->whenLoaded('posts', fn() => $this->posts),
+            'threads' => $this->whenLoaded('threads', fn () => $this->threads),
+            'posts' => $this->whenLoaded('posts', fn () => $this->posts),
         ];
     }
 }

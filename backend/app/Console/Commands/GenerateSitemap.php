@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\File;
 class GenerateSitemap extends Command
 {
     protected $signature = 'sitemap:generate';
+
     protected $description = 'Generate static sitemap XML files from SitemapController';
 
     public function handle(): int
@@ -20,16 +21,16 @@ class GenerateSitemap extends Command
         $this->info('Generating sitemaps...');
 
         $sitemaps = [
-            'sitemap.xml'            => fn () => $sitemap->index(),
-            'sitemap-pages.xml'      => fn () => $sitemap->pages(),
-            'sitemap-articles.xml'   => fn () => $sitemap->articles(),
+            'sitemap.xml' => fn () => $sitemap->index(),
+            'sitemap-pages.xml' => fn () => $sitemap->pages(),
+            'sitemap-articles.xml' => fn () => $sitemap->articles(),
             'sitemap-categories.xml' => fn () => $sitemap->categories(),
-            'sitemap-hub.xml'        => fn () => $sitemap->hub(),
-            'sitemap-guides.xml'     => fn () => $sitemap->guides(),
-            'sitemap-videos.xml'     => fn () => $sitemap->videos(),
-            'sitemap-products.xml'   => fn () => $sitemap->products(),
-            'sitemap-news.xml'       => fn () => $sitemap->news(),
-            'sitemap-images.xml'     => fn () => $sitemap->images(),
+            'sitemap-hub.xml' => fn () => $sitemap->hub(),
+            'sitemap-guides.xml' => fn () => $sitemap->guides(),
+            'sitemap-videos.xml' => fn () => $sitemap->videos(),
+            'sitemap-products.xml' => fn () => $sitemap->products(),
+            'sitemap-news.xml' => fn () => $sitemap->news(),
+            'sitemap-images.xml' => fn () => $sitemap->images(),
         ];
 
         foreach ($sitemaps as $filename => $generator) {
@@ -51,6 +52,7 @@ class GenerateSitemap extends Command
 
         $this->newLine();
         $this->info('✓ All sitemaps generated successfully!');
+
         return Command::SUCCESS;
     }
 }

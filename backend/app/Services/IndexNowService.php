@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\SiteSetting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Models\SiteSetting;
 
 class IndexNowService
 {
@@ -15,8 +15,9 @@ class IndexNowService
     {
         $key = SiteSetting::get('seo_indexnow_key');
 
-        if (!$key) {
+        if (! $key) {
             Log::warning('IndexNow: No key configured');
+
             return false;
         }
 
@@ -27,11 +28,12 @@ class IndexNowService
             $response = Http::get('https://api.indexnow.org/indexnow', [
                 'url' => $url,
                 'key' => $key,
-                'keyLocation' => config('app.url') . "/{$key}.txt",
+                'keyLocation' => config('app.url')."/{$key}.txt",
             ]);
 
             if ($response->successful() || $response->status() === 202) {
                 Log::info("IndexNow: Pinged {$url}");
+
                 return true;
             }
 
@@ -39,12 +41,14 @@ class IndexNowService
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
+
             return false;
 
         } catch (\Exception $e) {
             Log::error("IndexNow: Error pinging {$url}", [
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -56,7 +60,7 @@ class IndexNowService
     {
         $key = SiteSetting::get('seo_indexnow_key');
 
-        if (!$key || empty($urls)) {
+        if (! $key || empty($urls)) {
             return 0;
         }
 
@@ -64,19 +68,21 @@ class IndexNowService
             $response = Http::post('https://api.indexnow.org/indexnow', [
                 'host' => parse_url(config('app.frontend_url'), PHP_URL_HOST),
                 'key' => $key,
-                'keyLocation' => config('app.url') . "/{$key}.txt",
+                'keyLocation' => config('app.url')."/{$key}.txt",
                 'urlList' => array_slice($urls, 0, 10000), // Max 10k URLs
             ]);
 
             if ($response->successful() || $response->status() === 202) {
-                Log::info("IndexNow: Batch pinged " . count($urls) . " URLs");
+                Log::info('IndexNow: Batch pinged '.count($urls).' URLs');
+
                 return count($urls);
             }
 
             return 0;
 
         } catch (\Exception $e) {
-            Log::error("IndexNow: Batch error", ['error' => $e->getMessage()]);
+            Log::error('IndexNow: Batch error', ['error' => $e->getMessage()]);
+
             return 0;
         }
     }

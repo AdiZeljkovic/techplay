@@ -2,12 +2,13 @@
 
 namespace App\Filament\Resources\PageSeoResource\Schemas;
 
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Schema;
 
 class PageSeoForm
 {
@@ -78,7 +79,7 @@ class PageSeoForm
                     ->label('NoIndex (hide from search engines)')
                     ->columnSpanFull(),
 
-                \Filament\Forms\Components\RichEditor::make('seo_text')
+                RichEditor::make('seo_text')
                     ->label('Page Content (Bottom)')
                     ->helperText('Content displayed at the bottom of the page.')
                     ->columnSpanFull(),
@@ -86,4 +87,3 @@ class PageSeoForm
             ->columns(2);
     }
 }
-

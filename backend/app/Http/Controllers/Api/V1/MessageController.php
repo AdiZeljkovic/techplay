@@ -5,11 +5,12 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Message;
 use App\Models\User;
+use App\Services\SanitizationService;
 use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
-    public function store(Request $request, \App\Services\SanitizationService $sanitizer)
+    public function store(Request $request, SanitizationService $sanitizer)
     {
         $validated = $request->validate([
             'receiver_username' => 'required|exists:users,username',
@@ -91,6 +92,7 @@ class MessageController extends Controller
 
         return response()->json(['message' => 'Message deleted']);
     }
+
     public function deleteConversation(Request $request, $otherUserId)
     {
         $currentUserId = $request->user()->id;

@@ -19,23 +19,23 @@ class ImportMobyCsv extends Command
 
     // Maps CSV file name substrings to normalized platform_names tags
     private const PLATFORM_MAP = [
-        'Windows'         => ['PC', 'Windows'],
-        'Linux'           => ['PC', 'Linux'],
-        'Macintosh'       => ['PC', 'Mac'],
-        'DOS'             => ['PC', 'DOS'],
-        'PlayStation 5'   => ['PlayStation', 'PS5'],
-        'PlayStation 4'   => ['PlayStation', 'PS4'],
-        'PlayStation 3'   => ['PlayStation', 'PS3'],
-        'PlayStation 2'   => ['PlayStation', 'PS2'],
-        'PlayStation'     => ['PlayStation', 'PS1'],
-        'Xbox Series X'   => ['Xbox', 'Xbox Series X'],
-        'Xbox One'        => ['Xbox', 'Xbox One'],
-        'Xbox 360'        => ['Xbox', 'Xbox 360'],
+        'Windows' => ['PC', 'Windows'],
+        'Linux' => ['PC', 'Linux'],
+        'Macintosh' => ['PC', 'Mac'],
+        'DOS' => ['PC', 'DOS'],
+        'PlayStation 5' => ['PlayStation', 'PS5'],
+        'PlayStation 4' => ['PlayStation', 'PS4'],
+        'PlayStation 3' => ['PlayStation', 'PS3'],
+        'PlayStation 2' => ['PlayStation', 'PS2'],
+        'PlayStation' => ['PlayStation', 'PS1'],
+        'Xbox Series X' => ['Xbox', 'Xbox Series X'],
+        'Xbox One' => ['Xbox', 'Xbox One'],
+        'Xbox 360' => ['Xbox', 'Xbox 360'],
         'Nintendo Switch' => ['Nintendo', 'Switch'],
-        'Wii U'           => ['Nintendo', 'Wii U'],
-        'Wii'             => ['Nintendo', 'Wii'],
-        'Android'         => ['Mobile', 'Android'],
-        'iPhone'          => ['Mobile', 'iOS'],
+        'Wii U' => ['Nintendo', 'Wii U'],
+        'Wii' => ['Nintendo', 'Wii'],
+        'Android' => ['Mobile', 'Android'],
+        'iPhone' => ['Mobile', 'iOS'],
     ];
 
     public function handle(): int
@@ -44,6 +44,7 @@ class ImportMobyCsv extends Command
 
         if (empty($files)) {
             $this->error('No CSV files found. Provide --dir or --file.');
+
             return self::FAILURE;
         }
 
@@ -53,6 +54,7 @@ class ImportMobyCsv extends Command
         }
 
         $this->info("Done. Total rows upserted: {$total}");
+
         return self::SUCCESS;
     }
 
@@ -65,22 +67,24 @@ class ImportMobyCsv extends Command
         $dir = $this->option('dir');
         if (! $dir || ! is_dir($dir)) {
             $this->error("Directory not found: {$dir}");
+
             return [];
         }
 
-        return glob(rtrim($dir, '/') . '/*.csv') ?: [];
+        return glob(rtrim($dir, '/').'/*.csv') ?: [];
     }
 
     private function importFile(string $path): int
     {
-        $filename     = basename($path, '.csv');
+        $filename = basename($path, '.csv');
         $platformTags = $this->detectPlatformTags($filename);
 
-        $this->info("Importing: {$filename}.csv → platform tags: [" . implode(', ', $platformTags) . "]");
+        $this->info("Importing: {$filename}.csv → platform tags: [".implode(', ', $platformTags).']');
 
         $handle = fopen($path, 'r');
         if (! $handle) {
             $this->error("Cannot open: {$path}");
+
             return 0;
         }
 
@@ -88,6 +92,7 @@ class ImportMobyCsv extends Command
         $header = fgetcsv($handle);
         if (! $header) {
             fclose($handle);
+
             return 0;
         }
 
@@ -100,32 +105,35 @@ class ImportMobyCsv extends Command
         foreach ($required as $col) {
             if (! isset($colMap[$col])) {
                 $this->error("Missing required column '{$col}' in {$filename}.csv");
-                $this->line('Available columns: ' . implode(', ', $header));
+                $this->line('Available columns: '.implode(', ', $header));
                 fclose($handle);
+
                 return 0;
             }
         }
 
         $batchSize = (int) $this->option('batch');
-        $batch     = [];
-        $count     = 0;
-        $skipped   = 0;
+        $batch = [];
+        $count = 0;
+        $skipped = 0;
 
         while (($row = fgetcsv($handle)) !== false) {
             if (count($row) < count($required)) {
                 $skipped++;
+
                 continue;
             }
 
-            $mobyId      = (int) ($row[$colMap['game_id']] ?? 0);
-            $title       = trim($row[$colMap['title']] ?? '');
-            $mobyUrl     = trim($row[$colMap['moby_url']] ?? '');
+            $mobyId = (int) ($row[$colMap['game_id']] ?? 0);
+            $title = trim($row[$colMap['title']] ?? '');
+            $mobyUrl = trim($row[$colMap['moby_url']] ?? '');
             $releaseYear = trim($row[$colMap['release_year'] ?? -1] ?? '');
-            $mobyScore   = trim($row[$colMap['moby_score'] ?? -1] ?? '');
-            $genresRaw   = trim($row[$colMap['genres'] ?? -1] ?? '');
+            $mobyScore = trim($row[$colMap['moby_score'] ?? -1] ?? '');
+            $genresRaw = trim($row[$colMap['genres'] ?? -1] ?? '');
 
             if (! $mobyId || ! $title || ! $mobyUrl) {
                 $skipped++;
+
                 continue;
             }
 
@@ -137,7 +145,7 @@ class ImportMobyCsv extends Command
             // Parse release date
             $released = null;
             if ($releaseYear && is_numeric($releaseYear)) {
-                $released = $releaseYear . '-01-01';
+                $released = $releaseYear.'-01-01';
             }
 
             // Parse genres: comma-separated string
@@ -148,10 +156,10 @@ class ImportMobyCsv extends Command
 
             // Build record
             $record = [
-                'moby_id'          => $mobyId,
-                'slug'             => $slug,
-                'name'             => $title,
-                'has_description'  => false,
+                'moby_id' => $mobyId,
+                'slug' => $slug,
+                'name' => $title,
+                'has_description' => false,
             ];
 
             if ($released) {
@@ -163,8 +171,8 @@ class ImportMobyCsv extends Command
             }
 
             $batch[] = [
-                'record'       => $record,
-                'genreNames'   => $genreNames,
+                'record' => $record,
+                'genreNames' => $genreNames,
                 'platformTags' => $platformTags,
             ];
 
@@ -214,7 +222,7 @@ class ImportMobyCsv extends Command
             if (! empty($item['platformTags'])) {
                 // Merge with existing platform_names (multiple CSVs may cover same game)
                 $existing = $this->getTextArray($game->id, 'platform_names');
-                $merged   = array_unique(array_merge($existing, $item['platformTags']));
+                $merged = array_unique(array_merge($existing, $item['platformTags']));
                 $this->updateTextArray($game->id, 'platform_names', $merged);
             }
         }
@@ -224,7 +232,7 @@ class ImportMobyCsv extends Command
 
     private function updateTextArray(int $gameId, string $column, array $values): void
     {
-        $literal = '{' . implode(',', array_map(fn($v) => '"' . addslashes($v) . '"', $values)) . '}';
+        $literal = '{'.implode(',', array_map(fn ($v) => '"'.addslashes($v).'"', $values)).'}';
         DB::statement("UPDATE games SET {$column} = ? WHERE id = ?", [$literal, $gameId]);
     }
 
@@ -251,6 +259,7 @@ class ImportMobyCsv extends Command
         foreach ($matches[0] as $m) {
             $values[] = trim($m, '"');
         }
+
         return $values;
     }
 
@@ -260,7 +269,7 @@ class ImportMobyCsv extends Command
         $map = self::PLATFORM_MAP;
         arsort($map); // sort by value length descending — but we need by key length
         $sorted = $map;
-        uksort($sorted, fn($a, $b) => strlen($b) - strlen($a));
+        uksort($sorted, fn ($a, $b) => strlen($b) - strlen($a));
 
         foreach ($sorted as $keyword => $tags) {
             if (stripos($filename, $keyword) !== false) {

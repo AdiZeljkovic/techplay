@@ -4,24 +4,26 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\WowAnalysis;
-use App\Services\BlizzardService;
-use App\Services\BlizzardDataTransformer;
 use App\Services\BlizzardDataTransformerV2;
-use App\Services\RaiderIOService;
-use App\Services\GroqService;
+use App\Services\BlizzardService;
 use App\Services\CacheService;
+use App\Services\GroqService;
+use App\Services\RaiderIOService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Validator;
 
 class WowAnalyzerController extends Controller
 {
     use ApiResponse;
 
     protected BlizzardService $blizzardService;
+
     protected BlizzardDataTransformerV2 $transformer;
+
     protected RaiderIOService $rioService;
+
     protected GroqService $aiService;
 
     public function __construct(
@@ -65,7 +67,7 @@ class WowAnalyzerController extends Controller
             // Step 1: Fetch ALL data in parallel (4x faster)
             $data = $this->blizzardService->fetchAllCharacterData($region, $realmSlug, $characterName);
 
-            if (!$data['profile']) {
+            if (! $data['profile']) {
                 return $this->error('Character not found. Check spelling and realm.', 404);
             }
 
@@ -103,7 +105,7 @@ class WowAnalyzerController extends Controller
             // Step 4: Call Analysis Service (Groq - Llama 3.3 70B)
             $analysis = $this->aiService->analyzeCharacterReadiness($payload);
 
-            if (!$analysis) {
+            if (! $analysis) {
                 return $this->error('Professor Buffy is currently unavailable. Please try again in a moment!', 503);
             }
 
@@ -305,7 +307,7 @@ class WowAnalyzerController extends Controller
     {
         $analysis = WowAnalysis::find($id);
 
-        if (!$analysis) {
+        if (! $analysis) {
             return $this->error('Analysis not found', 404);
         }
 
@@ -326,7 +328,7 @@ class WowAnalyzerController extends Controller
     {
         $analysis = WowAnalysis::find($id);
 
-        if (!$analysis) {
+        if (! $analysis) {
             return $this->error('Analysis not found', 404);
         }
 
@@ -347,7 +349,7 @@ class WowAnalyzerController extends Controller
     public function getRealms(string $region)
     {
         // Validate region
-        if (!in_array($region, ['us', 'eu', 'kr', 'tw'])) {
+        if (! in_array($region, ['us', 'eu', 'kr', 'tw'])) {
             return $this->error('Invalid region. Must be us, eu, kr, or tw.', 400);
         }
 
@@ -357,7 +359,7 @@ class WowAnalyzerController extends Controller
         return Cache::remember($cacheKey, CacheService::TTL_WEEK, function () use ($region) {
             $data = $this->blizzardService->getRealmIndex($region);
 
-            if (!$data || !isset($data['realms'])) {
+            if (! $data || ! isset($data['realms'])) {
                 return $this->error('Failed to fetch realms from Blizzard API', 503);
             }
 

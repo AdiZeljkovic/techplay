@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 class FixImagePaths extends Command
 {
     protected $signature = 'images:fix-paths {--dry-run : Show what would be updated without making changes}';
+
     protected $description = 'Update database image paths from .jpg/.png to .webp if the webp file exists';
 
     public function handle(): int
@@ -45,15 +46,15 @@ class FixImagePaths extends Command
             $newPath = str_replace($relativePath, $newRelativePath, $oldPath);
 
             if (Storage::disk('public')->exists($newRelativePath)) {
-                if (!$dryRun) {
+                if (! $dryRun) {
                     DB::table('articles')
                         ->where('id', $article->id)
                         ->update(['featured_image_url' => $newPath]);
                 }
-                $this->line("  ✅ Updated: " . basename($oldPath) . " → " . basename($newPath));
+                $this->line('  ✅ Updated: '.basename($oldPath).' → '.basename($newPath));
                 $totalUpdated++;
             } else {
-                $this->line("  ⏭️  " . basename($oldPath) . " (no webp at: {$newRelativePath})");
+                $this->line('  ⏭️  '.basename($oldPath)." (no webp at: {$newRelativePath})");
             }
         }
 
@@ -75,15 +76,15 @@ class FixImagePaths extends Command
             $newPath = str_replace($relativePath, $newRelativePath, $oldPath);
 
             if (Storage::disk('public')->exists($newRelativePath)) {
-                if (!$dryRun) {
+                if (! $dryRun) {
                     DB::table('reviews')
                         ->where('id', $review->id)
                         ->update(['cover_image' => $newPath]);
                 }
-                $this->line("  ✅ Updated: " . basename($oldPath) . " → " . basename($newPath));
+                $this->line('  ✅ Updated: '.basename($oldPath).' → '.basename($newPath));
                 $totalUpdated++;
             } else {
-                $this->line("  ⏭️  " . basename($oldPath) . " (no webp at: {$newRelativePath})");
+                $this->line('  ⏭️  '.basename($oldPath)." (no webp at: {$newRelativePath})");
             }
         }
 

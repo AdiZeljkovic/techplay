@@ -4,8 +4,8 @@ namespace App\Filament\Resources\GiveawayResource\Pages;
 
 use App\Filament\Resources\GiveawayResource;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
 use Filament\Notifications\Notification;
+use Filament\Resources\Pages\EditRecord;
 
 class EditGiveaway extends EditRecord
 {
@@ -17,7 +17,7 @@ class EditGiveaway extends EditRecord
             Actions\Action::make('viewGiveaway')
                 ->label('View Giveaway')
                 ->icon('heroicon-o-eye')
-                ->url(fn() => $this->record->getPublicUrl())
+                ->url(fn () => $this->record->getPublicUrl())
                 ->openUrlInNewTab(),
 
             Actions\Action::make('copyLink')
@@ -31,7 +31,7 @@ class EditGiveaway extends EditRecord
                         ->send();
                 })
                 ->extraAttributes([
-                    'x-on:click' => "navigator.clipboard.writeText('" . ($this->record?->getPublicUrl() ?? '') . "')",
+                    'x-on:click' => "navigator.clipboard.writeText('".($this->record?->getPublicUrl() ?? '')."')",
                 ]),
 
             Actions\DeleteAction::make(),

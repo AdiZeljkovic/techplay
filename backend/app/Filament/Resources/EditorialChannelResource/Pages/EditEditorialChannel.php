@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\EditorialChannelResource\Pages;
 
 use App\Filament\Resources\EditorialChannelResource;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditEditorialChannel extends EditRecord
@@ -12,7 +13,7 @@ class EditEditorialChannel extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

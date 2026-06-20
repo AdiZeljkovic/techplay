@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Product;
 use App\Services\CacheService;
 use Illuminate\Http\Request;
@@ -96,7 +95,8 @@ class ShopController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Order failed: ' . $e->getMessage()], 400);
+
+            return response()->json(['message' => 'Order failed: '.$e->getMessage()], 400);
         }
     }
 }

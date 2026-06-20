@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class GiveawayEntry extends Model
@@ -39,11 +40,11 @@ class GiveawayEntry extends Model
 
         // Invalidate leaderboard cache when points change
         static::updated(function ($entry) {
-            \Illuminate\Support\Facades\Cache::forget("giveaway:{$entry->giveaway_id}:leaderboard");
+            Cache::forget("giveaway:{$entry->giveaway_id}:leaderboard");
         });
 
         static::created(function ($entry) {
-            \Illuminate\Support\Facades\Cache::forget("giveaway:{$entry->giveaway_id}:leaderboard");
+            Cache::forget("giveaway:{$entry->giveaway_id}:leaderboard");
         });
     }
 
@@ -91,8 +92,9 @@ class GiveawayEntry extends Model
     public function getWinChance(): float
     {
         $totalPool = $this->giveaway->getTotalEntryPool();
-        if ($totalPool === 0)
+        if ($totalPool === 0) {
             return 0;
+        }
 
         return round(($this->total_points / $totalPool) * 100, 2);
     }
@@ -104,7 +106,7 @@ class GiveawayEntry extends Model
 
     public function getReferralUrl(): string
     {
-        return $this->giveaway->getPublicUrl() . '?ref=' . $this->referral_code;
+        return $this->giveaway->getPublicUrl().'?ref='.$this->referral_code;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -121,11 +123,12 @@ class GiveawayEntry extends Model
         $lastVisit = $this->last_visit_date;
 
         // First visit
-        if (!$lastVisit) {
+        if (! $lastVisit) {
             $this->update([
                 'streak_days' => 1,
                 'last_visit_date' => $today,
             ]);
+
             return ['streak' => 1, 'bonus' => 0, 'message' => 'Streak started!'];
         }
 
@@ -197,10 +200,10 @@ class GiveawayEntry extends Model
      */
     public function canClaimDailyBonus(): bool
     {
-        if (!$this->last_visit_date) {
+        if (! $this->last_visit_date) {
             return true;
         }
 
-        return !$this->last_visit_date->isToday();
+        return ! $this->last_visit_date->isToday();
     }
 }

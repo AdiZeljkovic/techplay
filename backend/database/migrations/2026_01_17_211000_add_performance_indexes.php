@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Schema;
  * PERFORMANCE: Add indexes for commonly queried foreign keys and filters
  * This migration improves query performance for articles, threads, posts, and comments
  */
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         // Articles indexes

@@ -1,0 +1,133 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1;
+
+use App\Http\Controllers\Controller;
+use App\Models\UserGame;
+use App\Traits\ApiResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
+class BacklogAdvisorController extends Controller
+{
+    use ApiResponse;
+
+    private const MOODS = ['action', 'relaxed', 'story', 'competitive', 'any'];
+
+    /**
+     * POST /backlog/suggest — AI picks the best backlog game based on mood + time.
+     */
+    public function suggest(Request $request): JsonResponse
+    {
+        $request->validate([
+            'mood' => 'nullable|in:action,relaxed,story,competitive,any',
+            'time_available' => 'nullable|integer|min:1|max:100',
+            'platform' => 'nullable|string|max:60',
+        ]);
+
+        $mood = $request->input('mood', 'any');
+        $timeAvailable = $request->input('time_available', 3);
+        $platform = $request->input('platform', '');
+
+        $backlog = UserGame::where('user_id', Auth::id())
+            ->where('status', 'backlog')
+            ->with('game:id,name,slug,background_image,genre_names,platform_names,rating')
+            ->orderByDesc('updated_at')
+            ->limit(40)
+            ->get();
+
+        if ($backlog->isEmpty()) {
+            return $this->error('Your backlog is empty — add some games first!', 422);
+        }
+
+        $gameList = $backlog->map(function ($entry) {
+            $g = $entry->game;
+            if (! $g) {
+                return null;
+            }
+            $genres = is_array($g->genre_names) ? implode(', ', array_slice($g->genre_names, 0, 3)) : '';
+
+            return "- {$g->name}".($genres ? " [{$genres}]" : '').($g->rating ? " (rating: {$g->rating})" : '');
+        })->filter()->implode("\n");
+
+        $platformNote = $platform ? "The user prefers playing on: {$platform}." : '';
+        $moodNote = $mood !== 'any' ? "Current mood: {$mood} games." : '';
+        $timeNote = "Available time: approximately {$timeAvailable} hour(s).";
+
+        $prompt = <<<PROMPT
+You are a gaming advisor. The user has these games in their backlog:
+
+{$gameList}
+
+{$moodNote} {$timeNote} {$platformNote}
+
+Pick the SINGLE BEST game from the list above that fits the user's current mood and available time. Respond ONLY in JSON with this exact structure:
+{
+  "game_name": "<exact name from the list>",
+  "reason": "<2-3 sentence explanation why this fits now>",
+  "mood_match": "<how it fits the mood>",
+  "estimated_hours": <number>
+}
+PROMPT;
+
+        try {
+            $apiKey = config('services.gemini.api_key');
+            $model = config('services.gemini.model', 'gemini-2.5-flash');
+
+            $response = Http::timeout(30)->post(
+                "https://generativelanguage.googleapis.com/v1/models/{$model}:generateContent?key={$apiKey}",
+                [
+                    'contents' => [['parts' => [['text' => $prompt]]]],
+                    'generationConfig' => ['temperature' => 0.7, 'maxOutputTokens' => 512],
+                ]
+            );
+
+            if ($response->failed()) {
+                throw new \RuntimeException('Gemini API call failed: '.$response->status());
+            }
+
+            $text = $response->json('candidates.0.content.parts.0.text', '');
+            $text = preg_replace('/```json|```/', '', $text);
+            $aiData = json_decode(trim($text), true);
+
+            if (! is_array($aiData) || empty($aiData['game_name'])) {
+                throw new \RuntimeException('Invalid AI response');
+            }
+
+            // Find matching game in backlog for slug + image
+            $matched = $backlog->first(fn ($e) => $e->game && strtolower($e->game->name) === strtolower($aiData['game_name']));
+
+            return $this->success([
+                'game_name' => $aiData['game_name'],
+                'reason' => $aiData['reason'] ?? '',
+                'mood_match' => $aiData['mood_match'] ?? '',
+                'estimated_hours' => $aiData['estimated_hours'] ?? $timeAvailable,
+                'game' => $matched?->game ? [
+                    'slug' => $matched->game->slug,
+                    'background_image' => $matched->game->background_image,
+                    'rating' => $matched->game->rating,
+                ] : null,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('BacklogAdvisor AI failed', ['error' => $e->getMessage()]);
+
+            // Graceful fallback: pick random from backlog
+            $fallback = $backlog->random();
+
+            return $this->success([
+                'game_name' => $fallback->game?->name ?? 'Unknown',
+                'reason' => 'Our AI advisor is taking a break. Here\'s a random pick from your backlog!',
+                'mood_match' => '',
+                'estimated_hours' => $timeAvailable,
+                'game' => $fallback->game ? [
+                    'slug' => $fallback->game->slug,
+                    'background_image' => $fallback->game->background_image,
+                    'rating' => $fallback->game->rating,
+                ] : null,
+            ]);
+        }
+    }
+}

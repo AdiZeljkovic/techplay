@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Data\MidnightData;
-use Carbon\Carbon;
 
 /**
  * Blizzard Data Transformer - Midnight Edition
@@ -102,7 +101,7 @@ class BlizzardDataTransformer
      */
     protected function hasVoidElfAchievement(array $achievements): bool
     {
-        if (!isset($achievements['achievements'])) {
+        if (! isset($achievements['achievements'])) {
             return false;
         }
 
@@ -122,7 +121,7 @@ class BlizzardDataTransformer
     {
         $loreAchievements = [];
 
-        if (!isset($achievements['achievements'])) {
+        if (! isset($achievements['achievements'])) {
             return $loreAchievements;
         }
 
@@ -172,10 +171,19 @@ class BlizzardDataTransformer
      */
     protected function getHousingRating(int $score): string
     {
-        if ($score >= 90) return 'Legendary Collector';
-        if ($score >= 75) return 'Epic Decorator';
-        if ($score >= 60) return 'Rare Enthusiast';
-        if ($score >= 40) return 'Uncommon Start';
+        if ($score >= 90) {
+            return 'Legendary Collector';
+        }
+        if ($score >= 75) {
+            return 'Epic Decorator';
+        }
+        if ($score >= 60) {
+            return 'Rare Enthusiast';
+        }
+        if ($score >= 40) {
+            return 'Uncommon Start';
+        }
+
         return 'Common Beginner';
     }
 
@@ -235,13 +243,13 @@ class BlizzardDataTransformer
                         'name' => 'Collect 300+ Mounts',
                         'completed' => ($mounts['total_mounts'] ?? 0) >= 300,
                         'priority' => 'HIGH',
-                        'progress' => ($mounts['total_mounts'] ?? 0) . '/300',
+                        'progress' => ($mounts['total_mounts'] ?? 0).'/300',
                     ],
                     [
                         'name' => 'Collect 10+ Void Mounts',
                         'completed' => ($mounts['void_mount_count'] ?? 0) >= 10,
                         'priority' => 'MEDIUM',
-                        'progress' => ($mounts['void_mount_count'] ?? 0) . '/10',
+                        'progress' => ($mounts['void_mount_count'] ?? 0).'/10',
                     ],
                 ],
             ],

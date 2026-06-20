@@ -25,7 +25,7 @@ class SendGiveawayReminders implements ShouldQueue
             ->where('is_public', true)
             ->whereBetween('ends_at', [
                 now()->addHours(23),
-                now()->addHours(25)
+                now()->addHours(25),
             ])
             ->with('entries.user')
             ->get();

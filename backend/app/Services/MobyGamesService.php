@@ -63,8 +63,8 @@ class MobyGamesService
     public function getGames(int $offset = 0, int $limit = 100): ?array
     {
         return $this->request('/games', [
-            'limit'   => $limit,
-            'offset'  => $offset,
+            'limit' => $limit,
+            'offset' => $offset,
             'include' => 'publishers,developers',
         ]);
     }
@@ -77,8 +77,8 @@ class MobyGamesService
         return $this->request('/games', [
             'company' => $companyId,
             'include' => 'publishers,developers',
-            'limit'   => 100,
-            'offset'  => $offset,
+            'limit' => 100,
+            'offset' => $offset,
         ]);
     }
 
@@ -88,8 +88,8 @@ class MobyGamesService
     public function searchGames(string $query, int $offset = 0): ?array
     {
         return $this->request('/games', [
-            'title'  => $query,
-            'limit'  => 100,
+            'title' => $query,
+            'limit' => 100,
             'offset' => $offset,
         ]);
     }
@@ -107,7 +107,7 @@ class MobyGamesService
         try {
             $response = Http::timeout(30)
                 ->retry(2, 10000)
-                ->get(self::BASE_URL . $endpoint, $params);
+                ->get(self::BASE_URL.$endpoint, $params);
 
             if ($response->successful()) {
                 return $response->json();
@@ -115,15 +115,15 @@ class MobyGamesService
 
             Log::warning('MobyGames API error', [
                 'endpoint' => $endpoint,
-                'status'   => $response->status(),
-                'body'     => $response->body(),
+                'status' => $response->status(),
+                'body' => $response->body(),
             ]);
 
             return null;
         } catch (\Throwable $e) {
             Log::error('MobyGames API exception', [
                 'endpoint' => $endpoint,
-                'error'    => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
 
             return null;
@@ -148,7 +148,7 @@ class MobyGamesService
      * Pick the "primary" platform_id for enrichment API calls.
      * Prefers Windows (id=3), then any PC platform, then the first in the list.
      *
-     * @param array $platforms  Array of { platform_id, platform_name, first_release_date }
+     * @param  array  $platforms  Array of { platform_id, platform_name, first_release_date }
      */
     public static function primaryPlatformId(array $platforms): ?int
     {
@@ -190,12 +190,12 @@ class MobyGamesService
 
         // Year-month
         if (preg_match('/^\d{4}-\d{2}$/', $date)) {
-            return $date . '-01';
+            return $date.'-01';
         }
 
         // Year only
         if (preg_match('/^\d{4}$/', $date)) {
-            return $date . '-01-01';
+            return $date.'-01-01';
         }
 
         return null;
@@ -204,7 +204,7 @@ class MobyGamesService
     /**
      * Find the earliest release date across all platforms.
      *
-     * @param array $platforms  Array of { platform_id, platform_name, first_release_date }
+     * @param  array  $platforms  Array of { platform_id, platform_name, first_release_date }
      */
     public static function earliestReleaseDate(array $platforms): ?string
     {
@@ -221,6 +221,7 @@ class MobyGamesService
         }
 
         sort($dates);
+
         return $dates[0];
     }
 
@@ -239,39 +240,40 @@ class MobyGamesService
                 }
             }
         }
+
         return $names;
     }
 
     private static function platformTags(string $name): array
     {
         $map = [
-            'Windows'          => ['PC', 'Windows'],
-            'DOS'              => ['PC', 'DOS'],
-            'Linux'            => ['PC', 'Linux'],
-            'Macintosh'        => ['PC', 'Mac'],
-            'Mac OS X'         => ['PC', 'Mac'],
-            'macOS'            => ['PC', 'Mac'],
-            'PlayStation 5'    => ['PlayStation', 'PS5'],
-            'PlayStation 4'    => ['PlayStation', 'PS4'],
-            'PlayStation 3'    => ['PlayStation', 'PS3'],
-            'PlayStation 2'    => ['PlayStation', 'PS2'],
-            'PlayStation'      => ['PlayStation', 'PS1'],
-            'PS Vita'          => ['PlayStation', 'PS Vita'],
-            'PSP'              => ['PlayStation', 'PSP'],
-            'Xbox Series X'    => ['Xbox', 'Xbox Series X'],
-            'Xbox One'         => ['Xbox', 'Xbox One'],
-            'Xbox 360'         => ['Xbox', 'Xbox 360'],
-            'Xbox'             => ['Xbox', 'Xbox'],
-            'Nintendo Switch'  => ['Nintendo', 'Switch'],
-            'Wii U'            => ['Nintendo', 'Wii U'],
-            'Wii'              => ['Nintendo', 'Wii'],
-            'Nintendo 64'      => ['Nintendo', 'N64'],
-            'Super Nintendo'   => ['Nintendo', 'SNES'],
-            'Nintendo DS'      => ['Nintendo', 'DS'],
-            '3DS'              => ['Nintendo', '3DS'],
-            'Game Boy Advance'  => ['Nintendo', 'GBA'],
-            'Android'          => ['Mobile', 'Android'],
-            'iPhone'           => ['Mobile', 'iOS'],
+            'Windows' => ['PC', 'Windows'],
+            'DOS' => ['PC', 'DOS'],
+            'Linux' => ['PC', 'Linux'],
+            'Macintosh' => ['PC', 'Mac'],
+            'Mac OS X' => ['PC', 'Mac'],
+            'macOS' => ['PC', 'Mac'],
+            'PlayStation 5' => ['PlayStation', 'PS5'],
+            'PlayStation 4' => ['PlayStation', 'PS4'],
+            'PlayStation 3' => ['PlayStation', 'PS3'],
+            'PlayStation 2' => ['PlayStation', 'PS2'],
+            'PlayStation' => ['PlayStation', 'PS1'],
+            'PS Vita' => ['PlayStation', 'PS Vita'],
+            'PSP' => ['PlayStation', 'PSP'],
+            'Xbox Series X' => ['Xbox', 'Xbox Series X'],
+            'Xbox One' => ['Xbox', 'Xbox One'],
+            'Xbox 360' => ['Xbox', 'Xbox 360'],
+            'Xbox' => ['Xbox', 'Xbox'],
+            'Nintendo Switch' => ['Nintendo', 'Switch'],
+            'Wii U' => ['Nintendo', 'Wii U'],
+            'Wii' => ['Nintendo', 'Wii'],
+            'Nintendo 64' => ['Nintendo', 'N64'],
+            'Super Nintendo' => ['Nintendo', 'SNES'],
+            'Nintendo DS' => ['Nintendo', 'DS'],
+            '3DS' => ['Nintendo', '3DS'],
+            'Game Boy Advance' => ['Nintendo', 'GBA'],
+            'Android' => ['Mobile', 'Android'],
+            'iPhone' => ['Mobile', 'iOS'],
         ];
 
         foreach ($map as $key => $tags) {
@@ -286,17 +288,17 @@ class MobyGamesService
     /**
      * Split MobyGames genres into genre_names (Basic Genres) and tag_names (everything else).
      *
-     * @param array $genres  Array of { genre_category, genre_name }
+     * @param  array  $genres  Array of { genre_category, genre_name }
      * @return array{ genre_names: string[], tag_names: string[] }
      */
     public static function splitGenres(array $genres): array
     {
         $genreNames = [];
-        $tagNames   = [];
+        $tagNames = [];
 
         foreach ($genres as $g) {
             $category = $g['genre_category'] ?? '';
-            $name     = $g['genre_name'] ?? '';
+            $name = $g['genre_name'] ?? '';
 
             if (! $name) {
                 continue;

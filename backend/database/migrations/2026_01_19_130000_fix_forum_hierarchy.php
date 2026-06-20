@@ -1,32 +1,31 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         // Define the hierarchy we want to restore
         $structure = [
             'Community' => [
                 'icon' => 'users',
-                'children' => ['news-announcements', 'feedback-support', 'the-lounge']
+                'children' => ['news-announcements', 'feedback-support', 'the-lounge'],
             ],
             'Gaming' => [
                 'icon' => 'gamepad-2',
-                'children' => ['general-gaming', 'game-reviews', 'user-reviews', 'esports']
+                'children' => ['general-gaming', 'game-reviews', 'user-reviews', 'esports'],
             ],
             'Hardware' => [
                 'icon' => 'cpu',
-                'children' => ['pc-builds', 'consoles', 'peripherals']
+                'children' => ['pc-builds', 'consoles', 'peripherals'],
             ],
             'Marketplace' => [
                 'icon' => 'shopping-bag',
-                'children' => ['marketplace', 'buy-sell-trade']
-            ]
+                'children' => ['marketplace', 'buy-sell-trade'],
+            ],
         ];
 
         foreach ($structure as $parentName => $data) {
@@ -56,7 +55,7 @@ return new class extends Migration {
                     ->where('type', 'forum')
                     ->update([
                         'parent_id' => $parentId,
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ]);
             }
         }

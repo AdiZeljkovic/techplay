@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Mews\Purifier\Facades\Purifier;
+
 /**
  * Centralized content sanitization service
  *
@@ -61,7 +63,7 @@ class SanitizationService
      */
     public function sanitizeRichContent(string $content): string
     {
-        return \Mews\Purifier\Facades\Purifier::clean($content, 'forum');
+        return Purifier::clean($content, 'forum');
     }
 
     /**
@@ -71,7 +73,7 @@ class SanitizationService
      */
     public function sanitizeStaffContent(string $content): string
     {
-        return \Mews\Purifier\Facades\Purifier::clean($content, 'staff_content');
+        return Purifier::clean($content, 'staff_content');
     }
 
     /**

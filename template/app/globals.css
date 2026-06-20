@@ -1,0 +1,27 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-tp-bg-main: #05070A;
+  --color-tp-bg-sec: #080D11;
+  --color-tp-bg-tert: #0B1117;
+  
+  --color-tp-panel-1: #101820;
+  --color-tp-panel-2: #131C24;
+  --color-tp-panel-3: #17212B;
+  
+  --color-tp-accent: #FF5A00;
+  --color-tp-accent-hover: #FF6A00;
+  
+  --color-tp-light: #F4F4F1;
+
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

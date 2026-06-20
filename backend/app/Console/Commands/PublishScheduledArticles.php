@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 class PublishScheduledArticles extends Command
 {
     protected $signature = 'articles:publish-scheduled';
+
     protected $description = 'Publish articles scheduled for release at or before now';
 
     public function handle(): void
@@ -26,7 +27,7 @@ class PublishScheduledArticles extends Command
 
         Article::whereIn('id', $ids)->update(['status' => 'published']);
 
-        Log::info('PublishScheduledArticles: published ' . count($ids) . ' articles', ['ids' => $ids]);
+        Log::info('PublishScheduledArticles: published '.count($ids).' articles', ['ids' => $ids]);
 
         // Trigger ISR revalidation for each published article
         $revalidateToken = config('services.revalidate.token');
@@ -48,7 +49,7 @@ class PublishScheduledArticles extends Command
                     try {
                         Http::withToken($revalidateToken)->post($revalidateUrl, ['path' => $path]);
                     } catch (\Throwable $e) {
-                        Log::warning("Failed to revalidate {$path}: " . $e->getMessage());
+                        Log::warning("Failed to revalidate {$path}: ".$e->getMessage());
                     }
                 }
             }

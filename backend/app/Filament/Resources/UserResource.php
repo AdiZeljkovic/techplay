@@ -4,17 +4,18 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Schemas\Schema;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
@@ -34,7 +35,7 @@ class UserResource extends Resource
         return $data;
     }
 
-    public static function getRecord($key): \Illuminate\Database\Eloquent\Model
+    public static function getRecord($key): Model
     {
         return parent::getRecord($key)->makeVisible('email');
     }
@@ -43,11 +44,13 @@ class UserResource extends Resource
     {
         return 'Community';
     }
+
     protected static ?int $navigationSort = 1;
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
+
         // Check Spatie permissions OR old role column for backwards compatibility
         return $user && ($user->can('manage users') || in_array($user->role ?? '', ['admin', 'super_admin']));
     }
@@ -66,9 +69,9 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('password')
                     ->password()
                     ->maxLength(255)
-                    ->dehydrateStateUsing(fn($state) => filled($state) ? Hash::make($state) : null)
-                    ->required(fn(string $context): bool => $context === 'create')
-                    ->dehydrated(fn($state) => filled($state)),
+                    ->dehydrateStateUsing(fn ($state) => filled($state) ? Hash::make($state) : null)
+                    ->required(fn (string $context): bool => $context === 'create')
+                    ->dehydrated(fn ($state) => filled($state)),
                 Forms\Components\Select::make('roles')
                     ->relationship('roles', 'name')
                     ->multiple()
@@ -87,7 +90,7 @@ class UserResource extends Resource
                     ->columnSpanFull(),
                 Forms\Components\KeyValue::make('settings')
                     ->columnSpanFull(),
-                \Filament\Schemas\Components\Section::make('Ban Management')
+                Section::make('Ban Management')
                     ->icon('heroicon-o-no-symbol')
                     ->collapsible()
                     ->collapsed()
@@ -99,7 +102,7 @@ class UserResource extends Resource
                         Forms\Components\Textarea::make('ban_reason')
                             ->label('Ban Reason')
                             ->rows(2)
-                            ->visible(fn($get) => $get('is_banned'))
+                            ->visible(fn ($get) => $get('is_banned'))
                             ->placeholder('Razlog bana...')
                             ->columnSpanFull(),
                     ])
@@ -117,7 +120,7 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('roles.name')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Super Admin' => 'danger',
                         'Editor-in-Chief' => 'danger',
                         'Editor' => 'warning',

@@ -22,8 +22,9 @@ class KeywordDensityService
             'suggestions' => [],
         ];
 
-        if (!$focusKeyword) {
+        if (! $focusKeyword) {
             $result['suggestions'][] = 'Set a focus keyword for better SEO analysis';
+
             return $result;
         }
 
@@ -43,8 +44,8 @@ class KeywordDensityService
         ];
 
         // Check keyword in headings
-        $inH1 = (bool) preg_match('/<h1[^>]*>.*?' . preg_quote($focusKeyword, '/') . '.*?<\/h1>/is', $contentLower);
-        $inH2 = (bool) preg_match('/<h2[^>]*>.*?' . preg_quote($focusKeyword, '/') . '.*?<\/h2>/is', $contentLower);
+        $inH1 = (bool) preg_match('/<h1[^>]*>.*?'.preg_quote($focusKeyword, '/').'.*?<\/h1>/is', $contentLower);
+        $inH2 = (bool) preg_match('/<h2[^>]*>.*?'.preg_quote($focusKeyword, '/').'.*?<\/h2>/is', $contentLower);
 
         $result['heading_usage'] = [
             'in_h1' => $inH1,
@@ -67,23 +68,23 @@ class KeywordDensityService
         } elseif ($density > 3) {
             $result['issues'][] = [
                 'type' => 'warning',
-                'message' => 'Keyword stuffing detected - density too high (' . $density . '%)',
+                'message' => 'Keyword stuffing detected - density too high ('.$density.'%)',
             ];
         } elseif ($density < 0.5) {
             $result['issues'][] = [
                 'type' => 'info',
-                'message' => 'Focus keyword density is low (' . $density . '%) - consider adding more instances',
+                'message' => 'Focus keyword density is low ('.$density.'%) - consider adding more instances',
             ];
         }
 
-        if (!$inH1 && !$inH2) {
+        if (! $inH1 && ! $inH2) {
             $result['issues'][] = [
                 'type' => 'warning',
                 'message' => 'Focus keyword not found in any heading (H1 or H2)',
             ];
         }
 
-        if (!$result['in_first_paragraph']) {
+        if (! $result['in_first_paragraph']) {
             $result['issues'][] = [
                 'type' => 'info',
                 'message' => 'Focus keyword not found in first paragraph',
@@ -98,7 +99,7 @@ class KeywordDensityService
         if ($wordCount < 300) {
             $result['issues'][] = [
                 'type' => 'warning',
-                'message' => 'Content is too short (' . $wordCount . ' words) - aim for 500+ words',
+                'message' => 'Content is too short ('.$wordCount.' words) - aim for 500+ words',
             ];
         } elseif ($wordCount > 1500) {
             $result['suggestions'][] = 'Long-form content (good for SEO)';
@@ -115,12 +116,16 @@ class KeywordDensityService
      */
     private static function getDensityStatus(float $density): string
     {
-        if ($density === 0)
+        if ($density === 0) {
             return 'missing';
-        if ($density < 0.5)
+        }
+        if ($density < 0.5) {
             return 'low';
-        if ($density > 3)
+        }
+        if ($density > 3) {
             return 'high';
+        }
+
         return 'optimal';
     }
 
@@ -133,38 +138,45 @@ class KeywordDensityService
 
         // Keyword density
         $densityStatus = $result['focus_keyword']['status'] ?? 'missing';
-        if ($densityStatus === 'optimal')
+        if ($densityStatus === 'optimal') {
             $score += 20;
-        elseif ($densityStatus === 'low')
+        } elseif ($densityStatus === 'low') {
             $score += 10;
-        elseif ($densityStatus === 'high')
+        } elseif ($densityStatus === 'high') {
             $score -= 10;
-        elseif ($densityStatus === 'missing')
+        } elseif ($densityStatus === 'missing') {
             $score -= 20;
+        }
 
         // Heading usage
-        if ($result['heading_usage']['in_h1'] ?? false)
+        if ($result['heading_usage']['in_h1'] ?? false) {
             $score += 10;
-        if ($result['heading_usage']['in_h2'] ?? false)
+        }
+        if ($result['heading_usage']['in_h2'] ?? false) {
             $score += 5;
+        }
 
         // First paragraph
-        if ($result['in_first_paragraph'] ?? false)
+        if ($result['in_first_paragraph'] ?? false) {
             $score += 10;
+        }
 
         // Word count
         $wordCount = $result['word_count'] ?? 0;
-        if ($wordCount >= 500)
+        if ($wordCount >= 500) {
             $score += 5;
-        if ($wordCount >= 1000)
+        }
+        if ($wordCount >= 1000) {
             $score += 5;
+        }
 
         // Deduct for issues
         foreach ($result['issues'] as $issue) {
-            if ($issue['type'] === 'critical')
+            if ($issue['type'] === 'critical') {
                 $score -= 15;
-            elseif ($issue['type'] === 'warning')
+            } elseif ($issue['type'] === 'warning') {
                 $score -= 5;
+            }
         }
 
         return max(0, min(100, $score));

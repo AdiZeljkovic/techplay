@@ -20,7 +20,7 @@ class PriveeGiveawayEntry extends Model
     ];
 
     protected $casts = [
-        'access_token'  => 'encrypted',
+        'access_token' => 'encrypted',
         'refresh_token' => 'encrypted',
     ];
 

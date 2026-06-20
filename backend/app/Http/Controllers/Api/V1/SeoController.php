@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Services\InternalLinkService;
 use App\Services\SchemaService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +15,7 @@ class SeoController extends Controller
     /**
      * SEO tools are staff-only; auth:sanctum alone is not enough.
      */
-    private function authorizeStaff(): ?\Illuminate\Http\JsonResponse
+    private function authorizeStaff(): ?JsonResponse
     {
         $user = Auth::user();
         $allowedRoles = ['Super Admin', 'Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'];

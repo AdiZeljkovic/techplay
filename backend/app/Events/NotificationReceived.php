@@ -14,9 +14,13 @@ class NotificationReceived implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public User $user;
+
     public string $type;
+
     public string $message;
+
     public ?string $link;
+
     public ?array $data;
 
     public function __construct(User $user, string $type, string $message, ?string $link = null, ?array $data = null)

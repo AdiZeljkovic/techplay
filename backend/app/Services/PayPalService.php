@@ -8,8 +8,11 @@ use Illuminate\Support\Facades\Log;
 class PayPalService
 {
     protected $baseUrl;
+
     protected $clientId;
+
     protected $clientSecret;
+
     protected $verifySSL;
 
     public function __construct()
@@ -18,7 +21,7 @@ class PayPalService
         $this->clientSecret = config('services.paypal.secret');
         $this->baseUrl = config('services.paypal.base_url');
         // Only disable SSL verification in local development
-        $this->verifySSL = !app()->environment('local');
+        $this->verifySSL = ! app()->environment('local');
     }
 
     /**
@@ -27,9 +30,10 @@ class PayPalService
     protected function http()
     {
         $client = Http::timeout(30);
-        if (!$this->verifySSL) {
+        if (! $this->verifySSL) {
             $client = $client->withoutVerifying();
         }
+
         return $client;
     }
 
@@ -48,7 +52,7 @@ class PayPalService
             ]);
 
         if ($response->failed()) {
-            Log::error('PayPal Auth Failed: ' . $response->body());
+            Log::error('PayPal Auth Failed: '.$response->body());
             throw new \Exception('Could not authenticate with PayPal');
         }
 
@@ -73,7 +77,7 @@ class PayPalService
             ]);
 
         if ($response->failed()) {
-            Log::error('PayPal Create Order Failed: ' . $response->body());
+            Log::error('PayPal Create Order Failed: '.$response->body());
             throw new \Exception('Could not create PayPal order');
         }
 
@@ -93,7 +97,7 @@ class PayPalService
 
         // Note: 422 usually means already captured or invalid status, but let's handle generic fail
         if ($response->failed()) {
-            Log::error('PayPal Capture Failed: ' . $response->body());
+            Log::error('PayPal Capture Failed: '.$response->body());
             throw new \Exception('Could not capture PayPal order');
         }
 
@@ -150,7 +154,7 @@ class PayPalService
             ]);
 
         if ($response->failed()) {
-            Log::error('PayPal Create Plan Failed: ' . $response->body());
+            Log::error('PayPal Create Plan Failed: '.$response->body());
             throw new \Exception('Could not create PayPal plan');
         }
 

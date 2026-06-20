@@ -4,21 +4,30 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\GiveawayResource\Pages;
 use App\Models\Giveaway;
-use Filament\Forms;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\{Section, Grid, Tabs};
-use Filament\Forms\Components\{TextInput, Textarea, RichEditor, Select, Toggle, DateTimePicker, FileUpload, Repeater, Placeholder};
-use Filament\Tables\Columns\{TextColumn, ImageColumn};
-use Filament\Actions\Action;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Notifications\Notification;
 use App\Models\User;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Illuminate\Support\Str;
 
 class GiveawayResource extends Resource
@@ -54,7 +63,7 @@ class GiveawayResource extends Resource
                                         ->required()
                                         ->maxLength(100)
                                         ->live(onBlur: true)
-                                        ->afterStateUpdated(fn($state, $set) => $set('slug', Str::slug($state) . '-' . Str::random(6))),
+                                        ->afterStateUpdated(fn ($state, $set) => $set('slug', Str::slug($state).'-'.Str::random(6))),
 
                                     TextInput::make('slug')
                                         ->required()
@@ -160,8 +169,7 @@ class GiveawayResource extends Resource
                                         ->defaultItems(0)
                                         ->reorderable()
                                         ->collapsible()
-                                        ->itemLabel(fn(array $state): ?string =>
-                                            ($state['tier_name'] ?? 'New Tier') . ' (' . ($state['winner_count'] ?? 1) . ' winner' . (($state['winner_count'] ?? 1) > 1 ? 's' : '') . ')')
+                                        ->itemLabel(fn (array $state): ?string => ($state['tier_name'] ?? 'New Tier').' ('.($state['winner_count'] ?? 1).' winner'.(($state['winner_count'] ?? 1) > 1 ? 's' : '').')')
                                         ->addActionLabel('Add Prize Tier'),
                                 ]),
                         ]),
@@ -237,8 +245,7 @@ class GiveawayResource extends Resource
                                         ->defaultItems(0)
                                         ->reorderable()
                                         ->collapsible()
-                                        ->itemLabel(fn(array $state): ?string =>
-                                            ($state['title'] ?? 'New Task') . ' (+' . ($state['points'] ?? 0) . ' pts)')
+                                        ->itemLabel(fn (array $state): ?string => ($state['title'] ?? 'New Task').' (+'.($state['points'] ?? 0).' pts)')
                                         ->addActionLabel('Add Task'),
                                 ]),
                         ]),
@@ -299,7 +306,7 @@ class GiveawayResource extends Resource
                 ->columnSpanFull(),
 
             Forms\Components\Hidden::make('created_by')
-                ->default(fn() => auth()->id()),
+                ->default(fn () => auth()->id()),
         ]);
     }
 
@@ -315,7 +322,7 @@ class GiveawayResource extends Resource
                 TextColumn::make('title')
                     ->searchable()
                     ->sortable()
-                    ->description(fn(Giveaway $record) => $record->prize_name),
+                    ->description(fn (Giveaway $record) => $record->prize_name),
 
                 TextColumn::make('entries_count')
                     ->label('Entries')
@@ -325,7 +332,7 @@ class GiveawayResource extends Resource
 
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'draft' => 'gray',
                         'active' => 'success',
                         'ended' => 'warning',
@@ -358,8 +365,8 @@ class GiveawayResource extends Resource
                     ->action(function (Giveaway $record) {
                         // JS will handle clipboard
                     })
-                    ->extraAttributes(fn(Giveaway $record) => [
-                        'x-on:click' => "navigator.clipboard.writeText('" . $record->getPublicUrl() . "'); \$tooltip('Copied!')",
+                    ->extraAttributes(fn (Giveaway $record) => [
+                        'x-on:click' => "navigator.clipboard.writeText('".$record->getPublicUrl()."'); \$tooltip('Copied!')",
                     ]),
 
                 Action::make('viewParticipants')
@@ -367,8 +374,8 @@ class GiveawayResource extends Resource
                     ->icon('heroicon-o-users')
                     ->color('info')
                     ->modalHeading('Giveaway Participants')
-                    ->modalDescription(fn(Giveaway $record) => 'Total participants: ' . $record->entries()->where('total_points', '>', 0)->count() . ' | Total points pool: ' . number_format($record->getTotalEntryPool()))
-                    ->modalContent(fn(Giveaway $record) => view('filament.resources.giveaway.modals.participants-list', [
+                    ->modalDescription(fn (Giveaway $record) => 'Total participants: '.$record->entries()->where('total_points', '>', 0)->count().' | Total points pool: '.number_format($record->getTotalEntryPool()))
+                    ->modalContent(fn (Giveaway $record) => view('filament.resources.giveaway.modals.participants-list', [
                         'entries' => $record->entries()
                             ->with('user')
                             ->where('total_points', '>', 0)
@@ -379,7 +386,7 @@ class GiveawayResource extends Resource
                     ->modalWidth('7xl')
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close')
-                    ->visible(fn(Giveaway $record) => $record->entries()->where('total_points', '>', 0)->count() > 0),
+                    ->visible(fn (Giveaway $record) => $record->entries()->where('total_points', '>', 0)->count() > 0),
 
                 Action::make('pickWinner')
                     ->label('Auto Pick Winner')
@@ -389,7 +396,7 @@ class GiveawayResource extends Resource
                     ->modalHeading('Auto Pick a Winner')
                     ->modalDescription('This will automatically select a winner using weighted random algorithm based on points. This action cannot be undone.')
                     ->modalWidth('md')
-                    ->visible(fn(Giveaway $record) => $record->hasEnded() && !$record->winner_id && !$record->hasTiers())
+                    ->visible(fn (Giveaway $record) => $record->hasEnded() && ! $record->winner_id && ! $record->hasTiers())
                     ->action(function (Giveaway $record) {
                         $winner = $record->pickWinner();
                         if ($winner) {
@@ -412,7 +419,7 @@ class GiveawayResource extends Resource
                     ->icon('heroicon-o-hand-raised')
                     ->color('warning')
                     ->form([
-                        Forms\Components\Select::make('winner_id')
+                        Select::make('winner_id')
                             ->label('Select Winner')
                             ->options(function (Giveaway $record) {
                                 return $record->entries()
@@ -421,8 +428,9 @@ class GiveawayResource extends Resource
                                     ->get()
                                     ->mapWithKeys(function ($entry) {
                                         $user = $entry->user;
+
                                         return [
-                                            $user->id => "{$user->username} ({$user->email}) - {$entry->total_points} points"
+                                            $user->id => "{$user->username} ({$user->email}) - {$entry->total_points} points",
                                         ];
                                     });
                             })
@@ -430,7 +438,7 @@ class GiveawayResource extends Resource
                             ->required()
                             ->helperText('You will need to manually send them an email.'),
                     ])
-                    ->visible(fn(Giveaway $record) => $record->hasEnded() && !$record->winner_id && !$record->hasTiers())
+                    ->visible(fn (Giveaway $record) => $record->hasEnded() && ! $record->winner_id && ! $record->hasTiers())
                     ->action(function (Giveaway $record, array $data) {
                         $record->update([
                             'winner_id' => $data['winner_id'],
@@ -453,7 +461,7 @@ class GiveawayResource extends Resource
                     ->requiresConfirmation()
                     ->modalHeading('Pick Winners by Prize Tiers')
                     ->modalDescription('This will select multiple winners for each prize tier. Winners are selected using weighted random. This action cannot be undone.')
-                    ->visible(fn(Giveaway $record) => $record->hasEnded() && $record->hasTiers())
+                    ->visible(fn (Giveaway $record) => $record->hasEnded() && $record->hasTiers())
                     ->action(function (Giveaway $record) {
                         $results = $record->pickWinnersByTiers();
 
@@ -463,11 +471,12 @@ class GiveawayResource extends Resource
                                 ->body('No entries qualified for any tier.')
                                 ->warning()
                                 ->send();
+
                             return;
                         }
 
                         $totalWinners = array_sum(array_map('count', $results));
-                        $message = "🎉 Selected {$totalWinners} winner" . ($totalWinners > 1 ? 's' : '') . " across " . count($results) . " tier" . (count($results) > 1 ? 's' : '') . "!";
+                        $message = "🎉 Selected {$totalWinners} winner".($totalWinners > 1 ? 's' : '').' across '.count($results).' tier'.(count($results) > 1 ? 's' : '').'!';
 
                         Notification::make()
                             ->title('Winners Selected!')

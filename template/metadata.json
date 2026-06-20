@@ -1,0 +1,6 @@
+{
+  "name": "TechPlay.gg",
+  "description": "Premium gaming media platform - news, reviews, releases, game database and community in one place.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

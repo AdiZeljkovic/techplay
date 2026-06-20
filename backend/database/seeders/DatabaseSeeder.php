@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Article;
+use App\Models\Category;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -29,10 +31,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Create random articles for each category
-        \App\Models\Category::whereNotNull('parent_id')->get()->each(function ($cat) {
-            \App\Models\Article::factory(3)->create([
+        Category::whereNotNull('parent_id')->get()->each(function ($cat) {
+            Article::factory(3)->create([
                 'category_id' => $cat->id,
-                'author_id' => 1
+                'author_id' => 1,
             ]);
         });
     }

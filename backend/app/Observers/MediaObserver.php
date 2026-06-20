@@ -15,7 +15,7 @@ class MediaObserver
     public function created(Media $media): void
     {
         // Only process images
-        if (!str_starts_with($media->mime_type ?? '', 'image/')) {
+        if (! str_starts_with($media->mime_type ?? '', 'image/')) {
             return;
         }
 
@@ -25,7 +25,7 @@ class MediaObserver
         }
 
         try {
-            $optimizer = new ImageOptimizationService();
+            $optimizer = new ImageOptimizationService;
             $webpUrl = $optimizer->convertToWebp($media->path);
 
             if ($webpUrl) {
@@ -35,7 +35,7 @@ class MediaObserver
             }
         } catch (\Exception $e) {
             // Log error but don't fail the upload
-            \Log::warning("WebP conversion failed for media {$media->id}: " . $e->getMessage());
+            \Log::warning("WebP conversion failed for media {$media->id}: ".$e->getMessage());
         }
     }
 }

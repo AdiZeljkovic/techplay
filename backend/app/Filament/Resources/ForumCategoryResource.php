@@ -4,19 +4,20 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ForumCategoryResource\Pages;
 use App\Models\Category;
+use Closure;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
+use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
-use Filament\Forms\Get;
-use Closure;
 
 class ForumCategoryResource extends Resource
 {
@@ -28,6 +29,7 @@ class ForumCategoryResource extends Resource
     {
         return 'Community';
     }
+
     protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationLabel = 'Forum Categories';
@@ -43,9 +45,9 @@ class ForumCategoryResource extends Resource
     {
         return $schema
             ->components([
-                \Filament\Schemas\Components\Tabs::make('Tabs')
+                Tabs::make('Tabs')
                     ->tabs([
-                        \Filament\Schemas\Components\Tabs\Tab::make('Content')
+                        Tab::make('Content')
                             ->icon('heroicon-o-document-text')
                             ->schema([
                                 Forms\Components\TextInput::make('name')

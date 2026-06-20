@@ -17,7 +17,7 @@ trait ApiResponse
     /**
      * Success response with data
      */
-    protected function success($data = null, string $message = null, int $code = 200): JsonResponse
+    protected function success($data = null, ?string $message = null, int $code = 200): JsonResponse
     {
         $response = [
             'success' => true,
@@ -44,7 +44,7 @@ trait ApiResponse
             'message' => $message,
         ];
 
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             $response['errors'] = $errors;
         }
 
@@ -54,7 +54,7 @@ trait ApiResponse
     /**
      * Paginated response
      */
-    protected function paginated(LengthAwarePaginator $paginator, string $message = null): JsonResponse
+    protected function paginated(LengthAwarePaginator $paginator, ?string $message = null): JsonResponse
     {
         $response = [
             'success' => true,

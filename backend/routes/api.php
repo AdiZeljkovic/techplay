@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AboutController;
 use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\AdController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BacklogAdvisorController;
 use App\Http\Controllers\Api\V1\BattleNetAuthController;
 use App\Http\Controllers\Api\V1\BountyController;
 use App\Http\Controllers\Api\V1\CategoryController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Api\V1\DiscordIntegrationController;
 use App\Http\Controllers\Api\V1\DiscordLeaderboardController;
 use App\Http\Controllers\Api\V1\DiscordSubscriptionController;
 use App\Http\Controllers\Api\V1\DiscordXpController;
+use App\Http\Controllers\Api\V1\FeedController;
 use App\Http\Controllers\Api\V1\ForumController;
 use App\Http\Controllers\Api\V1\FriendActivityController;
 use App\Http\Controllers\Api\V1\FriendController;
@@ -58,6 +60,7 @@ use App\Http\Controllers\Api\V1\VerificationController;
 use App\Http\Controllers\Api\V1\VideoController;
 use App\Http\Controllers\Api\V1\WebhookController;
 use App\Http\Controllers\Api\V1\WowAnalyzerController;
+use App\Http\Controllers\Api\V1\WrappedController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -176,6 +179,15 @@ Route::prefix('v1')->group(function () {
         // Presence (Auth) — set / clear what you're currently playing
         Route::post('/presence', [PresenceController::class, 'store']);
         Route::delete('/presence', [PresenceController::class, 'destroy']);
+
+        // Library index — slug→status map for badge rendering
+        Route::get('/collection/index', [GameCollectionController::class, 'libraryIndex']);
+
+        // Personalized feed
+        Route::get('/feed/personalized', [FeedController::class, 'personalized']);
+
+        // AI Backlog Advisor
+        Route::post('/backlog/suggest', [BacklogAdvisorController::class, 'suggest']);
 
         // Recognitions (Auth)
         Route::post('/users/{username}/recognitions', [RecognitionController::class, 'store']);
@@ -323,6 +335,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/game-lists/{id}', [GameListController::class, 'show'])->whereNumber('id');
 
         // Public Profile
+        Route::get('/users/{username}/wrapped/{year}', [WrappedController::class, 'show']);
         Route::get('/users/{username}/collection', [GameCollectionController::class, 'index']);
         Route::get('/users/{username}/lists', [GameListController::class, 'index']);
         Route::get('/users/{username}/activity', [ActivityController::class, 'index']);

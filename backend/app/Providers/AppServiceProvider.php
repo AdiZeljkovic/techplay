@@ -2,7 +2,42 @@
 
 namespace App\Providers;
 
+use App\Models\Article;
+use App\Models\Category;
+use App\Models\Comment;
+use App\Models\Guide;
+use App\Models\Media;
+use App\Models\MediaKitSetting;
+use App\Models\PageSeo;
+use App\Models\Post;
+use App\Models\Product;
+use App\Models\Review;
+use App\Models\SiteSetting;
+use App\Models\Thread;
+use App\Models\Video;
+use App\Observers\ArticleObserver;
+use App\Observers\CategoryObserver;
+use App\Observers\CommentObserver;
+use App\Observers\ContentObserver;
+use App\Observers\ForumPostObserver;
+use App\Observers\GuideObserver;
+use App\Observers\MediaKitSettingObserver;
+use App\Observers\MediaObserver;
+use App\Observers\PageSeoObserver;
+use App\Observers\PostObserver;
+use App\Observers\ProductObserver;
+use App\Observers\ReviewObserver;
+use App\Observers\SiteSettingObserver;
+use App\Observers\ThreadObserver;
+use App\Observers\VideoObserver;
+use App\Services\LoggingService;
+use App\Services\Socialite\BattleNetProvider;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Socialite\Contracts\Factory;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,7 +59,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Force HTTPS in production/staging and fix URL generation
         if ($this->app->environment('production') || $this->app->environment('staging') || request()->getHost() !== 'localhost') {
-            \Illuminate\Support\Facades\URL::forceScheme('https');
+            URL::forceScheme('https');
 
             // Fix APP_URL if it's set to HTTP in .env
             if (str_starts_with(config('app.url'), 'http://')) {
@@ -32,32 +67,32 @@ class AppServiceProvider extends ServiceProvider
             }
         }
         // Existing observers
-        \App\Models\Post::observe(\App\Observers\PostObserver::class);
-        \App\Models\Article::observe(\App\Observers\ContentObserver::class);
+        Post::observe(PostObserver::class);
+        Article::observe(ContentObserver::class);
 
         // Real-time broadcast observers
-        \App\Models\Article::observe(\App\Observers\ArticleObserver::class);
-        \App\Models\Comment::observe(\App\Observers\CommentObserver::class);
-        \App\Models\Product::observe(\App\Observers\ProductObserver::class);
-        \App\Models\Review::observe(\App\Observers\ReviewObserver::class);
-        \App\Models\Thread::observe(\App\Observers\ThreadObserver::class);
-        \App\Models\Post::observe(\App\Observers\ForumPostObserver::class);
-        \App\Models\Video::observe(\App\Observers\VideoObserver::class);
-        \App\Models\Guide::observe(\App\Observers\GuideObserver::class);
-        \App\Models\Media::observe(\App\Observers\MediaObserver::class);
-        \App\Models\Category::observe(\App\Observers\CategoryObserver::class);
-        \App\Models\SiteSetting::observe(\App\Observers\SiteSettingObserver::class);
-        \App\Models\PageSeo::observe(\App\Observers\PageSeoObserver::class);
-        \App\Models\MediaKitSetting::observe(\App\Observers\MediaKitSettingObserver::class);
+        Article::observe(ArticleObserver::class);
+        Comment::observe(CommentObserver::class);
+        Product::observe(ProductObserver::class);
+        Review::observe(ReviewObserver::class);
+        Thread::observe(ThreadObserver::class);
+        Post::observe(ForumPostObserver::class);
+        Video::observe(VideoObserver::class);
+        Guide::observe(GuideObserver::class);
+        Media::observe(MediaObserver::class);
+        Category::observe(CategoryObserver::class);
+        SiteSetting::observe(SiteSettingObserver::class);
+        PageSeo::observe(PageSeoObserver::class);
+        MediaKitSetting::observe(MediaKitSettingObserver::class);
 
         // Prevent N+1 queries in non-production environments
-        \Illuminate\Database\Eloquent\Model::preventLazyLoading(!app()->isProduction());
+        Model::preventLazyLoading(! app()->isProduction());
 
         // MONITORING: Query performance logging
         if (config('logging.slow_query_threshold')) {
-            \Illuminate\Support\Facades\DB::listen(function ($query) {
+            DB::listen(function ($query) {
                 if ($query->time > config('logging.slow_query_threshold', 1000)) {
-                    app(\App\Services\LoggingService::class)->logSlowQuery(
+                    app(LoggingService::class)->logSlowQuery(
                         $query->sql,
                         $query->time,
                         $query->bindings
@@ -67,12 +102,13 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // Pulse Authorization
-        \Illuminate\Support\Facades\Gate::define('viewPulse', function ($user = null) {
+        Gate::define('viewPulse', function ($user = null) {
             // For now, allow local dev or logged in admins.
             // Since user might be null, we need to check.
             // Actually, Pulse auth usually handles user resolution.
             // Let's allow if user has 'admin' role.
             $user = $user ?? auth()->user();
+
             return $user && in_array($user->role, ['admin', 'super_admin']);
         });
     }
@@ -82,11 +118,12 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function bootSocialite(): void
     {
-        $socialite = $this->app->make(\Laravel\Socialite\Contracts\Factory::class);
+        $socialite = $this->app->make(Factory::class);
 
         $socialite->extend('battlenet', function ($app) use ($socialite) {
             $config = config('services.battlenet');
-            return $socialite->buildProvider(\App\Services\Socialite\BattleNetProvider::class, $config);
+
+            return $socialite->buildProvider(BattleNetProvider::class, $config);
         });
     }
 }

@@ -45,7 +45,7 @@ class AdCampaignStats extends BaseWidget
                 ->descriptionIcon('heroicon-m-cursor-arrow-rays')
                 ->color($overallCtr > 5 ? 'success' : ($overallCtr > 2 ? 'warning' : 'danger')),
 
-            Stat::make('Estimated Revenue', number_format($totalRevenue, 2) . ' KM')
+            Stat::make('Estimated Revenue', number_format($totalRevenue, 2).' KM')
                 ->description('CPM-based calculation')
                 ->descriptionIcon('heroicon-m-currency-dollar')
                 ->color('success'),

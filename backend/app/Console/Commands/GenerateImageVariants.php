@@ -37,7 +37,7 @@ class GenerateImageVariants extends Command
             ? $this->imageDirectories
             : [$directory];
 
-        $optimizer = new ImageOptimizer();
+        $optimizer = new ImageOptimizer;
         $stats = [
             'processed' => 0,
             'skipped' => 0,
@@ -45,8 +45,9 @@ class GenerateImageVariants extends Command
         ];
 
         foreach ($directories as $dir) {
-            if (!Storage::disk('public')->exists($dir)) {
+            if (! Storage::disk('public')->exists($dir)) {
                 $this->warn("⚠️  Directory '{$dir}' does not exist, skipping...");
+
                 continue;
             }
 
@@ -60,10 +61,10 @@ class GenerateImageVariants extends Command
 
                 // Only process .webp files that don't have variant suffixes
                 return $extension === 'webp'
-                    && !preg_match('/_(thumb|medium|large)$/', $filename);
+                    && ! preg_match('/_(thumb|medium|large)$/', $filename);
             });
 
-            $this->info("  Found " . count($originalFiles) . " original images");
+            $this->info('  Found '.count($originalFiles).' original images');
 
             $progressBar = $this->output->createProgressBar(count($originalFiles));
             $progressBar->start();
@@ -75,6 +76,7 @@ class GenerateImageVariants extends Command
                     $this->line("  Would generate variants for: {$basename}");
                     $stats['processed']++;
                     $progressBar->advance();
+
                     continue;
                 }
 
@@ -89,7 +91,7 @@ class GenerateImageVariants extends Command
                 } catch (\Exception $e) {
                     $stats['errors']++;
                     $this->newLine();
-                    $this->error("  ❌ Error: " . basename($file) . " - " . $e->getMessage());
+                    $this->error('  ❌ Error: '.basename($file).' - '.$e->getMessage());
                 }
 
                 $progressBar->advance();

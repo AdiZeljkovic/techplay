@@ -20,7 +20,7 @@ echo "Response:\n";
 $data = json_decode($response, true);
 if (isset($data['models'])) {
     echo "\nDostupni modeli:\n";
-    echo str_repeat('=', 80) . "\n";
+    echo str_repeat('=', 80)."\n";
 
     foreach ($data['models'] as $model) {
         $name = $model['name'] ?? 'N/A';
@@ -34,8 +34,8 @@ if (isset($data['models'])) {
         echo "Display Name: $displayName\n";
         echo "Description: $description\n";
         echo "Supported Methods: $supportedMethods\n";
-        echo str_repeat('-', 80) . "\n";
+        echo str_repeat('-', 80)."\n";
     }
 } else {
-    echo $response . "\n";
+    echo $response."\n";
 }

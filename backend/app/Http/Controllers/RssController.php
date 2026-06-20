@@ -26,15 +26,15 @@ class RssController extends Controller
 
         $frontendUrl = rtrim(config('app.frontend_url', env('FRONTEND_URL')), '/');
         $siteTitle = config('app.name', 'TechPlay');
-        $feedUrl = $frontendUrl . '/feed';
+        $feedUrl = $frontendUrl.'/feed';
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml .= '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">';
         $xml .= '<channel>';
         $xml .= "<title>{$siteTitle}</title>";
         $xml .= "<link>{$frontendUrl}</link>";
-        $xml .= "<description>Your daily dose of tech and gaming news.</description>";
-        $xml .= "<language>en-us</language>";
+        $xml .= '<description>Your daily dose of tech and gaming news.</description>';
+        $xml .= '<language>en-us</language>';
         $xml .= "<atom:link href=\"{$feedUrl}\" rel=\"self\" type=\"application/rss+xml\" />";
 
         foreach ($articles as $article) {

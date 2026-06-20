@@ -27,12 +27,12 @@ class TopPerformingAds extends BaseWidget
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable()
-                    ->description(fn($record) => $record->position),
+                    ->description(fn ($record) => $record->position),
 
                 Tables\Columns\TextColumn::make('format')
                     ->badge()
                     ->color('info')
-                    ->formatStateUsing(fn($state) => $state ? strtoupper($state) : 'N/A'),
+                    ->formatStateUsing(fn ($state) => $state ? strtoupper($state) : 'N/A'),
 
                 Tables\Columns\TextColumn::make('view_count')
                     ->label('Views')
@@ -53,7 +53,7 @@ class TopPerformingAds extends BaseWidget
                     ->suffix('%')
                     ->sortable(false)
                     ->badge()
-                    ->color(fn($state) => $state > 5 ? 'success' : ($state > 2 ? 'warning' : 'danger')),
+                    ->color(fn ($state) => $state > 5 ? 'success' : ($state > 2 ? 'warning' : 'danger')),
 
                 Tables\Columns\TextColumn::make('estimated_revenue')
                     ->label('Revenue')

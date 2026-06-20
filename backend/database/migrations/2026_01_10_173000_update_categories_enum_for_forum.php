@@ -2,10 +2,10 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -17,7 +17,7 @@ return new class extends Migration {
         // Laravel 10+ on Postgres usually creates a check constraint named "categories_type_check".
 
         // Let's drop the constraint and add a new one with 'forum' included.
-        DB::statement("ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_type_check");
+        DB::statement('ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_type_check');
         DB::statement("ALTER TABLE categories ADD CONSTRAINT categories_type_check CHECK (type IN ('news', 'reviews', 'tech', 'other', 'forum'))");
     }
 
@@ -27,7 +27,7 @@ return new class extends Migration {
     public function down(): void
     {
         // Revert to original
-        DB::statement("ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_type_check");
+        DB::statement('ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_type_check');
         DB::statement("ALTER TABLE categories ADD CONSTRAINT categories_type_check CHECK (type IN ('news', 'reviews', 'tech', 'other'))");
     }
 };

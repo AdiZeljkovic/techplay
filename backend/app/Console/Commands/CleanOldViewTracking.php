@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 class CleanOldViewTracking extends Command
 {
     protected $signature = 'views:clean {--days=7 : Number of days to keep}';
+
     protected $description = 'Clean old view tracking records from database';
 
     public function handle()
@@ -51,6 +52,7 @@ class CleanOldViewTracking extends Command
             return Command::SUCCESS;
         } catch (\Exception $e) {
             $this->error("Failed to clean view tracking records: {$e->getMessage()}");
+
             return Command::FAILURE;
         }
     }
