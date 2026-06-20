@@ -113,6 +113,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/user/export-data', [AuthController::class, 'exportData']);
         Route::delete('/user/account', [AuthController::class, 'deleteAccount']);
         Route::get('/user/notifications/counts', [NotificationController::class, 'counts']);
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::patch('/notifications/{id}/read', [NotificationController::class, 'markRead']);
+        Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
 
         // User WoW Characters
         Route::get('/user/wow-characters', [UserWowCharactersController::class, 'index']);

@@ -7,6 +7,7 @@ use App\Models\ConnectedAccount;
 use App\Models\Friendship;
 use App\Models\Order;
 use App\Models\User;
+use App\Notifications\AchievementUnlockedNotification;
 use Illuminate\Support\Facades\Log;
 
 class AchievementService
@@ -209,6 +210,12 @@ class AchievementService
         }
 
         $user->achievements()->attach($achievement->id, ['unlocked_at' => now()]);
+
+        try {
+            $user->notify(new AchievementUnlockedNotification($achievement));
+        } catch (\Throwable) {
+            // Never let notification failure block the achievement unlock.
+        }
 
         return true;
     }

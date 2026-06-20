@@ -21,6 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import SearchDropdown from "./SearchDropdown";
 import { decodeHtml } from "@/lib/decode";
+import NotificationPanel from "./NotificationPanel";
 
 const DiscordIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -393,7 +394,11 @@ export default function Header() {
     const { settings } = useSiteSettings();
     const pathname = usePathname();
     const [navItems, setNavItems] = useState<NavItemType[]>(INITIAL_NAV_ITEMS);
-    const [notifications, setNotifications] = useState({ unread_messages: 0, pending_requests: 0, forum_replies: 0 });
+    const [notifications, setNotifications] = useState({ unread_messages: 0, pending_requests: 0, forum_replies: 0, unread_notifications: 0 });
+    const refreshNotifCounts = () => {
+        if (!user) return;
+        axios.get('/user/notifications/counts').then((r) => setNotifications(r.data)).catch(() => {});
+    };
 
 
 
@@ -603,6 +608,10 @@ export default function Header() {
                                             </span>
                                         )}
                                     </Link>
+                                    <NotificationPanel
+                                        unreadCount={notifications.unread_notifications}
+                                        onCountRefresh={refreshNotifCounts}
+                                    />
                                 </div>
 
                                 <div className="h-6 w-px bg-white/10 mx-1" />

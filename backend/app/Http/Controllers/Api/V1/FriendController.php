@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Friendship;
 use App\Models\User;
+use App\Notifications\FriendRequestNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,6 +25,7 @@ class FriendController extends Controller
             ->get()
             ->map(function ($friendship) use ($userId) {
                 $friend = $friendship->sender_id === $userId ? $friendship->receiver : $friendship->sender;
+
                 return [
                     'id' => $friend->id,
                     'username' => $friend->username,
@@ -80,8 +82,13 @@ class FriendController extends Controller
         Friendship::create([
             'sender_id' => $senderId,
             'receiver_id' => $receiver->id,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
+
+        try {
+            $receiver->notify(new FriendRequestNotification(Auth::user(), 'sent'));
+        } catch (\Throwable) {
+        }
 
         return response()->json(['message' => 'Friend request sent']);
     }
@@ -95,6 +102,12 @@ class FriendController extends Controller
             ->firstOrFail();
 
         $friendship->update(['status' => 'accepted']);
+
+        try {
+            $friendship->load('sender');
+            $friendship->sender->notify(new FriendRequestNotification(Auth::user(), 'accepted'));
+        } catch (\Throwable) {
+        }
 
         return response()->json(['message' => 'Friend request accepted']);
     }
@@ -117,7 +130,7 @@ class FriendController extends Controller
             Friendship::create([
                 'sender_id' => $currentUserId,
                 'receiver_id' => $userId,
-                'status' => 'blocked'
+                'status' => 'blocked',
             ]);
         }
 
@@ -141,7 +154,7 @@ class FriendController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('query');
-        if (!$query || strlen($query) < 2) {
+        if (! $query || strlen($query) < 2) {
             return response()->json([]);
         }
 
@@ -173,6 +186,7 @@ class FriendController extends Controller
             }
 
             $user->friendship_status = $status;
+
             return $user;
         });
 
