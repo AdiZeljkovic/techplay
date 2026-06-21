@@ -3,6 +3,7 @@ import ArticleDetailView from "@/components/news/ArticleDetailView";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { HARDWARE_CATEGORIES } from "@/lib/categories";
+import { getServerApiUrl } from "@/lib/api";
 
 // ISR: revalidate every 10 minutes
 export const revalidate = 600;
@@ -11,19 +12,9 @@ type Props = {
     params: Promise<{ category: string }>;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
-
-function getApiUrl() {
-    let apiUrl = API_URL;
-    if (apiUrl && apiUrl.includes('localhost')) {
-        apiUrl = apiUrl.replace('localhost', '127.0.0.1');
-    }
-    return apiUrl;
-}
-
 async function getSeoSettings() {
     try {
-        const res = await fetch(`${getApiUrl()}/settings`, { next: { revalidate: 3600 } });
+        const res = await fetch(`${getServerApiUrl()}/settings`, { next: { revalidate: 3600 } });
         if (!res.ok) return {};
         return res.json();
     } catch { return {}; }
@@ -32,7 +23,7 @@ async function getSeoSettings() {
 async function getInitialCategoryData(categoryId: string) {
     try {
         const params = new URLSearchParams({ page: '1', category: categoryId });
-        const res = await fetch(`${getApiUrl()}/tech?${params.toString()}`, {
+        const res = await fetch(`${getServerApiUrl()}/tech?${params.toString()}`, {
             next: { revalidate: 600 },
             headers: { 'Accept': 'application/json' },
         });
@@ -45,7 +36,7 @@ async function getInitialCategoryData(categoryId: string) {
 
 async function getArticle(slug: string) {
     try {
-        const res = await fetch(`${getApiUrl()}/tech/${slug}`, {
+        const res = await fetch(`${getServerApiUrl()}/tech/${slug}`, {
             next: { revalidate: 600, tags: ['tech', `tech-${slug}`] },
             headers: { 'Accept': 'application/json' },
         });

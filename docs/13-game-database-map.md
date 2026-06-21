@@ -1,0 +1,171 @@
+# 13 — Game Database Map
+
+## Svrha
+
+Lokalna baza igara koja korisnicima omogućuje pregled igara, ocjenjivanje, dodavanje u kolekciju, praćenje novih izdanja kroz Release Calendar i generisanje SEO sadržaja za svaku igru.
+
+**Ključna napomena:** API NIKAD ne proxira live MobyGames ili RAWG zahtjeve za osnove podatke. Igre su uvijek u lokalnom PostgreSQL-u. RAWG se koristi samo za supplementarne podatke (screenshoti, filmovi, prijedlozi).
+
+---
+
+## Izvor podataka
+
+### MobyGames (primarni izvor)
+- **Servis:** `MobyGamesService`
+- **Import putevi:**
+  - `php artisan moby:fetch` — fetch igara iz MobyGames API
+  - `php artisan import:moby-csv` — import iz CSV dump-a
+  - `MobyEnrichmentJob` — background enrich za pojedinačne igre
+  - `php artisan moby:enrich` — ručni enrich
+- **Podaci koji dolaze:** naziv, opis, cover, release date, developer, publisher, žanrovi, platforme, MobyGames ID
+
+### RAWG (supplementarni, fallback)
+- **Servis:** `RawgService`
+- **API ključ:** `RAWG_API_KEY` env var
+- **Koristi se za:** screenshoti, filmovi/traileri, suggested igre
+- **Endpointi:**
+  - `GET /games/rawg/{slug}` — RAWG game detalji
+  - `GET /games/rawg/{slug}/screenshots` — screenshoti
+  - `GET /games/rawg/{slug}/movies` — filmovi
+  - `GET /games/rawg/{slug}/suggested` — prijedlozi
+- **Napomena:** RAWG endpointi su live proxy pozivi (throttle:60,1). Može biti problem ako RAWG API key istekne.
+
+### Legacy (IGDB)
+- `CrawlIgdbGames` i `CrawlIgdbStatus` komande postoje — vjerovatno legacy, zamijenjen MobyGames
+- `update_games_table_for_igdb.php` migracija → zatim `replace_igdb_id_with_moby_id.php`
+- IGDB integracija je napuštena, zamjenjena MobyGames
+
+---
+
+## Game model (`games` tabela)
+
+**Ključne kolone:**
+- `id` — interni ID
+- `moby_id` — MobyGames ID
+- `rawg_slug` — RAWG slug za fallback
+- `name` — naziv igre
+- `slug` — URL slug
+- `description` — opis (nullable — `has_description` boolean)
+- `cover_image` — URL cover slike
+- `release_date` — datum izlaska
+- `developer` — developer naziv
+- `publisher` — publisher naziv
+- `rating` — prosječna ocjena
+- `genre_names TEXT[]` — žanrovi (PostgreSQL array)
+- `platform_names TEXT[]` — platforme (PostgreSQL array)
+- `tag_names TEXT[]` — tagovi (PostgreSQL array)
+- `moby_group` — MobyGames group za series detection
+
+**Kritično:** `genre_names`, `platform_names`, `tag_names` su `TEXT[]` kolone. PHP iz PDO dobija raw string format `{Action,"Role-Playing (RPG)"}`. UVIJEK koristiti `pgArray()` helper u `GameController` prije array operacija.
+
+---
+
+## Relacije
+
+```
+Game
+ ├── hasMany → GameExternalId (rawg_id, igdb_id, steam_id, itd.)
+ ├── hasMany → GameRating (user ocjene)
+ ├── hasMany → UserGame (u čijoj je biblioteci)
+ ├── hasMany → GameListItem (u kojim listama)
+ ├── belongsToMany → GameCompany (developer/publisher)
+ ├── hasMany → Article (game_id FK — noviji, za vezane vijesti)
+ └── hasMany → Presence (korisnici koji trenutno igraju)
+```
+
+---
+
+## Filtriranje i pretraga
+
+`GameController::index` podržava:
+- `?q=` — tekstualna pretraga
+- `?genre=` — filter po žanru (TEXT[] query: `@> ARRAY[?]::text[]`)
+- `?platform=` — filter po platformi
+- `?year=` — filter po godini izlaska
+- `?sort=` — sortiranje (naziv, ocjena, datum)
+- `?page=` — paginacija
+
+---
+
+## User Game Ratings
+
+- `GameRating` model: user_id, game_id, rating (0-10), review_text
+- `GET /games/{slug}/ratings` — sve ocjene za igru (javno)
+- `GET /games/{slug}/ratings/my` — moja ocjena (auth)
+- `POST /games/{slug}/ratings` — upsert ocjene (auth)
+- `GET /games/hub/{type}/{value}` — hub po žanru ili platformi s agregiranim ocjenama
+
+---
+
+## Game Collection (korisnička biblioteka)
+
+- `UserGame` model: user_id, game_id, status, hours_played, notes
+- Status vrijednosti: `playing`, `finished`, `wishlist`, `dropped`, `backlog`
+- Korisnik može dodati igru s bilo kojim statusom
+- `GET /collection/index` — mapa slug→status za badge rendering (za cijelu biblioteku odjednom)
+- Javno vidljivo na profilu: `GET /users/{username}/collection`
+
+---
+
+## Game Lists (custom liste)
+
+- `GameList` model: user_id, name, slug, is_public
+- `GameListItem` model: list_id, game_id, position, notes
+- Svaki korisnik može kreirati custom liste (npr. "Top 10 RPG-ova")
+- Javno vidljive: `GET /users/{username}/lists`
+- Detalj liste: `GET /game-lists/{id}`
+
+---
+
+## Release Calendar
+
+- Podaci dolaze iz `games.release_date` kolone
+- `GET /games/calendar` — endpoint za calendar prikaz
+- Filtriranje po date range parametrima
+- Veza s kolekcijom: wishlist igre korisnika mogu triggerat notifikacije (CheckWishlistReleases komanda)
+
+---
+
+## Game detail page (frontend)
+
+**Lokacija:** `app/games/[slug]`
+
+**Podaci koji se fetchuju:**
+1. `GET /games/{slug}` — osnov podaci (lokalni)
+2. `GET /games/{slug}/screenshots` (lokalni) ili RAWG fallback
+3. `GET /games/{slug}/ratings` — user ocjene
+4. Ako auth: `GET /collection/games/{slug}` — status u biblioteci
+5. Slične igre: `GET /games/{slug}/suggested` ili RAWG fallback
+
+---
+
+## Game companies (`game_companies` tabela)
+
+- `id`, `name`, `slug`, `moby_id`
+- Pivot veza s games (developer/publisher role)
+
+---
+
+## External IDs (`game_external_ids` tabela)
+
+- Čuva IDeve za različite platforme: RAWG, IGDB, Steam
+- Omogućuje cross-reference između platformi
+- `GameExternalId` model: game_id, provider, external_id
+
+---
+
+## SEO za igre
+
+- Svaka game stranica treba unique title/description
+- Game detalj API vraća SEO-relevantne podatke
+- `SchemaService` može generisati Game JSON-LD schema
+- Crawled slugs endpoint: `GET /games/crawled-slugs` — vjerovatno za sitemap
+
+---
+
+## Poznati problemi
+
+1. TEXT[] kolone zahtijevaju `pgArray()` helper — greška-prone
+2. RAWG API fallback je live proxy — ako RAWG key istekne, game stranice nemaju screenshote
+3. Igre bez opisa (`has_description: false`) prikazuju se bez punog sadržaja
+4. IGDB legacy komande postoje ali su napuštene — mogu zbuniti novog developera

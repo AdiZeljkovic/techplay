@@ -18,7 +18,7 @@ class TechController extends Controller
     {
         $page = $request->get('page', 1);
         $category = $request->get('category', 'all');
-        $cacheKey = "tech.index.page_{$page}.cat_{$category}";
+        $cacheKey = "tech.index.v2.page_{$page}.cat_{$category}";
 
         $resource = Cache::remember($cacheKey, CacheService::TTL_LONG, function () use ($request) {
             $query = Article::query()
