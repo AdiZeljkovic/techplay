@@ -17,6 +17,7 @@ import DiscordWidget from "@/components/home/DiscordWidget";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import RelatedArticles from "@/components/seo/RelatedArticles";
 import ArticleFooter from "@/components/ui/ArticleFooter";
+import GoogleNewsFollow from "@/components/ui/GoogleNewsFollow";
 import { decodeHtml } from "@/lib/decode";
 
 interface ArticleDetailViewProps {
@@ -214,6 +215,8 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                     <div className="my-12 xl:hidden">
                                         <AdUnit position="article_mid" />
                                     </div>
+
+                                    <GoogleNewsFollow />
 
                                     <ArticleFooter
                                         author={article.author}
