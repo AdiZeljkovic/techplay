@@ -22,11 +22,11 @@ export default function GoogleNewsFollow() {
 
             {/* Text */}
             <div className="flex-1 min-w-0">
-                <p className="text-[13px] text-[#A1A1AA] font-medium leading-snug group-hover:text-white transition-colors duration-200">
-                    Dodajte{" "}
-                    <span className="text-white font-bold">TechPlay.gg</span>
-                    {" "}između omiljenih izvora na{" "}
-                    <span className="text-white font-bold">Google Newsu</span>
+                <p className="text-[13px] text-white font-bold leading-snug mb-0.5">
+                    Add TechPlay.gg as a preferred source on Google
+                </p>
+                <p className="text-[12px] text-[#71717A] leading-snug group-hover:text-[#A1A1AA] transition-colors duration-200">
+                    See more of our gaming news, reviews and guides when you search for the latest gaming topics.
                 </p>
             </div>
 
