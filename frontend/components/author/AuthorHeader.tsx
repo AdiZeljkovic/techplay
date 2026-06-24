@@ -31,18 +31,8 @@ export default function AuthorHeader({ author, stats }: AuthorHeaderProps) {
 
     return (
         <div className="relative overflow-hidden bg-[#0B0E14] border-b border-[#161B22]">
-            {/* Cover / gradient background */}
-            <div className="relative h-48 md:h-60">
-                {author.cover_image ? (
-                    <Image
-                        src={author.cover_image}
-                        alt=""
-                        fill
-                        className="object-cover opacity-25"
-                        priority
-                        unoptimized
-                    />
-                ) : null}
+            {/* Gradient background */}
+            <div className="relative h-36 md:h-44">
                 <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent)]/5 via-transparent to-[#0B0E14]" />
                 <div className="absolute top-0 left-[10%] w-[60%] h-[2px] bg-gradient-to-r from-transparent via-[var(--accent)]/40 to-transparent" />
             </div>
