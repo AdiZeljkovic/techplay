@@ -184,7 +184,10 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
 
                                         {/* Author row */}
                                         <div className="flex items-center gap-3">
-                                            <div className="w-[46px] h-[46px] rounded-full overflow-hidden border border-white/10 shrink-0 shadow-sm">
+                                            <Link
+                                                href={`/author/${guide.author?.author_slug || guide.author?.username || 'me'}`}
+                                                className="w-[46px] h-[46px] rounded-full overflow-hidden border border-white/10 shrink-0 shadow-sm hover:border-[var(--accent)]/50 transition-colors"
+                                            >
                                                 {guide.author?.avatar_url ? (
                                                     <Image
                                                         src={guide.author.avatar_url}
@@ -198,10 +201,16 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                                                         {(guide.author?.display_name || guide.author?.username || "T").charAt(0).toUpperCase()}
                                                     </div>
                                                 )}
-                                            </div>
+                                            </Link>
                                             <div className="flex flex-col">
                                                 <span className="text-[#E4E4E5] font-medium text-[14px]">
-                                                    By <strong>{decodeHtml(guide.author?.display_name || guide.author?.username || "TechPlay Editor")}</strong>
+                                                    By{" "}
+                                                    <Link
+                                                        href={`/author/${guide.author?.author_slug || guide.author?.username || 'me'}`}
+                                                        className="font-bold hover:text-[var(--accent)] transition-colors"
+                                                    >
+                                                        {decodeHtml(guide.author?.display_name || guide.author?.username || "TechPlay Editor")}
+                                                    </Link>
                                                 </span>
                                                 <div className="flex items-center gap-2 text-[#71717A] text-[11px] font-bold uppercase tracking-widest mt-1">
                                                     <span>{publishedDate}</span>

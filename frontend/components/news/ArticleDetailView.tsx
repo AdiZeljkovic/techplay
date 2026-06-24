@@ -141,7 +141,10 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
 
                                         {/* Author row */}
                                         <div className="flex items-center gap-3">
-                                            <div className="w-[46px] h-[46px] rounded-full overflow-hidden border border-white/10 shrink-0 shadow-sm">
+                                            <Link
+                                                href={`/author/${article.author?.author_slug || article.author?.username || 'me'}`}
+                                                className="w-[46px] h-[46px] rounded-full overflow-hidden border border-white/10 shrink-0 shadow-sm hover:border-[var(--accent)]/50 transition-colors"
+                                            >
                                                 {article.author?.avatar_url ? (
                                                     <Image
                                                         src={article.author.avatar_url}
@@ -155,10 +158,16 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                                         {(article.author?.display_name || article.author?.username || "T").charAt(0).toUpperCase()}
                                                     </div>
                                                 )}
-                                            </div>
+                                            </Link>
                                             <div className="flex flex-col">
                                                 <span className="text-[#E4E4E5] font-medium text-[14px]">
-                                                    By <strong>{decodeHtml(article.author?.display_name || article.author?.username || "TechPlay Editor")}</strong>
+                                                    By{" "}
+                                                    <Link
+                                                        href={`/author/${article.author?.author_slug || article.author?.username || 'me'}`}
+                                                        className="font-bold hover:text-[var(--accent)] transition-colors"
+                                                    >
+                                                        {decodeHtml(article.author?.display_name || article.author?.username || "TechPlay Editor")}
+                                                    </Link>
                                                 </span>
                                                 <div className="flex items-center gap-2 text-[#71717A] text-[11px] font-bold uppercase tracking-widest mt-1">
                                                     <ClientDate date={article.published_at || article.created_at} />
