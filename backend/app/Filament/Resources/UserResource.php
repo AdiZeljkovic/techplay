@@ -102,6 +102,39 @@ class UserResource extends Resource
                     ->helperText('Auto-generated from display name. Edit only if needed.')
                     ->unique(ignoreRecord: true)
                     ->maxLength(100),
+                Section::make('Author Social Links')
+                    ->description('Social profiles shown on author page and included in Google structured data.')
+                    ->icon('heroicon-o-link')
+                    ->collapsible()
+                    ->collapsed()
+                    ->schema([
+                        Forms\Components\TextInput::make('author_social_links.twitter')
+                            ->label('Twitter / X')
+                            ->prefix('https://x.com/')
+                            ->placeholder('username')
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('author_social_links.linkedin')
+                            ->label('LinkedIn')
+                            ->prefix('https://linkedin.com/in/')
+                            ->placeholder('username')
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('author_social_links.youtube')
+                            ->label('YouTube')
+                            ->url()
+                            ->placeholder('https://youtube.com/@channel')
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('author_social_links.instagram')
+                            ->label('Instagram')
+                            ->prefix('https://instagram.com/')
+                            ->placeholder('username')
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('author_social_links.website')
+                            ->label('Personal Website')
+                            ->url()
+                            ->placeholder('https://example.com')
+                            ->maxLength(255),
+                    ])
+                    ->columnSpanFull(),
                 Forms\Components\KeyValue::make('gamertags')
                     ->keyLabel('Platform')
                     ->valueLabel('Username/ID')

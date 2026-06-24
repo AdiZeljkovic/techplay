@@ -113,6 +113,25 @@ class AuthorController extends Controller
                     : asset('storage/' . $user->cover_image);
             }
 
+            $socialLinks = $user->author_social_links ?? [];
+            $socialUrls = array_filter([
+                isset($socialLinks['twitter']) && $socialLinks['twitter']
+                    ? 'https://x.com/' . ltrim($socialLinks['twitter'], '/')
+                    : null,
+                isset($socialLinks['linkedin']) && $socialLinks['linkedin']
+                    ? 'https://linkedin.com/in/' . ltrim($socialLinks['linkedin'], '/')
+                    : null,
+                isset($socialLinks['youtube']) && $socialLinks['youtube']
+                    ? $socialLinks['youtube']
+                    : null,
+                isset($socialLinks['instagram']) && $socialLinks['instagram']
+                    ? 'https://instagram.com/' . ltrim($socialLinks['instagram'], '/')
+                    : null,
+                isset($socialLinks['website']) && $socialLinks['website']
+                    ? $socialLinks['website']
+                    : null,
+            ]);
+
             return [
                 'author' => [
                     'id'           => $user->id,
@@ -125,6 +144,8 @@ class AuthorController extends Controller
                     'tagline'      => $user->tagline,
                     'role'         => $this->getDisplayRole($user),
                     'joined_at'    => $user->created_at->format('M Y'),
+                    'social_links' => $socialLinks,
+                    'social_urls'  => array_values($socialUrls),
                 ],
                 'stats' => [
                     'total'   => $total,

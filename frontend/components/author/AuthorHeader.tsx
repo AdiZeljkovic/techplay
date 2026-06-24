@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink, Calendar, Crown, PenLine, Shield } from "lucide-react";
+import { ExternalLink, Calendar, Crown, PenLine, Shield, Globe, Twitter, Linkedin, Youtube, Instagram } from "lucide-react";
 import type { AuthorProfile, AuthorStats } from "@/types";
 
 interface AuthorHeaderProps {
@@ -94,6 +94,47 @@ export default function AuthorHeader({ author, stats }: AuthorHeaderProps) {
                                 View gamer profile
                             </Link>
                         </div>
+
+                        {/* Social links */}
+                        {author.social_links && Object.values(author.social_links).some(Boolean) && (
+                            <div className="flex items-center gap-2 mt-3">
+                                {author.social_links.twitter && (
+                                    <Link href={`https://x.com/${author.social_links.twitter}`} target="_blank" rel="noopener noreferrer"
+                                        className="w-8 h-8 rounded-lg bg-white/5 border border-white/[0.08] flex items-center justify-center text-[#71717A] hover:text-white hover:bg-[var(--accent)]/10 hover:border-[var(--accent)]/30 transition-all"
+                                        aria-label="Twitter / X">
+                                        <Twitter className="w-3.5 h-3.5" />
+                                    </Link>
+                                )}
+                                {author.social_links.linkedin && (
+                                    <Link href={`https://linkedin.com/in/${author.social_links.linkedin}`} target="_blank" rel="noopener noreferrer"
+                                        className="w-8 h-8 rounded-lg bg-white/5 border border-white/[0.08] flex items-center justify-center text-[#71717A] hover:text-white hover:bg-[var(--accent)]/10 hover:border-[var(--accent)]/30 transition-all"
+                                        aria-label="LinkedIn">
+                                        <Linkedin className="w-3.5 h-3.5" />
+                                    </Link>
+                                )}
+                                {author.social_links.youtube && (
+                                    <Link href={author.social_links.youtube} target="_blank" rel="noopener noreferrer"
+                                        className="w-8 h-8 rounded-lg bg-white/5 border border-white/[0.08] flex items-center justify-center text-[#71717A] hover:text-white hover:bg-[var(--accent)]/10 hover:border-[var(--accent)]/30 transition-all"
+                                        aria-label="YouTube">
+                                        <Youtube className="w-3.5 h-3.5" />
+                                    </Link>
+                                )}
+                                {author.social_links.instagram && (
+                                    <Link href={`https://instagram.com/${author.social_links.instagram}`} target="_blank" rel="noopener noreferrer"
+                                        className="w-8 h-8 rounded-lg bg-white/5 border border-white/[0.08] flex items-center justify-center text-[#71717A] hover:text-white hover:bg-[var(--accent)]/10 hover:border-[var(--accent)]/30 transition-all"
+                                        aria-label="Instagram">
+                                        <Instagram className="w-3.5 h-3.5" />
+                                    </Link>
+                                )}
+                                {author.social_links.website && (
+                                    <Link href={author.social_links.website} target="_blank" rel="noopener noreferrer"
+                                        className="w-8 h-8 rounded-lg bg-white/5 border border-white/[0.08] flex items-center justify-center text-[#71717A] hover:text-white hover:bg-[var(--accent)]/10 hover:border-[var(--accent)]/30 transition-all"
+                                        aria-label="Website">
+                                        <Globe className="w-3.5 h-3.5" />
+                                    </Link>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 

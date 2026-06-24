@@ -395,6 +395,14 @@ export interface ComprehensiveWowAnalysis extends WowAnalysisResult {
 export type WowTabId = 'overview' | 'gear' | 'mythic' | 'raids' | 'pvp' | 'collections' | 'professions';
 
 // Author page types
+export interface AuthorSocialLinks {
+    twitter?: string;
+    linkedin?: string;
+    youtube?: string;
+    instagram?: string;
+    website?: string;
+}
+
 export interface AuthorProfile {
     id: number;
     username: string;
@@ -406,6 +414,8 @@ export interface AuthorProfile {
     tagline?: string;
     role: string;
     joined_at: string;
+    social_links?: AuthorSocialLinks;
+    social_urls?: string[];
 }
 
 export interface AuthorStats {

@@ -89,7 +89,10 @@ export default async function AuthorPage({ params }: Props) {
             "name": "TechPlay",
             "url": siteUrl,
         },
-        "sameAs": [`${siteUrl}/profile/${author.username}`],
+        "sameAs": [
+            `${siteUrl}/profile/${author.username}`,
+            ...(author.social_urls ?? []),
+        ],
     };
 
     return (
