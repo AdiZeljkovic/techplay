@@ -34,6 +34,7 @@ interface Guide {
     updated_at: string;
     author: {
         username: string;
+        author_slug?: string;
         display_name?: string;
         avatar_url?: string;
         name?: string;
