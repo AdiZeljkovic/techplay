@@ -114,7 +114,7 @@ export default async function GuidePage({ params }: Props) {
         "author": guide.author ? [{
             "@type": "Person",
             "name": guide.author.display_name || guide.author.username || "TechPlay",
-            "url": `${siteUrl}/profile/${guide.author.username}`,
+            "url": `${siteUrl}/author/${guide.author.author_slug || guide.author.username}`,
         }] : [{ "@type": "Organization", "name": "TechPlay", "url": siteUrl }],
         "publisher": {
             "@type": "Organization",

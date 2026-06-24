@@ -194,7 +194,7 @@ export default async function NewsSlugPage({ params }: Props) {
         "author": [{
             "@type": "Person",
             "name": article.author?.display_name || article.author?.username || "TechPlay Editor",
-            "url": `${siteUrl}/profile/${article.author?.username}`,
+            "url": `${siteUrl}/author/${article.author?.author_slug || article.author?.username}`,
         }],
         "publisher": {
             "@type": "Organization",

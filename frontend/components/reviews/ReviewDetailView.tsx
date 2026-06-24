@@ -50,7 +50,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
         "author": {
             "@type": "Person",
             "name": review.author?.display_name || review.author?.username || "TechPlay Reviewer",
-            "url": `${process.env.NEXT_PUBLIC_APP_URL}/profile/${review.author?.username}`
+            "url": `${process.env.NEXT_PUBLIC_APP_URL}/author/${review.author?.author_slug || review.author?.username}`
         },
         "publisher": {
             "@type": "Organization",

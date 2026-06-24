@@ -61,6 +61,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'discord_avatar',
         'last_daily_claim',
         'daily_streak',
+        'author_slug',
         'battlenet_id',
         'battlenet_token',
         'battlenet_refresh_token',

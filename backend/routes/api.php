@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AboutController;
+use App\Http\Controllers\Api\V1\AuthorController;
 use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\AdController;
 use App\Http\Controllers\Api\V1\AuthController;
@@ -380,6 +381,10 @@ Route::prefix('v1')->group(function () {
 
         // Staff / About Us
         Route::get('/staff', [AboutController::class, 'index']);
+
+        // Author pages (public, editorial staff only)
+        Route::get('/authors/{slug}', [AuthorController::class, 'show']);
+        Route::get('/authors/{slug}/articles', [AuthorController::class, 'articles']);
 
         // Ads
         Route::get('/ads/{position}', [AdController::class, 'show']);

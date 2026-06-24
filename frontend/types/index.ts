@@ -2,6 +2,7 @@ export interface User {
     id: number;
     name: string;
     username: string;
+    author_slug?: string;
     email: string;
     avatar_url?: string;
     bio?: string;
@@ -392,3 +393,30 @@ export interface ComprehensiveWowAnalysis extends WowAnalysisResult {
 
 // Tab navigation type
 export type WowTabId = 'overview' | 'gear' | 'mythic' | 'raids' | 'pvp' | 'collections' | 'professions';
+
+// Author page types
+export interface AuthorProfile {
+    id: number;
+    username: string;
+    author_slug: string;
+    display_name: string;
+    avatar_url?: string;
+    cover_image?: string;
+    bio?: string;
+    tagline?: string;
+    role: string;
+    joined_at: string;
+}
+
+export interface AuthorStats {
+    total: number;
+    news: number;
+    reviews: number;
+    tech: number;
+    guides: number;
+}
+
+export interface AuthorPageData {
+    author: AuthorProfile;
+    stats: AuthorStats;
+}

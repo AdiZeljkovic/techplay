@@ -51,6 +51,7 @@ class ArticleObserver
 
         $this->clearApiListingCache($article->category->type ?? null);
         $this->clearArticleShowCache($article->slug);
+        $this->clearAuthorCache($article);
 
         if ($article->category) {
             $categoryPath = $this->getCategoryPath($article->category->type);
@@ -99,6 +100,21 @@ class ArticleObserver
         // Revalidate homepage if featured article was deleted
         if ($article->is_featured_in_hero) {
             $this->revalidationService->revalidateHomepage();
+        }
+    }
+
+    /**
+     * Clear author page cache when their article is published/updated.
+     */
+    protected function clearAuthorCache(Article $article): void
+    {
+        if (! $article->relationLoaded('author')) {
+            $article->load('author:id,author_slug');
+        }
+
+        $authorSlug = $article->author?->author_slug;
+        if ($authorSlug) {
+            Cache::forget("author.show.v1.{$authorSlug}");
         }
     }
 

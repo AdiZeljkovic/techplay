@@ -1,0 +1,122 @@
+import Image from "next/image";
+import Link from "next/link";
+import { ExternalLink, Calendar, Crown, PenLine, Shield } from "lucide-react";
+import type { AuthorProfile, AuthorStats } from "@/types";
+
+interface AuthorHeaderProps {
+    author: AuthorProfile;
+    stats: AuthorStats;
+}
+
+const ROLE_CONFIG: Record<string, { color: string; bg: string; border: string; Icon: React.ComponentType<{ className?: string }> }> = {
+    "Editor-in-Chief": { color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/30", Icon: Crown },
+    "Editor":          { color: "text-amber-400",  bg: "bg-amber-500/10",  border: "border-amber-500/30",  Icon: PenLine },
+    "Journalist":      { color: "text-[var(--accent)]", bg: "bg-[var(--accent)]/10", border: "border-[var(--accent)]/30", Icon: PenLine },
+    "Moderator":       { color: "text-blue-400",   bg: "bg-blue-500/10",   border: "border-blue-500/30",   Icon: Shield },
+    "Admin":           { color: "text-[var(--accent)]", bg: "bg-[var(--accent)]/10", border: "border-[var(--accent)]/30", Icon: Crown },
+    "Super Admin":     { color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/30", Icon: Crown },
+};
+
+const STATS: Array<{ key: keyof AuthorStats; label: string }> = [
+    { key: "total",   label: "Total" },
+    { key: "news",    label: "News" },
+    { key: "reviews", label: "Reviews" },
+    { key: "tech",    label: "Tech" },
+    { key: "guides",  label: "Guides" },
+];
+
+export default function AuthorHeader({ author, stats }: AuthorHeaderProps) {
+    const roleConf = ROLE_CONFIG[author.role] ?? ROLE_CONFIG["Journalist"];
+    const { color, bg, border, Icon: RoleIcon } = roleConf;
+
+    return (
+        <div className="relative overflow-hidden bg-[#0B0E14] border-b border-[#161B22]">
+            {/* Cover / gradient background */}
+            <div className="relative h-48 md:h-60">
+                {author.cover_image ? (
+                    <Image
+                        src={author.cover_image}
+                        alt=""
+                        fill
+                        className="object-cover opacity-25"
+                        priority
+                        unoptimized
+                    />
+                ) : null}
+                <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent)]/5 via-transparent to-[#0B0E14]" />
+                <div className="absolute top-0 left-[10%] w-[60%] h-[2px] bg-gradient-to-r from-transparent via-[var(--accent)]/40 to-transparent" />
+            </div>
+
+            {/* Profile content */}
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-8 -mt-20 pb-8 relative z-10">
+                <div className="flex flex-col md:flex-row gap-6 items-start md:items-end">
+                    {/* Avatar */}
+                    <div className="shrink-0">
+                        <div className="w-28 h-28 md:w-36 md:h-36 rounded-2xl border-2 border-[var(--accent)]/40 overflow-hidden bg-[#1A1F26] shadow-[0_0_40px_rgba(252,65,0,0.15)]">
+                            {author.avatar_url ? (
+                                <Image
+                                    src={author.avatar_url}
+                                    alt={author.display_name}
+                                    width={144}
+                                    height={144}
+                                    className="object-cover w-full h-full"
+                                    unoptimized={author.avatar_url.includes('discord') || author.avatar_url.includes('gravatar')}
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-[var(--accent)]">
+                                    {author.display_name.charAt(0).toUpperCase()}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0 pb-1">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${color} ${bg} border ${border} mb-3`}>
+                            <RoleIcon className="w-3 h-3" />
+                            {author.role}
+                        </span>
+
+                        <h1 className="font-display text-[28px] md:text-[36px] font-black text-white leading-tight mb-1">
+                            {author.display_name}
+                        </h1>
+
+                        {author.tagline && (
+                            <p className="text-[#A1A1AA] text-[15px] mb-3">{author.tagline}</p>
+                        )}
+
+                        {author.bio && (
+                            <p className="text-[#71717A] text-[13px] leading-relaxed max-w-2xl mb-4 line-clamp-3">
+                                {author.bio}
+                            </p>
+                        )}
+
+                        <div className="flex flex-wrap items-center gap-4 text-[11px] text-[#71717A]">
+                            <span className="flex items-center gap-1.5">
+                                <Calendar className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                Member since {author.joined_at}
+                            </span>
+                            <Link
+                                href={`/profile/${author.username}`}
+                                className="flex items-center gap-1.5 hover:text-[var(--accent)] transition-colors"
+                            >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                View gamer profile
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Stats strip */}
+                <div className="mt-6 grid grid-cols-5 gap-3">
+                    {STATS.map(({ key, label }) => (
+                        <div key={key} className="bg-[#05070A] border border-[#161B22] rounded-xl px-3 py-3 text-center">
+                            <span className="block text-[22px] font-black text-white font-display">{stats[key]}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#71717A]">{label}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}

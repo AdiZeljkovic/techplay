@@ -80,6 +80,12 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('xp')
                     ->numeric()
                     ->default(0),
+                Forms\Components\TextInput::make('author_slug')
+                    ->label('Author Page URL Slug')
+                    ->prefix('techplay.gg/author/')
+                    ->helperText('Auto-generated from display name. Edit only if needed.')
+                    ->unique(ignoreRecord: true)
+                    ->maxLength(100),
                 Forms\Components\KeyValue::make('gamertags')
                     ->keyLabel('Platform')
                     ->valueLabel('Username/ID')

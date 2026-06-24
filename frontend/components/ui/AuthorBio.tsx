@@ -8,6 +8,7 @@ import { decodeHtml } from "@/lib/decode";
 interface AuthorBioProps {
     author?: {
         username?: string;
+        author_slug?: string;
         display_name?: string;
         avatar_url?: string;
         bio?: string;
@@ -29,7 +30,7 @@ export default function AuthorBio({ author, fallbackBio = "TechPlay editor and g
 
             <div className="relative z-10 flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-left">
                 {/* Avatar */}
-                <Link href={`/profile/${author?.username}`} className="shrink-0 group/avatar">
+                <Link href={`/author/${author?.author_slug || author?.username}`} className="shrink-0 group/avatar">
                     <div className="w-20 h-20 rounded-2xl overflow-hidden border border-[#161B22] ring-2 ring-tp-accent/30 group-hover/avatar:ring-tp-accent transition-all bg-[#1A1F26]">
                         {author?.avatar_url ? (
                             <Image
@@ -52,7 +53,7 @@ export default function AuthorBio({ author, fallbackBio = "TechPlay editor and g
                     <span className="text-tp-accent font-bold tracking-[0.15em] text-[10px] uppercase mb-1.5 block">
                         THE AUTHOR
                     </span>
-                    <Link href={`/profile/${author?.username}`} className="inline-block group">
+                    <Link href={`/author/${author?.author_slug || author?.username}`} className="inline-block group">
                         <h3 className="font-display text-[20px] font-bold text-white mb-2 group-hover:text-tp-accent transition-colors">
                             {displayName}
                         </h3>
@@ -61,10 +62,10 @@ export default function AuthorBio({ author, fallbackBio = "TechPlay editor and g
                         {decodeHtml(author?.bio || "") || fallbackBio}
                     </p>
                     <Link
-                        href={`/profile/${author?.username}`}
+                        href={`/author/${author?.author_slug || author?.username}`}
                         className="inline-flex items-center gap-1.5 text-[11px] font-bold text-tp-accent hover:text-tp-accent-hover uppercase tracking-wider transition-colors group/link"
                     >
-                        VIEW FULL PROFILE
+                        VIEW AUTHOR PAGE
                         <ArrowRight className="w-3 h-3 group-hover/link:translate-x-0.5 transition-transform" />
                     </Link>
                 </div>

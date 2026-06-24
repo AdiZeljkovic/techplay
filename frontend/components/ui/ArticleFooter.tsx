@@ -24,6 +24,7 @@ const SOCIAL_ICON_MAP: Record<string, { Icon: React.ComponentType<{ className?: 
 interface ArticleFooterProps {
     author?: {
         username?: string;
+        author_slug?: string;
         display_name?: string;
         avatar_url?: string;
         bio?: string;
@@ -83,7 +84,7 @@ export default function ArticleFooter({
                 {author && (
                     <div className="flex items-start sm:items-center justify-between gap-4 px-5 py-5 border-t border-[#161B22]">
                         <div className="flex items-center gap-4 min-w-0 flex-1">
-                            <Link href={`/profile/${author.username || 'me'}`} className="shrink-0">
+                            <Link href={`/author/${author.author_slug || author.username || 'me'}`} className="shrink-0">
                                 {author.avatar_url ? (
                                     <Image
                                         src={author.avatar_url}
@@ -101,14 +102,14 @@ export default function ArticleFooter({
                             </Link>
                             <div className="flex flex-col min-w-0">
                                 <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#71717A] mb-0.5">The Author</span>
-                                <Link href={`/profile/${author.username || 'me'}`} className="text-white font-bold text-[15px] hover:text-tp-accent transition-colors leading-tight">
+                                <Link href={`/author/${author.author_slug || author.username || 'me'}`} className="text-white font-bold text-[15px] hover:text-tp-accent transition-colors leading-tight">
                                     {author.display_name || author.username}
                                 </Link>
                                 {author.bio && (
                                     <p className="text-[#6B7280] text-[13px] leading-relaxed mt-1 line-clamp-2">{author.bio}</p>
                                 )}
-                                <Link href={`/profile/${author.username || 'me'}`} className="mt-2 text-[11px] font-bold uppercase tracking-widest text-tp-accent hover:text-tp-accent-hover transition-colors flex items-center gap-1 group w-max">
-                                    View Full Profile <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>
+                                <Link href={`/author/${author.author_slug || author.username || 'me'}`} className="mt-2 text-[11px] font-bold uppercase tracking-widest text-tp-accent hover:text-tp-accent-hover transition-colors flex items-center gap-1 group w-max">
+                                    View Author Page <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>
                                 </Link>
                             </div>
                         </div>

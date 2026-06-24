@@ -142,7 +142,7 @@ export default async function ReviewSlugPage({ params }: Props) {
             "author": {
                 "@type": "Person",
                 "name": review.author?.display_name || review.author?.username || "TechPlay Editor",
-                "url": `${siteUrl}/profile/${review.author?.username}`,
+                "url": `${siteUrl}/author/${review.author?.author_slug || review.author?.username}`,
             },
             "publisher": {
                 "@type": "Organization",
