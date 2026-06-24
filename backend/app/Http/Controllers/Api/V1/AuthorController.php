@@ -32,14 +32,28 @@ class AuthorController extends Controller
         'Super Admin'     => 6,
     ];
 
+    private function normalizeRole(string $name): string
+    {
+        return strtolower(str_replace([' ', '-'], '_', $name));
+    }
+
+    private array $normalizedEditorialRoles = [
+        'editor_in_chief', 'editor', 'journalist',
+        'moderator', 'admin', 'super_admin',
+    ];
+
     private function findEditorialAuthor(string $slug): User
     {
         $user = User::where('author_slug', $slug)->with('roles')->firstOrFail();
 
-        $hasEditorialRole = $user->roles->pluck('name')->intersect($this->editorialRoles)->isNotEmpty()
-            || in_array(strtolower($user->role ?? ''), $this->editorialRoleValues);
+        $spatieMatch = $user->roles->pluck('name')
+            ->map(fn ($r) => $this->normalizeRole($r))
+            ->intersect($this->normalizedEditorialRoles)
+            ->isNotEmpty();
 
-        if (! $hasEditorialRole) {
+        $columnMatch = in_array($this->normalizeRole($user->role ?? ''), $this->normalizedEditorialRoles);
+
+        if (! $spatieMatch && ! $columnMatch) {
             abort(404, 'Author not found.');
         }
 
@@ -50,9 +64,17 @@ class AuthorController extends Controller
     {
         $priority = $this->rolePriority;
 
-        return $user->roles
+        $spatieRole = $user->roles
             ->sortBy(fn ($r) => $priority[$r->name] ?? 99)
-            ->first()?->name ?? ucfirst($user->role ?? 'Editor');
+            ->first()?->name;
+
+        if ($spatieRole) {
+            return $spatieRole;
+        }
+
+        // Fallback: prettify role column value
+        $col = $user->role ?? 'Editor';
+        return ucwords(str_replace('_', ' ', $col));
     }
 
     /**
