@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserResource extends Resource
 {
@@ -77,6 +78,21 @@ class UserResource extends Resource
                     ->multiple()
                     ->preload()
                     ->searchable(),
+                Forms\Components\TextInput::make('display_name')
+                    ->label('Display Name')
+                    ->helperText('Publicly visible name (shown on articles, author page, profile).')
+                    ->maxLength(100)
+                    ->live(debounce: 600)
+                    ->afterStateUpdated(function ($state, $set, $get) {
+                        if (filled($state)) {
+                            $base = Str::slug($state);
+                            $current = $get('author_slug');
+                            // Only auto-fill if author_slug is empty
+                            if (blank($current)) {
+                                $set('author_slug', $base);
+                            }
+                        }
+                    }),
                 Forms\Components\TextInput::make('xp')
                     ->numeric()
                     ->default(0),
@@ -122,6 +138,10 @@ class UserResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('username')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('display_name')
+                    ->label('Display Name')
+                    ->searchable()
+                    ->placeholder('—'),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('roles.name')
