@@ -53,7 +53,7 @@ export default function Gta6MapHero({ totalLocations }: Gta6MapHeroProps) {
 
                     {/* Attribution */}
                     <div className="shrink-0 text-[11px] text-[#4A4A55] text-right leading-relaxed">
-                        <p>Location data:</p>
+                        <p>Map tiles &amp; location data:</p>
                         <a
                             href="https://gtadb.org"
                             target="_blank"
