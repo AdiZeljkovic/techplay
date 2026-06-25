@@ -4,7 +4,7 @@
 import { MapContainer, ImageOverlay, Marker, Popup, ZoomControl, useMap } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import L from "leaflet";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getCategoryColor, getCategoryLabel } from "./gta6Utils";
 import type { Gta6Location } from "@/types";
 
@@ -15,36 +15,27 @@ const GAME_W = MAX_X - MIN_X; // 20000
 const GAME_H = MAX_Y - MIN_Y; // 20000
 
 // Normalize game coords to [0, 1000] so Leaflet CRS.Simple works at sane zoom levels.
-// At zoom 0: 1000 CSS pixels = whole map. At zoom -1: 500px. At zoom 1: 2000px.
 const MAP_SIZE = 1000;
 
 function normalizeX(gameX: number): number {
     return (gameX - MIN_X) / GAME_W * MAP_SIZE;
 }
 function normalizeY(gameY: number): number {
-    // CRS.Simple lat increases upward — same direction as game Y. Direct mapping.
     return (gameY - MIN_Y) / GAME_H * MAP_SIZE;
 }
 function gameToLeaflet(gameX: number, gameY: number): [number, number] {
     return [normalizeY(gameY), normalizeX(gameX)]; // [lat, lng]
 }
 
-// GTADB zoom 0 = 3×3 tile grid covering the full game world
-const TILE_COLS = 3;
-const TILE_ROWS = 3;
+// ----- TILES -----
 
-// GitHub raw URL for GTADB zoom-0 tiles (CC BY 4.0, tileset yanis,13)
-const GTADB_BASE = "https://raw.githubusercontent.com/rolux/gtadb.org/main/maps/tiles/6/yanis%2C13/0";
+const GTADB_RAW = "https://raw.githubusercontent.com/rolux/gtadb.org/main/maps/tiles/6/yanis%2C13";
 
-function tileUrl(row: number, col: number): string {
-    return `${GTADB_BASE}/0%2C${row}%2C${col}.jpg`;
-}
-
-// [[southLat, westLng], [northLat, eastLng]] in normalized [0,1000] coordinate space
-function tileBounds(row: number, col: number): [[number, number], [number, number]] {
-    const tileGameH = GAME_H / TILE_ROWS;
-    const tileGameW = GAME_W / TILE_COLS;
-    // row=0 = northernmost (highest game Y), row=2 = southernmost
+// Leaflet bounds [[southLat, westLng], [northLat, eastLng]] for a GTADB tile
+function gtaTileBounds(z: number, row: number, col: number): [[number, number], [number, number]] {
+    const totalTiles = 3 * Math.pow(2, z); // 3 at z=0, 6 at z=1, ...
+    const tileGameH  = GAME_H / totalTiles;
+    const tileGameW  = GAME_W / totalTiles;
     const northGameY = MAX_Y - row * tileGameH;
     const southGameY = MAX_Y - (row + 1) * tileGameH;
     const westGameX  = MIN_X + col * tileGameW;
@@ -55,7 +46,64 @@ function tileBounds(row: number, col: number): [[number, number], [number, numbe
     ];
 }
 
-// Red cluster icon matching TechPlay accent color
+function gtaTileUrl(z: number, row: number, col: number): string {
+    return `${GTADB_RAW}/${z}/${z}%2C${row}%2C${col}.jpg`;
+}
+
+// Zoom-0: full 3×3 base map
+const Z0_TILES = [0, 1, 2].flatMap(r => [0, 1, 2].map(c => ({ r, c })));
+
+// Zoom-1 tiles with actual game content (rows 2-3, cols 0-4, based on z=3 coverage analysis)
+// These cover the Leonida/Vice City area with 2× better resolution than z=0
+const Z1_CONTENT_TILES = [
+    { r: 2, c: 0 }, { r: 2, c: 1 }, { r: 2, c: 2 }, { r: 2, c: 3 }, { r: 2, c: 4 },
+    { r: 3, c: 0 }, { r: 3, c: 1 }, { r: 3, c: 2 }, { r: 3, c: 3 }, { r: 3, c: 4 },
+];
+
+// Vice City area in normalized [0,1000] coords — used for default fitBounds
+// Game X[-5000, 1500] → normalized [550, 875], Game Y[-1000, 3500] → normalized [350, 575]
+const VICE_CITY_BOUNDS: [[number, number], [number, number]] = [[350, 550], [575, 875]];
+
+// ----- MAP COMPONENTS -----
+
+function FitBoundsOnLoad() {
+    const map = useMap();
+    useEffect(() => {
+        map.fitBounds(VICE_CITY_BOUNDS, { padding: [20, 20] });
+    }, [map]);
+    return null;
+}
+
+// Load zoom-1 tiles only when the user has zoomed in enough to benefit from them
+function AdaptiveTiles() {
+    const map = useMap();
+    const [showZ1, setShowZ1] = useState(false);
+
+    useEffect(() => {
+        const update = () => setShowZ1(map.getZoom() >= 1);
+        map.on("zoomend", update);
+        update();
+        return () => { map.off("zoomend", update); };
+    }, [map]);
+
+    if (!showZ1) return null;
+
+    return (
+        <>
+            {Z1_CONTENT_TILES.map(({ r, c }) => (
+                <ImageOverlay
+                    key={`z1-${r}-${c}`}
+                    url={gtaTileUrl(1, r, c)}
+                    bounds={gtaTileBounds(1, r, c)}
+                    opacity={1}
+                />
+            ))}
+        </>
+    );
+}
+
+// ----- CLUSTER ICON -----
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function createClusterIcon(cluster: any) {
     const count = cluster.getChildCount();
@@ -77,16 +125,6 @@ function createClusterIcon(cluster: any) {
     });
 }
 
-// Auto-fit to full game world on mount
-function FitBoundsOnLoad() {
-    const map = useMap();
-    useEffect(() => {
-        // [[south, west], [north, east]] in normalized coords
-        map.fitBounds([[0, 0], [MAP_SIZE, MAP_SIZE]], { padding: [16, 16] });
-    }, [map]);
-    return null;
-}
-
 function makeIcon(color: string, opacity: number) {
     return L.divIcon({
         className: "",
@@ -103,8 +141,7 @@ function makeIcon(color: string, opacity: number) {
     });
 }
 
-// Pre-compute 3×3 tile grid
-const MAP_TILES = [0, 1, 2].flatMap(row => [0, 1, 2].map(col => ({ row, col })));
+// ----- MAIN COMPONENT -----
 
 interface Props {
     locations: Gta6Location[];
@@ -119,35 +156,40 @@ export default function Gta6LeafletMap({ locations }: Props) {
     return (
         <MapContainer
             crs={L.CRS.Simple}
-            center={[MAP_SIZE / 2, MAP_SIZE / 2]}
-            zoom={0}
+            center={[462, 712]}   // center of Vice City bounds
+            zoom={1}
             zoomControl={false}
             minZoom={-2}
-            maxZoom={4}
+            maxZoom={5}
             maxBounds={[[-60, -60], [MAP_SIZE + 60, MAP_SIZE + 60]]}
             maxBoundsViscosity={0.8}
             style={{ height: "100%", width: "100%", background: "#05070A" }}
         >
-            {/* GTA VI map background: 3×3 GTADB tiles (CC BY 4.0) */}
-            {MAP_TILES.map(({ row, col }) => (
+            {/* Base layer: zoom-0 tiles (3×3, full game world) */}
+            {Z0_TILES.map(({ r, c }) => (
                 <ImageOverlay
-                    key={`${row}-${col}`}
-                    url={tileUrl(row, col)}
-                    bounds={tileBounds(row, col)}
+                    key={`z0-${r}-${c}`}
+                    url={gtaTileUrl(0, r, c)}
+                    bounds={gtaTileBounds(0, r, c)}
                     opacity={1}
                 />
             ))}
 
+            {/* Enhanced layer: zoom-1 tiles loaded when zoomed in */}
+            <AdaptiveTiles />
+
+            {/* Fit to Vice City on initial load */}
             <FitBoundsOnLoad />
+
             <ZoomControl position="bottomright" />
 
-            {/* Clustered markers using normalized game coordinates */}
+            {/* Clustered markers using in-game coordinates */}
             <MarkerClusterGroup
                 chunkedLoading
                 iconCreateFunction={createClusterIcon}
                 showCoverageOnHover={false}
                 spiderfyOnMaxZoom={true}
-                maxClusterRadius={60}
+                maxClusterRadius={50}
             >
                 {mappable.map(loc => {
                     const color   = getCategoryColor(loc.categories);
