@@ -430,3 +430,17 @@ export interface AuthorPageData {
     author: AuthorProfile;
     stats: AuthorStats;
 }
+
+// GTA 6 Map types
+export interface Gta6Location {
+    id: number;
+    gtadb_key: string;
+    name: string;
+    lat: number;
+    lng: number;
+    game_x?: number;
+    game_y?: number;
+    real_address?: string;
+    categories: string[];
+    is_unconfirmed: boolean;
+}

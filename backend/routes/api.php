@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AboutController;
 use App\Http\Controllers\Api\V1\AuthorController;
+use App\Http\Controllers\Api\V1\Gta6Controller;
 use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\AdController;
 use App\Http\Controllers\Api\V1\AuthController;
@@ -385,6 +386,12 @@ Route::prefix('v1')->group(function () {
         // Author pages (public, editorial staff only)
         Route::get('/authors/{slug}', [AuthorController::class, 'show']);
         Route::get('/authors/{slug}/articles', [AuthorController::class, 'articles']);
+
+        // GTA 6 Interactive Map (public)
+        Route::prefix('gta6')->group(function () {
+            Route::get('/locations', [Gta6Controller::class, 'locations']);
+            Route::get('/categories', [Gta6Controller::class, 'categories']);
+        });
 
         // Ads
         Route::get('/ads/{position}', [AdController::class, 'show']);
