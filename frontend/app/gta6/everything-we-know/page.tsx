@@ -1,0 +1,185 @@
+import { Metadata } from "next";
+import Link from "next/link";
+import { generatePageMetadata } from "@/lib/seo";
+import Gta6Countdown from "@/components/gta6/Gta6Countdown";
+import {
+    Calendar, MapPin, Users, Gamepad2, Clapperboard, Tag,
+    BookOpen, Map as MapIcon, ChevronRight,
+} from "lucide-react";
+
+export const revalidate = 86400;
+
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
+
+export async function generateMetadata(): Promise<Metadata> {
+    return generatePageMetadata("/gta6/everything-we-know", {
+        title: "GTA 6: Everything We Know (2026) — Release Date, Map, Story & More",
+        description:
+            "The complete GTA 6 guide: confirmed release date (Nov 19, 2026), Vice City & Leonida setting, protagonists Jason and Lucia, platforms, trailers, story and every confirmed detail so far.",
+        keywords: ["GTA 6", "Grand Theft Auto VI", "release date", "Vice City", "Leonida", "Jason", "Lucia", "everything we know"],
+    });
+}
+
+// Curated, editorial facts (original wording). UNKNOWN where not officially confirmed.
+const FACTS: { icon: typeof Calendar; label: string; value: string }[] = [
+    { icon: Calendar,    label: "Release date", value: "November 19, 2026 (officially confirmed by Rockstar)" },
+    { icon: Gamepad2,    label: "Platforms",    value: "PlayStation 5 and Xbox Series X|S at launch. PC version not yet confirmed." },
+    { icon: MapPin,      label: "Setting",      value: "The state of Leonida — a modern-day reimagining of Florida, centered on Vice City." },
+    { icon: Users,       label: "Protagonists", value: "Jason Duval and Lucia Caminos — the series' first playable female lead, in a Bonnie-and-Clyde-style story." },
+    { icon: Clapperboard,label: "Trailers",     value: "Two official trailers released so far, revealing Vice City, the Keys and a large cast." },
+    { icon: Tag,         label: "Price",        value: "Not yet announced. Editions and pricing expected closer to launch." },
+];
+
+const FAQ: { q: string; a: string }[] = [
+    {
+        q: "When is GTA 6 coming out?",
+        a: "Grand Theft Auto VI is confirmed for release on November 19, 2026 on PlayStation 5 and Xbox Series X|S.",
+    },
+    {
+        q: "Where is GTA 6 set?",
+        a: "GTA 6 is set in the fictional state of Leonida, based on Florida. The main city is Vice City, a reimagining of Miami, alongside surrounding keys, swamps and rural areas.",
+    },
+    {
+        q: "Who are the GTA 6 protagonists?",
+        a: "The game features two playable protagonists: Jason Duval and Lucia Caminos. Lucia is the first female lead in the series' history, and the two share a criminal partnership at the heart of the story.",
+    },
+    {
+        q: "Will GTA 6 come to PC?",
+        a: "Rockstar has only confirmed PlayStation 5 and Xbox Series X|S so far. A PC release has historically followed console launches for previous GTA titles, but nothing official has been announced for GTA 6.",
+    },
+    {
+        q: "How big is the GTA 6 map?",
+        a: "Rockstar has not released official map measurements. Based on trailers and community analysis, Leonida is expected to be the largest GTA world yet, spanning Vice City and multiple surrounding regions. Explore known locations on our interactive map.",
+    },
+    {
+        q: "How much will GTA 6 cost?",
+        a: "Pricing and special editions have not been announced. We'll update this guide as soon as Rockstar confirms details.",
+    },
+];
+
+export default function Gta6EverythingWeKnowPage() {
+    const faqJsonLd = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": FAQ.map(f => ({
+            "@type": "Question",
+            "name": f.q,
+            "acceptedAnswer": { "@type": "Answer", "text": f.a },
+        })),
+    };
+
+    return (
+        <>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+
+            <div className="min-h-screen bg-[#05070A]">
+                {/* Hero */}
+                <div className="relative bg-[#0B0E14] border-b border-[#161B22] overflow-hidden">
+                    <div className="absolute inset-0 bg-tech-grid opacity-20" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent)]/8 via-transparent to-[#0B0E14]" />
+                    <div className="relative max-w-[920px] mx-auto px-4 xl:px-8 py-12 md:py-16">
+                        {/* Breadcrumb */}
+                        <nav className="flex items-center gap-1.5 text-[12px] text-[#71717A] mb-5">
+                            <Link href="/gta6" className="hover:text-[var(--accent)] transition-colors">GTA 6 Hub</Link>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                            <span className="text-[#A1A1AA]">Everything We Know</span>
+                        </nav>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/30 text-[var(--accent)] text-[11px] font-bold uppercase tracking-widest mb-4">
+                            <BookOpen className="w-3 h-3" />
+                            The Complete Guide
+                        </div>
+                        <h1 className="font-display text-[32px] md:text-[46px] font-black text-white leading-tight mb-3">
+                            GTA 6: Everything We Know
+                        </h1>
+                        <p className="text-[#A1A1AA] text-[15px] md:text-[16px] max-w-2xl">
+                            Every officially confirmed detail about Grand Theft Auto VI — gathered, verified and updated as Rockstar reveals more.
+                        </p>
+                        <div className="mt-8">
+                            <Gta6Countdown />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="max-w-[920px] mx-auto px-4 xl:px-8 py-12">
+                    {/* Quick facts */}
+                    <h2 className="font-display text-[24px] font-black text-white mb-5">The essentials</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-12">
+                        {FACTS.map(({ icon: Icon, label, value }) => (
+                            <div key={label} className="flex items-start gap-3 bg-[#0B0E14] border border-[#161B22] rounded-xl p-4">
+                                <div className="w-9 h-9 rounded-lg bg-[var(--accent)]/10 border border-[var(--accent)]/25 flex items-center justify-center shrink-0">
+                                    <Icon className="w-4.5 h-4.5 text-[var(--accent)]" />
+                                </div>
+                                <div>
+                                    <p className="text-[11px] font-bold uppercase tracking-widest text-[#71717A] mb-1">{label}</p>
+                                    <p className="text-[13px] text-[#D4D4D8] leading-relaxed">{value}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Narrative sections */}
+                    <div className="space-y-10">
+                        <section>
+                            <h2 className="font-display text-[22px] font-black text-white mb-3">The setting: Vice City & Leonida</h2>
+                            <p className="text-[#A1A1AA] text-[15px] leading-relaxed">
+                                GTA 6 returns to Vice City, Rockstar&apos;s take on Miami, for the first time since 2002. This time the city
+                                sits within the wider state of Leonida — a sun-soaked, neon-lit reimagining of Florida packed with beaches,
+                                swamps, keys and sprawling suburbs. Explore every known landmark on our{" "}
+                                <Link href="/gta6/map" className="text-[var(--accent)] hover:underline">interactive map</Link>.
+                            </p>
+                        </section>
+
+                        <section>
+                            <h2 className="font-display text-[22px] font-black text-white mb-3">The protagonists: Jason & Lucia</h2>
+                            <p className="text-[#A1A1AA] text-[15px] leading-relaxed">
+                                For the first time in the series, GTA 6 stars a dual protagonist duo where one is a woman. Jason Duval and
+                                Lucia Caminos are bound together in a relationship and a life of crime, in what Rockstar frames as a modern
+                                Bonnie-and-Clyde story. Meet the wider cast on our{" "}
+                                <Link href="/gta6/characters" className="text-[var(--accent)] hover:underline">characters page</Link>.
+                            </p>
+                        </section>
+
+                        <section>
+                            <h2 className="font-display text-[22px] font-black text-white mb-3">Story & what to expect</h2>
+                            <p className="text-[#A1A1AA] text-[15px] leading-relaxed">
+                                The trailers tease a story driven by ambition, money and the bond between Jason and Lucia. Expect Rockstar&apos;s
+                                signature open world packed with vehicles, weapons, activities and a living world that reacts to you.
+                                Browse confirmed{" "}
+                                <Link href="/gta6/vehicles" className="text-[var(--accent)] hover:underline">vehicles</Link> and{" "}
+                                <Link href="/gta6/weapons" className="text-[var(--accent)] hover:underline">weapons</Link> as they&apos;re revealed.
+                            </p>
+                        </section>
+                    </div>
+
+                    {/* FAQ */}
+                    <div className="mt-14">
+                        <h2 className="font-display text-[24px] font-black text-white mb-5">Frequently asked questions</h2>
+                        <div className="space-y-2.5">
+                            {FAQ.map((f, i) => (
+                                <details key={i} className="group bg-[#0B0E14] border border-[#161B22] rounded-xl overflow-hidden">
+                                    <summary className="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer list-none text-[15px] font-bold text-white hover:text-[var(--accent)] transition-colors">
+                                        {f.q}
+                                        <ChevronRight className="w-4 h-4 shrink-0 text-[#71717A] group-open:rotate-90 transition-transform" />
+                                    </summary>
+                                    <div className="px-5 pb-4 -mt-1 text-[14px] text-[#A1A1AA] leading-relaxed">
+                                        {f.a}
+                                    </div>
+                                </details>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* CTA */}
+                    <div className="mt-14 flex flex-wrap gap-3">
+                        <Link href="/gta6/map" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--accent)] text-white text-[14px] font-bold hover:bg-[var(--accent-hover)] transition-colors">
+                            <MapIcon className="w-4 h-4" /> Explore the Map
+                        </Link>
+                        <Link href="/gta6" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#161B22] text-white text-[14px] font-bold hover:border-[var(--accent)]/40 transition-colors">
+                            Back to GTA 6 Hub
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}
