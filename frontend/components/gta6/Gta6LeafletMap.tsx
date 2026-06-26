@@ -17,6 +17,16 @@ const GAME_H = MAX_Y - MIN_Y; // 20000
 // MAP_SIZE = 3 × tileSize (256) = 768 — at Leaflet zoom 0, exactly 3×3 GTADB tiles fit
 const MAP_SIZE = 768;
 
+// CRS.Simple defaults to transformation(1,0,-1,0) which inverts Y → tile coords become
+// negative and GTADB tiles (y=0..2) never load. Fix: transformation(1,0,-1,MAP_SIZE)
+// maps lat=MAP_SIZE (north) → pixel_y=0 (top) and lat=0 (south) → pixel_y=MAP_SIZE (bottom),
+// so Leaflet tile y=0 = northernmost = GTADB row=0 ✓
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const GTA_CRS: L.CRS = (L as any).Util.extend({}, L.CRS.Simple, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    transformation: new ((L as any).Transformation)(1, 0, -1, MAP_SIZE),
+});
+
 function normalizeX(gameX: number): number {
     return (gameX - MIN_X) / GAME_W * MAP_SIZE;
 }
@@ -294,7 +304,7 @@ export default function Gta6LeafletMap({ locations, selectedKey }: Props) {
 
     return (
         <MapContainer
-            crs={L.CRS.Simple}
+            crs={GTA_CRS}
             center={[normalizeY(1000), normalizeX(-2000)]}
             zoom={1}
             zoomControl={false}
