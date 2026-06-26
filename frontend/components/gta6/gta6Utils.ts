@@ -27,6 +27,10 @@ export const CATEGORY_LABEL: Record<string, string> = {
 
 const META_TAGS = ["2022", "unconfirmed", "may-not-exist", "reused", "address-ambiguous"];
 
+export function getPhotoUrl(gtadbKey: string, type: "ig" | "rl"): string {
+    return `https://raw.githubusercontent.com/rolux/gtadb.org/main/map/photos/6/${gtadbKey},${type}.jpg`;
+}
+
 export function getCategoryColor(categories: string[]): string {
     for (const cat of categories) {
         if (CATEGORY_COLOR[cat]) return CATEGORY_COLOR[cat];

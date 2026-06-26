@@ -50,6 +50,7 @@ export default function Gta6MapClient({ initialCategories }: Props) {
     const [debouncedSearch, setDebounced]   = useState("");
     const [activeCategory, setActive]       = useState<string>("all");
     const [showFilters, setShowFilters]     = useState(false);
+    const [selectedKey, setSelectedKey]     = useState<string | null>(null);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     const handleSearch = useCallback((val: string) => {
@@ -159,10 +160,15 @@ export default function Gta6MapClient({ initialCategories }: Props) {
                     ) : (
                         <div className="divide-y divide-[#161B22]">
                             {locations.map(loc => {
-                                const color = getCategoryColor(loc.categories);
-                                const label = getCategoryLabel(loc.categories);
+                                const color    = getCategoryColor(loc.categories);
+                                const label    = getCategoryLabel(loc.categories);
+                                const isActive = selectedKey === loc.gtadb_key;
                                 return (
-                                    <div key={loc.id} className="px-4 py-2.5 hover:bg-[#161B22]/50 transition-colors">
+                                    <button
+                                        key={loc.id}
+                                        onClick={() => setSelectedKey(k => k === loc.gtadb_key ? null : loc.gtadb_key)}
+                                        className={`w-full text-left px-4 py-2.5 transition-colors ${isActive ? "bg-[var(--accent)]/10 border-l-2 border-[var(--accent)]" : "hover:bg-[#161B22]/50 border-l-2 border-transparent"}`}
+                                    >
                                         <div className="flex items-start gap-2">
                                             <div className="mt-1 w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
                                             <div className="min-w-0">
@@ -173,7 +179,7 @@ export default function Gta6MapClient({ initialCategories }: Props) {
                                                 </p>
                                             </div>
                                         </div>
-                                    </div>
+                                    </button>
                                 );
                             })}
                         </div>
@@ -192,7 +198,7 @@ export default function Gta6MapClient({ initialCategories }: Props) {
                     Filters {activeCategory !== "all" && `(${CATEGORY_CONFIG[activeCategory]?.label})`}
                 </button>
 
-                <Gta6LeafletMap locations={locations} />
+                <Gta6LeafletMap locations={locations} selectedKey={selectedKey} />
             </div>
         </div>
     );
