@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import dynamic from "next/dynamic";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import { Search, SlidersHorizontal, X, MapPin } from "lucide-react";
+import { Search, SlidersHorizontal, X, MapPin, ChevronRight } from "lucide-react";
 import type { Gta6Location } from "@/types";
 import { getCategoryColor, getCategoryLabel } from "./gta6Utils";
 
@@ -72,9 +72,20 @@ export default function Gta6MapClient({ initialCategories }: Props) {
     const displayCategories = initialCategories.filter(c => CATEGORY_CONFIG[c]);
 
     return (
-        <div className="flex flex-col md:flex-row h-[calc(100vh-130px)] min-h-[560px]">
+        <div className="flex flex-col md:flex-row h-[calc(100vh-96px)] min-h-[600px]">
             {/* Sidebar */}
             <div className={`${showFilters ? "flex" : "hidden md:flex"} flex-col w-full md:w-72 lg:w-80 shrink-0 bg-[#0B0E14] border-r border-[#161B22] z-10 overflow-hidden`}>
+
+                {/* Header */}
+                <div className="px-4 pt-4 pb-3 border-b border-[#161B22] flex items-center justify-between">
+                    <h2 className="text-[13px] font-bold text-white tracking-wide">Locations</h2>
+                    <span className="text-[11px] text-[#71717A]">
+                        {isLoading
+                            ? "…"
+                            : <><span className="text-[var(--accent)] font-bold">{locations.length}</span> results</>
+                        }
+                    </span>
+                </div>
 
                 {/* Search */}
                 <div className="p-4 border-b border-[#161B22]">
@@ -116,7 +127,7 @@ export default function Gta6MapClient({ initialCategories }: Props) {
                                 <button
                                     key={cat}
                                     onClick={() => setActive(active ? "all" : cat)}
-                                    className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all ${
+                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all ${
                                         active
                                             ? "border"
                                             : "bg-[#05070A] border border-[#161B22] text-[#71717A] hover:text-white hover:border-white/20"
@@ -127,21 +138,12 @@ export default function Gta6MapClient({ initialCategories }: Props) {
                                         color:           conf.color,
                                     } : {}}
                                 >
+                                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: conf.color }} />
                                     {conf.label}
                                 </button>
                             );
                         })}
                     </div>
-                </div>
-
-                {/* Count */}
-                <div className="px-4 py-3 border-b border-[#161B22]">
-                    <p className="text-[12px] text-[#71717A]">
-                        {isLoading
-                            ? "Loading..."
-                            : <><span className="text-white font-bold">{locations.length}</span> locations</>
-                        }
-                    </p>
                 </div>
 
                 {/* List */}
@@ -167,17 +169,18 @@ export default function Gta6MapClient({ initialCategories }: Props) {
                                     <button
                                         key={loc.id}
                                         onClick={() => setSelectedKey(k => k === loc.gtadb_key ? null : loc.gtadb_key)}
-                                        className={`w-full text-left px-4 py-2.5 transition-colors ${isActive ? "bg-[var(--accent)]/10 border-l-2 border-[var(--accent)]" : "hover:bg-[#161B22]/50 border-l-2 border-transparent"}`}
+                                        className={`group w-full text-left px-4 py-2.5 transition-colors ${isActive ? "bg-[var(--accent)]/10 border-l-2 border-[var(--accent)]" : "hover:bg-[#161B22]/50 border-l-2 border-transparent"}`}
                                     >
-                                        <div className="flex items-start gap-2">
-                                            <div className="mt-1 w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                                            <div className="min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                                            <div className="min-w-0 flex-1">
                                                 <p className="text-[12px] font-medium text-white leading-tight truncate">{loc.name}</p>
                                                 <p className="text-[10px] text-[#71717A] mt-0.5">
                                                     {label}
                                                     {loc.is_unconfirmed && <span className="ml-1 text-[#F59E0B]">· unconfirmed</span>}
                                                 </p>
                                             </div>
+                                            <ChevronRight className={`w-3.5 h-3.5 shrink-0 transition-all ${isActive ? "text-[var(--accent)] opacity-100" : "text-[#71717A] opacity-0 group-hover:opacity-100"}`} />
                                         </div>
                                     </button>
                                 );
