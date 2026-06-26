@@ -42,17 +42,17 @@ export default function Gta6HubHero() {
                             The Hype Is Real
                         </div>
 
-                        {/* Stacked GTA wordmark */}
-                        <div className="flex items-end gap-3 md:gap-4 mb-5">
-                            <h1 className="font-display font-black uppercase leading-[0.82] tracking-tight text-white text-[40px] sm:text-[54px] md:text-[64px] italic gta6-text-glow">
-                                <span className="block">Grand</span>
-                                <span className="block">Theft</span>
-                                <span className="block">Auto</span>
-                            </h1>
-                            <span className="font-display font-black italic leading-none gta6-neon-text text-[64px] sm:text-[88px] md:text-[110px] pb-1">
-                                VI
-                            </span>
-                        </div>
+                        {/* Official GTA VI logo */}
+                        <h1 className="mb-5">
+                            <Image
+                                src="/gta6/logo.png"
+                                alt="Grand Theft Auto VI"
+                                width={420}
+                                height={340}
+                                priority
+                                className="w-[220px] sm:w-[290px] md:w-[350px] h-auto drop-shadow-[0_6px_30px_rgba(0,0,0,0.55)]"
+                            />
+                        </h1>
 
                         <p className="text-[#E4E4E5] text-[14px] md:text-[16px] max-w-md mb-7 drop-shadow">
                             Vice City is calling. Explore everything we know about GTA 6 — news, trailers,
