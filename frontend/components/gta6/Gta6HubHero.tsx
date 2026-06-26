@@ -11,33 +11,32 @@ function scrollTo(id: string) {
 
 export default function Gta6HubHero() {
     return (
-        <div className="max-w-[1320px] mx-auto px-4 xl:px-8 pt-6">
-            <section className="relative w-full overflow-hidden rounded-3xl border border-[#161B22] gta6-grain bg-[#05070A] min-h-[520px] md:min-h-[600px]">
-                {/* Background key art */}
-                <div className="absolute inset-0">
-                    <Image
-                        src="/gta6/hero.jpg"
-                        alt="Grand Theft Auto VI — Jason and Lucia in Vice City"
-                        fill
-                        priority
-                        sizes="(max-width: 1320px) 100vw, 1320px"
-                        className="object-cover object-[70%_center]"
-                    />
-                </div>
+        <section className="relative w-full overflow-hidden gta6-grain bg-[#05070A] min-h-[560px] md:min-h-[660px]">
+            {/* Background key art (full-bleed) */}
+            <div className="absolute inset-0">
+                <Image
+                    src="/gta6/hero.jpg"
+                    alt="Grand Theft Auto VI — Jason and Lucia in Vice City"
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-cover object-[68%_center]"
+                />
+            </div>
 
-                {/* Scrims (subjects sit right) */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#05070A] via-[#05070A]/70 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-transparent to-transparent" />
-                <div className="absolute inset-0 gta6-sunset opacity-50 mix-blend-screen pointer-events-none" />
+            {/* Scrims (subjects sit right) */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#05070A] via-[#05070A]/65 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-transparent to-transparent" />
+            <div className="absolute inset-0 gta6-sunset opacity-50 mix-blend-screen pointer-events-none" />
 
-                {/* Content */}
-                <div className="relative h-full px-6 md:px-12 py-10 md:py-14 flex flex-col justify-center min-h-[520px] md:min-h-[600px]">
-                    <motion.div
-                        initial={{ opacity: 0, y: 22 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        className="max-w-xl"
-                    >
+            {/* Content */}
+            <div className="relative max-w-[1320px] mx-auto px-4 xl:px-8 py-12 md:py-16 flex flex-col justify-center min-h-[560px] md:min-h-[660px]">
+                <motion.div
+                    initial={{ opacity: 0, y: 22 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="max-w-xl"
+                >
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--gta-pink)]/15 border border-[var(--gta-pink)]/45 text-white text-[10px] font-bold uppercase tracking-[0.2em] mb-5 backdrop-blur-sm">
                             <span className="w-1.5 h-1.5 rounded-full bg-[var(--gta-pink)] animate-pulse" />
                             The Hype Is Real
@@ -85,10 +84,9 @@ export default function Gta6HubHero() {
                             </button>
                         </div>
                     </motion.div>
-                </div>
+            </div>
 
-                <div className="gta6-accent-line absolute bottom-0 left-0 right-0" />
-            </section>
-        </div>
+            <div className="gta6-accent-line absolute bottom-0 left-0 right-0" />
+        </section>
     );
 }
