@@ -113,9 +113,9 @@ export default async function Gta6HubPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-7">
                         {/* Map — big feature */}
                         <Link href="/gta6/map" className="group relative md:col-span-2 rounded-2xl overflow-hidden border border-[#161B22] bg-[#0B0E14] gta6-card min-h-[240px] md:min-h-[300px]">
-                            <div className="absolute inset-0 gta6-grid opacity-50" />
-                            <div className="absolute inset-0 gta6-sunset opacity-40" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/40 to-transparent" />
+                            <Image src="/gta6/card-map.png" alt="GTA 6 interactive map" fill sizes="(max-width:768px) 100vw, 66vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/55 to-[#05070A]/10" />
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#05070A]/70 to-transparent" />
                             <div className="relative h-full p-7 flex flex-col justify-end">
                                 <div className="w-12 h-12 rounded-xl bg-[var(--gta-pink)]/15 border border-[var(--gta-pink)]/35 flex items-center justify-center mb-4">
                                     <Map className="w-6 h-6 text-[var(--gta-pink)]" />
@@ -144,10 +144,10 @@ export default async function Gta6HubPage() {
                         </Link>
 
                         {/* Smaller cards */}
-                        <BentoCard href="/gta6/vehicles" icon={Car} title="Vehicles" desc="Cars, bikes, boats & much more." cta="View all" />
-                        <BentoCard href="/gta6/weapons" icon={Crosshair} title="Weapons" desc="All confirmed weapons." cta="View all" />
-                        <BentoCard href="/gta6/everything-we-know" icon={Gamepad2} title="Gameplay" desc="Gameplay features, mechanics & more." cta="Learn more" />
-                        <BentoCard href="/gta6/everything-we-know" icon={BookOpen} title="Everything We Know" desc="A complete summary of all confirmed info." cta="Read now" />
+                        <BentoCard href="/gta6/vehicles" icon={Car} title="Vehicles" desc="Cars, bikes, boats & much more." cta="View all" image="/gta6/card-vehicles.png" />
+                        <BentoCard href="/gta6/weapons" icon={Crosshair} title="Weapons" desc="All confirmed weapons." cta="View all" image="/gta6/card-weapons.png" />
+                        <BentoCard href="/gta6/everything-we-know" icon={Gamepad2} title="Gameplay" desc="Gameplay features, mechanics & more." cta="Learn more" image="/gta6/card-gameplay.png" />
+                        <BentoCard href="/gta6/everything-we-know" icon={BookOpen} title="Everything We Know" desc="A complete summary of all confirmed info." cta="Read now" image="/gta6/card-everything.png" />
                     </div>
                 </section>
 
@@ -221,20 +221,27 @@ function SectionHeading({ kicker, title, noMargin }: { kicker: string; title: st
     );
 }
 
-function BentoCard({ href, icon: Icon, title, desc, cta }: { href: string; icon: React.ComponentType<{ className?: string }>; title: string; desc: string; cta: string }) {
+function BentoCard({ href, icon: Icon, title, desc, cta, image }: { href: string; icon: React.ComponentType<{ className?: string }>; title: string; desc: string; cta: string; image?: string }) {
     return (
-        <Link href={href} className="group relative rounded-2xl overflow-hidden border border-[#161B22] bg-[#0B0E14] gta6-card p-6 min-h-[160px] flex flex-col justify-between">
-            <div className="absolute inset-0 bg-gradient-to-br from-[var(--gta-pink)]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <Link href={href} className="group relative rounded-2xl overflow-hidden border border-[#161B22] bg-[#0B0E14] gta6-card p-6 min-h-[190px] flex flex-col justify-end">
+            {image ? (
+                <>
+                    <Image src={image} alt={title} fill sizes="(max-width:768px) 100vw, 25vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/55 to-[#05070A]/10" />
+                </>
+            ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-[var(--gta-pink)]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            )}
             <div className="relative">
-                <div className="w-11 h-11 rounded-xl bg-[var(--gta-pink)]/12 border border-[var(--gta-pink)]/30 flex items-center justify-center mb-4">
+                <div className="w-10 h-10 rounded-xl bg-[var(--gta-pink)]/15 border border-[var(--gta-pink)]/35 flex items-center justify-center mb-3 backdrop-blur-sm">
                     <Icon className="w-5 h-5 text-[var(--gta-pink)]" />
                 </div>
                 <h3 className="font-display text-[18px] font-black text-white mb-1 group-hover:text-[var(--gta-pink)] transition-colors">{title}</h3>
-                <p className="text-[#71717A] text-[12px] leading-relaxed">{desc}</p>
+                <p className="text-[#D4D4D8] text-[12px] leading-relaxed">{desc}</p>
+                <span className="inline-flex items-center gap-1.5 text-[var(--gta-cyan)] text-[12px] font-bold mt-3">
+                    {cta} <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </span>
             </div>
-            <span className="relative inline-flex items-center gap-1.5 text-[var(--gta-cyan)] text-[12px] font-bold mt-4">
-                {cta} <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </span>
         </Link>
     );
 }

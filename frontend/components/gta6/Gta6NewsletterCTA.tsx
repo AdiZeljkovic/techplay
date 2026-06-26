@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { MessageCircle } from "lucide-react";
 
 const DISCORD_URL = "https://discord.gg/techplaygg";
@@ -41,12 +42,9 @@ export default function Gta6NewsletterCTA() {
 
     return (
         <div className="relative rounded-2xl overflow-hidden border border-[#161B22] bg-[#0B0E14] gta6-grain">
-            <div className="absolute inset-0 gta6-grid opacity-30 pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[var(--gta-violet)]/30 via-[var(--gta-pink)]/15 to-transparent pointer-events-none" />
-            {/* Flamingo accent */}
-            <div className="absolute right-6 bottom-0 text-[120px] leading-none select-none opacity-90 hidden md:block drop-shadow-[0_0_30px_rgba(255,46,136,0.5)]" aria-hidden>
-                🦩
-            </div>
+            <Image src="/gta6/newsletter.png" alt="" fill sizes="(max-width:1320px) 100vw, 1320px" className="object-cover object-right" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#05070A] via-[#05070A]/80 to-[#05070A]/20" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--gta-violet)]/25 via-[var(--gta-pink)]/10 to-transparent pointer-events-none" />
 
             <div className="relative p-8 md:p-10">
                 <h2 className="font-display text-[26px] md:text-[34px] font-black text-white leading-tight mb-2">
