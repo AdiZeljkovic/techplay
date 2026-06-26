@@ -86,19 +86,21 @@ function createClusterIcon(cluster: any) {
     });
 }
 
+// Prominent orange teardrop pin for every location — the category color sits in the
+// inner dot, so markers stay visible on the busy detailed map and read as "a location".
 function makeIcon(color: string, opacity: number) {
     return L.divIcon({
         className: "",
-        html: `<div style="
-            width:10px;height:10px;border-radius:50%;
-            background:${color};
-            border:2px solid rgba(255,255,255,0.35);
-            opacity:${opacity};
-            box-shadow:0 0 6px ${color}99;
-        "></div>`,
-        iconSize:    [10, 10],
-        iconAnchor:  [5, 5],
-        popupAnchor: [0, -10],
+        html: `<div style="opacity:${opacity};filter:drop-shadow(0 2px 3px rgba(0,0,0,0.55));">
+            <svg width="26" height="34" viewBox="0 0 26 34" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 0C5.82 0 0 5.82 0 13c0 9.2 11.1 19.4 12.4 20.6a.86.86 0 0 0 1.2 0C14.9 32.4 26 22.2 26 13 26 5.82 20.18 0 13 0z"
+                      fill="#FC4100" stroke="#ffffff" stroke-width="2"/>
+                <circle cx="13" cy="13" r="5" fill="${color}"/>
+            </svg>
+        </div>`,
+        iconSize:    [26, 34],
+        iconAnchor:  [13, 34],
+        popupAnchor: [0, -32],
     });
 }
 
