@@ -24,12 +24,13 @@ export default function Gta6EntityDetail({ entity, sectionLabel, sectionPath, me
     return (
         <div className="min-h-screen bg-[#05070A]">
             {/* Breadcrumb bar */}
-            <div className="bg-[#0B0E14] border-b border-[#161B22]">
+            <div className="relative bg-[#0B0E14] border-b border-[#161B22]">
+                <div className="gta6-accent-line absolute bottom-0 left-0 right-0" />
                 <div className="max-w-[1100px] mx-auto px-4 xl:px-8 py-4">
                     <nav className="flex items-center gap-1.5 text-[12px] text-[#71717A]">
-                        <Link href="/gta6" className="hover:text-[var(--accent)] transition-colors">GTA 6</Link>
+                        <Link href="/gta6" className="hover:text-[var(--gta-pink)] transition-colors">GTA 6</Link>
                         <ChevronRight className="w-3.5 h-3.5" />
-                        <Link href={sectionPath} className="hover:text-[var(--accent)] transition-colors">{sectionLabel}</Link>
+                        <Link href={sectionPath} className="hover:text-[var(--gta-pink)] transition-colors">{sectionLabel}</Link>
                         <ChevronRight className="w-3.5 h-3.5" />
                         <span className="text-[#A1A1AA] truncate">{entity.name}</span>
                     </nav>
@@ -45,7 +46,7 @@ export default function Gta6EntityDetail({ entity, sectionLabel, sectionPath, me
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={hero} alt={entity.name} className="w-full h-full object-cover" />
                             ) : (
-                                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--accent)]/15 to-[#1A1F26]">
+                                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--gta-pink)]/15 to-[#1A1F26]">
                                     <span className="font-display text-[64px] font-black text-white/15">{entity.name.charAt(0)}</span>
                                 </div>
                             )}
@@ -90,7 +91,7 @@ export default function Gta6EntityDetail({ entity, sectionLabel, sectionPath, me
                         )}
 
                         <div className="mt-8">
-                            <Link href={sectionPath} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0B0E14] border border-[#161B22] text-white text-[13px] font-semibold hover:border-[var(--accent)]/40 transition-colors">
+                            <Link href={sectionPath} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0B0E14] border border-[#161B22] text-white text-[13px] font-semibold hover:border-[var(--gta-pink)]/40 transition-colors">
                                 ← Back to {sectionLabel}
                             </Link>
                         </div>

@@ -67,7 +67,7 @@ export default function Gta6EntityGrid({
                         placeholder="Search..."
                         value={search}
                         onChange={e => handleSearch(e.target.value)}
-                        className="w-full bg-[#0B0E14] border border-[#161B22] rounded-lg pl-9 pr-8 py-2 text-[13px] text-white placeholder-[#71717A] focus:outline-none focus:border-[var(--accent)]/50 transition-colors"
+                        className="w-full bg-[#0B0E14] border border-[#161B22] rounded-lg pl-9 pr-8 py-2 text-[13px] text-white placeholder-[#71717A] focus:outline-none focus:border-[var(--gta-pink)]/50 transition-colors"
                     />
                     {search && (
                         <button onClick={() => handleSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#71717A] hover:text-white">
@@ -82,8 +82,8 @@ export default function Gta6EntityGrid({
                             onClick={() => setActiveFilter("all")}
                             className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all ${
                                 activeFilter === "all"
-                                    ? "bg-[var(--accent)] text-white"
-                                    : "bg-[#0B0E14] border border-[#161B22] text-[#71717A] hover:text-white hover:border-[var(--accent)]/30"
+                                    ? "bg-[var(--gta-pink)] text-white"
+                                    : "bg-[#0B0E14] border border-[#161B22] text-[#71717A] hover:text-white hover:border-[var(--gta-pink)]/30"
                             }`}
                         >
                             All {filterLabel}
@@ -94,7 +94,7 @@ export default function Gta6EntityGrid({
                                 onClick={() => setActiveFilter(a => a === opt ? "all" : opt)}
                                 className={`px-2.5 py-1 rounded-md text-[11px] font-semibold capitalize transition-all ${
                                     activeFilter === opt
-                                        ? "bg-[var(--accent)]/15 border border-[var(--accent)]/50 text-[var(--accent)]"
+                                        ? "bg-[var(--gta-pink)]/15 border border-[var(--gta-pink)]/50 text-[var(--gta-pink)]"
                                         : "bg-[#0B0E14] border border-[#161B22] text-[#71717A] hover:text-white hover:border-white/20"
                                 }`}
                             >

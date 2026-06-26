@@ -24,6 +24,7 @@ export default function Gta6CharactersPage() {
                 subtitle="The protagonists and cast of Vice City & Leonida"
                 breadcrumb="Characters"
                 badge="The Cast"
+                image="/gta6/hero.jpg"
             />
 
             <div className="max-w-[1320px] mx-auto px-4 xl:px-8 py-8">

@@ -66,11 +66,11 @@ function createClusterIcon(cluster: any) {
     return L.divIcon({
         html: `<div style="
             width:${size}px;height:${size}px;border-radius:50%;
-            background:#FC4100;
-            border:3px solid rgba(252,65,0,0.3);
+            background:#FF2E88;
+            border:3px solid rgba(255,46,136,0.3);
             color:#fff;font-weight:700;font-size:${fs}px;
             display:flex;align-items:center;justify-content:center;
-            box-shadow:0 0 16px rgba(252,65,0,0.45),0 2px 8px rgba(0,0,0,0.5);
+            box-shadow:0 0 16px rgba(255,46,136,0.5),0 2px 8px rgba(0,0,0,0.5);
             cursor:pointer;
         ">${count}</div>`,
         className: "",
@@ -87,7 +87,7 @@ function makeIcon(color: string, opacity: number) {
         html: `<div style="opacity:${opacity};filter:drop-shadow(0 2px 3px rgba(0,0,0,0.55));">
             <svg width="26" height="34" viewBox="0 0 26 34" xmlns="http://www.w3.org/2000/svg">
                 <path d="M13 0C5.82 0 0 5.82 0 13c0 9.2 11.1 19.4 12.4 20.6a.86.86 0 0 0 1.2 0C14.9 32.4 26 22.2 26 13 26 5.82 20.18 0 13 0z"
-                      fill="#FC4100" stroke="#ffffff" stroke-width="2"/>
+                      fill="#FF2E88" stroke="#ffffff" stroke-width="2"/>
                 <circle cx="13" cy="13" r="5" fill="${color}"/>
             </svg>
         </div>`,
@@ -129,7 +129,7 @@ function LocationPopup({ loc }: { loc: Gta6Location }) {
                             textTransform: "uppercase",
                             cursor: "pointer",
                             border: "none",
-                            background: tab === t ? "#FC4100" : "#10141B",
+                            background: tab === t ? "#FF2E88" : "#10141B",
                             color: tab === t ? "#fff" : "#71717A",
                             transition: "all 0.15s",
                         }}

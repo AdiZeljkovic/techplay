@@ -56,7 +56,7 @@ export default function Gta6Countdown() {
 
     if (time.isOut) {
         return (
-            <div className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[var(--accent)]/15 border border-[var(--accent)]/40 text-[var(--accent)] font-display font-black text-[20px] uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[var(--gta-pink)]/15 border border-[var(--gta-pink)]/40 text-[var(--gta-pink)] font-display font-black text-[20px] uppercase tracking-wider">
                 Out Now
             </div>
         );

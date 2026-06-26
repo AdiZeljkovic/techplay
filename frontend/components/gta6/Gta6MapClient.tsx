@@ -14,7 +14,7 @@ const Gta6LeafletMap = dynamic(() => import("./Gta6LeafletMap"), {
     loading: () => (
         <div className="absolute inset-0 flex items-center justify-center bg-[#05070A]">
             <div className="text-center">
-                <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                <div className="w-8 h-8 border-2 border-[var(--gta-pink)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                 <p className="text-[#71717A] text-[13px]">Loading map...</p>
             </div>
         </div>
@@ -82,7 +82,7 @@ export default function Gta6MapClient({ initialCategories }: Props) {
                     <span className="text-[11px] text-[#71717A]">
                         {isLoading
                             ? "…"
-                            : <><span className="text-[var(--accent)] font-bold">{locations.length}</span> results</>
+                            : <><span className="text-[var(--gta-pink)] font-bold">{locations.length}</span> results</>
                         }
                     </span>
                 </div>
@@ -96,7 +96,7 @@ export default function Gta6MapClient({ initialCategories }: Props) {
                             placeholder="Search locations..."
                             value={search}
                             onChange={e => handleSearch(e.target.value)}
-                            className="w-full bg-[#05070A] border border-[#161B22] rounded-lg pl-9 pr-8 py-2 text-[13px] text-white placeholder-[#71717A] focus:outline-none focus:border-[var(--accent)]/50 transition-colors"
+                            className="w-full bg-[#05070A] border border-[#161B22] rounded-lg pl-9 pr-8 py-2 text-[13px] text-white placeholder-[#71717A] focus:outline-none focus:border-[var(--gta-pink)]/50 transition-colors"
                         />
                         {search && (
                             <button onClick={() => handleSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#71717A] hover:text-white">
@@ -114,8 +114,8 @@ export default function Gta6MapClient({ initialCategories }: Props) {
                             onClick={() => setActive("all")}
                             className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all ${
                                 activeCategory === "all"
-                                    ? "bg-[var(--accent)] text-white"
-                                    : "bg-[#05070A] border border-[#161B22] text-[#71717A] hover:text-white hover:border-[var(--accent)]/30"
+                                    ? "bg-[var(--gta-pink)] text-white"
+                                    : "bg-[#05070A] border border-[#161B22] text-[#71717A] hover:text-white hover:border-[var(--gta-pink)]/30"
                             }`}
                         >
                             All
@@ -169,7 +169,7 @@ export default function Gta6MapClient({ initialCategories }: Props) {
                                     <button
                                         key={loc.id}
                                         onClick={() => setSelectedKey(k => k === loc.gtadb_key ? null : loc.gtadb_key)}
-                                        className={`group w-full text-left px-4 py-2.5 transition-colors ${isActive ? "bg-[var(--accent)]/10 border-l-2 border-[var(--accent)]" : "hover:bg-[#161B22]/50 border-l-2 border-transparent"}`}
+                                        className={`group w-full text-left px-4 py-2.5 transition-colors ${isActive ? "bg-[var(--gta-pink)]/10 border-l-2 border-[var(--gta-pink)]" : "hover:bg-[#161B22]/50 border-l-2 border-transparent"}`}
                                     >
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
@@ -180,7 +180,7 @@ export default function Gta6MapClient({ initialCategories }: Props) {
                                                     {loc.is_unconfirmed && <span className="ml-1 text-[#F59E0B]">· unconfirmed</span>}
                                                 </p>
                                             </div>
-                                            <ChevronRight className={`w-3.5 h-3.5 shrink-0 transition-all ${isActive ? "text-[var(--accent)] opacity-100" : "text-[#71717A] opacity-0 group-hover:opacity-100"}`} />
+                                            <ChevronRight className={`w-3.5 h-3.5 shrink-0 transition-all ${isActive ? "text-[var(--gta-pink)] opacity-100" : "text-[#71717A] opacity-0 group-hover:opacity-100"}`} />
                                         </div>
                                     </button>
                                 );

@@ -41,6 +41,7 @@ export default async function Gta6WeaponsPage() {
                 subtitle="The confirmed arsenal of Leonida"
                 breadcrumb="Weapons"
                 badge="The Arsenal"
+                image="/gta6/card-weapons.png"
             />
 
             <div className="max-w-[1320px] mx-auto px-4 xl:px-8 py-8">

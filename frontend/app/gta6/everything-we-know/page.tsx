@@ -80,6 +80,7 @@ export default function Gta6EverythingWeKnowPage() {
                     subtitle="Every officially confirmed detail about Grand Theft Auto VI — gathered, verified and updated as Rockstar reveals more."
                     breadcrumb="Everything We Know"
                     badge="The Complete Guide"
+                    image="/gta6/card-everything.png"
                 >
                     <Gta6Countdown />
                 </Gta6SectionHero>
@@ -90,8 +91,8 @@ export default function Gta6EverythingWeKnowPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-12">
                         {FACTS.map(({ icon: Icon, label, value }) => (
                             <div key={label} className="flex items-start gap-3 bg-[#0B0E14] border border-[#161B22] rounded-xl p-4">
-                                <div className="w-9 h-9 rounded-lg bg-[var(--accent)]/10 border border-[var(--accent)]/25 flex items-center justify-center shrink-0">
-                                    <Icon className="w-4.5 h-4.5 text-[var(--accent)]" />
+                                <div className="w-9 h-9 rounded-lg bg-[var(--gta-pink)]/10 border border-[var(--gta-pink)]/25 flex items-center justify-center shrink-0">
+                                    <Icon className="w-4.5 h-4.5 text-[var(--gta-pink)]" />
                                 </div>
                                 <div>
                                     <p className="text-[11px] font-bold uppercase tracking-widest text-[#71717A] mb-1">{label}</p>
@@ -109,7 +110,7 @@ export default function Gta6EverythingWeKnowPage() {
                                 GTA 6 returns to Vice City, Rockstar&apos;s take on Miami, for the first time since 2002. This time the city
                                 sits within the wider state of Leonida — a sun-soaked, neon-lit reimagining of Florida packed with beaches,
                                 swamps, keys and sprawling suburbs. Explore every known landmark on our{" "}
-                                <Link href="/gta6/map" className="text-[var(--accent)] hover:underline">interactive map</Link>.
+                                <Link href="/gta6/map" className="text-[var(--gta-pink)] hover:underline">interactive map</Link>.
                             </p>
                         </section>
 
@@ -119,7 +120,7 @@ export default function Gta6EverythingWeKnowPage() {
                                 For the first time in the series, GTA 6 stars a dual protagonist duo where one is a woman. Jason Duval and
                                 Lucia Caminos are bound together in a relationship and a life of crime, in what Rockstar frames as a modern
                                 Bonnie-and-Clyde story. Meet the wider cast on our{" "}
-                                <Link href="/gta6/characters" className="text-[var(--accent)] hover:underline">characters page</Link>.
+                                <Link href="/gta6/characters" className="text-[var(--gta-pink)] hover:underline">characters page</Link>.
                             </p>
                         </section>
 
@@ -129,8 +130,8 @@ export default function Gta6EverythingWeKnowPage() {
                                 The trailers tease a story driven by ambition, money and the bond between Jason and Lucia. Expect Rockstar&apos;s
                                 signature open world packed with vehicles, weapons, activities and a living world that reacts to you.
                                 Browse confirmed{" "}
-                                <Link href="/gta6/vehicles" className="text-[var(--accent)] hover:underline">vehicles</Link> and{" "}
-                                <Link href="/gta6/weapons" className="text-[var(--accent)] hover:underline">weapons</Link> as they&apos;re revealed.
+                                <Link href="/gta6/vehicles" className="text-[var(--gta-pink)] hover:underline">vehicles</Link> and{" "}
+                                <Link href="/gta6/weapons" className="text-[var(--gta-pink)] hover:underline">weapons</Link> as they&apos;re revealed.
                             </p>
                         </section>
                     </div>
@@ -141,7 +142,7 @@ export default function Gta6EverythingWeKnowPage() {
                         <div className="space-y-2.5">
                             {FAQ.map((f, i) => (
                                 <details key={i} className="group bg-[#0B0E14] border border-[#161B22] rounded-xl overflow-hidden">
-                                    <summary className="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer list-none text-[15px] font-bold text-white hover:text-[var(--accent)] transition-colors">
+                                    <summary className="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer list-none text-[15px] font-bold text-white hover:text-[var(--gta-pink)] transition-colors">
                                         {f.q}
                                         <ChevronRight className="w-4 h-4 shrink-0 text-[#71717A] group-open:rotate-90 transition-transform" />
                                     </summary>
@@ -155,10 +156,10 @@ export default function Gta6EverythingWeKnowPage() {
 
                     {/* CTA */}
                     <div className="mt-14 flex flex-wrap gap-3">
-                        <Link href="/gta6/map" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--accent)] text-white text-[14px] font-bold hover:bg-[var(--accent-hover)] transition-colors">
+                        <Link href="/gta6/map" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--gta-pink)] text-white text-[14px] font-bold hover:bg-[#ff1a7a] transition-colors">
                             <MapIcon className="w-4 h-4" /> Explore the Map
                         </Link>
-                        <Link href="/gta6" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#161B22] text-white text-[14px] font-bold hover:border-[var(--accent)]/40 transition-colors">
+                        <Link href="/gta6" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#161B22] text-white text-[14px] font-bold hover:border-[var(--gta-pink)]/40 transition-colors">
                             Back to GTA 6 Hub
                         </Link>
                     </div>

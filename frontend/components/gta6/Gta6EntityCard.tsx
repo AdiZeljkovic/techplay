@@ -33,7 +33,7 @@ export default function Gta6EntityCard({ entity, basePath, subtitle }: Props) {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                 ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--accent)]/15 to-[#1A1F26]">
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--gta-pink)]/15 to-[#1A1F26]">
                         <span className="font-display text-[40px] font-black text-white/15 select-none">
                             {entity.name.charAt(0)}
                         </span>
