@@ -1,0 +1,69 @@
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getApiUrl } from "@/lib/api";
+import type { Gta6Character } from "@/types";
+import Gta6EntityDetail from "@/components/gta6/Gta6EntityDetail";
+
+export const revalidate = 3600;
+
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
+
+async function fetchCharacter(slug: string): Promise<Gta6Character | null> {
+    try {
+        const res = await fetch(`${getApiUrl()}/gta6/characters/${slug}`, {
+            next: { revalidate: 3600 },
+            headers: { Accept: "application/json" },
+        });
+        if (!res.ok) return null;
+        const json = await res.json();
+        return json.data ?? null;
+    } catch {
+        return null;
+    }
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+    const { slug } = await params;
+    const c = await fetchCharacter(slug);
+    if (!c) return { title: "Character Not Found — TechPlay" };
+    const desc = (c.description ?? `${c.name} — a character in Grand Theft Auto VI.`).slice(0, 160);
+    return {
+        title: `${c.name} — GTA 6 Character | TechPlay`,
+        description: desc,
+        alternates: { canonical: `${SITE_URL}/gta6/characters/${c.slug}` },
+        openGraph: {
+            title: `${c.name} — GTA 6 Character`,
+            description: desc,
+            images: c.image ? [{ url: c.image }] : [],
+            type: "profile",
+        },
+    };
+}
+
+export default async function Gta6CharacterDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = await params;
+    const c = await fetchCharacter(slug);
+    if (!c) notFound();
+
+    const meta = [
+        ...(c.role ? [{ label: "Role", value: c.role }] : []),
+        ...(c.alias ? [{ label: "Alias", value: c.alias }] : []),
+    ];
+
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": c.name,
+        ...(c.alias ? { alternateName: c.alias } : {}),
+        ...(c.description ? { description: c.description } : {}),
+        ...(c.image ? { image: c.image } : {}),
+        "url": `${SITE_URL}/gta6/characters/${c.slug}`,
+    };
+
+    return (
+        <>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+            <Gta6EntityDetail entity={c} sectionLabel="Characters" sectionPath="/gta6/characters" meta={meta} />
+        </>
+    );
+}

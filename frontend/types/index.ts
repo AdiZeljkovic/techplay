@@ -444,3 +444,56 @@ export interface Gta6Location {
     categories: string[];
     is_unconfirmed: boolean;
 }
+
+// GTA 6 content databases (admin-curated)
+export interface Gta6Character {
+    id: number;
+    slug: string;
+    name: string;
+    alias?: string | null;
+    role?: string | null;
+    description?: string | null;
+    image?: string | null;
+    gallery?: string[] | null;
+    status: string;
+}
+
+export interface Gta6Vehicle {
+    id: number;
+    slug: string;
+    name: string;
+    vehicle_class?: string | null;
+    real_equivalent?: string | null;
+    description?: string | null;
+    image?: string | null;
+    gallery?: string[] | null;
+    status: string;
+}
+
+export interface Gta6Weapon {
+    id: number;
+    slug: string;
+    name: string;
+    weapon_type?: string | null;
+    description?: string | null;
+    image?: string | null;
+    gallery?: string[] | null;
+    status: string;
+}
+
+// Shared shape for the generic GTA6 entity grid/card/detail components
+export interface Gta6Entity {
+    id: number;
+    slug: string;
+    name: string;
+    image?: string | null;
+    gallery?: string[] | null;
+    description?: string | null;
+    status: string;
+    // optional type-specific subtitle fields
+    role?: string | null;
+    alias?: string | null;
+    vehicle_class?: string | null;
+    real_equivalent?: string | null;
+    weapon_type?: string | null;
+}

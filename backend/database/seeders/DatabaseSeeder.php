@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             SeasonSeeder::class,
             QuestSeeder::class,
+            Gta6CharactersSeeder::class,
         ]);
 
         // Create Admin

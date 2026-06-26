@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+
+class Gta6Weapon extends Model
+{
+    protected $table = 'gta6_weapons';
+
+    protected $fillable = [
+        'slug',
+        'name',
+        'weapon_type',
+        'description',
+        'image',
+        'gallery',
+        'status',
+        'is_published',
+        'sort_order',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'gallery'      => 'array',
+            'is_published' => 'boolean',
+            'sort_order'   => 'integer',
+        ];
+    }
+
+    public function scopePublished(Builder $query): Builder
+    {
+        return $query->where('is_published', true);
+    }
+}

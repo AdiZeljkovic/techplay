@@ -3,6 +3,9 @@
 use App\Http\Controllers\Api\V1\AboutController;
 use App\Http\Controllers\Api\V1\AuthorController;
 use App\Http\Controllers\Api\V1\Gta6Controller;
+use App\Http\Controllers\Api\V1\Gta6CharactersController;
+use App\Http\Controllers\Api\V1\Gta6VehiclesController;
+use App\Http\Controllers\Api\V1\Gta6WeaponsController;
 use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\AdController;
 use App\Http\Controllers\Api\V1\AuthController;
@@ -391,6 +394,18 @@ Route::prefix('v1')->group(function () {
         Route::prefix('gta6')->group(function () {
             Route::get('/locations', [Gta6Controller::class, 'locations']);
             Route::get('/categories', [Gta6Controller::class, 'categories']);
+
+            // GTA 6 content databases (public, admin-curated)
+            Route::get('/characters', [Gta6CharactersController::class, 'index']);
+            Route::get('/characters/{slug}', [Gta6CharactersController::class, 'show']);
+
+            Route::get('/vehicles', [Gta6VehiclesController::class, 'index']);
+            Route::get('/vehicles/classes', [Gta6VehiclesController::class, 'classes']);
+            Route::get('/vehicles/{slug}', [Gta6VehiclesController::class, 'show']);
+
+            Route::get('/weapons', [Gta6WeaponsController::class, 'index']);
+            Route::get('/weapons/types', [Gta6WeaponsController::class, 'types']);
+            Route::get('/weapons/{slug}', [Gta6WeaponsController::class, 'show']);
         });
 
         // Ads
