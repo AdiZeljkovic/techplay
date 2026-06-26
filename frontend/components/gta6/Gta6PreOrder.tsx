@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 
 // Retailer links — redakcija fills affiliate URLs when pre-orders open. "#" = disabled.
@@ -25,9 +26,9 @@ function PlatformIcon({ kind }: { kind: string }) {
 
 export default function Gta6PreOrder() {
     return (
-        <div id="preorder" className="relative rounded-2xl overflow-hidden border border-[var(--gta-pink)]/25 bg-[#0B0E14] gta6-grain scroll-mt-24">
-            <div className="absolute inset-0 gta6-grid opacity-30" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[var(--gta-violet)]/25 via-[var(--gta-pink)]/12 to-[var(--gta-orange)]/15 pointer-events-none" />
+        <div id="preorder" className="relative rounded-2xl overflow-hidden border border-[var(--gta-pink)]/25 bg-[#0B0E14] scroll-mt-24">
+            <Image src="/gta6/preorder.png" alt="" fill sizes="(max-width:1320px) 100vw, 1320px" className="object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#05070A]/90 via-[#05070A]/55 to-[#05070A]/30" />
             <div className="relative p-6 md:p-8 flex flex-col lg:flex-row lg:items-center gap-6">
                 <div className="flex-1">
                     <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[var(--gta-cyan)]/15 border border-[var(--gta-cyan)]/40 text-[var(--gta-cyan)] text-[10px] font-bold uppercase tracking-widest mb-3">
