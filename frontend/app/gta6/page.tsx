@@ -8,7 +8,7 @@ import Gta6Trailers from "@/components/gta6/Gta6Trailers";
 import Gta6PreOrder from "@/components/gta6/Gta6PreOrder";
 import Gta6NewsletterCTA from "@/components/gta6/Gta6NewsletterCTA";
 import {
-    Map, Users, Car, Crosshair, BookOpen, Gamepad2, ArrowRight, ChevronRight,
+    Map, Users, Car, Crosshair, BookOpen, ArrowRight, ChevronRight,
 } from "lucide-react";
 
 export const revalidate = 3600;
@@ -146,7 +146,6 @@ export default async function Gta6HubPage() {
                         {/* Smaller cards */}
                         <BentoCard href="/gta6/vehicles" icon={Car} title="Vehicles" desc="Cars, bikes, boats & much more." cta="View all" image="/gta6/card-vehicles.png" />
                         <BentoCard href="/gta6/weapons" icon={Crosshair} title="Weapons" desc="All confirmed weapons." cta="View all" image="/gta6/card-weapons.png" />
-                        <BentoCard href="/gta6/everything-we-know" icon={Gamepad2} title="Gameplay" desc="Gameplay features, mechanics & more." cta="Learn more" image="/gta6/card-gameplay.png" />
                         <BentoCard href="/gta6/everything-we-know" icon={BookOpen} title="Everything We Know" desc="A complete summary of all confirmed info." cta="Read now" image="/gta6/card-everything.png" />
                     </div>
                 </section>
