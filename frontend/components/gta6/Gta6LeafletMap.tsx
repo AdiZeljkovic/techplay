@@ -8,14 +8,17 @@ import { useEffect, useState } from "react";
 import { getCategoryColor, getCategoryLabel, getPhotoUrl } from "./gta6Utils";
 import type { Gta6Location } from "@/types";
 
-// GTA VI game world bounds (from GTADB maps.js)
-const MIN_X = -16000, MAX_X = 4000;
-const MIN_Y = -8000,  MAX_Y = 12000;
-const GAME_W = MAX_X - MIN_X; // 20000
-const GAME_H = MAX_Y - MIN_Y; // 20000
+// GTA VI tile-image coordinate system (verbatim from GTADB maps.js):
+//   mapW = mapH = 32768, zeroX = zeroY = 16384 (game origin at image centre)
+//   cX = (gameX + 16384)/32768 * mapSize ; cY = (16384 - gameY)/32768 * mapSize
+// So the full tile image spans game coords ±16384 in both axes.
+const ZERO     = 16384;   // zeroX = zeroY
+const MAP_FULL = 32768;   // mapW = mapH
+const MAP_SIZE = 1024;    // CRS pixels at Leaflet zoom 0 (= theoretical 4×4 tiles of 256)
 
-// MAP_SIZE = 3 × tileSize (256) = 768 — at Leaflet zoom 0, exactly 3×3 GTADB tiles fit
-const MAP_SIZE = 768;
+// Content bounds (where the island + landmarks actually are) — used for the default view
+const CONTENT_MIN_X = -16000, CONTENT_MAX_X = 4000;
+const CONTENT_MIN_Y = -8000,  CONTENT_MAX_Y = 12000;
 
 // CRS.Simple defaults to transformation(1,0,-1,0) which inverts Y → tile coords become
 // negative and GTADB tiles (y=0..2) never load. Fix: transformation(1,0,-1,MAP_SIZE)
@@ -28,25 +31,33 @@ const GTA_CRS: L.CRS = (L as any).Util.extend({}, L.CRS.Simple, {
 });
 
 function normalizeX(gameX: number): number {
-    return (gameX - MIN_X) / GAME_W * MAP_SIZE;
+    return (gameX + ZERO) / MAP_FULL * MAP_SIZE;
 }
 function normalizeY(gameY: number): number {
-    return (gameY - MIN_Y) / GAME_H * MAP_SIZE;
+    // high gameY = north = high lat (top); CRS transform inverts to pixel_y=0
+    return (gameY + ZERO) / MAP_FULL * MAP_SIZE;
 }
 function gameToLeaflet(gameX: number, gameY: number): [number, number] {
     return [normalizeY(gameY), normalizeX(gameX)]; // [lat, lng]
 }
 
-// Vice City bounds in normalized coords (game X[-5000,2000], Y[-1000,3500])
-const VICE_CITY_BOUNDS: [[number, number], [number, number]] = [
-    [normalizeY(-1000), normalizeX(-5000)],
-    [normalizeY(3500),  normalizeX(2000)],
+// Default view = frame all content (the island), so no marker spills into open ocean
+const CONTENT_BOUNDS: [[number, number], [number, number]] = [
+    [normalizeY(CONTENT_MIN_Y), normalizeX(CONTENT_MIN_X)],
+    [normalizeY(CONTENT_MAX_Y), normalizeX(CONTENT_MAX_X)],
 ];
 
-// GTADB yanis,13 tile URL — {z} appears twice (directory + filename prefix)
-// At Leaflet zoom z with tileSize=256 and MAP_SIZE=768: 3×2^z tiles per row = GTADB zoom z ✓
-const TILE_URL =
-    "https://raw.githubusercontent.com/rolux/gtadb.org/main/maps/tiles/6/yanis%2C13/{z}/{z}%2C{y}%2C{x}.jpg";
+// GTADB tilesets — {z} appears twice (directory + filename prefix), {y}/{x} are tile indices.
+// dupzor,51 = clean colored base map (no baked-in legend); yanis,13 = community map w/ legend.
+const TILESETS = {
+    color:     "dupzor%2C51",
+    community: "yanis%2C13",
+} as const;
+type TileStyle = keyof typeof TILESETS;
+
+function tileUrl(style: TileStyle): string {
+    return `https://raw.githubusercontent.com/rolux/gtadb.org/main/maps/tiles/6/${TILESETS[style]}/{z}/{z}%2C{y}%2C{x}.jpg`;
+}
 
 // 1×1 transparent GIF for tiles that don't exist (empty ocean areas)
 const EMPTY_TILE =
@@ -267,7 +278,7 @@ function LocationPopup({ loc }: { loc: Gta6Location }) {
 function FitBoundsOnLoad() {
     const map = useMap();
     useEffect(() => {
-        map.fitBounds(VICE_CITY_BOUNDS, { padding: [20, 20] });
+        map.fitBounds(CONTENT_BOUNDS, { padding: [24, 24] });
     }, [map]);
     return null;
 }
@@ -289,6 +300,49 @@ function FlyToHandler({ locations, selectedKey }: FlyToHandlerProps) {
     return null;
 }
 
+// Base-map style switcher (top-right overlay) — Color (dupzor,51) / Community (yanis,13)
+function StyleToggle({ style, onChange }: { style: TileStyle; onChange: (s: TileStyle) => void }) {
+    const opts: { key: TileStyle; label: string }[] = [
+        { key: "color",     label: "Color" },
+        { key: "community", label: "Community" },
+    ];
+    return (
+        <div style={{
+            position: "absolute",
+            top: 12,
+            right: 12,
+            zIndex: 1000,
+            display: "flex",
+            background: "#0B0E14",
+            border: "1px solid #161B22",
+            borderRadius: 8,
+            overflow: "hidden",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+        }}>
+            {opts.map(o => (
+                <button
+                    key={o.key}
+                    onClick={() => onChange(o.key)}
+                    style={{
+                        padding: "6px 12px",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        letterSpacing: "0.04em",
+                        textTransform: "uppercase",
+                        border: "none",
+                        cursor: "pointer",
+                        background: style === o.key ? "#FC4100" : "transparent",
+                        color: style === o.key ? "#fff" : "#71717A",
+                        transition: "all 0.15s",
+                    }}
+                >
+                    {o.label}
+                </button>
+            ))}
+        </div>
+    );
+}
+
 // ----- MAIN COMPONENT -----
 
 interface Props {
@@ -297,6 +351,8 @@ interface Props {
 }
 
 export default function Gta6LeafletMap({ locations, selectedKey }: Props) {
+    const [style, setStyle] = useState<TileStyle>("color");
+
     const mappable = locations.filter(
         (l): l is Gta6Location & { game_x: number; game_y: number } =>
             l.game_x != null && l.game_y != null
@@ -305,21 +361,23 @@ export default function Gta6LeafletMap({ locations, selectedKey }: Props) {
     return (
         <MapContainer
             crs={GTA_CRS}
-            center={[normalizeY(1000), normalizeX(-2000)]}
+            center={[normalizeY(2000), normalizeX(-4000)]}
             zoom={1}
             zoomControl={false}
-            minZoom={-2}
-            maxZoom={6}
-            maxBounds={[[-40, -40], [MAP_SIZE + 40, MAP_SIZE + 40]]}
-            maxBoundsViscosity={0.8}
-            style={{ height: "100%", width: "100%", background: "#05070A" }}
+            minZoom={0}
+            maxZoom={7}
+            maxBounds={[[-50, -50], [MAP_SIZE + 50, MAP_SIZE + 50]]}
+            maxBoundsViscosity={0.9}
+            style={{ height: "100%", width: "100%", background: "#13384f" }}
         >
-            {/* GTADB yanis,13 tile layer — auto-loads correct zoom level */}
+            {/* GTADB tile layer — auto-loads correct zoom level (z 0-6). Keyed so a
+                style switch fully remounts the layer with the new tileset URL. */}
             <TileLayer
-                url={TILE_URL}
+                key={style}
+                url={tileUrl(style)}
                 tileSize={256}
                 minNativeZoom={0}
-                maxNativeZoom={3}
+                maxNativeZoom={6}
                 noWrap={true}
                 errorTileUrl={EMPTY_TILE}
                 bounds={[[0, 0], [MAP_SIZE, MAP_SIZE]]}
@@ -329,6 +387,7 @@ export default function Gta6LeafletMap({ locations, selectedKey }: Props) {
             <FitBoundsOnLoad />
             <FlyToHandler locations={locations} selectedKey={selectedKey} />
             <ZoomControl position="bottomright" />
+            <StyleToggle style={style} onChange={setStyle} />
 
             <MarkerClusterGroup
                 chunkedLoading

@@ -72,7 +72,7 @@ export default function Gta6MapClient({ initialCategories }: Props) {
     const displayCategories = initialCategories.filter(c => CATEGORY_CONFIG[c]);
 
     return (
-        <div className="flex flex-col md:flex-row h-[calc(100vh-200px)] min-h-[500px]">
+        <div className="flex flex-col md:flex-row h-[calc(100vh-130px)] min-h-[560px]">
             {/* Sidebar */}
             <div className={`${showFilters ? "flex" : "hidden md:flex"} flex-col w-full md:w-72 lg:w-80 shrink-0 bg-[#0B0E14] border-r border-[#161B22] z-10 overflow-hidden`}>
 
