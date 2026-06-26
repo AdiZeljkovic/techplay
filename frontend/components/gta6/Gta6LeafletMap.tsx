@@ -295,6 +295,28 @@ function FlyToHandler({ locations, selectedKey }: FlyToHandlerProps) {
     return null;
 }
 
+// Wheel zoom only after the user interacts with the map — so scrolling the page
+// over the map scrolls the page, while clicking the map enables wheel zoom.
+function ScrollZoomGate() {
+    const map = useMap();
+    useEffect(() => {
+        map.scrollWheelZoom.disable();
+        const enable  = () => map.scrollWheelZoom.enable();
+        const disable = () => map.scrollWheelZoom.disable();
+        map.on("focus", enable);
+        map.on("click", enable);
+        map.on("mouseout", disable);
+        map.on("blur", disable);
+        return () => {
+            map.off("focus", enable);
+            map.off("click", enable);
+            map.off("mouseout", disable);
+            map.off("blur", disable);
+        };
+    }, [map]);
+    return null;
+}
+
 // ----- MAIN COMPONENT -----
 
 interface Props {
@@ -314,6 +336,7 @@ export default function Gta6LeafletMap({ locations, selectedKey }: Props) {
             center={[normalizeY(2000), normalizeX(-4000)]}
             zoom={1}
             zoomControl={false}
+            scrollWheelZoom={false}
             minZoom={0}
             maxZoom={7}
             maxBounds={[[-50, -50], [MAP_SIZE + 50, MAP_SIZE + 50]]}
@@ -334,6 +357,7 @@ export default function Gta6LeafletMap({ locations, selectedKey }: Props) {
 
             <FitBoundsOnLoad />
             <FlyToHandler locations={locations} selectedKey={selectedKey} />
+            <ScrollZoomGate />
             <ZoomControl position="bottomright" />
 
             <MarkerClusterGroup

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import { Search, SlidersHorizontal, X, MapPin, ChevronRight } from "lucide-react";
+import { Search, SlidersHorizontal, X, MapPin, ChevronRight, ChevronLeft, ArrowLeft } from "lucide-react";
 import type { Gta6Location } from "@/types";
 import { getCategoryColor, getCategoryLabel } from "./gta6Utils";
 
@@ -43,15 +44,23 @@ const fetcher = (url: string) => axios.get(url).then(r => r.data?.data ?? []);
 
 interface Props {
     initialCategories: string[];
+    totalLocations?: number;
 }
 
-export default function Gta6MapClient({ initialCategories }: Props) {
+export default function Gta6MapClient({ initialCategories, totalLocations = 0 }: Props) {
     const [search, setSearch]               = useState("");
     const [debouncedSearch, setDebounced]   = useState("");
     const [activeCategory, setActive]       = useState<string>("all");
-    const [showFilters, setShowFilters]     = useState(false);
+    const [panelOpen, setPanelOpen]         = useState(false);   // mobile drawer / desktop collapse
     const [selectedKey, setSelectedKey]     = useState<string | null>(null);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+    // Panel open by default on desktop (overlay), closed on mobile (drawer)
+    useEffect(() => {
+        if (typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches) {
+            setPanelOpen(true);
+        }
+    }, []);
 
     const handleSearch = useCallback((val: string) => {
         setSearch(val);
@@ -71,24 +80,83 @@ export default function Gta6MapClient({ initialCategories }: Props) {
 
     const displayCategories = initialCategories.filter(c => CATEGORY_CONFIG[c]);
 
-    return (
-        <div className="flex flex-col md:flex-row h-[calc(100vh-96px)] min-h-[600px]">
-            {/* Sidebar */}
-            <div className={`${showFilters ? "flex" : "hidden md:flex"} flex-col w-full md:w-72 lg:w-80 shrink-0 bg-[#0B0E14] border-r border-[#161B22] z-10 overflow-hidden`}>
+    const handleSelect = (key: string) => {
+        setSelectedKey(k => (k === key ? null : key));
+        // close the drawer on mobile so the user sees the map fly
+        if (window.matchMedia("(max-width: 767px)").matches) setPanelOpen(false);
+    };
 
-                {/* Header */}
-                <div className="px-4 pt-4 pb-3 border-b border-[#161B22] flex items-center justify-between">
-                    <h2 className="text-[13px] font-bold text-white tracking-wide">Locations</h2>
-                    <span className="text-[11px] text-[#71717A]">
-                        {isLoading
-                            ? "…"
-                            : <><span className="text-[var(--gta-pink)] font-bold">{locations.length}</span> results</>
-                        }
+    return (
+        <div className="relative w-full h-[calc(100dvh-106px)] min-h-[520px] overflow-hidden bg-[#05070A]">
+            {/* Map fills everything */}
+            <Gta6LeafletMap locations={locations} selectedKey={selectedKey} />
+
+            {/* Title chip (SEO H1) */}
+            <div className="absolute top-3 left-3 z-[800] hidden sm:flex items-center gap-3 px-3.5 py-2 rounded-xl bg-[#0B0E14]/85 backdrop-blur border border-[#161B22] shadow-lg pointer-events-none">
+                <MapPin className="w-4 h-4 text-[var(--gta-pink)]" />
+                <h1 className="text-[13px] font-bold text-white">
+                    GTA 6 Interactive Map
+                    <span className="ml-2 text-[11px] font-normal text-[#71717A]">
+                        {totalLocations ? totalLocations.toLocaleString() : ""} locations
                     </span>
+                </h1>
+            </div>
+
+            {/* Back to hub */}
+            <Link
+                href="/gta6"
+                className="absolute top-3 right-3 z-[800] inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0B0E14]/85 backdrop-blur border border-[#161B22] text-[12px] font-semibold text-white hover:border-[var(--gta-pink)]/50 transition-colors shadow-lg"
+            >
+                <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">GTA 6 Hub</span>
+            </Link>
+
+            {/* Open-panel button (shown when panel closed) */}
+            {!panelOpen && (
+                <button
+                    onClick={() => setPanelOpen(true)}
+                    className="absolute bottom-4 left-4 md:top-16 md:bottom-auto z-[800] inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--gta-pink)] text-white text-[13px] font-bold shadow-lg gta6-glow-pink"
+                >
+                    <SlidersHorizontal className="w-4 h-4" />
+                    Filters &amp; list
+                    {activeCategory !== "all" && (
+                        <span className="px-1.5 py-0.5 rounded bg-black/25 text-[10px]">{CATEGORY_CONFIG[activeCategory]?.label}</span>
+                    )}
+                </button>
+            )}
+
+            {/* Backdrop (mobile only) */}
+            {panelOpen && (
+                <button
+                    aria-label="Close filters"
+                    onClick={() => setPanelOpen(false)}
+                    className="md:hidden absolute inset-0 z-[850] bg-black/50 backdrop-blur-[2px]"
+                />
+            )}
+
+            {/* Floating filter/list panel */}
+            <div
+                className={`absolute z-[900] flex flex-col bg-[#0B0E14]/95 backdrop-blur border border-[#161B22] shadow-2xl overflow-hidden
+                    transition-transform duration-300
+                    md:top-16 md:left-4 md:w-80 md:max-h-[calc(100%-5rem)] md:rounded-2xl
+                    inset-x-0 bottom-0 max-h-[78%] rounded-t-2xl md:inset-x-auto md:bottom-auto
+                    ${panelOpen ? "translate-y-0" : "translate-y-full md:translate-y-0 md:hidden"}`}
+            >
+                {/* Panel header */}
+                <div className="px-4 pt-4 pb-3 border-b border-[#161B22] flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-2">
+                        <h2 className="text-[13px] font-bold text-white tracking-wide">Locations</h2>
+                        <span className="text-[11px] text-[#71717A]">
+                            {isLoading ? "…" : <><span className="text-[var(--gta-pink)] font-bold">{locations.length}</span> results</>}
+                        </span>
+                    </div>
+                    <button onClick={() => setPanelOpen(false)} className="text-[#71717A] hover:text-white p-1 -mr-1" aria-label="Collapse">
+                        <span className="md:hidden"><X className="w-4 h-4" /></span>
+                        <span className="hidden md:inline"><ChevronLeft className="w-4 h-4" /></span>
+                    </button>
                 </div>
 
                 {/* Search */}
-                <div className="p-4 border-b border-[#161B22]">
+                <div className="p-4 border-b border-[#161B22] shrink-0">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#71717A]" />
                         <input
@@ -107,7 +175,7 @@ export default function Gta6MapClient({ initialCategories }: Props) {
                 </div>
 
                 {/* Categories */}
-                <div className="p-4 border-b border-[#161B22]">
+                <div className="p-4 border-b border-[#161B22] shrink-0">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-[#71717A] mb-3">Category</p>
                     <div className="flex flex-wrap gap-1.5">
                         <button
@@ -147,7 +215,7 @@ export default function Gta6MapClient({ initialCategories }: Props) {
                 </div>
 
                 {/* List */}
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto min-h-0">
                     {isLoading ? (
                         <div className="p-4 space-y-2">
                             {Array.from({ length: 8 }).map((_, i) => (
@@ -168,7 +236,7 @@ export default function Gta6MapClient({ initialCategories }: Props) {
                                 return (
                                     <button
                                         key={loc.id}
-                                        onClick={() => setSelectedKey(k => k === loc.gtadb_key ? null : loc.gtadb_key)}
+                                        onClick={() => handleSelect(loc.gtadb_key)}
                                         className={`group w-full text-left px-4 py-2.5 transition-colors ${isActive ? "bg-[var(--gta-pink)]/10 border-l-2 border-[var(--gta-pink)]" : "hover:bg-[#161B22]/50 border-l-2 border-transparent"}`}
                                     >
                                         <div className="flex items-center gap-2">
@@ -188,20 +256,6 @@ export default function Gta6MapClient({ initialCategories }: Props) {
                         </div>
                     )}
                 </div>
-            </div>
-
-            {/* Map */}
-            <div className="flex-1 relative">
-                {/* Mobile filter toggle */}
-                <button
-                    onClick={() => setShowFilters(v => !v)}
-                    className="md:hidden absolute top-3 left-3 z-[1000] flex items-center gap-2 px-3 py-2 bg-[#0B0E14] border border-[#161B22] rounded-lg text-[12px] text-white shadow-lg"
-                >
-                    <SlidersHorizontal className="w-3.5 h-3.5" />
-                    Filters {activeCategory !== "all" && `(${CATEGORY_CONFIG[activeCategory]?.label})`}
-                </button>
-
-                <Gta6LeafletMap locations={locations} selectedKey={selectedKey} />
             </div>
         </div>
     );

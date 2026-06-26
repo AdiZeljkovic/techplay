@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { getServerApiUrl } from "@/lib/api";
-import Gta6MapHero from "@/components/gta6/Gta6MapHero";
 import Gta6MapClient from "@/components/gta6/Gta6MapClient";
 
 export const revalidate = 86400;
@@ -85,9 +84,8 @@ export default async function Gta6MapPage() {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <div className="min-h-screen bg-[#05070A]">
-                <Gta6MapHero totalLocations={totalLocations} />
-                <Gta6MapClient initialCategories={categories} />
+            <div className="bg-[#05070A]">
+                <Gta6MapClient initialCategories={categories} totalLocations={totalLocations} />
             </div>
         </>
     );
