@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { generatePageMetadata } from "@/lib/seo";
 import Gta6Countdown from "@/components/gta6/Gta6Countdown";
+import Gta6SectionHero from "@/components/gta6/Gta6SectionHero";
 import {
     Calendar, MapPin, Users, Gamepad2, Clapperboard, Tag,
     BookOpen, Map as MapIcon, ChevronRight,
@@ -73,32 +74,15 @@ export default function Gta6EverythingWeKnowPage() {
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
             <div className="min-h-screen bg-[#05070A]">
-                {/* Hero */}
-                <div className="relative bg-[#0B0E14] border-b border-[#161B22] overflow-hidden">
-                    <div className="absolute inset-0 bg-tech-grid opacity-20" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[var(--accent)]/8 via-transparent to-[#0B0E14]" />
-                    <div className="relative max-w-[920px] mx-auto px-4 xl:px-8 py-12 md:py-16">
-                        {/* Breadcrumb */}
-                        <nav className="flex items-center gap-1.5 text-[12px] text-[#71717A] mb-5">
-                            <Link href="/gta6" className="hover:text-[var(--accent)] transition-colors">GTA 6 Hub</Link>
-                            <ChevronRight className="w-3.5 h-3.5" />
-                            <span className="text-[#A1A1AA]">Everything We Know</span>
-                        </nav>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/30 text-[var(--accent)] text-[11px] font-bold uppercase tracking-widest mb-4">
-                            <BookOpen className="w-3 h-3" />
-                            The Complete Guide
-                        </div>
-                        <h1 className="font-display text-[32px] md:text-[46px] font-black text-white leading-tight mb-3">
-                            GTA 6: Everything We Know
-                        </h1>
-                        <p className="text-[#A1A1AA] text-[15px] md:text-[16px] max-w-2xl">
-                            Every officially confirmed detail about Grand Theft Auto VI — gathered, verified and updated as Rockstar reveals more.
-                        </p>
-                        <div className="mt-8">
-                            <Gta6Countdown />
-                        </div>
-                    </div>
-                </div>
+                <Gta6SectionHero
+                    icon={BookOpen}
+                    title="GTA 6: Everything We Know"
+                    subtitle="Every officially confirmed detail about Grand Theft Auto VI — gathered, verified and updated as Rockstar reveals more."
+                    breadcrumb="Everything We Know"
+                    badge="The Complete Guide"
+                >
+                    <Gta6Countdown />
+                </Gta6SectionHero>
 
                 <div className="max-w-[920px] mx-auto px-4 xl:px-8 py-12">
                     {/* Quick facts */}

@@ -27,12 +27,12 @@ function calc(): TimeLeft {
 function Unit({ value, label }: { value: number; label: string }) {
     return (
         <div className="flex flex-col items-center">
-            <div className="min-w-[64px] md:min-w-[84px] px-2 py-3 md:py-4 rounded-xl bg-[#0B0E14] border border-[#161B22] text-center">
-                <span className="font-display text-[28px] md:text-[40px] font-black text-white tabular-nums leading-none">
+            <div className="min-w-[62px] md:min-w-[88px] px-2 py-3 md:py-4 rounded-xl bg-[#0B0E14]/80 backdrop-blur-sm border border-[var(--gta-pink)]/25 text-center gta6-glow-pink">
+                <span className="font-display text-[28px] md:text-[44px] font-black text-white tabular-nums leading-none gta6-text-glow">
                     {String(value).padStart(2, "0")}
                 </span>
             </div>
-            <span className="mt-2 text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-[#71717A]">
+            <span className="mt-2 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--gta-cyan)]">
                 {label}
             </span>
         </div>
@@ -65,11 +65,11 @@ export default function Gta6Countdown() {
     return (
         <div className="flex items-start gap-2 md:gap-3">
             <Unit value={time.days}    label="Days" />
-            <span className="font-display text-[28px] md:text-[40px] font-black text-[#2A2F38] leading-none pt-3 md:pt-4">:</span>
+            <span className="font-display text-[28px] md:text-[40px] font-black text-[var(--gta-pink)]/40 leading-none pt-3 md:pt-4">:</span>
             <Unit value={time.hours}   label="Hours" />
-            <span className="font-display text-[28px] md:text-[40px] font-black text-[#2A2F38] leading-none pt-3 md:pt-4">:</span>
+            <span className="font-display text-[28px] md:text-[40px] font-black text-[var(--gta-pink)]/40 leading-none pt-3 md:pt-4">:</span>
             <Unit value={time.minutes} label="Min" />
-            <span className="font-display text-[28px] md:text-[40px] font-black text-[#2A2F38] leading-none pt-3 md:pt-4">:</span>
+            <span className="font-display text-[28px] md:text-[40px] font-black text-[var(--gta-pink)]/40 leading-none pt-3 md:pt-4">:</span>
             <Unit value={time.seconds} label="Sec" />
         </div>
     );

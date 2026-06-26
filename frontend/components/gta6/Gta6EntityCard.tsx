@@ -19,9 +19,9 @@ export default function Gta6EntityCard({ entity, basePath, subtitle }: Props) {
     return (
         <Link
             href={`${basePath}/${entity.slug}`}
-            className="group relative bg-[#0B0E14] border border-[#161B22] rounded-xl overflow-hidden hover:border-[var(--accent)]/40 hover:-translate-y-0.5 transition-all"
+            className="group relative bg-[#0B0E14] border border-[#161B22] rounded-xl overflow-hidden gta6-card"
         >
-            <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--accent)] scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300 z-20" />
+            <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--gta-pink)] scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300 z-20" />
 
             <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#10141B]">
                 {img ? (
@@ -47,11 +47,11 @@ export default function Gta6EntityCard({ entity, basePath, subtitle }: Props) {
             </div>
 
             <div className="p-4">
-                <h3 className="text-[15px] font-bold text-white leading-tight truncate group-hover:text-[var(--accent)] transition-colors">
+                <h3 className="text-[15px] font-bold text-white leading-tight truncate group-hover:text-[var(--gta-pink)] transition-colors">
                     {entity.name}
                 </h3>
                 {subtitle && (
-                    <p className="text-[11px] text-[#71717A] mt-1 uppercase tracking-wide font-semibold">{subtitle}</p>
+                    <p className="text-[11px] text-[var(--gta-cyan)] mt-1 uppercase tracking-wide font-semibold">{subtitle}</p>
                 )}
             </div>
         </Link>
