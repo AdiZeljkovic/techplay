@@ -8,6 +8,7 @@ import axios from "@/lib/axios";
 import { Search, SlidersHorizontal, X, MapPin, ChevronRight, ChevronLeft, ArrowLeft } from "lucide-react";
 import type { Gta6Location } from "@/types";
 import { getCategoryColor, getCategoryLabel } from "./gta6Utils";
+import Gta6MapBackdrop from "./Gta6MapBackdrop";
 
 // Single dynamic import for the entire Leaflet map — SSR disabled
 const Gta6LeafletMap = dynamic(() => import("./Gta6LeafletMap"), {
@@ -54,6 +55,12 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
     const [panelOpen, setPanelOpen]         = useState(false);   // mobile drawer / desktop collapse
     const [selectedKey, setSelectedKey]     = useState<string | null>(null);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const searchRef   = useRef<HTMLInputElement>(null);
+
+    const openPanel = useCallback((tab: "search" | "filters") => {
+        setPanelOpen(true);
+        if (tab === "search") setTimeout(() => searchRef.current?.focus(), 120);
+    }, []);
 
     // Panel open by default on desktop (overlay), closed on mobile (drawer)
     useEffect(() => {
@@ -88,8 +95,13 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
 
     return (
         <div className="relative w-full h-[calc(100dvh-106px)] min-h-[520px] overflow-hidden bg-[#05070A]">
-            {/* Map fills everything */}
-            <Gta6LeafletMap locations={locations} selectedKey={selectedKey} />
+            {/* Sunset/palm backdrop behind the map */}
+            <Gta6MapBackdrop />
+
+            {/* Map fills everything (above backdrop) */}
+            <div className="absolute inset-0 z-10">
+                <Gta6LeafletMap locations={locations} selectedKey={selectedKey} onOpenPanel={openPanel} />
+            </div>
 
             {/* Title chip (SEO H1) */}
             <div className="absolute top-3 left-3 z-[800] hidden sm:flex items-center gap-3 px-3.5 py-2 rounded-xl bg-[#0B0E14]/85 backdrop-blur border border-[#161B22] shadow-lg pointer-events-none">
@@ -110,11 +122,11 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                 <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">GTA 6 Hub</span>
             </Link>
 
-            {/* Open-panel button (shown when panel closed) */}
+            {/* Mobile open-panel button (desktop uses the toolbar) */}
             {!panelOpen && (
                 <button
                     onClick={() => setPanelOpen(true)}
-                    className="absolute bottom-4 left-4 md:top-16 md:bottom-auto z-[800] inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--gta-pink)] text-white text-[13px] font-bold shadow-lg gta6-glow-pink"
+                    className="md:hidden absolute bottom-4 left-4 z-[800] inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--gta-pink)] text-white text-[13px] font-bold shadow-lg gta6-glow-pink"
                 >
                     <SlidersHorizontal className="w-4 h-4" />
                     Filters &amp; list
@@ -160,6 +172,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#71717A]" />
                         <input
+                            ref={searchRef}
                             type="text"
                             placeholder="Search locations..."
                             value={search}

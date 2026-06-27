@@ -1,10 +1,11 @@
 "use client";
 
 // Loaded via dynamic({ ssr: false }) only — Leaflet DOM access is safe here
-import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import L from "leaflet";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { Plus, Minus, Maximize2, Search, SlidersHorizontal, Expand } from "lucide-react";
 import { getCategoryColor, getCategoryLabel, getPhotoUrl } from "./gta6Utils";
 import type { Gta6Location } from "@/types";
 
@@ -317,14 +318,66 @@ function ScrollZoomGate() {
     return null;
 }
 
+// Left vertical control rail (zoom / reset / search / filters / fullscreen)
+function MapToolbar({ onOpenPanel }: { onOpenPanel?: (tab: "search" | "filters") => void }) {
+    const map = useMap();
+
+    const toggleFullscreen = () => {
+        const el = map.getContainer();
+        if (!document.fullscreenElement) el.requestFullscreen?.();
+        else document.exitFullscreen?.();
+    };
+
+    const Btn = ({ onClick, title, children }: { onClick: () => void; title: string; children: React.ReactNode }) => (
+        <button
+            onClick={onClick}
+            title={title}
+            aria-label={title}
+            className="w-10 h-10 flex items-center justify-center text-[#A1A1AA] hover:text-white hover:bg-[var(--gta-pink)]/20 transition-colors"
+        >
+            {children}
+        </button>
+    );
+
+    return (
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 z-[800] flex flex-col rounded-xl bg-[#0B0E14]/90 backdrop-blur border border-[#161B22] shadow-xl overflow-hidden divide-y divide-[#161B22]">
+            <Btn onClick={() => map.zoomIn()} title="Zoom in"><Plus className="w-[18px] h-[18px]" /></Btn>
+            <Btn onClick={() => map.zoomOut()} title="Zoom out"><Minus className="w-[18px] h-[18px]" /></Btn>
+            <Btn onClick={() => map.flyToBounds(CONTENT_BOUNDS, { padding: [24, 24], duration: 0.6 })} title="Reset view"><Maximize2 className="w-4 h-4" /></Btn>
+            {onOpenPanel && <Btn onClick={() => onOpenPanel("search")} title="Search locations"><Search className="w-4 h-4" /></Btn>}
+            {onOpenPanel && <Btn onClick={() => onOpenPanel("filters")} title="Filters & list"><SlidersHorizontal className="w-4 h-4" /></Btn>}
+            <Btn onClick={toggleFullscreen} title="Fullscreen"><Expand className="w-4 h-4" /></Btn>
+        </div>
+    );
+}
+
+// Live game X/Y readout (desktop) — writes directly to a ref to avoid re-renders
+function CoordinateHud() {
+    const ref = useRef<HTMLSpanElement>(null);
+    useMapEvents({
+        mousemove(e) {
+            if (!ref.current) return;
+            const gx = Math.round(e.latlng.lng * (MAP_FULL / MAP_SIZE) - ZERO);
+            const gy = Math.round(e.latlng.lat * (MAP_FULL / MAP_SIZE) - ZERO);
+            ref.current.textContent = `X: ${gx} · Y: ${gy}`;
+        },
+    });
+    return (
+        <div className="absolute bottom-3 left-3 z-[800] hidden md:block px-3 py-1.5 rounded-lg bg-[#0B0E14]/90 backdrop-blur border border-[#161B22] text-[11px] font-mono text-[var(--gta-cyan)] shadow-lg pointer-events-none">
+            <span ref={ref}>X: — · Y: —</span>
+        </div>
+    );
+}
+
 // ----- MAIN COMPONENT -----
 
 interface Props {
     locations: Gta6Location[];
     selectedKey?: string | null;
+    onOpenPanel?: (tab: "search" | "filters") => void;
 }
 
-export default function Gta6LeafletMap({ locations, selectedKey }: Props) {
+export default function Gta6LeafletMap({ locations, selectedKey, onOpenPanel }: Props) {
     const mappable = locations.filter(
         (l): l is Gta6Location & { game_x: number; game_y: number } =>
             l.game_x != null && l.game_y != null
@@ -341,7 +394,7 @@ export default function Gta6LeafletMap({ locations, selectedKey }: Props) {
             maxZoom={7}
             maxBounds={[[-50, -50], [MAP_SIZE + 50, MAP_SIZE + 50]]}
             maxBoundsViscosity={0.9}
-            style={{ height: "100%", width: "100%", background: "#13384f" }}
+            style={{ height: "100%", width: "100%", background: "transparent" }}
         >
             {/* GTADB tile layer — auto-loads correct zoom level (z 0-6) */}
             <TileLayer
@@ -358,7 +411,8 @@ export default function Gta6LeafletMap({ locations, selectedKey }: Props) {
             <FitBoundsOnLoad />
             <FlyToHandler locations={locations} selectedKey={selectedKey} />
             <ScrollZoomGate />
-            <ZoomControl position="bottomright" />
+            <MapToolbar onOpenPanel={onOpenPanel} />
+            <CoordinateHud />
 
             <MarkerClusterGroup
                 chunkedLoading
