@@ -87,6 +87,11 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
 
     const displayCategories = initialCategories.filter(c => CATEGORY_CONFIG[c]);
 
+    // Once the first dataset arrives, mount the map (keeps full-island bounds stable)
+    const hasLoadedRef = useRef(false);
+    if (locations.length > 0) hasLoadedRef.current = true;
+    const hasLoaded = hasLoadedRef.current;
+
     const handleSelect = (key: string) => {
         setSelectedKey(k => (k === key ? null : key));
         // close the drawer on mobile so the user sees the map fly
@@ -98,9 +103,19 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
             {/* Sunset/palm backdrop behind the map */}
             <Gta6MapBackdrop />
 
-            {/* Map fills everything (above backdrop) */}
+            {/* Map fills everything (above backdrop). Mount only once data has loaded
+                so the island bounds are derived from the full set, not a filtered subset. */}
             <div className="absolute inset-0 z-10">
-                <Gta6LeafletMap locations={locations} selectedKey={selectedKey} onOpenPanel={openPanel} />
+                {hasLoaded ? (
+                    <Gta6LeafletMap locations={locations} selectedKey={selectedKey} onOpenPanel={openPanel} />
+                ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="w-8 h-8 border-2 border-[var(--gta-pink)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                            <p className="text-white/80 text-[13px]">Loading map…</p>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Title chip (SEO H1) */}

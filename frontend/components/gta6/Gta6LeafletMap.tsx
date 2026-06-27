@@ -271,10 +271,16 @@ function LocationPopup({ loc }: { loc: Gta6Location }) {
 
 // ----- MAP BEHAVIOUR COMPONENTS -----
 
-function FitBoundsOnLoad() {
+type Bounds = [[number, number], [number, number]];
+
+function FitBoundsOnLoad({ bounds }: { bounds: Bounds }) {
     const map = useMap();
     useEffect(() => {
-        map.fitBounds(CONTENT_BOUNDS, { padding: [24, 24] });
+        map.fitBounds(bounds, { padding: [20, 20] });
+        // Lock zoom-out: can't go below the full-island view (hides poster frame)
+        const z = map.getBoundsZoom(bounds);
+        map.setMinZoom(Math.floor(z));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [map]);
     return null;
 }
@@ -319,7 +325,7 @@ function ScrollZoomGate() {
 }
 
 // Left vertical control rail (zoom / reset / search / filters / fullscreen)
-function MapToolbar({ onOpenPanel }: { onOpenPanel?: (tab: "search" | "filters") => void }) {
+function MapToolbar({ onOpenPanel, resetBounds }: { onOpenPanel?: (tab: "search" | "filters") => void; resetBounds: Bounds }) {
     const map = useMap();
 
     const toggleFullscreen = () => {
@@ -343,7 +349,7 @@ function MapToolbar({ onOpenPanel }: { onOpenPanel?: (tab: "search" | "filters")
         <div className="absolute right-3 top-1/2 -translate-y-1/2 z-[800] flex flex-col rounded-xl bg-[#0B0E14]/90 backdrop-blur border border-[#161B22] shadow-xl overflow-hidden divide-y divide-[#161B22]">
             <Btn onClick={() => map.zoomIn()} title="Zoom in"><Plus className="w-[18px] h-[18px]" /></Btn>
             <Btn onClick={() => map.zoomOut()} title="Zoom out"><Minus className="w-[18px] h-[18px]" /></Btn>
-            <Btn onClick={() => map.flyToBounds(CONTENT_BOUNDS, { padding: [24, 24], duration: 0.6 })} title="Reset view"><Maximize2 className="w-4 h-4" /></Btn>
+            <Btn onClick={() => map.flyToBounds(resetBounds, { padding: [20, 20], duration: 0.6 })} title="Reset view"><Maximize2 className="w-4 h-4" /></Btn>
             {onOpenPanel && <Btn onClick={() => onOpenPanel("search")} title="Search locations"><Search className="w-4 h-4" /></Btn>}
             {onOpenPanel && <Btn onClick={() => onOpenPanel("filters")} title="Filters & list"><SlidersHorizontal className="w-4 h-4" /></Btn>}
             <Btn onClick={toggleFullscreen} title="Fullscreen"><Expand className="w-4 h-4" /></Btn>
@@ -383,17 +389,43 @@ export default function Gta6LeafletMap({ locations, selectedKey, onOpenPanel }: 
             l.game_x != null && l.game_y != null
     );
 
+    // Island content bounds derived from the markers themselves (the poster legend
+    // and credits are baked art, not markers, so they fall outside this box).
+    // Frozen on first non-empty dataset so category filtering doesn't shrink the map.
+    const PAD = 1200; // game units of breathing room around the markers
+    const boundsRef = useRef<Bounds | null>(null);
+    if (!boundsRef.current && mappable.length > 0) {
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        for (const l of mappable) {
+            if (l.game_x < minX) minX = l.game_x;
+            if (l.game_x > maxX) maxX = l.game_x;
+            if (l.game_y < minY) minY = l.game_y;
+            if (l.game_y > maxY) maxY = l.game_y;
+        }
+        boundsRef.current = [
+            [normalizeY(minY - PAD), normalizeX(minX - PAD)],
+            [normalizeY(maxY + PAD), normalizeX(maxX + PAD)],
+        ];
+    }
+    const islandBounds: Bounds = boundsRef.current ?? CONTENT_BOUNDS;
+
+    // Slightly looser pan limit than the visible island so dragging feels natural
+    const panBounds: Bounds = [
+        [islandBounds[0][0] - 30, islandBounds[0][1] - 30],
+        [islandBounds[1][0] + 30, islandBounds[1][1] + 30],
+    ];
+
     return (
         <MapContainer
             crs={GTA_CRS}
-            center={[normalizeY(2000), normalizeX(-4000)]}
-            zoom={1}
+            center={[(islandBounds[0][0] + islandBounds[1][0]) / 2, (islandBounds[0][1] + islandBounds[1][1]) / 2]}
+            zoom={2}
             zoomControl={false}
             scrollWheelZoom={false}
             minZoom={0}
             maxZoom={7}
-            maxBounds={[[-50, -50], [MAP_SIZE + 50, MAP_SIZE + 50]]}
-            maxBoundsViscosity={0.9}
+            maxBounds={panBounds}
+            maxBoundsViscosity={1}
             style={{ height: "100%", width: "100%", background: "transparent" }}
         >
             {/* GTADB tile layer — auto-loads correct zoom level (z 0-6) */}
@@ -404,14 +436,14 @@ export default function Gta6LeafletMap({ locations, selectedKey, onOpenPanel }: 
                 maxNativeZoom={6}
                 noWrap={true}
                 errorTileUrl={EMPTY_TILE}
-                bounds={[[0, 0], [MAP_SIZE, MAP_SIZE]]}
+                bounds={islandBounds}
                 attribution='Map: <a href="https://gtadb.org" target="_blank">GTADB.org</a> (CC BY 4.0)'
             />
 
-            <FitBoundsOnLoad />
+            <FitBoundsOnLoad bounds={islandBounds} />
             <FlyToHandler locations={locations} selectedKey={selectedKey} />
             <ScrollZoomGate />
-            <MapToolbar onOpenPanel={onOpenPanel} />
+            <MapToolbar onOpenPanel={onOpenPanel} resetBounds={islandBounds} />
             <CoordinateHud />
 
             <MarkerClusterGroup
