@@ -394,7 +394,9 @@ export default function Gta6LeafletMap({ locations, selectedKey, onOpenPanel }: 
     // Frozen on first non-empty dataset so category filtering doesn't shrink the map.
     // Outliers (bad coords far in the ocean) are rejected via a generous envelope so
     // they can't blow the box up to the full poster.
-    const PAD = 700; // game units of breathing room around the markers
+    // Padding (game units). Extra to the north so the landmass above the northernmost
+    // markers (Mount Kalaga) isn't clipped, while still excluding the poster title band.
+    const PAD = 1500, PAD_N = 3000;
     const ENV = { minX: -14000, maxX: 6000, minY: -10000, maxY: 14000 };
     const boundsRef = useRef<Bounds | null>(null);
     if (!boundsRef.current && mappable.length > 0) {
@@ -408,8 +410,8 @@ export default function Gta6LeafletMap({ locations, selectedKey, onOpenPanel }: 
         }
         if (minX !== Infinity) {
             boundsRef.current = [
-                [normalizeY(minY - PAD), normalizeX(minX - PAD)],
-                [normalizeY(maxY + PAD), normalizeX(maxX + PAD)],
+                [normalizeY(minY - PAD),   normalizeX(minX - PAD)],
+                [normalizeY(maxY + PAD_N), normalizeX(maxX + PAD)],
             ];
         }
     }
@@ -420,6 +422,17 @@ export default function Gta6LeafletMap({ locations, selectedKey, onOpenPanel }: 
         [islandBounds[0][0] - 30, islandBounds[0][1] - 30],
         [islandBounds[1][0] + 30, islandBounds[1][1] + 30],
     ];
+
+    // Force tile pruning to the island: the `bounds` prop alone doesn't reliably set
+    // GridLayer.options.bounds in react-leaflet 5, so set it on the layer + redraw.
+    const tileRef = useRef<L.TileLayer | null>(null);
+    useEffect(() => {
+        const tl = tileRef.current;
+        if (!tl) return;
+        tl.options.bounds = L.latLngBounds(islandBounds);
+        tl.redraw();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [islandBounds[0][0], islandBounds[0][1], islandBounds[1][0], islandBounds[1][1]]);
 
     return (
         <MapContainer
@@ -436,6 +449,7 @@ export default function Gta6LeafletMap({ locations, selectedKey, onOpenPanel }: 
         >
             {/* GTADB tile layer — auto-loads correct zoom level (z 0-6) */}
             <TileLayer
+                ref={tileRef}
                 url={TILE_URL}
                 tileSize={256}
                 minNativeZoom={0}
