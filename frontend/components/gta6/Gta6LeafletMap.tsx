@@ -392,20 +392,26 @@ export default function Gta6LeafletMap({ locations, selectedKey, onOpenPanel }: 
     // Island content bounds derived from the markers themselves (the poster legend
     // and credits are baked art, not markers, so they fall outside this box).
     // Frozen on first non-empty dataset so category filtering doesn't shrink the map.
-    const PAD = 1200; // game units of breathing room around the markers
+    // Outliers (bad coords far in the ocean) are rejected via a generous envelope so
+    // they can't blow the box up to the full poster.
+    const PAD = 700; // game units of breathing room around the markers
+    const ENV = { minX: -14000, maxX: 6000, minY: -10000, maxY: 14000 };
     const boundsRef = useRef<Bounds | null>(null);
     if (!boundsRef.current && mappable.length > 0) {
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
         for (const l of mappable) {
+            if (l.game_x < ENV.minX || l.game_x > ENV.maxX || l.game_y < ENV.minY || l.game_y > ENV.maxY) continue;
             if (l.game_x < minX) minX = l.game_x;
             if (l.game_x > maxX) maxX = l.game_x;
             if (l.game_y < minY) minY = l.game_y;
             if (l.game_y > maxY) maxY = l.game_y;
         }
-        boundsRef.current = [
-            [normalizeY(minY - PAD), normalizeX(minX - PAD)],
-            [normalizeY(maxY + PAD), normalizeX(maxX + PAD)],
-        ];
+        if (minX !== Infinity) {
+            boundsRef.current = [
+                [normalizeY(minY - PAD), normalizeX(minX - PAD)],
+                [normalizeY(maxY + PAD), normalizeX(maxX + PAD)],
+            ];
+        }
     }
     const islandBounds: Bounds = boundsRef.current ?? CONTENT_BOUNDS;
 
