@@ -5,6 +5,9 @@ namespace App\Providers;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\Comment;
+use App\Models\Gta6Character;
+use App\Models\Gta6Vehicle;
+use App\Models\Gta6Weapon;
 use App\Models\Guide;
 use App\Models\Media;
 use App\Models\MediaKitSetting;
@@ -20,6 +23,9 @@ use App\Observers\CategoryObserver;
 use App\Observers\CommentObserver;
 use App\Observers\ContentObserver;
 use App\Observers\ForumPostObserver;
+use App\Observers\Gta6CharacterObserver;
+use App\Observers\Gta6VehicleObserver;
+use App\Observers\Gta6WeaponObserver;
 use App\Observers\GuideObserver;
 use App\Observers\MediaKitSettingObserver;
 use App\Observers\MediaObserver;
@@ -84,6 +90,11 @@ class AppServiceProvider extends ServiceProvider
         SiteSetting::observe(SiteSettingObserver::class);
         PageSeo::observe(PageSeoObserver::class);
         MediaKitSetting::observe(MediaKitSettingObserver::class);
+
+        // GTA 6 content observers — cache invalidation + Next.js ISR revalidation
+        Gta6Character::observe(Gta6CharacterObserver::class);
+        Gta6Vehicle::observe(Gta6VehicleObserver::class);
+        Gta6Weapon::observe(Gta6WeaponObserver::class);
 
         // Prevent N+1 queries in non-production environments
         Model::preventLazyLoading(! app()->isProduction());
