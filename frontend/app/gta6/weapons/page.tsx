@@ -10,12 +10,24 @@ export const revalidate = 3600;
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
 
 export async function generateMetadata(): Promise<Metadata> {
-    return generatePageMetadata("/gta6/weapons", {
+    const base = await generatePageMetadata("/gta6/weapons", {
         title: "GTA 6 Weapons — Complete Arsenal: Guns, Melee & Explosives | TechPlay",
         description:
             "Every confirmed GTA 6 weapon — pistols, rifles, shotguns, SMGs, melee and explosives from the Leonida arsenal. Full weapon database with types, photos and confirmed details.",
         keywords: ["GTA 6 weapons", "GTA 6 guns", "GTA VI arsenal", "GTA 6 weapons list", "GTA 6 all weapons"],
     });
+    return {
+        ...base,
+        openGraph: {
+            title: "GTA 6 Weapons — Complete Arsenal: Guns, Melee & Explosives",
+            description: "Every confirmed GTA 6 weapon from the Leonida arsenal — pistols, rifles, shotguns, SMGs, melee and explosives.",
+            url: `${SITE_URL}/gta6/weapons`,
+            siteName: "TechPlay",
+            type: "website",
+            images: [{ url: `${SITE_URL}/gta6/og-weapons.png`, width: 1200, height: 630 }],
+        },
+        alternates: { canonical: `${SITE_URL}/gta6/weapons` },
+    };
 }
 
 async function fetchTypes(): Promise<string[]> {

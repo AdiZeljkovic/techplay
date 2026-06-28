@@ -10,12 +10,24 @@ export const revalidate = 3600;
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
 
 export async function generateMetadata(): Promise<Metadata> {
-    return generatePageMetadata("/gta6/vehicles", {
+    const base = await generatePageMetadata("/gta6/vehicles", {
         title: "GTA 6 Vehicles — Every Confirmed Car, Bike, Boat & Aircraft | TechPlay",
         description:
             "Complete GTA 6 vehicle database — every confirmed car, motorcycle, boat and aircraft spotted in Leonida. Filter by class, explore real-world inspirations and browse the full garage.",
         keywords: ["GTA 6 vehicles", "GTA 6 cars", "GTA 6 all cars", "GTA VI vehicle list", "GTA 6 motorcycles"],
     });
+    return {
+        ...base,
+        openGraph: {
+            title: "GTA 6 Vehicles — Every Confirmed Car, Bike, Boat & Aircraft",
+            description: "Complete GTA 6 vehicle database — every confirmed car, motorcycle, boat and aircraft spotted in Leonida.",
+            url: `${SITE_URL}/gta6/vehicles`,
+            siteName: "TechPlay",
+            type: "website",
+            images: [{ url: `${SITE_URL}/gta6/og-vehicles.png`, width: 1200, height: 630 }],
+        },
+        alternates: { canonical: `${SITE_URL}/gta6/vehicles` },
+    };
 }
 
 async function fetchClasses(): Promise<string[]> {

@@ -3,9 +3,9 @@ import { ShoppingCart } from "lucide-react";
 
 // Retailer links — redakcija fills affiliate URLs when pre-orders open. "#" = disabled.
 const PLATFORMS: { name: string; note: string; href: string; icon: string }[] = [
-    { name: "PlayStation 5",   note: "",            href: "#", icon: "ps" },
-    { name: "Xbox Series X|S",  note: "",            href: "#", icon: "xbox" },
-    { name: "PC",               note: "Coming Soon", href: "#", icon: "pc" },
+    { name: "PlayStation 5",   note: "", href: "https://www.playstation.com/en-us/games/grand-theft-auto-vi/", icon: "ps" },
+    { name: "Xbox Series X|S", note: "", href: "https://www.xbox.com/en-US/games/grand-theft-auto-vi",        icon: "xbox" },
+    { name: "PC",              note: "Coming Soon", href: "#", icon: "pc" },
 ];
 
 function PlatformIcon({ kind }: { kind: string }) {

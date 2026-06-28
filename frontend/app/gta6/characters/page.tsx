@@ -9,12 +9,24 @@ export const revalidate = 3600;
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
 
 export async function generateMetadata(): Promise<Metadata> {
-    return generatePageMetadata("/gta6/characters", {
+    const base = await generatePageMetadata("/gta6/characters", {
         title: "GTA 6 Characters — Jason, Lucia & Every Confirmed Cast Member | TechPlay",
         description:
             "Meet every confirmed GTA 6 character — from protagonists Jason Duval and Lucia Caminos to the full supporting cast of Vice City and Leonida. Full profiles, roles and gallery.",
         keywords: ["GTA 6 characters", "GTA 6 characters list", "Jason Duval", "Lucia Caminos", "GTA VI cast", "who are the characters in GTA 6"],
     });
+    return {
+        ...base,
+        openGraph: {
+            title: "GTA 6 Characters — Jason, Lucia & Every Confirmed Cast Member",
+            description: "Meet every confirmed GTA 6 character — protagonists Jason Duval and Lucia Caminos and the full cast.",
+            url: `${SITE_URL}/gta6/characters`,
+            siteName: "TechPlay",
+            type: "website",
+            images: [{ url: `${SITE_URL}/gta6/og-characters.png`, width: 1200, height: 630 }],
+        },
+        alternates: { canonical: `${SITE_URL}/gta6/characters` },
+    };
 }
 
 const breadcrumbLd = {

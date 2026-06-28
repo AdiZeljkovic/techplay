@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
             url: `${SITE_URL}/gta6`,
             siteName: "TechPlay",
             type: "website",
-            images: [{ url: `${SITE_URL}/gta6/hero.jpg` }],
+            images: [{ url: `${SITE_URL}/gta6/og-hub.png`, width: 1200, height: 630 }],
         },
         alternates: { canonical: `${SITE_URL}/gta6` },
     };
@@ -103,7 +103,7 @@ export default async function Gta6HubPage() {
         "url": `${SITE_URL}/gta6`,
         "datePublished": "2026-11-19",
         "dateModified": new Date().toISOString(),
-        "image": `${SITE_URL}/gta6/hero.jpg`,
+        "image": `${SITE_URL}/gta6/og-hub.png`,
         "keywords": "GTA 6, Grand Theft Auto VI, GTA 6 characters, GTA 6 map, GTA 6 vehicles, GTA 6 weapons",
     };
 

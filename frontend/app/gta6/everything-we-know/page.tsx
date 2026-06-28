@@ -13,12 +13,24 @@ export const revalidate = 86400;
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
 
 export async function generateMetadata(): Promise<Metadata> {
-    return generatePageMetadata("/gta6/everything-we-know", {
+    const base = await generatePageMetadata("/gta6/everything-we-know", {
         title: "GTA 6: Everything We Know (Updated 2026) — Release Date, Map, Story & Cast",
         description:
             "Complete GTA 6 guide with every confirmed detail: November 19 2026 release date, Vice City & Leonida setting, protagonists Jason & Lucia, platforms, trailers, story, map and vehicle reveals. Updated weekly.",
         keywords: ["GTA 6 everything we know", "GTA 6 confirmed details", "GTA 6", "Grand Theft Auto VI", "GTA 6 release date", "Vice City", "Leonida", "Jason Duval", "Lucia Caminos"],
     });
+    return {
+        ...base,
+        openGraph: {
+            title: "GTA 6: Everything We Know (Updated 2026)",
+            description: "Complete GTA 6 guide: release date, Vice City & Leonida setting, protagonists Jason & Lucia, platforms, story and every confirmed detail.",
+            url: `${SITE_URL}/gta6/everything-we-know`,
+            siteName: "TechPlay",
+            type: "article",
+            images: [{ url: `${SITE_URL}/gta6/og-everything-we-know.png`, width: 1200, height: 630 }],
+        },
+        alternates: { canonical: `${SITE_URL}/gta6/everything-we-know` },
+    };
 }
 
 // Curated, editorial facts (original wording). UNKNOWN where not officially confirmed.
