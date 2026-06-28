@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { getServerApiUrl } from "@/lib/api";
+import { generatePageMetadata } from "@/lib/seo";
 import Gta6HubHero from "@/components/gta6/Gta6HubHero";
 import Gta6HypeBar, { type HypeStat } from "@/components/gta6/Gta6HypeBar";
 import Gta6Trailers from "@/components/gta6/Gta6Trailers";
@@ -17,20 +18,26 @@ const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
 const RELEASE_DATE = new Date("2026-11-19T00:00:00");
 const TRAILER_COUNT = 2;
 
-export const metadata: Metadata = {
-    title: "GTA 6 Hub — Map, Characters, Vehicles, Weapons & Countdown | TechPlay",
-    description:
-        "The ultimate Grand Theft Auto VI hub — interactive map, characters, vehicles, weapons, live release countdown, trailers and the latest GTA 6 news. Releases November 19, 2026.",
-    openGraph: {
-        title: "GTA 6 Hub | TechPlay",
-        description: "Interactive map, characters, vehicles, weapons, countdown, trailers and the latest GTA 6 news.",
-        url: `${SITE_URL}/gta6`,
-        siteName: "TechPlay",
-        type: "website",
-        images: [{ url: `${SITE_URL}/gta6/hero.jpg` }],
-    },
-    alternates: { canonical: `${SITE_URL}/gta6` },
-};
+export async function generateMetadata(): Promise<Metadata> {
+    const base = await generatePageMetadata("/gta6", {
+        title: "GTA 6 — Interactive Map, Characters, Vehicles & Complete Guide | TechPlay",
+        description:
+            "The most complete GTA 6 resource online — interactive map with 1,000+ locations, full character database, confirmed vehicle list, weapons and everything about Grand Theft Auto VI. Updated weekly.",
+        keywords: ["GTA 6", "Grand Theft Auto VI", "GTA 6 release date", "GTA 6 map", "GTA 6 characters", "GTA 6 vehicles", "GTA VI", "GTA 6 guide 2026"],
+    });
+    return {
+        ...base,
+        openGraph: {
+            title: "GTA 6 Hub | TechPlay",
+            description: "Interactive map, characters, vehicles, weapons, countdown, trailers and the latest GTA 6 news.",
+            url: `${SITE_URL}/gta6`,
+            siteName: "TechPlay",
+            type: "website",
+            images: [{ url: `${SITE_URL}/gta6/hero.jpg` }],
+        },
+        alternates: { canonical: `${SITE_URL}/gta6` },
+    };
+}
 
 interface NewsItem {
     id: number;
@@ -95,12 +102,24 @@ export default async function Gta6HubPage() {
         "publisher": { "@type": "Organization", "name": "Rockstar Games" },
         "url": `${SITE_URL}/gta6`,
         "datePublished": "2026-11-19",
+        "dateModified": new Date().toISOString(),
         "image": `${SITE_URL}/gta6/hero.jpg`,
+        "keywords": "GTA 6, Grand Theft Auto VI, GTA 6 characters, GTA 6 map, GTA 6 vehicles, GTA 6 weapons",
+    };
+
+    const breadcrumbLd = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": SITE_URL },
+            { "@type": "ListItem", "position": 2, "name": "GTA 6 Hub", "item": `${SITE_URL}/gta6` },
+        ],
     };
 
     return (
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
             <div className="min-h-screen bg-[#05070A] pb-16">
                 <Gta6HubHero />

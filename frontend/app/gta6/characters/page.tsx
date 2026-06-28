@@ -6,39 +6,69 @@ import Gta6SectionHero from "@/components/gta6/Gta6SectionHero";
 
 export const revalidate = 3600;
 
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
+
 export async function generateMetadata(): Promise<Metadata> {
     return generatePageMetadata("/gta6/characters", {
-        title: "GTA 6 Characters — Full Cast of Leonida | TechPlay",
+        title: "GTA 6 Characters — Jason, Lucia & Every Confirmed Cast Member | TechPlay",
         description:
-            "Meet the confirmed Grand Theft Auto VI characters — protagonists Jason Duval and Lucia Caminos and the supporting cast of Vice City and Leonida.",
-        keywords: ["GTA 6 characters", "Jason Duval", "Lucia Caminos", "GTA VI cast"],
+            "Meet every confirmed GTA 6 character — from protagonists Jason Duval and Lucia Caminos to the full supporting cast of Vice City and Leonida. Full profiles, roles and gallery.",
+        keywords: ["GTA 6 characters", "GTA 6 characters list", "Jason Duval", "Lucia Caminos", "GTA VI cast", "who are the characters in GTA 6"],
     });
 }
 
+const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": SITE_URL },
+        { "@type": "ListItem", "position": 2, "name": "GTA 6 Hub", "item": `${SITE_URL}/gta6` },
+        { "@type": "ListItem", "position": 3, "name": "Characters", "item": `${SITE_URL}/gta6/characters` },
+    ],
+};
+
+const videoGameLd = {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "Grand Theft Auto VI",
+    "alternateName": "GTA 6",
+    "url": `${SITE_URL}/gta6`,
+    "datePublished": "2026-11-19",
+    "publisher": { "@type": "Organization", "name": "Rockstar Games" },
+    "gamePlatform": ["PlayStation 5", "Xbox Series X", "Xbox Series S"],
+};
+
 export default function Gta6CharactersPage() {
     return (
-        <div className="min-h-screen bg-[#05070A]">
-            <Gta6SectionHero
-                icon={Users}
-                title="GTA 6 Characters"
-                subtitle="The protagonists and cast of Vice City & Leonida"
-                breadcrumb="Characters"
-                badge="The Cast"
-                image="/gta6/hero.jpg"
-            />
-
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-8 py-8">
-                <Gta6EntityGrid
-                    section="characters"
-                    basePath="/gta6/characters"
-                    apiPath="/gta6/characters"
-                    filterParam="role"
-                    filterLabel="Roles"
-                    filterOptions={["protagonist", "antagonist", "supporting"]}
-                    emptyTitle="No characters found"
-                    emptyHint="No characters match your search yet. More are added as Rockstar reveals the cast."
+        <>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(videoGameLd) }} />
+            <div className="min-h-screen bg-[#05070A]">
+                <Gta6SectionHero
+                    icon={Users}
+                    title="GTA 6 Characters"
+                    subtitle="Jason, Lucia and every confirmed face in Vice City & Leonida"
+                    breadcrumb="Characters"
+                    badge="The Cast"
+                    image="/gta6/hero.jpg"
                 />
+
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-8 py-8">
+                    <p className="text-[#A1A1AA] text-[15px] leading-relaxed max-w-2xl mb-8">
+                        Grand Theft Auto VI introduces Jason Duval and Lucia Caminos as a dual-protagonist duo — Lucia being the series&apos; first playable female lead. Below is every confirmed GTA 6 character, updated as Rockstar reveals the full cast. Click any character for their full profile, background and gallery.
+                    </p>
+                    <Gta6EntityGrid
+                        section="characters"
+                        basePath="/gta6/characters"
+                        apiPath="/gta6/characters"
+                        filterParam="role"
+                        filterLabel="Roles"
+                        filterOptions={["protagonist", "antagonist", "supporting"]}
+                        emptyTitle="No characters found"
+                        emptyHint="No characters match your search yet. More are added as Rockstar reveals the cast."
+                    />
+                </div>
             </div>
-        </div>
+        </>
     );
 }

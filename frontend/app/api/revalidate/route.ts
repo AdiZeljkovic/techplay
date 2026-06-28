@@ -16,10 +16,12 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
     try {
         // 1. Verify secret token (security)
-        const token = request.headers.get('x-revalidate-token');
+        // Accept both x-revalidate-token (RevalidationService) and Authorization: Bearer (CacheRevalidationService)
+        const headerToken = request.headers.get('x-revalidate-token')
+            ?? request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? null;
         const expectedToken = process.env.REVALIDATE_SECRET_TOKEN;
 
-        if (!expectedToken || token !== expectedToken) {
+        if (!expectedToken || headerToken !== expectedToken) {
             return NextResponse.json(
                 { error: 'Invalid or missing revalidate token' },
                 { status: 401 }
@@ -29,6 +31,20 @@ export async function POST(request: NextRequest) {
         // 2. Parse request body
         const body = await request.json();
         const { type, slug, category } = body;
+
+        // Handle paths array (sent by CacheRevalidationService::revalidatePaths for GTA6 content)
+        if (body.paths && Array.isArray(body.paths)) {
+            const paths: string[] = body.paths.filter((p: unknown) => typeof p === 'string');
+            for (const path of paths) {
+                revalidatePath(path);
+            }
+            return NextResponse.json({
+                success: true,
+                revalidated: true,
+                paths,
+                timestamp: new Date().toISOString(),
+            });
+        }
 
         if (!type) {
             return NextResponse.json(

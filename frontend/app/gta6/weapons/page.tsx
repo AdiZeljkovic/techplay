@@ -7,12 +7,14 @@ import Gta6SectionHero from "@/components/gta6/Gta6SectionHero";
 
 export const revalidate = 3600;
 
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
+
 export async function generateMetadata(): Promise<Metadata> {
     return generatePageMetadata("/gta6/weapons", {
-        title: "GTA 6 Weapons — Confirmed Arsenal | TechPlay",
+        title: "GTA 6 Weapons — Complete Arsenal: Guns, Melee & Explosives | TechPlay",
         description:
-            "Every confirmed Grand Theft Auto VI weapon — pistols, rifles, shotguns, melee and more from the Leonida arsenal.",
-        keywords: ["GTA 6 weapons", "GTA VI guns", "GTA 6 arsenal"],
+            "Every confirmed GTA 6 weapon — pistols, rifles, shotguns, SMGs, melee and explosives from the Leonida arsenal. Full weapon database with types, photos and confirmed details.",
+        keywords: ["GTA 6 weapons", "GTA 6 guns", "GTA VI arsenal", "GTA 6 weapons list", "GTA 6 all weapons"],
     });
 }
 
@@ -30,32 +32,60 @@ async function fetchTypes(): Promise<string[]> {
     }
 }
 
+const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": SITE_URL },
+        { "@type": "ListItem", "position": 2, "name": "GTA 6 Hub", "item": `${SITE_URL}/gta6` },
+        { "@type": "ListItem", "position": 3, "name": "Weapons", "item": `${SITE_URL}/gta6/weapons` },
+    ],
+};
+
+const videoGameLd = {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "Grand Theft Auto VI",
+    "alternateName": "GTA 6",
+    "url": `${SITE_URL}/gta6`,
+    "datePublished": "2026-11-19",
+    "publisher": { "@type": "Organization", "name": "Rockstar Games" },
+    "gamePlatform": ["PlayStation 5", "Xbox Series X", "Xbox Series S"],
+};
+
 export default async function Gta6WeaponsPage() {
     const types = await fetchTypes();
 
     return (
-        <div className="min-h-screen bg-[#05070A]">
-            <Gta6SectionHero
-                icon={Crosshair}
-                title="GTA 6 Weapons"
-                subtitle="The confirmed arsenal of Leonida"
-                breadcrumb="Weapons"
-                badge="The Arsenal"
-                image="/gta6/card-weapons.png"
-            />
-
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-8 py-8">
-                <Gta6EntityGrid
-                    section="weapons"
-                    basePath="/gta6/weapons"
-                    apiPath="/gta6/weapons"
-                    filterParam="type"
-                    filterLabel="Types"
-                    filterOptions={types}
-                    emptyTitle="No weapons yet"
-                    emptyHint="Confirmed weapons will appear here as Rockstar reveals the arsenal."
+        <>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(videoGameLd) }} />
+            <div className="min-h-screen bg-[#05070A]">
+                <Gta6SectionHero
+                    icon={Crosshair}
+                    title="GTA 6 Weapons"
+                    subtitle="Every confirmed firearm, melee weapon and explosive in Grand Theft Auto VI"
+                    breadcrumb="Weapons"
+                    badge="The Arsenal"
+                    image="/gta6/card-weapons.png"
                 />
+
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-8 py-8">
+                    <p className="text-[#A1A1AA] text-[15px] leading-relaxed max-w-2xl mb-8">
+                        The Leonida criminal underworld doesn&apos;t travel light. Every GTA 6 weapon confirmed via official trailers is catalogued below — from sidearms to heavy weapons. Click any entry for the full profile and in-game photos.
+                    </p>
+                    <Gta6EntityGrid
+                        section="weapons"
+                        basePath="/gta6/weapons"
+                        apiPath="/gta6/weapons"
+                        filterParam="type"
+                        filterLabel="Types"
+                        filterOptions={types}
+                        emptyTitle="No weapons yet"
+                        emptyHint="Confirmed weapons will appear here as Rockstar reveals the arsenal."
+                    />
+                </div>
             </div>
-        </div>
+        </>
     );
 }

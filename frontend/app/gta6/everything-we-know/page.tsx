@@ -14,10 +14,10 @@ const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
 
 export async function generateMetadata(): Promise<Metadata> {
     return generatePageMetadata("/gta6/everything-we-know", {
-        title: "GTA 6: Everything We Know (2026) — Release Date, Map, Story & More",
+        title: "GTA 6: Everything We Know (Updated 2026) — Release Date, Map, Story & Cast",
         description:
-            "The complete GTA 6 guide: confirmed release date (Nov 19, 2026), Vice City & Leonida setting, protagonists Jason and Lucia, platforms, trailers, story and every confirmed detail so far.",
-        keywords: ["GTA 6", "Grand Theft Auto VI", "release date", "Vice City", "Leonida", "Jason", "Lucia", "everything we know"],
+            "Complete GTA 6 guide with every confirmed detail: November 19 2026 release date, Vice City & Leonida setting, protagonists Jason & Lucia, platforms, trailers, story, map and vehicle reveals. Updated weekly.",
+        keywords: ["GTA 6 everything we know", "GTA 6 confirmed details", "GTA 6", "Grand Theft Auto VI", "GTA 6 release date", "Vice City", "Leonida", "Jason Duval", "Lucia Caminos"],
     });
 }
 
@@ -69,9 +69,20 @@ export default function Gta6EverythingWeKnowPage() {
         })),
     };
 
+    const breadcrumbLd = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": SITE_URL },
+            { "@type": "ListItem", "position": 2, "name": "GTA 6 Hub", "item": `${SITE_URL}/gta6` },
+            { "@type": "ListItem", "position": 3, "name": "Everything We Know", "item": `${SITE_URL}/gta6/everything-we-know` },
+        ],
+    };
+
     return (
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
             <div className="min-h-screen bg-[#05070A]">
                 <Gta6SectionHero
