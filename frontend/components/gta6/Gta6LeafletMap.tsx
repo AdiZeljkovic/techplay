@@ -276,9 +276,10 @@ type Bounds = [[number, number], [number, number]];
 function FitBoundsOnLoad({ bounds }: { bounds: Bounds }) {
     const map = useMap();
     useEffect(() => {
-        map.fitBounds(bounds, { padding: [20, 20] });
-        // Lock zoom-out: can't go below the full-island view (hides poster frame)
-        const z = map.getBoundsZoom(bounds);
+        // Cover-fit (inside=false, the default): island fills the card → poster decorations stay outside the viewport
+        const lb = L.latLngBounds(bounds);
+        const z  = map.getBoundsZoom(lb); // inside=false → cover: max(scaleX, scaleY)
+        map.setView(lb.getCenter(), z, { animate: false });
         map.setMinZoom(Math.floor(z));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [map]);
@@ -349,7 +350,10 @@ function MapToolbar({ onOpenPanel, resetBounds }: { onOpenPanel?: (tab: "search"
         <div className="absolute right-3 top-1/2 -translate-y-1/2 z-[800] flex flex-col rounded-xl bg-[#0B0E14]/90 backdrop-blur border border-[#161B22] shadow-xl overflow-hidden divide-y divide-[#161B22]">
             <Btn onClick={() => map.zoomIn()} title="Zoom in"><Plus className="w-[18px] h-[18px]" /></Btn>
             <Btn onClick={() => map.zoomOut()} title="Zoom out"><Minus className="w-[18px] h-[18px]" /></Btn>
-            <Btn onClick={() => map.flyToBounds(resetBounds, { padding: [20, 20], duration: 0.6 })} title="Reset view"><Maximize2 className="w-4 h-4" /></Btn>
+            <Btn onClick={() => {
+                const lb = L.latLngBounds(resetBounds);
+                map.flyTo(lb.getCenter(), map.getBoundsZoom(lb), { duration: 0.6 });
+            }} title="Reset view"><Maximize2 className="w-4 h-4" /></Btn>
             {onOpenPanel && <Btn onClick={() => onOpenPanel("search")} title="Search locations"><Search className="w-4 h-4" /></Btn>}
             {onOpenPanel && <Btn onClick={() => onOpenPanel("filters")} title="Filters & list"><SlidersHorizontal className="w-4 h-4" /></Btn>}
             <Btn onClick={toggleFullscreen} title="Fullscreen"><Expand className="w-4 h-4" /></Btn>
