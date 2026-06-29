@@ -18,7 +18,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 class Gta6WeaponResource extends Resource
@@ -90,24 +89,25 @@ class Gta6WeaponResource extends Resource
                         Section::make('Images')
                             ->icon('heroicon-o-photo')
                             ->schema([
-                                Forms\Components\TextInput::make('image')
-                                    ->label('Main image URL')
-                                    ->url()
-                                    ->maxLength(1000)
-                                    ->placeholder('https://...'),
-
-                                Forms\Components\Placeholder::make('image_preview')
-                                    ->label('Preview')
-                                    ->content(fn ($get) => new HtmlString(
-                                        $get('image')
-                                            ? '<img src="'.e($get('image')).'" style="max-height:200px;border-radius:6px;object-fit:cover;" />'
-                                            : '<span style="color:#6b7280">No image set</span>'
-                                    )),
+                                Forms\Components\FileUpload::make('image')
+                                    ->label('Main image')
+                                    ->disk('public')
+                                    ->directory('gta6/weapons')
+                                    ->image()
+                                    ->imagePreviewHeight('200')
+                                    ->maxSize(10240)
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+                                    ->nullable(),
 
                                 Forms\Components\Repeater::make('gallery')
-                                    ->label('Gallery (extra image URLs)')
+                                    ->label('Gallery (extra images)')
                                     ->simple(
-                                        Forms\Components\TextInput::make('url')->url()->placeholder('https://...')
+                                        Forms\Components\FileUpload::make('url')
+                                            ->disk('public')
+                                            ->directory('gta6/weapons/gallery')
+                                            ->image()
+                                            ->maxSize(10240)
+                                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
                                     )
                                     ->addActionLabel('Add image')
                                     ->defaultItems(0)
@@ -154,7 +154,7 @@ class Gta6WeaponResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('image')->label('')->width(64)->height(40),
+                ImageColumn::make('image')->label('')->width(64)->height(40)->disk('public'),
 
                 TextColumn::make('name')->searchable()->sortable()->weight('bold'),
 
