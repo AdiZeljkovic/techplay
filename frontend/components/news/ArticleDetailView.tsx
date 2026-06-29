@@ -171,22 +171,6 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         />
                                     )}
 
-                                    {/* Play button overlay — visible only when video URL exists and not yet playing */}
-                                    {videoEmbed && !isVideoPlaying && (
-                                        <button
-                                            onClick={() => setIsVideoPlaying(true)}
-                                            aria-label="Play video"
-                                            className="absolute inset-0 z-30 flex items-center justify-center group cursor-pointer"
-                                        >
-                                            <div className="relative">
-                                                {/* Pulse ring */}
-                                                <div className="absolute inset-0 rounded-full bg-[var(--accent)]/20 animate-ping" />
-                                                <div className="relative w-20 h-20 rounded-full bg-black/40 backdrop-blur-md border-2 border-white/30 flex items-center justify-center group-hover:bg-[var(--accent)]/80 group-hover:border-[var(--accent)] transition-all duration-300 group-hover:scale-110 shadow-2xl">
-                                                    <Play className="w-8 h-8 text-white fill-white ml-1" />
-                                                </div>
-                                            </div>
-                                        </button>
-                                    )}
 
                                     {/* Left content panel — slides down and fades out when playing */}
                                     <div className={`relative z-10 flex flex-col p-8 md:p-12 w-full md:w-[75%] transition-all duration-500 ${isVideoPlaying ? 'opacity-0 translate-y-4 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
@@ -202,6 +186,17 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                                 {decodeHtml(article.title)}
                                             </h1>
                                         </div>
+
+                                        {/* Watch video button — shown only when video URL is set and not yet playing */}
+                                        {videoEmbed && !isVideoPlaying && (
+                                            <button
+                                                onClick={() => setIsVideoPlaying(true)}
+                                                className="mb-5 flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--accent)] hover:bg-[var(--accent)]/80 text-white text-[11px] font-bold uppercase tracking-widest transition-all duration-200 w-max shadow-lg shadow-[var(--accent)]/20 group"
+                                            >
+                                                <Play className="w-3.5 h-3.5 fill-white group-hover:scale-110 transition-transform" />
+                                                Watch Video
+                                            </button>
+                                        )}
 
                                         {/* Author row */}
                                         <div className="flex items-center gap-3">
