@@ -8,6 +8,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms;
+use App\Filament\Components\MediaPickerFields;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
@@ -99,22 +100,14 @@ class Gta6VehicleResource extends Resource
                         Section::make('Images')
                             ->icon('heroicon-o-photo')
                             ->schema([
-                                Forms\Components\FileUpload::make('image')
-                                    ->label('Main image')
-                                    ->disk('public')
-                                    ->directory('gta6/vehicles')
-                                    ->image()
-                                    ->imagePreviewHeight('200')
-                                    ->maxSize(10240)
-                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-                                    ->nullable(),
+                                ...MediaPickerFields::make('image', null, 'gta6-vehicles'),
 
                                 Forms\Components\Repeater::make('gallery')
                                     ->label('Gallery (extra images)')
                                     ->simple(
                                         Forms\Components\FileUpload::make('url')
                                             ->disk('public')
-                                            ->directory('gta6/vehicles/gallery')
+                                            ->directory('gta6-vehicles/gallery')
                                             ->image()
                                             ->maxSize(10240)
                                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])

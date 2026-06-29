@@ -19,7 +19,7 @@ class MediaPickerFields
      */
     public static function make(
         string $pathField = 'featured_image_url',
-        string $altField = 'featured_image_alt',
+        ?string $altField = 'featured_image_alt',
         string $collection = 'articles'
     ): array {
         return [
@@ -155,11 +155,13 @@ class MediaPickerFields
                     ->visible(fn ($get) => ! empty($get($pathField))),
             ])->columnSpanFull(),
 
-            // Alt text field
-            TextInput::make($altField)
-                ->label('Image Alt Text')
-                ->placeholder('Describe the image for accessibility...')
-                ->helperText('Important for SEO and accessibility'),
+            // Alt text field (optional — only included if altField is provided)
+            ...($altField ? [
+                TextInput::make($altField)
+                    ->label('Image Alt Text')
+                    ->placeholder('Describe the image for accessibility...')
+                    ->helperText('Important for SEO and accessibility'),
+            ] : []),
         ];
     }
 }
