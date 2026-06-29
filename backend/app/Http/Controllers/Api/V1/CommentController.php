@@ -8,6 +8,9 @@ use App\Models\Article;
 use App\Models\Comment;
 use App\Models\Guide;
 use App\Models\Review;
+use App\Models\User;
+use App\Notifications\ArticleCommentNotification;
+use App\Notifications\CommentReplyNotification;
 use App\Services\AchievementService;
 use App\Services\SanitizationService;
 use App\Services\XpService;
@@ -163,6 +166,11 @@ class CommentController extends Controller
         } catch (\Throwable) {
         }
 
+        // 5. Send notifications (only for approved comments, never blocks response)
+        if ($comment->status === 'approved') {
+            $this->sendCommentNotifications($comment, $user, $request->commentable_type);
+        }
+
         return (new CommentResource($comment->load('user.rank')))
             ->additional([
                 'message' => $message,
@@ -242,6 +250,56 @@ class CommentController extends Controller
 
             return response()->json(['message' => 'Server Error: '.$e->getMessage()], 500);
         }
+    }
+
+    private function sendCommentNotifications(Comment $comment, User $commenter, string $commentableType): void
+    {
+        try {
+            if ($comment->parent_id) {
+                // Reply → notify the parent comment's author
+                $parent = Comment::with('user')->find($comment->parent_id);
+                if (! $parent || ! $parent->user || $parent->user->id === $commenter->id) {
+                    return;
+                }
+
+                $link = $this->resolveContentLink($commentableType, $comment->commentable_id);
+                $parent->user->notify(new CommentReplyNotification($comment, $commenter, $link));
+            } else {
+                // Top-level comment → notify content author
+                $modelClass = $this->getModelClass($commentableType);
+                if (! $modelClass) {
+                    return;
+                }
+
+                $content = $modelClass::with('author')->find($comment->commentable_id);
+                if (! $content || ! $content->author || $content->author->id === $commenter->id) {
+                    return;
+                }
+
+                $link  = $this->resolveContentLink($commentableType, $comment->commentable_id, $content->slug ?? null);
+                $title = $content->title ?? ($content->name ?? '');
+                $content->author->notify(new ArticleCommentNotification($comment, $commenter, $title, $link));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Comment notification failed: '.$e->getMessage());
+        }
+    }
+
+    private function resolveContentLink(string $commentableType, int $contentId, ?string $slug = null): string
+    {
+        if (! $slug) {
+            $modelClass = $this->getModelClass($commentableType);
+            $slug = $modelClass ? ($modelClass::find($contentId)?->slug ?? '') : '';
+        }
+
+        $prefix = match ($commentableType) {
+            'review' => 'reviews',
+            'guide'  => 'guides',
+            'tech'   => 'hardware',
+            default  => 'news',
+        };
+
+        return "/{$prefix}/{$slug}";
     }
 
     protected function getModelClass($type)

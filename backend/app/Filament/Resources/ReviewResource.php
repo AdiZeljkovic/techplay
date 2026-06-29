@@ -7,6 +7,7 @@ use App\Filament\Components\SeoFields;
 use App\Filament\Resources\NewsResource\RelationManagers\ContentVersionsRelationManager;
 use App\Filament\Resources\ReviewResource\Pages;
 use App\Models\Article;
+use App\Models\Game;
 // Layout Components (from Schemas)
 use App\Policies\ArticlePolicy;
 use App\Services\CacheService;
@@ -17,6 +18,7 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -228,10 +230,26 @@ class ReviewResource extends Resource
                                         if (isset($details['genres'])) {
                                             $set('review_data.genres', collect($details['genres'])->pluck('name')->map(fn ($g) => strtolower($g))->toArray());
                                         }
+
+                                        // Upsert local Game record so ArticleObserver can link the review
+                                        $game = Game::firstOrCreate(
+                                            ['slug' => $state],
+                                            [
+                                                'name'             => $details['name'],
+                                                'released'         => $details['released'] ?? null,
+                                                'background_image' => $details['background_image'] ?? null,
+                                                'rating'           => $details['rating'] ?? 0,
+                                                'details_crawled_at' => now(),
+                                            ]
+                                        );
+                                        $set('game_id', $game->id);
+
                                         Notification::make()->title('Fields filled from RAWG')->success()->send();
                                     })
                                     ->dehydrated(false)
                                     ->helperText('Select a game to auto-fill title, developer, publisher, release date, platforms and genres'),
+
+                                Hidden::make('game_id'),
 
                                 Grid::make(2)->schema([
                                     TextInput::make('review_data.game_title')

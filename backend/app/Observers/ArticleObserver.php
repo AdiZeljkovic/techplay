@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Http\Controllers\SitemapController;
 use App\Models\Article;
 use App\Models\UserGame;
+use App\Notifications\GameNewsNotification;
 use App\Notifications\WishlistGameReviewedNotification;
 use App\Services\BountyService;
 use App\Services\QuestService;
@@ -70,9 +71,14 @@ class ArticleObserver
                     $this->regenerateNewsSitemap();
                     $this->pingSearchEngines($article->slug, $categoryPath);
 
-                    // Notify users who wishlisted this game when a review is published.
+                    // Notify wishlisted users when a review is published.
                     if ($article->game_id && $article->review_score && in_array($article->category->type, ['review', 'reviews'])) {
                         $this->notifyWishlisters($article);
+                    }
+
+                    // Notify all users tracking this game when any article about it is published.
+                    if ($article->game_id && in_array($article->category->type, ['news', 'guide', 'guides'])) {
+                        $this->notifyGameTrackers($article, $categoryPath);
                     }
 
                     // Award bounty + quest progress to the author on first publish.
@@ -238,6 +244,40 @@ class ArticleObserver
                         $article,
                         (float) $article->review_score,
                     ));
+                } catch (\Throwable) {
+                }
+            }
+        } catch (\Throwable) {
+            // Never block article publish
+        }
+    }
+
+    /**
+     * Notify all users who have this game tracked (any status except 'dropped')
+     * when a news article or guide about it is published.
+     */
+    protected function notifyGameTrackers(Article $article, string $categoryPath): void
+    {
+        try {
+            if (! $article->relationLoaded('game')) {
+                $article->load('game');
+            }
+            if (! $article->game) {
+                return;
+            }
+
+            $trackers = UserGame::where('game_id', $article->game_id)
+                ->where('status', '!=', 'dropped')
+                ->where('user_id', '!=', $article->author_id) // don't notify the article's own author
+                ->with('user')
+                ->get();
+
+            foreach ($trackers as $entry) {
+                if (! $entry->user) {
+                    continue;
+                }
+                try {
+                    $entry->user->notify(new GameNewsNotification($article->game, $article, $categoryPath));
                 } catch (\Throwable) {
                 }
             }

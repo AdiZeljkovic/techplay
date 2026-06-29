@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Rank;
 use App\Models\User;
+use App\Notifications\RankUpNotification;
 use Illuminate\Support\Facades\Cache;
 
 class XpService
@@ -76,7 +77,10 @@ class XpService
         if ($newRank && $newRank->id !== $user->rank_id) {
             $user->rank_id = $newRank->id;
             $user->save();
-            // Could fire RankUp event here
+            try {
+                $user->notify(new RankUpNotification($newRank));
+            } catch (\Throwable) {
+            }
         }
     }
 }
