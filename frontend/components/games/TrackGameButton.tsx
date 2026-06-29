@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
@@ -35,6 +35,19 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
     const { user } = useAuth();
     const [open, setOpen] = useState(false);
     const [busy, setBusy] = useState(false);
+    const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (open && wrapperRef.current) {
+            const rect = wrapperRef.current.getBoundingClientRect();
+            setDropdownPos({
+                top: rect.bottom + window.scrollY + 8,
+                left: rect.left + window.scrollX,
+                width: rect.width,
+            });
+        }
+    }, [open]);
 
     const swrKey = user ? `/collection/games/${slug}` : null;
     const { data: entry, mutate } = useSWR(swrKey, fetcher);
@@ -143,7 +156,7 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
 
     // --- FULL variant (game detail sidebar) ---
     return (
-        <div className={`relative ${wrapperClassName ?? "w-full"}`}>
+        <div ref={wrapperRef} className={`relative ${wrapperClassName ?? "w-full"}`}>
             {currentMeta ? (
                 <div className="flex gap-2">
                     <div className="flex-1 flex items-center gap-2.5 py-3 px-4 rounded-xl border" style={{ backgroundColor: `${currentMeta.color}15`, borderColor: `${currentMeta.color}40` }}>
@@ -165,8 +178,11 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
 
             {open && (
                 <>
-                    <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-                    <div className="absolute left-0 right-0 top-full mt-2 z-50 rounded-xl bg-[#0d1117] border border-white/10 shadow-2xl overflow-hidden py-1">
+                    <div className="fixed inset-0 z-[9998]" onClick={() => setOpen(false)} />
+                    <div
+                        className="fixed z-[9999] rounded-xl bg-[#0d1117] border border-white/10 shadow-2xl overflow-hidden py-1"
+                        style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width || undefined, minWidth: 180 }}
+                    >
                         {visibleStatuses.map((s) => (
                             <button key={s.value} onClick={() => setStatus(s.value)}
                                 className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-semibold transition-colors ${currentStatus === s.value ? "text-white bg-white/10" : "text-white/65 hover:text-white hover:bg-white/[0.05]"}`}>
