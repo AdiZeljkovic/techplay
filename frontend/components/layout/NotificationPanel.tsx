@@ -18,7 +18,7 @@ interface AppNotification {
     created_at: string;
 }
 
-const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data ?? { data: [] });
+const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
 function typeIcon(type: string) {
     switch (type) {
