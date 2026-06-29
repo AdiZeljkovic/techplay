@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Check, X, Star } from "lucide-react";
 import Image from "next/image";
 import { format } from "date-fns";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import Script from "next/script";
 import AdUnit from "@/components/ads/AdUnit";
 import ReviewSidebar from "@/components/reviews/ReviewSidebar";
@@ -28,6 +28,10 @@ interface ReviewDetailViewProps {
 
 export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
     useEmbedScripts();
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
 
     // Calculate reading time
     const readingTime = useMemo(() => {

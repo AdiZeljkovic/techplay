@@ -76,6 +76,10 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
     useEmbedScripts();
     const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
     const readingTime = useMemo(() => {
         const text = (article.content || '').replace(/<[^>]+>/g, '');
         const words = text.split(/\s+/).length;

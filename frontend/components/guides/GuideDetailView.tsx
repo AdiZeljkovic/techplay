@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, ThumbsUp } from "lucide-react";
 import Image from "next/image";
@@ -53,6 +53,10 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const { user } = useAuth();
     useEmbedScripts();
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
 
     // Calculate reading time
     const readingTime = useMemo(() => {
