@@ -306,9 +306,8 @@ export default async function CalendarGamePage({ params }: Props) {
                         </span>
                     </div>
 
-                    {/* Two-column hero: left content + right trailer panel */}
-                    {/* Show 2-col if there's a YouTube clip OR RAWG movie trailers */}
-                    <div className={`grid gap-8 items-center ${(game.clip?.video || movies.count > 0) ? "grid-cols-1 lg:grid-cols-[1fr_400px]" : "grid-cols-1"}`}>
+                    {/* Two-column hero: left content + right trailer/preview panel */}
+                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 items-center">
                         {/* LEFT */}
                         <div>
                             {/* Title */}
@@ -440,14 +439,13 @@ export default async function CalendarGamePage({ params }: Props) {
                             </div>
                         </div>
 
-                        {/* RIGHT — Trailer panel (YouTube or RAWG movie) */}
-                        {(game.clip?.video || movies.count > 0) && (
-                            <HeroTrailerPanel
-                                youtubeId={game.clip?.video ?? null}
-                                movie={movies.results[0] ?? null}
-                                gameName={game.name}
-                            />
-                        )}
+                        {/* RIGHT — always shown: YouTube, RAWG movie, or game preview fallback */}
+                        <HeroTrailerPanel
+                            youtubeId={game.clip?.video ?? null}
+                            movie={movies.results[0] ?? null}
+                            gameName={game.name}
+                            backgroundImage={game.background_image_additional ?? game.background_image}
+                        />
                     </div>
                 </div>
             </div>

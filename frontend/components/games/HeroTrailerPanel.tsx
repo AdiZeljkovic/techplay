@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Play } from "lucide-react";
+import { Play, Film } from "lucide-react";
 
 interface Movie {
     id: number;
@@ -15,12 +15,11 @@ interface Props {
     youtubeId: string | null;
     movie: Movie | null;
     gameName: string;
+    backgroundImage?: string | null;
 }
 
-export default function HeroTrailerPanel({ youtubeId, movie, gameName }: Props) {
+export default function HeroTrailerPanel({ youtubeId, movie, gameName, backgroundImage }: Props) {
     const [playing, setPlaying] = useState(false);
-
-    if (!youtubeId && !movie) return null;
 
     // YouTube embed — always shows as iframe
     if (youtubeId) {
@@ -80,15 +79,59 @@ export default function HeroTrailerPanel({ youtubeId, movie, gameName }: Props) 
     }
 
     // Playing — inline video
+    if (playing) {
+        return (
+            <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl bg-black">
+                <video
+                    src={movie!.data.max || movie!.data["480"]}
+                    poster={movie!.preview}
+                    controls
+                    autoPlay
+                    className="w-full h-full object-contain"
+                />
+            </div>
+        );
+    }
+
+    // Fallback — no trailer, show game background as stylized preview card
     return (
-        <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl bg-black">
-            <video
-                src={movie!.data.max || movie!.data["480"]}
-                poster={movie!.preview}
-                controls
-                autoPlay
-                className="w-full h-full object-contain"
-            />
+        <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl">
+            {backgroundImage ? (
+                <Image
+                    src={backgroundImage}
+                    alt={`${gameName} preview`}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 400px"
+                    className="object-cover scale-105"
+                />
+            ) : (
+                <div className="absolute inset-0 bg-[#0B0E14]" />
+            )}
+            {/* Dark vignette */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
+
+            {/* Center content */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                <div className="w-14 h-14 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center backdrop-blur-sm">
+                    <Film className="w-6 h-6 text-white/30" />
+                </div>
+                <div className="text-center">
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-white/40">
+                        Trailer Not Yet Available
+                    </p>
+                    <p className="text-[10px] text-white/20 mt-1">
+                        Check back closer to release
+                    </p>
+                </div>
+            </div>
+
+            {/* Game name watermark bottom */}
+            <div className="absolute bottom-0 left-0 right-0 px-4 py-3 bg-gradient-to-t from-black/60 to-transparent">
+                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30">
+                    {gameName}
+                </p>
+            </div>
         </div>
     );
 }
