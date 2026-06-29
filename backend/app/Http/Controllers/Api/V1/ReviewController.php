@@ -18,7 +18,7 @@ class ReviewController extends Controller
     {
         $page = $request->get('page', 1);
         $category = $request->get('category', 'all');
-        $cacheKey = "reviews.index.v2.page_{$page}.cat_{$category}";
+        $cacheKey = "reviews.index.v3.page_{$page}.cat_{$category}";
 
         $resource = Cache::remember($cacheKey, CacheService::TTL_LONG, function () use ($request) {
             $query = Article::query()
@@ -45,7 +45,7 @@ class ReviewController extends Controller
             }
 
             return ReviewResource::collection(
-                $query->latest('published_at')->paginate(12)
+                $query->latest('published_at')->paginate(13)
             );
         });
 

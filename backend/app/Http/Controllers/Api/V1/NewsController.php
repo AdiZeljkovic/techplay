@@ -18,7 +18,7 @@ class NewsController extends Controller
     {
         $page = $request->get('page', 1);
         $category = $request->get('category', 'all');
-        $cacheKey = "news.index.v2.page_{$page}.cat_{$category}";
+        $cacheKey = "news.index.v3.page_{$page}.cat_{$category}";
 
         // Note: Caching for 1 hour (production)
         $resource = Cache::remember($cacheKey, CacheService::TTL_LONG, function () use ($request) {
@@ -40,7 +40,7 @@ class NewsController extends Controller
             }
 
             return ArticleResource::collection(
-                $query->latest('published_at')->paginate(12)
+                $query->latest('published_at')->paginate(13)
             );
         });
 

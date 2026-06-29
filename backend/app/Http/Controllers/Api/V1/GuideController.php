@@ -17,7 +17,7 @@ class GuideController extends Controller
         $page = $request->get('page', 1);
         $difficulty = $request->get('difficulty', 'all');
         $search = $request->get('search', '');
-        $cacheKey = "guides.index.v2.page_{$page}.diff_{$difficulty}.search_".md5($search);
+        $cacheKey = "guides.index.v3.page_{$page}.diff_{$difficulty}.search_".md5($search);
 
         $resource = Cache::remember($cacheKey, CacheService::TTL_MEDIUM, function () use ($request, $search) {
             $query = Guide::with('author:id,username,display_name,avatar_url');
@@ -35,7 +35,7 @@ class GuideController extends Controller
                 });
             }
 
-            return $query->latest()->paginate(12);
+            return $query->latest()->paginate(13);
         });
 
         return response()->json($resource)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
