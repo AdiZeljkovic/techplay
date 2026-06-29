@@ -343,6 +343,7 @@ export default function CalendarClient() {
     const scrollToCalendar = () => calendarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
     return (
+        <>
         <div className="min-h-screen bg-white dark:bg-[#05070A]">
 
             {/* ══════════════════ HERO ══════════════════ */}
@@ -817,5 +818,6 @@ export default function CalendarClient() {
                 onClose={() => setDayPopup(null)}
             />
         )}
+        </>
     );
 }
