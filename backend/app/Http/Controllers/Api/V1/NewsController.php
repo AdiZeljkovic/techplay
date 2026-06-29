@@ -18,10 +18,11 @@ class NewsController extends Controller
     {
         $page = $request->get('page', 1);
         $category = $request->get('category', 'all');
-        $cacheKey = "news.index.v3.page_{$page}.cat_{$category}";
+        $search = $request->get('search', '');
+        $cacheKey = "news.index.v3.page_{$page}.cat_{$category}.search_".md5($search);
 
         // Note: Caching for 1 hour (production)
-        $resource = Cache::remember($cacheKey, CacheService::TTL_LONG, function () use ($request) {
+        $resource = Cache::remember($cacheKey, CacheService::TTL_LONG, function () use ($request, $search) {
             $query = Article::query()
                 ->where('status', 'published')
                 ->where('published_at', '<=', now())
@@ -37,6 +38,10 @@ class NewsController extends Controller
                         $q->orWhere('id', $categorySlug);
                     }
                 });
+            }
+
+            if (! empty($search)) {
+                $query->where('title', 'ILIKE', "%{$search}%");
             }
 
             return ArticleResource::collection(

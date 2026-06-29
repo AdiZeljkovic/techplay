@@ -426,6 +426,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/games/rawg/{slug}/screenshots', [GameController::class, 'rawgScreenshots']);
         Route::get('/games/rawg/{slug}/movies', [GameController::class, 'rawgMovies']);
         Route::get('/games/rawg/{slug}/suggested', [GameController::class, 'rawgSuggested']);
+        Route::get('/games/rawg/{slug}/game-series', [GameController::class, 'rawgGameSeries']);
         Route::get('/games/rawg/{slug}', [GameController::class, 'rawgDetail']);
         Route::get('/games/crawled-slugs', [GameController::class, 'crawledSlugs']);
         Route::get('/games/hub/{type}/{value}', [GameRatingController::class, 'hub']);

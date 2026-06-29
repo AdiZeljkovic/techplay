@@ -217,6 +217,20 @@ class GameController extends Controller
             ->header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=86400');
     }
 
+    public function rawgGameSeries(string $slug, RawgService $rawg)
+    {
+        $data = Cache::remember("rawg.series.{$slug}", 86400, function () use ($slug, $rawg) {
+            return $rawg->getGameSeries($slug);
+        });
+
+        if (! $data) {
+            return response()->json(['count' => 0, 'results' => []]);
+        }
+
+        return response()->json($data)
+            ->header('Cache-Control', 'public, max-age=86400, stale-while-revalidate=86400');
+    }
+
     public function rawgSuggested(string $slug, RawgService $rawg)
     {
         $data = Cache::remember("rawg.suggested.{$slug}", 3600 * 6, function () use ($slug, $rawg) {

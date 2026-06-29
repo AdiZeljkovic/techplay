@@ -5,11 +5,13 @@ import Link from "next/link";
 import { getServerApiUrl } from "@/lib/api";
 import { format, parseISO, isBefore, startOfDay } from "date-fns";
 import {
-    ChevronLeft, Star, Flame, Globe, Users, Shield,
-    Calendar, Bell, Play, CheckCircle2, Circle, Clock3,
+    ChevronLeft, Star, Flame, Globe, Shield,
+    Calendar, Bell, ExternalLink,
 } from "lucide-react";
 import GameDetailClient, { AddToCalendarButton } from "./GameDetailClient";
 import TrackGameButton from "@/components/games/TrackGameButton";
+import SocialShare from "@/components/share/SocialShare";
+import { Article } from "@/types";
 
 export const revalidate = 43200; // 12h ISR
 
@@ -28,6 +30,11 @@ interface SuggestedGame {
     genres: { name: string }[];
     platforms: { platform: { name: string; slug: string } }[];
 }
+interface SeriesGame {
+    id: number; slug: string; name: string;
+    released: string | null; background_image: string | null;
+    rating: number;
+}
 
 interface RawgGame {
     id: number; slug: string; name: string;
@@ -42,6 +49,10 @@ interface RawgGame {
     short_screenshots: { id: number; image: string }[];
     clip: { clip: string; preview: string; clips: Record<string, string>; video: string } | null;
     ratings: { id: number; title: string; count: number; percent: number }[];
+    added_by_status: {
+        yet: number; owned: number; beaten: number;
+        toplay: number; dropped: number; playing: number;
+    } | null;
 }
 
 type Props = { params: Promise<{ slug: string }> };
@@ -88,6 +99,28 @@ async function getSuggestedGames(slug: string): Promise<{ count: number; results
     } catch { return { count: 0, results: [] }; }
 }
 
+async function getGameSeries(slug: string): Promise<{ count: number; results: SeriesGame[] }> {
+    try {
+        const res = await fetch(`${getServerApiUrl()}/games/rawg/${slug}/game-series`, {
+            next: { revalidate: 86400 },
+        });
+        if (!res.ok) return { count: 0, results: [] };
+        return res.json();
+    } catch { return { count: 0, results: [] }; }
+}
+
+async function getGameNews(gameName: string): Promise<Article[]> {
+    try {
+        const query = encodeURIComponent(gameName.slice(0, 40));
+        const res = await fetch(`${getServerApiUrl()}/news?search=${query}&page=1`, {
+            next: { revalidate: 3600 },
+        });
+        if (!res.ok) return [];
+        const json = await res.json();
+        return (json.data ?? []).slice(0, 4);
+    } catch { return []; }
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function platformChip(name: string, slug?: string): { label: string; cls: string } | null {
@@ -101,14 +134,6 @@ function platformChip(name: string, slug?: string): { label: string; cls: string
     if (s.includes("xbox")) return { label: "XBOX", cls: "bg-[#107C10] text-white" };
     if (s.includes("nintendo") || s.includes("switch")) return { label: "SWITCH", cls: "bg-[#E60012] text-white" };
     return null;
-}
-
-function anticipationLabel(score: number): string {
-    if (score >= 9) return "Exceptional";
-    if (score >= 8) return "Very Positive";
-    if (score >= 7) return "Positive";
-    if (score >= 5) return "Mixed";
-    return "Needs Work";
 }
 
 function metacriticColor(score: number): string {
@@ -156,7 +181,7 @@ function HeroCountdownServer({ released }: { released: string }) {
 
     if (isPast) {
         return (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-tp-accent/15 border border-tp-accent/30 mb-5">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-tp-accent/15 border border-tp-accent/30">
                 <span className="text-[13px] font-black text-tp-accent uppercase tracking-widest">
                     {isToday ? "Out Today" : "Out Now"}
                 </span>
@@ -171,7 +196,7 @@ function HeroCountdownServer({ released }: { released: string }) {
     const units = [{ v: days, label: "Days" }, { v: hours, label: "Hrs" }, { v: minutes, label: "Min" }, { v: seconds, label: "Sec" }];
 
     return (
-        <div className="mb-5">
+        <div>
             <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-tp-accent mb-2">Launches in</p>
             <div className="flex items-end gap-2">
                 {units.map(({ v, label }, i) => (
@@ -190,6 +215,20 @@ function HeroCountdownServer({ released }: { released: string }) {
     );
 }
 
+// ── Sidebar countdown — compact ────────────────────────────────────────────────
+
+function SidebarCountdown({ released }: { released: string }) {
+    const diff = parseISO(released).getTime() - Date.now();
+    if (diff <= 0) return null;
+    const days = Math.floor(diff / 86400000);
+    return (
+        <div className="flex items-center gap-1.5 text-[11px] text-white/50">
+            <Calendar className="w-3 h-3 text-tp-accent shrink-0" />
+            <span><span className="font-black text-white">{days}</span> days to release</span>
+        </div>
+    );
+}
+
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default async function CalendarGamePage({ params }: Props) {
@@ -204,6 +243,12 @@ export default async function CalendarGamePage({ params }: Props) {
 
     if (!game) notFound();
 
+    // Fetch series + news after we know the game name
+    const [gameSeries, gameNews] = await Promise.all([
+        getGameSeries(slug),
+        getGameNews(game.name),
+    ]);
+
     // Build platform chips (deduplicated)
     const chips: { label: string; cls: string }[] = [];
     for (const p of game.platforms || []) {
@@ -215,17 +260,17 @@ export default async function CalendarGamePage({ params }: Props) {
     const isFuture   = game.released ? !isReleased : false;
     const isUpcoming = isFuture || game.tba;
     const statusLabel = isUpcoming ? "Upcoming Release" : "Past Release";
-
-    const anticipationScore = +(game.rating * 2).toFixed(1);
-    const anticipationPct   = (game.rating / 5) * 100;
-
     const gameTagline = game.description_raw ? tagline(game.description_raw) : "";
+    const pageUrl = `https://techplay.gg/calendar/${slug}`;
+
+    // Series: pick first game that isn't this one
+    const seriesGame = gameSeries.results.find(g => g.slug !== slug) ?? null;
 
     return (
         <div className="min-h-screen bg-white dark:bg-[#05070A]">
 
             {/* ══ HERO ══════════════════════════════════════════════════════════ */}
-            <div className="relative w-full min-h-[600px] h-[72vh] overflow-hidden bg-[#05070A]">
+            <div className="relative w-full min-h-[560px] overflow-hidden bg-[#05070A]">
 
                 {/* Background image */}
                 {game.background_image && (
@@ -239,132 +284,151 @@ export default async function CalendarGamePage({ params }: Props) {
                 )}
 
                 {/* Gradient overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/60 to-[#05070A]/10" />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#05070A]/90 via-[#05070A]/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/70 to-[#05070A]/20" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#05070A]/95 via-[#05070A]/50 to-transparent" />
 
                 {/* Top orange line */}
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-tp-accent/70 via-tp-accent/20 to-transparent" />
 
-                {/* Content — centered vertically */}
-                <div className="absolute inset-0 flex flex-col justify-center">
-                    <div className="max-w-[1320px] mx-auto px-8 xl:px-10 w-full">
+                {/* Content */}
+                <div className="relative z-10 max-w-[1320px] mx-auto px-6 xl:px-10 pt-10 pb-12">
 
-                        {/* Breadcrumb */}
-                        <div className="flex items-center gap-2 mb-6">
-                            <Link
-                                href="/calendar"
-                                className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors"
-                            >
-                                <ChevronLeft className="w-3.5 h-3.5" />
-                                Release Calendar
-                            </Link>
-                            <span className="text-white/20 text-[10px]">/</span>
-                            <span className={`text-[10px] font-bold uppercase tracking-widest ${isUpcoming ? "text-tp-accent" : "text-white/40"}`}>
-                                {statusLabel}
-                            </span>
-                        </div>
-
-                        {/* Title */}
-                        <h1
-                            className="font-display font-black text-white uppercase tracking-tight leading-[0.88] mb-5 max-w-[700px]"
-                            style={{ fontSize: "clamp(36px, 6vw, 76px)" }}
+                    {/* Breadcrumb */}
+                    <div className="flex items-center gap-2 mb-8">
+                        <Link
+                            href="/calendar"
+                            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors"
                         >
-                            {game.name}
-                        </h1>
+                            <ChevronLeft className="w-3.5 h-3.5" />
+                            Release Calendar
+                        </Link>
+                        <span className="text-white/20 text-[10px]">/</span>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest ${isUpcoming ? "text-tp-accent" : "text-white/40"}`}>
+                            {statusLabel}
+                        </span>
+                    </div>
 
-                        {/* Release date */}
-                        {game.released && (
-                            <div className="flex items-center gap-2 mb-5">
-                                <Calendar className="w-4 h-4 text-tp-accent shrink-0" />
-                                <span className="text-[14px] font-semibold text-white/70">
-                                    {format(parseISO(game.released), "MMMM d, yyyy")}
-                                </span>
-                            </div>
-                        )}
-                        {game.tba && !game.released && (
-                            <span className="inline-block text-[11px] font-black text-tp-accent uppercase tracking-widest border border-tp-accent/40 px-3 py-1.5 rounded-full mb-5">
-                                Release Date TBA
-                            </span>
-                        )}
+                    {/* Two-column hero: left content + right YouTube embed */}
+                    <div className={`grid gap-8 items-center ${game.clip?.video ? "grid-cols-1 lg:grid-cols-[1fr_400px]" : "grid-cols-1"}`}>
+                        {/* LEFT */}
+                        <div>
+                            {/* Title */}
+                            <h1
+                                className="font-display font-black text-white uppercase tracking-tight leading-[0.88] mb-4 max-w-[700px]"
+                                style={{ fontSize: "clamp(34px, 5.5vw, 70px)" }}
+                            >
+                                {game.name}
+                            </h1>
 
-                        {/* Countdown */}
-                        {game.released && <HeroCountdownServer released={game.released} />}
-
-                        {/* Platform chips + genre tags */}
-                        <div className="flex flex-wrap items-center gap-2 mb-5">
-                            {chips.map(chip => (
-                                <span key={chip.label} className={`${chip.cls} text-[9px] font-bold tracking-wider px-2.5 py-[5px] rounded-[4px] leading-none`}>
-                                    {chip.label}
-                                </span>
-                            ))}
-                            {game.genres.slice(0, 4).map(g => (
-                                <span key={g.id} className="text-[11px] font-medium text-white/60 bg-white/8 border border-white/10 px-2.5 py-1 rounded-full">
-                                    #{g.name}
-                                </span>
-                            ))}
-                        </div>
-
-                        {/* Tagline */}
-                        {gameTagline && (
-                            <p className="text-[14px] text-white/55 max-w-[500px] leading-relaxed mb-5">
-                                {gameTagline}
-                            </p>
-                        )}
-
-                        {/* Stats row */}
-                        <div className="flex items-center gap-5 mb-7 flex-wrap">
-                            {(game.added || 0) > 0 && (
-                                <div className="flex items-center gap-1.5 text-[12px] text-white/50">
-                                    <Flame className="w-3.5 h-3.5 text-tp-accent" />
-                                    <span className="font-bold text-white/80">{hypeLabel(game.added)}</span>
-                                    <span>Players tracking</span>
-                                </div>
+                            {/* Tagline */}
+                            {gameTagline && (
+                                <p className="text-[14px] text-white/50 max-w-[520px] leading-relaxed mb-5">
+                                    {gameTagline}
+                                </p>
                             )}
-                            {game.metacritic && (
-                                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold ${metacriticColor(game.metacritic)}`}>
-                                    Metacritic {game.metacritic}
-                                </div>
-                            )}
-                            {game.rating > 0 && (
-                                <div className="flex items-center gap-1.5 text-[12px] text-white/50">
-                                    <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-                                    <span className="font-bold text-white/80">{game.rating.toFixed(1)}</span>
-                                    <span>/ 5 RAWG</span>
-                                </div>
-                            )}
-                        </div>
 
-                        {/* CTA buttons */}
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <TrackGameButton slug={slug} gameName={game.name} variant="full" />
-                            {game.website && (
-                                <a
-                                    href={game.website}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/15 hover:border-white/30 text-white text-[11px] font-bold uppercase tracking-widest rounded-full transition-all"
-                                >
-                                    <Globe className="w-4 h-4" /> Official Website
-                                </a>
-                            )}
-                            {movies.count > 0 && (
-                                <a
-                                    href="#trailers"
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/15 hover:border-white/30 text-white text-[11px] font-bold uppercase tracking-widest rounded-full transition-all"
-                                >
-                                    <Play className="w-4 h-4" /> Watch Trailer
-                                </a>
-                            )}
-                        </div>
-
-                        {/* Short clip preview strip */}
-                        {game.short_screenshots && game.short_screenshots.length > 0 && (
-                            <div className="flex gap-2 mt-6 overflow-x-auto pb-1 scrollbar-hide">
-                                {game.short_screenshots.slice(0, 6).map((s, i) => (
-                                    <div key={s.id} className="relative shrink-0 w-28 h-16 rounded-lg overflow-hidden border border-white/[0.12] hover:border-tp-accent/50 transition-colors">
-                                        <Image src={s.image} alt={`${game.name} screenshot ${i + 1}`} fill sizes="112px" className="object-cover" />
+                            {/* Release date row */}
+                            <div className="flex items-center gap-4 mb-5 flex-wrap">
+                                {game.released && (
+                                    <div className="flex items-center gap-2">
+                                        <Calendar className="w-4 h-4 text-tp-accent shrink-0" />
+                                        <span className="text-[14px] font-semibold text-white/70">
+                                            {format(parseISO(game.released), "MMMM d, yyyy")}
+                                        </span>
                                     </div>
+                                )}
+                                {game.tba && !game.released && (
+                                    <span className="inline-block text-[11px] font-black text-tp-accent uppercase tracking-widest border border-tp-accent/40 px-3 py-1.5 rounded-full">
+                                        Release Date TBA
+                                    </span>
+                                )}
+                                {game.metacritic && (
+                                    <span className={`text-[11px] font-black px-2.5 py-1 rounded-lg ${metacriticColor(game.metacritic)}`}>
+                                        Metacritic {game.metacritic}
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Countdown */}
+                            {game.released && !isReleased && (
+                                <div className="mb-5">
+                                    <HeroCountdownServer released={game.released} />
+                                </div>
+                            )}
+
+                            {/* Platform chips + genre pills */}
+                            <div className="flex flex-wrap items-center gap-2 mb-5">
+                                {chips.map(chip => (
+                                    <span key={chip.label} className={`${chip.cls} text-[9px] font-bold tracking-wider px-2.5 py-[5px] rounded-[4px] leading-none`}>
+                                        {chip.label}
+                                    </span>
                                 ))}
+                                {game.genres.slice(0, 4).map(g => (
+                                    <span key={g.id} className="text-[11px] font-medium text-white/55 bg-white/[0.07] border border-white/[0.09] px-2.5 py-1 rounded-full">
+                                        #{g.name}
+                                    </span>
+                                ))}
+                            </div>
+
+                            {/* Stats row */}
+                            {(game.added || 0) > 0 && (
+                                <div className="flex items-center gap-5 mb-6 flex-wrap">
+                                    <div className="flex items-center gap-1.5 text-[12px] text-white/50">
+                                        <Flame className="w-3.5 h-3.5 text-tp-accent" />
+                                        <span className="font-bold text-white/80">{hypeLabel(game.added)}</span>
+                                        <span>players tracking</span>
+                                    </div>
+                                    {game.rating > 0 && (
+                                        <div className="flex items-center gap-1.5 text-[12px] text-white/50">
+                                            <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                                            <span className="font-bold text-white/80">{game.rating.toFixed(1)}</span>
+                                            <span>/ 5 RAWG</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* CTA buttons row */}
+                            <div className="flex items-center gap-3 flex-wrap">
+                                <TrackGameButton slug={slug} gameName={game.name} variant="full" />
+                                <AddToCalendarButton game={game} />
+                                <button
+                                    disabled
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-white/[0.04] border border-white/10 text-white/30 text-[11px] font-bold uppercase tracking-widest rounded-full cursor-default"
+                                >
+                                    <Bell className="w-3.5 h-3.5" />
+                                    Notify Me
+                                </button>
+                                {game.website && (
+                                    <a
+                                        href={game.website}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 px-5 py-2.5 bg-white/[0.04] hover:bg-white/10 border border-white/10 hover:border-white/25 text-white/60 hover:text-white text-[11px] font-bold uppercase tracking-widest rounded-full transition-all"
+                                    >
+                                        <Globe className="w-3.5 h-3.5" />
+                                        Official Site
+                                    </a>
+                                )}
+                                <SocialShare url={pageUrl} title={game.name} description={gameTagline} vertical={false} />
+                            </div>
+                        </div>
+
+                        {/* RIGHT — YouTube embed (only if clip.video exists) */}
+                        {game.clip?.video && (
+                            <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl">
+                                <iframe
+                                    src={`https://www.youtube-nocookie.com/embed/${game.clip.video}?rel=0&modestbranding=1`}
+                                    title={`${game.name} — Official Trailer`}
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                    className="absolute inset-0 w-full h-full"
+                                />
+                                <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-white/50">
+                                        Official Reveal Trailer · Watch on YouTube
+                                    </p>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -372,240 +436,238 @@ export default async function CalendarGamePage({ params }: Props) {
             </div>
 
             {/* ══ CONTENT ═══════════════════════════════════════════════════════ */}
-            <div className="max-w-[1320px] mx-auto px-8 xl:px-10 pt-12 pb-24">
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10">
+            <div className="max-w-[1320px] mx-auto px-6 xl:px-10 pt-12 pb-24">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-10">
 
-                    {/* Left — tabs */}
+                    {/* Main column */}
                     <GameDetailClient
                         game={game}
                         screenshots={screenshots}
                         movies={movies}
                         suggested={suggested}
+                        news={gameNews}
+                        isUpcoming={isUpcoming}
                     />
 
-                    {/* Right — sidebar */}
-                    <aside className="space-y-5 lg:sticky lg:top-6 self-start">
+                    {/* Sidebar */}
+                    <aside className="space-y-4 lg:sticky lg:top-6 self-start">
 
-                        {/* Quick Facts */}
+                        {/* 1. RELEASE INFO */}
                         <div className="bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-5">
-                            <h3 className="font-display text-[12px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.12em] mb-5 pb-4 border-b border-zinc-200 dark:border-white/5">
-                                Quick Facts
+                            <h3 className="font-display text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.12em] mb-4 pb-3 border-b border-zinc-200 dark:border-white/5">
+                                Release Info
                             </h3>
-                            <dl className="space-y-3.5">
+                            <div className="space-y-3">
+                                {/* Date */}
                                 {game.released && (
-                                    <div className="flex items-start gap-3">
-                                        <Calendar className="w-3.5 h-3.5 text-tp-accent mt-0.5 shrink-0" />
-                                        <div>
-                                            <dt className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 dark:text-white/30 mb-0.5">Release Date</dt>
-                                            <dd className="text-[12px] font-semibold text-zinc-900 dark:text-white">{format(parseISO(game.released), "MMMM d, yyyy")}</dd>
-                                        </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] text-zinc-500 dark:text-white/40 uppercase tracking-widest font-bold">Date</span>
+                                        <span className="text-[12px] font-bold text-zinc-900 dark:text-white">{format(parseISO(game.released), "MMM d, yyyy")}</span>
                                     </div>
                                 )}
-                                {chips.length > 0 && (
-                                    <div className="flex items-start gap-3">
-                                        <Users className="w-3.5 h-3.5 text-tp-accent mt-0.5 shrink-0" />
-                                        <div>
-                                            <dt className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 dark:text-white/30 mb-0.5">Platforms</dt>
-                                            <dd className="flex flex-wrap gap-1 mt-1">
-                                                {chips.map(chip => (
-                                                    <span key={chip.label} className={`${chip.cls} text-[8px] font-bold px-1.5 py-[3px] rounded-[3px] leading-none`}>{chip.label}</span>
-                                                ))}
-                                            </dd>
-                                        </div>
+                                {game.tba && !game.released && (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] text-zinc-500 dark:text-white/40 uppercase tracking-widest font-bold">Date</span>
+                                        <span className="text-[12px] font-bold text-tp-accent">TBA</span>
                                     </div>
                                 )}
+                                {/* Countdown */}
+                                {game.released && !isReleased && (
+                                    <SidebarCountdown released={game.released} />
+                                )}
+                                {/* Status badge */}
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] text-zinc-500 dark:text-white/40 uppercase tracking-widest font-bold">Status</span>
+                                    {isUpcoming ? (
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-tp-accent bg-tp-accent/10 border border-tp-accent/25 px-2.5 py-1 rounded-full">
+                                            Upcoming
+                                        </span>
+                                    ) : (
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/25 px-2.5 py-1 rounded-full">
+                                            Released
+                                        </span>
+                                    )}
+                                </div>
+                                {/* Pre-orders */}
+                                {isUpcoming && (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] text-zinc-500 dark:text-white/40 uppercase tracking-widest font-bold">Pre-Orders</span>
+                                        {game.website ? (
+                                            <a href={game.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[11px] font-bold text-tp-accent hover:underline">
+                                                Open <ExternalLink className="w-2.5 h-2.5" />
+                                            </a>
+                                        ) : (
+                                            <span className="text-[11px] font-bold text-zinc-400 dark:text-white/25">TBA</span>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* 2. PLATFORMS */}
+                        {chips.length > 0 && (
+                            <div className="bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-5">
+                                <h3 className="font-display text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.12em] mb-3">
+                                    Platforms
+                                </h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {chips.map(chip => (
+                                        <span key={chip.label} className={`${chip.cls} text-[10px] font-bold px-3 py-1.5 rounded-lg leading-none`}>
+                                            {chip.label}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 3. GAME DETAILS */}
+                        <div className="bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-5">
+                            <h3 className="font-display text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.12em] mb-4 pb-3 border-b border-zinc-200 dark:border-white/5">
+                                Game Details
+                            </h3>
+                            <dl className="space-y-2.5">
                                 {game.genres.length > 0 && (
                                     <div className="flex items-start gap-3">
-                                        <Star className="w-3.5 h-3.5 text-tp-accent mt-0.5 shrink-0" />
-                                        <div>
-                                            <dt className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 dark:text-white/30 mb-0.5">Genres</dt>
-                                            <dd className="text-[12px] text-zinc-900 dark:text-white">{game.genres.map(g => g.name).join(", ")}</dd>
-                                        </div>
+                                        <dt className="text-[10px] text-zinc-500 dark:text-white/35 uppercase tracking-widest font-bold w-20 shrink-0 pt-px">Genre</dt>
+                                        <dd className="text-[11px] font-semibold text-zinc-900 dark:text-white leading-snug">{game.genres.map(g => g.name).join(", ")}</dd>
                                     </div>
                                 )}
                                 {game.developers.length > 0 && (
                                     <div className="flex items-start gap-3">
-                                        <Globe className="w-3.5 h-3.5 text-tp-accent mt-0.5 shrink-0" />
-                                        <div>
-                                            <dt className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 dark:text-white/30 mb-0.5">Developer</dt>
-                                            <dd className="text-[12px] text-zinc-900 dark:text-white">{game.developers.map(d => d.name).join(", ")}</dd>
-                                        </div>
+                                        <dt className="text-[10px] text-zinc-500 dark:text-white/35 uppercase tracking-widest font-bold w-20 shrink-0 pt-px">Dev</dt>
+                                        <dd className="text-[11px] font-semibold text-zinc-900 dark:text-white leading-snug">{game.developers.map(d => d.name).join(", ")}</dd>
                                     </div>
                                 )}
                                 {game.publishers.length > 0 && (
                                     <div className="flex items-start gap-3">
-                                        <Globe className="w-3.5 h-3.5 text-tp-accent mt-0.5 shrink-0" />
-                                        <div>
-                                            <dt className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 dark:text-white/30 mb-0.5">Publisher</dt>
-                                            <dd className="text-[12px] text-zinc-900 dark:text-white">{game.publishers.map(p => p.name).join(", ")}</dd>
-                                        </div>
+                                        <dt className="text-[10px] text-zinc-500 dark:text-white/35 uppercase tracking-widest font-bold w-20 shrink-0 pt-px">Publisher</dt>
+                                        <dd className="text-[11px] font-semibold text-zinc-900 dark:text-white leading-snug">{game.publishers.map(p => p.name).join(", ")}</dd>
+                                    </div>
+                                )}
+                                {gameSeries.count > 0 && (
+                                    <div className="flex items-start gap-3">
+                                        <dt className="text-[10px] text-zinc-500 dark:text-white/35 uppercase tracking-widest font-bold w-20 shrink-0 pt-px">Franchise</dt>
+                                        <dd className="text-[11px] font-semibold text-zinc-900 dark:text-white">{gameSeries.count} titles in series</dd>
                                     </div>
                                 )}
                                 {game.playtime > 0 && (
                                     <div className="flex items-start gap-3">
-                                        <Clock3 className="w-3.5 h-3.5 text-tp-accent mt-0.5 shrink-0" />
-                                        <div>
-                                            <dt className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 dark:text-white/30 mb-0.5">Avg. Playtime</dt>
-                                            <dd className="text-[12px] text-zinc-900 dark:text-white">{game.playtime}h</dd>
-                                        </div>
+                                        <dt className="text-[10px] text-zinc-500 dark:text-white/35 uppercase tracking-widest font-bold w-20 shrink-0 pt-px">Playtime</dt>
+                                        <dd className="text-[11px] font-semibold text-zinc-900 dark:text-white">{game.playtime}h avg.</dd>
                                     </div>
                                 )}
                                 {game.esrb_rating && (
                                     <div className="flex items-start gap-3">
-                                        <Shield className="w-3.5 h-3.5 text-tp-accent mt-0.5 shrink-0" />
+                                        <Shield className="w-3 h-3 text-tp-accent mt-0.5 shrink-0" />
                                         <div>
-                                            <dt className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 dark:text-white/30 mb-0.5">ESRB</dt>
-                                            <dd className="text-[12px] text-zinc-900 dark:text-white">{game.esrb_rating.name}</dd>
+                                            <dt className="text-[10px] text-zinc-500 dark:text-white/35 uppercase tracking-widest font-bold">ESRB</dt>
+                                            <dd className="text-[11px] font-semibold text-zinc-900 dark:text-white">{game.esrb_rating.name}</dd>
                                         </div>
+                                    </div>
+                                )}
+                                {game.metacritic && (
+                                    <div className="flex items-start gap-3">
+                                        <dt className="text-[10px] text-zinc-500 dark:text-white/35 uppercase tracking-widest font-bold w-20 shrink-0 pt-px">Metacritic</dt>
+                                        <dd>
+                                            <span className={`text-[10px] font-black px-2 py-0.5 rounded ${metacriticColor(game.metacritic)}`}>
+                                                {game.metacritic}
+                                            </span>
+                                        </dd>
                                     </div>
                                 )}
                             </dl>
                         </div>
 
-                        {/* Release Status */}
-                        <div className="bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-5">
-                            <h3 className="font-display text-[12px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.12em] mb-5 pb-4 border-b border-zinc-200 dark:border-white/5">
-                                Release Status
-                            </h3>
-                            <div className="space-y-3 relative">
-                                {/* Vertical line */}
-                                <div className="absolute left-[7px] top-2 bottom-2 w-px bg-zinc-200 dark:bg-white/[0.06]" />
-
-                                {/* Announced — always checked since we have data */}
-                                <div className="flex items-center gap-3 pl-1">
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0" />
-                                    <div className="flex items-center justify-between flex-1">
-                                        <span className="text-[11px] font-semibold text-zinc-900 dark:text-white">Announced</span>
-                                    </div>
-                                </div>
-
-                                {/* Coming Soon / In Development */}
-                                {isUpcoming && (
-                                    <div className="flex items-center gap-3 pl-1">
-                                        <div className="w-3.5 h-3.5 rounded-full bg-tp-accent shrink-0 ring-4 ring-tp-accent/20" />
-                                        <div className="flex items-center justify-between flex-1">
-                                            <span className="text-[11px] font-bold text-tp-accent">Coming Soon</span>
-                                            {game.released && (
-                                                <span className="text-[10px] text-zinc-500 dark:text-white/35">{format(parseISO(game.released), "MMM d, yyyy")}</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Released */}
-                                <div className="flex items-center gap-3 pl-1">
-                                    {isReleased ? (
-                                        <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0" />
-                                    ) : (
-                                        <Circle className="w-3.5 h-3.5 text-zinc-300 dark:text-white/20 shrink-0" />
-                                    )}
-                                    <div className="flex items-center justify-between flex-1">
-                                        <span className={`text-[11px] font-semibold ${isReleased ? "text-zinc-900 dark:text-white font-bold" : "text-zinc-400 dark:text-white/30"}`}>
-                                            Released
-                                        </span>
-                                        {isReleased && game.released && (
-                                            <span className="text-[10px] text-zinc-500 dark:text-white/35">{format(parseISO(game.released), "MMM d, yyyy")}</span>
-                                        )}
-                                        {!isReleased && (
-                                            <span className="text-[10px] text-zinc-400 dark:text-white/20">TBA</span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
+                        {/* 4. ACTIONS */}
+                        <div className="bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-5 space-y-2.5">
+                            <TrackGameButton slug={slug} gameName={game.name} variant="full" />
+                            <AddToCalendarButton game={game} />
+                            <button
+                                disabled
+                                className="w-full flex items-center justify-center gap-2 py-2.5 bg-zinc-100 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.07] text-zinc-400 dark:text-white/25 text-[10px] font-bold uppercase tracking-widest rounded-full cursor-default"
+                            >
+                                <Bell className="w-3.5 h-3.5" />
+                                Notify Me on Release
+                            </button>
                         </div>
 
-                        {/* Community Anticipation */}
-                        {game.rating > 0 && (
-                            <div className="bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-5">
-                                <h3 className="font-display text-[12px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.12em] mb-5 pb-4 border-b border-zinc-200 dark:border-white/5">
-                                    Community Anticipation
-                                </h3>
-                                <div className="text-center mb-4">
-                                    <div className="flex items-end justify-center gap-1 mb-1">
-                                        <span className="font-display text-[48px] font-black text-zinc-900 dark:text-white leading-none">{anticipationScore}</span>
-                                        <span className="text-[18px] font-bold text-zinc-400 dark:text-white/30 mb-2">/10</span>
+                        {/* 5. LATEST IN SERIES */}
+                        {seriesGame && (
+                            <div className="bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl overflow-hidden">
+                                {seriesGame.background_image && (
+                                    <div className="relative h-24">
+                                        <Image
+                                            src={seriesGame.background_image}
+                                            alt={seriesGame.name}
+                                            fill
+                                            sizes="320px"
+                                            className="object-cover"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                                     </div>
-                                    <span className="text-[11px] font-bold uppercase tracking-widest text-tp-accent">{anticipationLabel(anticipationScore)}</span>
-                                </div>
-                                <div className="w-full h-2 bg-zinc-100 dark:bg-white/[0.06] rounded-full overflow-hidden mb-4">
-                                    <div
-                                        className="h-full bg-tp-accent rounded-full"
-                                        style={{ width: `${anticipationPct}%` }}
-                                    />
-                                </div>
-                                <div className="space-y-1.5 text-[11px]">
-                                    {(game.added || 0) > 0 && (
-                                        <div className="flex items-center justify-between text-zinc-600 dark:text-white/50">
-                                            <span className="flex items-center gap-1.5"><Flame className="w-3 h-3 text-tp-accent" /> Players Tracking</span>
-                                            <span className="font-bold text-zinc-900 dark:text-white">{hypeLabel(game.added)}</span>
-                                        </div>
+                                )}
+                                <div className="p-4">
+                                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-tp-accent mb-1">
+                                        Also in Series
+                                    </p>
+                                    <p className="text-[13px] font-bold text-zinc-900 dark:text-white leading-snug mb-2">
+                                        {seriesGame.name}
+                                    </p>
+                                    {seriesGame.released && (
+                                        <p className="text-[10px] text-zinc-500 dark:text-white/35 mb-3">
+                                            {format(parseISO(seriesGame.released), "MMM d, yyyy")}
+                                        </p>
                                     )}
-                                    {game.ratings_count > 0 && (
-                                        <div className="flex items-center justify-between text-zinc-600 dark:text-white/50">
-                                            <span className="flex items-center gap-1.5"><Star className="w-3 h-3 text-yellow-400 fill-yellow-400" /> RAWG Ratings</span>
-                                            <span className="font-bold text-zinc-900 dark:text-white">{game.ratings_count.toLocaleString()}</span>
-                                        </div>
-                                    )}
+                                    <Link
+                                        href={`/calendar/${seriesGame.slug}`}
+                                        className="text-[10px] font-bold uppercase tracking-widest text-tp-accent hover:underline"
+                                    >
+                                        View Game →
+                                    </Link>
                                 </div>
                             </div>
                         )}
 
-                        {/* Ratings breakdown */}
-                        {game.ratings && game.ratings.length > 0 && (
+                        {/* 6. SIMILAR UPCOMING (compact list of 3) */}
+                        {suggested.results.length > 0 && (
                             <div className="bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-5">
-                                <h3 className="font-display text-[12px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.12em] mb-5 pb-4 border-b border-zinc-200 dark:border-white/5">
-                                    Player Ratings
+                                <h3 className="font-display text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.12em] mb-4 pb-3 border-b border-zinc-200 dark:border-white/5">
+                                    Similar Games
                                 </h3>
                                 <div className="space-y-3">
-                                    {game.ratings.map(r => {
-                                        const colorMap: Record<string, string> = {
-                                            exceptional: "bg-green-500",
-                                            recommended: "bg-blue-500",
-                                            meh: "bg-yellow-400",
-                                            skip: "bg-red-500",
-                                        };
-                                        const emojiMap: Record<string, string> = {
-                                            exceptional: "🏆", recommended: "👍", meh: "😐", skip: "👎",
-                                        };
-                                        return (
-                                            <div key={r.id}>
-                                                <div className="flex justify-between items-center mb-1.5">
-                                                    <span className="text-[11px] font-semibold text-zinc-600 dark:text-white/60 capitalize">
-                                                        {emojiMap[r.title] ?? ""} {r.title}
-                                                    </span>
-                                                    <span className="text-[11px] font-black text-zinc-900 dark:text-white tabular-nums">
-                                                        {r.percent.toFixed(0)}%
-                                                    </span>
-                                                </div>
-                                                <div className="h-1.5 bg-zinc-100 dark:bg-white/[0.06] rounded-full overflow-hidden">
-                                                    <div
-                                                        className={`h-full rounded-full ${colorMap[r.title] ?? "bg-tp-accent"}`}
-                                                        style={{ width: `${r.percent}%` }}
+                                    {suggested.results.slice(0, 3).map(sg => (
+                                        <Link
+                                            key={sg.id}
+                                            href={`/calendar/${sg.slug}`}
+                                            className="flex gap-3 items-center group"
+                                        >
+                                            <div className="relative shrink-0 w-16 h-10 rounded-lg overflow-hidden border border-zinc-200 dark:border-white/[0.06] bg-zinc-100 dark:bg-[#0F1318]">
+                                                {sg.background_image && (
+                                                    <Image
+                                                        src={sg.background_image}
+                                                        alt={sg.name}
+                                                        fill
+                                                        sizes="64px"
+                                                        className="object-cover group-hover:scale-105 transition-transform"
                                                     />
-                                                </div>
+                                                )}
                                             </div>
-                                        );
-                                    })}
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[12px] font-bold text-zinc-900 dark:text-white group-hover:text-tp-accent transition-colors line-clamp-1">
+                                                    {sg.name}
+                                                </p>
+                                                {sg.released && (
+                                                    <p className="text-[10px] text-zinc-500 dark:text-white/35">
+                                                        {format(parseISO(sg.released), "MMM d, yyyy")}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </Link>
+                                    ))}
                                 </div>
-                                {game.ratings_count > 0 && (
-                                    <p className="text-[10px] text-zinc-400 dark:text-white/25 mt-4">
-                                        Based on {game.ratings_count.toLocaleString()} ratings
-                                    </p>
-                                )}
                             </div>
                         )}
 
-                        {/* Add to Calendar */}
-                        <AddToCalendarButton game={game} />
-
-                        {/* Notify Me — placeholder */}
-                        <button
-                            disabled
-                            className="w-full flex items-center justify-center gap-2 py-3 bg-white dark:bg-[#0B0E14] hover:bg-zinc-50 dark:hover:bg-[#0F1318] border border-zinc-200 dark:border-[#161B22] text-zinc-500 dark:text-white/40 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all disabled:cursor-default"
-                        >
-                            <Bell className="w-4 h-4" />
-                            Notify Me on Release
-                        </button>
                     </aside>
                 </div>
             </div>

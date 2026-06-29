@@ -102,6 +102,22 @@ class RawgService
         }
     }
 
+    public function getGameSeries(string $slug): ?array
+    {
+        try {
+            $response = $this->http(15)->get("{$this->baseUrl}/games/{$slug}/game-series", [
+                'key' => $this->key(),
+                'page_size' => 4,
+            ]);
+
+            return $response->successful() ? $response->json() : null;
+        } catch (\Exception $e) {
+            Log::error('RawgService getGameSeries: '.$e->getMessage());
+
+            return null;
+        }
+    }
+
     public function getSuggestedGames(string $slug): ?array
     {
         try {

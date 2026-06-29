@@ -1,25 +1,37 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Images, Film, Gamepad2, AlignLeft, CalendarPlus, Play } from "lucide-react";
+import { CalendarPlus, Flame } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import GameScreenshotsLightbox from "@/components/games/GameScreenshotsLightbox";
-import GameTrailersPlayer from "@/components/games/GameTrailersPlayer";
+import { Article } from "@/types";
+import HypeMeter from "@/components/games/HypeMeter";
+import GameMediaGallery from "@/components/games/GameMediaGallery";
+import NewsCard from "@/components/news/NewsCard";
 
 interface RawgGame {
     id: number;
     slug: string;
     name: string;
     released: string | null;
+    tba: boolean;
     description_raw: string;
     rating: number;
     ratings_count: number;
     added: number;
+    playtime: number;
     tags: { id: number; name: string; slug: string; language: string }[];
     genres: { id: number; name: string; slug: string }[];
+    developers: { id: number; name: string; slug: string }[];
+    publishers: { id: number; name: string; slug: string }[];
+    esrb_rating: { id: number; name: string; slug: string } | null;
+    metacritic: number | null;
     clip: { clip: string; preview: string; clips: Record<string, string>; video: string } | null;
+    ratings: { id: number; title: string; count: number; percent: number }[];
+    added_by_status: {
+        yet: number; owned: number; beaten: number;
+        toplay: number; dropped: number; playing: number;
+    } | null;
 }
 
 interface Screenshot { id: number; image: string; width: number; height: number }
@@ -37,24 +49,30 @@ interface Props {
     screenshots: { count: number; results: Screenshot[] };
     movies: { count: number; results: Movie[] };
     suggested: { count: number; results: SuggestedGame[] };
+    news: Article[];
+    isUpcoming: boolean;
 }
-
-type Tab = "overview" | "screenshots" | "trailers" | "similar";
 
 function platformChip(name: string, slug?: string): { label: string; cls: string } | null {
     const s = (slug || name).toLowerCase();
-    if (s.includes("pc") || s === "windows") return { label: "PC", cls: "bg-[#2F6FED]" };
-    if (s.includes("playstation-5") || name === "PlayStation 5") return { label: "PS5", cls: "bg-[#1A3FA8]" };
-    if (s.includes("playstation-4") || name === "PlayStation 4") return { label: "PS4", cls: "bg-[#1A3FA8]" };
-    if (s.includes("playstation")) return { label: "PS", cls: "bg-[#1A3FA8]" };
-    if (s.includes("xbox-series") || name.includes("Series")) return { label: "SERIES", cls: "bg-[#107C10]" };
-    if (s.includes("xbox-one")) return { label: "ONE", cls: "bg-[#107C10]" };
-    if (s.includes("xbox")) return { label: "XBOX", cls: "bg-[#107C10]" };
-    if (s.includes("nintendo") || s.includes("switch")) return { label: "SWITCH", cls: "bg-[#E60012]" };
+    if (s.includes("pc") || s === "windows") return { label: "PC", cls: "bg-[#2F6FED] text-white" };
+    if (s.includes("playstation-5") || name === "PlayStation 5") return { label: "PS5", cls: "bg-[#1A3FA8] text-white" };
+    if (s.includes("playstation-4") || name === "PlayStation 4") return { label: "PS4", cls: "bg-[#1A3FA8] text-white" };
+    if (s.includes("playstation")) return { label: "PS", cls: "bg-[#1A3FA8] text-white" };
+    if (s.includes("xbox-series") || name.includes("Series")) return { label: "SERIES", cls: "bg-[#107C10] text-white" };
+    if (s.includes("xbox-one")) return { label: "ONE", cls: "bg-[#107C10] text-white" };
+    if (s.includes("xbox")) return { label: "XBOX", cls: "bg-[#107C10] text-white" };
+    if (s.includes("nintendo") || s.includes("switch")) return { label: "SWITCH", cls: "bg-[#E60012] text-white" };
     return null;
 }
 
-function AddToCalendarButton({ game }: { game: RawgGame }) {
+function hypeLabel(n: number): string {
+    if (n >= 10000) return `${(n / 1000).toFixed(0)}K`;
+    if (n >= 1000)  return `${(n / 1000).toFixed(1)}K`;
+    return String(n);
+}
+
+export function AddToCalendarButton({ game }: { game: RawgGame }) {
     const handleClick = () => {
         if (!game.released) return;
         const d = game.released.replace(/-/g, "");
@@ -84,240 +102,277 @@ function AddToCalendarButton({ game }: { game: RawgGame }) {
         <button
             onClick={handleClick}
             disabled={!game.released}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-tp-accent hover:bg-tp-accent/90 disabled:opacity-40 disabled:cursor-not-allowed text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-colors shadow-lg shadow-tp-accent/20"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/15 hover:border-white/30 disabled:opacity-40 disabled:cursor-not-allowed text-white text-[11px] font-bold uppercase tracking-widest rounded-full transition-all"
         >
-            <CalendarPlus className="w-4 h-4" />
+            <CalendarPlus className="w-3.5 h-3.5" />
             Add to Calendar
         </button>
     );
 }
 
-export { AddToCalendarButton };
-
-const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
-    { id: "overview",    label: "Overview",    icon: AlignLeft  },
-    { id: "screenshots", label: "Screenshots", icon: Images     },
-    { id: "trailers",    label: "Trailers",    icon: Film       },
-    { id: "similar",     label: "Similar",     icon: Gamepad2   },
-];
-
-export default function GameDetailClient({ game, screenshots, movies, suggested }: Props) {
-    const [activeTab, setActiveTab] = useState<Tab>("overview");
-
-    const tags = game.tags.filter(t => t.language === "eng").slice(0, 20);
-
+function SectionHeading({ title, linkHref, linkText }: { title: string; linkHref?: string; linkText?: string }) {
     return (
-        <div>
-            {/* Screenshot strip — above tabs */}
-            {screenshots.results.length > 0 && (
-                <div className="flex gap-2.5 overflow-x-auto pb-2 mb-7 scrollbar-hide">
-                    {screenshots.results.slice(0, 8).map((s, i) => (
-                        <button
-                            key={s.id}
-                            onClick={() => setActiveTab("screenshots")}
-                            className="group relative shrink-0 w-40 h-[90px] rounded-xl overflow-hidden border border-white/[0.08] hover:border-tp-accent/60 transition-all duration-200 focus:outline-none"
-                            title={`Screenshot ${i + 1}`}
-                        >
-                            <Image src={s.image} alt={`Screenshot ${i + 1}`} fill sizes="160px" className="object-cover group-hover:scale-105 transition-transform duration-300" />
-                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
-                        </button>
-                    ))}
-                    {screenshots.count > 8 && (
-                        <button
-                            onClick={() => setActiveTab("screenshots")}
-                            className="shrink-0 w-40 h-[90px] rounded-xl border border-white/[0.08] hover:border-tp-accent/60 bg-white/[0.03] flex flex-col items-center justify-center gap-1 transition-all focus:outline-none"
-                        >
-                            <Images className="w-5 h-5 text-white/30" />
-                            <span className="text-[11px] font-bold text-white/40">+{screenshots.count - 8} more</span>
-                        </button>
-                    )}
-                </div>
-            )}
-
-            {/* Tab bar */}
-            <div className="flex items-center gap-1 border-b border-zinc-200 dark:border-white/[0.06] mb-8">
-                {TABS.map(tab => {
-                    const Icon = tab.icon;
-                    const active = activeTab === tab.id;
-                    const disabled = tab.id === "trailers" && movies.count === 0;
-                    if (disabled) return null;
-                    return (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-2 px-4 py-3 text-[11px] font-bold uppercase tracking-wider border-b-2 -mb-px transition-colors ${
-                                active
-                                    ? "border-tp-accent text-tp-accent"
-                                    : "border-transparent text-zinc-500 dark:text-white/40 hover:text-zinc-800 dark:hover:text-white/70"
-                            }`}
-                        >
-                            <Icon className="w-3.5 h-3.5 shrink-0" />
-                            {tab.label}
-                            {tab.id === "screenshots" && screenshots.count > 0 && (
-                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none ${active ? "bg-tp-accent/20 text-tp-accent" : "bg-zinc-200 dark:bg-white/10 text-zinc-500 dark:text-white/40"}`}>
-                                    {screenshots.count}
-                                </span>
-                            )}
-                            {tab.id === "similar" && suggested.count > 0 && (
-                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none ${active ? "bg-tp-accent/20 text-tp-accent" : "bg-zinc-200 dark:bg-white/10 text-zinc-500 dark:text-white/40"}`}>
-                                    {suggested.count}
-                                </span>
-                            )}
-                        </button>
-                    );
-                })}
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/[0.06]">
+            <div className="flex items-center gap-3">
+                <span className="w-1 h-5 bg-tp-accent rounded-full shrink-0" />
+                <h2 className="font-display text-[14px] font-black text-white uppercase tracking-[0.1em] leading-none">
+                    {title}
+                </h2>
             </div>
-
-            {/* Tab content */}
-            {activeTab === "overview" && (
-                <div className="space-y-10">
-                    {/* Clip preview */}
-                    {game.clip?.preview && (
-                        <section>
-                            <div className="relative aspect-video rounded-2xl overflow-hidden bg-black border border-white/[0.08]">
-                                <video
-                                    src={game.clip.clips?.["640"] || game.clip.clip}
-                                    poster={game.clip.preview}
-                                    controls
-                                    className="w-full h-full object-cover"
-                                    preload="none"
-                                />
-                            </div>
-                        </section>
-                    )}
-
-                    {game.description_raw ? (
-                        <section>
-                            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-zinc-200 dark:border-white/5">
-                                <span className="w-1 h-5 bg-tp-accent rounded-full shrink-0" />
-                                <h2 className="font-display text-[15px] font-bold text-zinc-900 dark:text-white uppercase tracking-[0.08em] leading-none">
-                                    About the Game
-                                </h2>
-                            </div>
-                            <div className="text-[15px] text-zinc-700 dark:text-white/80 leading-[1.9] whitespace-pre-line">
-                                {game.description_raw}
-                            </div>
-                        </section>
-                    ) : (
-                        <p className="text-[14px] text-zinc-500 dark:text-white/30 italic">No description available.</p>
-                    )}
-
-                    {tags.length > 0 && (
-                        <section>
-                            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-zinc-200 dark:border-white/5">
-                                <span className="w-1 h-5 bg-tp-accent rounded-full shrink-0" />
-                                <h2 className="font-display text-[15px] font-bold text-zinc-900 dark:text-white uppercase tracking-[0.08em] leading-none">
-                                    Tags
-                                </h2>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {tags.map(tag => (
-                                    <span
-                                        key={tag.id}
-                                        className="text-[12px] font-medium text-zinc-600 dark:text-white/50 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/[0.07] px-3 py-1.5 rounded-full hover:border-tp-accent/40 hover:text-tp-accent dark:hover:text-tp-accent transition-colors cursor-default"
-                                    >
-                                        {tag.name}
-                                    </span>
-                                ))}
-                            </div>
-                        </section>
-                    )}
-                </div>
-            )}
-
-            {activeTab === "screenshots" && (
-                <div>
-                    {screenshots.results.length > 0 ? (
-                        <GameScreenshotsLightbox screenshots={screenshots.results} wrapperClassName="w-full" />
-                    ) : (
-                        <div className="flex items-center justify-center py-20 text-zinc-400 dark:text-white/20">
-                            <Images className="w-8 h-8 mr-3" />
-                            <span className="text-[14px]">No screenshots available</span>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {activeTab === "trailers" && (
-                <div>
-                    {movies.results.length > 0 ? (
-                        <GameTrailersPlayer movies={movies.results} />
-                    ) : (
-                        <div className="flex items-center justify-center py-20 text-zinc-400 dark:text-white/20">
-                            <Film className="w-8 h-8 mr-3" />
-                            <span className="text-[14px]">No trailers available</span>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {activeTab === "similar" && (
-                <div>
-                    {suggested.results.length > 0 ? (
-                        <>
-                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-zinc-200 dark:border-white/5">
-                                <span className="w-1 h-5 bg-tp-accent rounded-full shrink-0" />
-                                <h2 className="font-display text-[15px] font-bold text-zinc-900 dark:text-white uppercase tracking-[0.08em] leading-none">
-                                    You May Also Like
-                                </h2>
-                            </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {suggested.results.map(sg => {
-                                    const chips: { label: string; cls: string }[] = [];
-                                    for (const p of sg.platforms || []) {
-                                        const chip = platformChip(p.platform.name, p.platform.slug);
-                                        if (chip && !chips.some(c => c.label === chip.label)) chips.push(chip);
-                                    }
-                                    return (
-                                        <Link
-                                            key={sg.id}
-                                            href={`/calendar/${sg.slug}`}
-                                            className="group relative block rounded-xl overflow-hidden border border-zinc-200 dark:border-white/[0.06] bg-zinc-100 dark:bg-[#0B0E14] hover:border-tp-accent/40 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(252,65,0,0.15)] transition-all duration-300"
-                                        >
-                                            <div className="relative aspect-video overflow-hidden bg-zinc-200 dark:bg-[#0B0E14]">
-                                                {sg.background_image && (
-                                                    <Image
-                                                        src={sg.background_image}
-                                                        alt={sg.name}
-                                                        fill
-                                                        sizes="(max-width: 640px) 50vw, 25vw"
-                                                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                                    />
-                                                )}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                                            </div>
-                                            <div className="p-3">
-                                                <h3 className="text-[12px] font-bold text-zinc-900 dark:text-white group-hover:text-tp-accent transition-colors line-clamp-2 leading-snug mb-1.5">
-                                                    {sg.name}
-                                                </h3>
-                                                {sg.released && (
-                                                    <p className="text-[10px] text-zinc-500 dark:text-white/35 mb-1.5">
-                                                        {format(parseISO(sg.released), "MMM d, yyyy")}
-                                                    </p>
-                                                )}
-                                                <div className="flex gap-1 flex-wrap">
-                                                    {chips.slice(0, 3).map(chip => (
-                                                        <span key={chip.label} className={`${chip.cls} text-white text-[7px] font-bold px-1.5 py-[3px] rounded-[3px] leading-none`}>
-                                                            {chip.label}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </Link>
-                                    );
-                                })}
-                            </div>
-                        </>
-                    ) : (
-                        <div className="flex items-center justify-center py-20 text-zinc-400 dark:text-white/20">
-                            <Gamepad2 className="w-8 h-8 mr-3" />
-                            <span className="text-[14px]">No similar games found</span>
-                        </div>
-                    )}
-                </div>
+            {linkHref && linkText && (
+                <Link href={linkHref} className="text-[10px] font-bold uppercase tracking-widest text-white/35 hover:text-tp-accent transition-colors">
+                    {linkText} →
+                </Link>
             )}
         </div>
     );
 }
 
-export { AddToCalendarButton as default_AddToCalendarButton };
+const RATING_COLORS: Record<string, string> = {
+    exceptional: "bg-green-500",
+    recommended: "bg-blue-500",
+    meh: "bg-yellow-400",
+    skip: "bg-red-500",
+};
+const RATING_EMOJI: Record<string, string> = {
+    exceptional: "🏆", recommended: "👍", meh: "😐", skip: "👎",
+};
+
+export default function GameDetailClient({
+    game, screenshots, movies, suggested, news, isUpcoming,
+}: Props) {
+    const hypeScore = game.rating > 0 ? Math.round((game.rating / 5) * 100) : 0;
+    const hypeLabelText = isUpcoming ? "RISING" : game.rating >= 4 ? "PEAKED" : "GROWING";
+
+    const confirmedDetails = [
+        game.released && {
+            label: "Release Date",
+            value: format(parseISO(game.released), "MMM d, yyyy"),
+        },
+        game.developers.length > 0 && {
+            label: "Developer",
+            value: game.developers.map(d => d.name).join(", "),
+        },
+        game.publishers.length > 0 && {
+            label: "Publisher",
+            value: game.publishers.map(p => p.name).join(", "),
+        },
+        game.genres.length > 0 && {
+            label: "Genre",
+            value: game.genres.map(g => g.name).join(", "),
+        },
+        game.playtime > 0 && {
+            label: "Avg. Playtime",
+            value: `${game.playtime}h`,
+        },
+        game.esrb_rating && {
+            label: "ESRB",
+            value: game.esrb_rating.name,
+        },
+    ].filter(Boolean) as { label: string; value: string }[];
+
+    const engTags = game.tags.filter(t => t.language === "eng").slice(0, 16);
+
+    return (
+        <div>
+            {/* ── 1. OVERVIEW ─────────────────────────────────────────────── */}
+            <section className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-8 mb-14">
+                {/* Left — description + confirmed details */}
+                <div>
+                    <SectionHeading title="Overview" />
+
+                    {game.description_raw ? (
+                        <p className="text-[15px] text-white/80 leading-[1.9] whitespace-pre-line mb-8">
+                            {game.description_raw}
+                        </p>
+                    ) : (
+                        <p className="text-[14px] text-white/30 italic mb-8">No description available.</p>
+                    )}
+
+                    {/* Confirmed Details grid */}
+                    {confirmedDetails.length > 0 && (
+                        <>
+                            <h3 className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30 mb-3">
+                                Confirmed Details
+                            </h3>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                                {confirmedDetails.map(item => (
+                                    <div
+                                        key={item.label}
+                                        className="bg-[#0B0E14] border border-[#161B22] rounded-xl p-3.5"
+                                    >
+                                        <dt className="text-[9px] font-bold uppercase tracking-widest text-white/30 mb-1 leading-none">
+                                            {item.label}
+                                        </dt>
+                                        <dd className="text-[12px] font-semibold text-white leading-snug">
+                                            {item.value}
+                                        </dd>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
+
+                    {/* Tags */}
+                    {engTags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-6">
+                            {engTags.map(tag => (
+                                <span
+                                    key={tag.id}
+                                    className="text-[11px] font-medium text-white/40 bg-white/[0.04] border border-white/[0.07] px-2.5 py-1 rounded-full"
+                                >
+                                    {tag.name}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Right — Hype Meter */}
+                <div className="bg-[#0B0E14] border border-[#161B22] rounded-2xl p-6 flex flex-col items-center self-start sticky top-6">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-tp-accent mb-4">
+                        🔥 Hype Meter
+                    </p>
+                    <HypeMeter score={hypeScore} label={hypeLabelText} size={150} />
+
+                    {/* Stats */}
+                    <div className="w-full space-y-2.5 mt-5">
+                        {game.added > 0 && (
+                            <div className="flex items-center justify-between text-[11px]">
+                                <span className="text-white/50 flex items-center gap-1.5">
+                                    <Flame className="w-3 h-3 text-tp-accent" /> Players Tracking
+                                </span>
+                                <span className="font-bold text-white">{hypeLabel(game.added)}</span>
+                            </div>
+                        )}
+                        {(game.added_by_status?.yet ?? 0) > 0 && (
+                            <div className="flex items-center justify-between text-[11px]">
+                                <span className="text-white/50">📋 Want to Play</span>
+                                <span className="font-bold text-white">{hypeLabel(game.added_by_status!.yet)}</span>
+                            </div>
+                        )}
+                        {(game.added_by_status?.playing ?? 0) > 0 && (
+                            <div className="flex items-center justify-between text-[11px]">
+                                <span className="text-white/50">🎮 Currently Playing</span>
+                                <span className="font-bold text-white">{hypeLabel(game.added_by_status!.playing)}</span>
+                            </div>
+                        )}
+                        {(game.added_by_status?.owned ?? 0) > 0 && (
+                            <div className="flex items-center justify-between text-[11px]">
+                                <span className="text-white/50">🎯 Own It</span>
+                                <span className="font-bold text-white">{hypeLabel(game.added_by_status!.owned)}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Ratings bars */}
+                    {game.ratings && game.ratings.length > 0 && (
+                        <div className="w-full mt-5 pt-4 border-t border-white/[0.06] space-y-2.5">
+                            {game.ratings.map(r => (
+                                <div key={r.id}>
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-[10px] text-white/50 capitalize">
+                                            {RATING_EMOJI[r.title] ?? ""} {r.title}
+                                        </span>
+                                        <span className="text-[10px] font-bold text-white">{r.percent.toFixed(0)}%</span>
+                                    </div>
+                                    <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                                        <div
+                                            className={`h-full rounded-full ${RATING_COLORS[r.title] ?? "bg-tp-accent"}`}
+                                            style={{ width: `${r.percent}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </section>
+
+            {/* ── 2. MEDIA GALLERY ────────────────────────────────────────── */}
+            {(movies.count > 0 || screenshots.count > 0) && (
+                <section className="mb-14">
+                    <SectionHeading title="Media Gallery" />
+                    <GameMediaGallery
+                        movies={movies.results}
+                        screenshots={screenshots.results}
+                        gameName={game.name}
+                    />
+                </section>
+            )}
+
+            {/* ── 3. LATEST NEWS ──────────────────────────────────────────── */}
+            {news.length > 0 && (
+                <section className="mb-14">
+                    <SectionHeading
+                        title="Latest News About This Game"
+                        linkHref="/news"
+                        linkText="View All News"
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {news.slice(0, 4).map((article, i) => (
+                            <NewsCard key={article.id} article={article} index={i} />
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {/* ── 4. SIMILAR GAMES ────────────────────────────────────────── */}
+            {suggested.count > 0 && suggested.results.length > 0 && (
+                <section>
+                    <SectionHeading
+                        title="Similar Games"
+                        linkHref="/calendar"
+                        linkText="View All"
+                    />
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {suggested.results.slice(0, 8).map(sg => {
+                            const chips: { label: string; cls: string }[] = [];
+                            for (const p of sg.platforms || []) {
+                                const chip = platformChip(p.platform.name, p.platform.slug);
+                                if (chip && !chips.some(c => c.label === chip.label)) chips.push(chip);
+                            }
+                            return (
+                                <Link
+                                    key={sg.id}
+                                    href={`/calendar/${sg.slug}`}
+                                    className="group relative block rounded-xl overflow-hidden border border-white/[0.06] bg-[#0B0E14] hover:border-tp-accent/40 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(252,65,0,0.15)] transition-all duration-300"
+                                >
+                                    <div className="relative aspect-video overflow-hidden bg-[#0B0E14]">
+                                        {sg.background_image && (
+                                            <Image
+                                                src={sg.background_image}
+                                                alt={sg.name}
+                                                fill
+                                                sizes="(max-width: 640px) 50vw, 25vw"
+                                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
+                                        )}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                                    </div>
+                                    <div className="p-3">
+                                        <h3 className="text-[12px] font-bold text-white group-hover:text-tp-accent transition-colors line-clamp-2 leading-snug mb-1.5">
+                                            {sg.name}
+                                        </h3>
+                                        {sg.released && (
+                                            <p className="text-[10px] text-white/35 mb-1.5">
+                                                {format(parseISO(sg.released), "MMM d, yyyy")}
+                                            </p>
+                                        )}
+                                        <div className="flex gap-1 flex-wrap">
+                                            {chips.slice(0, 3).map(chip => (
+                                                <span key={chip.label} className={`${chip.cls} text-[7px] font-bold px-1.5 py-[3px] rounded-[3px] leading-none`}>
+                                                    {chip.label}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </section>
+            )}
+        </div>
+    );
+}
