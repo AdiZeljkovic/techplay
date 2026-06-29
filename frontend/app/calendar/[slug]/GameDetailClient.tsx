@@ -184,9 +184,9 @@ export default function GameDetailClient({
     return (
         <div>
             {/* ── 1. OVERVIEW ─────────────────────────────────────────────── */}
-            <section className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-8 mb-14">
+            <section className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-6 lg:gap-8 mb-10 sm:mb-14">
                 {/* Left — description + confirmed details */}
-                <div>
+                <div className="order-2 lg:order-1">
                     <SectionHeading title="Overview" />
 
                     {game.description_raw ? (
@@ -247,7 +247,7 @@ export default function GameDetailClient({
                 </div>
 
                 {/* Right — Hype Meter */}
-                <div className="bg-[#0B0E14] border border-[#161B22] rounded-2xl overflow-hidden self-start sticky top-6">
+                <div className="order-1 lg:order-2 bg-[#0B0E14] border border-[#161B22] rounded-2xl overflow-hidden self-start lg:sticky top-6">
                     {/* Header */}
                     <div className="flex items-center gap-2.5 px-5 py-4 border-b border-[#161B22]">
                         <div className="w-6 h-6 rounded-md bg-tp-accent/15 flex items-center justify-center">
@@ -294,11 +294,11 @@ export default function GameDetailClient({
 
                         if (stats.length === 0) return null;
                         return (
-                            <div className="border-b border-[#161B22]">
+                            <div className="border-b border-[#161B22] grid grid-cols-2 lg:grid-cols-1 divide-x lg:divide-x-0 divide-[#161B22]">
                                 {stats.map((s, i) => (
                                     <div
                                         key={s.label}
-                                        className={`flex items-center justify-between px-5 py-3.5 ${i > 0 ? "border-t border-[#161B22]" : ""}`}
+                                        className={`flex items-center justify-between px-4 sm:px-5 py-3 lg:py-3.5 ${i >= 2 ? "border-t border-[#161B22]" : ""} ${i % 2 === 0 && i === stats.length - 1 && stats.length % 2 !== 0 ? "col-span-2 lg:col-span-1" : ""}`}
                                     >
                                         <div className="flex items-center gap-2.5">
                                             <s.icon className={`w-4 h-4 ${s.accent ? "text-tp-accent" : "text-white/35"}`} />

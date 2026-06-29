@@ -216,8 +216,8 @@ function HeroCountdownServer({ released }: { released: string }) {
         <div className="flex items-end gap-2">
             {units.map(({ v, label }, i) => (
                 <div key={label} className="flex items-end gap-2">
-                    <div className="flex flex-col items-center bg-black/40 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 min-w-[48px]">
-                        <span className="font-display font-black text-white text-[22px] leading-none tabular-nums" suppressHydrationWarning>
+                    <div className="flex flex-col items-center bg-black/40 backdrop-blur-sm border border-white/10 rounded-xl px-2 sm:px-3 py-2 min-w-[38px] sm:min-w-[48px]">
+                        <span className="font-display font-black text-white text-[18px] sm:text-[22px] leading-none tabular-nums" suppressHydrationWarning>
                             {String(v).padStart(2, "0")}
                         </span>
                         <span className="text-[7px] font-bold uppercase tracking-widest text-white/35 mt-1 leading-none">{label}</span>
@@ -285,7 +285,7 @@ export default async function CalendarGamePage({ params }: Props) {
         <div className="min-h-screen bg-white dark:bg-[#05070A]">
 
             {/* ══ HERO ══════════════════════════════════════════════════════════ */}
-            <div className="relative w-full min-h-[560px] overflow-hidden bg-[#05070A]">
+            <div className="relative w-full min-h-[480px] lg:min-h-[560px] overflow-hidden bg-[#05070A]">
 
                 {/* Background image */}
                 {game.background_image && (
@@ -306,7 +306,7 @@ export default async function CalendarGamePage({ params }: Props) {
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-tp-accent/70 via-tp-accent/20 to-transparent" />
 
                 {/* Content */}
-                <div className="relative z-10 max-w-[1320px] mx-auto px-6 xl:px-10 pt-10 pb-12">
+                <div className="relative z-10 max-w-[1320px] mx-auto px-4 sm:px-6 xl:px-10 pt-8 sm:pt-10 pb-10 sm:pb-12">
 
                     {/* Breadcrumb */}
                     <div className="flex items-center gap-2 mb-8">
@@ -324,13 +324,13 @@ export default async function CalendarGamePage({ params }: Props) {
                     </div>
 
                     {/* Two-column hero: left content + right trailer/preview panel */}
-                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 items-center">
+                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 lg:gap-8 items-center">
                         {/* LEFT */}
                         <div>
                             {/* Title */}
                             <h1
                                 className="font-display font-black text-white uppercase tracking-tight leading-[0.88] mb-3 max-w-[700px]"
-                                style={{ fontSize: "clamp(34px, 5.5vw, 70px)" }}
+                                style={{ fontSize: "clamp(28px, 5.5vw, 70px)" }}
                             >
                                 {titleParts.head}
                                 {titleParts.tail && (
@@ -351,7 +351,7 @@ export default async function CalendarGamePage({ params }: Props) {
                             )}
 
                             {/* Release date + countdown SIDE BY SIDE */}
-                            <div className="flex items-start gap-8 mb-5 flex-wrap">
+                            <div className="flex items-start gap-5 sm:gap-8 mb-5 flex-wrap">
                                 {/* Release date column */}
                                 {(game.released || (game.tba && !game.released)) && (
                                     <div>
@@ -444,35 +444,39 @@ export default async function CalendarGamePage({ params }: Props) {
                     </div>
 
                     {/* CTA buttons — full-width row under the hero */}
-                    <div className="flex items-center gap-2.5 flex-wrap mt-8 pt-6 border-t border-white/[0.08]">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:flex-wrap mt-7 sm:mt-8 pt-5 sm:pt-6 border-t border-white/[0.08]">
                         <TrackGameButton
                             slug={slug}
                             gameName={game.name}
                             variant="full"
-                            wrapperClassName="shrink-0"
+                            wrapperClassName="w-full sm:w-auto sm:shrink-0"
                             released={game.released}
                         />
-                        <NotifyMeButton slug={slug} gameName={game.name} variant="hero" />
-                        {game.website && (
-                            <a
-                                href={game.website}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-5 py-[11px] bg-white/[0.04] hover:bg-white/10 border border-white/10 hover:border-white/25 text-white/60 hover:text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all whitespace-nowrap"
-                            >
-                                <Globe className="w-3.5 h-3.5" />
-                                Official Site
-                            </a>
-                        )}
-                        <div className="shrink-0">
-                            <SocialShare url={pageUrl} title={game.name} description={gameTagline} vertical={false} />
+                        <div className="w-full sm:w-auto">
+                            <NotifyMeButton slug={slug} gameName={game.name} variant="hero" />
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                            {game.website && (
+                                <a
+                                    href={game.website}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 px-5 py-[11px] bg-white/[0.04] hover:bg-white/10 border border-white/10 hover:border-white/25 text-white/60 hover:text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all whitespace-nowrap"
+                                >
+                                    <Globe className="w-3.5 h-3.5" />
+                                    Official Site
+                                </a>
+                            )}
+                            <div className="shrink-0">
+                                <SocialShare url={pageUrl} title={game.name} description={gameTagline} vertical={false} />
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* ══ CONTENT ═══════════════════════════════════════════════════════ */}
-            <div className="max-w-[1320px] mx-auto px-6 xl:px-10 pt-12 pb-24">
+            <div className="max-w-[1320px] mx-auto px-4 sm:px-6 xl:px-10 pt-8 sm:pt-12 pb-16 sm:pb-24">
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-10">
 
                     {/* Main column */}
