@@ -8,11 +8,14 @@ import {
     ChevronLeft, Star, Flame, Globe, Shield,
     Calendar, ExternalLink,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import GameDetailClient, { AddToCalendarButton } from "./GameDetailClient";
 import TrackGameButton from "@/components/games/TrackGameButton";
 import NotifyMeButton from "@/components/games/NotifyMeButton";
-import HeroLibraryBadge from "@/components/games/HeroLibraryBadge";
 import SocialShare from "@/components/share/SocialShare";
+
+// ssr: false prevents hydration mismatch — badge reads localStorage auth state
+const HeroLibraryBadge = dynamic(() => import("@/components/games/HeroLibraryBadge"), { ssr: false });
 import HeroTrailerPanel from "@/components/games/HeroTrailerPanel";
 import { Article } from "@/types";
 

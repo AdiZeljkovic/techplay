@@ -9,6 +9,7 @@ use App\Models\UserGame;
 use App\Services\AchievementService;
 use App\Services\BountyService;
 use App\Services\QuestService;
+use App\Services\RawgService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,7 +52,12 @@ class GameCollectionController extends Controller
      */
     public function show(Request $request, string $slug)
     {
-        $game = Game::where('slug', $slug)->firstOrFail();
+        $game = Game::where('slug', $slug)->first();
+
+        // Game not yet in local DB — user hasn't tracked it
+        if (!$game) {
+            return $this->success(null);
+        }
 
         $entry = UserGame::where('user_id', $request->user()->id)
             ->where('game_id', $game->id)
@@ -67,7 +73,24 @@ class GameCollectionController extends Controller
      */
     public function upsert(Request $request, string $slug)
     {
-        $game = Game::where('slug', $slug)->firstOrFail();
+        $game = Game::where('slug', $slug)->first();
+
+        // Game not in local DB — fetch minimal data from RAWG and create it
+        if (!$game) {
+            try {
+                $rawg = app(RawgService::class)->getGameDetails($slug);
+                $game = Game::create([
+                    'slug'             => $slug,
+                    'name'             => $rawg['name'] ?? ucwords(str_replace('-', ' ', $slug)),
+                    'released'         => $rawg['released'] ?? null,
+                    'rating'           => $rawg['rating'] ?? 0,
+                    'background_image' => $rawg['background_image'] ?? null,
+                    'details_crawled_at' => now(),
+                ]);
+            } catch (\Throwable) {
+                return $this->error('Game not found', 404);
+            }
+        }
 
         $data = $request->validate([
             'status' => ['required', Rule::in(UserGame::STATUSES)],
@@ -181,11 +204,13 @@ class GameCollectionController extends Controller
      */
     public function destroy(Request $request, string $slug)
     {
-        $game = Game::where('slug', $slug)->firstOrFail();
+        $game = Game::where('slug', $slug)->first();
 
-        UserGame::where('user_id', $request->user()->id)
-            ->where('game_id', $game->id)
-            ->delete();
+        if ($game) {
+            UserGame::where('user_id', $request->user()->id)
+                ->where('game_id', $game->id)
+                ->delete();
+        }
 
         return $this->success(null, 'Removed from collection');
     }
