@@ -6,10 +6,12 @@ import { getServerApiUrl } from "@/lib/api";
 import { format, parseISO, isBefore, startOfDay } from "date-fns";
 import {
     ChevronLeft, Star, Flame, Globe, Shield,
-    Calendar, Bell, ExternalLink,
+    Calendar, ExternalLink,
 } from "lucide-react";
 import GameDetailClient, { AddToCalendarButton } from "./GameDetailClient";
 import TrackGameButton from "@/components/games/TrackGameButton";
+import NotifyMeButton from "@/components/games/NotifyMeButton";
+import HeroLibraryBadge from "@/components/games/HeroLibraryBadge";
 import SocialShare from "@/components/share/SocialShare";
 import HeroTrailerPanel from "@/components/games/HeroTrailerPanel";
 import { Article } from "@/types";
@@ -312,11 +314,16 @@ export default async function CalendarGamePage({ params }: Props) {
                         <div>
                             {/* Title */}
                             <h1
-                                className="font-display font-black text-white uppercase tracking-tight leading-[0.88] mb-4 max-w-[700px]"
+                                className="font-display font-black text-white uppercase tracking-tight leading-[0.88] mb-3 max-w-[700px]"
                                 style={{ fontSize: "clamp(34px, 5.5vw, 70px)" }}
                             >
                                 {game.name}
                             </h1>
+
+                            {/* Library status badge — client component, visible only when logged in */}
+                            <div className="mb-4">
+                                <HeroLibraryBadge slug={slug} />
+                            </div>
 
                             {/* Tagline */}
                             {gameTagline && (
@@ -415,13 +422,7 @@ export default async function CalendarGamePage({ params }: Props) {
                                     wrapperClassName="shrink-0"
                                 />
                                 <AddToCalendarButton game={game} />
-                                <button
-                                    disabled
-                                    className="flex items-center gap-2 px-5 py-[11px] bg-white/[0.04] border border-white/10 text-white/30 text-[11px] font-bold uppercase tracking-widest rounded-xl cursor-default whitespace-nowrap"
-                                >
-                                    <Bell className="w-3.5 h-3.5" />
-                                    Notify Me on Release
-                                </button>
+                                <NotifyMeButton slug={slug} gameName={game.name} variant="hero" />
                                 {game.website && (
                                     <a
                                         href={game.website}
@@ -597,13 +598,7 @@ export default async function CalendarGamePage({ params }: Props) {
                         <div className="bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-5 space-y-2.5">
                             <TrackGameButton slug={slug} gameName={game.name} variant="full" />
                             <AddToCalendarButton game={game} />
-                            <button
-                                disabled
-                                className="w-full flex items-center justify-center gap-2 py-2.5 bg-zinc-100 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/[0.07] text-zinc-400 dark:text-white/25 text-[10px] font-bold uppercase tracking-widest rounded-full cursor-default"
-                            >
-                                <Bell className="w-3.5 h-3.5" />
-                                Notify Me on Release
-                            </button>
+                            <NotifyMeButton slug={slug} gameName={game.name} variant="sidebar" />
                         </div>
 
                         {/* 5. LATEST IN SERIES */}

@@ -147,6 +147,35 @@ class GameCollectionController extends Controller
     }
 
     /**
+     * Auth: upcoming releases from the user's wishlist/backlog (next 180 days).
+     * GET /collection/upcoming
+     */
+    public function upcoming(Request $request): JsonResponse
+    {
+        $items = UserGame::where('user_id', Auth::id())
+            ->whereIn('status', ['wishlist', 'backlog'])
+            ->with(['game:id,slug,name,released,background_image'])
+            ->whereHas('game', function ($q) {
+                $q->whereNotNull('released')
+                  ->whereDate('released', '>', now())
+                  ->whereDate('released', '<', now()->addDays(180));
+            })
+            ->get()
+            ->map(fn (UserGame $ug) => [
+                'slug'             => $ug->game->slug,
+                'name'             => $ug->game->name,
+                'released'         => $ug->game->released?->format('Y-m-d'),
+                'background_image' => $ug->game->background_image,
+                'status'           => $ug->status,
+            ])
+            ->sortBy('released')
+            ->values()
+            ->take(10);
+
+        return $this->success($items);
+    }
+
+    /**
      * Auth: remove a game from the current user's collection.
      * DELETE /collection/games/{slug}
      */

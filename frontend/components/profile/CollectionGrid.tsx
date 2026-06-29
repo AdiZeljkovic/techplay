@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { Library, Star, Trash2, Plus, Search, X, Loader2, Heart } from "lucide-react";
+import { differenceInDays, parseISO } from "date-fns";
+import { Library, Star, Trash2, Plus, Search, X, Loader2, Heart, CalendarClock } from "lucide-react";
 import type { CollectionEntry, CollectionStatus } from "@/lib/types/profile";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
@@ -18,6 +20,7 @@ const STATUS_FILTERS: { id: string; label: string }[] = [
     { id: "wishlist", label: "Wishlist" },
     { id: "favorites", label: "Favorites" },
     { id: "dropped", label: "Dropped" },
+    { id: "upcoming", label: "Upcoming" },
 ];
 
 const STATUS_OPTIONS: CollectionStatus[] = ["playing", "backlog", "completed", "wishlist", "dropped"];
@@ -31,12 +34,106 @@ interface Props {
     isOwnProfile: boolean;
 }
 
+interface UpcomingGame {
+    slug: string;
+    name: string;
+    released: string;
+    background_image: string | null;
+    status: "wishlist" | "backlog";
+}
+
+function UpcomingList({ isOwnProfile }: { isOwnProfile: boolean }) {
+    const { data, isLoading } = useSWR<{ data: UpcomingGame[] }>(
+        isOwnProfile ? "/collection/upcoming" : null,
+        fetcher,
+        { revalidateOnFocus: false }
+    );
+    const games = data?.data ?? [];
+
+    if (!isOwnProfile) {
+        return <p className="text-[13px] text-white/30 text-center py-8">Upcoming releases are only visible on your own profile.</p>;
+    }
+
+    if (isLoading) {
+        return (
+            <div className="space-y-3">
+                {[...Array(4)].map((_, i) => (
+                    <div key={i} className="flex gap-3 items-center animate-pulse">
+                        <div className="w-20 h-12 rounded-lg bg-white/[0.05] shrink-0" />
+                        <div className="flex-1 space-y-2">
+                            <div className="h-3 bg-white/[0.05] rounded w-1/2" />
+                            <div className="h-2 bg-white/[0.05] rounded w-1/4" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
+    if (games.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+                <CalendarClock className="w-8 h-8 text-white/15 mb-3" />
+                <p className="text-[13px] font-semibold text-white/40">No upcoming releases in your wishlist or backlog</p>
+                <p className="text-[11px] text-white/25 mt-1">Add games to your wishlist to be notified when they release.</p>
+                <Link href="/calendar" className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[11px] font-bold uppercase tracking-wider transition-colors">
+                    Browse Release Calendar
+                </Link>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-2">
+            {games.map((game) => {
+                const days = differenceInDays(parseISO(game.released), new Date());
+                const statusColor = game.status === "wishlist" ? "#f472b6" : "#60a5fa";
+                return (
+                    <Link
+                        key={game.slug}
+                        href={`/calendar/${game.slug}`}
+                        className="group flex items-center gap-4 rounded-xl p-3 border border-white/[0.06] bg-[#0B0E14] hover:border-tp-accent/30 hover:bg-[#0F1318] transition-all"
+                    >
+                        <div className="relative w-20 h-12 rounded-lg overflow-hidden shrink-0 bg-white/[0.05]">
+                            {game.background_image && (
+                                <Image src={game.background_image} alt={game.name} fill sizes="80px" className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                            )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h4 className="text-[13px] font-bold text-white group-hover:text-tp-accent transition-colors line-clamp-1">{game.name}</h4>
+                            <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[10px] font-bold text-white/40">
+                                    {days <= 0 ? "Out Now" : days === 1 ? "Tomorrow" : `${days} days`}
+                                </span>
+                                <span className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ backgroundColor: `${statusColor}20`, color: statusColor }}>
+                                    {game.status}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                            <p className="text-[10px] font-bold text-white/30 uppercase tracking-wider">
+                                {parseISO(game.released).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                            </p>
+                            <p className="text-[9px] text-white/20">{parseISO(game.released).getFullYear()}</p>
+                        </div>
+                    </Link>
+                );
+            })}
+            <div className="pt-2 text-center">
+                <Link href="/calendar" className="text-[10px] font-bold uppercase tracking-widest text-white/25 hover:text-tp-accent transition-colors">
+                    View Full Release Calendar →
+                </Link>
+            </div>
+        </div>
+    );
+}
+
 export default function CollectionGrid({ username, isOwnProfile }: Props) {
     const [filter, setFilter] = useState("all");
     const [addOpen, setAddOpen] = useState(false);
 
-    const query = filter === "all" ? "" : filter === "favorites" ? "?favorite=1" : `?status=${filter}`;
-    const key = `/users/${username}/collection${query}`;
+    const query = filter === "all" || filter === "upcoming" ? "" : filter === "favorites" ? "?favorite=1" : `?status=${filter}`;
+    const key = filter === "upcoming" ? null : `/users/${username}/collection${query}`;
     const { data, isLoading, mutate } = useSWR<{ data: CollectionEntry[] }>(key, fetcher);
 
     const entries = data?.data ?? [];
@@ -84,8 +181,10 @@ export default function CollectionGrid({ username, isOwnProfile }: Props) {
                 )}
             </div>
 
-            {/* Grid */}
-            {isLoading ? (
+            {/* Upcoming list — special view */}
+            {filter === "upcoming" ? (
+                <UpcomingList isOwnProfile={isOwnProfile} />
+            ) : isLoading ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                     {Array.from({ length: 10 }).map((_, i) => <div key={i} className="aspect-[3/4] bg-white/[0.04] rounded-xl animate-pulse" />)}
                 </div>

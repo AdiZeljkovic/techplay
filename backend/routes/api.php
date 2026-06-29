@@ -194,6 +194,9 @@ Route::prefix('v1')->group(function () {
         // Library index — slug→status map for badge rendering
         Route::get('/collection/index', [GameCollectionController::class, 'libraryIndex']);
 
+        // Upcoming releases from user's wishlist/backlog
+        Route::get('/collection/upcoming', [GameCollectionController::class, 'upcoming']);
+
         // Personalized feed
         Route::get('/feed/personalized', [FeedController::class, 'personalized']);
 

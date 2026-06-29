@@ -4,7 +4,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import {
     Gamepad2, Library, Trophy, Activity as ActivityIcon, ListChecks,
-    Dna, Coins, Hexagon, BarChart3, Target, Sparkles, Plus, Flame,
+    Dna, Coins, Hexagon, BarChart3, Target, Sparkles, Plus, Flame, CalendarClock,
 } from "lucide-react";
 import SectionCard from "./dashboard/SectionCard";
 import EmptyState from "./dashboard/EmptyState";
@@ -23,6 +23,7 @@ import FriendActivityFeed from "./FriendActivityFeed";
 import LivePresenceBadge from "./dashboard/LivePresenceBadge";
 import DailyStreakWidget from "./dashboard/DailyStreakWidget";
 import QuestPanel from "./dashboard/QuestPanel";
+import UpcomingReleasesWidget from "./dashboard/UpcomingReleasesWidget";
 import SeasonBanner from "@/components/ui/SeasonBanner";
 import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview, CustomizationData, CollectionSnapshotTile, DistributionStat } from "@/lib/types/profile";
 
@@ -91,6 +92,13 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                         { status: "favorites", label: "Favorites", color: "#facc15", count: stats.favorites_count ?? 0, cover: null },
                     ]} />
                 </SectionCard>
+
+                {/* Upcoming Releases — own profile only */}
+                {isOwnProfile && (
+                    <SectionCard title="Upcoming Releases" icon={<CalendarClock className="w-4 h-4 text-tp-accent/70" />} action={{ label: "View Calendar", href: "/calendar" }}>
+                        <UpcomingReleasesWidget />
+                    </SectionCard>
+                )}
 
                 {/* Recent Activity */}
                 <SectionCard title="Recent Activity" icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View All Activity", href: "?tab=activity" }}>
