@@ -102,7 +102,7 @@ export function AddToCalendarButton({ game }: { game: RawgGame }) {
         <button
             onClick={handleClick}
             disabled={!game.released}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/15 hover:border-white/30 disabled:opacity-40 disabled:cursor-not-allowed text-white text-[11px] font-bold uppercase tracking-widest rounded-full transition-all"
+            className="flex items-center justify-center gap-2 px-5 py-[11px] bg-white/[0.05] hover:bg-white/10 border border-white/15 hover:border-white/30 disabled:opacity-40 disabled:cursor-not-allowed text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all whitespace-nowrap"
         >
             <CalendarPlus className="w-3.5 h-3.5" />
             Add to Calendar

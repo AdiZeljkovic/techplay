@@ -26,9 +26,10 @@ interface Props {
     gameName?: string;
     /** "full" = sidebar button; "compact" = small card overlay button */
     variant?: "full" | "compact";
+    wrapperClassName?: string;
 }
 
-export default function TrackGameButton({ slug, gameName, variant = "full" }: Props) {
+export default function TrackGameButton({ slug, gameName, variant = "full", wrapperClassName }: Props) {
     const { user } = useAuth();
     const [open, setOpen] = useState(false);
     const [busy, setBusy] = useState(false);
@@ -135,7 +136,7 @@ export default function TrackGameButton({ slug, gameName, variant = "full" }: Pr
 
     // --- FULL variant (game detail sidebar) ---
     return (
-        <div className="relative w-full">
+        <div className={`relative ${wrapperClassName ?? "w-full"}`}>
             {currentMeta ? (
                 <div className="flex gap-2">
                     <div className="flex-1 flex items-center gap-2.5 py-3 px-4 rounded-xl border" style={{ backgroundColor: `${currentMeta.color}15`, borderColor: `${currentMeta.color}40` }}>

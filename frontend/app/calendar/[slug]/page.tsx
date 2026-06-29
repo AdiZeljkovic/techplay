@@ -11,6 +11,7 @@ import {
 import GameDetailClient, { AddToCalendarButton } from "./GameDetailClient";
 import TrackGameButton from "@/components/games/TrackGameButton";
 import SocialShare from "@/components/share/SocialShare";
+import HeroTrailerPanel from "@/components/games/HeroTrailerPanel";
 import { Article } from "@/types";
 
 export const revalidate = 43200; // 12h ISR
@@ -196,21 +197,18 @@ function HeroCountdownServer({ released }: { released: string }) {
     const units = [{ v: days, label: "Days" }, { v: hours, label: "Hrs" }, { v: minutes, label: "Min" }, { v: seconds, label: "Sec" }];
 
     return (
-        <div>
-            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-tp-accent mb-2">Launches in</p>
-            <div className="flex items-end gap-2">
-                {units.map(({ v, label }, i) => (
-                    <div key={label} className="flex items-end gap-2">
-                        <div className="flex flex-col items-center bg-black/40 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 min-w-[52px]">
-                            <span className="font-display font-black text-white text-[26px] leading-none tabular-nums" suppressHydrationWarning>
-                                {String(v).padStart(2, "0")}
-                            </span>
-                            <span className="text-[8px] font-bold uppercase tracking-widest text-white/35 mt-1 leading-none">{label}</span>
-                        </div>
-                        {i < units.length - 1 && <span className="text-white/25 font-black text-[18px] leading-none mb-3">:</span>}
+        <div className="flex items-end gap-2">
+            {units.map(({ v, label }, i) => (
+                <div key={label} className="flex items-end gap-2">
+                    <div className="flex flex-col items-center bg-black/40 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 min-w-[48px]">
+                        <span className="font-display font-black text-white text-[22px] leading-none tabular-nums" suppressHydrationWarning>
+                            {String(v).padStart(2, "0")}
+                        </span>
+                        <span className="text-[7px] font-bold uppercase tracking-widest text-white/35 mt-1 leading-none">{label}</span>
                     </div>
-                ))}
-            </div>
+                    {i < units.length - 1 && <span className="text-white/20 font-black text-[16px] leading-none mb-2">:</span>}
+                </div>
+            ))}
         </div>
     );
 }
@@ -308,8 +306,9 @@ export default async function CalendarGamePage({ params }: Props) {
                         </span>
                     </div>
 
-                    {/* Two-column hero: left content + right YouTube embed */}
-                    <div className={`grid gap-8 items-center ${game.clip?.video ? "grid-cols-1 lg:grid-cols-[1fr_400px]" : "grid-cols-1"}`}>
+                    {/* Two-column hero: left content + right trailer panel */}
+                    {/* Show 2-col if there's a YouTube clip OR RAWG movie trailers */}
+                    <div className={`grid gap-8 items-center ${(game.clip?.video || movies.count > 0) ? "grid-cols-1 lg:grid-cols-[1fr_400px]" : "grid-cols-1"}`}>
                         {/* LEFT */}
                         <div>
                             {/* Title */}
@@ -327,48 +326,68 @@ export default async function CalendarGamePage({ params }: Props) {
                                 </p>
                             )}
 
-                            {/* Release date row */}
-                            <div className="flex items-center gap-4 mb-5 flex-wrap">
-                                {game.released && (
-                                    <div className="flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-tp-accent shrink-0" />
-                                        <span className="text-[14px] font-semibold text-white/70">
-                                            {format(parseISO(game.released), "MMMM d, yyyy")}
+                            {/* Release date + countdown SIDE BY SIDE */}
+                            <div className="flex items-start gap-8 mb-5 flex-wrap">
+                                {/* Release date column */}
+                                {(game.released || (game.tba && !game.released)) && (
+                                    <div>
+                                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/35 mb-1">Release Date</p>
+                                        {game.released ? (
+                                            <p className="text-[18px] font-black text-white uppercase tracking-wide">
+                                                {format(parseISO(game.released), "MMMM d, yyyy").toUpperCase()}
+                                            </p>
+                                        ) : (
+                                            <p className="text-[18px] font-black text-tp-accent uppercase tracking-wide">TBA</p>
+                                        )}
+                                    </div>
+                                )}
+                                {/* Countdown column */}
+                                {game.released && !isReleased && (
+                                    <div>
+                                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/35 mb-1">Countdown</p>
+                                        <HeroCountdownServer released={game.released} />
+                                    </div>
+                                )}
+                                {/* Metacritic */}
+                                {game.metacritic && (
+                                    <div>
+                                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/35 mb-1">Metacritic</p>
+                                        <span className={`text-[14px] font-black px-3 py-1 rounded-lg ${metacriticColor(game.metacritic)}`}>
+                                            {game.metacritic}
                                         </span>
                                     </div>
                                 )}
-                                {game.tba && !game.released && (
-                                    <span className="inline-block text-[11px] font-black text-tp-accent uppercase tracking-widest border border-tp-accent/40 px-3 py-1.5 rounded-full">
-                                        Release Date TBA
-                                    </span>
-                                )}
-                                {game.metacritic && (
-                                    <span className={`text-[11px] font-black px-2.5 py-1 rounded-lg ${metacriticColor(game.metacritic)}`}>
-                                        Metacritic {game.metacritic}
-                                    </span>
-                                )}
                             </div>
 
-                            {/* Countdown */}
-                            {game.released && !isReleased && (
-                                <div className="mb-5">
-                                    <HeroCountdownServer released={game.released} />
+                            {/* Platform chips */}
+                            {chips.length > 0 && (
+                                <div className="mb-3">
+                                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/35 mb-2">Platforms</p>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        {chips.map(chip => (
+                                            <span key={chip.label} className={`${chip.cls} text-[10px] font-bold tracking-wide px-3 py-1.5 rounded-lg leading-none`}>
+                                                {chip.label}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
 
-                            {/* Platform chips + genre pills */}
-                            <div className="flex flex-wrap items-center gap-2 mb-5">
-                                {chips.map(chip => (
-                                    <span key={chip.label} className={`${chip.cls} text-[9px] font-bold tracking-wider px-2.5 py-[5px] rounded-[4px] leading-none`}>
-                                        {chip.label}
-                                    </span>
-                                ))}
-                                {game.genres.slice(0, 4).map(g => (
-                                    <span key={g.id} className="text-[11px] font-medium text-white/55 bg-white/[0.07] border border-white/[0.09] px-2.5 py-1 rounded-full">
-                                        #{g.name}
-                                    </span>
-                                ))}
-                            </div>
+                            {/* Genre + tag pills */}
+                            {game.genres.length > 0 && (
+                                <div className="flex flex-wrap items-center gap-1.5 mb-5">
+                                    {game.genres.slice(0, 3).map(g => (
+                                        <span key={g.id} className="text-[10px] font-semibold text-white/55 bg-white/[0.07] border border-white/[0.09] px-2.5 py-1 rounded-full">
+                                            {g.name.toUpperCase()}
+                                        </span>
+                                    ))}
+                                    {game.tags.filter(t => t.language === "eng").slice(0, 3).map(t => (
+                                        <span key={t.id} className="text-[10px] font-semibold text-white/40 bg-white/[0.04] border border-white/[0.06] px-2.5 py-1 rounded-full">
+                                            {t.name.toUpperCase()}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
 
                             {/* Stats row */}
                             {(game.added || 0) > 0 && (
@@ -388,48 +407,46 @@ export default async function CalendarGamePage({ params }: Props) {
                                 </div>
                             )}
 
-                            {/* CTA buttons row */}
-                            <div className="flex items-center gap-3 flex-wrap">
-                                <TrackGameButton slug={slug} gameName={game.name} variant="full" />
+                            {/* CTA buttons — all in ONE ROW, equal height */}
+                            <div className="flex items-center gap-2.5 flex-wrap">
+                                <TrackGameButton
+                                    slug={slug}
+                                    gameName={game.name}
+                                    variant="full"
+                                    wrapperClassName="shrink-0"
+                                />
                                 <AddToCalendarButton game={game} />
                                 <button
                                     disabled
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-white/[0.04] border border-white/10 text-white/30 text-[11px] font-bold uppercase tracking-widest rounded-full cursor-default"
+                                    className="flex items-center gap-2 px-5 py-[11px] bg-white/[0.04] border border-white/10 text-white/30 text-[11px] font-bold uppercase tracking-widest rounded-xl cursor-default whitespace-nowrap"
                                 >
                                     <Bell className="w-3.5 h-3.5" />
-                                    Notify Me
+                                    Notify Me on Release
                                 </button>
                                 {game.website && (
                                     <a
                                         href={game.website}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="flex items-center gap-2 px-5 py-2.5 bg-white/[0.04] hover:bg-white/10 border border-white/10 hover:border-white/25 text-white/60 hover:text-white text-[11px] font-bold uppercase tracking-widest rounded-full transition-all"
+                                        className="flex items-center gap-2 px-5 py-[11px] bg-white/[0.04] hover:bg-white/10 border border-white/10 hover:border-white/25 text-white/60 hover:text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all whitespace-nowrap"
                                     >
                                         <Globe className="w-3.5 h-3.5" />
                                         Official Site
                                     </a>
                                 )}
-                                <SocialShare url={pageUrl} title={game.name} description={gameTagline} vertical={false} />
+                                <div className="shrink-0">
+                                    <SocialShare url={pageUrl} title={game.name} description={gameTagline} vertical={false} />
+                                </div>
                             </div>
                         </div>
 
-                        {/* RIGHT — YouTube embed (only if clip.video exists) */}
-                        {game.clip?.video && (
-                            <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl">
-                                <iframe
-                                    src={`https://www.youtube-nocookie.com/embed/${game.clip.video}?rel=0&modestbranding=1`}
-                                    title={`${game.name} — Official Trailer`}
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                    className="absolute inset-0 w-full h-full"
-                                />
-                                <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-white/50">
-                                        Official Reveal Trailer · Watch on YouTube
-                                    </p>
-                                </div>
-                            </div>
+                        {/* RIGHT — Trailer panel (YouTube or RAWG movie) */}
+                        {(game.clip?.video || movies.count > 0) && (
+                            <HeroTrailerPanel
+                                youtubeId={game.clip?.video ?? null}
+                                movie={movies.results[0] ?? null}
+                                gameName={game.name}
+                            />
                         )}
                     </div>
                 </div>
