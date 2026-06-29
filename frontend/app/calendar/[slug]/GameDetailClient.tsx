@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Images, Film, Gamepad2, AlignLeft, CalendarPlus, Bell } from "lucide-react";
+import { Images, Film, Gamepad2, AlignLeft, CalendarPlus, Play } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import GameScreenshotsLightbox from "@/components/games/GameScreenshotsLightbox";
 import GameTrailersPlayer from "@/components/games/GameTrailersPlayer";
@@ -19,6 +19,7 @@ interface RawgGame {
     added: number;
     tags: { id: number; name: string; slug: string; language: string }[];
     genres: { id: number; name: string; slug: string }[];
+    clip: { clip: string; preview: string; clips: Record<string, string>; video: string } | null;
 }
 
 interface Screenshot { id: number; image: string; width: number; height: number }
@@ -107,6 +108,32 @@ export default function GameDetailClient({ game, screenshots, movies, suggested 
 
     return (
         <div>
+            {/* Screenshot strip — above tabs */}
+            {screenshots.results.length > 0 && (
+                <div className="flex gap-2.5 overflow-x-auto pb-2 mb-7 scrollbar-hide">
+                    {screenshots.results.slice(0, 8).map((s, i) => (
+                        <button
+                            key={s.id}
+                            onClick={() => setActiveTab("screenshots")}
+                            className="group relative shrink-0 w-40 h-[90px] rounded-xl overflow-hidden border border-white/[0.08] hover:border-tp-accent/60 transition-all duration-200 focus:outline-none"
+                            title={`Screenshot ${i + 1}`}
+                        >
+                            <Image src={s.image} alt={`Screenshot ${i + 1}`} fill sizes="160px" className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
+                        </button>
+                    ))}
+                    {screenshots.count > 8 && (
+                        <button
+                            onClick={() => setActiveTab("screenshots")}
+                            className="shrink-0 w-40 h-[90px] rounded-xl border border-white/[0.08] hover:border-tp-accent/60 bg-white/[0.03] flex flex-col items-center justify-center gap-1 transition-all focus:outline-none"
+                        >
+                            <Images className="w-5 h-5 text-white/30" />
+                            <span className="text-[11px] font-bold text-white/40">+{screenshots.count - 8} more</span>
+                        </button>
+                    )}
+                </div>
+            )}
+
             {/* Tab bar */}
             <div className="flex items-center gap-1 border-b border-zinc-200 dark:border-white/[0.06] mb-8">
                 {TABS.map(tab => {
@@ -144,6 +171,21 @@ export default function GameDetailClient({ game, screenshots, movies, suggested 
             {/* Tab content */}
             {activeTab === "overview" && (
                 <div className="space-y-10">
+                    {/* Clip preview */}
+                    {game.clip?.preview && (
+                        <section>
+                            <div className="relative aspect-video rounded-2xl overflow-hidden bg-black border border-white/[0.08]">
+                                <video
+                                    src={game.clip.clips?.["640"] || game.clip.clip}
+                                    poster={game.clip.preview}
+                                    controls
+                                    className="w-full h-full object-cover"
+                                    preload="none"
+                                />
+                            </div>
+                        </section>
+                    )}
+
                     {game.description_raw ? (
                         <section>
                             <div className="flex items-center gap-3 mb-5 pb-4 border-b border-zinc-200 dark:border-white/5">
@@ -152,7 +194,7 @@ export default function GameDetailClient({ game, screenshots, movies, suggested 
                                     About the Game
                                 </h2>
                             </div>
-                            <div className="text-[14px] text-zinc-600 dark:text-white/60 leading-[1.85] whitespace-pre-line">
+                            <div className="text-[15px] text-zinc-700 dark:text-white/80 leading-[1.9] whitespace-pre-line">
                                 {game.description_raw}
                             </div>
                         </section>

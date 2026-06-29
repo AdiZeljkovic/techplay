@@ -40,7 +40,8 @@ interface RawgGame {
     developers: RawgDev[]; publishers: RawgDev[];
     esrb_rating: { id: number; name: string; slug: string } | null;
     short_screenshots: { id: number; image: string }[];
-    clip: { clip: string; preview: string } | null;
+    clip: { clip: string; preview: string; clips: Record<string, string>; video: string } | null;
+    ratings: { id: number; title: string; count: number; percent: number }[];
 }
 
 type Props = { params: Promise<{ slug: string }> };
@@ -355,6 +356,17 @@ export default async function CalendarGamePage({ params }: Props) {
                                 </a>
                             )}
                         </div>
+
+                        {/* Short clip preview strip */}
+                        {game.short_screenshots && game.short_screenshots.length > 0 && (
+                            <div className="flex gap-2 mt-6 overflow-x-auto pb-1 scrollbar-hide">
+                                {game.short_screenshots.slice(0, 6).map((s, i) => (
+                                    <div key={s.id} className="relative shrink-0 w-28 h-16 rounded-lg overflow-hidden border border-white/[0.12] hover:border-tp-accent/50 transition-colors">
+                                        <Image src={s.image} alt={`${game.name} screenshot ${i + 1}`} fill sizes="112px" className="object-cover" />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -535,6 +547,51 @@ export default async function CalendarGamePage({ params }: Props) {
                                         </div>
                                     )}
                                 </div>
+                            </div>
+                        )}
+
+                        {/* Ratings breakdown */}
+                        {game.ratings && game.ratings.length > 0 && (
+                            <div className="bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-5">
+                                <h3 className="font-display text-[12px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.12em] mb-5 pb-4 border-b border-zinc-200 dark:border-white/5">
+                                    Player Ratings
+                                </h3>
+                                <div className="space-y-3">
+                                    {game.ratings.map(r => {
+                                        const colorMap: Record<string, string> = {
+                                            exceptional: "bg-green-500",
+                                            recommended: "bg-blue-500",
+                                            meh: "bg-yellow-400",
+                                            skip: "bg-red-500",
+                                        };
+                                        const emojiMap: Record<string, string> = {
+                                            exceptional: "🏆", recommended: "👍", meh: "😐", skip: "👎",
+                                        };
+                                        return (
+                                            <div key={r.id}>
+                                                <div className="flex justify-between items-center mb-1.5">
+                                                    <span className="text-[11px] font-semibold text-zinc-600 dark:text-white/60 capitalize">
+                                                        {emojiMap[r.title] ?? ""} {r.title}
+                                                    </span>
+                                                    <span className="text-[11px] font-black text-zinc-900 dark:text-white tabular-nums">
+                                                        {r.percent.toFixed(0)}%
+                                                    </span>
+                                                </div>
+                                                <div className="h-1.5 bg-zinc-100 dark:bg-white/[0.06] rounded-full overflow-hidden">
+                                                    <div
+                                                        className={`h-full rounded-full ${colorMap[r.title] ?? "bg-tp-accent"}`}
+                                                        style={{ width: `${r.percent}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                {game.ratings_count > 0 && (
+                                    <p className="text-[10px] text-zinc-400 dark:text-white/25 mt-4">
+                                        Based on {game.ratings_count.toLocaleString()} ratings
+                                    </p>
+                                )}
                             </div>
                         )}
 
