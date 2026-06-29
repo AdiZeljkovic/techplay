@@ -42,8 +42,8 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
         if (open && wrapperRef.current) {
             const rect = wrapperRef.current.getBoundingClientRect();
             setDropdownPos({
-                top: rect.bottom + window.scrollY + 8,
-                left: rect.left + window.scrollX,
+                top: rect.bottom + 8,
+                left: rect.left,
                 width: rect.width,
             });
         }
