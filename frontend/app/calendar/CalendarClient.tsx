@@ -695,7 +695,7 @@ export default function CalendarClient() {
                                                                     )}
                                                                 </div>
                                                             )}
-                                                            <span className="text-[10px] font-semibold text-zinc-700 dark:text-white/75 truncate group-hover/game:text-tp-accent transition-colors leading-tight">
+                                                            <span className="text-[10px] font-bold text-zinc-800 dark:text-white truncate group-hover/game:text-tp-accent transition-colors leading-tight">
                                                                 {game.name}
                                                             </span>
                                                         </Link>
