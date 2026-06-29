@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     ChevronLeft, ChevronRight, Flame, Gamepad2, Clock,
     Calendar as CalendarIcon, LayoutGrid, Monitor, Gamepad,
-    CircleDot, Bookmark,
+    CircleDot, Bookmark, X,
 } from "lucide-react";
 import {
     format, addMonths, startOfMonth, endOfMonth,
@@ -202,11 +202,75 @@ function GameCard({ game, library }: { game: GameRelease; library: Record<string
     );
 }
 
+function DayGamesPopup({ date, games, library, onClose }: { date: string; games: GameRelease[]; library: Record<string, string>; onClose: () => void }) {
+    const parsed = parseISO(date);
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={onClose}>
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+            <div
+                className="relative bg-[#0d1117] border border-white/10 rounded-2xl shadow-2xl w-full max-w-sm max-h-[70vh] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+                    <div>
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-tp-accent">
+                            {format(parsed, "MMMM yyyy")}
+                        </p>
+                        <h3 className="font-display text-[20px] font-black text-white leading-none">
+                            {format(parsed, "EEEE, d")}
+                        </h3>
+                    </div>
+                    <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors">
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+
+                {/* Game list */}
+                <div className="overflow-y-auto flex-1 px-3 py-3 space-y-1">
+                    {games.map(game => (
+                        <Link
+                            key={game.id}
+                            href={`/calendar/${game.slug}`}
+                            onClick={onClose}
+                            className="group flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-white/[0.05] transition-colors"
+                        >
+                            <div className="relative w-16 h-10 rounded-lg overflow-hidden shrink-0 bg-white/5 border border-white/[0.06]">
+                                {game.background_image && (
+                                    <Image src={game.background_image} fill sizes="64px" className="object-cover group-hover:scale-105 transition-transform duration-300" alt={game.name} />
+                                )}
+                                {library[game.slug] && (
+                                    <span className="absolute bottom-1 right-1 w-2 h-2 rounded-full bg-green-500 border border-black" />
+                                )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[13px] font-bold text-white group-hover:text-tp-accent transition-colors truncate leading-snug">
+                                    {game.name}
+                                </p>
+                                {(game.genres?.length || 0) > 0 && (
+                                    <p className="text-[10px] text-white/35 truncate">{game.genres!.slice(0, 2).map(g => g.name).join(" · ")}</p>
+                                )}
+                            </div>
+                            {(game.added || 0) > 0 && (
+                                <div className="flex items-center gap-1 shrink-0">
+                                    <Flame className="w-3 h-3 text-tp-accent" />
+                                    <span className="text-[10px] font-bold text-white/40">{hypeLabel(game.added!)}</span>
+                                </div>
+                            )}
+                        </Link>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function CalendarClient() {
     const { library } = useLibraryIndex();
     const [viewDate, setViewDate] = useState(() => startOfMonth(new Date()));
     const [platform, setPlatform] = useState("all");
     const [heroIndex, setHeroIndex] = useState(0);
+    const [dayPopup, setDayPopup] = useState<{ date: string; games: GameRelease[] } | null>(null);
     const calendarRef = useRef<HTMLDivElement>(null);
 
     const startDate = format(startOfMonth(viewDate), "yyyy-MM-dd");
@@ -701,7 +765,12 @@ export default function CalendarClient() {
                                                         </Link>
                                                     ))}
                                                     {games.length > 2 && (
-                                                        <span className="text-[9px] font-bold text-tp-accent/70 pl-1">+{games.length - 2} more</span>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); setDayPopup({ date: dayStr, games }); }}
+                                                            className="text-[9px] font-bold text-tp-accent/70 hover:text-tp-accent pl-1 transition-colors text-left"
+                                                        >
+                                                            +{games.length - 2} more
+                                                        </button>
                                                     )}
                                                 </div>
                                             )}
@@ -739,5 +808,14 @@ export default function CalendarClient() {
                 </div>
             </div>
         </div>
+
+        {dayPopup && (
+            <DayGamesPopup
+                date={dayPopup.date}
+                games={dayPopup.games}
+                library={library}
+                onClose={() => setDayPopup(null)}
+            />
+        )}
     );
 }
