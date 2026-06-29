@@ -8,7 +8,7 @@ import {
     ChevronLeft, Star, Flame, Globe, Shield,
     Calendar, ExternalLink,
 } from "lucide-react";
-import GameDetailClient, { AddToCalendarButton } from "./GameDetailClient";
+import GameDetailClient from "./GameDetailClient";
 import TrackGameButton from "@/components/games/TrackGameButton";
 import NotifyMeButton from "@/components/games/NotifyMeButton";
 import HeroLibraryBadge from "@/components/games/HeroLibraryBadge";
@@ -422,7 +422,6 @@ export default async function CalendarGamePage({ params }: Props) {
                                     wrapperClassName="shrink-0"
                                     released={game.released}
                                 />
-                                <AddToCalendarButton game={game} />
                                 <NotifyMeButton slug={slug} gameName={game.name} variant="hero" />
                                 {game.website && (
                                     <a
@@ -598,7 +597,6 @@ export default async function CalendarGamePage({ params }: Props) {
                         {/* 4. ACTIONS */}
                         <div className="bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-5 space-y-2.5">
                             <TrackGameButton slug={slug} gameName={game.name} variant="full" released={game.released} />
-                            <AddToCalendarButton game={game} />
                             <NotifyMeButton slug={slug} gameName={game.name} variant="sidebar" />
                         </div>
 
