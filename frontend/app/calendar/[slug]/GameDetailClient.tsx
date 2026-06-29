@@ -4,11 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import {
     CalendarPlus, Flame, Calendar, Building2, Code2, Gamepad2,
-    Clock, Shield, MessageCircle, Heart, Target,
+    Clock, Shield, MessageCircle, Heart, Target, TrendingUp,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Article } from "@/types";
-import HypeMeter from "@/components/games/HypeMeter";
 import GameMediaGallery from "@/components/games/GameMediaGallery";
 import NewsCard from "@/components/news/NewsCard";
 
@@ -191,19 +190,24 @@ export default function GameDetailClient({
                     <SectionHeading title="Overview" />
 
                     {game.description_raw ? (
-                        <p className="text-[15px] text-white/80 leading-[1.9] whitespace-pre-line mb-8">
-                            {game.description_raw}
+                        <p className="text-[14px] text-white/70 leading-[1.85] mb-8">
+                            {game.description_raw.length > 600
+                                ? game.description_raw.slice(0, 600).trimEnd() + "…"
+                                : game.description_raw}
                         </p>
                     ) : (
-                        <p className="text-[14px] text-white/30 italic mb-8">No description available.</p>
+                        <p className="text-[14px] text-white/25 italic mb-8">No description available.</p>
                     )}
 
                     {/* Confirmed Details grid */}
                     {confirmedDetails.length > 0 && (
                         <>
-                            <h3 className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30 mb-3">
-                                Confirmed Details
-                            </h3>
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="w-px h-3.5 bg-tp-accent/50 rounded-full" />
+                                <h3 className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/35">
+                                    Confirmed Details
+                                </h3>
+                            </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                 {confirmedDetails.map(item => (
                                     <div
@@ -243,53 +247,98 @@ export default function GameDetailClient({
                 </div>
 
                 {/* Right — Hype Meter */}
-                <div className="bg-[#0B0E14] border border-[#161B22] rounded-2xl p-6 flex flex-col items-center self-start sticky top-6">
-                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-tp-accent mb-4">
-                        🔥 Hype Meter
-                    </p>
-                    <HypeMeter score={hypeScore} label={hypeLabelText} size={150} />
-
-                    {/* Stats — boxed tiles, real data only */}
-                    <div className="w-full space-y-2 mt-5">
-                        {[
-                            game.added > 0 && { icon: Flame, label: "Players Tracking", value: game.added },
-                            (game.added_by_status?.yet ?? 0) > 0 && { icon: Target, label: "Want to Play", value: game.added_by_status!.yet },
-                            (game.added_by_status?.playing ?? 0) > 0 && { icon: Gamepad2, label: "Currently Playing", value: game.added_by_status!.playing },
-                            (game.added_by_status?.owned ?? 0) > 0 && { icon: Heart, label: "Own It", value: game.added_by_status!.owned },
-                        ].filter(Boolean).map((stat) => {
-                            const s = stat as { icon: typeof Flame; label: string; value: number };
-                            return (
-                                <div key={s.label} className="flex items-center justify-between bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2">
-                                    <span className="text-[11px] text-white/55 flex items-center gap-2">
-                                        <s.icon className="w-3.5 h-3.5 text-tp-accent" /> {s.label}
-                                    </span>
-                                    <span className="text-[13px] font-black text-white tabular-nums">{hypeLabel(s.value)}</span>
-                                </div>
-                            );
-                        })}
+                <div className="bg-[#0B0E14] border border-[#161B22] rounded-2xl overflow-hidden self-start sticky top-6">
+                    {/* Header */}
+                    <div className="flex items-center gap-2.5 px-5 py-4 border-b border-[#161B22]">
+                        <div className="w-6 h-6 rounded-md bg-tp-accent/15 flex items-center justify-center">
+                            <Flame className="w-3.5 h-3.5 text-tp-accent" />
+                        </div>
+                        <span className="text-[11px] font-black uppercase tracking-[0.15em] text-white">Hype Meter</span>
+                        <span className="ml-auto text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-md bg-tp-accent/10 text-tp-accent border border-tp-accent/20">
+                            {hypeLabelText}
+                        </span>
                     </div>
 
-                    {/* Community discussions */}
-                    <Link
-                        href="/forum"
-                        className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-white/20 text-white/60 hover:text-white text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all"
-                    >
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        View Community Discussions
-                    </Link>
+                    {/* Score + horizontal bar */}
+                    <div className="px-5 pt-5 pb-4 border-b border-[#161B22]">
+                        <div className="flex items-end justify-between mb-3">
+                            <div>
+                                <span className="text-[42px] font-black text-white leading-none tabular-nums">
+                                    {hypeScore}
+                                </span>
+                                <span className="text-[22px] font-black text-white/25 leading-none">%</span>
+                            </div>
+                            <span className="text-[9px] font-bold uppercase tracking-widest text-white/25 mb-1.5">
+                                Hype Level
+                            </span>
+                        </div>
+                        <div className="h-[5px] bg-white/[0.06] rounded-full overflow-hidden">
+                            <div
+                                className="h-full rounded-full bg-gradient-to-r from-tp-accent via-orange-400 to-amber-400 transition-all duration-700"
+                                style={{ width: hypeScore > 0 ? `${hypeScore}%` : "4px" }}
+                            />
+                        </div>
+                        {hypeScore === 0 && (
+                            <p className="text-[10px] text-white/25 mt-2">Not enough data yet</p>
+                        )}
+                    </div>
+
+                    {/* Stats */}
+                    {(() => {
+                        const stats = [
+                            game.added > 0 && { icon: TrendingUp, label: "Players Tracking", value: game.added, accent: true },
+                            (game.added_by_status?.yet ?? 0) > 0 && { icon: Target, label: "Want to Play", value: game.added_by_status!.yet, accent: false },
+                            (game.added_by_status?.playing ?? 0) > 0 && { icon: Gamepad2, label: "Currently Playing", value: game.added_by_status!.playing, accent: false },
+                            (game.added_by_status?.owned ?? 0) > 0 && { icon: Heart, label: "Own It", value: game.added_by_status!.owned, accent: false },
+                        ].filter(Boolean) as { icon: typeof Flame; label: string; value: number; accent: boolean }[];
+
+                        if (stats.length === 0) return null;
+                        return (
+                            <div className="border-b border-[#161B22]">
+                                {stats.map((s, i) => (
+                                    <div
+                                        key={s.label}
+                                        className={`flex items-center justify-between px-5 py-3.5 ${i > 0 ? "border-t border-[#161B22]" : ""}`}
+                                    >
+                                        <div className="flex items-center gap-2.5">
+                                            <s.icon className={`w-4 h-4 ${s.accent ? "text-tp-accent" : "text-white/35"}`} />
+                                            <span className="text-[11px] font-semibold text-white/50">{s.label}</span>
+                                        </div>
+                                        <span className={`text-[18px] font-black tabular-nums ${s.accent ? "text-white" : "text-white/70"}`}>
+                                            {hypeLabel(s.value)}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        );
+                    })()}
+
+                    {/* Community button */}
+                    <div className="px-5 py-4">
+                        <Link
+                            href="/forum"
+                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-tp-accent/10 hover:bg-tp-accent/20 border border-tp-accent/25 hover:border-tp-accent/50 text-tp-accent text-[10px] font-bold uppercase tracking-widest transition-all"
+                        >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            View Community Discussions
+                        </Link>
+                    </div>
 
                     {/* Ratings bars */}
                     {game.ratings && game.ratings.length > 0 && (
-                        <div className="w-full mt-5 pt-4 border-t border-white/[0.06] space-y-2.5">
+                        <div className="px-5 pb-5 pt-1 border-t border-[#161B22] space-y-3">
+                            <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/25 pt-3">
+                                Player Ratings
+                            </p>
                             {game.ratings.map(r => (
                                 <div key={r.id}>
-                                    <div className="flex justify-between items-center mb-1">
-                                        <span className="text-[10px] text-white/50 capitalize">
+                                    <div className="flex justify-between items-center mb-1.5">
+                                        <span className="text-[11px] text-white/50 capitalize flex items-center gap-1.5">
                                             {RATING_EMOJI[r.title] ?? ""} {r.title}
                                         </span>
-                                        <span className="text-[10px] font-bold text-white">{r.percent.toFixed(0)}%</span>
+                                        <span className="text-[11px] font-bold text-white">{r.percent.toFixed(0)}%</span>
                                     </div>
-                                    <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                                    <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
                                         <div
                                             className={`h-full rounded-full ${RATING_COLORS[r.title] ?? "bg-tp-accent"}`}
                                             style={{ width: `${r.percent}%` }}
