@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarPlus, Flame } from "lucide-react";
+import {
+    CalendarPlus, Flame, Calendar, Building2, Code2, Gamepad2,
+    Clock, Shield, MessageCircle, Heart, Target,
+} from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Article } from "@/types";
 import HypeMeter from "@/components/games/HypeMeter";
@@ -146,30 +149,36 @@ export default function GameDetailClient({
 
     const confirmedDetails = [
         game.released && {
+            icon: Calendar,
             label: "Release Date",
             value: format(parseISO(game.released), "MMM d, yyyy"),
         },
         game.developers.length > 0 && {
+            icon: Code2,
             label: "Developer",
             value: game.developers.map(d => d.name).join(", "),
         },
         game.publishers.length > 0 && {
+            icon: Building2,
             label: "Publisher",
             value: game.publishers.map(p => p.name).join(", "),
         },
         game.genres.length > 0 && {
+            icon: Gamepad2,
             label: "Genre",
             value: game.genres.map(g => g.name).join(", "),
         },
         game.playtime > 0 && {
+            icon: Clock,
             label: "Avg. Playtime",
             value: `${game.playtime}h`,
         },
         game.esrb_rating && {
+            icon: Shield,
             label: "ESRB",
             value: game.esrb_rating.name,
         },
-    ].filter(Boolean) as { label: string; value: string }[];
+    ].filter(Boolean) as { icon: typeof Calendar; label: string; value: string }[];
 
     const engTags = game.tags.filter(t => t.language === "eng").slice(0, 16);
 
@@ -195,18 +204,23 @@ export default function GameDetailClient({
                             <h3 className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30 mb-3">
                                 Confirmed Details
                             </h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                 {confirmedDetails.map(item => (
                                     <div
                                         key={item.label}
-                                        className="bg-[#0B0E14] border border-[#161B22] rounded-xl p-3.5"
+                                        className="flex items-start gap-3 bg-[#0B0E14] border border-[#161B22] rounded-xl p-3.5"
                                     >
-                                        <dt className="text-[9px] font-bold uppercase tracking-widest text-white/30 mb-1 leading-none">
-                                            {item.label}
-                                        </dt>
-                                        <dd className="text-[12px] font-semibold text-white leading-snug">
-                                            {item.value}
-                                        </dd>
+                                        <div className="w-8 h-8 rounded-lg bg-tp-accent/10 border border-tp-accent/20 flex items-center justify-center shrink-0">
+                                            <item.icon className="w-4 h-4 text-tp-accent" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <dt className="text-[9px] font-bold uppercase tracking-widest text-white/30 mb-1 leading-none">
+                                                {item.label}
+                                            </dt>
+                                            <dd className="text-[12px] font-semibold text-white leading-snug">
+                                                {item.value}
+                                            </dd>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -235,35 +249,34 @@ export default function GameDetailClient({
                     </p>
                     <HypeMeter score={hypeScore} label={hypeLabelText} size={150} />
 
-                    {/* Stats */}
-                    <div className="w-full space-y-2.5 mt-5">
-                        {game.added > 0 && (
-                            <div className="flex items-center justify-between text-[11px]">
-                                <span className="text-white/50 flex items-center gap-1.5">
-                                    <Flame className="w-3 h-3 text-tp-accent" /> Players Tracking
-                                </span>
-                                <span className="font-bold text-white">{hypeLabel(game.added)}</span>
-                            </div>
-                        )}
-                        {(game.added_by_status?.yet ?? 0) > 0 && (
-                            <div className="flex items-center justify-between text-[11px]">
-                                <span className="text-white/50">📋 Want to Play</span>
-                                <span className="font-bold text-white">{hypeLabel(game.added_by_status!.yet)}</span>
-                            </div>
-                        )}
-                        {(game.added_by_status?.playing ?? 0) > 0 && (
-                            <div className="flex items-center justify-between text-[11px]">
-                                <span className="text-white/50">🎮 Currently Playing</span>
-                                <span className="font-bold text-white">{hypeLabel(game.added_by_status!.playing)}</span>
-                            </div>
-                        )}
-                        {(game.added_by_status?.owned ?? 0) > 0 && (
-                            <div className="flex items-center justify-between text-[11px]">
-                                <span className="text-white/50">🎯 Own It</span>
-                                <span className="font-bold text-white">{hypeLabel(game.added_by_status!.owned)}</span>
-                            </div>
-                        )}
+                    {/* Stats — boxed tiles, real data only */}
+                    <div className="w-full space-y-2 mt-5">
+                        {[
+                            game.added > 0 && { icon: Flame, label: "Players Tracking", value: game.added },
+                            (game.added_by_status?.yet ?? 0) > 0 && { icon: Target, label: "Want to Play", value: game.added_by_status!.yet },
+                            (game.added_by_status?.playing ?? 0) > 0 && { icon: Gamepad2, label: "Currently Playing", value: game.added_by_status!.playing },
+                            (game.added_by_status?.owned ?? 0) > 0 && { icon: Heart, label: "Own It", value: game.added_by_status!.owned },
+                        ].filter(Boolean).map((stat) => {
+                            const s = stat as { icon: typeof Flame; label: string; value: number };
+                            return (
+                                <div key={s.label} className="flex items-center justify-between bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2">
+                                    <span className="text-[11px] text-white/55 flex items-center gap-2">
+                                        <s.icon className="w-3.5 h-3.5 text-tp-accent" /> {s.label}
+                                    </span>
+                                    <span className="text-[13px] font-black text-white tabular-nums">{hypeLabel(s.value)}</span>
+                                </div>
+                            );
+                        })}
                     </div>
+
+                    {/* Community discussions */}
+                    <Link
+                        href="/forum"
+                        className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-white/20 text-white/60 hover:text-white text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all"
+                    >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        View Community Discussions
+                    </Link>
 
                     {/* Ratings bars */}
                     {game.ratings && game.ratings.length > 0 && (

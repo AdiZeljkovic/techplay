@@ -6,12 +6,13 @@ import { getServerApiUrl } from "@/lib/api";
 import { format, parseISO, isBefore, startOfDay } from "date-fns";
 import {
     ChevronLeft, Star, Flame, Globe, Shield,
-    Calendar, ExternalLink,
+    Calendar, ExternalLink, Users, MessageCircle,
 } from "lucide-react";
 import GameDetailClient from "./GameDetailClient";
 import TrackGameButton from "@/components/games/TrackGameButton";
 import NotifyMeButton from "@/components/games/NotifyMeButton";
 import HeroLibraryBadge from "@/components/games/HeroLibraryBadge";
+import PlatformIcon from "@/components/games/PlatformIcon";
 import SocialShare from "@/components/share/SocialShare";
 import HeroTrailerPanel from "@/components/games/HeroTrailerPanel";
 import { Article } from "@/types";
@@ -156,6 +157,19 @@ function tagline(description: string): string {
     return first.length > 120 ? first.slice(0, 117) + "…" : first;
 }
 
+/** Split a title into a white head + accent tail for the two-tone hero heading. */
+function splitTitle(name: string): { head: string; tail: string } {
+    // Prefer splitting on a colon or dash (e.g. "Assassin's Creed IV: Black Flag")
+    const sep = name.match(/^(.*?)[\s]*[:\-–—][\s]*(.+)$/);
+    if (sep && sep[1].trim() && sep[2].trim()) {
+        return { head: sep[1].trim(), tail: sep[2].trim() };
+    }
+    // Otherwise color the last word, unless it's a single word
+    const words = name.trim().split(/\s+/);
+    if (words.length < 2) return { head: name, tail: "" };
+    return { head: words.slice(0, -1).join(" "), tail: words[words.length - 1] };
+}
+
 // ── Metadata ────────────────────────────────────────────────────────────────────
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -261,6 +275,7 @@ export default async function CalendarGamePage({ params }: Props) {
     const isUpcoming = isFuture || game.tba;
     const statusLabel = isUpcoming ? "Upcoming Release" : "Past Release";
     const gameTagline = game.description_raw ? tagline(game.description_raw) : "";
+    const titleParts = splitTitle(game.name);
     const pageUrl = `https://techplay.gg/calendar/${slug}`;
 
     // Series: pick first game that isn't this one
@@ -317,7 +332,10 @@ export default async function CalendarGamePage({ params }: Props) {
                                 className="font-display font-black text-white uppercase tracking-tight leading-[0.88] mb-3 max-w-[700px]"
                                 style={{ fontSize: "clamp(34px, 5.5vw, 70px)" }}
                             >
-                                {game.name}
+                                {titleParts.head}
+                                {titleParts.tail && (
+                                    <> <span className="text-tp-accent">{titleParts.tail}</span></>
+                                )}
                             </h1>
 
                             {/* Library status badge — client component, visible only when logged in */}
@@ -371,7 +389,8 @@ export default async function CalendarGamePage({ params }: Props) {
                                     <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/35 mb-2">Platforms</p>
                                     <div className="flex flex-wrap items-center gap-2">
                                         {chips.map(chip => (
-                                            <span key={chip.label} className={`${chip.cls} text-[10px] font-bold tracking-wide px-3 py-1.5 rounded-lg leading-none`}>
+                                            <span key={chip.label} className={`${chip.cls} inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wide px-3 py-1.5 rounded-lg leading-none`}>
+                                                <PlatformIcon label={chip.label} className="w-3.5 h-3.5" />
                                                 {chip.label}
                                             </span>
                                         ))}
@@ -413,31 +432,6 @@ export default async function CalendarGamePage({ params }: Props) {
                                 </div>
                             )}
 
-                            {/* CTA buttons — all in ONE ROW, equal height */}
-                            <div className="flex items-center gap-2.5 flex-wrap">
-                                <TrackGameButton
-                                    slug={slug}
-                                    gameName={game.name}
-                                    variant="full"
-                                    wrapperClassName="shrink-0"
-                                    released={game.released}
-                                />
-                                <NotifyMeButton slug={slug} gameName={game.name} variant="hero" />
-                                {game.website && (
-                                    <a
-                                        href={game.website}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-2 px-5 py-[11px] bg-white/[0.04] hover:bg-white/10 border border-white/10 hover:border-white/25 text-white/60 hover:text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all whitespace-nowrap"
-                                    >
-                                        <Globe className="w-3.5 h-3.5" />
-                                        Official Site
-                                    </a>
-                                )}
-                                <div className="shrink-0">
-                                    <SocialShare url={pageUrl} title={game.name} description={gameTagline} vertical={false} />
-                                </div>
-                            </div>
                         </div>
 
                         {/* RIGHT — always shown: YouTube, RAWG movie, or game preview fallback */}
@@ -447,6 +441,32 @@ export default async function CalendarGamePage({ params }: Props) {
                             gameName={game.name}
                             backgroundImage={game.background_image_additional ?? game.background_image}
                         />
+                    </div>
+
+                    {/* CTA buttons — full-width row under the hero */}
+                    <div className="flex items-center gap-2.5 flex-wrap mt-8 pt-6 border-t border-white/[0.08]">
+                        <TrackGameButton
+                            slug={slug}
+                            gameName={game.name}
+                            variant="full"
+                            wrapperClassName="shrink-0"
+                            released={game.released}
+                        />
+                        <NotifyMeButton slug={slug} gameName={game.name} variant="hero" />
+                        {game.website && (
+                            <a
+                                href={game.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-5 py-[11px] bg-white/[0.04] hover:bg-white/10 border border-white/10 hover:border-white/25 text-white/60 hover:text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all whitespace-nowrap"
+                            >
+                                <Globe className="w-3.5 h-3.5" />
+                                Official Site
+                            </a>
+                        )}
+                        <div className="shrink-0">
+                            <SocialShare url={pageUrl} title={game.name} description={gameTagline} vertical={false} />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -528,7 +548,8 @@ export default async function CalendarGamePage({ params }: Props) {
                                 </h3>
                                 <div className="flex flex-wrap gap-2">
                                     {chips.map(chip => (
-                                        <span key={chip.label} className={`${chip.cls} text-[10px] font-bold px-3 py-1.5 rounded-lg leading-none`}>
+                                        <span key={chip.label} className={`${chip.cls} inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-lg leading-none`}>
+                                            <PlatformIcon label={chip.label} className="w-3 h-3" />
                                             {chip.label}
                                         </span>
                                     ))}
@@ -678,6 +699,33 @@ export default async function CalendarGamePage({ params }: Props) {
                         )}
 
                     </aside>
+                </div>
+
+                {/* ══ JOIN THE COMMUNITY ════════════════════════════════════════ */}
+                <div className="relative mt-12 overflow-hidden rounded-2xl border border-zinc-200 dark:border-[#161B22] bg-white dark:bg-[#0B0E14]">
+                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-tp-accent/70 via-tp-accent/20 to-transparent" />
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 p-6 md:p-8">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-tp-accent/10 border border-tp-accent/25 flex items-center justify-center shrink-0">
+                                <Users className="w-6 h-6 text-tp-accent" />
+                            </div>
+                            <div>
+                                <h3 className="font-display text-[18px] font-black text-zinc-900 dark:text-white uppercase tracking-wide leading-none mb-1.5">
+                                    Join the Community
+                                </h3>
+                                <p className="text-[13px] text-zinc-500 dark:text-white/45 leading-snug max-w-md">
+                                    Discuss {game.name}, share your thoughts and stay updated with other players.
+                                </p>
+                            </div>
+                        </div>
+                        <Link
+                            href="/forum"
+                            className="shrink-0 inline-flex items-center gap-2 px-6 py-3 bg-tp-accent hover:bg-tp-accent/90 text-white text-[12px] font-bold uppercase tracking-widest rounded-xl transition-all shadow-[0_0_24px_rgba(252,65,0,0.25)]"
+                        >
+                            <MessageCircle className="w-4 h-4" />
+                            Join Discussion
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>
