@@ -21,6 +21,7 @@ class Article extends Model
         'author_id',
         'featured_image_url',
         'featured_image_alt',
+        'featured_video_url',
         'excerpt',
         'content',
         'category_id',

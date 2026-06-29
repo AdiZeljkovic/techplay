@@ -162,6 +162,26 @@ class MediaPickerFields
                     ->placeholder('Describe the image for accessibility...')
                     ->helperText('Important for SEO and accessibility'),
             ] : []),
+
+            // ─── Video option ────────────────────────────────────────────────
+            Placeholder::make('_video_divider')
+                ->label('')
+                ->content(new HtmlString(
+                    '<div style="display:flex;align-items:center;gap:12px;margin:8px 0;">'.
+                    '<div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>'.
+                    '<span style="color:#71717a;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">or use a video instead</span>'.
+                    '<div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>'.
+                    '</div>'
+                ))
+                ->columnSpanFull(),
+
+            TextInput::make('featured_video_url')
+                ->label('Featured Video URL')
+                ->placeholder('https://www.youtube.com/watch?v=... or https://vimeo.com/...')
+                ->helperText('YouTube or Vimeo link. When set, the hero shows a video player — clicking play hides the title overlay and starts the video.')
+                ->url()
+                ->suffixIcon('heroicon-o-video-camera')
+                ->columnSpanFull(),
         ];
     }
 }

@@ -83,12 +83,17 @@ const config: Config = {
                     "0%": { filter: "hue-rotate(0deg)" },
                     "100%": { filter: "hue-rotate(360deg)" },
                 },
+                fadeIn: {
+                    "0%": { opacity: "0" },
+                    "100%": { opacity: "1" },
+                },
             },
             animation: {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
                 ticker: "ticker 40s linear infinite",
                 "spin-slow": "spin-slow 4s linear infinite",
+                "fadeIn": "fadeIn 0.4s ease-in-out",
             },
         },
     },

@@ -29,6 +29,7 @@ class ArticleResource extends JsonResource
             'slug' => $this->slug,
             'excerpt' => $this->excerpt,
             'featured_image_url' => $featuredImageUrl,
+            'featured_video_url' => $this->featured_video_url ?: null,
             'published_at' => $this->published_at,
             'published_at_human' => $this->published_at ? $this->published_at->diffForHumans() : null,
 

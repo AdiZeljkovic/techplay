@@ -2,7 +2,7 @@
 
 import { Article } from "@/types";
 import Link from "next/link";
-import { ArrowLeft, Clock, Calendar } from "lucide-react";
+import { ArrowLeft, Clock, Calendar, Play } from "lucide-react";
 import Image from "next/image";
 import { format } from "date-fns";
 import { useMemo, useState, useEffect } from "react";
@@ -45,8 +45,36 @@ const ClientDate = ({ date }: { date: string }) => {
     return <span>{formatted}</span>;
 };
 
+function getVideoEmbed(url: string): { embedUrl: string; thumbnailUrl: string | null } | null {
+    try {
+        const parsed = new URL(url);
+
+        // YouTube watch page
+        if (parsed.hostname === 'www.youtube.com' || parsed.hostname === 'youtube.com') {
+            if (parsed.pathname === '/watch') {
+                const v = parsed.searchParams.get('v');
+                if (v) return { embedUrl: `https://www.youtube.com/embed/${v}`, thumbnailUrl: `https://img.youtube.com/vi/${v}/maxresdefault.jpg` };
+            }
+        }
+        // YouTube short URL
+        if (parsed.hostname === 'youtu.be') {
+            const v = parsed.pathname.slice(1).split('?')[0];
+            if (v) return { embedUrl: `https://www.youtube.com/embed/${v}`, thumbnailUrl: `https://img.youtube.com/vi/${v}/maxresdefault.jpg` };
+        }
+        // Vimeo
+        if (parsed.hostname === 'vimeo.com' || parsed.hostname === 'www.vimeo.com') {
+            const v = parsed.pathname.split('/').filter(Boolean)[0];
+            if (v && /^\d+$/.test(v)) return { embedUrl: `https://player.vimeo.com/video/${v}`, thumbnailUrl: null };
+        }
+    } catch {
+        return null;
+    }
+    return null;
+}
+
 export default function ArticleDetailView({ article, initialComments }: ArticleDetailViewProps) {
     useEmbedScripts();
+    const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
     const readingTime = useMemo(() => {
         const text = (article.content || '').replace(/<[^>]+>/g, '');
@@ -62,6 +90,12 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
     const imageUrl = article.featured_image_url?.startsWith('http')
         ? article.featured_image_url
         : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${article.featured_image_url}`;
+
+    const videoEmbed = article.featured_video_url ? getVideoEmbed(article.featured_video_url) : null;
+    // Use article image as hero bg; fall back to YouTube auto-thumbnail
+    const heroBackground = article.featured_image_url
+        ? imageUrl
+        : (videoEmbed?.thumbnailUrl ?? null);
 
     // NOTE: We trust backend-sanitized content and our own processContent transformations
     // DOMPurify was stripping iframe embeds even with ADD_TAGS config
@@ -104,13 +138,15 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                             {/* Hero Banner */}
                             <div className="relative w-full rounded-[24px] flex flex-col overflow-hidden bg-[#0B0E14] border border-[#161B22] h-[580px]">
                                 <div className="relative w-full flex-1 flex flex-col justify-end min-h-0">
-                                    <div className="absolute inset-0">
-                                        {article.featured_image_url ? (
+
+                                    {/* Background layer — hidden when video is playing */}
+                                    <div className={`absolute inset-0 transition-opacity duration-500 ${isVideoPlaying ? 'opacity-0' : 'opacity-100'}`}>
+                                        {heroBackground ? (
                                             <Image
-                                                src={imageUrl!}
+                                                src={heroBackground}
                                                 alt={decodeHtml(article.title)}
                                                 fill
-                                                className="object-cover object-right opacity-100"
+                                                className="object-cover object-right"
                                                 priority
                                                 quality={90}
                                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
@@ -120,12 +156,40 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         )}
                                         {/* Left fade */}
                                         <div className="absolute inset-0 bg-gradient-to-r from-[#05070A]/90 via-[#05070A]/50 to-transparent w-[65%]" />
-                                        {/* Bottom fade — stronger to ensure text legibility */}
+                                        {/* Bottom fade */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/60 to-transparent" />
                                     </div>
 
-                                    {/* Left content panel */}
-                                    <div className="relative z-10 flex flex-col p-8 md:p-12 w-full md:w-[75%]">
+                                    {/* Video iframe — shown only after play is clicked */}
+                                    {videoEmbed && isVideoPlaying && (
+                                        <iframe
+                                            src={`${videoEmbed.embedUrl}?autoplay=1&rel=0&modestbranding=1`}
+                                            className="absolute inset-0 w-full h-full z-20 animate-fadeIn"
+                                            allow="autoplay; fullscreen; picture-in-picture"
+                                            allowFullScreen
+                                            title={decodeHtml(article.title)}
+                                        />
+                                    )}
+
+                                    {/* Play button overlay — visible only when video URL exists and not yet playing */}
+                                    {videoEmbed && !isVideoPlaying && (
+                                        <button
+                                            onClick={() => setIsVideoPlaying(true)}
+                                            aria-label="Play video"
+                                            className="absolute inset-0 z-30 flex items-center justify-center group cursor-pointer"
+                                        >
+                                            <div className="relative">
+                                                {/* Pulse ring */}
+                                                <div className="absolute inset-0 rounded-full bg-[var(--accent)]/20 animate-ping" />
+                                                <div className="relative w-20 h-20 rounded-full bg-black/40 backdrop-blur-md border-2 border-white/30 flex items-center justify-center group-hover:bg-[var(--accent)]/80 group-hover:border-[var(--accent)] transition-all duration-300 group-hover:scale-110 shadow-2xl">
+                                                    <Play className="w-8 h-8 text-white fill-white ml-1" />
+                                                </div>
+                                            </div>
+                                        </button>
+                                    )}
+
+                                    {/* Left content panel — slides down and fades out when playing */}
+                                    <div className={`relative z-10 flex flex-col p-8 md:p-12 w-full md:w-[75%] transition-all duration-500 ${isVideoPlaying ? 'opacity-0 translate-y-4 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
                                         {/* Category badge */}
                                         <div className="bg-[var(--accent)] text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded inline-flex w-max mb-5 leading-none shadow-sm shadow-[var(--accent)]/20">
                                             {decodeHtml(article.category?.name) || "News"}

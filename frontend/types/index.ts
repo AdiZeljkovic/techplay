@@ -47,6 +47,7 @@ export interface Article {
     title: string;
     slug: string;
     featured_image_url: string;
+    featured_video_url?: string | null;
     excerpt: string;
     content: string;
     category: Category; // Updated from string
