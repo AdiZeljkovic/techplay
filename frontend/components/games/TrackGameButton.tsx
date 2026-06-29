@@ -27,9 +27,11 @@ interface Props {
     /** "full" = sidebar button; "compact" = small card overlay button */
     variant?: "full" | "compact";
     wrapperClassName?: string;
+    /** ISO date string — if in the future, hides Completed and Dropped */
+    released?: string | null;
 }
 
-export default function TrackGameButton({ slug, gameName, variant = "full", wrapperClassName }: Props) {
+export default function TrackGameButton({ slug, gameName, variant = "full", wrapperClassName, released }: Props) {
     const { user } = useAuth();
     const [open, setOpen] = useState(false);
     const [busy, setBusy] = useState(false);
@@ -39,6 +41,11 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
 
     const currentStatus = entry?.status as Status | undefined;
     const currentMeta = STATUSES.find((s) => s.value === currentStatus);
+
+    const isUpcoming = !released || new Date(released) >= new Date(new Date().toDateString());
+    const visibleStatuses = isUpcoming
+        ? STATUSES.filter((s) => s.value === "playing" || s.value === "backlog" || s.value === "wishlist")
+        : STATUSES;
 
     async function setStatus(status: Status) {
         if (busy) return;
@@ -111,7 +118,7 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
                     <>
                         <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
                         <div className="absolute right-0 top-9 z-50 w-40 rounded-xl bg-[#0d1117] border border-white/10 shadow-2xl overflow-hidden py-1">
-                            {STATUSES.map((s) => (
+                            {visibleStatuses.map((s) => (
                                 <button key={s.value} onClick={() => setStatus(s.value)}
                                     className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-[12px] font-semibold transition-colors ${currentStatus === s.value ? "text-white bg-white/10" : "text-white/65 hover:text-white hover:bg-white/[0.05]"}`}>
                                     <s.icon className="w-3.5 h-3.5 shrink-0" style={{ color: s.color }} />
@@ -160,7 +167,7 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
                     <div className="absolute left-0 right-0 top-full mt-2 z-50 rounded-xl bg-[#0d1117] border border-white/10 shadow-2xl overflow-hidden py-1">
-                        {STATUSES.map((s) => (
+                        {visibleStatuses.map((s) => (
                             <button key={s.value} onClick={() => setStatus(s.value)}
                                 className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-semibold transition-colors ${currentStatus === s.value ? "text-white bg-white/10" : "text-white/65 hover:text-white hover:bg-white/[0.05]"}`}>
                                 <s.icon className="w-4 h-4 shrink-0" style={{ color: s.color }} />
