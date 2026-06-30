@@ -21,7 +21,6 @@ export default memo(function ReviewCard({ review, index, basePath = "/reviews", 
     // Use review_score (new system) with fallback to rating (legacy)
     const score = review.review_score ?? review.rating ?? 0;
     const ratingColor = score >= 8 ? "text-green-500" : score >= 6 ? "text-yellow-500" : "text-red-500";
-    const ratingBg = score >= 8 ? "bg-green-500/10" : score >= 6 ? "bg-yellow-500/10" : "bg-red-500/10";
 
     // Get medium variant for card images (better quality for h-48 cards on retina displays)
     const rawImageUrl = review.featured_image_url || review.cover_image;
@@ -57,10 +56,15 @@ export default memo(function ReviewCard({ review, index, basePath = "/reviews", 
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
 
-                    {/* Score Badge - Hidden if hideRating is true */}
-                    {!hideRating && (
-                        <div className={`absolute top-3 right-3 w-12 h-12 rounded-[12px] ${ratingBg} backdrop-blur-md border border-white/10 flex items-center justify-center shadow-lg`}>
-                            <span className={`text-lg font-bold font-display ${ratingColor}`}>{score}</span>
+                    {/* Score Badge - ribbon style, matches homepage ReviewsSection */}
+                    {!hideRating && score > 0 && (
+                        <div
+                            className="absolute top-0 right-4 w-[42px] sm:w-[54px] h-[50px] sm:h-[64px] bg-tp-accent flex flex-col items-center justify-end pb-2 sm:pb-3 shadow-[0_5px_15px_rgba(0,0,0,0.5)] group-hover:h-[56px] sm:group-hover:h-[70px] transition-all duration-300"
+                            style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%)" }}
+                        >
+                            <span className="text-[15px] sm:text-[18px] font-black font-display leading-none text-white">
+                                {Number(score).toFixed(1)}
+                            </span>
                         </div>
                     )}
 
