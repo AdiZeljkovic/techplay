@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Category extends Model
 {
@@ -38,5 +39,10 @@ class Category extends Model
     public function threads()
     {
         return $this->hasMany(Thread::class);
+    }
+
+    public function posts(): HasManyThrough
+    {
+        return $this->hasManyThrough(Post::class, Thread::class);
     }
 }

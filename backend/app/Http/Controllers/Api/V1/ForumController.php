@@ -23,14 +23,17 @@ class ForumController extends Controller
 {
     public function stats()
     {
-        // Cache stats for 5 minutes
-        $stats = Cache::remember('forum.stats', 300, function () {
+        $stats = Cache::remember('forum.stats', 30, function () {
             return [
                 'total_threads' => Thread::count(),
                 'total_posts' => Thread::count() + Post::count(),
                 'members' => User::count(),
             ];
         });
+
+        // Online users computed fresh on each request (cheap Redis op)
+        Redis::zremrangebyscore('forum:users:online', '-inf', now()->subMinutes(5)->timestamp);
+        $stats['online_users'] = (int) Redis::zcard('forum:users:online');
 
         return response()->json($stats)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
@@ -39,9 +42,9 @@ class ForumController extends Controller
     {
         // PERFORMANCE: Cache for 60 seconds
         $categories = Cache::remember('forum.categories', 60, function () {
-            // Get all forum categories with thread counts
+            // Get all forum categories with thread and post counts
             $allForumCategories = Category::where('type', 'forum')
-                ->withCount('threads')
+                ->withCount(['threads', 'posts'])
                 ->orderBy('id')
                 ->get();
 
@@ -311,7 +314,7 @@ class ForumController extends Controller
     {
         // Cache for 60 seconds
         $threads = Cache::remember('forum.active_threads', 60, function () {
-            return Thread::with(['author'])
+            return Thread::with(['author', 'category'])
                 ->withCount('posts')
                 ->orderByDesc('updated_at')
                 ->take(5)

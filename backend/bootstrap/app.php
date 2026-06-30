@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\TrackUserActivity;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -32,6 +33,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // SECURITY: Add security headers to all responses
         $middleware->append(SecurityHeaders::class);
+
+        // Track authenticated users as online (used for forum online counter)
+        $middleware->appendToGroup('api', TrackUserActivity::class);
 
         $middleware->redirectGuestsTo(function ($request) {
             if ($request->is('api/*') || $request->expectsJson()) {
