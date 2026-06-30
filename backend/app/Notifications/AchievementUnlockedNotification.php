@@ -26,7 +26,7 @@ class AchievementUnlockedNotification extends Notification
             'description' => $this->achievement->description,
             'points' => $this->achievement->points,
             'icon_path' => $this->achievement->icon_path,
-            'link' => null,
+            'link' => "/profile/{$notifiable->username}",
         ];
     }
 }

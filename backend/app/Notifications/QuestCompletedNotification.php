@@ -26,7 +26,7 @@ class QuestCompletedNotification extends Notification
             'quest_name' => $this->quest->name,
             'bounty_reward' => $this->quest->bounty_reward,
             'xp_reward' => $this->quest->xp_reward,
-            'link' => '/profile',
+            'link' => "/profile/{$notifiable->username}",
         ];
     }
 }
