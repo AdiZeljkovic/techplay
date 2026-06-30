@@ -53,6 +53,11 @@ interface ActiveThread {
 
 type TabType = "all" | "new" | "unanswered";
 
+const fmtStat = (n: number): string => {
+    if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K`;
+    return n.toString();
+};
+
 const getCategoryColor = (slug: string): string => {
     const map: Record<string, string> = {
         "news-announcements": "#ef4444",
@@ -226,60 +231,61 @@ export default function ForumPage() {
     return (
         <div className="min-h-screen">
             {/* ── HERO ── */}
-            <section className="relative bg-gradient-to-br from-[#060810] via-[#0B0E1A] to-[#080C14] overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_60%,rgba(252,65,0,0.08),transparent_60%)]" />
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,rgba(59,130,246,0.04),transparent_50%)]" />
+            <section className="relative overflow-hidden bg-[#060810]" style={{ minHeight: 340 }}>
+                {/* Warrior background image */}
+                <Image
+                    src="/forum-hero.png"
+                    alt=""
+                    fill
+                    priority
+                    unoptimized
+                    className="object-cover object-center"
+                />
+
+                {/* Left-heavy gradient so text stays readable, warrior shows through center */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#060810] from-[28%] via-[#060810]/60 via-[55%] to-[#060810]/65" />
+                {/* Extra bottom darkness so the whole hero blends into page */}
+                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#060810] to-transparent" />
 
                 <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-14 lg:py-20 relative z-10">
-                    <div className="grid lg:grid-cols-[1fr_300px] gap-10 xl:gap-16 items-center">
+                    <div className="grid lg:grid-cols-[1fr_auto] gap-8 xl:gap-16 items-center">
                         {/* Left */}
-                        <div>
+                        <div className="max-w-[520px]">
                             <p className="text-tp-accent text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.25em] mb-3 sm:mb-4">
                                 DISCUSS. SHARE. CONNECT.
                             </p>
-                            <h1 className="font-display text-[38px] sm:text-5xl xl:text-[56px] font-black text-white uppercase leading-none mb-4 sm:mb-5">
+                            <h1 className="font-display text-[38px] sm:text-5xl xl:text-[58px] font-black text-white uppercase leading-none mb-4 sm:mb-5">
                                 COMMUNITY{" "}
                                 <span className="text-tp-accent">FORUMS</span>
                             </h1>
-                            <p className="text-[#A1A1AA] text-[14px] sm:text-[15px] leading-relaxed mb-7 sm:mb-10 max-w-lg">
-                                Join thousands of gamers in discussions, share your thoughts, and connect with the TechPlay community.
+                            <p className="text-[#A1A1AA] text-[14px] sm:text-[15px] leading-relaxed mb-8 sm:mb-10">
+                                Join the discussion, share your thoughts, and connect with fellow gamers and tech enthusiasts.
                             </p>
 
                             {/* Stats row */}
-                            <div className="flex flex-wrap gap-x-7 gap-y-4">
+                            <div className="flex flex-wrap gap-x-6 gap-y-4">
                                 {[
-                                    { icon: Users2, value: stats?.online_users ?? 0, label: "ONLINE" },
+                                    { icon: Users2, value: stats?.online_users ?? 0, label: "MEMBERS ONLINE" },
                                     { icon: MessageSquare, value: stats?.total_threads ?? 0, label: "THREADS" },
                                     { icon: FileText, value: stats?.total_posts ?? 0, label: "POSTS" },
                                     { icon: Users, value: stats?.members ?? 0, label: "MEMBERS" },
                                 ].map(({ icon: Icon, value, label }) => (
                                     <div key={label} className="flex items-center gap-2">
-                                        <Icon className="w-3.5 h-3.5 text-tp-accent flex-shrink-0" />
-                                        <span className="font-display font-black text-white text-[20px] leading-none">
-                                            {value.toLocaleString()}
+                                        <Icon className="w-4 h-4 text-tp-accent flex-shrink-0" />
+                                        <span className="font-display font-black text-white text-[22px] leading-none">
+                                            {fmtStat(value)}
                                         </span>
-                                        <span className="text-[#71717A] text-[9px] font-bold uppercase tracking-widest">{label}</span>
+                                        <span className="text-[#6B7280] text-[9px] font-bold uppercase tracking-widest leading-tight">{label}</span>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Right — icon + mini auth panel */}
-                        <div className="hidden lg:flex flex-col items-center gap-5">
-                            <div className="relative">
-                                <div className="absolute inset-0 bg-tp-accent/15 blur-[60px] rounded-full scale-[1.8]" />
-                                <Image
-                                    src="/forum.png"
-                                    alt="Community Forums"
-                                    width={150}
-                                    height={150}
-                                    className="relative drop-shadow-[0_0_35px_rgba(252,65,0,0.45)]"
-                                    unoptimized
-                                />
-                            </div>
-                            <div className="w-full bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 backdrop-blur-sm">
-                                <div className="flex items-center gap-2 bg-[#0B0E14] border border-[#1E2530] rounded-lg px-3 py-2 mb-3">
-                                    <Search className="w-3.5 h-3.5 text-[#71717A] flex-shrink-0" />
+                        {/* Right — auth / search panel */}
+                        <div className="hidden lg:block w-[300px] xl:w-[320px]">
+                            <div className="space-y-3">
+                                {/* Search bar */}
+                                <div className="flex items-center gap-2 bg-[#0D1117]/80 border border-white/[0.10] rounded-lg px-4 py-3 backdrop-blur-md">
                                     <input
                                         type="text"
                                         placeholder="Search forums..."
@@ -290,38 +296,45 @@ export default function ForumPage() {
                                                 router.push(`/forum/search?q=${encodeURIComponent(searchQuery.trim())}`);
                                             }
                                         }}
-                                        className="bg-transparent text-[13px] text-white placeholder:text-[#4A4A55] outline-none flex-1 min-w-0"
+                                        className="flex-1 bg-transparent text-[14px] text-white placeholder:text-[#6B7280] outline-none min-w-0"
                                     />
+                                    <Search className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
                                 </div>
+
                                 {user ? (
                                     <Link
                                         href={`/profile/${user.username}`}
-                                        className="flex items-center justify-center w-full h-9 rounded-lg bg-tp-accent/10 border border-tp-accent/20 text-tp-accent text-[11px] font-bold uppercase tracking-widest hover:bg-tp-accent/20 transition-colors"
+                                        className="flex items-center justify-center w-full h-11 rounded-lg bg-tp-accent hover:bg-tp-accent/90 text-white text-[12px] font-black uppercase tracking-widest transition-colors shadow-lg shadow-tp-accent/25"
                                     >
-                                        Go to Profile
+                                        GO TO PROFILE
                                     </Link>
                                 ) : (
-                                    <div className="flex gap-2">
-                                        <Link
-                                            href="/login"
-                                            className="flex-1 h-9 rounded-lg bg-tp-accent hover:bg-tp-accent/90 text-white text-[11px] font-bold uppercase tracking-widest flex items-center justify-center transition-colors shadow-lg shadow-tp-accent/20"
-                                        >
-                                            Log In
-                                        </Link>
-                                        <Link
-                                            href="/register"
-                                            className="flex-1 h-9 rounded-lg border border-[#1E2530] hover:border-tp-accent/30 text-[#A1A1AA] text-[11px] font-bold uppercase tracking-widest flex items-center justify-center transition-colors"
-                                        >
-                                            Register
-                                        </Link>
-                                    </div>
+                                    <>
+                                        <div className="flex gap-2">
+                                            <Link
+                                                href="/login"
+                                                className="flex-1 h-11 rounded-lg bg-tp-accent hover:bg-tp-accent/90 text-white text-[12px] font-black uppercase tracking-widest flex items-center justify-center transition-colors shadow-lg shadow-tp-accent/25"
+                                            >
+                                                LOG IN
+                                            </Link>
+                                            <Link
+                                                href="/register"
+                                                className="flex-1 h-11 rounded-lg border border-white/25 hover:border-white/50 text-white text-[12px] font-black uppercase tracking-widest flex items-center justify-center transition-colors"
+                                            >
+                                                REGISTER
+                                            </Link>
+                                        </div>
+                                        <p className="text-[12px] text-[#9CA3AF] text-center leading-relaxed">
+                                            New here? Create an account and join the TechPlay community.
+                                        </p>
+                                    </>
                                 )}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-tp-accent/40 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-tp-accent/50 to-transparent" />
             </section>
 
             {/* ── MAIN CONTENT ── */}
