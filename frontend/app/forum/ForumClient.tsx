@@ -77,17 +77,26 @@ const getCategoryColor = (slug: string): string => {
 
 const getCategoryIcon = (slug: string) => {
     const map: Record<string, React.ComponentType<{ className?: string }>> = {
+        // Parent categories
+        community: Users2,
+        gaming: Gamepad2,
+        hardware: Monitor,
+        // Child categories
         "news-announcements": Megaphone,
         "feedback-support": HelpCircle,
         "general-gaming": Gamepad2,
+        "game-reviews": Star,
         "user-reviews": Star,
         esports: Trophy,
         "pc-builds": Monitor,
+        "pc-builds-upgrades": Monitor,
         consoles: Gamepad2,
+        "consoles-peripherals": Gamepad2,
         "the-lounge": Coffee,
         marketplace: ShoppingBag,
         "game-guides": Star,
         "hardware-tech": Monitor,
+        "tech-gear-talk": ShoppingBag,
     };
     return map[slug] ?? MessageCircle;
 };
@@ -100,47 +109,50 @@ function CategoryCard({ category, viewMode }: { category: ForumCategory; viewMod
         return (
             <Link href={`/forum/${category.slug}`}>
                 <div
-                    className="group relative bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-tp-accent/40 hover:shadow-lg dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.5)] overflow-hidden"
+                    className="group relative bg-[#0D1117] border border-[#1A2030] rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:border-white/10 overflow-hidden"
                     style={{ borderLeft: `4px solid ${color}` }}
                 >
                     <div
                         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                        style={{ background: `linear-gradient(90deg, ${color}10 0%, transparent 100%)` }}
+                        style={{ background: `linear-gradient(90deg, ${color}08 0%, transparent 100%)` }}
                     />
                     <div className="relative z-10 flex items-center justify-between gap-6">
                         <div className="flex items-center gap-4">
                             <div
                                 className="w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center"
-                                style={{ backgroundColor: color, boxShadow: `0 6px 14px -4px ${color}60` }}
+                                style={{
+                                    background: `linear-gradient(135deg, ${color}dd 0%, ${color}66 100%)`,
+                                    boxShadow: `0 4px 12px -2px ${color}40`,
+                                }}
                             >
                                 <Icon className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                                <h3 className="text-[15px] font-bold text-zinc-900 dark:text-white mb-0.5 group-hover:text-tp-accent transition-colors">
+                                <h3 className="text-[15px] font-bold text-white mb-0.5 group-hover:text-tp-accent transition-colors">
                                     {decodeHtml(category.name)}
                                 </h3>
                                 {category.description && (
-                                    <p className="text-zinc-500 dark:text-[#71717A] text-[12px] line-clamp-1 max-w-md">
+                                    <p className="text-[#6B7280] text-[12px] line-clamp-1 max-w-md">
                                         {decodeHtml(category.description)}
                                     </p>
                                 )}
                             </div>
                         </div>
-                        <div className="flex items-center gap-6 flex-shrink-0">
-                            <div className="hidden sm:flex flex-col items-center min-w-[52px]">
-                                <span className="font-display text-[18px] font-bold text-zinc-900 dark:text-white leading-none">
-                                    {(category.threads_count || 0).toLocaleString()}
-                                </span>
-                                <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 dark:text-[#71717A] mt-0.5">Threads</span>
+                        <div className="flex items-center gap-8 flex-shrink-0">
+                            <div className="hidden sm:block text-center">
+                                <div className="font-display text-[18px] font-black text-white leading-none">
+                                    {fmtStat(category.threads_count || 0)}
+                                </div>
+                                <div className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] mt-0.5">Threads</div>
                             </div>
-                            <div className="hidden sm:flex flex-col items-center min-w-[52px]">
-                                <span className="font-display text-[18px] font-bold text-zinc-900 dark:text-white leading-none">
-                                    {(category.posts_count || 0).toLocaleString()}
-                                </span>
-                                <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 dark:text-[#71717A] mt-0.5">Posts</span>
+                            <div className="hidden sm:block text-center">
+                                <div className="font-display text-[18px] font-black text-white leading-none">
+                                    {fmtStat(category.posts_count || 0)}
+                                </div>
+                                <div className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] mt-0.5">Posts</div>
                             </div>
-                            <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/5 flex items-center justify-center text-zinc-400 dark:text-[#71717A] group-hover:bg-tp-accent group-hover:border-tp-accent group-hover:text-white transition-all duration-300">
-                                <ChevronRight className="w-4 h-4" />
+                            <div className="w-7 h-7 rounded-full border border-[#2A3040] flex items-center justify-center text-[#6B7280] group-hover:border-tp-accent/40 group-hover:text-tp-accent transition-all duration-300">
+                                <ChevronRight className="w-3.5 h-3.5" />
                             </div>
                         </div>
                     </div>
@@ -149,63 +161,83 @@ function CategoryCard({ category, viewMode }: { category: ForumCategory; viewMod
         );
     }
 
+    // ── Grid card — matches reference design exactly ──
     return (
         <Link href={`/forum/${category.slug}`} className="h-full">
-            <div className="group h-full bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-5 hover:border-tp-accent/30 hover:shadow-[0_8px_32px_rgba(0,0,0,0.25)] dark:hover:shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-300 flex flex-col">
-                {/* Icon */}
-                <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 flex-shrink-0 group-hover:scale-105 transition-transform duration-300"
-                    style={{ backgroundColor: color, boxShadow: `0 8px 16px -4px ${color}50` }}
-                >
-                    <Icon className="w-6 h-6 text-white" />
+            <div className="group h-full bg-[#0D1117] border border-[#1A2030] rounded-2xl overflow-hidden hover:border-white/10 transition-all duration-300 flex flex-col">
+
+                {/* TOP: icon + name + description */}
+                <div className="p-4 sm:p-5 flex gap-3 sm:gap-4">
+                    <div
+                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex-shrink-0 flex items-center justify-center"
+                        style={{
+                            background: `linear-gradient(135deg, ${color}ee 0%, ${color}77 100%)`,
+                            boxShadow: `0 8px 20px -4px ${color}50`,
+                        }}
+                    >
+                        <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0 pt-0.5">
+                        <h3 className="text-[15px] sm:text-[16px] font-bold text-white mb-1 group-hover:text-tp-accent transition-colors leading-snug">
+                            {decodeHtml(category.name)}
+                        </h3>
+                        <p className="text-[12px] text-[#6B7280] leading-relaxed line-clamp-2">
+                            {category.description ? decodeHtml(category.description) : "Explore discussions in this category."}
+                        </p>
+                    </div>
                 </div>
 
-                {/* Name + description */}
-                <h3 className="font-display text-[15px] font-bold text-zinc-900 dark:text-white mb-1.5 group-hover:text-tp-accent transition-colors leading-snug">
-                    {decodeHtml(category.name)}
-                </h3>
-                <p className="text-[12px] text-zinc-500 dark:text-[#71717A] leading-relaxed line-clamp-2 flex-1 mb-4">
-                    {category.description ? decodeHtml(category.description) : "Explore discussions in this category."}
-                </p>
-
-                {/* Stats row */}
-                <div className="flex items-center gap-4 pt-3 border-t border-zinc-200 dark:border-white/[0.06] mb-0">
-                    <div className="flex items-center gap-1.5">
-                        <MessageSquare className="w-3 h-3 text-zinc-400 dark:text-[#71717A]" />
-                        <span className="text-[11px] text-zinc-500 dark:text-[#71717A]">
-                            <span className="font-bold text-zinc-800 dark:text-[#E4E4E5]">
-                                {(category.threads_count || 0).toLocaleString()}
-                            </span>{" "}
+                {/* STATS */}
+                <div className="px-4 sm:px-5 py-3 sm:py-4 flex gap-8 border-t border-[#1A2030]">
+                    <div>
+                        <div className="font-display text-[22px] sm:text-[24px] font-black text-white leading-none">
+                            {fmtStat(category.threads_count || 0)}
+                        </div>
+                        <div className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] mt-1">
                             THREADS
-                        </span>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                        <FileText className="w-3 h-3 text-zinc-400 dark:text-[#71717A]" />
-                        <span className="text-[11px] text-zinc-500 dark:text-[#71717A]">
-                            <span className="font-bold text-zinc-800 dark:text-[#E4E4E5]">
-                                {(category.posts_count || 0).toLocaleString()}
-                            </span>{" "}
+                    <div>
+                        <div className="font-display text-[22px] sm:text-[24px] font-black text-white leading-none">
+                            {fmtStat(category.posts_count || 0)}
+                        </div>
+                        <div className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] mt-1">
                             POSTS
-                        </span>
+                        </div>
                     </div>
                 </div>
 
-                {/* Latest thread */}
-                {category.latest_thread && (
-                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-zinc-200 dark:border-white/[0.06]">
-                        <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-[#1A1F26] border border-zinc-200 dark:border-white/[0.06] flex items-center justify-center text-[10px] font-bold text-zinc-500 dark:text-[#A1A1AA] flex-shrink-0">
-                            {category.latest_thread.author?.username?.charAt(0)?.toUpperCase() || "?"}
+                {/* LATEST TOPIC */}
+                <div className="mt-auto border-t border-[#1A2030] px-4 sm:px-5 py-3 sm:py-4">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-tp-accent mb-2.5">
+                        LATEST TOPIC
+                    </p>
+                    {category.latest_thread ? (
+                        <div className="flex items-start gap-2.5">
+                            <div
+                                className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[11px] font-bold text-white mt-0.5"
+                                style={{ background: `linear-gradient(135deg, ${color}cc 0%, ${color}66 100%)` }}
+                            >
+                                {category.latest_thread.author?.username?.charAt(0)?.toUpperCase() || "?"}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[12px] sm:text-[13px] font-semibold text-white leading-snug line-clamp-2 group-hover:text-tp-accent transition-colors">
+                                    {decodeHtml(category.latest_thread.title)}
+                                </p>
+                                <p className="text-[11px] text-[#6B7280] mt-0.5" suppressHydrationWarning>
+                                    by {category.latest_thread.author?.username}
+                                    {" · "}
+                                    {formatDistanceToNow(new Date(category.latest_thread.created_at), { addSuffix: true })}
+                                </p>
+                            </div>
+                            <div className="w-6 h-6 rounded-full border border-[#2A3040] flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:border-tp-accent/40 group-hover:text-tp-accent transition-all duration-300">
+                                <ChevronRight className="w-3.5 h-3.5 text-[#6B7280] group-hover:text-tp-accent" />
+                            </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-[11px] text-zinc-600 dark:text-[#A1A1AA] truncate leading-snug">
-                                {decodeHtml(category.latest_thread.title)}
-                            </p>
-                            <p className="text-[10px] text-zinc-400 dark:text-[#71717A]" suppressHydrationWarning>
-                                {formatDistanceToNow(new Date(category.latest_thread.created_at), { addSuffix: true })}
-                            </p>
-                        </div>
-                    </div>
-                )}
+                    ) : (
+                        <p className="text-[12px] text-[#4A5060] italic">No topics yet.</p>
+                    )}
+                </div>
             </div>
         </Link>
     );
@@ -394,15 +426,17 @@ export default function ForumPage() {
                                 {categoriesLoading ? (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {[...Array(6)].map((_, i) => (
-                                            <div key={i} className="h-56 bg-zinc-100 dark:bg-[#0B0E14] rounded-2xl animate-pulse" />
+                                            <div key={i} className="h-72 bg-[#0D1117] border border-[#1A2030] rounded-2xl animate-pulse" />
                                         ))}
                                     </div>
                                 ) : (
-                                    categories?.map((parent) => (
+                                    categories?.map((parent) => {
+                                        const ParentIcon = getCategoryIcon(parent.slug) ?? Gamepad2;
+                                        return (
                                         <div key={parent.id}>
-                                            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-zinc-200 dark:border-white/5">
-                                                <span className="w-1.5 h-5 bg-tp-accent rounded-sm shrink-0" />
-                                                <h2 className="font-display text-[18px] font-bold text-zinc-900 dark:text-white uppercase tracking-[0.06em] leading-none">
+                                            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-white/[0.06]">
+                                                <ParentIcon className="w-5 h-5 text-tp-accent flex-shrink-0" />
+                                                <h2 className="font-display text-[16px] sm:text-[18px] font-bold text-white uppercase tracking-[0.08em] leading-none">
                                                     {decodeHtml(parent.name)}
                                                 </h2>
                                             </div>
@@ -419,7 +453,8 @@ export default function ForumPage() {
                                                 ))}
                                             </div>
                                         </div>
-                                    ))
+                                        );
+                                    })
                                 )}
                             </div>
                         )}
