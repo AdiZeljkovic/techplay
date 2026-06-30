@@ -15,7 +15,7 @@ class FixNotificationProfileLinks extends Command
     public function handle(): int
     {
         $rows = DB::table('notifications')
-            ->whereRaw("data->>'link' = '/profile'")
+            ->whereRaw("data::jsonb->>'link' = '/profile'")
             ->get(['id', 'notifiable_id', 'data']);
 
         if ($rows->isEmpty()) {
