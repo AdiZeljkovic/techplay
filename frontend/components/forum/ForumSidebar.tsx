@@ -14,13 +14,6 @@ import { getImageUrl } from "@/lib/imageUrl";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
-interface ForumStats {
-    total_threads: number;
-    total_posts: number;
-    members: number;
-    online_users: number;
-}
-
 interface ActiveThread {
     id: number;
     title: string;
@@ -41,7 +34,6 @@ interface LeaderboardEntry {
 }
 
 interface ForumSidebarProps {
-    stats?: ForumStats;
     activeThreads?: ActiveThread[];
 }
 
@@ -54,11 +46,6 @@ function SidebarHeader({ title }: { title: string }) {
             {title}
         </h3>
     );
-}
-
-function fmtStat(n: number): string {
-    if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K`;
-    return String(n);
 }
 
 const categoryColors: Record<string, string> = {
@@ -98,14 +85,121 @@ function getAvatarSrc(avatarUrl?: string): string | null {
     return getImageUrl(url, "thumb");
 }
 
-export default function ForumSidebar({ stats, activeThreads }: ForumSidebarProps) {
+export default function ForumSidebar({ activeThreads }: ForumSidebarProps) {
     const { user } = useAuth();
 
     const { data: leaderboardResponse } = useSWR("/leaderboard?type=reputation", fetcher);
     const topContributors: LeaderboardEntry[] = leaderboardResponse?.data?.slice(0, 5) ?? [];
 
+    const avatarSrc = getAvatarSrc(user?.avatar_url);
+    const xp = user?.xp ?? 0;
+    const level = user?.level ?? 1;
+    const nextRankXp = user?.next_rank?.min_xp ?? xp + 1000;
+    const xpProgress = Math.min(100, Math.round((xp / Math.max(1, nextRankXp)) * 100));
+
     return (
         <div className="space-y-4 sticky top-[130px]">
+            {/* ── PROFILE ── */}
+            {user ? (
+                <div className={`${panelClass} p-5`}>
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="relative w-14 h-14 flex-shrink-0">
+                            <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-[#FC4100]/40">
+                                {avatarSrc ? (
+                                    <Image
+                                        src={avatarSrc}
+                                        alt={user.username}
+                                        width={56}
+                                        height={56}
+                                        className="object-cover w-full h-full"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full bg-gradient-to-br from-[#FC4100] to-[#FF6B35] flex items-center justify-center text-white text-[18px] font-black">
+                                        {user.username?.charAt(0)?.toUpperCase() || "?"}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#FC4100] border-2 border-[#0D1117] flex items-center justify-center text-[10px] font-black text-white">
+                                {level}
+                            </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[14px] font-bold text-white truncate">{user.username}</p>
+                            {user.rank?.name && (
+                                <p
+                                    className="text-[11px] font-bold uppercase tracking-wide truncate"
+                                    style={{ color: user.rank.color || "#FC4100" }}
+                                >
+                                    {user.rank.name}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-[#4B5563]">
+                            Level {level} XP
+                        </span>
+                        <span className="text-[10px] font-bold text-[#9CA3AF]">
+                            {xp.toLocaleString()} / {nextRankXp.toLocaleString()}
+                        </span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden mb-4">
+                        <div
+                            className="h-full rounded-full bg-gradient-to-r from-[#FC4100] to-[#FF6B35]"
+                            style={{ width: `${xpProgress}%` }}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                        <div className="text-center bg-white/[0.02] rounded-xl py-2">
+                            <div className="text-[15px] font-black text-white leading-none">
+                                {user.posts_count || 0}
+                            </div>
+                            <div className="text-[8px] font-bold uppercase tracking-widest text-[#4B5563] mt-1">
+                                Posts
+                            </div>
+                        </div>
+                        <div className="text-center bg-white/[0.02] rounded-xl py-2">
+                            <div className="text-[15px] font-black text-white leading-none">
+                                {user.forum_reputation || 0}
+                            </div>
+                            <div className="text-[8px] font-bold uppercase tracking-widest text-[#4B5563] mt-1">
+                                Rep
+                            </div>
+                        </div>
+                    </div>
+
+                    <Link
+                        href={`/profile/${user.username}`}
+                        className="flex items-center justify-center w-full h-9 rounded-xl bg-[#FC4100] hover:bg-[#FC4100]/90 text-white text-[10px] font-bold uppercase tracking-[0.1em] transition-colors"
+                    >
+                        View Profile
+                    </Link>
+                </div>
+            ) : (
+                <div className={`${panelClass} p-5`}>
+                    <p className="text-[13px] font-bold text-white mb-1">Join the Community</p>
+                    <p className="text-[11px] text-[#4B5563] mb-4 leading-relaxed">
+                        Log in to post, earn XP, and climb the ranks.
+                    </p>
+                    <div className="flex gap-2">
+                        <Link
+                            href="/login"
+                            className="flex-1 h-9 rounded-xl bg-[#FC4100] hover:bg-[#FC4100]/90 text-white text-[11px] font-bold uppercase tracking-widest flex items-center justify-center transition-colors"
+                        >
+                            Log In
+                        </Link>
+                        <Link
+                            href="/register"
+                            className="flex-1 h-9 rounded-xl border border-[#2A3040] hover:border-[#FC4100]/40 text-[#9CA3AF] text-[11px] font-bold uppercase tracking-widest flex items-center justify-center transition-colors"
+                        >
+                            Register
+                        </Link>
+                    </div>
+                </div>
+            )}
+
             {/* ── TOP CONTRIBUTORS ── */}
             <div className={`${panelClass} p-5`}>
                 <SidebarHeader title="Top Contributors" />
@@ -222,115 +316,6 @@ export default function ForumSidebar({ stats, activeThreads }: ForumSidebarProps
                     View All Latest Posts &rsaquo;
                 </Link>
             </div>
-
-            {/* ── FORUM STATISTICS ── */}
-            <div className={`${panelClass} overflow-hidden`}>
-                {/* Orange waveform graph */}
-                <div className="bg-[#080B10] relative">
-                    <svg
-                        viewBox="0 0 300 72"
-                        className="w-full"
-                        preserveAspectRatio="none"
-                        aria-hidden="true"
-                    >
-                        <defs>
-                            <linearGradient id="waveGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#FC4100" stopOpacity="0.55" />
-                                <stop offset="100%" stopColor="#FC4100" stopOpacity="0.02" />
-                            </linearGradient>
-                            <filter id="glow">
-                                <feGaussianBlur stdDeviation="1.5" result="blur" />
-                                <feMerge>
-                                    <feMergeNode in="blur" />
-                                    <feMergeNode in="SourceGraphic" />
-                                </feMerge>
-                            </filter>
-                        </defs>
-                        {/* Fill area */}
-                        <path
-                            d="M0,68 C15,66 22,55 35,52 C48,49 55,42 68,36 C81,30 90,24 105,19 C120,14 128,10 142,12 C156,14 163,9 178,11 C193,13 200,20 215,18 C230,16 238,24 252,28 C266,32 274,40 288,44 L300,46 L300,72 L0,72 Z"
-                            fill="url(#waveGrad)"
-                        />
-                        {/* Stroke line */}
-                        <path
-                            d="M0,68 C15,66 22,55 35,52 C48,49 55,42 68,36 C81,30 90,24 105,19 C120,14 128,10 142,12 C156,14 163,9 178,11 C193,13 200,20 215,18 C230,16 238,24 252,28 C266,32 274,40 288,44 L300,46"
-                            fill="none"
-                            stroke="#FC4100"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            filter="url(#glow)"
-                        />
-                    </svg>
-                </div>
-
-                <div className="p-5">
-                    <SidebarHeader title="Forum Statistics" />
-
-                    {/* Stats row */}
-                    <div className="grid grid-cols-4 gap-1 mb-4">
-                        {[
-                            { label: "THREADS", value: stats?.total_threads },
-                            { label: "POSTS", value: stats?.total_posts },
-                            { label: "MEMBERS", value: stats?.members },
-                            { label: "ONLINE", value: stats?.online_users },
-                        ].map(({ label, value }) => (
-                            <div key={label} className="text-center">
-                                <div className="text-[15px] font-black text-white leading-none">
-                                    {fmtStat(value ?? 0)}
-                                </div>
-                                <div className="text-[8px] font-bold uppercase tracking-widest text-[#4B5563] mt-1">
-                                    {label}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <Link
-                        href="/forum"
-                        className="flex items-center justify-center w-full h-9 rounded-xl border border-[#2A3040] hover:border-[#FC4100]/40 hover:bg-[#FC4100]/5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#9CA3AF] hover:text-[#FC4100] transition-colors"
-                    >
-                        Full Forum Statistics &rsaquo;
-                    </Link>
-                </div>
-            </div>
-
-            {/* ── User quick card (logged in only) ── */}
-            {user && (
-                <div className={`${panelClass} p-4`}>
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-[#FC4100]/30">
-                            {user.avatar_url ? (
-                                <Image
-                                    src={getImageUrl(
-                                        user.avatar_url.startsWith("http")
-                                            ? user.avatar_url
-                                            : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${user.avatar_url}`,
-                                        "thumb"
-                                    )}
-                                    alt={user.username}
-                                    width={40}
-                                    height={40}
-                                    className="object-cover w-full h-full"
-                                />
-                            ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-[#FC4100] to-[#FF6B35] flex items-center justify-center text-white text-[15px] font-black">
-                                    {user.username?.charAt(0)?.toUpperCase() || "?"}
-                                </div>
-                            )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-[13px] font-bold text-white truncate">{user.username}</p>
-                            <p className="text-[11px] text-[#4B5563]">{user.posts_count || 0} posts</p>
-                        </div>
-                        <Link
-                            href={`/profile/${user.username}`}
-                            className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#FC4100] hover:text-[#FC4100]/80 transition-colors"
-                        >
-                            Profile
-                        </Link>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

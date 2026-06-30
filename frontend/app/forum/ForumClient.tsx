@@ -521,8 +521,8 @@ export default function ForumPage() {
                     </div>
 
                     {/* ── Sidebar ── */}
-                    <div className="lg:col-span-1">
-                        <ForumSidebar stats={stats} activeThreads={activeThreads} />
+                    <div className={`lg:col-span-1 ${activeTab === "all" ? "lg:pt-[57px]" : ""}`}>
+                        <ForumSidebar activeThreads={activeThreads} />
                     </div>
                 </div>
 
