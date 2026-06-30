@@ -526,24 +526,6 @@ export default function ForumPage() {
                     </div>
                 </div>
 
-                {/* Advanced Search CTA */}
-                <div className="mt-12 bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                        <p className="font-display text-[16px] font-bold text-zinc-900 dark:text-white mb-1">
-                            Can&apos;t find what you&apos;re looking for?
-                        </p>
-                        <p className="text-[13px] text-zinc-500 dark:text-[#71717A]">
-                            Use advanced search to find specific topics and discussions.
-                        </p>
-                    </div>
-                    <Link
-                        href="/forum/search"
-                        className="flex items-center gap-2 px-6 py-3 bg-tp-accent hover:bg-tp-accent/90 text-white text-[11px] font-bold uppercase tracking-widest rounded-lg transition-colors whitespace-nowrap shadow-lg shadow-tp-accent/20"
-                    >
-                        <Search className="w-3.5 h-3.5" />
-                        Advanced Search
-                    </Link>
-                </div>
             </div>
         </div>
     );
