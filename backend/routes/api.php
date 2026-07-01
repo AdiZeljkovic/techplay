@@ -311,6 +311,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/forum/stats', [ForumController::class, 'stats']);
         Route::get('/forum/categories', [ForumController::class, 'categories']);
         Route::get('/forum/active', [ForumController::class, 'activeThreads']);
+        Route::get('/forum/unanswered', [ForumController::class, 'unansweredThreads']);
         Route::get('/forum/categories/{slug}', [ForumController::class, 'showCategory']);
         Route::get('/forum/threads/{slug}', [ForumController::class, 'showThread']);
         Route::get('/forum/search', [ForumController::class, 'search'])->middleware('throttle:30,1');

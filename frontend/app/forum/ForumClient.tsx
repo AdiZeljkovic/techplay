@@ -272,6 +272,7 @@ export default function ForumPage() {
     const { data: categories, isLoading: categoriesLoading } = useSWR<ForumCategory[]>("/forum/categories", fetcher);
     const { data: stats } = useSWR<ForumStats>("/forum/stats", fetcher);
     const { data: activeThreads } = useSWR<ActiveThread[]>("/forum/active", fetcher);
+    const { data: unansweredThreads } = useSWR<ActiveThread[]>("/forum/unanswered", fetcher);
 
     const tabLabels: Record<TabType, string> = {
         all: "All Categories",
@@ -537,14 +538,63 @@ export default function ForumPage() {
 
                         {/* UNANSWERED */}
                         {activeTab === "unanswered" && (
-                            <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-14 text-center">
-                                <Clock className="w-12 h-12 text-[#3F3F46] mx-auto mb-4" />
-                                <h3 className="font-display text-[17px] font-bold text-white uppercase tracking-wide mb-2">
-                                    Coming Soon
-                                </h3>
-                                <p className="text-[#71717A] text-[13px]">
-                                    The unanswered posts filter is in development.
-                                </p>
+                            <div className="space-y-5">
+                                {!unansweredThreads ? (
+                                    <div className="space-y-5">
+                                        {[...Array(5)].map((_, i) => (
+                                            <div key={i} className="h-24 bg-[#0D1117] border border-[#1A2030] rounded-2xl animate-pulse" />
+                                        ))}
+                                    </div>
+                                ) : unansweredThreads.length === 0 ? (
+                                    <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-14 text-center">
+                                        <Clock className="w-12 h-12 text-[#3F3F46] mx-auto mb-4" />
+                                        <h3 className="font-display text-[17px] font-bold text-white uppercase tracking-wide mb-2">
+                                            All Caught Up
+                                        </h3>
+                                        <p className="text-[#71717A] text-[13px]">
+                                            Every thread has at least one reply. Nice work, community.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    unansweredThreads.map((thread) => (
+                                        <Link key={thread.id} href={`/forum/thread/${thread.slug}`} className="block">
+                                            <div className="group bg-[#0D1117] border border-[#1A2030] rounded-2xl px-5 py-5 sm:px-6 sm:py-6 hover:border-tp-accent/30 hover:shadow-lg hover:shadow-tp-accent/5 transition-all duration-300 flex items-center gap-5">
+                                                <div className="w-12 h-12 rounded-full bg-tp-accent/10 ring-1 ring-white/[0.06] flex items-center justify-center text-[14px] font-bold text-tp-accent flex-shrink-0 overflow-hidden">
+                                                    {getAvatarSrc(thread.author?.avatar_url) ? (
+                                                        <Image
+                                                            src={getAvatarSrc(thread.author?.avatar_url)!}
+                                                            alt={thread.author?.username || ""}
+                                                            width={48}
+                                                            height={48}
+                                                            className="object-cover w-full h-full"
+                                                        />
+                                                    ) : (
+                                                        thread.author?.username?.charAt(0)?.toUpperCase() || "?"
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="text-[15px] sm:text-[16px] font-bold text-white truncate group-hover:text-tp-accent transition-colors mb-1.5">
+                                                        {decodeHtml(thread.title)}
+                                                    </h3>
+                                                    <div className="flex items-center gap-2.5">
+                                                        {thread.category && (
+                                                            <span className="px-2 py-0.5 rounded-full bg-tp-accent/10 text-[10px] font-bold uppercase tracking-widest text-tp-accent">
+                                                                {thread.category.name}
+                                                            </span>
+                                                        )}
+                                                        <span className="text-[12px] text-[#6B7280]" suppressHydrationWarning>
+                                                            {formatDistanceToNow(new Date(thread.updated_at), { addSuffix: true })}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 text-tp-accent flex-shrink-0 bg-tp-accent/10 border border-tp-accent/20 rounded-full px-3 py-1.5">
+                                                    <MessageCircle className="w-3.5 h-3.5" />
+                                                    <span className="text-[11px] font-bold uppercase tracking-wide">Reply</span>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ))
+                                )}
                             </div>
                         )}
                     </div>

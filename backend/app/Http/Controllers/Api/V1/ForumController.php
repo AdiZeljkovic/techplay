@@ -216,6 +216,7 @@ class ForumController extends Controller
 
             // Cache invalidation AFTER successful transaction commit
             Cache::forget("forum.thread.{$slug}");
+            Cache::forget('forum.unanswered_threads');
 
             Log::info('createPost: Post created', ['id' => $post->id]);
 
@@ -289,6 +290,8 @@ class ForumController extends Controller
 
             // Cache invalidation AFTER successful transaction commit
             Cache::forget('forum.categories');
+            Cache::forget('forum.active_threads');
+            Cache::forget('forum.unanswered_threads');
 
             // Clear category-specific cache
             $category = Category::find($request->category_id);
@@ -318,6 +321,21 @@ class ForumController extends Controller
                 ->withCount('posts')
                 ->orderByDesc('updated_at')
                 ->take(5)
+                ->get();
+        });
+
+        return response()->json($threads)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+
+    public function unansweredThreads()
+    {
+        // Cache for 60 seconds
+        $threads = Cache::remember('forum.unanswered_threads', 60, function () {
+            return Thread::with(['author', 'category'])
+                ->withCount('posts')
+                ->whereDoesntHave('posts')
+                ->orderByDesc('created_at')
+                ->take(10)
                 ->get();
         });
 
