@@ -15,8 +15,17 @@ import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import ForumSidebar from "@/components/forum/ForumSidebar";
 import { decodeHtml } from "@/lib/decode";
+import { getImageUrl } from "@/lib/imageUrl";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
+
+function getAvatarSrc(avatarUrl?: string): string | null {
+    if (!avatarUrl) return null;
+    const url = avatarUrl.startsWith("http")
+        ? avatarUrl
+        : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${avatarUrl}`;
+    return getImageUrl(url, "thumb");
+}
 
 interface ForumCategory {
     id: number;
@@ -215,10 +224,20 @@ function CategoryCard({ category, viewMode }: { category: ForumCategory; viewMod
                     {category.latest_thread ? (
                         <div className="flex items-start gap-2.5">
                             <div
-                                className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[11px] font-bold text-white mt-0.5"
+                                className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[11px] font-bold text-white mt-0.5 overflow-hidden"
                                 style={{ background: `linear-gradient(135deg, ${color}cc 0%, ${color}66 100%)` }}
                             >
-                                {category.latest_thread.author?.username?.charAt(0)?.toUpperCase() || "?"}
+                                {getAvatarSrc(category.latest_thread.author?.avatar_url) ? (
+                                    <Image
+                                        src={getAvatarSrc(category.latest_thread.author?.avatar_url)!}
+                                        alt={category.latest_thread.author?.username || ""}
+                                        width={28}
+                                        height={28}
+                                        className="object-cover w-full h-full"
+                                    />
+                                ) : (
+                                    category.latest_thread.author?.username?.charAt(0)?.toUpperCase() || "?"
+                                )}
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-[12px] sm:text-[13px] font-semibold text-white leading-snug line-clamp-2 group-hover:text-tp-accent transition-colors">
@@ -477,8 +496,18 @@ export default function ForumPage() {
                                     activeThreads.map((thread) => (
                                         <Link key={thread.id} href={`/forum/thread/${thread.slug}`}>
                                             <div className="group bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-xl px-4 py-3.5 hover:border-tp-accent/30 transition-all duration-200 flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-full bg-tp-accent/10 border border-tp-accent/20 flex items-center justify-center text-[13px] font-bold text-tp-accent flex-shrink-0">
-                                                    {thread.author?.username?.charAt(0)?.toUpperCase() || "?"}
+                                                <div className="w-10 h-10 rounded-full bg-tp-accent/10 border border-tp-accent/20 flex items-center justify-center text-[13px] font-bold text-tp-accent flex-shrink-0 overflow-hidden">
+                                                    {getAvatarSrc(thread.author?.avatar_url) ? (
+                                                        <Image
+                                                            src={getAvatarSrc(thread.author?.avatar_url)!}
+                                                            alt={thread.author?.username || ""}
+                                                            width={40}
+                                                            height={40}
+                                                            className="object-cover w-full h-full"
+                                                        />
+                                                    ) : (
+                                                        thread.author?.username?.charAt(0)?.toUpperCase() || "?"
+                                                    )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <h3 className="text-[14px] font-bold text-zinc-900 dark:text-white truncate group-hover:text-tp-accent transition-colors">
