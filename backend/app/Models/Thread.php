@@ -50,4 +50,9 @@ class Thread extends Model
     {
         return $this->belongsToMany(User::class, 'thread_upvotes', 'thread_id', 'user_id')->withTimestamps();
     }
+
+    public function tags()
+    {
+        return $this->morphToMany(Tag::class, 'taggable');
+    }
 }

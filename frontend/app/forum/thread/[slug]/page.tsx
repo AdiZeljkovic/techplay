@@ -44,10 +44,11 @@ interface User {
 
 interface Post {
     id: number;
-    content: string;
+    content: string | null;
     created_at: string;
     edited_at?: string;
     is_solution: boolean;
+    is_deleted?: boolean;
     author: User;
 }
 
@@ -68,6 +69,7 @@ interface Thread {
     posts_count: number;
     upvotes_count: number;
     is_upvoted: boolean;
+    tags?: { name: string; slug: string }[];
 }
 
 interface ThreadData {
@@ -267,7 +269,7 @@ export default function ThreadPage() {
 
     const handleEditPost = (post: Post) => {
         setEditingPostId(post.id);
-        setEditContent(post.content);
+        setEditContent(post.content ?? "");
     };
 
     const handleSaveEdit = async (postId: number) => {
@@ -471,6 +473,19 @@ export default function ThreadPage() {
                             <h1 className="text-2xl md:text-3xl font-bold text-white leading-tight mb-3">
                                 {thread.title}
                             </h1>
+                            {thread.tags && thread.tags.length > 0 && (
+                                <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                                    {thread.tags.map((tag) => (
+                                        <Link
+                                            key={tag.slug}
+                                            href={`/forum/${thread.category?.slug}?tag=${tag.slug}`}
+                                            className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/[0.03] text-[#9CA3AF] hover:bg-tp-accent/10 hover:text-tp-accent transition-colors"
+                                        >
+                                            {tag.name}
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
                             <div className="flex flex-wrap items-center gap-4 text-sm text-[#9CA3AF]">
                                 <div className="flex items-center gap-2">
                                     <div className="w-6 h-6 rounded-full overflow-hidden bg-white/[0.03]">
@@ -609,6 +624,16 @@ export default function ThreadPage() {
                                 {postsList.map((post, index) => {
                                     const postAuthorStaff = isStaff(post.author);
                                     const postAuthorAvatar = getAvatarSrc(post.author?.avatar_url);
+
+                                    if (post.is_deleted) {
+                                        return (
+                                            <div key={post.id} className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-4 flex items-center justify-between">
+                                                <span className="text-sm text-[#4B5563] italic">[This post was deleted]</span>
+                                                <span className="text-xs text-[#4B5563]">#{index + 2}</span>
+                                            </div>
+                                        );
+                                    }
+
                                     return (
                                         <div key={post.id} className={`bg-[#0D1117] border border-[#1A2030] rounded-2xl overflow-hidden ${post.is_solution ? 'ring-2 ring-green-500/50' : ''}`}>
                                             {post.is_solution && (
@@ -728,7 +753,7 @@ export default function ThreadPage() {
                                                         </div>
                                                     ) : (
                                                         <div className="prose prose-sm prose-invert max-w-none text-[#D1D5DB]">
-                                                            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
+                                                            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content ?? "") }} />
                                                         </div>
                                                     )}
                                                 </div>

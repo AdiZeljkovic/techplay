@@ -8,7 +8,7 @@ import dynamic from "next/dynamic";
 import axios from "@/lib/axios";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
-import { ArrowLeft, Send, AlertCircle, FileText, Hash, AlignLeft, Sparkles } from "lucide-react";
+import { ArrowLeft, Send, AlertCircle, FileText, Hash, AlignLeft, Sparkles, Tag as TagIcon, X } from "lucide-react";
 import { getAvatarSrc } from "@/lib/forum";
 
 // PERF: Dynamic import for heavy editor (~50KB+ with Tiptap extensions)
@@ -39,8 +39,21 @@ function CreateThreadForm() {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [categoryId, setCategoryId] = useState<number | null>(null);
+    const [tags, setTags] = useState<string[]>([]);
+    const [tagInput, setTagInput] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const addTag = () => {
+        const value = tagInput.trim();
+        if (!value || tags.length >= 5 || tags.includes(value)) return;
+        setTags([...tags, value]);
+        setTagInput("");
+    };
+
+    const removeTag = (tag: string) => {
+        setTags(tags.filter(t => t !== tag));
+    };
 
     // Fetch forum categories for dropdown
     const { data: categoriesData } = useSWR<Category[]>('/forum/categories', fetcher);
@@ -72,7 +85,8 @@ function CreateThreadForm() {
             const response = await axios.post('/forum/threads', {
                 title: title.trim(),
                 content: content.trim(),
-                category_id: categoryId
+                category_id: categoryId,
+                tags: tags.length > 0 ? tags : undefined,
             });
 
             router.push(`/forum/thread/${response.data.slug}`);
@@ -246,6 +260,40 @@ function CreateThreadForm() {
                                     placeholder="Share your thoughts, questions, or ideas..."
                                     minHeight="250px"
                                 />
+                            </div>
+
+                            {/* Tags */}
+                            <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-6">
+                                <label className="flex items-center gap-2 text-sm font-semibold text-white mb-3">
+                                    <TagIcon className="w-4 h-4 text-tp-accent" />
+                                    Tags <span className="text-[#6B7280] font-normal normal-case">(optional, up to 5)</span>
+                                </label>
+                                <div className="flex flex-wrap items-center gap-2 mb-2">
+                                    {tags.map(tag => (
+                                        <span key={tag} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-tp-accent/10 text-tp-accent text-xs font-bold">
+                                            {tag}
+                                            <button type="button" onClick={() => removeTag(tag)} aria-label={`Remove tag ${tag}`}>
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </span>
+                                    ))}
+                                </div>
+                                {tags.length < 5 && (
+                                    <input
+                                        type="text"
+                                        value={tagInput}
+                                        onChange={(e) => setTagInput(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter" || e.key === ",") {
+                                                e.preventDefault();
+                                                addTag();
+                                            }
+                                        }}
+                                        onBlur={addTag}
+                                        placeholder="Type a tag and press Enter..."
+                                        className="w-full border border-[#1A2030] bg-white/[0.02] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-[#4B5563] focus:outline-none focus:border-tp-accent focus:ring-1 focus:ring-tp-accent transition-all"
+                                    />
+                                )}
                             </div>
 
                             {/* Submit Buttons */}

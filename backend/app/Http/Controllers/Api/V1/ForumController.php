@@ -7,6 +7,7 @@ use App\Http\Resources\V1\PostResource;
 use App\Http\Resources\V1\ThreadResource;
 use App\Models\Category;
 use App\Models\Post;
+use App\Models\Tag;
 use App\Models\Thread;
 use App\Models\User;
 use App\Notifications\ForumReplyNotification;
@@ -102,10 +103,11 @@ class ForumController extends Controller
     public function showCategory($slug)
     {
         $page = request()->get('page', 1);
-        $cacheKey = "forum.category.{$slug}.page_{$page}";
+        $tagSlug = request()->get('tag');
+        $cacheKey = "forum.category.{$slug}.page_{$page}".($tagSlug ? ".tag_{$tagSlug}" : '');
 
         // Reduced cache time to 30 seconds for faster updates
-        $data = Cache::remember($cacheKey, 30, function () use ($slug) {
+        $data = Cache::remember($cacheKey, 30, function () use ($slug, $tagSlug) {
             Log::info('Fetching category with slug: '.$slug);
             $category = Category::where('slug', $slug)->where('type', 'forum')->first();
 
@@ -115,8 +117,11 @@ class ForumController extends Controller
             }
 
             $threads = $category->threads()
-                ->with(['author', 'latestPost.author'])
+                ->with(['author', 'latestPost.author', 'tags'])
                 ->withCount('posts')
+                ->when($tagSlug, function ($q) use ($tagSlug) {
+                    $q->whereHas('tags', fn ($tq) => $tq->where('slug', $tagSlug));
+                })
                 ->orderBy('is_pinned', 'desc')
                 ->latest('updated_at')
                 ->paginate(20);
@@ -138,6 +143,7 @@ class ForumController extends Controller
                     $q->with(['rank', 'roles'])->withCount(['posts', 'threads']);
                 },
                 'category',
+                'tags',
             ])
             ->withCount(['posts', 'upvotes']) // Add upvotes count
             ->firstOrFail();
@@ -154,6 +160,7 @@ class ForumController extends Controller
             : false;
 
         $posts = $thread->posts()
+            ->withTrashed()
             ->with([
                 'author' => function ($q) {
                     $q->with(['rank', 'roles'])->withCount(['posts', 'threads']);
@@ -253,6 +260,8 @@ class ForumController extends Controller
             'title' => 'required|string|max:255|min:5',
             'content' => 'required|string|min:10|max:20000', // Max 20k chars for thread
             'category_id' => 'required|exists:categories,id',
+            'tags' => 'nullable|array|max:5',
+            'tags.*' => 'string|max:30',
         ]);
 
         try {
@@ -283,13 +292,33 @@ class ForumController extends Controller
 
             // RACE CONDITION FIX: Use DB transaction with cache invalidation AFTER commit
             $thread = DB::transaction(function () use ($cleanTitle, $slug, $cleanContent, $request) {
-                return Thread::create([
+                $thread = Thread::create([
                     'title' => $cleanTitle,
                     'slug' => $slug,
                     'content' => $cleanContent,
                     'category_id' => $request->category_id,
                     'author_id' => Auth::id(),
                 ]);
+
+                if (! empty($request->tags)) {
+                    $tagIds = collect($request->tags)
+                        ->map(fn ($name) => trim($name))
+                        ->filter()
+                        ->unique()
+                        ->take(5)
+                        ->map(function ($name) {
+                            $tag = Tag::firstOrCreate(
+                                ['slug' => Str::slug($name)],
+                                ['name' => $name]
+                            );
+
+                            return $tag->id;
+                        });
+
+                    $thread->tags()->sync($tagIds);
+                }
+
+                return $thread;
             });
 
             Log::info('Thread created successfully', ['id' => $thread->id]);

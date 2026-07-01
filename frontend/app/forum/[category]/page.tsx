@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams } from "next/navigation";
-import { MessageSquare, Lock, Pin, Eye, ArrowLeft, Plus, Clock, MessageCircle } from "lucide-react";
+import { useParams, useSearchParams } from "next/navigation";
+import { MessageSquare, Lock, Pin, Eye, ArrowLeft, Plus, Clock, MessageCircle, X, ScrollText, ChevronDown } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import ForumSidebar from "@/components/forum/ForumSidebar";
@@ -30,6 +30,7 @@ interface Thread {
         role?: string;
     };
     posts_count: number;
+    tags?: { name: string; slug: string }[];
 }
 
 interface CategoryData {
@@ -38,6 +39,7 @@ interface CategoryData {
         name: string;
         slug: string;
         description?: string;
+        rules?: string;
     };
     threads: {
         data: Thread[];
@@ -46,16 +48,19 @@ interface CategoryData {
     };
 }
 
-export default function CategoryThreadsPage() {
+function CategoryThreadsPageInner() {
     const params = useParams();
+    const searchParams = useSearchParams();
     const categorySlug = params.category as string;
     const { user } = useAuth();
     const color = getCategoryColor(categorySlug);
     const Icon = getCategoryIcon(categorySlug);
     const [page, setPage] = useState(1);
+    const [activeTag, setActiveTag] = useState<string | null>(searchParams.get("tag"));
+    const [showRules, setShowRules] = useState(false);
 
     const { data, isLoading } = useSWR<CategoryData>(
-        categorySlug ? `/forum/categories/${categorySlug}?page=${page}` : null,
+        categorySlug ? `/forum/categories/${categorySlug}?page=${page}${activeTag ? `&tag=${activeTag}` : ""}` : null,
         fetcher
     );
 
@@ -175,6 +180,36 @@ export default function CategoryThreadsPage() {
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     <div className="lg:col-span-3">
+                        {category.rules && (
+                            <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl mb-4 overflow-hidden">
+                                <button
+                                    onClick={() => setShowRules(!showRules)}
+                                    className="w-full flex items-center justify-between px-5 py-3.5 text-left"
+                                >
+                                    <span className="flex items-center gap-2 text-sm font-bold text-white">
+                                        <ScrollText className="w-4 h-4 text-tp-accent" />
+                                        Category Rules
+                                    </span>
+                                    <ChevronDown className={`w-4 h-4 text-[#6B7280] transition-transform ${showRules ? "rotate-180" : ""}`} />
+                                </button>
+                                {showRules && (
+                                    <div className="px-5 pb-4 text-sm text-[#9CA3AF] whitespace-pre-line border-t border-[#1A2030] pt-3">
+                                        {category.rules}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        {activeTag && (
+                            <div className="flex items-center gap-2 mb-4 text-sm text-[#9CA3AF]">
+                                Filtering by tag:
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-tp-accent/10 text-tp-accent text-xs font-bold">
+                                    {activeTag}
+                                    <button onClick={() => { setActiveTag(null); setPage(1); }} aria-label="Clear tag filter">
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </span>
+                            </div>
+                        )}
                         {allThreads.length > 0 ? (
                             <div className="space-y-3">
                                 {allThreads
@@ -217,6 +252,23 @@ export default function CategoryThreadsPage() {
                                                                     {thread.title}
                                                                 </h3>
                                                             </div>
+                                                            {thread.tags && thread.tags.length > 0 && (
+                                                                <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                                                                    {thread.tags.map((tag) => (
+                                                                        <button
+                                                                            key={tag.slug}
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault();
+                                                                                setActiveTag(tag.slug);
+                                                                                setPage(1);
+                                                                            }}
+                                                                            className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.03] text-[#9CA3AF] hover:bg-tp-accent/10 hover:text-tp-accent transition-colors"
+                                                                        >
+                                                                            {tag.name}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            )}
                                                             <div className="flex items-center gap-3 text-sm text-[#6B7280]">
                                                                 <div className="flex items-center gap-1.5">
                                                                     <div className={`w-5 h-5 rounded-full overflow-hidden flex-shrink-0 ${isStaff ? "ring-1 ring-tp-accent" : ""}`}>
@@ -296,5 +348,13 @@ export default function CategoryThreadsPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function CategoryThreadsPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[#060810]" />}>
+            <CategoryThreadsPageInner />
+        </Suspense>
     );
 }

@@ -9,9 +9,12 @@ class PostResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $isDeleted = $this->trashed();
+
         return [
             'id' => $this->id,
-            'content' => $this->content,
+            'content' => $isDeleted ? null : $this->content,
+            'is_deleted' => $isDeleted,
             'is_solution' => (bool) $this->is_solution,
             'edited_at' => $this->edited_at,
             'created_at' => $this->created_at,

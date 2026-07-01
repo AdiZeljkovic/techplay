@@ -79,6 +79,10 @@ class ForumCategoryResource extends Resource
                                     ->maxLength(255),
                                 Forms\Components\Textarea::make('description')
                                     ->rows(3),
+                                Forms\Components\Textarea::make('rules')
+                                    ->label('Category Rules')
+                                    ->helperText('Shown to users on the category page. Leave blank to hide.')
+                                    ->rows(4),
                             ]),
                     ])->columnSpanFull(),
             ]);
