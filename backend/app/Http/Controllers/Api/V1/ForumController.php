@@ -21,6 +21,19 @@ use Illuminate\Support\Str;
 
 class ForumController extends Controller
 {
+    /**
+     * Number of paginated category pages to invalidate on write operations.
+     * Wider than the typical thread count per category to avoid stale pages.
+     */
+    private const CATEGORY_CACHE_PAGES = 20;
+
+    private function clearCategoryPageCache(string $categorySlug): void
+    {
+        for ($i = 1; $i <= self::CATEGORY_CACHE_PAGES; $i++) {
+            Cache::forget("forum.category.{$categorySlug}.page_{$i}");
+        }
+    }
+
     public function stats()
     {
         $stats = Cache::remember('forum.stats', 30, function () {
@@ -121,7 +134,7 @@ class ForumController extends Controller
         $thread = Thread::where('slug', $slug)
             ->with([
                 'author' => function ($q) {
-                    $q->with(['rank', 'roles']);
+                    $q->with(['rank', 'roles'])->withCount(['posts', 'threads']);
                 },
                 'category',
             ])
@@ -139,24 +152,13 @@ class ForumController extends Controller
                 ->exists()
             : false;
 
-        if ($thread->author) {
-            $thread->author->loadCount(['posts', 'threads']);
-        }
-
         $posts = $thread->posts()
             ->with([
                 'author' => function ($q) {
-                    $q->with(['rank', 'roles']);
+                    $q->with(['rank', 'roles'])->withCount(['posts', 'threads']);
                 },
             ])
             ->paginate(15);
-
-        // Manually load counts to ensure accuracy
-        $posts->getCollection()->each(function ($post) {
-            if ($post->author) {
-                $post->author->loadCount(['posts', 'threads']);
-            }
-        });
 
         return response()->json([
             'thread' => new ThreadResource($thread),
@@ -296,9 +298,7 @@ class ForumController extends Controller
             // Clear category-specific cache
             $category = Category::find($request->category_id);
             if ($category) {
-                for ($i = 1; $i <= 5; $i++) {
-                    Cache::forget("forum.category.{$category->slug}.page_{$i}");
-                }
+                $this->clearCategoryPageCache($category->slug);
             }
 
             return response()->json($thread, 201);
@@ -345,27 +345,41 @@ class ForumController extends Controller
     public function upvote($slug)
     {
         $thread = Thread::where('slug', $slug)->firstOrFail();
+        $userId = Auth::id();
 
-        $exists = DB::table('thread_upvotes')
-            ->where('user_id', Auth::id())
-            ->where('thread_id', $thread->id)
-            ->exists();
-
-        if ($exists) {
-            DB::table('thread_upvotes')
-                ->where('user_id', Auth::id())
+        $action = DB::transaction(function () use ($thread, $userId) {
+            $exists = DB::table('thread_upvotes')
+                ->where('user_id', $userId)
                 ->where('thread_id', $thread->id)
-                ->delete();
-            $action = 'removed';
-        } else {
-            DB::table('thread_upvotes')->insert([
-                'user_id' => Auth::id(),
-                'thread_id' => $thread->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            $action = 'added';
-        }
+                ->lockForUpdate()
+                ->exists();
+
+            if ($exists) {
+                DB::table('thread_upvotes')
+                    ->where('user_id', $userId)
+                    ->where('thread_id', $thread->id)
+                    ->delete();
+                $delta = -1;
+                $action = 'removed';
+            } else {
+                DB::table('thread_upvotes')->insert([
+                    'user_id' => $userId,
+                    'thread_id' => $thread->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                $delta = 1;
+                $action = 'added';
+            }
+
+            // Reward the thread author with reputation for receiving an upvote,
+            // but never for upvoting your own thread (no self-farming).
+            if ($thread->author_id !== $userId) {
+                User::where('id', $thread->author_id)->increment('forum_reputation', $delta);
+            }
+
+            return $action;
+        });
 
         return response()->json([
             'message' => 'Upvote updated',
@@ -387,15 +401,56 @@ class ForumController extends Controller
         $thread->is_pinned = ! $thread->is_pinned;
         $thread->save();
 
-        // Invalidate category cache so pinned order refreshes
-        for ($i = 1; $i <= 5; $i++) {
-            Cache::forget("forum.category.{$thread->category->slug}.page_{$i}");
-        }
+        // Invalidate caches so pinned order/state refreshes everywhere it's shown
+        $this->clearCategoryPageCache($thread->category->slug);
+        Cache::forget('forum.categories');
+        Cache::forget('forum.active_threads');
 
         return response()->json([
             'is_pinned' => $thread->is_pinned,
             'message' => $thread->is_pinned ? 'Thread pinned.' : 'Thread unpinned.',
         ]);
+    }
+
+    public function lockThread(Request $request, string $slug)
+    {
+        $user = Auth::user();
+        $allowedRoles = ['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator'];
+
+        if (! $user->hasAnyRole($allowedRoles) && ! in_array($user->role, ['admin', 'super_admin', 'moderator'])) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $thread = Thread::where('slug', $slug)->firstOrFail();
+        $thread->is_locked = ! $thread->is_locked;
+        $thread->save();
+
+        Cache::forget("forum.thread.{$slug}");
+        $this->clearCategoryPageCache($thread->category->slug);
+        Cache::forget('forum.categories');
+
+        return response()->json([
+            'is_locked' => $thread->is_locked,
+            'message' => $thread->is_locked ? 'Thread locked.' : 'Thread unlocked.',
+        ]);
+    }
+
+    public function deleteThread(Request $request, string $slug)
+    {
+        $user = Auth::user();
+        $allowedRoles = ['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator'];
+
+        if (! $user->hasAnyRole($allowedRoles) && ! in_array($user->role, ['admin', 'super_admin', 'moderator'])) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $thread = Thread::where('slug', $slug)->firstOrFail();
+        $categorySlug = $thread->category->slug;
+        $thread->delete(); // Cascades to posts via FK constraint; ThreadObserver::deleted() clears shared caches
+
+        $this->clearCategoryPageCache($categorySlug);
+
+        return response()->json(['message' => 'Thread deleted.']);
     }
 
     public function updatePost(Request $request, string $slug, int $postId, SanitizationService $sanitizer)
@@ -440,7 +495,17 @@ class ForumController extends Controller
 
         $post->delete(); // Soft delete
 
+        // Post counts feed category cards, global stats, and the unanswered-threads
+        // list, so all of those need to be invalidated alongside the thread itself.
         Cache::forget("forum.thread.{$slug}");
+        Cache::forget('forum.categories');
+        Cache::forget('forum.stats');
+        Cache::forget('forum.active_threads');
+        Cache::forget('forum.unanswered_threads');
+        $post->loadMissing('thread.category');
+        if ($post->thread?->category) {
+            $this->clearCategoryPageCache($post->thread->category->slug);
+        }
 
         return response()->json(['message' => 'Post deleted.']);
     }

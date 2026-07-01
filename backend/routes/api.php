@@ -170,12 +170,14 @@ Route::prefix('v1')->group(function () {
         Route::post('/subscriptions/activate', [PayPalController::class, 'activateSubscription']);
 
         // Forum (Authenticated)
-        Route::post('/forum/threads', [ForumController::class, 'createThread']);
-        Route::post('/forum/threads/{slug}/posts', [ForumController::class, 'createPost']);
-        Route::post('/forum/threads/{slug}/upvote', [ForumController::class, 'upvote']);
+        Route::middleware('throttle:10,1')->post('/forum/threads', [ForumController::class, 'createThread']);
+        Route::middleware('throttle:20,1')->post('/forum/threads/{slug}/posts', [ForumController::class, 'createPost']);
+        Route::middleware('throttle:20,1')->post('/forum/threads/{slug}/upvote', [ForumController::class, 'upvote']);
         Route::post('/forum/threads/{slug}/pin', [ForumController::class, 'pinThread']);
-        Route::put('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'updatePost']);
-        Route::delete('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'deletePost']);
+        Route::post('/forum/threads/{slug}/lock', [ForumController::class, 'lockThread']);
+        Route::delete('/forum/threads/{slug}', [ForumController::class, 'deleteThread']);
+        Route::middleware('throttle:20,1')->put('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'updatePost']);
+        Route::middleware('throttle:20,1')->delete('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'deletePost']);
 
         // Game Ratings (Auth)
         Route::get('/games/{slug}/ratings/my', [GameRatingController::class, 'my']);

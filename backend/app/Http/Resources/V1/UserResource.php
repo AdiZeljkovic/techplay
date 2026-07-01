@@ -23,7 +23,7 @@ class UserResource extends JsonResource
             'display_name' => $this->display_name,
             'avatar_url' => $this->avatar_url,
             'bio' => $this->bio,
-            'email' => $this->email,
+            'email' => $this->when($request->user()?->id === $this->id, $this->email),
             'rank' => $this->whenLoaded('rank', function () {
                 return [
                     'id' => $this->rank->id,
