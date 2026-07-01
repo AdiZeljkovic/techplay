@@ -245,13 +245,16 @@ class ForumController extends Controller
 
     public function createThread(Request $request, SanitizationService $sanitizer)
     {
-        try {
-            $validated = $request->validate([
-                'title' => 'required|string|max:255|min:5',
-                'content' => 'required|string|min:10|max:20000', // Max 20k chars for thread
-                'category_id' => 'required|exists:categories,id',
-            ]);
+        // Validation must stay outside the try/catch below — otherwise Laravel's
+        // ValidationException gets swallowed by the generic \Exception catch and
+        // turned into an unhelpful 500 instead of the normal 422 field errors.
+        $request->validate([
+            'title' => 'required|string|max:255|min:5',
+            'content' => 'required|string|min:10|max:20000', // Max 20k chars for thread
+            'category_id' => 'required|exists:categories,id',
+        ]);
 
+        try {
             // check restriction for "News & Announcements"
             $category = Category::find($request->category_id);
             if ($category && ($category->slug === 'news-announcements' || $category->name === 'News & Announcements')) {
