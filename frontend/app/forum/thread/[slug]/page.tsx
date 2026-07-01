@@ -112,6 +112,7 @@ export default function ThreadPage() {
     const [editingPostId, setEditingPostId] = useState<number | null>(null);
     const [editContent, setEditContent] = useState("");
     const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
+    const [markingSolutionId, setMarkingSolutionId] = useState<number | null>(null);
 
     const { data, isLoading, mutate } = useSWR<ThreadData>(slug ? `/forum/threads/${slug}` : null, fetcher);
 
@@ -309,6 +310,32 @@ export default function ThreadPage() {
             toast.error("Failed to delete post.");
         } finally {
             setDeletingPostId(null);
+        }
+    };
+
+    const handleMarkSolution = async (postId: number) => {
+        if (markingSolutionId) return;
+        setMarkingSolutionId(postId);
+        try {
+            const res = await axios.post(`/forum/threads/${slug}/posts/${postId}/solution`);
+            const nowSolution = res.data.is_solution as boolean;
+            if (data) {
+                const currentPosts = getPosts(data);
+                const updatedPosts = currentPosts.map(p => ({
+                    ...p,
+                    is_solution: p.id === postId ? nowSolution : (nowSolution ? false : p.is_solution),
+                }));
+                if (Array.isArray(data.posts)) {
+                    mutate({ ...data, posts: updatedPosts }, false);
+                } else {
+                    mutate({ ...data, posts: { ...data.posts, data: updatedPosts } }, false);
+                }
+            }
+            toast.success(res.data.message);
+        } catch {
+            toast.error("Failed to update solution status.");
+        } finally {
+            setMarkingSolutionId(null);
         }
     };
 
@@ -649,6 +676,15 @@ export default function ThreadPage() {
                                                         </span>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-xs text-[#6B7280]">#{index + 2}</span>
+                                                            {user && (user.id === thread.author?.id || currentUserIsStaff) && (
+                                                                <button
+                                                                    onClick={() => handleMarkSolution(post.id)}
+                                                                    disabled={markingSolutionId === post.id}
+                                                                    className={`text-xs px-2 py-1 rounded transition-all ${post.is_solution ? 'text-green-400 hover:text-red-400 hover:bg-red-500/10' : 'text-[#9CA3AF] hover:text-green-400 hover:bg-green-500/10'}`}
+                                                                >
+                                                                    {markingSolutionId === post.id ? '...' : post.is_solution ? 'Unmark Solution' : 'Mark as Solution'}
+                                                                </button>
+                                                            )}
                                                             {user && (user.id === post.author?.id || currentUserIsStaff) && (
                                                                 <div className="flex items-center gap-1">
                                                                     <button

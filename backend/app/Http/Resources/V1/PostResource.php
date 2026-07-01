@@ -13,6 +13,7 @@ class PostResource extends JsonResource
             'id' => $this->id,
             'content' => $this->content,
             'is_solution' => (bool) $this->is_solution,
+            'edited_at' => $this->edited_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'author' => new UserResource($this->whenLoaded('author')),

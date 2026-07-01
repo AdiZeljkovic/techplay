@@ -10,6 +10,7 @@ use App\Models\Post;
 use App\Models\Thread;
 use App\Models\User;
 use App\Notifications\ForumReplyNotification;
+use App\Services\AchievementService;
 use App\Services\SanitizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -454,6 +455,48 @@ class ForumController extends Controller
         $this->clearCategoryPageCache($categorySlug);
 
         return response()->json(['message' => 'Thread deleted.']);
+    }
+
+    public function markSolution(Request $request, string $slug, int $postId)
+    {
+        $thread = Thread::where('slug', $slug)->firstOrFail();
+        $user = Auth::user();
+        $allowedRoles = ['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator'];
+        $isStaff = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'moderator']);
+
+        if ($thread->author_id !== $user->id && ! $isStaff) {
+            return response()->json(['message' => 'Only the thread author or staff can mark a solution.'], 403);
+        }
+
+        $post = Post::where('thread_id', $thread->id)->findOrFail($postId);
+
+        if ($post->is_solution) {
+            $post->is_solution = false;
+            $post->save();
+        } else {
+            Post::where('thread_id', $thread->id)->where('is_solution', true)->update(['is_solution' => false]);
+            $post->is_solution = true;
+            $post->save();
+
+            if ($post->author_id !== $thread->author_id) {
+                $solutionAuthor = User::find($post->author_id);
+                if ($solutionAuthor) {
+                    $solutionAuthor->increment('forum_reputation', 10);
+
+                    try {
+                        app(AchievementService::class)->check($solutionAuthor, ['solutions_count']);
+                    } catch (\Throwable) {
+                    }
+                }
+            }
+        }
+
+        Cache::forget("forum.thread.{$slug}");
+
+        return response()->json([
+            'is_solution' => $post->is_solution,
+            'message' => $post->is_solution ? 'Marked as solution.' : 'Unmarked as solution.',
+        ]);
     }
 
     public function updatePost(Request $request, string $slug, int $postId, SanitizationService $sanitizer)

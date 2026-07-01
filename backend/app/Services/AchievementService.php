@@ -116,6 +116,8 @@ class AchievementService
 
             'threads_count' => $user->threads()->count(),
 
+            'solutions_count' => $user->posts()->where('is_solution', true)->count(),
+
             'comments_count' => $user->comments()->count(),
 
             'comment_likes_received' => $this->resolveCommentLikes($user),

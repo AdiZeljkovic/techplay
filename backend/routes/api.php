@@ -178,6 +178,7 @@ Route::prefix('v1')->group(function () {
         Route::delete('/forum/threads/{slug}', [ForumController::class, 'deleteThread']);
         Route::middleware('throttle:20,1')->put('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'updatePost']);
         Route::middleware('throttle:20,1')->delete('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'deletePost']);
+        Route::middleware('throttle:20,1')->post('/forum/threads/{slug}/posts/{postId}/solution', [ForumController::class, 'markSolution']);
 
         // Game Ratings (Auth)
         Route::get('/games/{slug}/ratings/my', [GameRatingController::class, 'my']);

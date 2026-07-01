@@ -20,6 +20,9 @@ class AchievementSeeder extends Seeder
             ['name' => 'Conversation Starter', 'description' => 'Start your first thread', 'points' => 75, 'criteria_type' => 'threads_count', 'criteria_value' => 1],
             ['name' => 'Discussion Leader', 'description' => 'Start 10 threads', 'points' => 200, 'criteria_type' => 'threads_count', 'criteria_value' => 10],
 
+            // Q&A
+            ['name' => 'Problem Solver', 'description' => 'Have 5 of your replies marked as the solution', 'points' => 150, 'criteria_type' => 'solutions_count', 'criteria_value' => 5],
+
             // Reputation
             ['name' => 'Rising Star', 'description' => 'Reach 100 reputation', 'points' => 100, 'criteria_type' => 'reputation', 'criteria_value' => 100],
             ['name' => 'Community Pillar', 'description' => 'Reach 500 reputation', 'points' => 300, 'criteria_type' => 'reputation', 'criteria_value' => 500],
