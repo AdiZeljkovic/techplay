@@ -34,6 +34,14 @@ class ThreadResource extends JsonResource
             'tags' => $this->whenLoaded('tags', function () {
                 return $this->tags->map(fn ($tag) => ['name' => $tag->name, 'slug' => $tag->slug])->values();
             }),
+            'game' => $this->whenLoaded('game', function () {
+                return $this->game ? [
+                    'id' => $this->game->id,
+                    'name' => $this->game->name,
+                    'slug' => $this->game->slug,
+                    'background_image' => $this->game->background_image,
+                ] : null;
+            }),
         ];
     }
 }

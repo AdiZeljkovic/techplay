@@ -68,6 +68,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'battlenet_refresh_token',
         'battlenet_region',
         'battletag',
+        'post_color',
     ];
 
     /**

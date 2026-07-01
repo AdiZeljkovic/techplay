@@ -20,6 +20,12 @@ class Category extends Model
         'focus_keyword',
         'canonical_url',
         'is_noindex',
+        'clan_id',
+        'is_private',
+    ];
+
+    protected $casts = [
+        'is_private' => 'boolean',
     ];
 
     public function parent()
@@ -30,6 +36,11 @@ class Category extends Model
     public function children()
     {
         return $this->hasMany(Category::class, 'parent_id');
+    }
+
+    public function clan()
+    {
+        return $this->belongsTo(Clan::class);
     }
 
     public function articles()

@@ -28,6 +28,11 @@ class CustomizationSeeder extends Seeder
             ['name' => 'Early Adopter', 'type' => 'badge', 'cost' => 400, 'value' => '#FC4100', 'description' => 'Show you were here from the start.', 'sort_order' => 1],
             ['name' => 'Trendsetter', 'type' => 'badge', 'cost' => 600, 'value' => '#a855f7', 'description' => 'For the community tastemakers.', 'sort_order' => 2],
 
+            // Post Colors (forum username color)
+            ['name' => 'Crimson Post Color', 'type' => 'post_color', 'cost' => 200, 'value' => '#DC2626', 'description' => 'Show your username in crimson on forum posts.', 'sort_order' => 1],
+            ['name' => 'Azure Post Color', 'type' => 'post_color', 'cost' => 200, 'value' => '#2563EB', 'description' => 'Show your username in azure on forum posts.', 'sort_order' => 2],
+            ['name' => 'Gold Post Color', 'type' => 'post_color', 'cost' => 350, 'value' => '#EAB308', 'description' => 'Show your username in gold on forum posts.', 'sort_order' => 3],
+
             // Perks
             ['name' => 'Profile Spotlight', 'type' => 'perk', 'cost' => 1500, 'description' => 'Featured on the community page for a week.', 'sort_order' => 1],
             ['name' => 'Animated Avatar', 'type' => 'perk', 'cost' => 1000, 'description' => 'Unlock animated (GIF) avatars.', 'sort_order' => 2],

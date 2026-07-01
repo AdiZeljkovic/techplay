@@ -37,3 +37,6 @@ Schedule::command('sitemap:generate')->everySixHours();
 
 // PROFILE: Snapshot reputation + monthly contribution on the 1st of each month
 Schedule::command('profile:snapshot-reputation')->monthlyOn(1, '00:30');
+
+// FORUM: Unpin bounty-funded self-pins once their 24h window expires
+Schedule::command('forum:clear-expired-pins')->hourly();

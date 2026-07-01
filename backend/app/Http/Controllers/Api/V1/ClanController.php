@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Clan;
 use App\Models\ClanInvite;
 use App\Models\ClanMember;
@@ -58,7 +59,31 @@ class ClanController extends Controller
             'joined_at' => now(),
         ]);
 
+        $this->createClanForumCategory($clan);
+
         return $this->success($clan->load('owner:id,username,avatar'), 'Clan created!', 201);
+    }
+
+    /**
+     * Every clan gets its own private forum category, nested under a shared
+     * "Clans" parent, visible only to members (see ForumController::categories()).
+     */
+    private function createClanForumCategory(Clan $clan): void
+    {
+        $clansParent = Category::firstOrCreate(
+            ['slug' => 'clans', 'type' => 'forum'],
+            ['name' => 'Clans', 'description' => 'Private spaces for clans to discuss and organize.']
+        );
+
+        Category::create([
+            'name' => $clan->name,
+            'slug' => 'clan-'.$clan->slug,
+            'type' => 'forum',
+            'parent_id' => $clansParent->id,
+            'clan_id' => $clan->id,
+            'is_private' => true,
+            'description' => "Private discussion space for {$clan->name} members.",
+        ]);
     }
 
     /** GET /clans/{slug} — clan profile */

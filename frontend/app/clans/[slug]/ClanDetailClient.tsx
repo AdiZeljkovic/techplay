@@ -3,7 +3,7 @@
 import useSWR from 'swr'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Shield, Users, Crown, UserCheck, UserMinus, LogIn } from 'lucide-react'
+import { Shield, Users, Crown, UserCheck, UserMinus, LogIn, MessageSquare } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { getApiUrl } from '@/lib/api'
 import toast from 'react-hot-toast'
@@ -107,19 +107,27 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
           <span>·</span>
           <span>Led by <Link href={`/profile/${clan.owner.username}`} className="text-white hover:text-[--accent]">@{clan.owner.username}</Link></span>
         </div>
-        {user && (
-          isMember && myMembership.role !== 'owner' ? (
-            <button onClick={handleLeave}
-              className="flex items-center gap-1.5 text-sm text-red-400 hover:text-red-300 bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg transition-colors">
-              <UserMinus size={14} /> Leave
-            </button>
-          ) : !isMember && clan.is_public ? (
-            <button onClick={handleJoin}
-              className="flex items-center gap-1.5 text-sm bg-[--accent] hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
-              <LogIn size={14} /> Join Clan
-            </button>
-          ) : null
-        )}
+        <div className="flex items-center gap-2">
+          {isMember && (
+            <Link href={`/forum/clan-${clan.slug}`}
+              className="flex items-center gap-1.5 text-sm text-white bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg transition-colors">
+              <MessageSquare size={14} /> Clan Forum
+            </Link>
+          )}
+          {user && (
+            isMember && myMembership.role !== 'owner' ? (
+              <button onClick={handleLeave}
+                className="flex items-center gap-1.5 text-sm text-red-400 hover:text-red-300 bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg transition-colors">
+                <UserMinus size={14} /> Leave
+              </button>
+            ) : !isMember && clan.is_public ? (
+              <button onClick={handleJoin}
+                className="flex items-center gap-1.5 text-sm bg-[--accent] hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
+                <LogIn size={14} /> Join Clan
+              </button>
+            ) : null
+          )}
+        </div>
       </div>
 
       {clan.description && (

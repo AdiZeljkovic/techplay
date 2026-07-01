@@ -24,6 +24,12 @@ class Thread extends Model
         'is_pinned',
         'is_locked',
         'view_count',
+        'pinned_until',
+        'game_id',
+    ];
+
+    protected $casts = [
+        'pinned_until' => 'datetime',
     ];
 
     public function category()
@@ -64,5 +70,10 @@ class Thread extends Model
     public function bookmarkedBy()
     {
         return $this->belongsToMany(User::class, 'thread_bookmarks', 'thread_id', 'user_id')->withTimestamps();
+    }
+
+    public function game()
+    {
+        return $this->belongsTo(Game::class);
     }
 }

@@ -126,6 +126,12 @@ class CustomizationController extends Controller
 
         $pivot->update(['is_equipped' => true]);
 
+        // post_color is denormalized onto users so PostResource/ThreadResource
+        // can render it without joining customizations for every author.
+        if ($item->type === 'post_color') {
+            $user->update(['post_color' => $item->value]);
+        }
+
         return $this->success(null, 'Equipped');
     }
 
@@ -135,9 +141,16 @@ class CustomizationController extends Controller
      */
     public function unequip(Request $request, int $id)
     {
-        UserCustomization::where('user_id', $request->user()->id)
+        $user = $request->user();
+        $item = Customization::find($id);
+
+        UserCustomization::where('user_id', $user->id)
             ->where('customization_id', $id)
             ->update(['is_equipped' => false]);
+
+        if ($item && $item->type === 'post_color') {
+            $user->update(['post_color' => null]);
+        }
 
         return $this->success(null, 'Unequipped');
     }

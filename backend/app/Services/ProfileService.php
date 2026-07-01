@@ -333,7 +333,7 @@ class ProfileService
             ->with('customization:id,name,type,value,asset')
             ->get();
 
-        $equipped = ['theme' => null, 'frame' => null, 'badge' => null];
+        $equipped = ['theme' => null, 'frame' => null, 'badge' => null, 'post_color' => null];
         $perks = [];
 
         foreach ($equippedRows as $row) {
@@ -361,7 +361,7 @@ class ProfileService
             ->join('customizations', 'customizations.id', '=', 'user_customizations.customization_id')
             ->select('customizations.type', DB::raw('count(*) as c'))->groupBy('customizations.type')->pluck('c', 'type');
 
-        $labels = ['theme' => 'Profile Themes', 'frame' => 'Avatar Frames', 'badge' => 'Custom Badges', 'perk' => 'Exclusive Perks'];
+        $labels = ['theme' => 'Profile Themes', 'frame' => 'Avatar Frames', 'badge' => 'Custom Badges', 'post_color' => 'Post Colors', 'perk' => 'Exclusive Perks'];
         $summary = [];
         foreach ($labels as $type => $label) {
             $summary[] = [

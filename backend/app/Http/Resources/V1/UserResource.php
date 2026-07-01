@@ -35,6 +35,7 @@ class UserResource extends JsonResource
             'is_staff' => $this->hasRole(['admin', 'editor']),
             'next_rank' => $this->when(isset($this->next_rank), $this->next_rank),
             'forum_reputation' => $this->forum_reputation ?? 0,
+            'post_color' => $this->post_color,
             'created_at' => $this->created_at,
             'posts_count' => ($this->posts_count ?? $this->posts()->count()) + ($this->threads_count ?? $this->threads()->count()),
             'level' => floor(($this->xp ?? 0) / 1000) + 1,

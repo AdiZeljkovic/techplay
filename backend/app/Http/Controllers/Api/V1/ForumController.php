@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\V1\PostResource;
 use App\Http\Resources\V1\ThreadResource;
 use App\Models\Category;
+use App\Models\ClanMember;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Models\Thread;
@@ -14,6 +15,7 @@ use App\Notifications\ForumReplyNotification;
 use App\Notifications\MentionNotification;
 use App\Notifications\ThreadWatchNotification;
 use App\Services\AchievementService;
+use App\Services\BountyService;
 use App\Services\SanitizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,11 +33,43 @@ class ForumController extends Controller
      */
     private const CATEGORY_CACHE_PAGES = 20;
 
+    /** Bounty cost to self-pin your own thread for 24 hours. */
+    private const SELF_PIN_COST = 100;
+
     private function clearCategoryPageCache(string $categorySlug): void
     {
         for ($i = 1; $i <= self::CATEGORY_CACHE_PAGES; $i++) {
             Cache::forget("forum.category.{$categorySlug}.page_{$i}");
         }
+    }
+
+    /**
+     * IDs of clans the current authenticated user belongs to — used to gate
+     * visibility of private, clan-linked forum categories.
+     */
+    private function currentUserClanIds(): array
+    {
+        if (! Auth::guard('sanctum')->check()) {
+            return [];
+        }
+
+        return ClanMember::where('user_id', Auth::guard('sanctum')->id())->pluck('clan_id')->all();
+    }
+
+    /**
+     * Categories list is globally cached, so private-category visibility must
+     * be filtered per-request AFTER the cache read, never baked into the cache.
+     */
+    private function filterPrivateCategories($categories)
+    {
+        $userClanIds = $this->currentUserClanIds();
+        $canSee = fn ($cat) => ! $cat->is_private || in_array($cat->clan_id, $userClanIds);
+
+        return $categories->filter($canSee)->values()->each(function ($cat) use ($canSee) {
+            if (isset($cat->children)) {
+                $cat->children = $cat->children->filter($canSee)->values();
+            }
+        });
     }
 
     /**
@@ -121,7 +155,8 @@ class ForumController extends Controller
             return $parents->values();
         });
 
-        return response()->json($categories)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+        return response()->json($this->filterPrivateCategories($categories))
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     public function showCategory($slug)
@@ -156,6 +191,12 @@ class ForumController extends Controller
             ];
         });
 
+        // Checked per-request (not baked into the shared cache above) so private
+        // clan categories never leak to non-members via a cached response.
+        if ($data['category']->is_private && ! in_array($data['category']->clan_id, $this->currentUserClanIds())) {
+            abort(404, 'Category not found');
+        }
+
         return response()->json($data)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
@@ -168,6 +209,7 @@ class ForumController extends Controller
                 },
                 'category',
                 'tags',
+                'game:id,name,slug,background_image',
             ])
             ->withCount(['posts', 'upvotes']) // Add upvotes count
             ->firstOrFail();
@@ -307,6 +349,7 @@ class ForumController extends Controller
             'category_id' => 'required|exists:categories,id',
             'tags' => 'nullable|array|max:5',
             'tags.*' => 'string|max:30',
+            'game_id' => 'nullable|exists:games,id',
         ]);
 
         try {
@@ -343,6 +386,7 @@ class ForumController extends Controller
                     'content' => $cleanContent,
                     'category_id' => $request->category_id,
                     'author_id' => Auth::id(),
+                    'game_id' => $request->game_id,
                 ]);
 
                 if (! empty($request->tags)) {
@@ -393,6 +437,25 @@ class ForumController extends Controller
 
             return response()->json(['message' => 'Failed to create thread.'], 500);
         }
+    }
+
+    /**
+     * Recent forum threads discussing a specific game — powers the
+     * "Community Discussion" widget on the game's database page.
+     */
+    public function gameThreads(string $gameSlug)
+    {
+        $threads = Cache::remember("forum.game_threads.{$gameSlug}", 60, function () use ($gameSlug) {
+            return Thread::whereHas('game', fn ($q) => $q->where('slug', $gameSlug))
+                ->with(['author', 'category'])
+                ->withCount('posts')
+                ->orderByDesc('is_pinned')
+                ->orderByDesc('updated_at')
+                ->take(10)
+                ->get();
+        });
+
+        return response()->json($threads)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     public function activeThreads()
@@ -530,16 +593,38 @@ class ForumController extends Controller
         ]);
     }
 
+    /**
+     * Staff can moderate any thread; a clan's owner/officer can additionally
+     * moderate threads within their own clan's private forum category.
+     */
+    private function canModerateThread(User $user, Thread $thread): bool
+    {
+        $allowedRoles = ['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator'];
+        $isStaff = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'moderator']);
+
+        if ($isStaff) {
+            return true;
+        }
+
+        $clanId = $thread->category?->clan_id;
+        if (! $clanId) {
+            return false;
+        }
+
+        $membership = ClanMember::where('clan_id', $clanId)->where('user_id', $user->id)->first();
+
+        return $membership && $membership->isOfficerOrAbove();
+    }
+
     public function pinThread(Request $request, string $slug)
     {
         $user = Auth::user();
-        $allowedRoles = ['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator'];
+        $thread = Thread::where('slug', $slug)->with('category')->firstOrFail();
 
-        if (! $user->hasAnyRole($allowedRoles) && ! in_array($user->role, ['admin', 'super_admin', 'moderator'])) {
+        if (! $this->canModerateThread($user, $thread)) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
-        $thread = Thread::where('slug', $slug)->firstOrFail();
         $thread->is_pinned = ! $thread->is_pinned;
         $thread->save();
 
@@ -554,16 +639,55 @@ class ForumController extends Controller
         ]);
     }
 
+    /**
+     * Spend Bounty to pin your own thread to the top of its category for 24h.
+     * Expired self-pins are cleared by the forum:clear-expired-pins schedule.
+     */
+    public function selfPinThread(Request $request, string $slug, BountyService $bounty)
+    {
+        $thread = Thread::where('slug', $slug)->with('category')->firstOrFail();
+        $user = Auth::user();
+
+        if ($thread->author_id !== $user->id) {
+            return response()->json(['message' => 'Only the thread author can self-pin.'], 403);
+        }
+
+        if ($thread->is_pinned) {
+            return response()->json(['message' => 'This thread is already pinned.'], 422);
+        }
+
+        try {
+            $bounty->spend($user, self::SELF_PIN_COST, "Self-pinned thread: {$thread->title}");
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        $thread->is_pinned = true;
+        $thread->pinned_until = now()->addDay();
+        $thread->save();
+
+        Cache::forget("forum.thread.{$slug}");
+        $this->clearCategoryPageCache($thread->category->slug);
+        Cache::forget('forum.categories');
+        Cache::forget('forum.active_threads');
+
+        return response()->json([
+            'is_pinned' => true,
+            'pinned_until' => $thread->pinned_until,
+            'balance' => (int) $user->fresh()->bounty_balance,
+            'message' => 'Thread pinned for 24 hours.',
+        ]);
+    }
+
     public function lockThread(Request $request, string $slug)
     {
         $user = Auth::user();
-        $allowedRoles = ['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator'];
+        $thread = Thread::where('slug', $slug)->with('category')->firstOrFail();
 
-        if (! $user->hasAnyRole($allowedRoles) && ! in_array($user->role, ['admin', 'super_admin', 'moderator'])) {
+        if (! $this->canModerateThread($user, $thread)) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
-        $thread = Thread::where('slug', $slug)->firstOrFail();
         $thread->is_locked = ! $thread->is_locked;
         $thread->save();
 

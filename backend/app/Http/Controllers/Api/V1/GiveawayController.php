@@ -7,6 +7,7 @@ use App\Models\Giveaway;
 use App\Models\GiveawayEntry;
 use App\Models\GiveawayTask;
 use App\Models\GiveawayTaskCompletion;
+use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -297,6 +298,21 @@ class GiveawayController extends Controller
             return response()->json([
                 'message' => 'You have already completed this task.',
             ], 422);
+        }
+
+        // "Post in the forum" is actually verified (unlike most task types here,
+        // which are self-reported by the click alone) — require a real post
+        // made by this user since the giveaway started.
+        if ($task->type === 'forum_post') {
+            $hasPosted = Post::where('author_id', $user->id)
+                ->where('created_at', '>=', $giveaway->starts_at)
+                ->exists();
+
+            if (! $hasPosted) {
+                return response()->json([
+                    'message' => 'Post in the forum first, then come back to complete this task.',
+                ], 422);
+            }
         }
 
         // Mark as completed (with race condition protection)

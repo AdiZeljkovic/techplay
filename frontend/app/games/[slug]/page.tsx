@@ -12,6 +12,7 @@ import GameScreenshotsLightbox from "@/components/games/GameScreenshotsLightbox"
 import GameCountdownTimer from "@/components/games/GameCountdownTimer";
 import GameRating from "@/components/games/GameRating";
 import TrackGameButton from "@/components/games/TrackGameButton";
+import GameForumThreads from "@/components/games/GameForumThreads";
 
 /* ─── Rendering: SSR on every request, Cloudflare caches at edge ─────────────
    ISR disabled — game slugs create millions of files and exhaust disk/inodes.
@@ -608,6 +609,9 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         </div>
                     </section>
                 )}
+
+                {/* ── Forum discussion ──────────────────────────────────────── */}
+                <GameForumThreads gameSlug={slug} />
             </div>
         </div>
     );

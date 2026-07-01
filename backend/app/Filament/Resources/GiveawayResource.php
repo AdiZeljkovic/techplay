@@ -200,6 +200,7 @@ class GiveawayResource extends Resource
                                                         'share_giveaway' => '📤 Share Giveaway',
                                                         'daily_visit' => '📅 Daily Visit',
                                                         'referral' => '👥 Refer a Friend',
+                                                        'forum_post' => '💬 Post in the Forum',
                                                         'custom' => '⭐ Custom Task',
                                                     ])
                                                     ->required()

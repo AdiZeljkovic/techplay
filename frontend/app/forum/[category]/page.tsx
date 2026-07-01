@@ -28,6 +28,7 @@ interface Thread {
         username: string;
         avatar_url?: string;
         role?: string;
+        post_color?: string | null;
     };
     posts_count: number;
     tags?: { name: string; slug: string }[];
@@ -280,7 +281,10 @@ function CategoryThreadsPageInner() {
                                                                             </div>
                                                                         )}
                                                                     </div>
-                                                                    <span className={`font-medium ${isStaff ? "text-tp-accent" : ""}`}>
+                                                                    <span
+                                                                        className={`font-medium ${isStaff ? "text-tp-accent" : ""}`}
+                                                                        style={!isStaff && thread.author?.post_color ? { color: thread.author.post_color } : undefined}
+                                                                    >
                                                                         {thread.author?.username || "Unknown"}
                                                                     </span>
                                                                 </div>

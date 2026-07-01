@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Customization extends Model
 {
-    public const TYPES = ['theme', 'frame', 'badge', 'perk'];
+    public const TYPES = ['theme', 'frame', 'badge', 'perk', 'post_color'];
 
-    public const EQUIPPABLE = ['theme', 'frame', 'badge'];
+    public const EQUIPPABLE = ['theme', 'frame', 'badge', 'post_color'];
 
     protected $fillable = [
         'name',

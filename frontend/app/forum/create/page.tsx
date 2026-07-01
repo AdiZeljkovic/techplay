@@ -8,7 +8,7 @@ import dynamic from "next/dynamic";
 import axios from "@/lib/axios";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
-import { ArrowLeft, Send, AlertCircle, FileText, Hash, AlignLeft, Sparkles, Tag as TagIcon, X } from "lucide-react";
+import { ArrowLeft, Send, AlertCircle, FileText, Hash, AlignLeft, Sparkles, Tag as TagIcon, X, Gamepad2, Search, Loader2 } from "lucide-react";
 import { getAvatarSrc } from "@/lib/forum";
 
 // PERF: Dynamic import for heavy editor (~50KB+ with Tiptap extensions)
@@ -33,6 +33,7 @@ function CreateThreadForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const preselectedCategory = searchParams.get("category");
+    const preselectedGameSlug = searchParams.get("game");
 
     const { user, isLoading: authLoading } = useAuth({ middleware: 'auth' });
 
@@ -43,6 +44,24 @@ function CreateThreadForm() {
     const [tagInput, setTagInput] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [gameSearch, setGameSearch] = useState("");
+    const [selectedGame, setSelectedGame] = useState<{ id: number; name: string } | null>(null);
+
+    const { data: gameResults, isLoading: gameSearchLoading } = useSWR(
+        gameSearch.trim().length >= 2 ? `/games?search=${encodeURIComponent(gameSearch.trim())}&page_size=8` : null,
+        fetcher
+    );
+
+    // Preselect the linked game from the URL (e.g. "Start a Thread" on a game's page)
+    const { data: preselectedGameData } = useSWR(
+        preselectedGameSlug ? `/games/${preselectedGameSlug}` : null,
+        fetcher
+    );
+    useEffect(() => {
+        if (preselectedGameData && !selectedGame) {
+            setSelectedGame({ id: preselectedGameData.id, name: preselectedGameData.name });
+        }
+    }, [preselectedGameData, selectedGame]);
 
     const addTag = () => {
         const value = tagInput.trim();
@@ -87,6 +106,7 @@ function CreateThreadForm() {
                 content: content.trim(),
                 category_id: categoryId,
                 tags: tags.length > 0 ? tags : undefined,
+                game_id: selectedGame?.id,
             });
 
             router.push(`/forum/thread/${response.data.slug}`);
@@ -293,6 +313,55 @@ function CreateThreadForm() {
                                         placeholder="Type a tag and press Enter..."
                                         className="w-full border border-[#1A2030] bg-white/[0.02] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-[#4B5563] focus:outline-none focus:border-tp-accent focus:ring-1 focus:ring-tp-accent transition-all"
                                     />
+                                )}
+                            </div>
+
+                            {/* Link a Game */}
+                            <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-6">
+                                <label className="flex items-center gap-2 text-sm font-semibold text-white mb-3">
+                                    <Gamepad2 className="w-4 h-4 text-tp-accent" />
+                                    Link a Game <span className="text-[#6B7280] font-normal normal-case">(optional)</span>
+                                </label>
+                                {selectedGame ? (
+                                    <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-tp-accent/10 border border-tp-accent/20">
+                                        <span className="text-sm font-medium text-white">{selectedGame.name}</span>
+                                        <button type="button" onClick={() => setSelectedGame(null)} aria-label="Remove linked game">
+                                            <X className="w-4 h-4 text-tp-accent" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563]" />
+                                        <input
+                                            type="text"
+                                            value={gameSearch}
+                                            onChange={(e) => setGameSearch(e.target.value)}
+                                            placeholder="Search for a game to discuss..."
+                                            className="w-full border border-[#1A2030] bg-white/[0.02] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-[#4B5563] focus:outline-none focus:border-tp-accent focus:ring-1 focus:ring-tp-accent transition-all"
+                                        />
+                                        {gameSearch.trim().length >= 2 && (
+                                            <div className="mt-2 max-h-56 overflow-y-auto rounded-xl border border-[#1A2030] bg-[#0B0E1A]">
+                                                {gameSearchLoading ? (
+                                                    <div className="flex items-center justify-center py-4 text-[#6B7280]">
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    </div>
+                                                ) : (gameResults?.results?.length ?? 0) === 0 ? (
+                                                    <p className="text-xs text-[#6B7280] text-center py-4">No games found.</p>
+                                                ) : (
+                                                    gameResults.results.map((g: { id: number; name: string; slug: string }) => (
+                                                        <button
+                                                            key={g.id}
+                                                            type="button"
+                                                            onClick={() => { setSelectedGame({ id: g.id, name: g.name }); setGameSearch(""); }}
+                                                            className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-white/[0.04] transition-colors"
+                                                        >
+                                                            {g.name}
+                                                        </button>
+                                                    ))
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
                             </div>
 

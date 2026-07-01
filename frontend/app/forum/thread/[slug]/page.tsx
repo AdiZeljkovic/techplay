@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import axios from "@/lib/axios";
+import { isAxiosError } from "axios";
 import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
@@ -41,6 +42,7 @@ interface User {
     forum_reputation?: number;
     posts_count?: number;
     created_at?: string;
+    post_color?: string | null;
 }
 
 interface Post {
@@ -120,6 +122,7 @@ export default function ThreadPage() {
     const [markingSolutionId, setMarkingSolutionId] = useState<number | null>(null);
     const [isTogglingWatch, setIsTogglingWatch] = useState(false);
     const [isTogglingBookmark, setIsTogglingBookmark] = useState(false);
+    const [isSelfPinning, setIsSelfPinning] = useState(false);
 
     const { data, isLoading, mutate } = useSWR<ThreadData>(slug ? `/forum/threads/${slug}` : null, fetcher);
     const { replies: liveReplies } = useRealTimeThreadReplies(data?.thread?.id ?? 0);
@@ -243,6 +246,22 @@ export default function ThreadPage() {
             toast.error("Failed to update bookmark.");
         } finally {
             setIsTogglingBookmark(false);
+        }
+    };
+
+    const handleSelfPin = async () => {
+        if (!data || isSelfPinning) return;
+        if (!confirm("Spend 100 Bounty to pin this thread to the top of its category for 24 hours?")) return;
+        setIsSelfPinning(true);
+        try {
+            const res = await axios.post(`/forum/threads/${slug}/self-pin`);
+            mutate({ ...data, thread: { ...data.thread, is_pinned: true } }, false);
+            toast.success(res.data.message);
+        } catch (err) {
+            const message = isAxiosError(err) ? err.response?.data?.message : undefined;
+            toast.error(message || "Failed to self-pin thread.");
+        } finally {
+            setIsSelfPinning(false);
         }
     };
 
@@ -517,6 +536,16 @@ export default function ThreadPage() {
                                         </button>
                                     </>
                                 )}
+                                {!canModerate && user?.id === thread.author?.id && !thread.is_pinned && (
+                                    <button
+                                        onClick={handleSelfPin}
+                                        disabled={isSelfPinning}
+                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border border-tp-accent/30 bg-tp-accent/10 text-tp-accent hover:bg-tp-accent/20 transition-all"
+                                    >
+                                        <Pin className="w-3 h-3" />
+                                        Pin for 24h (100 Bounty)
+                                    </button>
+                                )}
                             </div>
                             <h1 className="text-2xl md:text-3xl font-bold text-white leading-tight mb-3">
                                 {thread.title}
@@ -588,7 +617,11 @@ export default function ThreadPage() {
                                             )}
                                         </div>
                                     </Link>
-                                    <Link href={`/profile/${thread.author?.username}`} className={`font-bold text-sm mb-1 hover:underline ${threadAuthorStaff ? 'text-tp-accent' : 'text-white'}`}>
+                                    <Link
+                                        href={`/profile/${thread.author?.username}`}
+                                        className={`font-bold text-sm mb-1 hover:underline ${threadAuthorStaff ? 'text-tp-accent' : !thread.author?.post_color ? 'text-white' : ''}`}
+                                        style={!threadAuthorStaff && thread.author?.post_color ? { color: thread.author.post_color } : undefined}
+                                    >
                                         {thread.author?.username || 'Unknown'}
                                     </Link>
 
@@ -725,7 +758,11 @@ export default function ThreadPage() {
                                                         </div>
                                                     </Link>
                                                     <div className="md:mt-2">
-                                                        <Link href={`/profile/${post.author?.username}`} className={`font-bold text-sm hover:underline block ${postAuthorStaff ? 'text-tp-accent' : 'text-white'}`}>
+                                                        <Link
+                                                            href={`/profile/${post.author?.username}`}
+                                                            className={`font-bold text-sm hover:underline block ${postAuthorStaff ? 'text-tp-accent' : !post.author?.post_color ? 'text-white' : ''}`}
+                                                            style={!postAuthorStaff && post.author?.post_color ? { color: post.author.post_color } : undefined}
+                                                        >
                                                             {post.author?.username || 'Unknown'}
                                                         </Link>
 

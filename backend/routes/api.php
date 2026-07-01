@@ -178,6 +178,7 @@ Route::prefix('v1')->group(function () {
         Route::middleware(['throttle:20,1', 'ban.check'])->post('/forum/threads/{slug}/posts', [ForumController::class, 'createPost']);
         Route::middleware(['throttle:20,1', 'ban.check'])->post('/forum/threads/{slug}/upvote', [ForumController::class, 'upvote']);
         Route::post('/forum/threads/{slug}/pin', [ForumController::class, 'pinThread']);
+        Route::middleware(['throttle:5,1', 'ban.check'])->post('/forum/threads/{slug}/self-pin', [ForumController::class, 'selfPinThread']);
         Route::post('/forum/threads/{slug}/lock', [ForumController::class, 'lockThread']);
         Route::delete('/forum/threads/{slug}', [ForumController::class, 'deleteThread']);
         Route::middleware(['throttle:20,1', 'ban.check'])->put('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'updatePost']);
@@ -450,6 +451,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/games/{slug}/suggested', [GameController::class, 'suggested']);
         Route::get('/games/{slug}/additions', [GameController::class, 'additions']);
         Route::get('/games/{slug}/ratings', [GameRatingController::class, 'index']);
+        Route::get('/games/{slug}/threads', [ForumController::class, 'gameThreads']);
         Route::get('/games/{slug}', [GameController::class, 'show']);
     });
 

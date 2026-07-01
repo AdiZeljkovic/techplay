@@ -39,6 +39,7 @@ class GiveawayTask extends Model
         'share_giveaway' => '📤',
         'daily_visit' => '📅',
         'referral' => '👥',
+        'forum_post' => '💬',
         'custom' => '⭐',
     ];
 
