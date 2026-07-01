@@ -7,6 +7,7 @@ use App\Models\Thread;
 use App\Services\AchievementService;
 use App\Services\XpService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class ThreadObserver
 {
@@ -30,24 +31,28 @@ class ThreadObserver
     /**
      * Award XP/reputation for starting a discussion, mirroring PostObserver's
      * reply rewards so thread creation isn't worth zero engagement points.
+     *
+     * Wrapped defensively: this fires inside createThread()'s DB transaction,
+     * so any unhandled exception here would roll back and fail the thread
+     * creation itself. Rewards are a side effect, never allowed to block it.
      */
     protected function awardThreadCreationRewards(Thread $thread): void
     {
-        if (! $thread->relationLoaded('author')) {
-            $thread->load('author');
-        }
-
-        $user = $thread->author;
-        if (! $user) {
-            return;
-        }
-
-        $user->increment('forum_reputation', 3);
-        app(XpService::class)->awardXp($user, 15, 'forum_thread');
-
         try {
+            if (! $thread->relationLoaded('author')) {
+                $thread->load('author');
+            }
+
+            $user = $thread->author;
+            if (! $user) {
+                return;
+            }
+
+            $user->increment('forum_reputation', 3);
+            app(XpService::class)->awardXp($user, 15, 'forum_thread');
             app(AchievementService::class)->check($user, ['threads_count', 'reputation']);
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            Log::warning('Thread creation reward failed: '.$e->getMessage(), ['thread_id' => $thread->id]);
         }
     }
 
