@@ -3,14 +3,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
-import {
-    Trophy, MessageCircle, Megaphone, HelpCircle, Gamepad2,
-    Star, Monitor, Coffee, ShoppingBag,
-} from "lucide-react";
+import { Trophy, MessageCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import { getImageUrl } from "@/lib/imageUrl";
+import { getCategoryColor, getCategoryIcon, getAvatarSrc } from "@/lib/forum";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -33,10 +30,6 @@ interface LeaderboardEntry {
     label: string;
 }
 
-interface ForumSidebarProps {
-    activeThreads?: ActiveThread[];
-}
-
 const panelClass =
     "bg-[#0D1117] border border-[#1A2030] rounded-2xl overflow-hidden";
 
@@ -48,48 +41,13 @@ function SidebarHeader({ title }: { title: string }) {
     );
 }
 
-const categoryColors: Record<string, string> = {
-    "news-announcements": "#FC4100",
-    "general-gaming": "#7C3AED",
-    "game-reviews": "#F59E0B",
-    "tech-hardware": "#06B6D4",
-    "tech-pc-builds": "#06B6D4",
-    "off-topic": "#6B7280",
-    "feedback-support": "#3B82F6",
-    community: "#EC4899",
-    gaming: "#7C3AED",
-    hardware: "#06B6D4",
-};
-
-function getCategoryColor(slug: string): string {
-    return categoryColors[slug] ?? "#FC4100";
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getCategoryIcon(slug: string): React.ComponentType<any> {
-    if (slug?.includes("news") || slug?.includes("announcement")) return Megaphone;
-    if (slug?.includes("review")) return Star;
-    if (slug?.includes("hardware") || slug?.includes("tech") || slug?.includes("pc")) return Monitor;
-    if (slug?.includes("gaming") || slug?.includes("game")) return Gamepad2;
-    if (slug?.includes("feedback") || slug?.includes("support")) return HelpCircle;
-    if (slug?.includes("off") || slug?.includes("random")) return Coffee;
-    if (slug?.includes("shop")) return ShoppingBag;
-    return MessageCircle;
-}
-
-function getAvatarSrc(avatarUrl?: string): string | null {
-    if (!avatarUrl) return null;
-    const url = avatarUrl.startsWith("http")
-        ? avatarUrl
-        : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${avatarUrl}`;
-    return getImageUrl(url, "thumb");
-}
-
-export default function ForumSidebar({ activeThreads }: ForumSidebarProps) {
+export default function ForumSidebar() {
     const { user } = useAuth();
 
     const { data: leaderboardResponse } = useSWR("/leaderboard?type=reputation", fetcher);
     const topContributors: LeaderboardEntry[] = leaderboardResponse?.data?.slice(0, 5) ?? [];
+
+    const { data: activeThreads } = useSWR<ActiveThread[]>("/forum/active", fetcher);
 
     const avatarSrc = getAvatarSrc(user?.avatar_url);
     const xp = user?.xp ?? 0;

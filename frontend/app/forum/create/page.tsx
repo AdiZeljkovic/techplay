@@ -9,10 +9,11 @@ import axios from "@/lib/axios";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, Send, AlertCircle, FileText, Hash, AlignLeft, Sparkles } from "lucide-react";
+import { getAvatarSrc } from "@/lib/forum";
 
 // PERF: Dynamic import for heavy editor (~50KB+ with Tiptap extensions)
 const RichTextEditor = dynamic(() => import("@/components/ui/RichTextEditor"), {
-    loading: () => <div className="h-64 bg-[var(--bg-elevated)] rounded-lg animate-pulse" />,
+    loading: () => <div className="h-64 bg-white/[0.03] rounded-lg animate-pulse" />,
     ssr: false
 });
 import useSWR from "swr";
@@ -85,21 +86,21 @@ function CreateThreadForm() {
 
     if (authLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="w-10 h-10 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+            <div className="min-h-screen bg-[#060810] flex items-center justify-center">
+                <div className="w-10 h-10 border-2 border-tp-accent border-t-transparent rounded-full animate-spin" />
             </div>
         );
     }
 
     if (!user) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-4">
-                <div className="w-24 h-24 bg-[var(--bg-card)] rounded-full flex items-center justify-center">
-                    <AlertCircle className="w-12 h-12 text-[var(--accent)]" />
+            <div className="min-h-screen bg-[#060810] flex flex-col items-center justify-center gap-6 p-4">
+                <div className="w-24 h-24 bg-[#0D1117] rounded-full flex items-center justify-center">
+                    <AlertCircle className="w-12 h-12 text-tp-accent" />
                 </div>
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Login Required</h1>
-                    <p className="text-[var(--text-secondary)] mb-6">You must be logged in to create a thread.</p>
+                    <h1 className="text-2xl font-bold text-white mb-2">Login Required</h1>
+                    <p className="text-[#9CA3AF] mb-6">You must be logged in to create a thread.</p>
                 </div>
                 <div className="flex gap-4">
                     <Link href="/login">
@@ -114,27 +115,28 @@ function CreateThreadForm() {
     }
 
     const selectedCategory = allCategories.find(c => c.id === categoryId);
+    const userAvatar = getAvatarSrc(user.avatar_url);
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-[#060810]">
             {/* Header */}
-            <div className="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
+            <div className="bg-[#0B0E1A] border-b border-[#1A2030]">
                 <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
                     <Link
                         href="/forum"
-                        className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors mb-6"
+                        className="inline-flex items-center gap-2 text-sm text-[#6B7280] hover:text-tp-accent transition-colors mb-6"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         Back to Forums
                     </Link>
 
                     <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-tp-accent rounded-2xl flex items-center justify-center shadow-lg shadow-[var(--accent)]/30">
+                        <div className="w-14 h-14 bg-tp-accent rounded-2xl flex items-center justify-center shadow-lg shadow-tp-accent/30">
                             <Sparkles className="w-7 h-7 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold text-[var(--text-primary)]">Create New Thread</h1>
-                            <p className="text-[var(--text-secondary)]">Start a new discussion in the community</p>
+                            <h1 className="text-3xl font-bold text-white">Create New Thread</h1>
+                            <p className="text-[#9CA3AF]">Start a new discussion in the community</p>
                         </div>
                     </div>
                 </div>
@@ -148,41 +150,41 @@ function CreateThreadForm() {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Error Display */}
                             {error && (
-                                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3 text-red-400">
+                                <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 flex items-center gap-3 text-red-400">
                                     <AlertCircle className="w-5 h-5 shrink-0" />
                                     <span>{error}</span>
                                 </div>
                             )}
 
                             {/* Author Preview */}
-                            <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-4 flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-[var(--accent)]">
-                                    {user.avatar_url ? (
-                                        <Image src={user.avatar_url} alt={user.username} width={48} height={48} className="object-cover" />
+                            <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-4 flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-tp-accent">
+                                    {userAvatar ? (
+                                        <Image src={userAvatar} alt={user.username} width={48} height={48} className="object-cover w-full h-full" />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-[var(--accent)] text-white font-bold text-lg">
+                                        <div className="w-full h-full flex items-center justify-center bg-tp-accent text-white font-bold text-lg">
                                             {user.username?.charAt(0)?.toUpperCase() || '?'}
                                         </div>
                                     )}
                                 </div>
                                 <div>
-                                    <div className="text-sm text-[var(--text-muted)]">Posting as</div>
-                                    <div className="font-bold text-[var(--text-primary)]">{user.username}</div>
+                                    <div className="text-sm text-[#6B7280]">Posting as</div>
+                                    <div className="font-bold text-white">{user.username}</div>
                                 </div>
                             </div>
 
                             {/* Category Select */}
-                            <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6">
-                                <label className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)] mb-3">
-                                    <Hash className="w-4 h-4 text-[var(--accent)]" />
+                            <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-6">
+                                <label className="flex items-center gap-2 text-sm font-semibold text-white mb-3">
+                                    <Hash className="w-4 h-4 text-tp-accent" />
                                     Category <span className="text-red-500">*</span>
                                 </label>
                                 {preselectedCategory && selectedCategory ? (
                                     // Locked View
-                                    <div className="w-full border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] flex items-center justify-between opacity-80 cursor-not-allowed">
+                                    <div className="w-full border border-[#1A2030] rounded-xl px-4 py-3 text-white flex items-center justify-between opacity-80 cursor-not-allowed">
                                         <div className="flex items-center gap-2">
                                             <span className="font-medium">{selectedCategory.name}</span>
-                                            <span className="text-xs bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-0.5 rounded-full border border-[var(--accent)]/20">
+                                            <span className="text-xs bg-tp-accent/10 text-tp-accent px-2 py-0.5 rounded-full border border-tp-accent/20">
                                                 Locked
                                             </span>
                                         </div>
@@ -193,7 +195,7 @@ function CreateThreadForm() {
                                     <select
                                         value={categoryId || ""}
                                         onChange={(e) => setCategoryId(Number(e.target.value))}
-                                        className="w-full border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all cursor-pointer appearance-none"
+                                        className="w-full border border-[#1A2030] bg-white/[0.02] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-tp-accent focus:ring-1 focus:ring-tp-accent transition-all cursor-pointer appearance-none"
                                         required
                                     >
                                         <option value="">Select a category...</option>
@@ -205,14 +207,14 @@ function CreateThreadForm() {
                                     </select>
                                 )}
                                 {selectedCategory?.description && (
-                                    <p className="mt-2 text-sm text-[var(--text-muted)]">{selectedCategory.description}</p>
+                                    <p className="mt-2 text-sm text-[#6B7280]">{selectedCategory.description}</p>
                                 )}
                             </div>
 
                             {/* Title */}
-                            <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6">
-                                <label className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)] mb-3">
-                                    <FileText className="w-4 h-4 text-[var(--accent)]" />
+                            <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-6">
+                                <label className="flex items-center gap-2 text-sm font-semibold text-white mb-3">
+                                    <FileText className="w-4 h-4 text-tp-accent" />
                                     Thread Title <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -220,22 +222,22 @@ function CreateThreadForm() {
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="Enter a clear, descriptive title..."
-                                    className="w-full border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] placeholder:text-gray-400 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all text-lg"
+                                    className="w-full border border-[#1A2030] bg-white/[0.02] rounded-xl px-4 py-3 text-white placeholder:text-[#4B5563] focus:outline-none focus:border-tp-accent focus:ring-1 focus:ring-tp-accent transition-all text-lg"
                                     maxLength={255}
                                     required
                                 />
                                 <div className="flex justify-between mt-2">
-                                    <span className="text-xs text-[var(--text-muted)]">Make it specific and searchable</span>
-                                    <span className={`text-xs ${title.length > 220 ? 'text-yellow-500' : 'text-[var(--text-muted)]'}`}>
+                                    <span className="text-xs text-[#6B7280]">Make it specific and searchable</span>
+                                    <span className={`text-xs ${title.length > 220 ? 'text-yellow-500' : 'text-[#6B7280]'}`}>
                                         {title.length}/255
                                     </span>
                                 </div>
                             </div>
 
                             {/* Content */}
-                            <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6">
-                                <label className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)] mb-3">
-                                    <AlignLeft className="w-4 h-4 text-[var(--accent)]" />
+                            <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-6">
+                                <label className="flex items-center gap-2 text-sm font-semibold text-white mb-3">
+                                    <AlignLeft className="w-4 h-4 text-tp-accent" />
                                     Content <span className="text-red-500">*</span>
                                 </label>
                                 <RichTextEditor
@@ -256,7 +258,7 @@ function CreateThreadForm() {
                                 <Button
                                     type="submit"
                                     disabled={isSubmitting || !title.trim() || !content.trim() || !categoryId}
-                                    className="w-full sm:w-auto shadow-lg shadow-[var(--accent)]/20"
+                                    className="w-full sm:w-auto shadow-lg shadow-tp-accent/20"
                                 >
                                     {isSubmitting ? (
                                         <>
@@ -277,26 +279,26 @@ function CreateThreadForm() {
                     {/* Sidebar */}
                     <div className="lg:col-span-1">
                         {/* Guidelines */}
-                        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6 mb-6">
-                            <h4 className="font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                                <Sparkles className="w-4 h-4 text-[var(--accent)]" />
+                        <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-6 mb-4">
+                            <h4 className="font-bold text-white mb-4 flex items-center gap-2">
+                                <Sparkles className="w-4 h-4 text-tp-accent" />
                                 Posting Tips
                             </h4>
-                            <ul className="space-y-3 text-sm text-[var(--text-secondary)]">
+                            <ul className="space-y-3 text-sm text-[#9CA3AF]">
                                 <li className="flex gap-2">
-                                    <span className="text-[var(--accent)] font-bold">•</span>
+                                    <span className="text-tp-accent font-bold">•</span>
                                     <span>Use a clear, specific title</span>
                                 </li>
                                 <li className="flex gap-2">
-                                    <span className="text-[var(--accent)] font-bold">•</span>
+                                    <span className="text-tp-accent font-bold">•</span>
                                     <span>Choose the right category</span>
                                 </li>
                                 <li className="flex gap-2">
-                                    <span className="text-[var(--accent)] font-bold">•</span>
+                                    <span className="text-tp-accent font-bold">•</span>
                                     <span>Be respectful and constructive</span>
                                 </li>
                                 <li className="flex gap-2">
-                                    <span className="text-[var(--accent)] font-bold">•</span>
+                                    <span className="text-tp-accent font-bold">•</span>
                                     <span>Search before posting duplicates</span>
                                 </li>
                             </ul>
@@ -313,8 +315,8 @@ function CreateThreadForm() {
 // Loading fallback for Suspense
 function LoadingFallback() {
     return (
-        <div className="min-h-screen flex items-center justify-center">
-            <div className="w-10 h-10 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+        <div className="min-h-screen bg-[#060810] flex items-center justify-center">
+            <div className="w-10 h-10 border-2 border-tp-accent border-t-transparent rounded-full animate-spin" />
         </div>
     );
 }

@@ -7,25 +7,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
-    MessageCircle, Megaphone, Gamepad2, Star, Coffee, Monitor,
-    HelpCircle, Trophy, ShoppingBag, Users2, MessageSquare,
+    MessageCircle, Users2, MessageSquare,
     FileText, Users, Search, LayoutGrid, List, Clock, ChevronRight,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import ForumSidebar from "@/components/forum/ForumSidebar";
 import { decodeHtml } from "@/lib/decode";
-import { getImageUrl } from "@/lib/imageUrl";
+import { fmtStat, getCategoryColor, getCategoryIcon, getAvatarSrc } from "@/lib/forum";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
-
-function getAvatarSrc(avatarUrl?: string): string | null {
-    if (!avatarUrl) return null;
-    const url = avatarUrl.startsWith("http")
-        ? avatarUrl
-        : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${avatarUrl}`;
-    return getImageUrl(url, "thumb");
-}
 
 interface ForumCategory {
     id: number;
@@ -61,54 +52,6 @@ interface ActiveThread {
 }
 
 type TabType = "all" | "new" | "unanswered";
-
-const fmtStat = (n: number): string => {
-    if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K`;
-    return n.toString();
-};
-
-const getCategoryColor = (slug: string): string => {
-    const map: Record<string, string> = {
-        "news-announcements": "#ef4444",
-        "feedback-support": "#3b82f6",
-        "general-gaming": "#8b5cf6",
-        "user-reviews": "#f59e0b",
-        esports: "#10b981",
-        "pc-builds": "#06b6d4",
-        consoles: "#6366f1",
-        "the-lounge": "#ec4899",
-        marketplace: "#14b8a6",
-        "game-guides": "#f97316",
-        "hardware-tech": "#84cc16",
-    };
-    return map[slug] ?? "#64748b";
-};
-
-const getCategoryIcon = (slug: string) => {
-    const map: Record<string, React.ComponentType<{ className?: string }>> = {
-        // Parent categories
-        community: Users2,
-        gaming: Gamepad2,
-        hardware: Monitor,
-        // Child categories
-        "news-announcements": Megaphone,
-        "feedback-support": HelpCircle,
-        "general-gaming": Gamepad2,
-        "game-reviews": Star,
-        "user-reviews": Star,
-        esports: Trophy,
-        "pc-builds": Monitor,
-        "pc-builds-upgrades": Monitor,
-        consoles: Gamepad2,
-        "consoles-peripherals": Gamepad2,
-        "the-lounge": Coffee,
-        marketplace: ShoppingBag,
-        "game-guides": Star,
-        "hardware-tech": Monitor,
-        "tech-gear-talk": ShoppingBag,
-    };
-    return map[slug] ?? MessageCircle;
-};
 
 function CategoryCard({ category, viewMode }: { category: ForumCategory; viewMode: "grid" | "list" }) {
     const Icon = getCategoryIcon(category.slug);
@@ -451,7 +394,7 @@ export default function ForumPage() {
                                     </div>
                                 ) : (
                                     categories?.map((parent) => {
-                                        const ParentIcon = getCategoryIcon(parent.slug) ?? Gamepad2;
+                                        const ParentIcon = getCategoryIcon(parent.slug);
                                         return (
                                         <div key={parent.id}>
                                             <div className="flex items-center gap-3 mb-5 pb-4 border-b border-white/[0.06]">
@@ -601,7 +544,7 @@ export default function ForumPage() {
 
                     {/* ── Sidebar ── */}
                     <div className={`lg:col-span-1 ${activeTab === "all" ? "lg:pt-[57px]" : ""}`}>
-                        <ForumSidebar activeThreads={activeThreads} />
+                        <ForumSidebar />
                     </div>
                 </div>
 
