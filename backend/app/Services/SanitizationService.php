@@ -111,6 +111,20 @@ class SanitizationService
     }
 
     /**
+     * Extract unique @username mentions from already-sanitized content.
+     * Returns raw candidate usernames (caller must validate they exist).
+     * Capped at 10 to bound notification fan-out per post.
+     */
+    public function extractMentions(string $content): array
+    {
+        if (! preg_match_all('/@([a-zA-Z0-9_]+)/', $content, $matches)) {
+            return [];
+        }
+
+        return array_slice(array_values(array_unique($matches[1])), 0, 10);
+    }
+
+    /**
      * Check if content contains spam patterns
      */
     public function detectSpam(string $content): bool

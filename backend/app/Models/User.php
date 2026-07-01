@@ -87,6 +87,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'subscription_ends_at',     // Internal
         'is_banned',                // Internal moderation
         'ban_reason',               // Internal moderation
+        'banned_until',             // Internal moderation
         'cookie_preferences',       // Private
         'settings',                 // Private
         'updated_at',               // Not needed publicly
@@ -107,6 +108,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_banned' => 'boolean',
+            'banned_until' => 'datetime',
             'gamertags' => 'array',
             'pc_specs' => 'array',
             'playstyle_tags' => 'array',
@@ -197,6 +199,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             ->first();
     }
 
+    public function isCurrentlyBanned(): bool
+    {
+        return $this->is_banned || ($this->banned_until && $this->banned_until->isFuture());
+    }
+
     public function articles()
     {
         return $this->hasMany(Article::class, 'author_id');
@@ -220,6 +227,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function posts()
     {
         return $this->hasMany(Post::class, 'author_id');
+    }
+
+    public function watchedThreads()
+    {
+        return $this->belongsToMany(Thread::class, 'thread_watchers', 'user_id', 'thread_id')->withTimestamps();
+    }
+
+    public function bookmarkedThreads()
+    {
+        return $this->belongsToMany(Thread::class, 'thread_bookmarks', 'user_id', 'thread_id')->withTimestamps();
     }
 
     public function comments()

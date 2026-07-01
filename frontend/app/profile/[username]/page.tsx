@@ -17,6 +17,7 @@ import ProfileOverviewDashboard from "@/components/profile/ProfileOverviewDashbo
 import CollectionGrid from "@/components/profile/CollectionGrid";
 import RewardsStore from "@/components/profile/RewardsStore";
 import ListsTab from "@/components/profile/ListsTab";
+import ForumActivityTab from "@/components/profile/ForumActivityTab";
 import ActivityFeed from "@/components/profile/ActivityFeed";
 import StatsPanel from "@/components/profile/StatsPanel";
 import SectionCard from "@/components/profile/dashboard/SectionCard";
@@ -169,6 +170,10 @@ function ProfilePageInner() {
 
                 {activeTab === "lists" && (
                     <ListsTab username={userData.username} isOwnProfile={isOwnProfile} />
+                )}
+
+                {activeTab === "forum" && (
+                    <ForumActivityTab isOwnProfile={isOwnProfile} />
                 )}
 
                 {activeTab === "rewards" && (

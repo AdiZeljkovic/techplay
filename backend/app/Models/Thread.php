@@ -55,4 +55,14 @@ class Thread extends Model
     {
         return $this->morphToMany(Tag::class, 'taggable');
     }
+
+    public function watchers()
+    {
+        return $this->belongsToMany(User::class, 'thread_watchers', 'thread_id', 'user_id')->withTimestamps();
+    }
+
+    public function bookmarkedBy()
+    {
+        return $this->belongsToMany(User::class, 'thread_bookmarks', 'thread_id', 'user_id')->withTimestamps();
+    }
 }

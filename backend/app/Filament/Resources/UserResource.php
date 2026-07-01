@@ -160,6 +160,10 @@ class UserResource extends Resource
                             ->visible(fn ($get) => $get('is_banned'))
                             ->placeholder('Razlog bana...')
                             ->columnSpanFull(),
+                        Forms\Components\DateTimePicker::make('banned_until')
+                            ->label('Temporary Restriction Until')
+                            ->helperText('Blocks forum posting until this date, without a full account ban. Leave empty for no temporary restriction.')
+                            ->native(false),
                     ])
                     ->columnSpanFull(),
             ]);

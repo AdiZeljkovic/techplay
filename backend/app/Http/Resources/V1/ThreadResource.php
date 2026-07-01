@@ -20,6 +20,8 @@ class ThreadResource extends JsonResource
             'posts_count' => $this->posts_count, // Loaded via withCount
             'upvotes_count' => $this->upvotes_count, // Loaded via withCount
             'is_upvoted' => $this->is_upvoted ?? false,
+            'is_watching' => $this->is_watching ?? false,
+            'is_bookmarked' => $this->is_bookmarked ?? false,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'author' => new UserResource($this->whenLoaded('author')),

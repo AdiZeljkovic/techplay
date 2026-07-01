@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckUserBan;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\TrackUserActivity;
 use Illuminate\Auth\AuthenticationException;
@@ -36,6 +37,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Track authenticated users as online (used for forum online counter)
         $middleware->appendToGroup('api', TrackUserActivity::class);
+
+        $middleware->alias([
+            'ban.check' => CheckUserBan::class,
+        ]);
 
         $middleware->redirectGuestsTo(function ($request) {
             if ($request->is('api/*') || $request->expectsJson()) {

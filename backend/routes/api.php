@@ -141,6 +141,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/user/wow-characters/{id}/set-main', [UserWowCharactersController::class, 'setMain']);
         Route::delete('/user/wow-characters/{id}', [UserWowCharactersController::class, 'destroy']);
 
+        // Forum activity (own profile)
+        Route::get('/user/watched-threads', [ForumController::class, 'myWatchedThreads']);
+        Route::get('/user/bookmarked-threads', [ForumController::class, 'myBookmarkedThreads']);
+
         // Friends
         Route::get('/friends', [FriendController::class, 'index']);
         Route::get('/friends/pending', [FriendController::class, 'penndingRequests']);
@@ -170,15 +174,17 @@ Route::prefix('v1')->group(function () {
         Route::post('/subscriptions/activate', [PayPalController::class, 'activateSubscription']);
 
         // Forum (Authenticated)
-        Route::middleware('throttle:10,1')->post('/forum/threads', [ForumController::class, 'createThread']);
-        Route::middleware('throttle:20,1')->post('/forum/threads/{slug}/posts', [ForumController::class, 'createPost']);
-        Route::middleware('throttle:20,1')->post('/forum/threads/{slug}/upvote', [ForumController::class, 'upvote']);
+        Route::middleware(['throttle:10,1', 'ban.check'])->post('/forum/threads', [ForumController::class, 'createThread']);
+        Route::middleware(['throttle:20,1', 'ban.check'])->post('/forum/threads/{slug}/posts', [ForumController::class, 'createPost']);
+        Route::middleware(['throttle:20,1', 'ban.check'])->post('/forum/threads/{slug}/upvote', [ForumController::class, 'upvote']);
         Route::post('/forum/threads/{slug}/pin', [ForumController::class, 'pinThread']);
         Route::post('/forum/threads/{slug}/lock', [ForumController::class, 'lockThread']);
         Route::delete('/forum/threads/{slug}', [ForumController::class, 'deleteThread']);
-        Route::middleware('throttle:20,1')->put('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'updatePost']);
-        Route::middleware('throttle:20,1')->delete('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'deletePost']);
+        Route::middleware(['throttle:20,1', 'ban.check'])->put('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'updatePost']);
+        Route::middleware(['throttle:20,1', 'ban.check'])->delete('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'deletePost']);
         Route::middleware('throttle:20,1')->post('/forum/threads/{slug}/posts/{postId}/solution', [ForumController::class, 'markSolution']);
+        Route::middleware('throttle:20,1')->post('/forum/threads/{slug}/watch', [ForumController::class, 'watchThread']);
+        Route::middleware('throttle:20,1')->post('/forum/threads/{slug}/bookmark', [ForumController::class, 'bookmarkThread']);
 
         // Game Ratings (Auth)
         Route::get('/games/{slug}/ratings/my', [GameRatingController::class, 'my']);

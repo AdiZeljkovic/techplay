@@ -11,6 +11,8 @@ use App\Models\Tag;
 use App\Models\Thread;
 use App\Models\User;
 use App\Notifications\ForumReplyNotification;
+use App\Notifications\MentionNotification;
+use App\Notifications\ThreadWatchNotification;
 use App\Services\AchievementService;
 use App\Services\SanitizationService;
 use Illuminate\Http\Request;
@@ -34,6 +36,28 @@ class ForumController extends Controller
         for ($i = 1; $i <= self::CATEGORY_CACHE_PAGES; $i++) {
             Cache::forget("forum.category.{$categorySlug}.page_{$i}");
         }
+    }
+
+    /**
+     * Notify any @username mentions found in freshly-posted content.
+     * Never notifies the author of the content about their own mention.
+     */
+    private function notifyMentions(string $content, Thread $thread, SanitizationService $sanitizer): void
+    {
+        $usernames = $sanitizer->extractMentions($content);
+        if (empty($usernames)) {
+            return;
+        }
+
+        $mentioner = Auth::user();
+        $preview = substr(strip_tags($content), 0, 100);
+
+        User::whereIn('username', $usernames)
+            ->where('id', '!=', $mentioner->id)
+            ->get()
+            ->each(function (User $mentioned) use ($thread, $mentioner, $preview) {
+                $mentioned->notify(new MentionNotification($thread, $mentioner, $preview));
+            });
     }
 
     public function stats()
@@ -152,11 +176,18 @@ class ForumController extends Controller
         // Views are flushed to DB every 5 minutes by FlushViewCounters job
         Redis::incr("views:thread:{$thread->id}");
 
-        $thread->is_upvoted = Auth::guard('sanctum')->check()
-            ? DB::table('thread_upvotes')
-                ->where('user_id', Auth::guard('sanctum')->id())
-                ->where('thread_id', $thread->id)
-                ->exists()
+        $authUserId = Auth::guard('sanctum')->check() ? Auth::guard('sanctum')->id() : null;
+
+        $thread->is_upvoted = $authUserId
+            ? DB::table('thread_upvotes')->where('user_id', $authUserId)->where('thread_id', $thread->id)->exists()
+            : false;
+
+        $thread->is_watching = $authUserId
+            ? DB::table('thread_watchers')->where('user_id', $authUserId)->where('thread_id', $thread->id)->exists()
+            : false;
+
+        $thread->is_bookmarked = $authUserId
+            ? DB::table('thread_bookmarks')->where('user_id', $authUserId)->where('thread_id', $thread->id)->exists()
             : false;
 
         $posts = $thread->posts()
@@ -235,6 +266,20 @@ class ForumController extends Controller
             if ($thread->author && $thread->author_id !== Auth::id()) {
                 $thread->author->notify(new ForumReplyNotification($post, $thread, Auth::user()));
             }
+
+            // Replying implies interest — auto-watch this thread
+            $thread->watchers()->syncWithoutDetaching([Auth::id()]);
+
+            // Notify other watchers (excluding the replier and the thread author, already notified above)
+            $watchers = $thread->watchers()
+                ->where('users.id', '!=', Auth::id())
+                ->where('users.id', '!=', $thread->author_id)
+                ->get();
+            foreach ($watchers as $watcher) {
+                $watcher->notify(new ThreadWatchNotification($post, $thread, Auth::user()));
+            }
+
+            $this->notifyMentions($post->content, $thread, $sanitizer);
 
             $post->load('author.rank');
             $post->author->loadCount(['posts', 'threads']);
@@ -318,6 +363,8 @@ class ForumController extends Controller
                     $thread->tags()->sync($tagIds);
                 }
 
+                $thread->watchers()->attach(Auth::id());
+
                 return $thread;
             });
 
@@ -333,6 +380,8 @@ class ForumController extends Controller
             if ($category) {
                 $this->clearCategoryPageCache($category->slug);
             }
+
+            $this->notifyMentions($thread->content, $thread, $sanitizer);
 
             return response()->json($thread, 201);
 
@@ -358,6 +407,28 @@ class ForumController extends Controller
         });
 
         return response()->json($threads)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+
+    public function myWatchedThreads()
+    {
+        $threads = Auth::user()->watchedThreads()
+            ->with(['author', 'category'])
+            ->withCount('posts')
+            ->orderByDesc('thread_watchers.created_at')
+            ->get();
+
+        return response()->json($threads);
+    }
+
+    public function myBookmarkedThreads()
+    {
+        $threads = Auth::user()->bookmarkedThreads()
+            ->with(['author', 'category'])
+            ->withCount('posts')
+            ->orderByDesc('thread_bookmarks.created_at')
+            ->get();
+
+        return response()->json($threads);
     }
 
     public function unansweredThreads()
@@ -418,6 +489,44 @@ class ForumController extends Controller
             'message' => 'Upvote updated',
             'action' => $action,
             'count' => DB::table('thread_upvotes')->where('thread_id', $thread->id)->count(),
+        ]);
+    }
+
+    public function watchThread(string $slug)
+    {
+        $thread = Thread::where('slug', $slug)->firstOrFail();
+        $userId = Auth::id();
+
+        $isWatching = $thread->watchers()->where('users.id', $userId)->exists();
+
+        if ($isWatching) {
+            $thread->watchers()->detach($userId);
+        } else {
+            $thread->watchers()->attach($userId);
+        }
+
+        return response()->json([
+            'watching' => ! $isWatching,
+            'message' => $isWatching ? 'Stopped watching thread.' : 'Now watching thread.',
+        ]);
+    }
+
+    public function bookmarkThread(string $slug)
+    {
+        $thread = Thread::where('slug', $slug)->firstOrFail();
+        $userId = Auth::id();
+
+        $isBookmarked = $thread->bookmarkedBy()->where('users.id', $userId)->exists();
+
+        if ($isBookmarked) {
+            $thread->bookmarkedBy()->detach($userId);
+        } else {
+            $thread->bookmarkedBy()->attach($userId);
+        }
+
+        return response()->json([
+            'bookmarked' => ! $isBookmarked,
+            'message' => $isBookmarked ? 'Removed bookmark.' : 'Thread bookmarked.',
         ]);
     }
 
@@ -548,6 +657,8 @@ class ForumController extends Controller
         $post->save();
 
         Cache::forget("forum.thread.{$slug}");
+
+        $this->notifyMentions($post->content, $post->thread, $sanitizer);
 
         $post->load('author.rank');
         $post->author->loadCount(['posts', 'threads']);

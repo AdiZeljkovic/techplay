@@ -1,8 +1,8 @@
 "use client";
 
-import { User, Gamepad2, Sparkles, Award, List, Gift, BarChart3 } from "lucide-react";
+import { User, Gamepad2, Sparkles, Award, List, Gift, BarChart3, MessageSquare } from "lucide-react";
 
-export type ProfileTab = "overview" | "collection" | "activity" | "achievements" | "lists" | "rewards" | "stats";
+export type ProfileTab = "overview" | "collection" | "activity" | "achievements" | "lists" | "forum" | "rewards" | "stats";
 
 export const PROFILE_TABS: { id: ProfileTab; label: string; icon: any }[] = [
     { id: "overview", label: "Overview", icon: User },
@@ -10,6 +10,7 @@ export const PROFILE_TABS: { id: ProfileTab; label: string; icon: any }[] = [
     { id: "activity", label: "Activity", icon: Sparkles },
     { id: "achievements", label: "Achievements", icon: Award },
     { id: "lists", label: "Lists", icon: List },
+    { id: "forum", label: "Forum", icon: MessageSquare },
     { id: "rewards", label: "Rewards", icon: Gift },
     { id: "stats", label: "Stats", icon: BarChart3 },
 ];

@@ -8,13 +8,14 @@ import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { formatDistanceToNow, format } from "date-fns";
-import { MessageSquare, Share2, Flag, Lock, Unlock, Shield, ArrowLeft, Eye, Clock, ChevronUp, Reply, Pin, Award, Send, Trash2 } from "lucide-react";
+import { MessageSquare, Share2, Flag, Lock, Unlock, Shield, ArrowLeft, Eye, Clock, ChevronUp, Reply, Pin, Award, Send, Trash2, Bell, BellOff, Bookmark } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import ForumSidebar from "@/components/forum/ForumSidebar";
 import { getCategoryColor, getAvatarSrc } from "@/lib/forum";
+import { useRealTimeThreadReplies } from "@/hooks";
 
 // PERF: Dynamic import for heavy editor (~50KB+ with Tiptap extensions)
 const RichTextEditor = dynamic(() => import("@/components/ui/RichTextEditor"), {
@@ -69,6 +70,8 @@ interface Thread {
     posts_count: number;
     upvotes_count: number;
     is_upvoted: boolean;
+    is_watching: boolean;
+    is_bookmarked: boolean;
     tags?: { name: string; slug: string }[];
 }
 
@@ -115,8 +118,11 @@ export default function ThreadPage() {
     const [editContent, setEditContent] = useState("");
     const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
     const [markingSolutionId, setMarkingSolutionId] = useState<number | null>(null);
+    const [isTogglingWatch, setIsTogglingWatch] = useState(false);
+    const [isTogglingBookmark, setIsTogglingBookmark] = useState(false);
 
     const { data, isLoading, mutate } = useSWR<ThreadData>(slug ? `/forum/threads/${slug}` : null, fetcher);
+    const { replies: liveReplies } = useRealTimeThreadReplies(data?.thread?.id ?? 0);
 
     // Helper to normalize posts
     const getPosts = (data: ThreadData | undefined): Post[] => {
@@ -209,6 +215,34 @@ export default function ThreadPage() {
             } finally {
                 setIsUpvoting(false);
             }
+        }
+    };
+
+    const handleToggleWatch = async () => {
+        if (!user || isTogglingWatch || !data) return;
+        setIsTogglingWatch(true);
+        try {
+            const res = await axios.post(`/forum/threads/${slug}/watch`);
+            mutate({ ...data, thread: { ...data.thread, is_watching: res.data.watching } }, false);
+            toast.success(res.data.message);
+        } catch {
+            toast.error("Failed to update watch status.");
+        } finally {
+            setIsTogglingWatch(false);
+        }
+    };
+
+    const handleToggleBookmark = async () => {
+        if (!user || isTogglingBookmark || !data) return;
+        setIsTogglingBookmark(true);
+        try {
+            const res = await axios.post(`/forum/threads/${slug}/bookmark`);
+            mutate({ ...data, thread: { ...data.thread, is_bookmarked: res.data.bookmarked } }, false);
+            toast.success(res.data.message);
+        } catch {
+            toast.error("Failed to update bookmark.");
+        } finally {
+            setIsTogglingBookmark(false);
         }
     };
 
@@ -394,7 +428,21 @@ export default function ThreadPage() {
     }
 
     const { thread } = data;
-    const postsList = getPosts(data);
+    const fetchedPosts = getPosts(data);
+    const liveOnlyReplies: Post[] = liveReplies
+        .filter((r) => !fetchedPosts.some((p) => p.id === r.id))
+        .map((r) => ({
+            id: r.id,
+            content: r.content,
+            created_at: r.created_at,
+            is_solution: false,
+            author: {
+                id: r.author.id,
+                username: r.author.username,
+                avatar_url: r.author.avatar ?? undefined,
+            },
+        }));
+    const postsList = [...fetchedPosts, ...liveOnlyReplies];
     const categoryColor = getCategoryColor(thread.category?.slug || '');
     const threadAuthorAvatar = getAvatarSrc(thread.author?.avatar_url);
 
@@ -590,6 +638,26 @@ export default function ThreadPage() {
                                                 <ChevronUp className={`w-4 h-4 ${thread.is_upvoted ? 'stroke-2' : ''}`} />
                                                 <span>Upvote {thread.upvotes_count > 0 && `(${thread.upvotes_count})`}</span>
                                             </button>
+                                            {user && (
+                                                <button
+                                                    onClick={handleToggleWatch}
+                                                    disabled={isTogglingWatch}
+                                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${thread.is_watching ? 'text-tp-accent bg-tp-accent/10' : 'text-[#9CA3AF] hover:text-white hover:bg-white/[0.03]'}`}
+                                                >
+                                                    {thread.is_watching ? <BellOff className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
+                                                    {thread.is_watching ? 'Watching' : 'Watch'}
+                                                </button>
+                                            )}
+                                            {user && (
+                                                <button
+                                                    onClick={handleToggleBookmark}
+                                                    disabled={isTogglingBookmark}
+                                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${thread.is_bookmarked ? 'text-tp-accent bg-tp-accent/10' : 'text-[#9CA3AF] hover:text-white hover:bg-white/[0.03]'}`}
+                                                >
+                                                    <Bookmark className={`w-4 h-4 ${thread.is_bookmarked ? 'fill-current' : ''}`} />
+                                                    {thread.is_bookmarked ? 'Saved' : 'Save'}
+                                                </button>
+                                            )}
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <button
