@@ -84,7 +84,7 @@ npm start               # node dist/index.js (production)
 - `PayPalService` + `PayPalWebhookController` — shop orders and subscriptions (signature-verified webhooks)
 - `CacheService` / `RevalidationService` — Redis-backed caching with on-demand Next.js revalidation
 
-**Real-time:** Laravel Reverb (WebSocket server) + Pusher protocol. Frontend uses `laravel-echo` + `pusher-js`. Events in `app/Events/` broadcast on publish (articles, comments, forum posts, etc.).
+**Real-time:** Laravel Reverb (WebSocket server) + Pusher protocol. Frontend uses `laravel-echo` + `pusher-js`. Events in `app/Events/` broadcast on publish (articles, comments, forum posts, etc.) — for forum content specifically, dispatch happens inside Model Observers (`ThreadObserver`, `ForumPostObserver`), not inline in the controller.
 
 **Queue jobs:** `FetchOgData`, `FlushViewCounters`, `MobyEnrichmentJob`, `PingIndexNow`, `SubmitIndexNow`, `SendGiveawayReminders`, `SendChatReminder`.
 
@@ -143,3 +143,72 @@ Bot authenticates to the backend using a shared API token (not Sanctum — uses 
 **Maintenance mode:** Controlled via `SiteSetting` model (database-driven). The Next.js middleware polls `/api/v1/system/status` on every page request and redirects to `/coming-soon` when `maintenance_mode === true`. Bypass via `techplay_maintenance_bypass` cookie.
 
 **Privée giveaways:** Separate auth flow from TechPlay accounts. `PriveeGiveawayController` handles Google OAuth and Privée-specific login — no Sanctum token required.
+
+---
+
+## Documentation
+
+Full project documentation is in `/docs/`. Always read before major changes:
+
+| When | Read |
+|------|------|
+| Any change | `docs/10-features-map.md` (feature status) |
+| Frontend changes | `docs/04-frontend-map.md`, `docs/23-frontend-backend-connections.md` |
+| Backend/API changes | `docs/05-backend-map.md`, `docs/08-api-map.md` |
+| Database changes | `docs/07-database-map.md` |
+| Discord bot changes | `docs/18-discord-bot-map.md` |
+| Architecture questions | `docs/02-system-architecture.md` |
+| AI agent onboarding | `docs/32-future-ai-instructions.md` |
+
+Update the relevant doc file after every code change.
+
+---
+
+## Platform Areas
+
+TechPlay.gg is NOT just a gaming news blog. Platform areas:
+- News (SEO trafik)
+- Reviews (kredibilitet + SEO)
+- Tech/Hardware (affiliate monetizacija)
+- Guides (community + SEO)
+- Game Database (SEO at scale, tisuće stranica)
+- Release Calendar (recurring visits)
+- Forum (community, retention)
+- User Profiles + XP + Achievements (retention, gamification)
+- Comments (engagement)
+- Discord Bot (Professor Buffy — bridging web i Discord)
+- Shop + Giveaways (monetizacija + lead gen)
+- WoW Analyzer (niche tool, diferencijacija)
+
+---
+
+## Rules
+
+- Always inspect existing code before making assumptions
+- Do not break existing public routes or SEO pages
+- Do not remove features without explicit instruction
+- Keep frontend, backend, admin panel, database and Discord bot aligned
+- When changing frontend behavior, check related API and backend logic
+- When changing backend/API behavior, check frontend usage
+- When changing database structure, update `docs/07-database-map.md`
+- When implementing new features, update `/docs`
+- If something is unclear, write UNKNOWN and ask for clarification
+- Prefer small, safe changes over large risky rewrites
+- Always use `SanitizationService` for user-generated content
+- Always use `ApiResponse` trait in controllers
+
+---
+
+## Product Direction
+
+- News brings traffic
+- Reviews bring credibility
+- Game Database brings SEO scale
+- Release Calendar brings recurring visits
+- Forum brings community
+- Profiles bring retention
+- XP and achievements bring engagement
+- Discord bot connects website and community
+- Hardware/Tech content brings sponsorship and monetization potential
+
+Avoid: generic blog structure, duplicated logic, undocumented hidden behavior, frontend-only features without backend support, unsafe Discord token handling.
