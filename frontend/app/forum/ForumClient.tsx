@@ -480,29 +480,29 @@ export default function ForumPage() {
 
                         {/* NEW POSTS */}
                         {activeTab === "new" && (
-                            <div className="space-y-3">
+                            <div className="space-y-5">
                                 {!activeThreads ? (
-                                    <div className="space-y-3">
+                                    <div className="space-y-5">
                                         {[...Array(5)].map((_, i) => (
-                                            <div key={i} className="h-20 bg-zinc-100 dark:bg-[#0B0E14] rounded-xl animate-pulse" />
+                                            <div key={i} className="h-24 bg-[#0D1117] border border-[#1A2030] rounded-2xl animate-pulse" />
                                         ))}
                                     </div>
                                 ) : activeThreads.length === 0 ? (
-                                    <div className="bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-12 text-center">
-                                        <MessageCircle className="w-10 h-10 text-zinc-300 dark:text-[#3F3F46] mx-auto mb-3" />
-                                        <p className="text-zinc-500 dark:text-[#71717A] text-sm">No recent posts yet.</p>
+                                    <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-12 text-center">
+                                        <MessageCircle className="w-10 h-10 text-[#3F3F46] mx-auto mb-3" />
+                                        <p className="text-[#71717A] text-sm">No recent posts yet.</p>
                                     </div>
                                 ) : (
                                     activeThreads.map((thread) => (
                                         <Link key={thread.id} href={`/forum/thread/${thread.slug}`}>
-                                            <div className="group bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-xl px-4 py-3.5 hover:border-tp-accent/30 transition-all duration-200 flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-full bg-tp-accent/10 border border-tp-accent/20 flex items-center justify-center text-[13px] font-bold text-tp-accent flex-shrink-0 overflow-hidden">
+                                            <div className="group bg-[#0D1117] border border-[#1A2030] rounded-2xl px-5 py-5 sm:px-6 sm:py-6 hover:border-tp-accent/30 hover:shadow-lg hover:shadow-tp-accent/5 transition-all duration-300 flex items-center gap-5">
+                                                <div className="w-12 h-12 rounded-full bg-tp-accent/10 ring-1 ring-white/[0.06] flex items-center justify-center text-[14px] font-bold text-tp-accent flex-shrink-0 overflow-hidden">
                                                     {getAvatarSrc(thread.author?.avatar_url) ? (
                                                         <Image
                                                             src={getAvatarSrc(thread.author?.avatar_url)!}
                                                             alt={thread.author?.username || ""}
-                                                            width={40}
-                                                            height={40}
+                                                            width={48}
+                                                            height={48}
                                                             className="object-cover w-full h-full"
                                                         />
                                                     ) : (
@@ -510,21 +510,21 @@ export default function ForumPage() {
                                                     )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <h3 className="text-[14px] font-bold text-zinc-900 dark:text-white truncate group-hover:text-tp-accent transition-colors">
+                                                    <h3 className="text-[15px] sm:text-[16px] font-bold text-white truncate group-hover:text-tp-accent transition-colors mb-1.5">
                                                         {decodeHtml(thread.title)}
                                                     </h3>
-                                                    <div className="flex items-center gap-3 mt-0.5">
+                                                    <div className="flex items-center gap-2.5">
                                                         {thread.category && (
-                                                            <span className="text-[10px] font-bold uppercase tracking-widest text-tp-accent">
+                                                            <span className="px-2 py-0.5 rounded-full bg-tp-accent/10 text-[10px] font-bold uppercase tracking-widest text-tp-accent">
                                                                 {thread.category.name}
                                                             </span>
                                                         )}
-                                                        <span className="text-[11px] text-zinc-500 dark:text-[#71717A]" suppressHydrationWarning>
+                                                        <span className="text-[12px] text-[#6B7280]" suppressHydrationWarning>
                                                             {formatDistanceToNow(new Date(thread.updated_at), { addSuffix: true })}
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-1.5 text-zinc-400 dark:text-[#71717A] flex-shrink-0">
+                                                <div className="flex items-center gap-1.5 text-[#6B7280] flex-shrink-0 bg-white/[0.02] border border-[#1A2030] rounded-full px-3 py-1.5">
                                                     <MessageCircle className="w-3.5 h-3.5" />
                                                     <span className="text-[12px] font-bold">{thread.posts_count}</span>
                                                 </div>
@@ -537,12 +537,12 @@ export default function ForumPage() {
 
                         {/* UNANSWERED */}
                         {activeTab === "unanswered" && (
-                            <div className="bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-14 text-center">
-                                <Clock className="w-12 h-12 text-zinc-300 dark:text-[#3F3F46] mx-auto mb-4" />
-                                <h3 className="font-display text-[17px] font-bold text-zinc-900 dark:text-white uppercase tracking-wide mb-2">
+                            <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-14 text-center">
+                                <Clock className="w-12 h-12 text-[#3F3F46] mx-auto mb-4" />
+                                <h3 className="font-display text-[17px] font-bold text-white uppercase tracking-wide mb-2">
                                     Coming Soon
                                 </h3>
-                                <p className="text-zinc-500 dark:text-[#71717A] text-[13px]">
+                                <p className="text-[#71717A] text-[13px]">
                                     The unanswered posts filter is in development.
                                 </p>
                             </div>
