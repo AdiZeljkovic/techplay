@@ -494,7 +494,7 @@ export default function ForumPage() {
                                     </div>
                                 ) : (
                                     activeThreads.map((thread) => (
-                                        <Link key={thread.id} href={`/forum/thread/${thread.slug}`}>
+                                        <Link key={thread.id} href={`/forum/thread/${thread.slug}`} className="block">
                                             <div className="group bg-[#0D1117] border border-[#1A2030] rounded-2xl px-5 py-5 sm:px-6 sm:py-6 hover:border-tp-accent/30 hover:shadow-lg hover:shadow-tp-accent/5 transition-all duration-300 flex items-center gap-5">
                                                 <div className="w-12 h-12 rounded-full bg-tp-accent/10 ring-1 ring-white/[0.06] flex items-center justify-center text-[14px] font-bold text-tp-accent flex-shrink-0 overflow-hidden">
                                                     {getAvatarSrc(thread.author?.avatar_url) ? (
