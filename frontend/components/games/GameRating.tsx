@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Star, Loader2, Trash2, X, LogIn, UserPlus } from "lucide-react";
 import Link from "next/link";
 import axios from "@/lib/axios";
+import { useAuth } from "@/context/AuthContext";
 
 interface Aggregate {
     count: number;
@@ -36,7 +37,8 @@ interface Props {
 }
 
 export default function GameRating({ slug }: Props) {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const { user } = useAuth();
+    const isAuthenticated = !!user;
     const [aggregate, setAggregate]     = useState<Aggregate | null>(null);
     const [techplayScore, setTechplayScore] = useState<TechplayScore | null>(null);
     const [reviews, setReviews]         = useState<Review[]>([]);
@@ -53,12 +55,12 @@ export default function GameRating({ slug }: Props) {
     const [submitError, setSubmitError]       = useState<string | null>(null);
 
     useEffect(() => {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-        const authed = !!token;
-        setIsAuthenticated(authed);
         fetchRatings(1);
-        if (authed) fetchMyRating();
     }, [slug]);
+
+    useEffect(() => {
+        if (isAuthenticated) fetchMyRating();
+    }, [slug, isAuthenticated]);
 
     async function fetchRatings(page: number) {
         setLoading(true);

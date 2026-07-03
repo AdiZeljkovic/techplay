@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useMemo } from "react";
+import useSWR from "swr";
 import axios from "@/lib/axios";
 import Image from "next/image";
 import Link from "next/link";
@@ -80,6 +81,8 @@ function FilterRow({ label, options, value, onChange }: { label: string; options
     );
 }
 
+const fetcher = (url: string) => axios.get(url).then((res) => res.data);
+
 function metacriticColor(score: number) {
     if (score >= 90) return "bg-green-500 text-white";
     if (score >= 75) return "bg-green-400 text-black";
@@ -88,19 +91,16 @@ function metacriticColor(score: number) {
 }
 
 export default function HubPage({ type, value, title, description, initialData }: Props) {
-    const [data, setData]                   = useState<HubResponse | null>(initialData ?? null);
     const [page, setPage]                   = useState(1);
     const [sort, setSort]                   = useState("rating");
     const [metacriticMin, setMetacriticMin] = useState("");
     const [era, setEra]                     = useState("");
     const [platform, setPlatform]           = useState("");
-    const [loading, setLoading]             = useState(false);
     const [showFilters, setShowFilters]     = useState(false);
 
     const hasAdvancedFilters = !!(metacriticMin || era || platform);
-    const isDefaultState = page === 1 && sort === "rating" && !metacriticMin && !era && !platform;
 
-    const buildUrl = useCallback(() => {
+    const apiUrl = useMemo(() => {
         const params = new URLSearchParams({ page: String(page), sort });
         if (metacriticMin) params.set("metacritic_min", metacriticMin);
         if (era) {
@@ -112,14 +112,16 @@ export default function HubPage({ type, value, title, description, initialData }
         return `/games/hub/${type}/${value}?${params.toString()}`;
     }, [type, value, page, sort, metacriticMin, era, platform]);
 
-    useEffect(() => {
-        if (isDefaultState && initialData) return;
-        setLoading(true);
-        axios.get(buildUrl())
-            .then((res) => setData(res.data))
-            .catch(() => setData(null))
-            .finally(() => setLoading(false));
-    }, [buildUrl]);
+    // keepPreviousData keeps the current grid on screen while the next
+    // filter/page loads; the SSR-prefetched initialData seeds the first render.
+    const { data, isLoading, isValidating } = useSWR<HubResponse>(apiUrl, fetcher, {
+        keepPreviousData: true,
+        fallbackData: initialData ?? undefined,
+        revalidateOnFocus: false,
+    });
+
+    const loading = isLoading && !data;
+    const refreshing = isValidating && !!data;
 
     const handlePage = (p: number) => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
@@ -237,7 +239,10 @@ export default function HubPage({ type, value, title, description, initialData }
                         ))}
                     </div>
                 ) : data && data.results.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                    <div className={cn(
+                        "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 transition-opacity duration-200",
+                        refreshing && "opacity-60"
+                    )}>
                         {data.results.map((game, idx) => (
                             <Link key={game.id} href={`/games/${game.slug}`}>
                                 <motion.article
@@ -302,13 +307,13 @@ export default function HubPage({ type, value, title, description, initialData }
 
                 {data && data.last_page > 1 && (
                     <div className="flex items-center justify-center gap-2 mb-12">
-                        <Button variant="outline" size="sm" onClick={() => handlePage(page - 1)} disabled={page === 1 || loading}>
+                        <Button variant="outline" size="sm" onClick={() => handlePage(page - 1)} disabled={page === 1 || refreshing}>
                             <ChevronLeft className="w-4 h-4" /> Previous
                         </Button>
                         <div className="px-4 py-2 bg-[var(--bg-card)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-secondary)]">
                             Page <span className="font-bold text-white">{page}</span> of {data.last_page.toLocaleString()}
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => handlePage(page + 1)} disabled={page === data.last_page || loading}>
+                        <Button variant="outline" size="sm" onClick={() => handlePage(page + 1)} disabled={page === data.last_page || refreshing}>
                             Next <ChevronRight className="w-4 h-4" />
                         </Button>
                     </div>
