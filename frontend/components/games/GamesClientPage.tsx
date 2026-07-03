@@ -8,7 +8,8 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
     Search, Database, Gamepad2, ChevronLeft, ChevronRight,
-    Star, SlidersHorizontal, X
+    Star, SlidersHorizontal, X, Swords, MonitorSmartphone,
+    History, ArrowUpDown, type LucideIcon,
 } from "lucide-react";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
 import TrackGameButton from "@/components/games/TrackGameButton";
@@ -106,14 +107,30 @@ function platformChip(name: string): { label: string; cls: string } | null {
 }
 
 /* ── Facet group in the sidebar ── */
-function FacetGroup({ label, children }: { label: string; children: React.ReactNode }) {
+function FacetGroup({ label, icon: Icon, isActive, children }: {
+    label: string;
+    icon: LucideIcon;
+    isActive?: boolean;
+    children: React.ReactNode;
+}) {
     return (
         <div className="pb-5 mb-5 border-b border-zinc-200 dark:border-white/[0.05] last:border-b-0 last:pb-0 last:mb-0">
-            <span className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-[#71717A] mb-3">
-                <span className="w-1 h-3 bg-tp-accent rounded-sm" />
-                {label}
+            <span className="flex items-center gap-2.5 mb-3.5">
+                <span className={`w-[26px] h-[26px] rounded-lg flex items-center justify-center border transition-colors ${
+                    isActive
+                        ? "bg-tp-accent/15 border-tp-accent/40"
+                        : "bg-zinc-100 dark:bg-white/[0.04] border-zinc-200 dark:border-white/[0.06]"
+                }`}>
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? "text-tp-accent" : "text-zinc-500 dark:text-[#8B949E]"}`} strokeWidth={2.25} />
+                </span>
+                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500 dark:text-[#8B949E]">
+                    {label}
+                </span>
+                {isActive && (
+                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-tp-accent shadow-[0_0_8px_rgba(252,65,0,0.9)]" />
+                )}
             </span>
-            <div className="flex flex-wrap gap-1.5">{children}</div>
+            {children}
         </div>
     );
 }
@@ -122,13 +139,50 @@ function FacetPill({ active, onClick, children }: { active: boolean; onClick: ()
     return (
         <button
             onClick={onClick}
-            className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all border ${
+            className={`px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-150 border ${
                 active
-                    ? "bg-tp-accent border-tp-accent text-white shadow-[0_0_12px_rgba(252,65,0,0.25)]"
-                    : "bg-zinc-50 dark:bg-[#070A0F] border-zinc-200 dark:border-[#161B22] text-zinc-600 dark:text-[#A1A1AA] hover:text-zinc-900 dark:hover:text-white hover:border-tp-accent/40"
+                    ? "bg-gradient-to-b from-tp-accent to-[#D93A02] border-tp-accent text-white shadow-[0_2px_14px_rgba(252,65,0,0.35)]"
+                    : "bg-zinc-50 dark:bg-white/[0.03] border-zinc-200 dark:border-white/[0.07] text-zinc-600 dark:text-[#A1A1AA] hover:text-zinc-900 dark:hover:text-white hover:border-tp-accent/50 hover:bg-tp-accent/[0.07]"
             }`}
         >
             {children}
+        </button>
+    );
+}
+
+/* Joined segmented control cell (Era / MobyScore) */
+function SegmentButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+    return (
+        <button
+            onClick={onClick}
+            className={`py-2 px-1 text-[10.5px] font-bold uppercase tracking-wider transition-all ${
+                active
+                    ? "bg-tp-accent text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]"
+                    : "bg-white dark:bg-[#0B0E14] text-zinc-600 dark:text-[#8B949E] hover:text-zinc-900 dark:hover:text-white hover:bg-tp-accent/10"
+            }`}
+        >
+            {children}
+        </button>
+    );
+}
+
+/* Vertical sort option row with indicator dot */
+function SortRow({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+    return (
+        <button
+            onClick={onClick}
+            className={`group flex items-center justify-between w-full px-3 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all border ${
+                active
+                    ? "bg-tp-accent/10 border-tp-accent/30 text-tp-accent"
+                    : "border-transparent text-zinc-600 dark:text-[#A1A1AA] hover:bg-zinc-50 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-white"
+            }`}
+        >
+            {children}
+            <span className={`w-1.5 h-1.5 rounded-full transition-all ${
+                active
+                    ? "bg-tp-accent shadow-[0_0_8px_rgba(252,65,0,0.9)]"
+                    : "bg-transparent group-hover:bg-zinc-300 dark:group-hover:bg-white/20"
+            }`} />
         </button>
     );
 }
@@ -200,46 +254,56 @@ export default function GamesClientPage() {
 
     const facets = (
         <>
-            <FacetGroup label="Genre">
-                <FacetPill active={genre === ""} onClick={() => setGenre("")}>All</FacetPill>
-                {GENRES.map(g => (
-                    <FacetPill key={g.id} active={genre === g.id} onClick={() => setGenre(genre === g.id ? "" : g.id)}>
-                        {g.name}
-                    </FacetPill>
-                ))}
+            <FacetGroup label="Genre" icon={Swords} isActive={genre !== ""}>
+                <div className="flex flex-wrap gap-1.5">
+                    <FacetPill active={genre === ""} onClick={() => setGenre("")}>All</FacetPill>
+                    {GENRES.map(g => (
+                        <FacetPill key={g.id} active={genre === g.id} onClick={() => setGenre(genre === g.id ? "" : g.id)}>
+                            {g.name}
+                        </FacetPill>
+                    ))}
+                </div>
             </FacetGroup>
 
-            <FacetGroup label="Platform">
-                <FacetPill active={platform === ""} onClick={() => setPlatform("")}>All</FacetPill>
-                {PLATFORMS.map(p => (
-                    <FacetPill key={p.id} active={platform === p.id} onClick={() => setPlatform(platform === p.id ? "" : p.id)}>
-                        {p.name}
-                    </FacetPill>
-                ))}
+            <FacetGroup label="Platform" icon={MonitorSmartphone} isActive={platform !== ""}>
+                <div className="flex flex-wrap gap-1.5">
+                    <FacetPill active={platform === ""} onClick={() => setPlatform("")}>All</FacetPill>
+                    {PLATFORMS.map(p => (
+                        <FacetPill key={p.id} active={platform === p.id} onClick={() => setPlatform(platform === p.id ? "" : p.id)}>
+                            {p.name}
+                        </FacetPill>
+                    ))}
+                </div>
             </FacetGroup>
 
-            <FacetGroup label="Era">
-                {ERAS.map(e => (
-                    <FacetPill key={e.id} active={era === e.id} onClick={() => setEra(e.id)}>
-                        {e.name}
-                    </FacetPill>
-                ))}
+            <FacetGroup label="Era" icon={History} isActive={era !== ""}>
+                <div className="grid grid-cols-3 gap-px w-full rounded-xl overflow-hidden border border-zinc-200 dark:border-white/[0.07] bg-zinc-200 dark:bg-white/[0.07]">
+                    {ERAS.map(e => (
+                        <SegmentButton key={e.id} active={era === e.id} onClick={() => setEra(e.id)}>
+                            {e.name}
+                        </SegmentButton>
+                    ))}
+                </div>
             </FacetGroup>
 
-            <FacetGroup label="MobyScore">
-                {SCORES.map(s => (
-                    <FacetPill key={s.id} active={score === s.id} onClick={() => setScore(s.id)}>
-                        {s.name}
-                    </FacetPill>
-                ))}
+            <FacetGroup label="MobyScore" icon={Star} isActive={score !== ""}>
+                <div className="grid grid-cols-4 gap-px w-full rounded-xl overflow-hidden border border-zinc-200 dark:border-white/[0.07] bg-zinc-200 dark:bg-white/[0.07]">
+                    {SCORES.map(s => (
+                        <SegmentButton key={s.id} active={score === s.id} onClick={() => setScore(s.id)}>
+                            {s.id === "" ? "Any" : s.name}
+                        </SegmentButton>
+                    ))}
+                </div>
             </FacetGroup>
 
-            <FacetGroup label="Sort by">
-                {SORT_OPTIONS.map(s => (
-                    <FacetPill key={s.value} active={ordering === s.value} onClick={() => setOrdering(s.value)}>
-                        {s.label}
-                    </FacetPill>
-                ))}
+            <FacetGroup label="Sort by" icon={ArrowUpDown} isActive={ordering !== "-rating"}>
+                <div className="flex flex-col gap-1 w-full">
+                    {SORT_OPTIONS.map(s => (
+                        <SortRow key={s.value} active={ordering === s.value} onClick={() => setOrdering(s.value)}>
+                            {s.label}
+                        </SortRow>
+                    ))}
+                </div>
             </FacetGroup>
         </>
     );
@@ -298,12 +362,22 @@ export default function GamesClientPage() {
 
                     {/* ── FACET SIDEBAR (desktop) ── */}
                     <aside className="hidden lg:block w-[280px] shrink-0 sticky top-[130px]">
-                        <div className="bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-[20px] p-6 shadow-sm dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-colors duration-300">
+                        <div className="relative overflow-hidden bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-[20px] p-6 shadow-sm dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-colors duration-300">
+                            {/* Accent hairline along the top of the card */}
+                            <span className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-tp-accent/70 via-tp-accent/15 to-transparent" />
+
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="font-display text-[15px] font-bold text-zinc-900 dark:text-white uppercase tracking-[0.06em]">Filters</h2>
+                                <div className="flex items-center gap-2.5">
+                                    <SlidersHorizontal className="w-4 h-4 text-tp-accent" strokeWidth={2.25} />
+                                    <h2 className="font-display text-[15px] font-bold text-zinc-900 dark:text-white uppercase tracking-[0.06em]">Filters</h2>
+                                </div>
                                 {activeFilters.length > 0 && (
-                                    <button onClick={clearAll} className="text-[10px] font-bold uppercase tracking-widest text-tp-accent hover:text-tp-accent-hover transition-colors">
-                                        Clear all
+                                    <button
+                                        onClick={clearAll}
+                                        className="flex items-center gap-1 pl-2.5 pr-2 py-1 rounded-full bg-tp-accent/10 border border-tp-accent/25 text-[9.5px] font-bold uppercase tracking-widest text-tp-accent hover:bg-tp-accent hover:text-white transition-all"
+                                    >
+                                        Clear ({activeFilters.length})
+                                        <X className="w-3 h-3" />
                                     </button>
                                 )}
                             </div>
