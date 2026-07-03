@@ -11,10 +11,12 @@ use App\Services\AchievementService;
 use App\Services\BountyService;
 use App\Services\QuestService;
 use App\Services\RawgService;
+use App\Services\XpService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
 
@@ -141,6 +143,9 @@ class GameCollectionController extends Controller
         }
 
         $wasNew = ! $entry->exists;
+        // Capture BEFORE save() — save() syncs originals, which made the
+        // completion bounty unreachable for status transitions
+        $previousStatus = $wasNew ? null : $entry->getOriginal('status');
         $entry->save();
         $entry->load(['game:id,slug,name,released,rating,background_image,platform_names,genre_names']);
 
@@ -151,22 +156,26 @@ class GameCollectionController extends Controller
         } catch (\Throwable) {
         }
 
-        // Bounty bonus for completing a game + quest progress
-        if ($data['status'] === 'completed') {
+        // Bounty + XP bonus for completing a game + quest progress
+        if ($data['status'] === 'completed' && $previousStatus !== 'completed') {
             try {
-                $wasAlreadyCompleted = ! $wasNew && $entry->getOriginal('status') === 'completed';
-                if (! $wasAlreadyCompleted) {
-                    app(BountyService::class)->award($request->user(), 50, "Game completed: {$game->name}", 'milestone');
-                    app(QuestService::class)->progress($request->user(), 'game_completed', 1);
-                }
+                app(BountyService::class)->award($request->user(), 50, "Game completed: {$game->name}", 'milestone');
+                app(QuestService::class)->progress($request->user(), 'game_completed', 1);
+                app(XpService::class)->awardXp($request->user(), XpService::XP_GAME_COMPLETED, 'game_completed');
             } catch (\Throwable) {
             }
         }
 
-        // Quest: game added to collection
+        // Quest + XP: game added to collection (XP once per game per user)
         if ($wasNew) {
             try {
                 app(QuestService::class)->progress($request->user(), 'game_added', 1);
+
+                $xpOnceKey = "user:{$request->user()->id}:xp_game_added:{$game->id}";
+                if (! Cache::has($xpOnceKey)) {
+                    Cache::put($xpOnceKey, 1, now()->addDays(30));
+                    app(XpService::class)->awardXp($request->user(), XpService::XP_GAME_ADDED, 'game_added');
+                }
             } catch (\Throwable) {
             }
         }

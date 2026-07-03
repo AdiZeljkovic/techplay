@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, Client, TextChannel } from 'discord.js';
+import { ChatInputCommandInteraction, Client, EmbedBuilder, TextChannel } from 'discord.js';
 import { ApiService } from '../services/ApiService';
 import { BuffyService } from '../services/BuffyService';
 import { LinkService } from '../services/LinkService';
@@ -27,6 +27,7 @@ export async function handleCommand(interaction: ChatInputCommandInteraction, cl
         case 'sync': return handleSync(interaction);
         case 'trivia': return handleTrivia(interaction);
         case 'search': return handleSearch(interaction, api, buffy);
+        case 'game': return handleGame(interaction, api, buffy);
         case 'techplay': return handleTechplay(interaction, api);
         case 'latest': return handleLatest(interaction, api);
         case 'giveaways': return handleGiveaways(interaction, api);
@@ -177,12 +178,48 @@ async function handleSearch(interaction: ChatInputCommandInteraction, api: ApiSe
     }
 
     const content = results.slice(0, 5).map(r =>
-        `🔹 **[${r.title}](https://techplay.gg/news/${r.slug})**\n${r.excerpt || ''}`
+        `🔹 **[${r.title}](https://techplay.gg${r.url || `/news/${r.slug}`})**\n${r.excerpt || ''}`
     ).join('\n\n');
 
     await interaction.editReply({
         content: `🔍 **Search results for "${query}"**\n\n${content}`
     });
+}
+
+async function handleGame(interaction: ChatInputCommandInteraction, api: ApiService, buffy: BuffyService) {
+    await interaction.deferReply();
+
+    const name = interaction.options.getString('name', true);
+    const results = await api.searchGames(name);
+
+    if (results.length === 0) {
+        const embed = buffy.createErrorEmbed(`No games found for "${name}".`);
+        await interaction.editReply({ embeds: [embed] });
+        return;
+    }
+
+    const top = results[0];
+    const embed = new EmbedBuilder()
+        .setColor(0xFC4100)
+        .setTitle(`🎮 ${top.title}`)
+        .setURL(`https://techplay.gg${top.url}`)
+        .setDescription(top.category)
+        .setFooter({ text: 'TechPlay Game Database' });
+
+    if (top.image) {
+        embed.setImage(top.image);
+    }
+
+    if (results.length > 1) {
+        embed.addFields({
+            name: 'More matches',
+            value: results.slice(1, 5)
+                .map(g => `[${g.title}](https://techplay.gg${g.url})`)
+                .join('\n'),
+        });
+    }
+
+    await interaction.editReply({ embeds: [embed] });
 }
 
 async function handleTechplay(interaction: ChatInputCommandInteraction, api: ApiService) {

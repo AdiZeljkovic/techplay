@@ -38,6 +38,18 @@ export const commands = [
         ]
     },
     {
+        name: 'game',
+        description: '🎮 Look up a game in the TechPlay database',
+        options: [
+            {
+                name: 'name',
+                description: 'Game name to search for',
+                type: ApplicationCommandOptionType.String,
+                required: true,
+            }
+        ]
+    },
+    {
         name: 'trivia',
         description: '🧠 Start a tech trivia question (win XP!)',
     },

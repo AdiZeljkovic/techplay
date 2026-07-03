@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Article;
 use App\Models\Game;
 use App\Models\GameRating;
+use App\Services\XpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -44,8 +46,51 @@ class GameRatingController extends Controller
                     1 => (int) $aggregate->r1,
                 ],
             ],
+            'techplay_score' => $this->techplayScore($slug, $aggregate),
             'reviews' => $reviews,
         ]);
+    }
+
+    /**
+     * "TechPlay Score" — blends the editorial review score (articles.review_score
+     * via articles.game_id, 0–10) with the community star average (1–5 → 0–10).
+     * Editorial weighs 60% when both exist.
+     */
+    private function techplayScore(string $slug, object $aggregate): ?array
+    {
+        $editorial = Cache::remember("games.editorial_score.{$slug}", 600, function () use ($slug) {
+            $gameId = Game::where('slug', $slug)->value('id');
+            if (! $gameId) {
+                return null;
+            }
+
+            $score = Article::where('game_id', $gameId)
+                ->where('status', 'published')
+                ->whereNotNull('review_score')
+                ->orderByDesc('published_at')
+                ->value('review_score');
+
+            return $score !== null ? (float) $score : null;
+        });
+
+        $community = $aggregate->count > 0 ? round(((float) $aggregate->average) * 2, 1) : null;
+
+        $score = match (true) {
+            $editorial !== null && $community !== null => round(0.6 * $editorial + 0.4 * $community, 1),
+            $editorial !== null => round($editorial, 1),
+            $community !== null => $community,
+            default => null,
+        };
+
+        if ($score === null) {
+            return null;
+        }
+
+        return [
+            'score' => $score,
+            'editorial' => $editorial,
+            'community' => $community,
+        ];
     }
 
     /**
@@ -82,6 +127,14 @@ class GameRatingController extends Controller
             ['user_id' => $request->user()->id, 'game_slug' => $slug],
             $validated
         );
+
+        // XP for a first-time rating that includes a written review
+        if ($rating->wasRecentlyCreated && ! empty($validated['review'])) {
+            try {
+                app(XpService::class)->awardXp($request->user(), XpService::XP_GAME_REVIEW, 'game_review');
+            } catch (\Throwable) {
+            }
+        }
 
         return response()->json($rating, 201);
     }

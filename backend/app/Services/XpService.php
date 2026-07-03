@@ -13,6 +13,12 @@ class XpService
 
     public const XP_ARTICLE_READ = 5;
 
+    public const XP_GAME_ADDED = 5;
+
+    public const XP_GAME_COMPLETED = 15;
+
+    public const XP_GAME_REVIEW = 10;
+
     public const DAILY_XP_CAP = 100;
 
     public const COMMENT_COOLDOWN_SECONDS = 60;

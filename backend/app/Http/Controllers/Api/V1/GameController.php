@@ -49,6 +49,10 @@ class GameController extends Controller
         $page = max(1, (int) $request->input('page', 1));
         $pageSize = min(40, max(10, (int) $request->input('page_size', 20)));
 
+        if ($search !== '' && $page === 1) {
+            $this->logSearchQuery($search);
+        }
+
         $cacheKey = 'games.index.v1.'.md5(json_encode([
             $search, $genre, $platform, $ordering, $yearFrom, $yearTo, $minRating, $page, $pageSize,
         ]));
@@ -103,7 +107,22 @@ class GameController extends Controller
     }
 
     /**
-     * Buffer game page views in Redis (flushed to games.views by
+     * Log game search queries into a daily Redis sorted set — tells the
+     * editorial team what the audience is looking for. 30-day retention.
+     */
+    private function logSearchQuery(string $query): void
+    {
+        try {
+            $key = 'analytics:game_search:'.now()->format('Y-m-d');
+            Redis::zincrby($key, 1, Str::lower(trim($query)));
+            Redis::expire($key, 60 * 60 * 24 * 30);
+        } catch (\Throwable) {
+            // Analytics must never break search
+        }
+    }
+
+    /**
+     * Buffer game page views in Redis (flushed to views by
      * FlushViewCounters), throttled to one count per IP per 30 minutes.
      */
     private function trackView(int $gameId, ?string $ip): void

@@ -7,6 +7,16 @@ interface NewsItem {
     title: string;
     excerpt: string;
     created_at: string;
+    url?: string;
+}
+
+interface GameSearchResult {
+    id: number;
+    title: string;
+    slug: string;
+    image: string | null;
+    category: string;
+    url: string;
 }
 
 interface LeaderboardUser {
@@ -88,9 +98,23 @@ export class ApiService {
     public async searchArticles(query: string): Promise<NewsItem[]> {
         try {
             const response = await this.client.get('/search/articles', { params: { q: query } });
-            return response.data.data || [];
+            // SearchController returns { results, count }
+            return response.data.results || [];
         } catch (error) {
             console.error('[ApiService] Failed to search articles:', error instanceof Error ? error.message : 'Unknown error');
+            return [];
+        }
+    }
+
+    /**
+     * Searches the game database by name
+     */
+    public async searchGames(query: string): Promise<GameSearchResult[]> {
+        try {
+            const response = await this.client.get('/search/games', { params: { q: query } });
+            return response.data.results || [];
+        } catch (error) {
+            console.error('[ApiService] Failed to search games:', error instanceof Error ? error.message : 'Unknown error');
             return [];
         }
     }

@@ -19,8 +19,15 @@ interface Review {
     user: { id: number; name: string; username: string; avatar: string | null };
 }
 
+interface TechplayScore {
+    score: number;
+    editorial: number | null;
+    community: number | null;
+}
+
 interface ReviewsResponse {
     aggregate: Aggregate;
+    techplay_score: TechplayScore | null;
     reviews: { data: Review[]; last_page: number; current_page: number };
 }
 
@@ -31,6 +38,7 @@ interface Props {
 export default function GameRating({ slug }: Props) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [aggregate, setAggregate]     = useState<Aggregate | null>(null);
+    const [techplayScore, setTechplayScore] = useState<TechplayScore | null>(null);
     const [reviews, setReviews]         = useState<Review[]>([]);
     const [lastPage, setLastPage]       = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
@@ -58,6 +66,7 @@ export default function GameRating({ slug }: Props) {
             const res = await axios.get(`/games/${slug}/ratings?page=${page}`);
             const data: ReviewsResponse = res.data;
             setAggregate(data.aggregate);
+            setTechplayScore(data.techplay_score ?? null);
             setReviews((prev) => page === 1 ? data.reviews.data : [...prev, ...data.reviews.data]);
             setLastPage(data.reviews.last_page);
             setCurrentPage(page);
@@ -116,6 +125,24 @@ export default function GameRating({ slug }: Props) {
                 <Star className="w-5 h-5 text-[var(--accent)]" />
                 Community Ratings
             </h2>
+
+            {/* TechPlay Score — editorial + community blend */}
+            {techplayScore && (
+                <div className="flex items-center gap-4 mb-6 p-4 bg-gradient-to-r from-[var(--accent)]/15 to-transparent border border-[var(--accent)]/25 rounded-2xl">
+                    <div className="w-16 h-16 rounded-2xl bg-[var(--accent)] flex items-center justify-center shrink-0 shadow-lg shadow-[var(--accent)]/30">
+                        <span className="text-2xl font-black text-white">{techplayScore.score.toFixed(1)}</span>
+                    </div>
+                    <div>
+                        <p className="text-sm font-black text-white uppercase tracking-widest">TechPlay Score</p>
+                        <p className="text-xs text-gray-400 mt-1">
+                            {techplayScore.editorial != null && `Editorial ${techplayScore.editorial.toFixed(1)}`}
+                            {techplayScore.editorial != null && techplayScore.community != null && " · "}
+                            {techplayScore.community != null && `Community ${techplayScore.community.toFixed(1)}`}
+                            {" / 10"}
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Aggregate stats */}
             {aggregate && aggregate.count > 0 && (
