@@ -47,9 +47,11 @@ class SeoController extends Controller
             5
         );
 
+        $gameSuggestions = InternalLinkService::suggestGameLinks($request->content, 5);
+
         return response()->json([
-            'data' => $suggestions,
-            'count' => count($suggestions),
+            'data' => array_merge($suggestions, $gameSuggestions),
+            'count' => count($suggestions) + count($gameSuggestions),
         ]);
     }
 

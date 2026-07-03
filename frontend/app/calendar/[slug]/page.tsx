@@ -180,8 +180,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
         title: `${game.name} - Release Calendar - TechPlay`,
         description: desc,
+        alternates: { canonical: `https://techplay.gg/calendar/${slug}` },
         openGraph: {
             title: game.name, description: desc,
+            url: `https://techplay.gg/calendar/${slug}`,
+            siteName: "TechPlay",
             images: game.background_image ? [game.background_image] : [],
             type: "website",
         },
@@ -281,8 +284,46 @@ export default async function CalendarGamePage({ params }: Props) {
     // Series: pick first game that isn't this one
     const seriesGame = gameSeries.results.find(g => g.slug !== slug) ?? null;
 
+    /* ── JSON-LD ─────────────────────────────────────────────────────────────── */
+    const structuredData: Record<string, unknown> = {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        name: game.name,
+        description: (game.description_raw ?? "").slice(0, 500),
+        image: game.background_image ?? "",
+        url: pageUrl,
+        ...(game.released ? { datePublished: game.released } : {}),
+        ...(game.esrb_rating ? { contentRating: game.esrb_rating.name } : {}),
+        ...(Number(game.ratings_count) > 0 && Number(game.rating) > 0 ? {
+            aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: Number(game.rating).toFixed(1),
+                ratingCount: game.ratings_count,
+                bestRating: String(game.rating_top ?? 5),
+                worstRating: "1",
+            },
+        } : {}),
+        genre: (game.genres ?? []).map(g => g.name),
+        gamePlatform: (game.platforms ?? []).map(p => p.platform.name),
+        publisher: (game.publishers ?? []).map(p => ({ "@type": "Organization", name: p.name })),
+        developer: (game.developers ?? []).map(d => ({ "@type": "Organization", name: d.name })),
+        applicationCategory: "Game",
+    };
+
+    const breadcrumb = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: "https://techplay.gg" },
+            { "@type": "ListItem", position: 2, name: "Release Calendar", item: "https://techplay.gg/calendar" },
+            { "@type": "ListItem", position: 3, name: game.name, item: pageUrl },
+        ],
+    };
+
     return (
         <div className="min-h-screen bg-white dark:bg-[#05070A]">
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
             {/* ══ HERO ══════════════════════════════════════════════════════════ */}
             <div className="relative w-full min-h-[480px] lg:min-h-[560px] overflow-hidden bg-[#05070A]">

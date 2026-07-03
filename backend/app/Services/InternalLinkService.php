@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Article;
+use App\Models\Game;
 use Illuminate\Support\Str;
 
 class InternalLinkService
@@ -72,6 +73,48 @@ class InternalLinkService
         return $scored
             ->sortByDesc('score')
             ->take($limit)
+            ->values()
+            ->toArray();
+    }
+
+    /**
+     * Suggest game database pages worth linking from the given content.
+     * Finds games whose full name actually appears in the text, preferring
+     * higher-rated (better-known) titles.
+     */
+    public static function suggestGameLinks(string $content, int $limit = 5): array
+    {
+        $text = Str::lower(strip_tags($content));
+        $keywords = self::extractKeywords($content);
+
+        if (empty($keywords)) {
+            return [];
+        }
+
+        $candidates = Game::query()
+            ->where('has_description', true)
+            ->where(function ($q) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $q->orWhere('name', 'ILIKE', "%{$keyword}%");
+                }
+            })
+            ->orderByDesc('rating')
+            ->limit(100)
+            ->get(['id', 'name', 'slug', 'rating', 'released']);
+
+        return $candidates
+            // Keyword match is just a pre-filter — require the full game name in the text
+            ->filter(fn ($game) => strlen($game->name) >= 4 && Str::contains($text, Str::lower($game->name)))
+            ->take($limit)
+            ->map(fn ($game) => [
+                'id' => $game->id,
+                'title' => $game->name,
+                'slug' => $game->slug,
+                'url' => '/games/'.$game->slug,
+                'excerpt' => $game->released ? 'Game ('.$game->released->format('Y').')' : 'Game',
+                'category' => 'game',
+                'score' => (float) ($game->rating ?? 0),
+            ])
             ->values()
             ->toArray();
     }

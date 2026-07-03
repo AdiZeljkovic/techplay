@@ -6,7 +6,7 @@ import { getApiUrl } from "@/lib/api";
 import {
     Calendar, Monitor, Star, Globe,
     ExternalLink, Gamepad2, ArrowLeft, Tag, Info,
-    Camera, Layers, ThumbsUp, Shield,
+    Camera, Layers, ThumbsUp, Shield, Newspaper,
 } from "lucide-react";
 import GameScreenshotsLightbox from "@/components/games/GameScreenshotsLightbox";
 import GameCountdownTimer from "@/components/games/GameCountdownTimer";
@@ -100,6 +100,17 @@ interface GameListItem {
     background_image: string;
     released: string;
     rating: number;
+}
+
+interface RelatedArticle {
+    slug: string;
+    title: string;
+    excerpt: string | null;
+    image: string | null;
+    published_at: string | null;
+    review_score: number | null;
+    category: string | null;
+    path: string;
 }
 
 /* ─── generateMetadata ───────────────────────────────────────────────────────── */
@@ -216,14 +227,17 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
     const { slug } = await params;
     const base     = getApiUrl();
 
-    const [game, screenshotsRes, seriesRes, suggestedRes] = await Promise.all([
+    const [game, screenshotsRes, seriesRes, suggestedRes, articlesRes] = await Promise.all([
         fetch(`${base}/games/${slug}`).then((r) => (r.ok ? r.json() : null)),
         fetch(`${base}/games/${slug}/screenshots`).then((r) => (r.ok ? r.json() : null)),
         fetch(`${base}/games/${slug}/series`).then((r) => (r.ok ? r.json() : null)),
         fetch(`${base}/games/${slug}/suggested`).then((r) => (r.ok ? r.json() : null)),
-    ]) as [GameDetail | null, { results: MobyScreenshot[] } | null, { results: GameListItem[] } | null, { results: GameListItem[] } | null];
+        fetch(`${base}/games/${slug}/articles`).then((r) => (r.ok ? r.json() : null)),
+    ]) as [GameDetail | null, { results: MobyScreenshot[] } | null, { results: GameListItem[] } | null, { results: GameListItem[] } | null, { data: RelatedArticle[] } | null];
 
     if (!game) notFound();
+
+    const relatedArticles = articlesRes?.data ?? [];
 
     // Ensure rating is always a number
     if (game.rating) game.rating = Number(game.rating);
@@ -273,6 +287,8 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                 worstRating:  "1",
             },
         } : {}),
+        ...(screenshots.length > 0 ? { screenshot: screenshots.slice(0, 5).map((s) => s.image) } : {}),
+        ...((game.alternate_titles ?? []).length > 0 ? { alternateName: game.alternate_titles.map((t) => t.title) } : {}),
         genre:               (game.genres    ?? []).map((g) => g.name),
         gamePlatform:        (game.platforms ?? []).map((p) => p.platform_name),
         publisher:           (game.publishers ?? []).map((p) => ({ "@type": "Organization", name: p.company_name })),
@@ -412,6 +428,49 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                 <p className="text-gray-500 italic">No description available yet.</p>
                             )}
                         </div>
+
+                        {/* Related News & Reviews */}
+                        {relatedArticles.length > 0 && (
+                            <div className="bg-[#0f1221]/60 border border-white/5 rounded-2xl p-6">
+                                <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <Newspaper className="w-4 h-4 text-[var(--accent)]" />
+                                    News &amp; Reviews
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {relatedArticles.map((a) => (
+                                        <Link key={a.slug} href={`/${a.path}/${a.slug}`}
+                                            className="group flex gap-4 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-[var(--accent)]/40 rounded-xl p-3 transition-all">
+                                            {a.image && (
+                                                <div className="relative w-24 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-[var(--bg-elevated)]">
+                                                    <Image src={a.image} alt={a.title} fill sizes="96px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                                                </div>
+                                            )}
+                                            <div className="min-w-0">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    {a.category && (
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--accent)]">{a.category}</span>
+                                                    )}
+                                                    {a.review_score != null && (
+                                                        <span className="inline-flex items-center gap-1 text-[10px] font-black text-yellow-400">
+                                                            <Star className="w-3 h-3 fill-yellow-400" />
+                                                            {Number(a.review_score).toFixed(1)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className="text-sm font-semibold text-white group-hover:text-[var(--accent)] transition-colors line-clamp-2 leading-snug">
+                                                    {a.title}
+                                                </p>
+                                                {a.published_at && (
+                                                    <p className="text-xs text-[var(--text-muted)] mt-1">
+                                                        {new Date(a.published_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Alternate Titles */}
                         {game.alternate_titles && game.alternate_titles.length > 0 && (

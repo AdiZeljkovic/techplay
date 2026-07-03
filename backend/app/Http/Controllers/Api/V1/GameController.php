@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\SitemapController;
+use App\Models\Article;
 use App\Models\Game;
 use App\Services\RawgService;
 use Illuminate\Http\Request;
@@ -131,6 +133,42 @@ class GameController extends Controller
             'stores' => [],
             'achievements_count' => 0,
         ]);
+    }
+
+    /**
+     * Published editorial content (news, reviews, guides) linked to this game
+     * via articles.game_id. Powers the "Related News & Reviews" section.
+     */
+    public function articles(string $slug)
+    {
+        $gameId = Game::where('slug', $slug)->value('id');
+
+        if (! $gameId) {
+            return response()->json(['data' => []]);
+        }
+
+        $articles = Cache::remember("games.articles.v1.{$gameId}", 600, function () use ($gameId) {
+            return Article::where('game_id', $gameId)
+                ->where('status', 'published')
+                ->with('category:id,name,type')
+                ->orderByDesc('published_at')
+                ->limit(6)
+                ->get(['id', 'slug', 'title', 'excerpt', 'featured_image_url', 'published_at', 'review_score', 'category_id'])
+                ->map(fn ($a) => [
+                    'slug' => $a->slug,
+                    'title' => $a->title,
+                    'excerpt' => $a->excerpt,
+                    'image' => $a->featured_image_url,
+                    'published_at' => $a->published_at?->toIso8601String(),
+                    'review_score' => $a->review_score,
+                    'category' => $a->category->name ?? null,
+                    'path' => SitemapController::getArticleTypePath($a->category->type ?? 'news'),
+                ])
+                ->values();
+        });
+
+        return response()->json(['data' => $articles])
+            ->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
     }
 
     public function screenshots(string $slug)
