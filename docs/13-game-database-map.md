@@ -169,3 +169,42 @@ Game
 2. RAWG API fallback je live proxy — ako RAWG key istekne, game stranice nemaju screenshote
 3. Igre bez opisa (`has_description: false`) prikazuju se bez punog sadržaja
 4. IGDB legacy komande postoje ali su napuštene — mogu zbuniti novog developera
+
+---
+
+## Changelog 2026-07-03 — Game Database audit implementacija (Faze 0-4)
+
+Kompletan audit + implementacija u 5 commitova (273a085, 64c8d75, ea30aa6, a2329ca, 57a9acb).
+
+### Faza 0 — Quick fixes
+- Popravljeni broken linkovi `/games/calendar` -> `/calendar` (homepage + sidebar widget)
+- `SitemapController`: games page-count filter usklađen s `has_description`, junk slugovi (`-`, `_`) se preskaču, year hub koristi tekuću godinu umjesto hardkodirane 2025
+- **Novi `GameObserver`** (registrovan u `AppServiceProvider`): na izmjenu igre bustuje `games.show.v1.{slug}` cache, poziva `CacheRevalidationService::revalidateGame()` (novi `game` tip u Next `/api/revalidate` + Cloudflare purge), i pinga IndexNow kad igra dobije opis. HTTP pozivi se preskaču u konzoli (bulk import)
+- Rate limiti: rating write `throttle:30,1`; collection + game-lists write `throttle:60,1`
+- `MobyFetch::upsertCompanies` više ne duplo broji `games_count`
+- Homepage `GameDatabaseSection`: dinamički count igara (200K+), genre/tag linkovi vode na hub rute (prije su bili mrtvi `?genre=` parametri); obrisan neiskorišteni `HypeMeter.tsx`
+
+### Faza 1 — SEO
+- **Novi endpoint `GET /games/{slug}/articles`** — objavljeni članci preko `articles.game_id` (cache 10 min); frontend "News & Reviews" sekcija na `/games/[slug]`
+- `/calendar/[slug]`: canonical + VideoGame/BreadcrumbList JSON-LD (prije nije imao ništa)
+- `/games/[slug]` JSON-LD: dodani `screenshot` i `alternateName`
+- `InternalLinkService::suggestGameLinks()` — editor link prijedlozi sada uključuju game stranice (mergano u `POST /seo/suggest-links`)
+
+### Faza 2 — Search & performanse
+- Migracija: `pg_trgm` ekstenzija + GIN trgm indeks na `games.name` (ILIKE pretraga na 200K redova bila sequential scan)
+- **Novi endpoint `GET /search/games`** + igre u globalnom search dropdownu (paralelno s člancima)
+- `GameController::index` (5 min) i `show` (10 min) keširani u Redis
+- **View tracking**: `games.views` kolona + Redis brojač (`views:game:{id}`, IP throttle 30 min) -> `FlushViewCounters`; novi sort `-views` ("Trending") na `/games`
+
+### Faza 3 — Data model & ingestion
+- `game_ratings.game_id` FK (backfilled iz sluga; `game_slug` zadržan); review tekst se strip_tags-uje
+- Collection auto-create ojačan: RateLimiter 10 novih igara/h po korisniku, RAWG rezultat mora odgovarati slugu, RAWG ID se upisuje u `game_external_ids`
+- **Nova komanda `games:sync-new-releases`** (RAWG releases -14d/+60d), scheduled sedmično ponedjeljkom 04:00 — zamjena za penzionisani Moby bulk import
+
+### Faza 4 — Community & gamifikacija
+- XP: +5 dodavanje igre (jednom po igri), +15 completion, +10 prva ocjena s reviewom (`XpService` konstante `XP_GAME_*`)
+- **Bugfix**: completion bounty se nikad nije dodjeljivao na tranziciji statusa (getOriginal čitan poslije save())
+- Discord: nova `/game` komanda (pretraga baze, embed); **bugfix** `/search` je čitao pogrešan response ključ (uvijek "No results")
+- **TechPlay Score**: editorial `review_score` (60%) + community prosjek (40%) u `GET /games/{slug}/ratings` responsu + prikaz na game stranici
+- Search analytics: dnevni Redis zset `analytics:game_search:{Y-m-d}` (30 dana)
+- **Novi Filament resurs `GameRatingResource`** (grupa Game Database) — moderacija community ocjena/reviewa
