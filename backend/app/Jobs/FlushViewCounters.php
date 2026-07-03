@@ -22,6 +22,7 @@ class FlushViewCounters implements ShouldQueue
     {
         $this->flushPattern('views:thread:*', 'threads', 'view_count');
         $this->flushPattern('views:article:*', 'articles', 'views');
+        $this->flushPattern('views:game:*', 'games', 'views');
         $this->flushPattern('views:ad:*', 'ad_campaigns', 'view_count');
         $this->flushPattern('clicks:ad:*', 'ad_campaigns', 'click_count');
     }

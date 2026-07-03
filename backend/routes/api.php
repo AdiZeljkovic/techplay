@@ -306,6 +306,7 @@ Route::prefix('v1')->group(function () {
 
         // Search
         Route::get('/search/articles', [SearchController::class, 'articles']);
+        Route::get('/search/games', [SearchController::class, 'games']);
 
         // News
         Route::get('/news', [NewsController::class, 'index']);

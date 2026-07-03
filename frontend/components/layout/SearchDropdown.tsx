@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, Loader2, FileText } from "lucide-react";
+import { Search, X, Loader2, FileText, Gamepad2 } from "lucide-react";
 import axios from "@/lib/axios";
 import { cn } from "@/lib/utils";
 import { decodeHtml } from "@/lib/decode";
@@ -55,13 +55,15 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
         const timer = setTimeout(async () => {
             setIsLoading(true);
             try {
-                const res = await axios.get('/search/articles', {
-                    params: { q: query },
-                    signal: abortController.signal
-                });
+                const [articlesRes, gamesRes] = await Promise.allSettled([
+                    axios.get('/search/articles', { params: { q: query }, signal: abortController.signal }),
+                    axios.get('/search/games', { params: { q: query }, signal: abortController.signal }),
+                ]);
                 // Only update state if not aborted
                 if (!abortController.signal.aborted) {
-                    setResults(res.data.results || []);
+                    const articles = articlesRes.status === 'fulfilled' ? (articlesRes.value.data.results || []) : [];
+                    const games = gamesRes.status === 'fulfilled' ? (gamesRes.value.data.results || []) : [];
+                    setResults([...articles, ...games]);
                     setIsOpen(true);
                 }
             } catch (error: any) {
@@ -195,7 +197,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                         <div className="max-h-[400px] overflow-y-auto">
                             {results.map((result, index) => (
                                 <button
-                                    key={result.id}
+                                    key={`${result.type}-${result.id}`}
                                     onClick={() => navigateTo(result.url)}
                                     className={cn(
                                         "w-full flex items-start gap-3 p-3 text-left transition-colors",
@@ -213,7 +215,9 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                                         />
                                     ) : (
                                         <div className="w-16 h-12 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                                            <FileText className="w-5 h-5 text-gray-400" />
+                                            {result.type === 'game'
+                                                ? <Gamepad2 className="w-5 h-5 text-gray-400" />
+                                                : <FileText className="w-5 h-5 text-gray-400" />}
                                         </div>
                                     )}
 

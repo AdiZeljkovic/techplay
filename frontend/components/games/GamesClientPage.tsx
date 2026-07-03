@@ -77,6 +77,7 @@ const SCORES = [
 
 const SORT_OPTIONS = [
     { value: "-rating",   label: "Top Rated" },
+    { value: "-views",    label: "Trending" },
     { value: "-released", label: "Newest" },
     { value: "released",  label: "Oldest" },
     { value: "name",      label: "A–Z" },

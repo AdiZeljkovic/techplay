@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Game;
 use App\Services\CacheRevalidationService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -27,11 +28,23 @@ class GameObserver
      */
     public function saved(Game $game): void
     {
-        if (! $game->slug || app()->runningInConsole()) {
+        if (! $game->slug) {
             return;
         }
 
         if (! $game->wasRecentlyCreated && ! $game->wasChanged(self::REVALIDATION_FIELDS)) {
+            return;
+        }
+
+        // Local API cache is always busted, even from CLI/queue jobs
+        Cache::forget("games.show.v1.{$game->slug}");
+        if ($game->wasChanged('slug')) {
+            Cache::forget('games.show.v1.'.$game->getOriginal('slug'));
+        }
+
+        // Outbound HTTP (revalidation, IndexNow) only for web requests, so bulk
+        // imports and enrichment jobs don't flood the endpoints
+        if (app()->runningInConsole()) {
             return;
         }
 
@@ -54,7 +67,14 @@ class GameObserver
      */
     public function deleted(Game $game): void
     {
-        if (! $game->slug || app()->runningInConsole()) {
+        if (! $game->slug) {
+            return;
+        }
+
+        Cache::forget("games.show.v1.{$game->slug}");
+        Cache::forget("games.articles.v1.{$game->id}");
+
+        if (app()->runningInConsole()) {
             return;
         }
 

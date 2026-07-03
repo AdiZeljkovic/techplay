@@ -9,6 +9,7 @@ use App\Models\Game;
 use App\Services\RawgService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
 
 class GameController extends Controller
@@ -48,41 +49,82 @@ class GameController extends Controller
         $page = max(1, (int) $request->input('page', 1));
         $pageSize = min(40, max(10, (int) $request->input('page_size', 20)));
 
-        $q = Game::query()
-            ->when($search, fn ($q) => $q->where('name', 'ilike', "%{$search}%"))
-            ->when($genre, fn ($q) => $q->whereRaw('genre_names @> ARRAY[?]::text[]', [$genre]))
-            ->when($platform, fn ($q) => $q->whereRaw('platform_names @> ARRAY[?]::text[]', [$platform]))
-            ->when($yearFrom > 0, fn ($q) => $q->where('released', '>=', "{$yearFrom}-01-01"))
-            ->when($yearTo > 0, fn ($q) => $q->where('released', '<=', "{$yearTo}-12-31"))
-            ->when($minRating > 0, fn ($q) => $q->where('rating', '>=', $minRating))
-            ->select(['id', 'slug', 'name', 'released', 'rating', 'metacritic', 'background_image', 'platforms', 'short_screenshots']);
+        $cacheKey = 'games.index.v1.'.md5(json_encode([
+            $search, $genre, $platform, $ordering, $yearFrom, $yearTo, $minRating, $page, $pageSize,
+        ]));
 
-        // Ordering
-        match ($ordering) {
-            'rating' => $q->orderBy('rating'),
-            '-released' => $q->orderByDesc('released'),
-            'released' => $q->orderBy('released'),
-            'name' => $q->orderBy('name'),
-            '-name' => $q->orderByDesc('name'),
-            default => $q->orderByDesc('rating'),  // -rating (default)
-        };
+        $payload = Cache::remember($cacheKey, 300, function () use ($search, $genre, $platform, $ordering, $yearFrom, $yearTo, $minRating, $page, $pageSize, $request) {
+            $q = Game::query()
+                ->when($search, fn ($q) => $q->where('name', 'ilike', "%{$search}%"))
+                ->when($genre, fn ($q) => $q->whereRaw('genre_names @> ARRAY[?]::text[]', [$genre]))
+                ->when($platform, fn ($q) => $q->whereRaw('platform_names @> ARRAY[?]::text[]', [$platform]))
+                ->when($yearFrom > 0, fn ($q) => $q->where('released', '>=', "{$yearFrom}-01-01"))
+                ->when($yearTo > 0, fn ($q) => $q->where('released', '<=', "{$yearTo}-12-31"))
+                ->when($minRating > 0, fn ($q) => $q->where('rating', '>=', $minRating))
+                ->select(['id', 'slug', 'name', 'released', 'rating', 'metacritic', 'background_image', 'platforms', 'short_screenshots']);
 
-        $games = $q->paginate($pageSize, ['*'], 'page', $page);
+            // Ordering
+            match ($ordering) {
+                'rating' => $q->orderBy('rating'),
+                '-released' => $q->orderByDesc('released'),
+                'released' => $q->orderBy('released'),
+                'name' => $q->orderBy('name'),
+                '-name' => $q->orderByDesc('name'),
+                '-views' => $q->orderByDesc('views'),  // trending by real page views
+                default => $q->orderByDesc('rating'),  // -rating (default)
+            };
 
-        return response()->json([
-            'count' => $games->total(),
-            'next' => $games->hasMorePages() ? $request->fullUrlWithQuery(['page' => $page + 1]) : null,
-            'previous' => $page > 1 ? $request->fullUrlWithQuery(['page' => $page - 1]) : null,
-            'results' => $games->items(),
-        ]);
+            $games = $q->paginate($pageSize, ['*'], 'page', $page);
+
+            return [
+                'count' => $games->total(),
+                'next' => $games->hasMorePages() ? $request->fullUrlWithQuery(['page' => $page + 1]) : null,
+                'previous' => $page > 1 ? $request->fullUrlWithQuery(['page' => $page - 1]) : null,
+                'results' => $games->items(),
+            ];
+        });
+
+        return response()->json($payload)
+            ->header('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
     }
 
-    public function show(string $slug)
+    public function show(Request $request, string $slug)
+    {
+        $payload = Cache::remember("games.show.v1.{$slug}", 600, fn () => $this->buildShowPayload($slug));
+
+        if (! $payload) {
+            return response()->json(['message' => 'Game not found'], 404);
+        }
+
+        $this->trackView((int) $payload['id'], $request->ip());
+
+        return response()->json($payload)
+            ->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+    }
+
+    /**
+     * Buffer game page views in Redis (flushed to games.views by
+     * FlushViewCounters), throttled to one count per IP per 30 minutes.
+     */
+    private function trackView(int $gameId, ?string $ip): void
+    {
+        try {
+            $throttleKey = "game_view_{$gameId}_".md5((string) $ip);
+            if (! Cache::has($throttleKey)) {
+                Cache::put($throttleKey, 1, 1800);
+                Redis::incr("views:game:{$gameId}");
+            }
+        } catch (\Throwable) {
+            // View tracking must never break the page
+        }
+    }
+
+    private function buildShowPayload(string $slug): ?array
     {
         $game = Game::where('slug', $slug)->first();
 
         if (! $game) {
-            return response()->json(['message' => 'Game not found'], 404);
+            return null;
         }
 
         $d = $game->details_data ?? [];
@@ -91,7 +133,7 @@ class GameController extends Controller
         $esrb = collect($d['ratings'] ?? [])
             ->first(fn ($r) => ($r['rating_system_name'] ?? '') === 'ESRB Rating');
 
-        return response()->json([
+        return [
             'id' => $game->id,
             'name' => $game->name,
             'slug' => $game->slug,
@@ -132,7 +174,7 @@ class GameController extends Controller
             'reddit_url' => null,
             'stores' => [],
             'achievements_count' => 0,
-        ]);
+        ];
     }
 
     /**

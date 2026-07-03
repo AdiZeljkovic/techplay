@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Article;
+use App\Models\Game;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -61,6 +62,47 @@ class SearchController extends Controller
                         'url' => $url,
                     ];
                 }),
+                'count' => $results->count(),
+            ];
+        });
+
+        return response()->json($result)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+
+    /**
+     * Search the game database for the global search dropdown.
+     * Uses the trigram index on games.name; max 5 results.
+     */
+    public function games(Request $request)
+    {
+        $request->validate([
+            'q' => 'required|string|min:2|max:100',
+        ]);
+
+        $query = $request->input('q');
+        $cacheKey = 'search.games.'.md5($query);
+
+        $result = Cache::remember($cacheKey, 60, function () use ($query) {
+            $results = Game::query()
+                ->where('name', 'ILIKE', "%{$query}%")
+                ->where('has_description', true)
+                ->orderByDesc('rating')
+                ->select('id', 'name', 'slug', 'background_image', 'released', 'rating')
+                ->limit(5)
+                ->get();
+
+            return [
+                'results' => $results->map(fn ($game) => [
+                    'id' => $game->id,
+                    'title' => $game->name,
+                    'slug' => $game->slug,
+                    'excerpt' => null,
+                    'image' => $game->background_image,
+                    'category' => $game->released ? 'Game · '.$game->released->format('Y') : 'Game',
+                    'category_slug' => 'games',
+                    'type' => 'game',
+                    'url' => "/games/{$game->slug}",
+                ]),
                 'count' => $results->count(),
             ];
         });
