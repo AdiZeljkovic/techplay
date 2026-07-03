@@ -423,6 +423,7 @@ function GameCard({ game }: { game: Game }) {
     return (
         <Link
             href={`/games/${game.slug}`}
+            prefetch={false}
             className="group bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-xl overflow-hidden hover:border-tp-accent/50 dark:hover:border-tp-accent/50 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.5)] transition-all duration-300 flex flex-col"
         >
             {/* Image */}

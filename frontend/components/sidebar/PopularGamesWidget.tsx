@@ -89,6 +89,7 @@ export default function PopularGamesWidget() {
                             <Link
                                 key={game.id}
                                 href={`/games/${game.slug}`}
+                                prefetch={false}
                                 className="flex items-center gap-3 py-3 group"
                                 style={{ borderLeft: '2px solid transparent', paddingLeft: '14px', paddingRight: '16px', transition: 'all 0.15s' }}
                                 onMouseEnter={e => {

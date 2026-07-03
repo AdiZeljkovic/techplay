@@ -244,7 +244,7 @@ export default function HubPage({ type, value, title, description, initialData }
                         refreshing && "opacity-60"
                     )}>
                         {data.results.map((game, idx) => (
-                            <Link key={game.id} href={`/games/${game.slug}`}>
+                            <Link key={game.id} href={`/games/${game.slug}`} prefetch={false}>
                                 <motion.article
                                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: idx * 0.03, duration: 0.3 }}

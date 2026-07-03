@@ -128,7 +128,7 @@ function DatabaseNavItem() {
                                     </div>
                                     <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
                                         {DB_GENRES.map((g) => (
-                                            <Link key={g.slug} href={`/games/genre/${g.slug}`}
+                                            <Link key={g.slug} href={`/games/genre/${g.slug}`} prefetch={false}
                                                 className="px-2 py-1.5 text-[12px] font-medium text-zinc-600 dark:text-[#A1A1AA] hover:text-tp-accent dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg transition-all">
                                                 {g.label}
                                             </Link>
@@ -145,7 +145,7 @@ function DatabaseNavItem() {
                                         </div>
                                         <div className="flex flex-col gap-0.5">
                                             {DB_PLATFORMS.map((p) => (
-                                                <Link key={p.slug} href={`/games/platform/${p.slug}`}
+                                                <Link key={p.slug} href={`/games/platform/${p.slug}`} prefetch={false}
                                                     className="px-2 py-1.5 text-[12px] font-medium text-zinc-600 dark:text-[#A1A1AA] hover:text-tp-accent dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg transition-all">
                                                     {p.label}
                                                 </Link>
@@ -160,7 +160,7 @@ function DatabaseNavItem() {
                                         </div>
                                         <div className="flex flex-col gap-0.5">
                                             {DB_YEARS.map((y) => (
-                                                <Link key={y} href={`/games/year/${y}`}
+                                                <Link key={y} href={`/games/year/${y}`} prefetch={false}
                                                     className="px-2 py-1.5 text-[12px] font-medium text-zinc-600 dark:text-[#A1A1AA] hover:text-tp-accent dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg transition-all">
                                                     {y}
                                                 </Link>

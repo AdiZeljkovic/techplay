@@ -157,7 +157,7 @@ export default function CompareClient({ username, other }: { username: string; o
           <h2 className="font-semibold text-white">Games Both Play</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {data.shared_games.map((sg, i) => sg.game && (
-              <Link href={`/games/${sg.game.slug}`} key={i}
+              <Link href={`/games/${sg.game.slug}`} prefetch={false} key={i}
                 className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-lg p-3 hover:border-zinc-600 transition-colors">
                 {sg.game.background_image && (
                   <Image src={sg.game.background_image} alt={sg.game.name} width={64} height={40}

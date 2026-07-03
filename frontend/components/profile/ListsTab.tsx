@@ -169,7 +169,7 @@ function ListDetail({ id, isOwnProfile, onBack, onChanged }: { id: number; isOwn
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                             {list.items.map((it) => it.game && (
                                 <div key={it.id} className="group relative rounded-xl overflow-hidden border border-white/[0.06] bg-[#0B0E14]">
-                                    <Link href={`/games/${it.game.slug}`} className="block relative aspect-[3/4] overflow-hidden">
+                                    <Link href={`/games/${it.game.slug}`} prefetch={false} className="block relative aspect-[3/4] overflow-hidden">
                                         {it.game.background_image ? (
                                             <img src={it.game.background_image} alt={it.game.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                         ) : <div className="w-full h-full flex items-center justify-center text-white/15"><Gamepad2 className="w-8 h-8" /></div>}

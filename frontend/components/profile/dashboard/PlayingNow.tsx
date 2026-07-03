@@ -29,6 +29,7 @@ export default function PlayingNow({ games }: { games: PlayingNowGame[] }) {
                     <Link
                         key={g.slug}
                         href={`/games/${g.slug}`}
+                        prefetch={false}
                         className="group relative rounded-xl overflow-hidden border border-white/[0.06] bg-[#0B0E14] hover:border-[var(--accent)]/40 transition-all"
                     >
                         <div className="relative aspect-[16/10] overflow-hidden bg-[#0B0E14]">

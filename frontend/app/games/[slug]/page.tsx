@@ -202,7 +202,7 @@ const ESRB_COLORS: Record<string, string> = {
 
 function MiniGameCard({ game }: { game: GameListItem }) {
     return (
-        <Link href={`/games/${game.slug}`}
+        <Link href={`/games/${game.slug}`} prefetch={false}
             className="group flex flex-col bg-[var(--bg-card)] border border-[var(--border)] rounded-xl overflow-hidden hover:border-[var(--accent)] transition-all hover:shadow-xl hover:shadow-[var(--accent)]/10">
             <div className="relative h-32 bg-[var(--bg-elevated)] overflow-hidden">
                 {game.background_image ? (

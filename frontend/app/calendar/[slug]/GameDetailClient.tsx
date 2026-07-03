@@ -397,7 +397,7 @@ export default function GameDetailClient({
                             return (
                                 <Link
                                     key={sg.id}
-                                    href={`/calendar/${sg.slug}`}
+                                    href={`/calendar/${sg.slug}`} prefetch={false}
                                     className="group relative block rounded-xl overflow-hidden border border-white/[0.06] bg-[#0B0E14] hover:border-tp-accent/40 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(252,65,0,0.15)] transition-all duration-300"
                                 >
                                     <div className="relative aspect-video overflow-hidden bg-[#0B0E14]">

@@ -218,6 +218,7 @@ export default function WrappedClient({ data, year }: Props) {
                 <Link
                   key={game.slug}
                   href={`/games/${game.slug}`}
+                  prefetch={false}
                   className="group relative rounded-xl overflow-hidden aspect-video bg-white/5 hover:ring-1 hover:ring-tp-accent/50 transition-all"
                 >
                   {game.background_image && (

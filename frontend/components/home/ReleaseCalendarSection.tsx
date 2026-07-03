@@ -79,6 +79,7 @@ export default function ReleaseCalendarSection() {
                             <Link
                                 key={game.id}
                                 href={`/games/${game.slug}`}
+                                prefetch={false}
                                 className={`group flex items-center gap-[22px] py-[16px] ${i !== games.length - 1 ? 'border-b border-zinc-200 dark:border-white/[0.04]' : ''}`}
                             >
                                 {/* Date column */}

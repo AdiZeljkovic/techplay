@@ -231,6 +231,7 @@ export default function BacklogAdvisorPage() {
                 {suggestion.game?.slug && (
                   <Link
                     href={`/games/${suggestion.game.slug}`}
+                    prefetch={false}
                     className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-center text-sm font-semibold hover:border-tp-accent/40 transition-colors"
                   >
                     View Game

@@ -154,7 +154,7 @@ function GameCard({ game, library }: { game: GameRelease; library: Record<string
     const libStatus = library[game.slug] as import("@/hooks/useLibraryIndex").LibraryStatus | undefined;
     return (
         <Link
-            href={`/calendar/${game.slug}`}
+            href={`/calendar/${game.slug}`} prefetch={false}
             className="group relative block bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-xl overflow-hidden hover:border-tp-accent/40 dark:hover:border-tp-accent/40 hover:-translate-x-1 hover:shadow-[0_8px_40px_rgba(252,65,0,0.18)] transition-all duration-300"
         >
             <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-tp-accent scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300 z-20" />
@@ -231,7 +231,7 @@ function DayGamesPopup({ date, games, library, onClose }: { date: string; games:
                     {games.map(game => (
                         <Link
                             key={game.id}
-                            href={`/calendar/${game.slug}`}
+                            href={`/calendar/${game.slug}`} prefetch={false}
                             onClick={onClose}
                             className="group flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-white/[0.05] transition-colors"
                         >
@@ -446,7 +446,7 @@ export default function CalendarClient() {
                                                 )}
                                                 <div className="flex items-center gap-3">
                                                     <Link
-                                                        href={`/calendar/${hero.slug}`}
+                                                        href={`/calendar/${hero.slug}`} prefetch={false}
                                                         className="inline-flex items-center gap-2 px-5 py-2.5 bg-tp-accent hover:bg-tp-accent/90 text-white text-[11px] font-bold uppercase tracking-widest rounded-full transition-all shadow-lg shadow-tp-accent/25"
                                                     >
                                                         View Game <ChevronRight className="w-3.5 h-3.5" />
@@ -530,7 +530,7 @@ export default function CalendarClient() {
                                                 return (
                                                     <Link
                                                         key={game.id}
-                                                        href={`/calendar/${game.slug}`}
+                                                        href={`/calendar/${game.slug}`} prefetch={false}
                                                         className="group flex items-center gap-3 rounded-xl px-2 py-2.5 hover:bg-white/[0.05] transition-colors"
                                                     >
                                                         {/* Date */}
@@ -616,7 +616,7 @@ export default function CalendarClient() {
                                 {highlights.map((game, i) => (
                                     <Link
                                         key={game.id}
-                                        href={`/calendar/${game.slug}`}
+                                        href={`/calendar/${game.slug}`} prefetch={false}
                                         className="group relative aspect-[2/3] rounded-2xl overflow-hidden border border-zinc-200 dark:border-[#161B22] bg-zinc-100 dark:bg-[#0B0E14] hover:border-tp-accent/50 hover:-translate-y-1.5 hover:shadow-[0_16px_48px_rgba(252,65,0,0.2)] transition-all duration-300"
                                     >
                                         {game.background_image && (
@@ -751,7 +751,7 @@ export default function CalendarClient() {
                                             {hasGames && (
                                                 <div className="hidden md:block space-y-1">
                                                     {games.slice(0, 2).map(game => (
-                                                        <Link key={game.id} href={`/calendar/${game.slug}`} className="group/game flex items-center gap-1.5 rounded-md p-1 hover:bg-tp-accent/10 transition-colors">
+                                                        <Link key={game.id} href={`/calendar/${game.slug}`} prefetch={false} className="group/game flex items-center gap-1.5 rounded-md p-1 hover:bg-tp-accent/10 transition-colors">
                                                             {game.background_image && (
                                                                 <div className="relative w-9 h-5 rounded overflow-hidden shrink-0">
                                                                     <Image src={game.background_image!} fill sizes="36px" className="object-cover" alt={game.name} />

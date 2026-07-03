@@ -694,7 +694,7 @@ export default async function CalendarGamePage({ params }: Props) {
                                         </p>
                                     )}
                                     <Link
-                                        href={`/calendar/${seriesGame.slug}`}
+                                        href={`/calendar/${seriesGame.slug}`} prefetch={false}
                                         className="text-[10px] font-bold uppercase tracking-widest text-tp-accent hover:underline"
                                     >
                                         View Game →
@@ -713,7 +713,7 @@ export default async function CalendarGamePage({ params }: Props) {
                                     {suggested.results.slice(0, 3).map(sg => (
                                         <Link
                                             key={sg.id}
-                                            href={`/calendar/${sg.slug}`}
+                                            href={`/calendar/${sg.slug}`} prefetch={false}
                                             className="flex gap-3 items-center group"
                                         >
                                             <div className="relative shrink-0 w-16 h-10 rounded-lg overflow-hidden border border-zinc-200 dark:border-white/[0.06] bg-zinc-100 dark:bg-[#0F1318]">

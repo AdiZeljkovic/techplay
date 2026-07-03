@@ -202,6 +202,7 @@ export default function GameDatabaseSection() {
                     {featured ? (
                         <Link
                             href={`/games/${featured.slug}`}
+                            prefetch={false}
                             className="glass-card glow-border group relative block overflow-hidden h-full min-h-[280px] transition-all duration-300"
                             style={{ borderRadius: HUD.radius.lg }}
                             onMouseEnter={e => {
@@ -277,6 +278,7 @@ export default function GameDatabaseSection() {
                             <Link
                                 key={genre.slug}
                                 href={`/games/genre/${genre.slug}`}
+                                prefetch={false}
                                 className="group relative flex flex-col items-center justify-center text-center overflow-hidden glass-card glow-border transition-all duration-300"
                                 style={{ borderRadius: '12px', padding: '20px 10px' }}
                             >
