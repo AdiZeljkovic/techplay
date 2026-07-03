@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
+use App\Models\GameExternalId;
 use App\Models\User;
 use App\Models\UserGame;
 use App\Services\AchievementService;
@@ -14,6 +15,7 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
 
 class GameCollectionController extends Controller
@@ -55,7 +57,7 @@ class GameCollectionController extends Controller
         $game = Game::where('slug', $slug)->first();
 
         // Game not yet in local DB — user hasn't tracked it
-        if (!$game) {
+        if (! $game) {
             return $this->success(null);
         }
 
@@ -75,18 +77,38 @@ class GameCollectionController extends Controller
     {
         $game = Game::where('slug', $slug)->first();
 
-        // Game not in local DB — fetch minimal data from RAWG and create it
-        if (!$game) {
+        // Game not in local DB — fetch minimal data from RAWG and create it.
+        // This is the only ingestion path for brand-new releases, so it stays,
+        // but hardened: per-user creation limit + the RAWG result must really
+        // be this slug (no fuzzy matches seeding junk rows).
+        if (! $game) {
+            $limiterKey = 'game-autocreate:'.$request->user()->id;
+            if (! RateLimiter::attempt($limiterKey, 10, fn () => true, 3600)) {
+                return $this->error('Too many new games added recently. Try again later.', 429);
+            }
+
             try {
                 $rawg = app(RawgService::class)->getGameDetails($slug);
+
+                if (empty($rawg['name']) || ($rawg['slug'] ?? $slug) !== $slug) {
+                    return $this->error('Game not found', 404);
+                }
+
                 $game = Game::create([
-                    'slug'             => $slug,
-                    'name'             => $rawg['name'] ?? ucwords(str_replace('-', ' ', $slug)),
-                    'released'         => $rawg['released'] ?? null,
-                    'rating'           => $rawg['rating'] ?? 0,
+                    'slug' => $slug,
+                    'name' => $rawg['name'],
+                    'released' => $rawg['released'] ?? null,
+                    'rating' => $rawg['rating'] ?? 0,
                     'background_image' => $rawg['background_image'] ?? null,
                     'details_crawled_at' => now(),
                 ]);
+
+                if (! empty($rawg['id'])) {
+                    GameExternalId::firstOrCreate(
+                        ['provider' => 'rawg', 'external_id' => (string) $rawg['id']],
+                        ['game_id' => $game->id]
+                    );
+                }
             } catch (\Throwable) {
                 return $this->error('Game not found', 404);
             }
@@ -180,16 +202,16 @@ class GameCollectionController extends Controller
             ->with(['game:id,slug,name,released,background_image'])
             ->whereHas('game', function ($q) {
                 $q->whereNotNull('released')
-                  ->whereDate('released', '>', now())
-                  ->whereDate('released', '<', now()->addDays(180));
+                    ->whereDate('released', '>', now())
+                    ->whereDate('released', '<', now()->addDays(180));
             })
             ->get()
             ->map(fn (UserGame $ug) => [
-                'slug'             => $ug->game->slug,
-                'name'             => $ug->game->name,
-                'released'         => $ug->game->released?->format('Y-m-d'),
+                'slug' => $ug->game->slug,
+                'name' => $ug->game->name,
+                'released' => $ug->game->released?->format('Y-m-d'),
                 'background_image' => $ug->game->background_image,
-                'status'           => $ug->status,
+                'status' => $ug->status,
             ])
             ->sortBy('released')
             ->values()

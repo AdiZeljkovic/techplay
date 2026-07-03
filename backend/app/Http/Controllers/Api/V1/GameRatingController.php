@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Game;
 use App\Models\GameRating;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -70,6 +71,12 @@ class GameRatingController extends Controller
             'rating' => 'required|integer|min:1|max:5',
             'review' => 'nullable|string|min:10|max:1000',
         ]);
+
+        if (! empty($validated['review'])) {
+            $validated['review'] = strip_tags($validated['review']);
+        }
+
+        $validated['game_id'] = Game::where('slug', $slug)->value('id');
 
         $rating = GameRating::updateOrCreate(
             ['user_id' => $request->user()->id, 'game_slug' => $slug],

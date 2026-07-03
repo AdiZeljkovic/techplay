@@ -35,6 +35,9 @@ Schedule::command('wishlist:check-releases')->dailyAt('09:00');
 // SEO: Regenerate XML sitemaps every 6 hours
 Schedule::command('sitemap:generate')->everySixHours();
 
+// GAMES: Import new/upcoming releases from RAWG weekly (Moby bulk import is retired)
+Schedule::command('games:sync-new-releases')->weeklyOn(1, '04:00');
+
 // PROFILE: Snapshot reputation + monthly contribution on the 1st of each month
 Schedule::command('profile:snapshot-reputation')->monthlyOn(1, '00:30');
 
