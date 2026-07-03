@@ -123,6 +123,50 @@ export async function POST(request: NextRequest) {
                     timestamp: new Date().toISOString(),
                 });
 
+            case 'game': {
+                if (!slug) {
+                    return NextResponse.json(
+                        { error: 'Missing "slug" for game revalidation' },
+                        { status: 400 }
+                    );
+                }
+
+                revalidatePath(`/games/${slug}`);
+                revalidatePath('/games');
+
+                // /games/[slug] is force-dynamic — the effective cache is Cloudflare,
+                // so the edge purge below is what actually makes edits visible.
+                const cfToken = process.env.CLOUDFLARE_API_TOKEN;
+                const cfZoneId = process.env.CLOUDFLARE_ZONE_ID;
+
+                if (cfToken && cfZoneId) {
+                    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg';
+                    after(async () => {
+                        try {
+                            const cfRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${cfZoneId}/purge_cache`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${cfToken}`,
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ files: [`${baseUrl}/games/${slug}`] }),
+                            });
+                            const cfBody = await cfRes.json();
+                            console.log('Cloudflare purge game (after):', cfRes.status, JSON.stringify(cfBody));
+                        } catch (error) {
+                            console.error('Cloudflare game cache purge failed:', error);
+                        }
+                    });
+                }
+
+                return NextResponse.json({
+                    success: true,
+                    revalidated: true,
+                    paths: [`/games/${slug}`, '/games'],
+                    timestamp: new Date().toISOString(),
+                });
+            }
+
             case 'homepage':
                 revalidatePath('/');
                 return NextResponse.json({

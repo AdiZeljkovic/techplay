@@ -88,6 +88,39 @@ class CacheRevalidationService
     }
 
     /**
+     * Revalidate a game detail page. The game page is force-dynamic in Next,
+     * so the frontend handler also purges the Cloudflare edge cache for it.
+     */
+    public static function revalidateGame(string $slug): bool
+    {
+        $frontendUrl = config('app.frontend_url');
+        $revalidationSecret = config('app.revalidation_secret');
+
+        if (! $frontendUrl || ! $revalidationSecret) {
+            return false;
+        }
+
+        try {
+            $response = Http::timeout(5)
+                ->withHeaders(['Authorization' => "Bearer {$revalidationSecret}"])
+                ->post(rtrim($frontendUrl, '/').'/api/revalidate', [
+                    'type' => 'game',
+                    'slug' => $slug,
+                    'timestamp' => now()->toIso8601String(),
+                ]);
+
+            return $response->successful();
+        } catch (\Exception $e) {
+            Log::error('[Revalidation] Game exception', [
+                'slug' => $slug,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
      * Revalidate home page
      */
     public static function revalidateHome(): bool

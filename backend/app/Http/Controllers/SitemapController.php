@@ -81,10 +81,11 @@ class SitemapController extends Controller
         });
 
         // Game sitemaps — paginated, 50,000 URLs per file (Google limit)
-        $gamesCount = Game::whereNotNull('details_crawled_at')->count();
+        // Must use the same filter as games() below, or the page count drifts
+        $gamesCount = Game::where('has_description', true)->count();
         if ($gamesCount > 0) {
             $gamePages = (int) ceil($gamesCount / 50000);
-            $gameLastmodRaw = Game::whereNotNull('details_crawled_at')->max('details_crawled_at');
+            $gameLastmodRaw = Game::where('has_description', true)->max('details_crawled_at');
             $gameLastmodStr = $gameLastmodRaw ? Carbon::parse($gameLastmodRaw)->toIso8601String() : now()->toIso8601String();
             for ($p = 1; $p <= $gamePages; $p++) {
                 $filename = "sitemap-games-{$p}.xml";
@@ -421,7 +422,7 @@ class SitemapController extends Controller
             $xml .= $this->urlEntry("{$this->frontendUrl}/games/platform/{$platform}", null, 'weekly', '0.7');
         }
 
-        for ($year = 2025; $year >= 1990; $year--) {
+        for ($year = (int) now()->year; $year >= 1990; $year--) {
             $priority = $year >= 2015 ? '0.6' : '0.4';
             $xml .= $this->urlEntry("{$this->frontendUrl}/games/year/{$year}", null, 'monthly', $priority);
         }
@@ -449,9 +450,13 @@ class SitemapController extends Controller
             ->offset(($page - 1) * $perPage)
             ->limit($perPage)
             ->each(function (Game $game) use (&$xml) {
+                // Skip junk slugs like "-", "_", "_____" that survived import
+                if (! preg_match('/[a-z0-9]/i', (string) $game->slug)) {
+                    return;
+                }
                 $xml .= $this->urlEntry(
                     "{$this->frontendUrl}/games/{$game->slug}",
-                    $game->details_crawled_at->toIso8601String(),
+                    $game->details_crawled_at?->toIso8601String(),
                     'monthly',
                     '0.8'
                 );

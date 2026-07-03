@@ -245,13 +245,17 @@ class MobyFetch extends Command
                 $gc->update(['role' => 'both']);
             }
 
-            $gc->increment('games_count');
-
-            DB::table('game_company')->insertOrIgnore([
+            $inserted = DB::table('game_company')->insertOrIgnore([
                 'game_id' => $gameId,
                 'game_company_id' => $gc->id,
                 'role' => $role,
             ]);
+
+            // Only count when the pivot row was actually created, otherwise
+            // re-running the import inflates games_count on every pass
+            if ($inserted > 0) {
+                $gc->increment('games_count');
+            }
         }
     }
 

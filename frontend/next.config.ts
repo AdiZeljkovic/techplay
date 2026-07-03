@@ -94,7 +94,7 @@ const nextConfig: NextConfig = {
     unoptimized: true,
 
     // Next.js 16 requires every quality value used by <Image quality={...}> to be declared
-    qualities: [60, 75],
+    qualities: [60, 70, 75, 80, 90],
 
     remotePatterns: [
       {

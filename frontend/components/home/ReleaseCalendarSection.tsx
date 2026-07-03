@@ -122,7 +122,7 @@ export default function ReleaseCalendarSection() {
 
             {/* CTA Button */}
             <Link
-                href="/games/calendar"
+                href="/calendar"
                 className="mt-8 bg-tp-accent hover:bg-tp-accent-hover text-white h-[46px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[12px] flex items-center justify-center shadow-lg shadow-tp-accent/20 relative z-10"
             >
                 VIEW FULL CALENDAR

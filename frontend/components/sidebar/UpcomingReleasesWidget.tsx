@@ -66,7 +66,7 @@ export default function UpcomingReleasesWidget() {
                         Upcoming Releases
                     </h3>
                 </div>
-                <Link href="/games/calendar" className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider hover:text-white transition-colors whitespace-nowrap" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                <Link href="/calendar" className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider hover:text-white transition-colors whitespace-nowrap" style={{ color: 'rgba(255,255,255,0.35)' }}>
                     View Calendar <ArrowRight className="w-3 h-3" />
                 </Link>
             </div>

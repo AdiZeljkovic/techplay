@@ -22,32 +22,35 @@ interface TrendingGame {
     genres?: { name: string }[];
 }
 
-const POPULAR_TAGS: { label: string; icon: LucideIcon; genre?: string; platform?: string }[] = [
-    { label: "Action",        icon: Swords,   genre: "action" },
-    { label: "RPG",           icon: Shield,   genre: "role-playing-games-rpg" },
-    { label: "Open World",    icon: Globe,    genre: "open-world" },
-    { label: "PlayStation 5", icon: Gamepad2, platform: "playstation5" },
-    { label: "Indie",         icon: Lightbulb, genre: "indie" },
+// Links point to the SEO hub routes (/games/genre|platform|tag/*) — the /games
+// listing reads different query params, so ?genre= links silently did nothing.
+const POPULAR_TAGS: { label: string; icon: LucideIcon; href: string }[] = [
+    { label: "Action",      icon: Swords,    href: "/games/genre/action" },
+    { label: "RPG",         icon: Shield,    href: "/games/genre/rpg" },
+    { label: "Open World",  icon: Globe,     href: "/games/tag/open-world" },
+    { label: "PlayStation", icon: Gamepad2,  href: "/games/platform/playstation" },
+    { label: "Indie",       icon: Lightbulb, href: "/games/genre/indie" },
 ];
 
-const GENRES: { label: string; icon: LucideIcon; slug: string; count: string }[] = [
-    { label: "Action",    icon: Swords,    slug: "action",                 count: "7,300+" },
-    { label: "RPG",       icon: Shield,    slug: "role-playing-games-rpg", count: "6,100+" },
-    { label: "Adventure", icon: Compass,   slug: "adventure",              count: "4,300+" },
-    { label: "Shooter",   icon: Crosshair, slug: "shooter",                count: "3,900+" },
-    { label: "Strategy",  icon: Castle,    slug: "strategy",               count: "2,800+" },
-    { label: "Racing",    icon: Car,       slug: "racing",                 count: "2,100+" },
+const GENRES: { label: string; icon: LucideIcon; slug: string }[] = [
+    { label: "Action",    icon: Swords,    slug: "action" },
+    { label: "RPG",       icon: Shield,    slug: "rpg" },
+    { label: "Adventure", icon: Compass,   slug: "adventure" },
+    { label: "Shooter",   icon: Crosshair, slug: "shooter" },
+    { label: "Strategy",  icon: Castle,    slug: "strategy" },
+    { label: "Racing",    icon: Car,       slug: "racing" },
 ];
 
 const DB_STATS: { icon: LucideIcon; value: string; label: string }[] = [
-    { icon: Gamepad2,          value: "28K+", label: "Games" },
-    { icon: Layers,            value: "42+",  label: "Genres" },
-    { icon: MonitorSmartphone, value: "25+",  label: "Platforms" },
-    { icon: Star,              value: "12M+", label: "Ratings" },
+    { icon: Gamepad2,          value: "200K+", label: "Games" },
+    { icon: Layers,            value: "42+",   label: "Genres" },
+    { icon: MonitorSmartphone, value: "25+",   label: "Platforms" },
+    { icon: Star,              value: "12M+",  label: "Ratings" },
 ];
 
 export default function GameDatabaseSection() {
     const [featured, setFeatured] = useState<TrendingGame | null>(null);
+    const [gamesCount, setGamesCount] = useState<number | null>(null);
     const [query, setQuery] = useState("");
     const router = useRouter();
 
@@ -56,6 +59,7 @@ export default function GameDatabaseSection() {
             .then(res => {
                 const results = res.data?.results || [];
                 if (results[0]) setFeatured(results[0]);
+                if (typeof res.data?.count === 'number') setGamesCount(res.data.count);
             })
             .catch(() => {});
     }, []);
@@ -133,10 +137,7 @@ export default function GameDatabaseSection() {
                             {POPULAR_TAGS.map(tag => (
                                 <button
                                     key={tag.label}
-                                    onClick={() => {
-                                        if (tag.genre) router.push(`/games?genre=${tag.genre}`);
-                                        else if (tag.platform) router.push(`/games?platform=${tag.platform}`);
-                                    }}
+                                    onClick={() => router.push(tag.href)}
                                     style={{
                                         display: 'inline-flex', alignItems: 'center', gap: '7px',
                                         padding: '7px 14px',
@@ -186,7 +187,9 @@ export default function GameDatabaseSection() {
                                     <stat.icon size={18} />
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: '18px', fontWeight: 900, color: '#FC4100', lineHeight: 1 }}>{stat.value}</div>
+                                    <div style={{ fontSize: '18px', fontWeight: 900, color: '#FC4100', lineHeight: 1 }}>
+                                        {stat.label === 'Games' && gamesCount ? `${Math.floor(gamesCount / 1000)}K+` : stat.value}
+                                    </div>
                                     <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '2px' }}>{stat.label}</div>
                                 </div>
                             </div>
@@ -273,7 +276,7 @@ export default function GameDatabaseSection() {
                         {GENRES.map(genre => (
                             <Link
                                 key={genre.slug}
-                                href={`/games?genre=${genre.slug}`}
+                                href={`/games/genre/${genre.slug}`}
                                 className="group relative flex flex-col items-center justify-center text-center overflow-hidden glass-card glow-border transition-all duration-300"
                                 style={{ borderRadius: '12px', padding: '20px 10px' }}
                             >

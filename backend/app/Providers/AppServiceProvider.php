@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\Comment;
+use App\Models\Game;
 use App\Models\Gta6Character;
 use App\Models\Gta6Vehicle;
 use App\Models\Gta6Weapon;
@@ -23,6 +24,7 @@ use App\Observers\CategoryObserver;
 use App\Observers\CommentObserver;
 use App\Observers\ContentObserver;
 use App\Observers\ForumPostObserver;
+use App\Observers\GameObserver;
 use App\Observers\Gta6CharacterObserver;
 use App\Observers\Gta6VehicleObserver;
 use App\Observers\Gta6WeaponObserver;
@@ -95,6 +97,9 @@ class AppServiceProvider extends ServiceProvider
         Gta6Character::observe(Gta6CharacterObserver::class);
         Gta6Vehicle::observe(Gta6VehicleObserver::class);
         Gta6Weapon::observe(Gta6WeaponObserver::class);
+
+        // Game database — Cloudflare/ISR revalidation + IndexNow on Filament edits
+        Game::observe(GameObserver::class);
 
         // Prevent N+1 queries in non-production environments
         Model::preventLazyLoading(! app()->isProduction());

@@ -1,18 +1,15 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AboutController;
-use App\Http\Controllers\Api\V1\AuthorController;
-use App\Http\Controllers\Api\V1\Gta6Controller;
-use App\Http\Controllers\Api\V1\Gta6CharactersController;
-use App\Http\Controllers\Api\V1\Gta6VehiclesController;
-use App\Http\Controllers\Api\V1\Gta6WeaponsController;
 use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\AdController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\AuthorController;
 use App\Http\Controllers\Api\V1\BacklogAdvisorController;
 use App\Http\Controllers\Api\V1\BattleNetAuthController;
 use App\Http\Controllers\Api\V1\BountyController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\ClanController;
 use App\Http\Controllers\Api\V1\CommentController;
 use App\Http\Controllers\Api\V1\ConnectedAccountController;
 use App\Http\Controllers\Api\V1\ContactController;
@@ -33,6 +30,10 @@ use App\Http\Controllers\Api\V1\GameController;
 use App\Http\Controllers\Api\V1\GameListController;
 use App\Http\Controllers\Api\V1\GameRatingController;
 use App\Http\Controllers\Api\V1\GiveawayController;
+use App\Http\Controllers\Api\V1\Gta6CharactersController;
+use App\Http\Controllers\Api\V1\Gta6Controller;
+use App\Http\Controllers\Api\V1\Gta6VehiclesController;
+use App\Http\Controllers\Api\V1\Gta6WeaponsController;
 use App\Http\Controllers\Api\V1\GuideController;
 use App\Http\Controllers\Api\V1\HomeController;
 use App\Http\Controllers\Api\V1\LeaderboardController;
@@ -46,6 +47,7 @@ use App\Http\Controllers\Api\V1\PayPalController;
 use App\Http\Controllers\Api\V1\PayPalWebhookController;
 use App\Http\Controllers\Api\V1\PresenceController;
 use App\Http\Controllers\Api\V1\PriveeGiveawayController;
+use App\Http\Controllers\Api\V1\ProfileCompareController;
 use App\Http\Controllers\Api\V1\QuestController;
 use App\Http\Controllers\Api\V1\RecognitionController;
 use App\Http\Controllers\Api\V1\RedirectController;
@@ -58,12 +60,10 @@ use App\Http\Controllers\Api\V1\SeoController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\ShopController;
 use App\Http\Controllers\Api\V1\SocialAuthController;
+use App\Http\Controllers\Api\V1\SteamAchievementController;
 use App\Http\Controllers\Api\V1\StreakController;
 use App\Http\Controllers\Api\V1\SupportController;
 use App\Http\Controllers\Api\V1\SystemController;
-use App\Http\Controllers\Api\V1\ClanController;
-use App\Http\Controllers\Api\V1\ProfileCompareController;
-use App\Http\Controllers\Api\V1\SteamAchievementController;
 use App\Http\Controllers\Api\V1\TechController;
 use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\UserWowCharactersController;
@@ -189,13 +189,13 @@ Route::prefix('v1')->group(function () {
 
         // Game Ratings (Auth)
         Route::get('/games/{slug}/ratings/my', [GameRatingController::class, 'my']);
-        Route::post('/games/{slug}/ratings', [GameRatingController::class, 'upsert']);
-        Route::delete('/games/{slug}/ratings', [GameRatingController::class, 'destroy']);
+        Route::middleware('throttle:30,1')->post('/games/{slug}/ratings', [GameRatingController::class, 'upsert']);
+        Route::middleware('throttle:30,1')->delete('/games/{slug}/ratings', [GameRatingController::class, 'destroy']);
 
         // Game Collection (Auth) — the current user's library
         Route::get('/collection/games/{slug}', [GameCollectionController::class, 'show']);
-        Route::put('/collection/games/{slug}', [GameCollectionController::class, 'upsert']);
-        Route::delete('/collection/games/{slug}', [GameCollectionController::class, 'destroy']);
+        Route::middleware('throttle:60,1')->put('/collection/games/{slug}', [GameCollectionController::class, 'upsert']);
+        Route::middleware('throttle:60,1')->delete('/collection/games/{slug}', [GameCollectionController::class, 'destroy']);
 
         // Presence (Auth) — set / clear what you're currently playing
         Route::post('/presence', [PresenceController::class, 'store']);
@@ -256,12 +256,14 @@ Route::prefix('v1')->group(function () {
 
         // Custom Game Lists (Auth)
         Route::get('/game-lists/mine', [GameListController::class, 'mine']);
-        Route::post('/game-lists', [GameListController::class, 'store']);
-        Route::put('/game-lists/{id}', [GameListController::class, 'update']);
-        Route::delete('/game-lists/{id}', [GameListController::class, 'destroy']);
-        Route::post('/game-lists/{id}/items', [GameListController::class, 'addItem']);
-        Route::delete('/game-lists/{id}/items/{itemId}', [GameListController::class, 'removeItem']);
-        Route::put('/game-lists/{id}/reorder', [GameListController::class, 'reorder']);
+        Route::middleware('throttle:60,1')->group(function () {
+            Route::post('/game-lists', [GameListController::class, 'store']);
+            Route::put('/game-lists/{id}', [GameListController::class, 'update']);
+            Route::delete('/game-lists/{id}', [GameListController::class, 'destroy']);
+            Route::post('/game-lists/{id}/items', [GameListController::class, 'addItem']);
+            Route::delete('/game-lists/{id}/items/{itemId}', [GameListController::class, 'removeItem']);
+            Route::put('/game-lists/{id}/reorder', [GameListController::class, 'reorder']);
+        });
 
         // Support Plans
         Route::post('/support/create-plan', [SupportController::class, 'createPlan']);
