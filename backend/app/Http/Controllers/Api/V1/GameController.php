@@ -27,6 +27,27 @@ class GameController extends Controller
         return str_getcsv(trim($value, '{}'));
     }
 
+    /**
+     * A random game with a real description — powers the "Random Game" button.
+     * Random offset instead of ORDER BY random() so it stays fast on 200K rows.
+     */
+    public function random()
+    {
+        $count = Cache::remember('games.random_count', 3600, fn () => Game::where('has_description', true)->count());
+
+        if ($count < 1) {
+            return response()->json(['message' => 'No games available'], 404);
+        }
+
+        $game = Game::where('has_description', true)
+            ->orderBy('id')
+            ->offset(random_int(0, $count - 1))
+            ->limit(1)
+            ->first(['slug', 'name']);
+
+        return response()->json($game);
+    }
+
     public function crawledSlugs()
     {
         $slugs = Game::whereNotNull('details_crawled_at')
@@ -75,6 +96,7 @@ class GameController extends Controller
                 'name' => $q->orderBy('name'),
                 '-name' => $q->orderByDesc('name'),
                 '-views' => $q->orderByDesc('views'),  // trending by real page views
+                '-added' => $q->orderByDesc('id'),     // recently added to the database
                 default => $q->orderByDesc('rating'),  // -rating (default)
             };
 

@@ -7,9 +7,10 @@ import Image from "next/image";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-    Search, Database, Gamepad2, ChevronLeft, ChevronRight,
+    Search, Gamepad2, ChevronLeft, ChevronRight,
     Star, SlidersHorizontal, X, Swords, MonitorSmartphone,
-    History, ArrowUpDown, type LucideIcon,
+    History, ArrowUpDown, Shuffle, ArrowRight, CalendarDays,
+    Box, ChevronDown, RotateCcw, Loader2, type LucideIcon,
 } from "lucide-react";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
 import TrackGameButton from "@/components/games/TrackGameButton";
@@ -69,13 +70,6 @@ const ERAS = [
     { id: "retro", name: "Retro",    from: 0,    to: 1989 },
 ];
 
-const SCORES = [
-    { id: "",  name: "Any score" },
-    { id: "7", name: "7+" },
-    { id: "8", name: "8+" },
-    { id: "9", name: "9+" },
-];
-
 const SORT_OPTIONS = [
     { value: "-rating",   label: "Top Rated" },
     { value: "-views",    label: "Trending" },
@@ -83,13 +77,6 @@ const SORT_OPTIONS = [
     { value: "released",  label: "Oldest" },
     { value: "name",      label: "A–Z" },
 ];
-
-// MobyGames rating is 0-10 scale
-function ratingClasses(rating: number) {
-    if (rating >= 7.5) return "bg-green-500/15 text-green-500 border-green-500/25";
-    if (rating >= 5)   return "bg-yellow-500/15 text-yellow-500 border-yellow-500/25";
-    return "bg-red-500/15 text-red-500 border-red-500/25";
-}
 
 /** Colored platform chip for MobyGames platform names */
 function platformChip(name: string): { label: string; cls: string } | null {
@@ -166,25 +153,47 @@ function SegmentButton({ active, onClick, children }: { active: boolean; onClick
     );
 }
 
-/* Vertical sort option row with indicator dot */
-function SortRow({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+/* Styled sort <select> (sidebar + results bar) */
+function SortSelect({ value, onChange, compact = false }: { value: string; onChange: (v: string) => void; compact?: boolean }) {
     return (
-        <button
-            onClick={onClick}
-            className={`group flex items-center justify-between w-full px-3 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all border ${
-                active
-                    ? "bg-tp-accent/10 border-tp-accent/30 text-tp-accent"
-                    : "border-transparent text-zinc-600 dark:text-[#A1A1AA] hover:bg-zinc-50 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-white"
-            }`}
-        >
-            {children}
-            <span className={`w-1.5 h-1.5 rounded-full transition-all ${
-                active
-                    ? "bg-tp-accent shadow-[0_0_8px_rgba(252,65,0,0.9)]"
-                    : "bg-transparent group-hover:bg-zinc-300 dark:group-hover:bg-white/20"
-            }`} />
-        </button>
+        <div className={`relative ${compact ? "" : "w-full"}`}>
+            <select
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className={`appearance-none bg-white dark:bg-[#070A0F] border border-zinc-200 dark:border-[#161B22] rounded-xl font-bold uppercase tracking-wider text-zinc-700 dark:text-white focus:outline-none focus:border-tp-accent/50 cursor-pointer transition-colors ${
+                    compact ? "pl-3 pr-8 py-2 text-[10.5px]" : "w-full pl-4 pr-9 py-2.5 text-[11px]"
+                }`}
+            >
+                {SORT_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400 dark:text-[#71717A] pointer-events-none" />
+        </div>
     );
+}
+
+/* Promo shortcut card under the hero */
+function PromoCard({ icon: Icon, title, desc, href, onClick }: {
+    icon: LucideIcon;
+    title: string;
+    desc: string;
+    href?: string;
+    onClick?: () => void;
+}) {
+    const inner = (
+        <>
+            <span className="absolute -top-10 -right-10 w-32 h-32 bg-tp-accent/[0.07] blur-[50px] rounded-full pointer-events-none" />
+            <span className="w-11 h-11 rounded-xl bg-tp-accent/10 border border-tp-accent/25 flex items-center justify-center mb-4 group-hover:bg-tp-accent/20 group-hover:shadow-[0_0_20px_rgba(252,65,0,0.25)] transition-all">
+                <Icon className="w-5 h-5 text-tp-accent" strokeWidth={2} />
+            </span>
+            <h3 className="font-display text-[13px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.06em] mb-1.5">{title}</h3>
+            <p className="text-[12px] text-zinc-500 dark:text-[#8B949E] leading-relaxed pr-5">{desc}</p>
+            <ArrowRight className="absolute bottom-5 right-5 w-4 h-4 text-tp-accent opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+        </>
+    );
+    const cls = "group relative block text-left bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-2xl p-5 pb-6 hover:border-tp-accent/40 hover:-translate-y-0.5 transition-all duration-300 overflow-hidden";
+    return href
+        ? <Link href={href} prefetch={false} className={cls}>{inner}</Link>
+        : <button onClick={onClick} className={`${cls} w-full`}>{inner}</button>;
 }
 
 export default function GamesClientPage() {
@@ -200,6 +209,8 @@ export default function GamesClientPage() {
     const [ordering, setOrdering] = useState(() => searchParams.get("sort") || "-rating");
     const [page, setPage]       = useState(() => Math.max(1, parseInt(searchParams.get("page") || "1", 10)));
     const [filtersOpen, setFiltersOpen] = useState(false);
+    const [showAllGenres, setShowAllGenres] = useState(false);
+    const [randomLoading, setRandomLoading] = useState(false);
 
     const [debouncedSearch, setDebouncedSearch] = useState(search);
     useEffect(() => {
@@ -252,16 +263,47 @@ export default function GamesClientPage() {
 
     const clearAll = () => { setSearch(""); setGenre(""); setPlatform(""); setEra(""); setScore(""); setOrdering("-rating"); };
 
+    const randomGame = async () => {
+        if (randomLoading) return;
+        setRandomLoading(true);
+        try {
+            const res = await axios.get("/games/random");
+            if (res.data?.slug) router.push(`/games/${res.data.slug}`);
+        } catch {
+            // ignore — button simply does nothing on failure
+        } finally {
+            setRandomLoading(false);
+        }
+    };
+
+    const scrollToGrid = () => {
+        document.getElementById("games-results")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
+    const quickChipCls = (active: boolean) =>
+        `flex items-center gap-2 px-4 py-2 rounded-full border text-[12px] font-bold transition-all ${
+            active
+                ? "bg-tp-accent border-tp-accent text-white shadow-[0_2px_14px_rgba(252,65,0,0.35)]"
+                : "bg-white dark:bg-white/[0.04] border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-[#C9D1D9] hover:border-tp-accent/50 hover:text-tp-accent"
+        }`;
+
     const facets = (
         <>
             <FacetGroup label="Genre" icon={Swords} isActive={genre !== ""}>
                 <div className="flex flex-wrap gap-1.5">
                     <FacetPill active={genre === ""} onClick={() => setGenre("")}>All</FacetPill>
-                    {GENRES.map(g => (
+                    {(showAllGenres ? GENRES : GENRES.slice(0, 7)).map(g => (
                         <FacetPill key={g.id} active={genre === g.id} onClick={() => setGenre(genre === g.id ? "" : g.id)}>
                             {g.name}
                         </FacetPill>
                     ))}
+                    <button
+                        onClick={() => setShowAllGenres(v => !v)}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[10.5px] font-bold uppercase tracking-wider text-zinc-400 dark:text-[#71717A] hover:text-tp-accent transition-colors"
+                    >
+                        {showAllGenres ? "Show less" : "Show more"}
+                        <ChevronDown className={`w-3 h-3 transition-transform ${showAllGenres ? "rotate-180" : ""}`} />
+                    </button>
                 </div>
             </FacetGroup>
 
@@ -286,25 +328,38 @@ export default function GamesClientPage() {
                 </div>
             </FacetGroup>
 
-            <FacetGroup label="MobyScore" icon={Star} isActive={score !== ""}>
-                <div className="grid grid-cols-4 gap-px w-full rounded-xl overflow-hidden border border-zinc-200 dark:border-white/[0.07] bg-zinc-200 dark:bg-white/[0.07]">
-                    {SCORES.map(s => (
-                        <SegmentButton key={s.id} active={score === s.id} onClick={() => setScore(s.id)}>
-                            {s.id === "" ? "Any" : s.name}
-                        </SegmentButton>
-                    ))}
+            <FacetGroup label="Rating (MobyScore)" icon={Star} isActive={score !== ""}>
+                <div className="w-full px-0.5">
+                    <input
+                        type="range"
+                        min={0}
+                        max={9}
+                        step={1}
+                        value={score === "" ? 0 : Number(score)}
+                        onChange={(e) => { const v = Number(e.target.value); setScore(v === 0 ? "" : String(v)); }}
+                        className="w-full h-1.5 cursor-pointer accent-[#FC4100]"
+                        aria-label="Minimum MobyScore"
+                    />
+                    <div className="flex justify-between mt-2">
+                        <span className={`text-[10.5px] font-bold uppercase tracking-wider ${score !== "" ? "text-tp-accent" : "text-zinc-500 dark:text-[#8B949E]"}`}>
+                            {score === "" ? "Any score" : `${score}+ / 10`}
+                        </span>
+                        <span className="text-[10.5px] font-bold text-zinc-400 dark:text-[#71717A]">10</span>
+                    </div>
                 </div>
             </FacetGroup>
 
             <FacetGroup label="Sort by" icon={ArrowUpDown} isActive={ordering !== "-rating"}>
-                <div className="flex flex-col gap-1 w-full">
-                    {SORT_OPTIONS.map(s => (
-                        <SortRow key={s.value} active={ordering === s.value} onClick={() => setOrdering(s.value)}>
-                            {s.label}
-                        </SortRow>
-                    ))}
-                </div>
+                <SortSelect value={ordering} onChange={setOrdering} />
             </FacetGroup>
+
+            <button
+                onClick={clearAll}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-zinc-200 dark:border-[#161B22] text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-[#8B949E] hover:text-tp-accent hover:border-tp-accent/40 hover:bg-tp-accent/[0.05] transition-all"
+            >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Clear all filters
+            </button>
         </>
     );
 
@@ -312,37 +367,41 @@ export default function GamesClientPage() {
         <div className="min-h-screen">
 
             {/* ── HERO with big search ── */}
-            <div className="relative w-full mb-10 overflow-hidden bg-zinc-50 dark:bg-[#05070A] border-b border-zinc-200 dark:border-[#161B22] transition-colors duration-300">
+            <div className="relative w-full mb-8 overflow-hidden bg-zinc-50 dark:bg-[#05070A] border-b border-zinc-200 dark:border-[#161B22] transition-colors duration-300">
                 <div className="absolute inset-0 z-0 pointer-events-none">
+                    {/* Cover-art collage backdrop */}
+                    {data?.results && data.results.length > 5 && (
+                        <div className="absolute -inset-x-8 -top-8 flex gap-3 blur-[3px] opacity-25 dark:opacity-30">
+                            {data.results.slice(0, 12).map((g) => g.background_image && (
+                                <div key={g.id} className="relative w-[120px] md:w-[150px] shrink-0 aspect-[3/4] rounded-xl overflow-hidden rotate-0">
+                                    <Image src={g.background_image} alt="" fill sizes="150px" quality={60} className="object-cover" />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-b from-zinc-50/80 via-zinc-50/90 to-zinc-50 dark:from-[#05070A]/70 dark:via-[#05070A]/88 dark:to-[#05070A]" />
                     <div className="absolute -top-[150px] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-tp-accent/5 dark:bg-tp-accent/10 blur-[120px] rounded-full" />
-                    <div
-                        className="absolute inset-0 opacity-[0.15] dark:opacity-[0.04]"
-                        style={{ backgroundImage: 'radial-gradient(1px 1px at 50% 50%, rgba(120,120,130,0.8) 1px, transparent 0)', backgroundSize: '32px 32px' }}
-                    />
                     <div className="absolute top-0 left-[25%] w-[50%] h-[1px] bg-gradient-to-r from-transparent via-tp-accent/30 dark:via-tp-accent/40 to-transparent" />
                 </div>
 
                 <div className="relative z-10 max-w-[1320px] mx-auto px-4 xl:px-0 pt-14 pb-12 flex flex-col items-center text-center">
-                    <div className="w-[52px] h-[52px] rounded-xl bg-tp-accent/10 border border-tp-accent/20 flex items-center justify-center mb-5 shadow-[0_0_30px_rgba(252,65,0,0.15)]">
-                        <Database className="w-6 h-6 text-tp-accent" strokeWidth={1.75} />
-                    </div>
-
-                    <h1 className="font-display text-[36px] md:text-[52px] font-black text-zinc-900 dark:text-white uppercase leading-[0.95] tracking-tight mb-4">
+                    <h1 className="font-display text-[36px] md:text-[52px] font-black text-zinc-900 dark:text-white uppercase leading-[0.95] tracking-tight mb-4 drop-shadow-xl">
                         GAME <span className="text-tp-accent">DATABASE</span>
                     </h1>
                     <p className="text-[15px] md:text-[16px] text-zinc-600 dark:text-[#A1A1AA] max-w-2xl leading-relaxed mb-9">
-                        {data?.count ? `${data.count.toLocaleString()} games at your fingertips.` : "Thousands of games at your fingertips."} Search, filter and discover your next adventure.
+                        Your ultimate hub to discover, explore and track {data?.count ? data.count.toLocaleString() : "thousands of"} games.
                     </p>
 
                     {/* Big search */}
                     <div className="w-full max-w-2xl relative">
+                        <div className="absolute -inset-[2px] rounded-full bg-gradient-to-r from-tp-accent/40 via-tp-accent/10 to-tp-accent/40 blur-[6px] opacity-60 pointer-events-none" />
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-tp-accent w-5 h-5" />
                         <input
                             type="text"
-                            placeholder="Search the database..."
+                            placeholder="Search for games, genres, platforms, themes..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-full h-[60px] pl-16 pr-14 text-[15px] text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-[#71717A] focus:outline-none focus:border-tp-accent/50 transition-all shadow-sm dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                            className="relative w-full bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-tp-accent/25 rounded-full h-[60px] pl-16 pr-14 text-[15px] text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-[#71717A] focus:outline-none focus:border-tp-accent/60 transition-all shadow-sm dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
                         />
                         {search && (
                             <button
@@ -354,7 +413,45 @@ export default function GamesClientPage() {
                             </button>
                         )}
                     </div>
+
+                    {/* Quick filter chips */}
+                    <div className="flex flex-wrap items-center justify-center gap-2.5 mt-8">
+                        {PLATFORMS.slice(0, 4).map((p) => (
+                            <button key={p.id} onClick={() => setPlatform(platform === p.id ? "" : p.id)} className={quickChipCls(platform === p.id)}>
+                                <Gamepad2 className="w-3.5 h-3.5" /> {p.name}
+                            </button>
+                        ))}
+                        <button onClick={() => setGenre(genre === "Role-Playing (RPG)" ? "" : "Role-Playing (RPG)")} className={quickChipCls(genre === "Role-Playing (RPG)")}>
+                            <Swords className="w-3.5 h-3.5" /> RPG
+                        </button>
+                        <button onClick={() => setGenre(genre === "Action" ? "" : "Action")} className={quickChipCls(genre === "Action")}>
+                            <Swords className="w-3.5 h-3.5" /> Action
+                        </button>
+                        <Link href={`/games/year/${new Date().getFullYear()}`} prefetch={false} className={quickChipCls(false)}>
+                            <CalendarDays className="w-3.5 h-3.5" /> {new Date().getFullYear()} Releases
+                        </Link>
+                        <button
+                            onClick={randomGame}
+                            disabled={randomLoading}
+                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-tp-accent/60 bg-tp-accent/10 text-[12px] font-bold text-tp-accent hover:bg-tp-accent hover:text-white transition-all disabled:opacity-60 shadow-[0_0_18px_rgba(252,65,0,0.15)]"
+                        >
+                            {randomLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shuffle className="w-3.5 h-3.5" />}
+                            Random Game
+                        </button>
+                    </div>
                 </div>
+            </div>
+
+            {/* ── Promo shortcut cards ── */}
+            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 mb-10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <PromoCard icon={Star} title="Top Rated Games" desc="See the highest rated games verified by our community."
+                    onClick={() => { clearAll(); setOrdering("-rating"); scrollToGrid(); }} />
+                <PromoCard icon={Box} title="Recently Added" desc="Explore the latest games added to our database."
+                    onClick={() => { clearAll(); setOrdering("-added"); scrollToGrid(); }} />
+                <PromoCard icon={CalendarDays} title="Upcoming Releases" desc="Discover games coming soon to your platform."
+                    href="/calendar" />
+                <PromoCard icon={Gamepad2} title="Explore by Platform" desc="Browse games across all major platforms."
+                    href="/games/platform/pc" />
             </div>
 
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 pb-20">
@@ -409,16 +506,20 @@ export default function GamesClientPage() {
                         </div>
 
                         {/* Header row */}
-                        <div className="flex items-end justify-between mb-6 pb-4 border-b border-zinc-200 dark:border-white/5">
+                        <div id="games-results" className="flex items-center justify-between mb-6 pb-4 border-b border-zinc-200 dark:border-white/5 scroll-mt-[110px]">
                             <div className="flex items-center gap-3 min-w-0">
                                 <span className="w-1.5 h-5 bg-tp-accent rounded-sm shrink-0" />
                                 <h2 className="font-display text-[20px] font-bold text-zinc-900 dark:text-white uppercase tracking-[0.04em] leading-none truncate">
                                     {debouncedSearch ? `Results for "${debouncedSearch}"` : SORT_OPTIONS.find(s => s.value === ordering)?.label ?? "Games"}
                                 </h2>
+                                <span className="hidden sm:block text-[11px] font-bold uppercase tracking-widest text-zinc-500 dark:text-[#71717A] leading-none shrink-0 mt-1">
+                                    · {data?.count?.toLocaleString() ?? 0} games found
+                                </span>
                             </div>
-                            <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 dark:text-[#71717A] leading-none shrink-0 ml-3">
-                                {data?.count?.toLocaleString() ?? 0} GAMES
-                            </span>
+                            <div className="shrink-0 ml-3 flex items-center gap-2">
+                                <span className="hidden md:block text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-[#71717A]">Sort by</span>
+                                <SortSelect value={ordering} onChange={setOrdering} compact />
+                            </div>
                         </div>
 
                         {/* Active filter chips */}
@@ -442,14 +543,14 @@ export default function GamesClientPage() {
 
                         {/* Grid */}
                         {isLoading && !data ? (
-                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                                {[...Array(12)].map((_, i) => (
-                                    <div key={i} className="h-[260px] bg-zinc-100 dark:bg-[#0B0E14] rounded-xl animate-pulse" />
+                            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
+                                {[...Array(15)].map((_, i) => (
+                                    <div key={i} className="aspect-[3/4] bg-zinc-100 dark:bg-[#0B0E14] rounded-xl animate-pulse" />
                                 ))}
                             </div>
                         ) : data?.results && data.results.length > 0 ? (
                             <>
-                                <div className={`grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 transition-opacity ${isLoading ? "opacity-60" : ""}`}>
+                                <div className={`grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4 transition-opacity ${isLoading ? "opacity-60" : ""}`}>
                                     {data.results.map((game) => (
                                         <GameCard key={game.id} game={game} />
                                     ))}
@@ -498,73 +599,72 @@ function GameCard({ game }: { game: Game }) {
         <Link
             href={`/games/${game.slug}`}
             prefetch={false}
-            className="group bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-xl overflow-hidden hover:border-tp-accent/50 dark:hover:border-tp-accent/50 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.5)] transition-all duration-300 flex flex-col"
+            onMouseLeave={() => setHoverIdx(null)}
+            className="group relative block aspect-[3/4] rounded-xl overflow-hidden border border-zinc-200 dark:border-[#161B22] bg-zinc-100 dark:bg-[#10141B] hover:border-tp-accent/60 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.55)] transition-all duration-300"
         >
-            {/* Image */}
-            <div className="relative h-[150px] overflow-hidden bg-zinc-100 dark:bg-[#10141B]" onMouseLeave={() => setHoverIdx(null)}>
-                {displayImg ? (
-                    <Image
-                        src={displayImg}
-                        alt={game.name}
-                        fill
-                        sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 250px"
-                        quality={70}
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        onError={() => setImgSrc("")}
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                        <Gamepad2 className="w-8 h-8 text-zinc-300 dark:text-white/10" />
-                    </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-70" />
-
-                {/* Rating badge */}
-                {rating > 0 && (
-                    <div className={`absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-1 rounded-lg border backdrop-blur-md text-[12px] font-bold ${ratingClasses(rating)}`}>
-                        <Star className="w-3 h-3 fill-current" />
-                        {rating.toFixed(1)}
-                    </div>
-                )}
-
-                {/* Year */}
-                {game.released && (
-                    <span className="absolute bottom-2.5 left-2.5 text-[10px] font-bold tracking-widest text-white/85 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded">
-                        {game.released.slice(0, 4)}
-                    </span>
-                )}
-
-                {/* Track button — visible on hover */}
-                <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                    <TrackGameButton slug={game.slug} gameName={game.name} variant="compact" />
+            {/* Cover art fills the card */}
+            {displayImg ? (
+                <Image
+                    src={displayImg}
+                    alt={game.name}
+                    fill
+                    sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 240px"
+                    quality={70}
+                    className="object-cover group-hover:scale-[1.06] transition-transform duration-500"
+                    onError={() => setImgSrc("")}
+                />
+            ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <Gamepad2 className="w-10 h-10 text-zinc-300 dark:text-white/10" />
                 </div>
+            )}
 
-                {/* Screenshot hover dots */}
-                {screenshots.length > 0 && (
-                    <div className="absolute bottom-2.5 right-2.5 hidden group-hover:flex gap-1">
-                        {screenshots.slice(0, 4).map((_, i) => (
-                            <span
-                                key={i}
-                                onMouseEnter={() => setHoverIdx(i)}
-                                className={`w-1.5 h-1.5 rounded-full transition-all cursor-pointer ${hoverIdx === i ? "bg-tp-accent scale-125" : "bg-white/50"}`}
-                            />
-                        ))}
-                    </div>
-                )}
+            {/* Poster gradient — dark base for the bottom text block */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-black/15" />
+
+            {/* Year — top left */}
+            {game.released && (
+                <span className="absolute top-2.5 left-2.5 text-[10px] font-bold tracking-widest text-white/90 bg-black/55 backdrop-blur-sm px-2 py-1 rounded-md">
+                    {game.released.slice(0, 4)}
+                </span>
+            )}
+
+            {/* Track button — top right, visible on hover */}
+            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                <TrackGameButton slug={game.slug} gameName={game.name} variant="compact" />
             </div>
 
-            {/* Body */}
-            <div className="p-3.5 flex-1 flex flex-col">
-                <h3 className="text-[13px] font-bold text-zinc-900 dark:text-white leading-snug mb-2.5 group-hover:text-tp-accent transition-colors line-clamp-2">
+            {/* Screenshot hover dots */}
+            {screenshots.length > 0 && (
+                <div className="absolute bottom-[74px] left-1/2 -translate-x-1/2 hidden group-hover:flex gap-1.5">
+                    {screenshots.slice(0, 4).map((_, i) => (
+                        <span
+                            key={i}
+                            onMouseEnter={() => setHoverIdx(i)}
+                            className={`w-1.5 h-1.5 rounded-full transition-all cursor-pointer ${hoverIdx === i ? "bg-tp-accent scale-125" : "bg-white/50"}`}
+                        />
+                    ))}
+                </div>
+            )}
+
+            {/* Bottom content — title, platforms, rating */}
+            <div className="absolute inset-x-0 bottom-0 p-3">
+                <h3 className="font-display text-[13px] font-black text-white uppercase tracking-[0.05em] leading-tight line-clamp-2 text-center mb-2.5 drop-shadow-lg group-hover:text-tp-accent transition-colors">
                     {game.name}
                 </h3>
-
-                <div className="mt-auto flex flex-wrap gap-1">
-                    {chips.map((chip) => (
-                        <span key={chip.label} className={`${chip.cls} text-white text-[7.5px] font-bold tracking-wider px-1 py-[2px] rounded-[3px] leading-none`}>
-                            {chip.label}
+                <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-wrap gap-1 min-w-0">
+                        {chips.map((chip) => (
+                            <span key={chip.label} className={`${chip.cls} text-white text-[7.5px] font-bold tracking-wider px-1 py-[2px] rounded-[3px] leading-none`}>
+                                {chip.label}
+                            </span>
+                        ))}
+                    </div>
+                    {rating > 0 && (
+                        <span className="shrink-0 bg-tp-accent text-white text-[11px] font-black px-1.5 py-0.5 rounded-md shadow-[0_2px_10px_rgba(252,65,0,0.4)] leading-none">
+                            {rating.toFixed(1)}
                         </span>
-                    ))}
+                    )}
                 </div>
             </div>
         </Link>
