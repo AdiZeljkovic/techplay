@@ -4,7 +4,7 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
     Search, Gamepad2, ChevronLeft, ChevronRight,
@@ -218,10 +218,19 @@ export default function GamesClientPage() {
         return () => clearTimeout(t);
     }, [search]);
 
-    // Reset to page 1 on any filter change
-    useEffect(() => { setPage(1); }, [debouncedSearch, genre, platform, era, score, ordering]);
+    // Reset to page 1 on any filter change — but NOT on mount, otherwise a
+    // deep-linked ?page=N gets reset and the old page is fetched alongside
+    // the new one (double request)
+    const skipPageReset = useRef(true);
+    useEffect(() => {
+        if (skipPageReset.current) { skipPageReset.current = false; return; }
+        setPage(1);
+    }, [debouncedSearch, genre, platform, era, score, ordering]);
 
-    // Keep URL in sync (shareable / back-button friendly)
+    // Keep URL in sync (shareable / back-button friendly).
+    // history.replaceState instead of router.replace — the route is
+    // force-dynamic, so router.replace would re-request the page from the
+    // server (extra RSC roundtrip + counts toward the CF /games/* rate limit).
     useEffect(() => {
         const params = new URLSearchParams();
         if (debouncedSearch) params.set("search", debouncedSearch);
@@ -232,8 +241,8 @@ export default function GamesClientPage() {
         if (ordering !== "-rating") params.set("sort", ordering);
         if (page > 1) params.set("page", String(page));
         const qs = params.toString();
-        router.replace(`/games${qs ? `?${qs}` : ""}`, { scroll: false });
-    }, [debouncedSearch, genre, platform, era, score, ordering, page, router]);
+        window.history.replaceState(null, "", `/games${qs ? `?${qs}` : ""}`);
+    }, [debouncedSearch, genre, platform, era, score, ordering, page]);
 
     const apiUrl = useMemo(() => {
         const eraDef = ERAS.find(e => e.id === era);
