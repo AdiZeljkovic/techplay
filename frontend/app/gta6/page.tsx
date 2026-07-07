@@ -20,7 +20,7 @@ const TRAILER_COUNT = 2;
 
 export async function generateMetadata(): Promise<Metadata> {
     const base = await generatePageMetadata("/gta6", {
-        title: "GTA 6 — Interactive Map, Characters, Vehicles & Complete Guide | TechPlay",
+        title: "GTA 6 — Interactive Map, Characters, Vehicles & Complete Guide",
         description:
             "The most complete GTA 6 resource online — interactive map with 1,000+ locations, full character database, confirmed vehicle list, weapons and everything about Grand Theft Auto VI. Updated weekly.",
         keywords: ["GTA 6", "Grand Theft Auto VI", "GTA 6 release date", "GTA 6 map", "GTA 6 characters", "GTA 6 vehicles", "GTA VI", "GTA 6 guide 2026"],

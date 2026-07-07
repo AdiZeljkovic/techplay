@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\Game;
+use App\Models\Gta6Character;
 use App\Models\Guide;
 use App\Models\Product;
 use App\Models\Video;
@@ -135,11 +136,32 @@ class SitemapController extends Controller
             ['/privacy', 'yearly', '0.2'],
             ['/terms', 'yearly', '0.2'],
             ['/cookies', 'yearly', '0.2'],
+
+            // GTA 6 hub — high-value evergreen pages
+            ['/gta6', 'daily', '0.95'],
+            ['/gta6/map', 'weekly', '0.9'],
+            ['/gta6/characters', 'weekly', '0.9'],
+            ['/gta6/vehicles', 'weekly', '0.85'],
+            ['/gta6/weapons', 'weekly', '0.85'],
+            ['/gta6/everything-we-know', 'weekly', '0.9'],
         ];
 
         foreach ($staticPages as [$page, $changefreq, $priority]) {
             $xml .= $this->urlEntry("{$this->frontendUrl}{$page}", null, $changefreq, $priority);
         }
+
+        // GTA 6 character profile pages (vehicles/weapons have no detail pages)
+        Gta6Character::where('is_published', true)
+            ->select('slug', 'updated_at')
+            ->orderBy('slug')
+            ->each(function (Gta6Character $character) use (&$xml) {
+                $xml .= $this->urlEntry(
+                    "{$this->frontendUrl}/gta6/characters/{$character->slug}",
+                    $character->updated_at?->toIso8601String(),
+                    'monthly',
+                    '0.75'
+                );
+            });
 
         $xml .= '</urlset>';
 

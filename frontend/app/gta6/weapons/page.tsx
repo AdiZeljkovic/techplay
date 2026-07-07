@@ -4,6 +4,7 @@ import { generatePageMetadata } from "@/lib/seo";
 import { getServerApiUrl } from "@/lib/api";
 import Gta6EntityGrid from "@/components/gta6/Gta6EntityGrid";
 import Gta6SectionHero from "@/components/gta6/Gta6SectionHero";
+import { fetchGta6Entities, gta6ItemListLd } from "@/lib/gta6";
 
 export const revalidate = 3600;
 
@@ -11,7 +12,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
 
 export async function generateMetadata(): Promise<Metadata> {
     const base = await generatePageMetadata("/gta6/weapons", {
-        title: "GTA 6 Weapons — Complete Arsenal: Guns, Melee & Explosives | TechPlay",
+        title: "GTA 6 Weapons — Complete Arsenal: Guns, Melee & Explosives",
         description:
             "Every confirmed GTA 6 weapon — pistols, rifles, shotguns, SMGs, melee and explosives from the Leonida arsenal. Full weapon database with types, photos and confirmed details.",
         keywords: ["GTA 6 weapons", "GTA 6 guns", "GTA VI arsenal", "GTA 6 weapons list", "GTA 6 all weapons"],
@@ -66,12 +67,20 @@ const videoGameLd = {
 };
 
 export default async function Gta6WeaponsPage() {
-    const types = await fetchTypes();
+    const [types, weapons] = await Promise.all([
+        fetchTypes(),
+        fetchGta6Entities(getServerApiUrl(), "/gta6/weapons"),
+    ]);
+
+    const itemListLd = gta6ItemListLd("GTA 6 Weapons", weapons);
 
     return (
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(videoGameLd) }} />
+            {weapons.length > 0 && (
+                <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }} />
+            )}
             <div className="min-h-screen bg-[#05070A]">
                 <Gta6SectionHero
                     icon={Crosshair}
@@ -96,6 +105,7 @@ export default async function Gta6WeaponsPage() {
                         emptyTitle="No weapons yet"
                         emptyHint="Confirmed weapons will appear here as Rockstar reveals the arsenal."
                         linkable={false}
+                        initialItems={weapons}
                     />
                 </div>
             </div>

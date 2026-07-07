@@ -9,7 +9,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
 
 export async function generateMetadata(): Promise<Metadata> {
     const base = await generatePageMetadata("/gta6/map", {
-        title: "GTA 6 Interactive Map — 1,000+ Locations in Vice City & Leonida | TechPlay",
+        title: "GTA 6 Interactive Map — 1,000+ Locations in Vice City & Leonida",
         description:
             "Explore every confirmed and community-discovered GTA 6 location across Vice City and the state of Leonida. Filter by category — click any pin for details and in-game footage.",
         keywords: ["GTA 6 interactive map", "GTA 6 map locations", "GTA 6 Leonida map", "Vice City map GTA 6"],

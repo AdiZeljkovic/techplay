@@ -1,13 +1,6 @@
 import Link from "next/link";
 import type { Gta6Entity } from "@/types";
-
-function resolveImage(image?: string | null): string | null {
-    if (!image) return null;
-    if (image.startsWith("http")) return image;
-    // Leading slash = served from the frontend's own /public (e.g. /gta6/vehicles/x.png)
-    if (image.startsWith("/")) return image;
-    return `${process.env.NEXT_PUBLIC_STORAGE_URL}/${image}`;
-}
+import { resolveGta6Image } from "@/lib/gta6";
 
 interface Props {
     entity: Gta6Entity;
@@ -17,7 +10,7 @@ interface Props {
 }
 
 export default function Gta6EntityCard({ entity, basePath, subtitle, linkable = true }: Props) {
-    const img = resolveImage(entity.image);
+    const img = resolveGta6Image(entity.image);
 
     const Wrapper = linkable ? Link : "div";
     const wrapperProps = linkable ? { href: `${basePath}/${entity.slug}` } : {};

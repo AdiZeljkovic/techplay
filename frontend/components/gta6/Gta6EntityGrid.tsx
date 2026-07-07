@@ -31,10 +31,11 @@ interface Props {
     emptyTitle: string;
     emptyHint: string;
     linkable?: boolean;       // false = showcase cards without detail links
+    initialItems?: Gta6Entity[]; // SSR-fetched list so content is in the HTML for crawlers
 }
 
 export default function Gta6EntityGrid({
-    section, basePath, apiPath, filterParam, filterLabel, filterOptions = [], emptyTitle, emptyHint, linkable = true,
+    section, basePath, apiPath, filterParam, filterLabel, filterOptions = [], emptyTitle, emptyHint, linkable = true, initialItems,
 }: Props) {
     const [search, setSearch]             = useState("");
     const [debounced, setDebounced]       = useState("");
@@ -55,6 +56,7 @@ export default function Gta6EntityGrid({
     const { data: items = [], isLoading } = useSWR<Gta6Entity[]>(url, fetcher, {
         keepPreviousData: true,
         revalidateOnFocus: false,
+        fallbackData: initialItems,
     });
 
     return (

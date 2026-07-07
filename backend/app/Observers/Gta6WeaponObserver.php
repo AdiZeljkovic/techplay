@@ -17,10 +17,8 @@ class Gta6WeaponObserver
     public function saved(Gta6Weapon $weapon): void
     {
         $this->clearCache($weapon->slug);
-        CacheRevalidationService::revalidatePaths([
-            '/gta6/weapons',
-            '/gta6/weapons/'.$weapon->slug,
-        ]);
+        // Detail pages were removed — weapons are a showcase-only listing
+        CacheRevalidationService::revalidatePaths(['/gta6/weapons']);
     }
 
     public function deleted(Gta6Weapon $weapon): void

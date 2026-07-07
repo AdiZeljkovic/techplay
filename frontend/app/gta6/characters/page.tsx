@@ -1,8 +1,10 @@
 import { Metadata } from "next";
 import { Users } from "lucide-react";
 import { generatePageMetadata } from "@/lib/seo";
+import { getServerApiUrl } from "@/lib/api";
 import Gta6EntityGrid from "@/components/gta6/Gta6EntityGrid";
 import Gta6SectionHero from "@/components/gta6/Gta6SectionHero";
+import { fetchGta6Entities, gta6ItemListLd } from "@/lib/gta6";
 
 export const revalidate = 3600;
 
@@ -10,7 +12,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
 
 export async function generateMetadata(): Promise<Metadata> {
     const base = await generatePageMetadata("/gta6/characters", {
-        title: "GTA 6 Characters — Jason, Lucia & Every Confirmed Cast Member | TechPlay",
+        title: "GTA 6 Characters — Jason, Lucia & Every Confirmed Cast Member",
         description:
             "Meet every confirmed GTA 6 character — from protagonists Jason Duval and Lucia Caminos to the full supporting cast of Vice City and Leonida. Full profiles, roles and gallery.",
         keywords: ["GTA 6 characters", "GTA 6 characters list", "Jason Duval", "Lucia Caminos", "GTA VI cast", "who are the characters in GTA 6"],
@@ -50,11 +52,18 @@ const videoGameLd = {
     "gamePlatform": ["PlayStation 5", "Xbox Series X", "Xbox Series S"],
 };
 
-export default function Gta6CharactersPage() {
+export default async function Gta6CharactersPage() {
+    const characters = await fetchGta6Entities(getServerApiUrl(), "/gta6/characters");
+
+    const itemListLd = gta6ItemListLd("GTA 6 Characters", characters, "/gta6/characters");
+
     return (
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(videoGameLd) }} />
+            {characters.length > 0 && (
+                <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }} />
+            )}
             <div className="min-h-screen bg-[#05070A]">
                 <Gta6SectionHero
                     icon={Users}
@@ -78,6 +87,7 @@ export default function Gta6CharactersPage() {
                         filterOptions={["protagonist", "antagonist", "supporting"]}
                         emptyTitle="No characters found"
                         emptyHint="No characters match your search yet. More are added as Rockstar reveals the cast."
+                        initialItems={characters}
                     />
                 </div>
             </div>

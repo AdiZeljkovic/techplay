@@ -20,11 +20,7 @@ async function fetchSlugs(path: string): Promise<string[]> {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const now = new Date().toISOString();
 
-    const [characterSlugs, vehicleSlugs, weaponSlugs] = await Promise.all([
-        fetchSlugs("/gta6/characters"),
-        fetchSlugs("/gta6/vehicles"),
-        fetchSlugs("/gta6/weapons"),
-    ]);
+    const characterSlugs = await fetchSlugs("/gta6/characters");
 
     const staticPages: MetadataRoute.Sitemap = [
         { url: `${SITE_URL}`,             lastModified: now, changeFrequency: "daily",  priority: 1.0 },
@@ -54,25 +50,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.75,
     }));
 
-    const vehiclePages: MetadataRoute.Sitemap = vehicleSlugs.map(slug => ({
-        url: `${SITE_URL}/gta6/vehicles/${slug}`,
-        lastModified: now,
-        changeFrequency: "monthly" as const,
-        priority: 0.7,
-    }));
-
-    const weaponPages: MetadataRoute.Sitemap = weaponSlugs.map(slug => ({
-        url: `${SITE_URL}/gta6/weapons/${slug}`,
-        lastModified: now,
-        changeFrequency: "monthly" as const,
-        priority: 0.7,
-    }));
-
     return [
         ...staticPages,
         ...gta6StaticPages,
         ...characterPages,
-        ...vehiclePages,
-        ...weaponPages,
     ];
 }

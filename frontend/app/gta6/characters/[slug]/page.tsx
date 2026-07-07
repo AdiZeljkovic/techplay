@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const firstSentence = c.description ? c.description.split(".")[0] + "." : "";
     const desc = `${c.name} is ${roleText} in Grand Theft Auto VI. ${firstSentence} Full profile, story details and gallery.`.slice(0, 160);
     return {
-        title: `${c.name} — GTA 6 Character Profile & Gallery | TechPlay`,
+        title: `${c.name} — GTA 6 Character Profile & Gallery`,
         description: desc,
         keywords: [`${c.name} GTA 6`, `${c.name} Grand Theft Auto VI`, "GTA 6 characters"],
         alternates: { canonical: `${SITE_URL}/gta6/characters/${c.slug}` },

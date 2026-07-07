@@ -18,10 +18,8 @@ class Gta6VehicleObserver
     public function saved(Gta6Vehicle $vehicle): void
     {
         $this->clearCache($vehicle->slug);
-        CacheRevalidationService::revalidatePaths([
-            '/gta6/vehicles',
-            '/gta6/vehicles/'.$vehicle->slug,
-        ]);
+        // Detail pages were removed — vehicles are a showcase-only listing
+        CacheRevalidationService::revalidatePaths(['/gta6/vehicles']);
     }
 
     public function deleted(Gta6Vehicle $vehicle): void

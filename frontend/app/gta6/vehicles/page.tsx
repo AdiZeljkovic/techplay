@@ -4,6 +4,7 @@ import { generatePageMetadata } from "@/lib/seo";
 import { getServerApiUrl } from "@/lib/api";
 import Gta6EntityGrid from "@/components/gta6/Gta6EntityGrid";
 import Gta6SectionHero from "@/components/gta6/Gta6SectionHero";
+import { fetchGta6Entities, gta6ItemListLd } from "@/lib/gta6";
 
 export const revalidate = 3600;
 
@@ -11,7 +12,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
 
 export async function generateMetadata(): Promise<Metadata> {
     const base = await generatePageMetadata("/gta6/vehicles", {
-        title: "GTA 6 Vehicles — Every Confirmed Car, Bike, Boat & Aircraft | TechPlay",
+        title: "GTA 6 Vehicles — Every Confirmed Car, Bike, Boat & Aircraft",
         description:
             "Complete GTA 6 vehicle database — every confirmed car, motorcycle, boat and aircraft spotted in Leonida. Filter by class, explore real-world inspirations and browse the full garage.",
         keywords: ["GTA 6 vehicles", "GTA 6 cars", "GTA 6 all cars", "GTA VI vehicle list", "GTA 6 motorcycles"],
@@ -66,12 +67,20 @@ const videoGameLd = {
 };
 
 export default async function Gta6VehiclesPage() {
-    const classes = await fetchClasses();
+    const [classes, vehicles] = await Promise.all([
+        fetchClasses(),
+        fetchGta6Entities(getServerApiUrl(), "/gta6/vehicles"),
+    ]);
+
+    const itemListLd = gta6ItemListLd("GTA 6 Vehicles", vehicles);
 
     return (
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(videoGameLd) }} />
+            {vehicles.length > 0 && (
+                <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }} />
+            )}
             <div className="min-h-screen bg-[#05070A]">
                 <Gta6SectionHero
                     icon={Car}
@@ -96,6 +105,7 @@ export default async function Gta6VehiclesPage() {
                         emptyTitle="No vehicles yet"
                         emptyHint="Confirmed vehicles will appear here as Rockstar reveals them through trailers and Newswire posts."
                         linkable={false}
+                        initialItems={vehicles}
                     />
                 </div>
             </div>
