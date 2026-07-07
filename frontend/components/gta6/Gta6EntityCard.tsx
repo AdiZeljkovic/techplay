@@ -4,6 +4,8 @@ import type { Gta6Entity } from "@/types";
 function resolveImage(image?: string | null): string | null {
     if (!image) return null;
     if (image.startsWith("http")) return image;
+    // Leading slash = served from the frontend's own /public (e.g. /gta6/vehicles/x.png)
+    if (image.startsWith("/")) return image;
     return `${process.env.NEXT_PUBLIC_STORAGE_URL}/${image}`;
 }
 
@@ -11,14 +13,19 @@ interface Props {
     entity: Gta6Entity;
     basePath: string;     // e.g. /gta6/characters
     subtitle?: string | null;
+    linkable?: boolean;   // false = plain showcase card without a detail page link
 }
 
-export default function Gta6EntityCard({ entity, basePath, subtitle }: Props) {
+export default function Gta6EntityCard({ entity, basePath, subtitle, linkable = true }: Props) {
     const img = resolveImage(entity.image);
 
+    const Wrapper = linkable ? Link : "div";
+    const wrapperProps = linkable ? { href: `${basePath}/${entity.slug}` } : {};
+
     return (
-        <Link
-            href={`${basePath}/${entity.slug}`}
+        // @ts-expect-error — Wrapper is either Link (needs href) or div (doesn't)
+        <Wrapper
+            {...wrapperProps}
             className="group relative bg-[#0B0E14] border border-[#161B22] rounded-xl overflow-hidden gta6-card"
         >
             <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--gta-pink)] scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300 z-20" />
@@ -54,6 +61,6 @@ export default function Gta6EntityCard({ entity, basePath, subtitle }: Props) {
                     <p className="text-[11px] text-[var(--gta-cyan)] mt-1 uppercase tracking-wide font-semibold">{subtitle}</p>
                 )}
             </div>
-        </Link>
+        </Wrapper>
     );
 }

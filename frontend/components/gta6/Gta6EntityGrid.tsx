@@ -30,10 +30,11 @@ interface Props {
     filterOptions?: string[];
     emptyTitle: string;
     emptyHint: string;
+    linkable?: boolean;       // false = showcase cards without detail links
 }
 
 export default function Gta6EntityGrid({
-    section, basePath, apiPath, filterParam, filterLabel, filterOptions = [], emptyTitle, emptyHint,
+    section, basePath, apiPath, filterParam, filterLabel, filterOptions = [], emptyTitle, emptyHint, linkable = true,
 }: Props) {
     const [search, setSearch]             = useState("");
     const [debounced, setDebounced]       = useState("");
@@ -124,7 +125,7 @@ export default function Gta6EntityGrid({
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     {items.map(e => (
-                        <Gta6EntityCard key={e.id} entity={e} basePath={basePath} subtitle={subtitleFor(section, e)} />
+                        <Gta6EntityCard key={e.id} entity={e} basePath={basePath} subtitle={subtitleFor(section, e)} linkable={linkable} />
                     ))}
                 </div>
             )}
