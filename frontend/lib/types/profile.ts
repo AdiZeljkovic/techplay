@@ -270,6 +270,7 @@ export interface UserProfile {
     playing_now?: PlayingNowGame[];
     showcase?: PlayingNowGame[];
     connected_accounts?: string[];
+    clan?: { name: string; slug: string; tag: string | null; logo: string | null; role: string } | null;
     platforms_genres?: PlatformsGenres;
     gamer_dna?: GamerDna;
     reputation?: ReputationData;

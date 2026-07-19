@@ -75,7 +75,7 @@ class CommentController extends Controller
                 // Custom rule could go here, but doing manual check for now
             ],
             'commentable_id' => 'required|integer',
-            'commentable_type' => 'required|string|in:article,review,guide,tech',
+            'commentable_type' => 'required|string|in:article,review,guide,tech,profile',
             'parent_id' => 'nullable|exists:comments,id',
         ]);
 
@@ -264,6 +264,13 @@ class CommentController extends Controller
 
                 $link = $this->resolveContentLink($commentableType, $comment->commentable_id);
                 $parent->user->notify(new CommentReplyNotification($comment, $commenter, $link));
+            } elseif ($commentableType === 'profile') {
+                // Profile wall → notify the profile owner directly
+                $owner = User::find($comment->commentable_id);
+                if (! $owner || $owner->id === $commenter->id) {
+                    return;
+                }
+                $owner->notify(new ArticleCommentNotification($comment, $commenter, 'your profile', "/profile/{$owner->username}"));
             } else {
                 // Top-level comment → notify content author
                 $modelClass = $this->getModelClass($commentableType);
@@ -276,7 +283,7 @@ class CommentController extends Controller
                     return;
                 }
 
-                $link  = $this->resolveContentLink($commentableType, $comment->commentable_id, $content->slug ?? null);
+                $link = $this->resolveContentLink($commentableType, $comment->commentable_id, $content->slug ?? null);
                 $title = $content->title ?? ($content->name ?? '');
                 $content->author->notify(new ArticleCommentNotification($comment, $commenter, $title, $link));
             }
@@ -287,6 +294,12 @@ class CommentController extends Controller
 
     private function resolveContentLink(string $commentableType, int $contentId, ?string $slug = null): string
     {
+        if ($commentableType === 'profile') {
+            $username = User::find($contentId)?->username ?? '';
+
+            return "/profile/{$username}";
+        }
+
         if (! $slug) {
             $modelClass = $this->getModelClass($commentableType);
             $slug = $modelClass ? ($modelClass::find($contentId)?->slug ?? '') : '';
@@ -294,9 +307,9 @@ class CommentController extends Controller
 
         $prefix = match ($commentableType) {
             'review' => 'reviews',
-            'guide'  => 'guides',
-            'tech'   => 'hardware',
-            default  => 'news',
+            'guide' => 'guides',
+            'tech' => 'hardware',
+            default => 'news',
         };
 
         return "/{$prefix}/{$slug}";
@@ -309,6 +322,7 @@ class CommentController extends Controller
             'review' => Review::class,
             'guide' => Guide::class,
             'tech' => Article::class,
+            'profile' => User::class, // profile wall (V3)
             default => null,
         };
     }

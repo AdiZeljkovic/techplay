@@ -15,7 +15,7 @@ import { decodeHtml } from "@/lib/decode";
 
 interface CommentsSectionProps {
     commentableId: number;
-    commentableType: 'article' | 'review' | 'guide';
+    commentableType: 'article' | 'review' | 'guide' | 'profile';
     initialComments?: Comment[];
 }
 

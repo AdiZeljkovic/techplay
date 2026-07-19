@@ -176,6 +176,7 @@ function ProfilePageInner() {
                         customization={profile.customization}
                         nextRank={profile.next_rank}
                         connectedAccounts={profile.connected_accounts}
+                        clan={profile.clan}
                         onOpenTab={(t) => setActiveTab(t as ProfileTab)}
                     />
                 )}

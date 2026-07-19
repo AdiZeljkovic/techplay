@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { format } from "date-fns";
 import {
     Library, Trophy, Activity as ActivityIcon, ListChecks,
-    Dna, Sparkles, CalendarClock,
+    Dna, Sparkles, CalendarClock, MessagesSquare, Shield,
 } from "lucide-react";
+import CommentsSection from "@/components/comments/CommentsSection";
 import SectionCard from "./dashboard/SectionCard";
 import PlayingNow from "./dashboard/PlayingNow";
 import CollectionSnapshot from "./dashboard/CollectionSnapshot";
@@ -38,6 +40,7 @@ interface Props {
     customization?: CustomizationData;
     nextRank?: { name: string; min_xp: number } | null;
     connectedAccounts?: string[];
+    clan?: { name: string; slug: string; tag: string | null; logo: string | null; role: string } | null;
     onOpenTab?: (tab: string) => void;
 }
 
@@ -54,6 +57,7 @@ export default function ProfileOverviewDashboard({
     collectionSnapshot = [], playingNow = [], showcase = [], platformsGenres, gamerDna,
     reputation, recognitions = [], lists = [], customization, nextRank,
     connectedAccounts = [],
+    clan = null,
     onOpenTab = () => {},
 }: Props) {
     const recentUnlocked = (achievements || [])
@@ -156,11 +160,39 @@ export default function ProfileOverviewDashboard({
                         <FriendActivityFeed />
                     </SectionCard>
                 )}
+
+                {/* Profile Wall — visitors can leave a message */}
+                <SectionCard title="Profile Wall" icon={<MessagesSquare className="w-4 h-4 text-[var(--accent)]" />}>
+                    <CommentsSection commentableId={userData.id} commentableType="profile" />
+                </SectionCard>
             </div>
 
-            {/* === SIDEBAR — exactly 3 cards === */}
+            {/* === SIDEBAR === */}
             <div className="space-y-6 min-w-0">
-                {/* 1. Community Standing (merges reputation + ranking + recognitions) */}
+                {/* Clan membership */}
+                {clan && (
+                    <SectionCard title="Clan" icon={<Shield className="w-4 h-4 text-[var(--accent)]" />}>
+                        <Link href="/clans" className="group flex items-center gap-3.5">
+                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/[0.04] border border-[var(--border)] flex items-center justify-center shrink-0">
+                                {clan.logo ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img src={clan.logo} alt={clan.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    <Shield className="w-5 h-5 text-[var(--accent)]" />
+                                )}
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-[14px] font-black text-white group-hover:text-[var(--accent)] transition-colors truncate">
+                                    {clan.tag && <span className="text-[var(--accent)] mr-1.5">[{clan.tag}]</span>}
+                                    {clan.name}
+                                </p>
+                                <p className="text-[11px] font-bold uppercase tracking-wider text-white/40">{clan.role}</p>
+                            </div>
+                        </Link>
+                    </SectionCard>
+                )}
+
+                {/* Community Standing (merges reputation + ranking + recognitions) */}
                 {reputation && (
                     <SectionCard title="Community Standing">
                         <CommunityStanding reputation={reputation} recognitions={recognitions} />

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, Loader2, FileText, Gamepad2 } from "lucide-react";
+import { Search, X, Loader2, FileText, Gamepad2, User as UserIcon } from "lucide-react";
 import axios from "@/lib/axios";
 import { cn } from "@/lib/utils";
 import { decodeHtml } from "@/lib/decode";
@@ -55,15 +55,17 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
         const timer = setTimeout(async () => {
             setIsLoading(true);
             try {
-                const [articlesRes, gamesRes] = await Promise.allSettled([
+                const [articlesRes, gamesRes, usersRes] = await Promise.allSettled([
                     axios.get('/search/articles', { params: { q: query }, signal: abortController.signal }),
                     axios.get('/search/games', { params: { q: query }, signal: abortController.signal }),
+                    axios.get('/search/users', { params: { q: query }, signal: abortController.signal }),
                 ]);
                 // Only update state if not aborted
                 if (!abortController.signal.aborted) {
                     const articles = articlesRes.status === 'fulfilled' ? (articlesRes.value.data.results || []) : [];
                     const games = gamesRes.status === 'fulfilled' ? (gamesRes.value.data.results || []) : [];
-                    setResults([...articles, ...games]);
+                    const users = usersRes.status === 'fulfilled' ? (usersRes.value.data.results || []) : [];
+                    setResults([...articles, ...games, ...users]);
                     setIsOpen(true);
                 }
             } catch (error: any) {
@@ -217,7 +219,9 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                                         <div className="w-16 h-12 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
                                             {result.type === 'game'
                                                 ? <Gamepad2 className="w-5 h-5 text-gray-400" />
-                                                : <FileText className="w-5 h-5 text-gray-400" />}
+                                                : result.type === 'user'
+                                                    ? <UserIcon className="w-5 h-5 text-gray-400" />
+                                                    : <FileText className="w-5 h-5 text-gray-400" />}
                                         </div>
                                     )}
 

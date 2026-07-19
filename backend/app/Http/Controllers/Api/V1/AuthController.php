@@ -7,6 +7,8 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\V1\PublicUserResource;
 use App\Http\Resources\V1\UserResource;
 use App\Models\Achievement;
+use App\Models\ClanMember;
+use App\Models\ConnectedAccount;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\PremiumService;
@@ -333,7 +335,21 @@ class AuthController extends Controller
                 'claimed_today' => $user->last_daily_claim && Carbon::parse($user->last_daily_claim)->isToday(),
             ],
             // V3 — which external accounts are linked (providers only, no tokens)
-            'connected_accounts' => \App\Models\ConnectedAccount::where('user_id', $user->id)->pluck('provider')->values(),
+            'connected_accounts' => ConnectedAccount::where('user_id', $user->id)->pluck('provider')->values(),
+            // V3 — clan membership (public identity)
+            'clan' => (function () use ($user) {
+                $member = ClanMember::where('user_id', $user->id)
+                    ->with('clan:id,name,slug,logo,tag')
+                    ->first();
+
+                return $member && $member->clan ? [
+                    'name' => $member->clan->name,
+                    'slug' => $member->clan->slug,
+                    'tag' => $member->clan->tag,
+                    'logo' => $member->clan->logo,
+                    'role' => $member->role,
+                ] : null;
+            })(),
         ];
     }
 

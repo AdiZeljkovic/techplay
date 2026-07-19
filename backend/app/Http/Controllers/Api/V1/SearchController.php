@@ -109,4 +109,46 @@ class SearchController extends Controller
 
         return response()->json($result)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
+
+    /**
+     * Search community members for the global search dropdown (max 5).
+     */
+    public function users(Request $request)
+    {
+        $request->validate([
+            'q' => 'required|string|min:2|max:100',
+        ]);
+
+        $query = $request->input('q');
+        $cacheKey = 'search.users.'.md5($query);
+
+        $result = Cache::remember($cacheKey, 60, function () use ($query) {
+            $results = User::query()
+                ->where(function ($q) use ($query) {
+                    $q->where('username', 'ILIKE', "%{$query}%")
+                        ->orWhere('display_name', 'ILIKE', "%{$query}%");
+                })
+                ->with('rank:id,name')
+                ->orderByDesc('xp')
+                ->limit(5)
+                ->get(['id', 'username', 'display_name', 'avatar_url', 'xp', 'rank_id']);
+
+            return [
+                'results' => $results->map(fn ($u) => [
+                    'id' => $u->id,
+                    'title' => $u->display_name ?: $u->username,
+                    'slug' => $u->username,
+                    'excerpt' => null,
+                    'image' => $u->avatar_url,
+                    'category' => trim('Lv '.(intdiv((int) ($u->xp ?? 0), 1000) + 1).' · '.($u->rank->name ?? 'Member')),
+                    'category_slug' => 'users',
+                    'type' => 'user',
+                    'url' => "/profile/{$u->username}",
+                ]),
+                'count' => $results->count(),
+            ];
+        });
+
+        return response()->json($result)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
 }
