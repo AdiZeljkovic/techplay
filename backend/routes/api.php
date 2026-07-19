@@ -197,6 +197,7 @@ Route::prefix('v1')->group(function () {
         Route::middleware('throttle:60,1')->put('/collection/games/{slug}', [GameCollectionController::class, 'upsert']);
         Route::middleware('throttle:60,1')->delete('/collection/games/{slug}', [GameCollectionController::class, 'destroy']);
         Route::middleware('throttle:60,1')->post('/collection/games/{slug}/showcase', [GameCollectionController::class, 'toggleShowcase']);
+        Route::middleware('throttle:5,1')->post('/collection/import', [GameCollectionController::class, 'import']);
 
         // Presence (Auth) — set / clear what you're currently playing
         Route::post('/presence', [PresenceController::class, 'store']);

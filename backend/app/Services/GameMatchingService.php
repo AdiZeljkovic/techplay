@@ -55,6 +55,35 @@ class GameMatchingService
         return null;
     }
 
+    /**
+     * Match a game purely by title (CSV/manual imports) — exact name,
+     * slug, then normalized-title fallback.
+     */
+    public function matchByName(string $name): ?Game
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return null;
+        }
+
+        $game = Game::whereRaw('LOWER(name) = ?', [strtolower($name)])->first();
+        if ($game) {
+            return $game;
+        }
+
+        $game = Game::where('slug', Str::slug($name))->first();
+        if ($game) {
+            return $game;
+        }
+
+        $normalized = $this->normalizeTitle($name);
+        if ($normalized !== strtolower($name)) {
+            return Game::whereRaw('LOWER(name) = ?', [$normalized])->first();
+        }
+
+        return null;
+    }
+
     private function normalizeTitle(string $name): string
     {
         // Strip trademark symbols, roman numerals at end, "Game of the Year" suffixes, etc.

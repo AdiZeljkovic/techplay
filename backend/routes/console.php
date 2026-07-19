@@ -47,5 +47,8 @@ Schedule::command('profile:snapshot-reputation --weekly')->weeklyOn(1, '00:10');
 // SEASONS: Conclude finished seasons (awards champion badges) — daily check
 Schedule::command('season:conclude')->dailyAt('00:20');
 
+// RETENTION: Weekly digest email every Friday afternoon
+Schedule::command('profile:send-weekly-digest')->weeklyOn(5, '16:00');
+
 // FORUM: Unpin bounty-funded self-pins once their 24h window expires
 Schedule::command('forum:clear-expired-pins')->hourly();

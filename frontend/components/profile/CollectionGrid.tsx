@@ -7,7 +7,8 @@ import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 import { differenceInDays, parseISO } from "date-fns";
-import { Library, Star, Trash2, Plus, Search, X, Loader2, Heart, CalendarClock, Pin } from "lucide-react";
+import { useRef } from "react";
+import { Library, Star, Trash2, Plus, Search, X, Loader2, Heart, CalendarClock, Pin, Upload } from "lucide-react";
 import type { CollectionEntry, CollectionStatus } from "@/lib/types/profile";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
@@ -131,6 +132,8 @@ function UpcomingList({ isOwnProfile }: { isOwnProfile: boolean }) {
 export default function CollectionGrid({ username, isOwnProfile }: Props) {
     const [filter, setFilter] = useState("all");
     const [addOpen, setAddOpen] = useState(false);
+    const [importing, setImporting] = useState(false);
+    const fileRef = useRef<HTMLInputElement>(null);
 
     const query = filter === "all" || filter === "upcoming" ? "" : filter === "favorites" ? "?favorite=1" : `?status=${filter}`;
     const key = filter === "upcoming" ? null : `/users/${username}/collection${query}`;
@@ -154,6 +157,23 @@ export default function CollectionGrid({ username, isOwnProfile }: Props) {
             mutate();
         } catch {
             toast.error("Failed to remove.");
+        }
+    };
+
+    const importCsv = async (file: File) => {
+        setImporting(true);
+        try {
+            const form = new FormData();
+            form.append("file", file);
+            const res = await axios.post("/collection/import", form, { headers: { "Content-Type": "multipart/form-data" } });
+            toast.success(res.data?.message ?? "Import finished");
+            mutate();
+            globalMutate(`/users/${username}`);
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message ?? "Import failed.");
+        } finally {
+            setImporting(false);
+            if (fileRef.current) fileRef.current.value = "";
         }
     };
 
@@ -186,9 +206,26 @@ export default function CollectionGrid({ username, isOwnProfile }: Props) {
                     ))}
                 </div>
                 {isOwnProfile && (
-                    <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[11px] font-bold uppercase tracking-wider transition-colors shrink-0">
-                        <Plus className="w-3.5 h-3.5" /> Add Game
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <input
+                            ref={fileRef}
+                            type="file"
+                            accept=".csv,.txt"
+                            className="hidden"
+                            onChange={(e) => { const f = e.target.files?.[0]; if (f) importCsv(f); }}
+                        />
+                        <button
+                            onClick={() => fileRef.current?.click()}
+                            disabled={importing}
+                            title="Import CSV (name,status,hours) — works with Backloggd/HLTB exports"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 text-white text-[11px] font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
+                        >
+                            {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />} Import
+                        </button>
+                        <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[11px] font-bold uppercase tracking-wider transition-colors">
+                            <Plus className="w-3.5 h-3.5" /> Add Game
+                        </button>
+                    </div>
                 )}
             </div>
 

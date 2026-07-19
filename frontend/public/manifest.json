@@ -4,8 +4,8 @@
   "description": "Your source for gaming news, reviews, hardware analysis, and community discussions",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#001540",
-  "theme_color": "#001540",
+  "background_color": "#05070A",
+  "theme_color": "#FC4100",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -24,17 +24,17 @@
   "categories": ["gaming", "news", "entertainment"],
   "shortcuts": [
     {
+      "name": "My Profile",
+      "short_name": "Profile",
+      "description": "Open your gamer profile",
+      "url": "/profile/me",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
       "name": "Latest News",
       "short_name": "News",
       "description": "View latest gaming news",
       "url": "/news",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Game Reviews",
-      "short_name": "Reviews",
-      "description": "Read game reviews",
-      "url": "/reviews",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {

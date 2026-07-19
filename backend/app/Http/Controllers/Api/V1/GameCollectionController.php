@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\UserGame;
 use App\Services\AchievementService;
 use App\Services\BountyService;
+use App\Services\GameMatchingService;
 use App\Services\QuestService;
 use App\Services\RawgService;
 use App\Services\XpService;
@@ -227,6 +228,81 @@ class GameCollectionController extends Controller
             ->take(10);
 
         return $this->success($items);
+    }
+
+    /**
+     * Auth: import a collection from a CSV file (name,status,hours_played).
+     * Matches by title via GameMatchingService — works with Backloggd/HowLongToBeat
+     * style exports. Max 500 rows per upload.
+     * POST /collection/import
+     */
+    public function import(Request $request, GameMatchingService $matcher)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:1024',
+        ]);
+
+        $lines = preg_split('/\r\n|\r|\n/', (string) file_get_contents($request->file('file')->getRealPath()));
+        $lines = array_slice(array_filter($lines, fn ($l) => trim($l) !== ''), 0, 501);
+
+        $imported = 0;
+        $skipped = [];
+
+        foreach ($lines as $i => $line) {
+            $cols = str_getcsv($line);
+            $name = trim((string) ($cols[0] ?? ''));
+
+            // Skip an obvious header row
+            if ($i === 0 && in_array(strtolower($name), ['name', 'title', 'game'], true)) {
+                continue;
+            }
+            if ($name === '') {
+                continue;
+            }
+
+            $game = $matcher->matchByName($name);
+            if (! $game) {
+                $skipped[] = $name;
+
+                continue;
+            }
+
+            $status = strtolower(trim((string) ($cols[1] ?? '')));
+            if (! in_array($status, UserGame::STATUSES, true)) {
+                $status = 'backlog';
+            }
+
+            $entry = UserGame::firstOrNew([
+                'user_id' => $request->user()->id,
+                'game_id' => $game->id,
+            ]);
+
+            // Never downgrade data the user already curated by hand
+            if (! $entry->exists) {
+                $entry->status = $status;
+            }
+            $hours = (int) ($cols[2] ?? 0);
+            if ($hours > 0 && $hours > (int) $entry->hours_played) {
+                $entry->hours_played = min($hours, 100000);
+            }
+            if ($entry->status === 'completed' && ! $entry->completed_at) {
+                $entry->completed_at = now();
+            }
+
+            $entry->save();
+            $imported++;
+        }
+
+        try {
+            app(AchievementService::class)->check($request->user(), ['games_added', 'games_completed']);
+        } catch (\Throwable) {
+        }
+
+        return $this->success([
+            'imported' => $imported,
+            'skipped_count' => count($skipped),
+            'skipped' => array_slice($skipped, 0, 20),
+        ], "Imported {$imported} games".(count($skipped) > 0 ? ', '.count($skipped).' not matched' : ''));
     }
 
     /**

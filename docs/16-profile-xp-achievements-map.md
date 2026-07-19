@@ -250,3 +250,12 @@ Kompletan redizajn profila u 4 commita (e717f27, 69872cf, 8c75df1, 8d96adf).
 - **Pin to Profile**: `user_games.showcase_order` (max 4), `POST /collection/games/{slug}/showcase` toggle, `showcase` u profil payloadu; ShowcaseStrip prioritet pinovano > playing > bucket coveri; Pin dugme u CollectionGrid hover akcijama.
 - **OG share slika**: `/og/profile?username=` nadograđena (ruta je POSTOJALA ali metadata je pokazivala na nju dok je stara verzija fetchala kroz javni CF URL) — sada koristi NEXT_PRIVATE_API_URL, prikazuje level/rank/stats/Top% + do 3 showcase covera, cache 1h.
 - **Ekonomija razdvojena**: XP→Bounty 1:1 mirror UKINUT (XpService). Bounty izvori sada: daily streak, questovi, game completion +50, article/review publish +30/75, NOVO: prva ocjena igre s reviewom +15, prihvaćeno rješenje na forumu +25. XP = čisti progres.
+
+### V3 (2026-07-19) — Aktivacija, discovery, kompeticija, retention
+- **V3.0**: CSP wss za Reverb; hydration fix (toLocaleString -> en-US); connected_accounts + clan u profil payloadu.
+- **V3.1 Aktivacija**: WelcomeOnboarding wizard (prazan vlastiti profil ili ?welcome=1) - Connect Steam ili pick-5-games; checklist stavka #1 = Connect Steam; Steam CTA na praznoj kolekciji.
+- **V3.2 Discovery/social**: GET /search/users + korisnici u header pretrazi; Clan kartica na profilu; Profile Wall (Comment type profile -> User, notifikacija vlasniku); header FORUM -> Community dropdown (Forum/Leaderboard/Clans/Friends).
+- **V3.3 Kompeticija**: sedmicni leaderboard (period=week, delta od ponedjeljka; profile:snapshot-reputation --weekly, pon 00:10; snapshoti sada nose i xp); sezonski questovi (season_id filter u QuestService/QuestController, SeasonQuestSeeder); season:conclude (daily 00:20) dodjeljuje Champion badge svima koji zavrse SVE sezonske questove pa gasi sezonu.
+- **V3.4 Retention**: profile:send-weekly-digest (petak 16:00; streak + clanci za tvoje igre + wishlist izlasci + sezona; opt-out settings.notifications.weekly_digest=false; preskace prazne digest-e); PWA manifest osvjezen (brend boje + My Profile shortcut); rucni Now Playing picker u Daily Hub (POST /presence).
+- **V3.5 Dubina**: kozmetika katalog +14 stavki (teme/frame/badge/post color); achievements +25 (kolekcija/completion/streak/connections/forum/rep dubina); CSV import kolekcije (POST /collection/import, GameMatchingService::matchByName, Import dugme u Collection tabu — radi s Backloggd/HLTB exportima).
+- NIJE radjeno (svjesno): web push (VAPID infra), Compare redizajn — sljedeca iteracija.
