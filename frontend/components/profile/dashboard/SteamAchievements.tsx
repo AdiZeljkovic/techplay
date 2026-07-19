@@ -32,7 +32,7 @@ export default function SteamAchievements({ username }: { username: string }) {
 
   if (isLoading) return (
     <div className="flex items-center justify-center py-12">
-      <div className="w-6 h-6 border-2 border-[--accent] border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
     </div>
   )
 
@@ -47,9 +47,9 @@ export default function SteamAchievements({ username }: { username: string }) {
   return (
     <div className="space-y-5">
       {/* Summary */}
-      <div className="flex items-center gap-6 bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+      <div className="flex items-center gap-6 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-4">
         <div className="text-center">
-          <p className="text-2xl font-bold text-[--accent]">{data.achieved}</p>
+          <p className="text-2xl font-bold text-[var(--accent)]">{data.achieved}</p>
           <p className="text-xs text-zinc-500">Unlocked</p>
         </div>
         <div className="flex-1">
@@ -57,8 +57,8 @@ export default function SteamAchievements({ username }: { username: string }) {
             <span>{data.completion_pct}% complete</span>
             <span>{data.achieved} / {data.total}</span>
           </div>
-          <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-            <div className="h-full bg-[--accent] rounded-full transition-all" style={{ width: `${data.completion_pct}%` }} />
+          <div className="h-2 bg-white/[0.06] rounded-full overflow-hidden">
+            <div className="h-full bg-[var(--accent)] rounded-full transition-all" style={{ width: `${data.completion_pct}%` }} />
           </div>
         </div>
         <div className="flex items-center gap-1.5 text-zinc-400">
@@ -70,12 +70,12 @@ export default function SteamAchievements({ username }: { username: string }) {
       {/* Achievement grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {data.items.map(ach => (
-          <div key={ach.id} className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-lg p-3">
+          <div key={ach.id} className="flex items-center gap-3 bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-3">
             {ach.icon_url ? (
               <Image src={ach.icon_url} alt={ach.display_name ?? ''} width={40} height={40}
                 className="w-10 h-10 rounded flex-shrink-0" />
             ) : (
-              <div className="w-10 h-10 rounded bg-zinc-800 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded bg-white/[0.06] flex items-center justify-center flex-shrink-0">
                 <CheckCircle2 size={18} className="text-green-400" />
               </div>
             )}

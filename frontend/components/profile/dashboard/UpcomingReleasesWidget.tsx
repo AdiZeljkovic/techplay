@@ -25,7 +25,7 @@ const STATUS_CONFIG = {
 
 function DaysChip({ released }: { released: string }) {
     const days = differenceInDays(parseISO(released), new Date());
-    if (days <= 0) return <span className="text-[10px] font-bold text-tp-accent">Out Now</span>;
+    if (days <= 0) return <span className="text-[10px] font-bold text-[var(--accent)]">Out Now</span>;
     if (days === 1) return <span className="text-[10px] font-bold text-yellow-400">Tomorrow</span>;
     return (
         <span className="text-[10px] font-bold text-white/50">
@@ -65,7 +65,7 @@ export default function UpcomingReleasesWidget() {
             <div className="text-center py-4">
                 <CalendarClock className="w-6 h-6 text-white/20 mx-auto mb-2" />
                 <p className="text-[12px] text-white/30">No upcoming releases in your wishlist or backlog.</p>
-                <Link href="/calendar" className="text-[11px] font-bold text-tp-accent hover:underline mt-1 block">
+                <Link href="/calendar" className="text-[11px] font-bold text-[var(--accent)] hover:underline mt-1 block">
                     Browse Release Calendar →
                 </Link>
             </div>
@@ -98,7 +98,7 @@ export default function UpcomingReleasesWidget() {
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                            <p className="text-[12px] font-bold text-white group-hover:text-tp-accent transition-colors line-clamp-1 leading-snug mb-0.5">
+                            <p className="text-[12px] font-bold text-white group-hover:text-[var(--accent)] transition-colors line-clamp-1 leading-snug mb-0.5">
                                 {game.name}
                             </p>
                             <div className="flex items-center gap-2">
@@ -116,7 +116,7 @@ export default function UpcomingReleasesWidget() {
             <div className="pt-2 border-t border-white/[0.05] mt-1">
                 <Link
                     href="/calendar"
-                    className="text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-tp-accent transition-colors"
+                    className="text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-[var(--accent)] transition-colors"
                 >
                     View Release Calendar →
                 </Link>

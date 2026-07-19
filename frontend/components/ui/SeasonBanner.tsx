@@ -33,17 +33,17 @@ export default function SeasonBanner() {
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl border border-tp-accent/20 bg-gradient-to-r from-tp-accent/10 to-transparent px-5 py-4 flex items-center gap-4"
+      className="relative overflow-hidden rounded-2xl border border-[var(--accent)]/20 bg-gradient-to-r from-[var(--accent)]/10 to-transparent px-5 py-4 flex items-center gap-4"
       style={season.cover_image ? { backgroundImage: `url(${season.cover_image})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
     >
       {season.cover_image && <div className="absolute inset-0 bg-black/60" />}
 
       <div className="relative z-10 flex items-center gap-3 flex-1 min-w-0">
-        <div className="w-9 h-9 rounded-xl bg-tp-accent/20 border border-tp-accent/30 flex items-center justify-center shrink-0">
-          <Sparkles className="w-4 h-4 text-tp-accent" />
+        <div className="w-9 h-9 rounded-xl bg-[var(--accent)]/20 border border-[var(--accent)]/30 flex items-center justify-center shrink-0">
+          <Sparkles className="w-4 h-4 text-[var(--accent)]" />
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-bold text-tp-accent uppercase tracking-wider mb-0.5">
+          <p className="text-xs font-bold text-[var(--accent)] uppercase tracking-wider mb-0.5">
             Active Season
           </p>
           <p className="text-sm font-black text-white truncate">{season.name}</p>

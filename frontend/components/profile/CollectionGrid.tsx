@@ -92,7 +92,7 @@ function UpcomingList({ isOwnProfile }: { isOwnProfile: boolean }) {
                     <Link
                         key={game.slug}
                         href={`/calendar/${game.slug}`}
-                        className="group flex items-center gap-4 rounded-xl p-3 border border-white/[0.06] bg-[#0B0E14] hover:border-tp-accent/30 hover:bg-[#0F1318] transition-all"
+                        className="group flex items-center gap-4 rounded-xl p-3 border border-white/[0.06] bg-[#0B0E14] hover:border-[var(--accent)]/30 hover:bg-[#0F1318] transition-all"
                     >
                         <div className="relative w-20 h-12 rounded-lg overflow-hidden shrink-0 bg-white/[0.05]">
                             {game.background_image && (
@@ -100,7 +100,7 @@ function UpcomingList({ isOwnProfile }: { isOwnProfile: boolean }) {
                             )}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h4 className="text-[13px] font-bold text-white group-hover:text-tp-accent transition-colors line-clamp-1">{game.name}</h4>
+                            <h4 className="text-[13px] font-bold text-white group-hover:text-[var(--accent)] transition-colors line-clamp-1">{game.name}</h4>
                             <div className="flex items-center gap-2 mt-0.5">
                                 <span className="text-[10px] font-bold text-white/40">
                                     {days <= 0 ? "Out Now" : days === 1 ? "Tomorrow" : `${days} days`}
@@ -120,7 +120,7 @@ function UpcomingList({ isOwnProfile }: { isOwnProfile: boolean }) {
                 );
             })}
             <div className="pt-2 text-center">
-                <Link href="/calendar" className="text-[10px] font-bold uppercase tracking-widest text-white/25 hover:text-tp-accent transition-colors">
+                <Link href="/calendar" className="text-[10px] font-bold uppercase tracking-widest text-white/25 hover:text-[var(--accent)] transition-colors">
                     View Full Release Calendar →
                 </Link>
             </div>
