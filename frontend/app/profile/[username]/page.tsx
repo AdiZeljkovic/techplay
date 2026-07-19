@@ -12,7 +12,6 @@ import { AchievementGrid } from "@/components/profile/AchievementGrid";
 import { SendMessageModal } from "@/components/messaging/SendMessageModal";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileTabs, { type ProfileTab, PROFILE_TABS } from "@/components/profile/ProfileTabs";
-import ProfileStatStrip from "@/components/profile/ProfileStatStrip";
 import ProfileOverviewDashboard from "@/components/profile/ProfileOverviewDashboard";
 import CollectionGrid from "@/components/profile/CollectionGrid";
 import RewardsStore from "@/components/profile/RewardsStore";
@@ -39,7 +38,9 @@ function ProfilePageInner() {
     const username = rawUsername === "me" && currentUser ? currentUser.username : rawUsername;
     const shouldFetch = username && username !== "me";
 
-    const tabParam = searchParams.get("tab") as ProfileTab | null;
+    // Legacy ?tab=forum now lives inside the Activity tab
+    const rawTabParam = searchParams.get("tab");
+    const tabParam = (rawTabParam === "forum" ? "activity" : rawTabParam) as ProfileTab | null;
     const activeTab: ProfileTab = tabParam && VALID_TABS.includes(tabParam) ? tabParam : "overview";
 
     const [friendStatus, setFriendStatus] = useState<"none" | "pending" | "accepted">("none");
@@ -103,6 +104,9 @@ function ProfilePageInner() {
     const { user: userData, stats, achievements } = profile;
     const isOwnProfile = currentUser?.username === userData.username;
 
+    // Rewards is the owner's economy hub — not part of the public profile
+    const effectiveTab: ProfileTab = activeTab === "rewards" && ! isOwnProfile ? "overview" : activeTab;
+
     // Equipped theme overrides the accent color across the whole profile.
     const themeColor = profile.customization?.equipped?.theme?.value;
     const rootStyle = themeColor
@@ -121,16 +125,25 @@ function ProfilePageInner() {
                 loadingAction={loadingAction}
                 onSendRequest={handleSendRequest}
                 onOpenMessage={() => setIsMessageModalOpen(true)}
+                onOpenTab={setActiveTab}
+                listsCount={profile.lists?.length ?? 0}
                 reputation={profile.reputation}
                 customization={profile.customization}
             />
 
-            <ProfileStatStrip stats={stats} nextXp={profile.next_rank?.min_xp ?? null} />
-
-            <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
+            <ProfileTabs
+                activeTab={effectiveTab}
+                onTabChange={setActiveTab}
+                isOwnProfile={isOwnProfile}
+                counts={{
+                    collection: stats?.games_count ?? 0,
+                    lists: profile.lists?.length ?? 0,
+                    achievements: stats?.achievements_count ?? 0,
+                }}
+            />
 
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
-                {activeTab === "overview" && (
+                {effectiveTab === "overview" && (
                     <ProfileOverviewDashboard
                         userData={userData}
                         stats={stats}
@@ -149,17 +162,20 @@ function ProfilePageInner() {
                     />
                 )}
 
-                {activeTab === "collection" && (
+                {effectiveTab === "collection" && (
                     <CollectionGrid username={userData.username} isOwnProfile={isOwnProfile} />
                 )}
 
-                {activeTab === "activity" && (
-                    <SectionCard title="Activity" icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />}>
-                        <ActivityFeed username={userData.username} />
-                    </SectionCard>
+                {effectiveTab === "activity" && (
+                    <div className="space-y-6">
+                        <SectionCard title="Activity" icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />}>
+                            <ActivityFeed username={userData.username} />
+                        </SectionCard>
+                        {isOwnProfile && <ForumActivityTab isOwnProfile={isOwnProfile} />}
+                    </div>
                 )}
 
-                {activeTab === "achievements" && (
+                {effectiveTab === "achievements" && (
                     <div className="space-y-6">
                         <AchievementGrid achievements={achievements || []} />
                         <SectionCard title="Steam Achievements" icon={<User className="w-4 h-4 text-[var(--accent)]" />}>
@@ -168,19 +184,15 @@ function ProfilePageInner() {
                     </div>
                 )}
 
-                {activeTab === "lists" && (
+                {effectiveTab === "lists" && (
                     <ListsTab username={userData.username} isOwnProfile={isOwnProfile} />
                 )}
 
-                {activeTab === "forum" && (
-                    <ForumActivityTab isOwnProfile={isOwnProfile} />
-                )}
-
-                {activeTab === "rewards" && (
+                {effectiveTab === "rewards" && isOwnProfile && (
                     <RewardsStore username={userData.username} isOwnProfile={isOwnProfile} />
                 )}
 
-                {activeTab === "stats" && (
+                {effectiveTab === "stats" && (
                     <StatsPanel
                         stats={stats}
                         platformsGenres={profile.platforms_genres}
