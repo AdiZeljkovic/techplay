@@ -128,6 +128,7 @@ class ConnectedAccountController extends Controller
                 'display_name' => $profile['gamertag'],
                 'sync_status' => 'pending',
                 'visibility' => 'public',
+                'metadata' => ['gamerscore' => $profile['gamerscore'], 'avatar' => $profile['avatar']],
             ]
         );
 

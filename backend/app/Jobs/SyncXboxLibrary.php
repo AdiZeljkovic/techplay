@@ -105,6 +105,18 @@ class SyncXboxLibrary implements ShouldQueue
                 ]);
             }
 
+            // Refresh public profile stats (gamerscore) alongside the library
+            try {
+                $summary = $xbl->playerSummary($account->provider_user_id);
+                if ($summary) {
+                    $account->metadata = array_merge($account->metadata ?? [], [
+                        'gamerscore' => $summary['gamerscore'],
+                        'avatar' => $summary['avatar'],
+                    ]);
+                }
+            } catch (\Throwable) {
+            }
+
             $account->update([
                 'sync_status' => 'done',
                 'last_synced_at' => now(),

@@ -28,6 +28,7 @@ interface ProfileHeaderProps {
     listsCount: number;
     reputation?: ReputationData;
     customization?: CustomizationData;
+    xboxProfile?: { gamertag: string | null; gamerscore: number } | null;
 }
 
 const roleConfig: Record<string, { color: string; bg: string; border: string; icon: any; label: string }> = {
@@ -130,6 +131,7 @@ export default function ProfileHeader({
     listsCount,
     reputation,
     customization,
+    xboxProfile,
 }: ProfileHeaderProps) {
     const [menuOpen, setMenuOpen] = useState(false);
 
@@ -318,6 +320,16 @@ export default function ProfileHeader({
                         onClick={() => onOpenTab("stats")}
                     />
                     <StatChip icon={ListIcon} label="Lists" value={listsCount} onClick={() => onOpenTab("lists")} />
+                    {xboxProfile && xboxProfile.gamerscore > 0 && (
+                        <span
+                            title={`Xbox: ${xboxProfile.gamertag ?? ""}`}
+                            className="flex items-center gap-2.5 pl-3 pr-4 py-2 rounded-xl bg-black/40 backdrop-blur-md border border-emerald-500/25"
+                        >
+                            <span className="w-4 h-4 rounded-full bg-[#107C10] flex items-center justify-center text-[9px] font-black text-white leading-none">G</span>
+                            <span className="text-[15px] font-black text-white leading-none">{xboxProfile.gamerscore.toLocaleString("en-US")}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400/80 leading-none">Gamerscore</span>
+                        </span>
+                    )}
                 </div>
             </div>
         </div>

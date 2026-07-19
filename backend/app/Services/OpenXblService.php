@@ -47,6 +47,31 @@ class OpenXblService
     }
 
     /**
+     * Public profile summary for a XUID: gamertag, gamerscore, avatar.
+     */
+    public function playerSummary(string $xuid): ?array
+    {
+        $response = $this->http()->get('/account/'.rawurlencode($xuid));
+
+        if (! $response->successful()) {
+            return null;
+        }
+
+        $settings = collect($response->json('content.profileUsers.0.settings', []))
+            ->pluck('value', 'id');
+
+        if ($settings->isEmpty()) {
+            return null;
+        }
+
+        return [
+            'gamertag' => $settings->get('Gamertag'),
+            'gamerscore' => (int) $settings->get('Gamerscore', 0),
+            'avatar' => $settings->get('GameDisplayPicRaw'),
+        ];
+    }
+
+    /**
      * The player's full title history with achievement progress.
      * Each title: name, titleId, type, devices, achievement{...}, titleHistory{lastTimePlayed}.
      */

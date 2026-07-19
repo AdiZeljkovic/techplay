@@ -336,6 +336,18 @@ class AuthController extends Controller
             ],
             // V3 — which external accounts are linked (providers only, no tokens)
             'connected_accounts' => ConnectedAccount::where('user_id', $user->id)->pluck('provider')->values(),
+            // Xbox public identity (gamertag + gamerscore) for the hero chip
+            'xbox_profile' => (function () use ($user) {
+                $xbox = ConnectedAccount::where('user_id', $user->id)
+                    ->where('provider', 'xbox')
+                    ->where('visibility', 'public')
+                    ->first(['display_name', 'metadata']);
+
+                return $xbox ? [
+                    'gamertag' => $xbox->display_name,
+                    'gamerscore' => (int) data_get($xbox->metadata, 'gamerscore', 0),
+                ] : null;
+            })(),
             // V3 — clan membership (public identity)
             'clan' => (function () use ($user) {
                 $member = ClanMember::where('user_id', $user->id)

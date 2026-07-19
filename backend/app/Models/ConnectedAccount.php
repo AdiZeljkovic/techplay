@@ -21,10 +21,12 @@ class ConnectedAccount extends Model
         'sync_error',
         'last_synced_at',
         'visibility',
+        'metadata',
     ];
 
     protected $casts = [
         'scopes' => 'array',
+        'metadata' => 'array',
         'token_expires_at' => 'datetime',
         'last_synced_at' => 'datetime',
     ];

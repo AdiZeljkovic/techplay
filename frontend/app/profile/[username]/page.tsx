@@ -144,6 +144,7 @@ function ProfilePageInner() {
                 listsCount={profile.lists?.length ?? 0}
                 reputation={profile.reputation}
                 customization={profile.customization}
+                xboxProfile={profile.xbox_profile}
             />
 
             <ProfileTabs

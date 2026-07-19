@@ -29,8 +29,9 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
     forced: boolean;
     onClose: () => void;
 }) {
-    const [mode, setMode] = useState<"choice" | "pick">("choice");
+    const [mode, setMode] = useState<"choice" | "pick" | "xbox">("choice");
     const [connecting, setConnecting] = useState(false);
+    const [xboxGamertag, setXboxGamertag] = useState("");
     const [query, setQuery] = useState("");
     const [debounced, setDebounced] = useState("");
     const [added, setAdded] = useState<string[]>([]);
@@ -67,6 +68,25 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
             toast.error("Couldn't start the Steam connection.");
         }
         setConnecting(false);
+    };
+
+    const connectXbox = async () => {
+        if (xboxGamertag.trim().length < 2) {
+            toast.error("Enter your Xbox gamertag first.");
+            return;
+        }
+        setConnecting(true);
+        try {
+            const res = await axios.post("/connected-accounts/xbox/connect", { gamertag: xboxGamertag.trim() });
+            try { localStorage.setItem(DISMISS_KEY, "1"); } catch { /* ignore */ }
+            toast.success(res.data?.message ?? "Xbox connected — importing your library!");
+            globalMutate(`/users/${username}`);
+            onClose();
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message ?? "Couldn't find that gamertag.");
+        } finally {
+            setConnecting(false);
+        }
     };
 
     const addGame = async (game: GameHit) => {
@@ -129,27 +149,66 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                                 </span>
                             </button>
 
-                            {/* Manual path */}
-                            <button onClick={() => setMode("pick")}
-                                className="group text-left rounded-2xl border border-[var(--border)] bg-white/[0.02] hover:bg-white/[0.05] p-6 transition-all">
-                                <span className="inline-flex px-2 py-1 rounded-md bg-white/[0.06] text-white/50 text-[9px] font-black uppercase tracking-widest mb-4">
-                                    No Steam?
+                            {/* Xbox path */}
+                            <button onClick={() => setMode("xbox")}
+                                className="group text-left rounded-2xl border border-emerald-600/30 bg-emerald-600/[0.04] hover:bg-emerald-600/[0.09] p-6 transition-all">
+                                <span className="inline-flex px-2 py-1 rounded-md bg-[#107C10] text-white text-[9px] font-black uppercase tracking-widest mb-4">
+                                    Xbox
                                 </span>
                                 <h3 className="flex items-center gap-2 text-[16px] font-black text-white mb-1.5">
+                                    <span className="w-4 h-4 rounded-full bg-[#107C10] flex items-center justify-center text-[8px] font-black text-white">X</span>
+                                    Connect Xbox
+                                </h3>
+                                <p className="text-[12.5px] text-white/50 leading-relaxed">
+                                    Just your gamertag — we import your played titles and achievements.
+                                </p>
+                                <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-emerald-400/80 group-hover:text-emerald-300">
+                                    Connect <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                                </span>
+                            </button>
+
+                            {/* Manual path */}
+                            <button onClick={() => setMode("pick")}
+                                className="group text-left rounded-2xl border border-[var(--border)] bg-white/[0.02] hover:bg-white/[0.05] p-6 transition-all md:col-span-2">
+                                <h3 className="flex items-center gap-2 text-[15px] font-black text-white mb-1">
                                     <Gamepad2 className="w-4 h-4 text-[var(--accent)]" />
-                                    Pick your games
+                                    No Steam or Xbox? Pick your games by hand
                                 </h3>
                                 <p className="text-[12.5px] text-white/50 leading-relaxed">
                                     Choose {PICK_TARGET} games you love from our database of 200,000+ titles.
                                 </p>
-                                <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-white/50 group-hover:text-white">
-                                    Start picking <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                                </span>
                             </button>
                         </div>
 
                         <button onClick={dismiss} className="mt-6 text-[11px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">
                             Skip for now
+                        </button>
+                    </div>
+                ) : mode === "xbox" ? (
+                    <div className="p-8 md:p-10">
+                        <h2 className="text-xl font-black text-white mb-2">Connect your Xbox</h2>
+                        <p className="text-[13px] text-white/50 mb-6 max-w-md">
+                            Enter your gamertag — no password needed. We read your public played-titles list and achievements.
+                        </p>
+                        <div className="flex items-center gap-2 max-w-md">
+                            <input
+                                autoFocus
+                                type="text"
+                                value={xboxGamertag}
+                                onChange={(e) => setXboxGamertag(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === "Enter") connectXbox(); }}
+                                placeholder="Your gamertag"
+                                className="flex-1 bg-white/[0.03] border border-[var(--border)] rounded-xl h-12 px-4 text-[14px] text-white placeholder:text-white/25 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                            />
+                            <button onClick={connectXbox} disabled={connecting}
+                                className="flex items-center gap-2 h-12 px-6 rounded-xl bg-[#107C10] hover:bg-[#0e6b0e] text-white text-[12px] font-bold uppercase tracking-wider transition-colors disabled:opacity-60">
+                                {connecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+                                Connect
+                            </button>
+                        </div>
+                        <p className="mt-3 text-[11px] text-white/30">Your Xbox privacy must allow others to see your game history (default setting).</p>
+                        <button onClick={() => setMode("choice")} className="mt-6 text-[11px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">
+                            ← Back
                         </button>
                     </div>
                 ) : (
