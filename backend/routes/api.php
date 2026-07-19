@@ -439,6 +439,10 @@ Route::prefix('v1')->group(function () {
         // Tracking
         Route::get('/articles/{slug}/views', [TrackingController::class, 'getViews']);
         Route::post('/articles/{slug}/view', [TrackingController::class, 'recordView']);
+
+        // Funnel analytics (auth-only, whitelisted events, aggregate counters)
+        Route::post('/track/event', [TrackingController::class, 'recordEvent'])
+            ->middleware(['auth:sanctum', 'throttle:30,1']);
     });
 
     // Games (Rate limited - 60 per minute to prevent scraping)

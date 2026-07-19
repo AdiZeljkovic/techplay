@@ -429,3 +429,27 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .gta6-accent-line { animation: none; }
 }
+
+/* ========================================
+   PROFILE — Command Center motion polish
+   ======================================== */
+
+/* Entrance: subtle fade + rise. Apply .tp-fade-up, stagger with .tp-d1..d6 */
+@keyframes tp-fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.tp-fade-up {
+  opacity: 0;
+  animation: tp-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.tp-d1 { animation-delay: 0.05s; }
+.tp-d2 { animation-delay: 0.12s; }
+.tp-d3 { animation-delay: 0.19s; }
+.tp-d4 { animation-delay: 0.26s; }
+.tp-d5 { animation-delay: 0.33s; }
+.tp-d6 { animation-delay: 0.40s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tp-fade-up { animation: none; opacity: 1; transform: none; }
+}

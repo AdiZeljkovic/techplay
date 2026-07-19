@@ -47,12 +47,12 @@ export default function ShowcaseStrip({ playingNow, snapshot, playingCount, show
 
                 {hasPlaying ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                        {games.slice(0, 4).map((g) => (
+                        {games.slice(0, 4).map((g, i) => (
                             <Link
                                 key={g.slug}
                                 href={`/games/${g.slug}`}
                                 prefetch={false}
-                                className="group relative aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border)] hover:border-[var(--accent)]/60 transition-all bg-[var(--bg-elevated)]"
+                                className={`group relative aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border)] hover:border-[var(--accent)]/60 transition-all bg-[var(--bg-elevated)] tp-fade-up tp-d${Math.min(6, i + 1)}`}
                             >
                                 {g.background_image ? (
                                     // eslint-disable-next-line @next/next/no-img-element
@@ -79,11 +79,11 @@ export default function ShowcaseStrip({ playingNow, snapshot, playingCount, show
                     </div>
                 ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        {coveredBuckets.slice(0, 4).map((t) => (
+                        {coveredBuckets.slice(0, 4).map((t, i) => (
                             <Link
                                 key={t.status}
                                 href="?tab=collection"
-                                className="group relative aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border)] hover:border-[var(--accent)]/60 transition-all bg-[var(--bg-elevated)]"
+                                className={`group relative aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border)] hover:border-[var(--accent)]/60 transition-all bg-[var(--bg-elevated)] tp-fade-up tp-d${Math.min(6, i + 1)}`}
                             >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={t.cover!} alt={t.label} loading="lazy"

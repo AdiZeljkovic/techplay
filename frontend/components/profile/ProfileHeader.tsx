@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useCountUp } from "@/hooks/useCountUp";
 import { format } from "date-fns";
 import {
     Calendar, MapPin, Crown, Pen, ShieldCheck, Award, CheckCircle2,
@@ -48,7 +49,16 @@ function LevelRingAvatar({ userData, level, progress, frameValue, animated }: {
     frameValue?: string | null;
     animated: boolean;
 }) {
-    const size = 148;
+    // Slightly smaller ring on phones so the hero doesn't dominate the fold
+    const [size, setSize] = useState(148);
+    useEffect(() => {
+        const mq = window.matchMedia("(max-width: 767px)");
+        const apply = () => setSize(mq.matches ? 116 : 148);
+        apply();
+        mq.addEventListener("change", apply);
+        return () => mq.removeEventListener("change", apply);
+    }, []);
+
     const stroke = 5;
     const r = (size - stroke) / 2;
     const circumference = 2 * Math.PI * r;
@@ -81,14 +91,14 @@ function LevelRingAvatar({ userData, level, progress, frameValue, animated }: {
                 {userData.avatar_url ? (
                     <img src={userData.avatar_url} alt={userData.username} className="w-full h-full object-cover" />
                 ) : (
-                    <span className="text-5xl font-black text-[var(--accent)]">{userData.username?.charAt(0)?.toUpperCase() || "?"}</span>
+                    <span className="text-4xl md:text-5xl font-black text-[var(--accent)]">{userData.username?.charAt(0)?.toUpperCase() || "?"}</span>
                 )}
             </div>
 
             {/* Level badge */}
-            <div className="absolute -bottom-1 -right-1 z-10 w-12 h-12 rounded-full bg-[var(--bg-primary)] border-[3px] border-[var(--accent)] flex flex-col items-center justify-center shadow-[0_0_15px_color-mix(in_srgb,var(--accent)_50%,transparent)]">
+            <div className="absolute -bottom-1 -right-1 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-[var(--bg-primary)] border-[3px] border-[var(--accent)] flex flex-col items-center justify-center shadow-[0_0_15px_color-mix(in_srgb,var(--accent)_50%,transparent)]">
                 <span className="text-[7px] font-black uppercase tracking-widest text-white/40 leading-none">LVL</span>
-                <span className="text-lg font-black text-[var(--accent)] leading-none">{level}</span>
+                <span className="text-base md:text-lg font-black text-[var(--accent)] leading-none">{level}</span>
             </div>
         </div>
     );
@@ -98,22 +108,40 @@ function LevelRingAvatar({ userData, level, progress, frameValue, animated }: {
 function StatChip({ icon: Icon, label, value, sub, onClick }: {
     icon: any;
     label: string;
-    value: string | number;
+    value: number;
     sub?: string | null;
     onClick: () => void;
 }) {
+    const animated = useCountUp(value);
+
     return (
         <button
             onClick={onClick}
             className="group flex items-center gap-2.5 pl-3 pr-4 py-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/[0.08] hover:border-[var(--accent)]/50 transition-all"
         >
             <Icon className="w-4 h-4 text-[var(--accent)]" />
-            <span className="text-[15px] font-black text-white leading-none">{value}</span>
+            <span className="text-[15px] font-black text-white leading-none tabular-nums">{animated.toLocaleString("en-US")}</span>
             <span className="text-[10px] font-bold uppercase tracking-wider text-white/45 group-hover:text-white/70 transition-colors leading-none">
                 {label}
                 {sub && <span className="ml-1 text-[var(--accent)]">{sub}</span>}
             </span>
         </button>
+    );
+}
+
+/** Xbox Gamerscore chip with count-up (own component so the hook is unconditional). */
+function GamerscoreChip({ gamertag, gamerscore }: { gamertag: string | null; gamerscore: number }) {
+    const animated = useCountUp(gamerscore);
+
+    return (
+        <span
+            title={`Xbox: ${gamertag ?? ""}`}
+            className="flex items-center gap-2.5 pl-3 pr-4 py-2 rounded-xl bg-black/40 backdrop-blur-md border border-emerald-500/25"
+        >
+            <span className="w-4 h-4 rounded-full bg-[#107C10] flex items-center justify-center text-[9px] font-black text-white leading-none">G</span>
+            <span className="text-[15px] font-black text-white leading-none tabular-nums">{animated.toLocaleString("en-US")}</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400/80 leading-none">Gamerscore</span>
+        </span>
     );
 }
 
@@ -134,6 +162,16 @@ export default function ProfileHeader({
     xboxProfile,
 }: ProfileHeaderProps) {
     const [menuOpen, setMenuOpen] = useState(false);
+
+    // Ring/XP bar animate from 0 on mount; reduced-motion users get the
+    // final value on first paint (no transition from zero).
+    const [ringReady, setRingReady] = useState(() =>
+        typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
+    useEffect(() => {
+        const id = requestAnimationFrame(() => setRingReady(true));
+        return () => cancelAnimationFrame(id);
+    }, []);
 
     const currentXP = stats?.xp || 0;
     const level = stats?.level || 1;
@@ -177,16 +215,18 @@ export default function ProfileHeader({
             {/* === CONTENT === */}
             <div className="relative z-10 max-w-[1320px] mx-auto px-4 xl:px-0 pt-[150px] md:pt-[160px] pb-6">
                 <div className="flex flex-col md:flex-row md:items-end gap-6">
-                    <LevelRingAvatar
-                        userData={userData}
-                        level={level}
-                        progress={xpProgress}
-                        frameValue={frame?.value}
-                        animated={hasAnimatedAvatar}
-                    />
+                    <div className="tp-fade-up tp-d1">
+                        <LevelRingAvatar
+                            userData={userData}
+                            level={level}
+                            progress={ringReady ? xpProgress : 0}
+                            frameValue={frame?.value}
+                            animated={hasAnimatedAvatar}
+                        />
+                    </div>
 
                     {/* Identity */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 tp-fade-up tp-d2">
                         <div className="flex items-center gap-2.5 flex-wrap mb-2">
                             <h1 className="text-3xl md:text-[38px] font-black text-white tracking-tight drop-shadow-lg leading-none">
                                 {userData.display_name || userData.username}
@@ -223,7 +263,7 @@ export default function ProfileHeader({
                             <div className="flex-1 h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/10 min-w-[80px]">
                                 <div
                                     className="h-full bg-[var(--accent)] rounded-full shadow-[0_0_10px_color-mix(in_srgb,var(--accent)_50%,transparent)]"
-                                    style={{ width: `${xpProgress}%`, transition: "width 1.2s ease-out" }}
+                                    style={{ width: `${ringReady ? xpProgress : 0}%`, transition: "width 1.2s ease-out" }}
                                 />
                             </div>
                             {nextRank && (
@@ -242,7 +282,7 @@ export default function ProfileHeader({
                     </div>
 
                     {/* Actions: max 2 primary + overflow menu */}
-                    <div className="flex items-center gap-2 md:pb-1 shrink-0">
+                    <div className="flex flex-wrap items-center gap-2 md:pb-1 shrink-0 tp-fade-up tp-d3">
                         {isOwnProfile ? (
                             <>
                                 <Link href="/settings" className={ghostBtnCls}>
@@ -309,7 +349,7 @@ export default function ProfileHeader({
                 </div>
 
                 {/* Identity stats — 4 clickable chips (replaces the 10-cell strip) */}
-                <div className="flex flex-wrap items-center gap-2 mt-6">
+                <div className="flex flex-wrap items-center gap-2 mt-6 tp-fade-up tp-d4">
                     <StatChip icon={Gamepad2} label="Games" value={stats?.games_count ?? 0} onClick={() => onOpenTab("collection")} />
                     <StatChip icon={Trophy} label="Achievements" value={stats?.achievements_count ?? 0} onClick={() => onOpenTab("achievements")} />
                     <StatChip
@@ -321,14 +361,7 @@ export default function ProfileHeader({
                     />
                     <StatChip icon={ListIcon} label="Lists" value={listsCount} onClick={() => onOpenTab("lists")} />
                     {xboxProfile && xboxProfile.gamerscore > 0 && (
-                        <span
-                            title={`Xbox: ${xboxProfile.gamertag ?? ""}`}
-                            className="flex items-center gap-2.5 pl-3 pr-4 py-2 rounded-xl bg-black/40 backdrop-blur-md border border-emerald-500/25"
-                        >
-                            <span className="w-4 h-4 rounded-full bg-[#107C10] flex items-center justify-center text-[9px] font-black text-white leading-none">G</span>
-                            <span className="text-[15px] font-black text-white leading-none">{xboxProfile.gamerscore.toLocaleString("en-US")}</span>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400/80 leading-none">Gamerscore</span>
-                        </span>
+                        <GamerscoreChip gamertag={xboxProfile.gamertag} gamerscore={xboxProfile.gamerscore} />
                     )}
                 </div>
             </div>

@@ -7,6 +7,7 @@ use App\Jobs\SyncSteamLibrary;
 use App\Jobs\SyncXboxLibrary;
 use App\Models\ConnectedAccount;
 use App\Services\AchievementService;
+use App\Services\FunnelAnalytics;
 use App\Services\OpenXblService;
 use App\Services\SteamService;
 use App\Traits\ApiResponse;
@@ -97,6 +98,8 @@ class ConnectedAccountController extends Controller
 
         SyncSteamLibrary::dispatch($account->id)->onQueue('default');
 
+        FunnelAnalytics::increment($account->wasRecentlyCreated ? 'steam_connected' : 'steam_reconnected');
+
         // Check connected_accounts achievement after linking Steam
         try {
             app(AchievementService::class)->check($user, ['connected_accounts']);
@@ -133,6 +136,8 @@ class ConnectedAccountController extends Controller
         );
 
         SyncXboxLibrary::dispatch($account->id)->onQueue('default');
+
+        FunnelAnalytics::increment($account->wasRecentlyCreated ? 'xbox_connected' : 'xbox_reconnected');
 
         try {
             app(AchievementService::class)->check($request->user(), ['connected_accounts']);

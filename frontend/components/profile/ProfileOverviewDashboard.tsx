@@ -93,6 +93,14 @@ export default function ProfileOverviewDashboard({
                     showcase={showcase}
                 />
 
+                {/* Mobile: Daily Hub right after the showcase (sidebar copy is lg-only;
+                    SWR dedupes the underlying requests, so the double mount is cheap) */}
+                {isOwnProfile && (
+                    <div className="lg:hidden">
+                        <DailyHub bounty={stats.bounty_balance ?? 0} onOpenTab={onOpenTab} />
+                    </div>
+                )}
+
                 {/* Playing Now detail rail — only when playing more than the showcase shows */}
                 {playingNow.length > 4 && (
                     <SectionCard title="Also Playing" action={{ label: "View Collection", href: "?tab=collection" }}>
@@ -199,9 +207,11 @@ export default function ProfileOverviewDashboard({
                     </SectionCard>
                 )}
 
-                {/* 2. Daily Hub — owner's engagement center */}
+                {/* 2. Daily Hub — owner's engagement center (mobile copy lives in the main column) */}
                 {isOwnProfile && (
-                    <DailyHub bounty={stats.bounty_balance ?? 0} onOpenTab={onOpenTab} />
+                    <div className="hidden lg:block">
+                        <DailyHub bounty={stats.bounty_balance ?? 0} onOpenTab={onOpenTab} />
+                    </div>
                 )}
 
                 {/* 3. Supporter & Cosmetics */}

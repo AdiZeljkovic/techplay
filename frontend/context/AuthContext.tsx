@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { useRouter } from "next/navigation";
 
 import { User } from "@/types";
+import { trackD1Return } from "@/lib/track";
 
 interface AuthContextType {
     user: User | null;
@@ -49,6 +50,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setIsLoading(false);
     }, []);
+
+    // Activation funnel: single-shot D1-return marker (accounts 24-48h old)
+    useEffect(() => {
+        if (user?.created_at) trackD1Return(user.created_at);
+    }, [user?.created_at]);
 
     // Fetch user and store in localStorage
     const fetchAndSetUser = async (authToken: string) => {

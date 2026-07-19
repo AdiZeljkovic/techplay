@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
+import { track } from "@/lib/track";
 import toast from "react-hot-toast";
 import { X, Search, Check, Loader2, Sparkles, Gamepad2, ArrowRight } from "lucide-react";
 
@@ -38,6 +39,10 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
     const [busySlug, setBusySlug] = useState<string | null>(null);
 
     useEffect(() => {
+        track("wizard_shown");
+    }, []);
+
+    useEffect(() => {
         const t = setTimeout(() => setDebounced(query), 350);
         return () => clearTimeout(t);
     }, [query]);
@@ -49,11 +54,13 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
     const { data: results, isLoading: searching } = useSWR<{ results: GameHit[] }>(searchUrl, fetcher, { keepPreviousData: true });
 
     const dismiss = () => {
+        track("wizard_skipped");
         try { localStorage.setItem(DISMISS_KEY, "1"); } catch { /* ignore */ }
         onClose();
     };
 
     const connectSteam = async () => {
+        track("wizard_steam_click");
         setConnecting(true);
         try {
             const res = await axios.get("/connected-accounts/steam/connect");
@@ -78,6 +85,7 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
         setConnecting(true);
         try {
             const res = await axios.post("/connected-accounts/xbox/connect", { gamertag: xboxGamertag.trim() });
+            track("wizard_xbox_submitted");
             try { localStorage.setItem(DISMISS_KEY, "1"); } catch { /* ignore */ }
             toast.success(res.data?.message ?? "Xbox connected — importing your library!");
             globalMutate(`/users/${username}`);
@@ -103,6 +111,7 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
     };
 
     const finishPicking = () => {
+        track("wizard_pick_done");
         try { localStorage.setItem(DISMISS_KEY, "1"); } catch { /* ignore */ }
         globalMutate(`/users/${username}`);
         toast.success(`Added ${added.length} ${added.length === 1 ? "game" : "games"} to your collection!`);
@@ -168,7 +177,7 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                             </button>
 
                             {/* Manual path */}
-                            <button onClick={() => setMode("pick")}
+                            <button onClick={() => { track("wizard_pick_started"); setMode("pick"); }}
                                 className="group text-left rounded-2xl border border-[var(--border)] bg-white/[0.02] hover:bg-white/[0.05] p-6 transition-all md:col-span-2">
                                 <h3 className="flex items-center gap-2 text-[15px] font-black text-white mb-1">
                                     <Gamepad2 className="w-4 h-4 text-[var(--accent)]" />

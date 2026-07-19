@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import axios from "@/lib/axios";
+import { track } from "@/lib/track";
 import toast from "react-hot-toast";
 import { CheckCircle2, Circle, Gamepad2, Play, ListChecks, Tag, MessagesSquare, Rocket, Sparkles } from "lucide-react";
 import type { ProfileStats } from "@/lib/types/profile";
@@ -15,6 +16,7 @@ interface Props {
 }
 
 async function startSteamConnect() {
+    track("checklist_steam_click");
     try {
         const res = await axios.get("/connected-accounts/steam/connect");
         const url = res.data?.data?.url;

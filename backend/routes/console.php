@@ -52,3 +52,7 @@ Schedule::command('profile:send-weekly-digest')->weeklyOn(5, '16:00');
 
 // FORUM: Unpin bounty-funded self-pins once their 24h window expires
 Schedule::command('forum:clear-expired-pins')->hourly();
+
+// CAMPAIGN: Founder badge for the first 50 full profiles — no-ops once all
+// 50 are awarded, so it can stay scheduled for the whole campaign
+Schedule::command('campaign:founders')->dailyAt('10:00');

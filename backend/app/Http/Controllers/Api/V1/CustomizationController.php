@@ -31,6 +31,8 @@ class CustomizationController extends Controller
         $items = Customization::where('is_active', true)
             ->orderBy('type')->orderBy('sort_order')->orderBy('cost')
             ->get()
+            // Award-only items (season/campaign badges) show up only for owners
+            ->filter(fn (Customization $c) => ! $c->isAwardOnly() || $owned->has($c->id))
             ->map(function (Customization $c) use ($owned, $tier, $balance) {
                 $pivot = $owned->get($c->id);
                 $isOwned = (bool) $pivot;
@@ -68,6 +70,10 @@ class CustomizationController extends Controller
     {
         $user = $request->user();
         $item = Customization::where('is_active', true)->findOrFail($id);
+
+        if ($item->isAwardOnly()) {
+            return $this->error('This item is awarded, not purchasable.', 403);
+        }
 
         if (UserCustomization::where('user_id', $user->id)->where('customization_id', $item->id)->exists()) {
             return $this->error('You already own this item.', 422);

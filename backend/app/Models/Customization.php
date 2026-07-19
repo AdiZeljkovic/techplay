@@ -29,6 +29,15 @@ class Customization extends Model
         'sort_order' => 'integer',
     ];
 
+    /**
+     * Award-only cosmetics (season champion, campaign badges) are granted by
+     * commands — never purchasable. Convention: free badge with no tier lock.
+     */
+    public function isAwardOnly(): bool
+    {
+        return $this->type === 'badge' && (int) $this->cost === 0 && ! $this->required_tier;
+    }
+
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_customizations')

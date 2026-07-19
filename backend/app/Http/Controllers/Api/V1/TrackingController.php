@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Guide;
 use App\Models\Review;
+use App\Services\FunnelAnalytics;
 use App\Services\RevalidationService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
@@ -21,6 +22,25 @@ class TrackingController extends Controller
     public function __construct(RevalidationService $revalidationService)
     {
         $this->revalidationService = $revalidationService;
+    }
+
+    /**
+     * POST /track/event — first-party funnel counter (auth-only, whitelisted
+     * event names, aggregate daily counts in Redis; no per-user data stored).
+     */
+    public function recordEvent(Request $request)
+    {
+        $validated = $request->validate([
+            'event' => 'required|string|max:40',
+        ]);
+
+        if (! in_array($validated['event'], FunnelAnalytics::CLIENT_EVENTS, true)) {
+            return $this->error('Unknown event', 422);
+        }
+
+        FunnelAnalytics::increment($validated['event']);
+
+        return $this->success(['recorded' => true]);
     }
 
     /**
