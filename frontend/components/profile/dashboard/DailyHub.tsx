@@ -4,13 +4,15 @@ import { useEffect, useState } from "react";
 import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { Coins, Target, ChevronRight, Radio, X, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { Coins, Target, ChevronRight, Radio, X, Loader2, Gem, Rocket } from "lucide-react";
 import SeasonBanner from "@/components/ui/SeasonBanner";
 import DailyStreakWidget from "./DailyStreakWidget";
 import QuestPanel from "./QuestPanel";
 
 interface Props {
     bounty: number;
+    username?: string;
     onOpenTab: (tab: string) => void;
 }
 
@@ -106,7 +108,7 @@ function NowPlayingPicker() {
  * The owner's daily engagement hub: bounty wallet, active season,
  * daily streak claim and quests — one card instead of four.
  */
-export default function DailyHub({ bounty, onOpenTab }: Props) {
+export default function DailyHub({ bounty, username, onOpenTab }: Props) {
     return (
         <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border)] overflow-hidden">
             {/* Wallet row */}
@@ -137,6 +139,18 @@ export default function DailyHub({ bounty, onOpenTab }: Props) {
                         <Target className="w-3.5 h-3.5 text-[var(--accent)]" /> Active Quests
                     </h4>
                     <QuestPanel isOwnProfile compact />
+                </div>
+
+                {/* Discovery shortcuts — the profile's hidden gems */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                    <Link href={username ? `/wrapped/${username}` : "/wrapped"}
+                        className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-[var(--border)] bg-white/[0.02] hover:border-[var(--accent)]/30 transition-all text-[11px] font-bold text-white/70 hover:text-white">
+                        <Gem className="w-3.5 h-3.5 text-[var(--accent)]" /> Wrapped
+                    </Link>
+                    <Link href="/backlog-advisor"
+                        className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-[var(--border)] bg-white/[0.02] hover:border-[var(--accent)]/30 transition-all text-[11px] font-bold text-white/70 hover:text-white">
+                        <Rocket className="w-3.5 h-3.5 text-[var(--accent)]" /> Backlog AI
+                    </Link>
                 </div>
             </div>
         </div>

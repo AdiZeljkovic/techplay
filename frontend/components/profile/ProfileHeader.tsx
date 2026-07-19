@@ -130,18 +130,19 @@ function StatChip({ icon: Icon, label, value, sub, onClick }: {
 }
 
 /** Xbox Gamerscore chip with count-up (own component so the hook is unconditional). */
-function GamerscoreChip({ gamertag, gamerscore }: { gamertag: string | null; gamerscore: number }) {
+function GamerscoreChip({ gamertag, gamerscore, onClick }: { gamertag: string | null; gamerscore: number; onClick: () => void }) {
     const animated = useCountUp(gamerscore);
 
     return (
-        <span
+        <button
+            onClick={onClick}
             title={`Xbox: ${gamertag ?? ""}`}
-            className="flex items-center gap-2.5 pl-3 pr-4 py-2 rounded-xl bg-black/40 backdrop-blur-md border border-emerald-500/25"
+            className="group flex items-center gap-2.5 pl-3 pr-4 py-2 rounded-xl bg-black/40 backdrop-blur-md border border-emerald-500/25 hover:border-emerald-400/50 transition-all"
         >
             <span className="w-4 h-4 rounded-full bg-[#107C10] flex items-center justify-center text-[9px] font-black text-white leading-none">G</span>
             <span className="text-[15px] font-black text-white leading-none tabular-nums">{animated.toLocaleString("en-US")}</span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400/80 leading-none">Gamerscore</span>
-        </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400/80 group-hover:text-emerald-300 transition-colors leading-none">Gamerscore</span>
+        </button>
     );
 }
 
@@ -361,7 +362,7 @@ export default function ProfileHeader({
                     />
                     <StatChip icon={ListIcon} label="Lists" value={listsCount} onClick={() => onOpenTab("lists")} />
                     {xboxProfile && xboxProfile.gamerscore > 0 && (
-                        <GamerscoreChip gamertag={xboxProfile.gamertag} gamerscore={xboxProfile.gamerscore} />
+                        <GamerscoreChip gamertag={xboxProfile.gamertag} gamerscore={xboxProfile.gamerscore} onClick={() => onOpenTab("stats")} />
                     )}
                 </div>
             </div>

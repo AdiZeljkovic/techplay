@@ -236,10 +236,12 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
         ...DB_PLATFORMS.map(p => ({ name: p.label, href: `/games/platform/${p.slug}` })),
     ]},
     { name: "FORUM", href: "/forum", hasDropdown: true, viewAllLabel: "Open Forum", children: [
-        { name: "Forum",       href: "/forum",       icon: MessageSquare, description: "Discussions, help & clan halls" },
-        { name: "Leaderboard", href: "/leaderboard", icon: Trophy,        description: "Top gamers by XP & reputation" },
-        { name: "Clans",       href: "/clans",       icon: Shield,        description: "Join or create a clan" },
-        { name: "Friends",     href: "/friends",     icon: Users,         description: "Your gaming crew" },
+        { name: "Forum",           href: "/forum",           icon: MessageSquare, description: "Discussions, help & clan halls" },
+        { name: "Leaderboard",     href: "/leaderboard",     icon: Trophy,        description: "Top gamers by XP & reputation" },
+        { name: "Clans",           href: "/clans",           icon: Shield,        description: "Join or create a clan" },
+        { name: "Friends",         href: "/friends",         icon: Users,         description: "Your gaming crew" },
+        { name: "Gaming Wrapped",  href: "/wrapped",         icon: Gem,           description: "Your year in gaming, shareable" },
+        { name: "Backlog Advisor", href: "/backlog-advisor", icon: Rocket,        description: "What should you play next?" },
     ]},
     { name: "SHOP",  href: "/shop" },
 ];

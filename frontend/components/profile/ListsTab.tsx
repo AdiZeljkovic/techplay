@@ -5,7 +5,7 @@ import Link from "next/link";
 import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { ListChecks, Plus, X, Trash2, Lock, Globe, ArrowLeft, Search, Loader2, Gamepad2 } from "lucide-react";
+import { ListChecks, Plus, X, Trash2, Lock, Globe, ArrowLeft, Search, Loader2, Gamepad2, Share2 } from "lucide-react";
 import ListCoverCollage from "./dashboard/ListCoverCollage";
 import type { GameListPreview, GameListDetail } from "@/lib/types/profile";
 
@@ -25,7 +25,7 @@ export default function ListsTab({ username, isOwnProfile }: Props) {
     const lists = data?.data ?? [];
 
     if (openId !== null) {
-        return <ListDetail id={openId} isOwnProfile={isOwnProfile} onBack={() => { setOpenId(null); mutate(); }} onChanged={() => { mutate(); globalMutate(`/users/${username}`); }} />;
+        return <ListDetail id={openId} ownerUsername={username} isOwnProfile={isOwnProfile} onBack={() => { setOpenId(null); mutate(); }} onChanged={() => { mutate(); globalMutate(`/users/${username}`); }} />;
     }
 
     return (
@@ -110,10 +110,16 @@ function CreateListModal({ onClose, onCreated }: { onClose: () => void; onCreate
     );
 }
 
-function ListDetail({ id, isOwnProfile, onBack, onChanged }: { id: number; isOwnProfile: boolean; onBack: () => void; onChanged: () => void }) {
+function ListDetail({ id, ownerUsername, isOwnProfile, onBack, onChanged }: { id: number; ownerUsername: string; isOwnProfile: boolean; onBack: () => void; onChanged: () => void }) {
     const [addOpen, setAddOpen] = useState(false);
     const { data, isLoading, mutate } = useSWR<{ data: GameListDetail }>(`/game-lists/${id}`, fetcher);
     const list = data?.data;
+
+    const shareList = () => {
+        if (!list) return;
+        const url = `${window.location.origin}/lists/${ownerUsername}/${list.slug}`;
+        navigator.clipboard.writeText(url).then(() => toast.success("List link copied!"));
+    };
 
     const removeItem = async (itemId: number) => {
         try {
@@ -152,12 +158,19 @@ function ListDetail({ id, isOwnProfile, onBack, onChanged }: { id: number; isOwn
                             {list.description && <p className="text-[13px] text-white/50 mt-1 max-w-2xl">{list.description}</p>}
                             <span className="text-[11px] text-white/35">{list.items_count} {list.items_count === 1 ? "game" : "games"}</span>
                         </div>
-                        {isOwnProfile && (
-                            <div className="flex items-center gap-2 shrink-0">
-                                <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[11px] font-bold uppercase tracking-wider"><Plus className="w-3.5 h-3.5" /> Add</button>
-                                <button onClick={deleteList} title="Delete list" className="p-2 rounded-lg bg-white/[0.04] hover:bg-red-500/15 text-red-400"><Trash2 className="w-4 h-4" /></button>
-                            </div>
-                        )}
+                        <div className="flex items-center gap-2 shrink-0">
+                            {list.is_public !== false && (
+                                <button onClick={shareList} title="Copy shareable link" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 text-white text-[11px] font-bold uppercase tracking-wider transition-colors">
+                                    <Share2 className="w-3.5 h-3.5" /> Share
+                                </button>
+                            )}
+                            {isOwnProfile && (
+                                <>
+                                    <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[11px] font-bold uppercase tracking-wider"><Plus className="w-3.5 h-3.5" /> Add</button>
+                                    <button onClick={deleteList} title="Delete list" className="p-2 rounded-lg bg-white/[0.04] hover:bg-red-500/15 text-red-400"><Trash2 className="w-4 h-4" /></button>
+                                </>
+                            )}
+                        </div>
                     </div>
 
                     {list.items.length === 0 ? (

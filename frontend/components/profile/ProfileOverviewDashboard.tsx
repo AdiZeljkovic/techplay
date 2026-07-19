@@ -97,7 +97,7 @@ export default function ProfileOverviewDashboard({
                     SWR dedupes the underlying requests, so the double mount is cheap) */}
                 {isOwnProfile && (
                     <div className="lg:hidden">
-                        <DailyHub bounty={stats.bounty_balance ?? 0} onOpenTab={onOpenTab} />
+                        <DailyHub bounty={stats.bounty_balance ?? 0} username={userData.username} onOpenTab={onOpenTab} />
                     </div>
                 )}
 
@@ -180,7 +180,7 @@ export default function ProfileOverviewDashboard({
                 {/* Clan membership */}
                 {clan && (
                     <SectionCard title="Clan" icon={<Shield className="w-4 h-4 text-[var(--accent)]" />}>
-                        <Link href="/clans" className="group flex items-center gap-3.5">
+                        <Link href={clan.slug ? `/clans/${clan.slug}` : "/clans"} className="group flex items-center gap-3.5">
                             <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/[0.04] border border-[var(--border)] flex items-center justify-center shrink-0">
                                 {clan.logo ? (
                                     // eslint-disable-next-line @next/next/no-img-element
@@ -210,7 +210,7 @@ export default function ProfileOverviewDashboard({
                 {/* 2. Daily Hub — owner's engagement center (mobile copy lives in the main column) */}
                 {isOwnProfile && (
                     <div className="hidden lg:block">
-                        <DailyHub bounty={stats.bounty_balance ?? 0} onOpenTab={onOpenTab} />
+                        <DailyHub bounty={stats.bounty_balance ?? 0} username={userData.username} onOpenTab={onOpenTab} />
                     </div>
                 )}
 

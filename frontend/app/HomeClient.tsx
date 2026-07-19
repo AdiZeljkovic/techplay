@@ -8,6 +8,7 @@ import HardwareSection from "@/components/home/HardwareSection";
 import ReleaseCalendarSection from "@/components/home/ReleaseCalendarSection";
 import PlatformHighlights from "@/components/home/PlatformHighlights";
 import CommunityForum from "@/components/home/CommunityForum";
+import TopGamers from "@/components/home/TopGamers";
 import DiscordWidget from "@/components/home/DiscordWidget";
 import NewsletterCTA from "@/components/home/NewsletterCTA";
 import PersonalizedFeedSection from "@/components/home/PersonalizedFeedSection";
@@ -54,6 +55,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                     </div>
                     <div className="lg:col-span-1 border-t lg:border-t-0 border-zinc-200 dark:border-white/5 lg:border-l lg:pl-10 xl:pl-[60px] pt-10 lg:pt-0 border-l-zinc-200 dark:border-l-white/5">
                         <CommunityForum />
+                        <TopGamers />
                     </div>
                 </div>
             </div>

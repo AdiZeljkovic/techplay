@@ -396,6 +396,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/users/{username}/wrapped/{year}', [WrappedController::class, 'show']);
         Route::get('/users/{username}/collection', [GameCollectionController::class, 'index']);
         Route::get('/users/{username}/lists', [GameListController::class, 'index']);
+        Route::get('/users/{username}/lists/{slug}', [GameListController::class, 'showBySlug']);
         Route::get('/users/{username}/activity', [ActivityController::class, 'index']);
         Route::get('/users/{username}/recognitions', [RecognitionController::class, 'index']);
         Route::get('/users/{username}/steam-achievements', [SteamAchievementController::class, 'index']);

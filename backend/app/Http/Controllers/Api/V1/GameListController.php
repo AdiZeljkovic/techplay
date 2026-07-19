@@ -65,6 +65,26 @@ class GameListController extends Controller
     }
 
     /**
+     * Public: a single list by owner username + slug — the shareable URL.
+     * GET /users/{username}/lists/{slug}
+     */
+    public function showBySlug(Request $request, string $username, string $slug)
+    {
+        $user = User::where('username', $username)->firstOrFail();
+
+        $list = GameList::where('user_id', $user->id)
+            ->where('slug', $slug)
+            ->with(['items.game:id,slug,name,released,rating,background_image,platform_names', 'user:id,username,display_name,avatar_url'])
+            ->firstOrFail();
+
+        if (! $list->is_public && optional($request->user('sanctum'))->id !== $list->user_id) {
+            return $this->forbidden('This list is private.');
+        }
+
+        return $this->success($this->presentList($list, true));
+    }
+
+    /**
      * Auth: create a list.
      * POST /game-lists
      */
