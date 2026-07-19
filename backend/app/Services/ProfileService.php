@@ -144,25 +144,31 @@ class ProfileService
     {
         // Postgres fast path: aggregate in SQL instead of loading the whole
         // collection into PHP (a 500-game library was ~1000 array iterations).
+        // unnest() must stay at the TOP level of a select list, so it lives in
+        // a subquery and trim/grouping happen outside of it.
         if (DB::connection()->getDriverName() === 'pgsql') {
             $total = UserGame::where('user_id', $user->id)->count();
 
             $aggregate = function (string $column) use ($user, $top, $total) {
-                return DB::table('user_games')
-                    ->join('games', 'games.id', '=', 'user_games.game_id')
-                    ->where('user_games.user_id', $user->id)
-                    ->selectRaw("trim(both from unnest(games.{$column})) as name, count(*) as c")
-                    ->groupBy('name')
-                    ->havingRaw("trim(both from name) <> ''")
-                    ->orderByDesc('c')
-                    ->limit($top)
-                    ->get()
-                    ->map(fn ($row) => [
-                        'name' => $row->name,
-                        'count' => (int) $row->c,
-                        'percent' => $total > 0 ? (int) round(((int) $row->c / $total) * 100) : 0,
-                    ])
-                    ->all();
+                $rows = DB::select("
+                    SELECT trim(raw_name) AS name, COUNT(*) AS c
+                    FROM (
+                        SELECT unnest(games.{$column}) AS raw_name
+                        FROM user_games
+                        JOIN games ON games.id = user_games.game_id
+                        WHERE user_games.user_id = ?
+                    ) x
+                    WHERE trim(raw_name) <> ''
+                    GROUP BY trim(raw_name)
+                    ORDER BY c DESC
+                    LIMIT {$top}
+                ", [$user->id]);
+
+                return array_map(fn ($row) => [
+                    'name' => $row->name,
+                    'count' => (int) $row->c,
+                    'percent' => $total > 0 ? (int) round(((int) $row->c / $total) * 100) : 0,
+                ], $rows);
             };
 
             return [
