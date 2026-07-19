@@ -307,6 +307,7 @@ class AuthController extends Controller
             // Phase 1 — game collection dashboard blocks
             'collection_snapshot' => $profileService->collectionSnapshot($user),
             'playing_now' => $profileService->playingNow($user),
+            'showcase' => $profileService->showcase($user),
             'platforms_genres' => $platformsGenres = $profileService->platformsAndGenres($user),
             'gamer_dna' => $profileService->gamerDna($user, $platformsGenres),
             // Phase 2 — reputation, ranking, recognitions, milestones

@@ -745,6 +745,12 @@ class ForumController extends Controller
                 if ($solutionAuthor) {
                     $solutionAuthor->increment('forum_reputation', 10);
 
+                    // Accepted solution = deliberate quality contribution → bounty
+                    try {
+                        app(BountyService::class)->award($solutionAuthor, 25, 'Answer accepted as solution', 'milestone');
+                    } catch (\Throwable) {
+                    }
+
                     try {
                         app(AchievementService::class)->check($solutionAuthor, ['solutions_count']);
                     } catch (\Throwable) {

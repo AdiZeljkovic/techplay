@@ -3,11 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import useSWR from "swr";
+import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 import { differenceInDays, parseISO } from "date-fns";
-import { Library, Star, Trash2, Plus, Search, X, Loader2, Heart, CalendarClock } from "lucide-react";
+import { Library, Star, Trash2, Plus, Search, X, Loader2, Heart, CalendarClock, Pin } from "lucide-react";
 import type { CollectionEntry, CollectionStatus } from "@/lib/types/profile";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
@@ -157,6 +157,17 @@ export default function CollectionGrid({ username, isOwnProfile }: Props) {
         }
     };
 
+    const toggleShowcase = async (slug: string) => {
+        try {
+            const res = await axios.post(`/collection/games/${slug}/showcase`);
+            toast.success(res.data?.message ?? "Showcase updated");
+            mutate();
+            globalMutate(`/users/${username}`);
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message ?? "Failed to update showcase.");
+        }
+    };
+
     return (
         <div>
             {/* Toolbar */}
@@ -228,6 +239,9 @@ export default function CollectionGrid({ username, isOwnProfile }: Props) {
                                     </select>
                                     <button onClick={() => updateEntry(e.game!.slug, { status: e.status, is_favorite: !e.is_favorite })} title="Favorite" className="p-1.5 rounded hover:bg-white/10 text-yellow-400">
                                         <Heart className={`w-3.5 h-3.5 ${e.is_favorite ? "fill-yellow-400" : ""}`} />
+                                    </button>
+                                    <button onClick={() => toggleShowcase(e.game!.slug)} title={e.showcase_order != null ? "Unpin from showcase" : "Pin to showcase"} className={`p-1.5 rounded hover:bg-white/10 ${e.showcase_order != null ? "text-[var(--accent)]" : "text-white/45"}`}>
+                                        <Pin className={`w-3.5 h-3.5 ${e.showcase_order != null ? "fill-[var(--accent)]" : ""}`} />
                                     </button>
                                     <button onClick={() => removeEntry(e.game!.slug)} title="Remove" className="p-1.5 rounded hover:bg-red-500/15 text-red-400">
                                         <Trash2 className="w-3.5 h-3.5" />

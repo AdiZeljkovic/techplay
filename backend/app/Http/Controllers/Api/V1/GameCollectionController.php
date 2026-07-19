@@ -230,6 +230,46 @@ class GameCollectionController extends Controller
     }
 
     /**
+     * Auth: pin/unpin a collection game to the profile showcase (max 4).
+     * POST /collection/games/{slug}/showcase
+     */
+    public function toggleShowcase(Request $request, string $slug)
+    {
+        $game = Game::where('slug', $slug)->first();
+
+        if (! $game) {
+            return $this->error('Game not found', 404);
+        }
+
+        $entry = UserGame::where('user_id', $request->user()->id)
+            ->where('game_id', $game->id)
+            ->first();
+
+        if (! $entry) {
+            return $this->error('Game is not in your collection', 404);
+        }
+
+        if ($entry->showcase_order !== null) {
+            $entry->update(['showcase_order' => null]);
+
+            return $this->success(['showcased' => false], 'Removed from showcase');
+        }
+
+        $count = UserGame::where('user_id', $request->user()->id)
+            ->whereNotNull('showcase_order')
+            ->count();
+
+        if ($count >= 4) {
+            return $this->error('Showcase is full — unpin a game first (max 4).', 422);
+        }
+
+        $max = (int) UserGame::where('user_id', $request->user()->id)->max('showcase_order');
+        $entry->update(['showcase_order' => $max + 1]);
+
+        return $this->success(['showcased' => true], 'Pinned to your showcase');
+    }
+
+    /**
      * Auth: remove a game from the current user's collection.
      * DELETE /collection/games/{slug}
      */
@@ -254,6 +294,7 @@ class GameCollectionController extends Controller
             'id' => $ug->id,
             'status' => $ug->status,
             'is_favorite' => $ug->is_favorite,
+            'showcase_order' => $ug->showcase_order,
             'progress' => $ug->progress,
             'hours_played' => $ug->hours_played,
             'platform' => $ug->platform,

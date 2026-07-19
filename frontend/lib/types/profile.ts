@@ -131,6 +131,7 @@ export interface CollectionEntry {
     id: number;
     status: CollectionStatus;
     is_favorite: boolean;
+    showcase_order?: number | null;
     progress: number;
     hours_played: number;
     platform: string | null;
@@ -267,6 +268,7 @@ export interface UserProfile {
     is_staff?: boolean;
     collection_snapshot?: CollectionSnapshotTile[];
     playing_now?: PlayingNowGame[];
+    showcase?: PlayingNowGame[];
     platforms_genres?: PlatformsGenres;
     gamer_dna?: GamerDna;
     reputation?: ReputationData;

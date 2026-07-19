@@ -1,22 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { Gamepad2, Play, Star } from "lucide-react";
+import { Gamepad2, Play, Star, Pin } from "lucide-react";
 import type { PlayingNowGame, CollectionSnapshotTile } from "@/lib/types/profile";
 
 interface Props {
     playingNow: PlayingNowGame[];
     snapshot: CollectionSnapshotTile[];
     playingCount?: number;
+    /** User-curated pins ("Pin to profile") — take priority over everything. */
+    showcase?: PlayingNowGame[];
 }
 
 /**
  * The visual centerpiece of the overview — large cover-art cards.
- * Shows Playing Now when available; falls back to collection bucket covers.
+ * Priority: user-pinned showcase > Playing Now > collection bucket covers.
  * Renders nothing when there is no visual data (caller handles empty state).
  */
-export default function ShowcaseStrip({ playingNow, snapshot, playingCount }: Props) {
-    const hasPlaying = playingNow.length > 0;
+export default function ShowcaseStrip({ playingNow, snapshot, playingCount, showcase = [] }: Props) {
+    const pinned = showcase.length > 0;
+    const games = pinned ? showcase : playingNow;
+    const hasPlaying = games.length > 0;
     const coveredBuckets = snapshot.filter((t) => t.cover && t.count > 0);
 
     if (!hasPlaying && coveredBuckets.length === 0) return null;
@@ -28,20 +32,22 @@ export default function ShowcaseStrip({ playingNow, snapshot, playingCount }: Pr
             <div className="p-5 md:p-6">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="flex items-center gap-2.5 text-[13px] font-black uppercase tracking-[0.14em] text-white">
-                        {hasPlaying ? (
+                        {pinned ? (
+                            <><Pin className="w-4 h-4 text-[var(--accent)] fill-[var(--accent)]" /> Showcase</>
+                        ) : hasPlaying ? (
                             <><Play className="w-4 h-4 text-[var(--accent)] fill-[var(--accent)]" /> Now Playing</>
                         ) : (
                             <><Star className="w-4 h-4 text-[var(--accent)]" /> Game Showcase</>
                         )}
                     </h2>
                     <Link href="?tab=collection" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-[var(--accent)] transition-colors">
-                        {hasPlaying && playingCount ? `All ${playingCount} playing` : "View collection"}
+                        {!pinned && hasPlaying && playingCount ? `All ${playingCount} playing` : "View collection"}
                     </Link>
                 </div>
 
                 {hasPlaying ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                        {playingNow.slice(0, 4).map((g) => (
+                        {games.slice(0, 4).map((g) => (
                             <Link
                                 key={g.slug}
                                 href={`/games/${g.slug}`}

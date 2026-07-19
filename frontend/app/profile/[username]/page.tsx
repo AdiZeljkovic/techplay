@@ -151,6 +151,7 @@ function ProfilePageInner() {
                         isOwnProfile={isOwnProfile}
                         collectionSnapshot={profile.collection_snapshot}
                         playingNow={profile.playing_now}
+                        showcase={profile.showcase}
                         platformsGenres={profile.platforms_genres}
                         gamerDna={profile.gamer_dna}
                         reputation={profile.reputation}

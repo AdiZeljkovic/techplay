@@ -28,6 +28,7 @@ interface Props {
     isOwnProfile: boolean;
     collectionSnapshot?: CollectionSnapshotTile[];
     playingNow?: PlayingNowGame[];
+    showcase?: PlayingNowGame[];
     platformsGenres?: PlatformsGenres;
     gamerDna?: GamerDna;
     reputation?: ReputationData;
@@ -49,7 +50,7 @@ interface Props {
  */
 export default function ProfileOverviewDashboard({
     userData, stats, achievements, isOwnProfile,
-    collectionSnapshot = [], playingNow = [], platformsGenres, gamerDna,
+    collectionSnapshot = [], playingNow = [], showcase = [], platformsGenres, gamerDna,
     reputation, recognitions = [], lists = [], customization, nextRank,
     onOpenTab = () => {},
 }: Props) {
@@ -77,11 +78,12 @@ export default function ProfileOverviewDashboard({
                     />
                 )}
 
-                {/* Showcase — the visual centerpiece */}
+                {/* Showcase — the visual centerpiece (user pins take priority) */}
                 <ShowcaseStrip
                     playingNow={playingNow}
                     snapshot={collectionSnapshot}
                     playingCount={stats.playing_count ?? playingNow.length}
+                    showcase={showcase}
                 />
 
                 {/* Playing Now detail rail — only when playing more than the showcase shows */}

@@ -111,6 +111,30 @@ class ProfileService
     }
 
     /**
+     * User-curated showcase — games pinned to the profile (max 4, ordered).
+     */
+    public function showcase(User $user): array
+    {
+        return UserGame::where('user_id', $user->id)
+            ->whereNotNull('showcase_order')
+            ->with(['game:id,slug,name,background_image,platform_names'])
+            ->orderBy('showcase_order')
+            ->limit(4)
+            ->get()
+            ->map(fn (UserGame $ug) => [
+                'slug' => $ug->game?->slug,
+                'name' => $ug->game?->name,
+                'background_image' => $ug->game?->background_image,
+                'platform_names' => $ug->game?->platform_names ?? [],
+                'progress' => $ug->progress,
+                'hours_played' => $ug->hours_played,
+            ])
+            ->filter(fn ($g) => $g['slug'] !== null)
+            ->values()
+            ->all();
+    }
+
+    /**
      * Platform + genre distribution across the whole collection, as
      * percentages of the collection size (top N each).
      *

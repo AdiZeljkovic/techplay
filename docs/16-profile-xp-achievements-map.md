@@ -245,3 +245,8 @@ Kompletan redizajn profila u 4 commita (e717f27, 69872cf, 8c75df1, 8d96adf).
 - **Tabovi 8 -> 6**: Overview, Collection, Lists, Achievements, Activity, Stats (+ Rewards samo vlasnik). `?tab=forum` legacy redirect u Activity (watched/bookmarked su tamo, own-only).
 - **Overview**: ShowcaseStrip (cover art centerpiece), ProfileChecklist (own onboarding, mijenja prazne kartice), empty sekcije se NE renderuju posjetiocima. Sidebar = 3 kartice: CommunityStanding (spaja 3 stare), DailyHub (bounty + season + streak + questovi), Supporter & Cosmetics.
 - **Tema**: svi hardkodirani tp-accent/orange/rgba(252,65,0) u profile komponentama -> var(--accent); equipped tema sada boji cijelu stranicu. QuestPanel/DailyStreakWidget/SteamAchievements na tokenima + axios/SWR.
+
+### V2 dodatak (isti dan)
+- **Pin to Profile**: `user_games.showcase_order` (max 4), `POST /collection/games/{slug}/showcase` toggle, `showcase` u profil payloadu; ShowcaseStrip prioritet pinovano > playing > bucket coveri; Pin dugme u CollectionGrid hover akcijama.
+- **OG share slika**: `/og/profile?username=` nadograđena (ruta je POSTOJALA ali metadata je pokazivala na nju dok je stara verzija fetchala kroz javni CF URL) — sada koristi NEXT_PRIVATE_API_URL, prikazuje level/rank/stats/Top% + do 3 showcase covera, cache 1h.
+- **Ekonomija razdvojena**: XP→Bounty 1:1 mirror UKINUT (XpService). Bounty izvori sada: daily streak, questovi, game completion +50, article/review publish +30/75, NOVO: prva ocjena igre s reviewom +15, prihvaćeno rješenje na forumu +25. XP = čisti progres.

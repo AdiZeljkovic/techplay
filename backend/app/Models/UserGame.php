@@ -14,6 +14,7 @@ class UserGame extends Model
         'game_id',
         'status',
         'is_favorite',
+        'showcase_order',
         'progress',
         'hours_played',
         'platform',
@@ -23,6 +24,7 @@ class UserGame extends Model
 
     protected $casts = [
         'is_favorite' => 'boolean',
+        'showcase_order' => 'integer',
         'progress' => 'integer',
         'hours_played' => 'integer',
         'started_at' => 'datetime',

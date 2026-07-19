@@ -56,16 +56,10 @@ class XpService
         $user->increment('xp', $actualAmount);
         Cache::increment($dailyKey, $actualAmount);
 
-        // Mirror the XP gain as Bounty currency (1:1) for the rewards store.
-        // applySeason=false — the amount already carries the season XP multiplier.
-        if ($actualAmount > 0) {
-            try {
-                app(BountyService::class)->award($user, $actualAmount, "Earned from {$actionType}", 'earn', false);
-            } catch (\Throwable $e) {
-                // Never let bounty accounting block XP awarding.
-                \Log::warning('Bounty award failed: '.$e->getMessage());
-            }
-        }
+        // NOTE (economy split, V2): XP no longer mirrors into Bounty.
+        // XP = progression; Bounty = currency earned through deliberate
+        // actions (daily streak, quests, game completions, publishing,
+        // reviews, accepted solutions).
 
         // Update rank if needed
         $this->checkRankUpdate($user);
