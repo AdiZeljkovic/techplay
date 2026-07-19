@@ -3,8 +3,8 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { Flame, Check, Loader2 } from "lucide-react";
+import axios from "@/lib/axios";
 import { useAuth } from "@/context/AuthContext";
-import { getApiUrl } from "@/lib/api";
 import toast from "react-hot-toast";
 
 interface StreakInfo {
@@ -14,17 +14,14 @@ interface StreakInfo {
   next_bounty: number;
 }
 
-const fetcher = ([url, token]: [string, string]) =>
-  fetch(url, { headers: { Authorization: `Bearer ${token}` } })
-    .then((r) => r.json())
-    .then((j) => j.data as StreakInfo);
+const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data as StreakInfo);
 
 export default function DailyStreakWidget() {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const [claiming, setClaiming] = useState(false);
 
   const { data: streak, mutate } = useSWR(
-    user && token ? [`${getApiUrl()}/user/streak`, token] : null,
+    user ? "/user/streak" : null,
     fetcher,
     { dedupingInterval: 60_000 }
   );
@@ -35,15 +32,9 @@ export default function DailyStreakWidget() {
     if (claiming || streak.claimed_today) return;
     setClaiming(true);
     try {
-      const res = await fetch(`${getApiUrl()}/user/streak/claim`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success(data.message ?? `Day ${data.data?.streak} streak!`);
-        mutate();
-      }
+      const res = await axios.post("/user/streak/claim");
+      toast.success(res.data?.message ?? `Day ${res.data?.data?.streak} streak!`);
+      mutate();
     } catch {
       toast.error("Failed to claim streak");
     } finally {
@@ -56,64 +47,49 @@ export default function DailyStreakWidget() {
 
   return (
     <div
-      className={`rounded-2xl border p-4 flex items-center gap-4 transition-all ${
+      className={`rounded-xl border p-3.5 flex items-center gap-3.5 transition-all ${
         claimed
-          ? "border-orange-500/20 bg-orange-500/5"
-          : "border-white/10 bg-white/[0.03] hover:border-orange-500/30"
+          ? "border-[var(--accent)]/20 bg-[var(--accent)]/[0.04]"
+          : "border-[var(--border)] bg-white/[0.02] hover:border-[var(--accent)]/30"
       }`}
     >
-      {/* Flame + count */}
       <div className="relative shrink-0">
-        <div
-          className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-            claimed ? "bg-orange-500/20" : "bg-white/5"
-          }`}
-        >
-          <Flame
-            className={`w-6 h-6 ${claimed ? "text-orange-400" : "text-zinc-500"}`}
-          />
+        <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${claimed ? "bg-[var(--accent)]/15" : "bg-white/5"}`}>
+          <Flame className={`w-5 h-5 ${claimed ? "text-[var(--accent)]" : "text-white/35"}`} />
         </div>
         {days > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-orange-500 text-white text-[10px] font-black flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[var(--accent)] text-white text-[10px] font-black flex items-center justify-center">
             {days > 99 ? "99+" : days}
           </span>
         )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-white">
+        <p className="text-[13px] font-bold text-white">
           {days > 0 ? `${days}-day streak` : "Start your streak"}
         </p>
-        <p className="text-xs text-zinc-500">
-          {claimed
-            ? "Come back tomorrow"
-            : `Claim +${streak.next_bounty} bounty`}
+        <p className="text-[11px] text-white/40">
+          {claimed ? "Come back tomorrow" : `Claim +${streak.next_bounty} bounty`}
         </p>
       </div>
 
       <button
         onClick={handleClaim}
         disabled={claimed || claiming}
-        className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+        className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all ${
           claimed
-            ? "bg-orange-500/10 text-orange-400 cursor-default"
+            ? "bg-[var(--accent)]/10 text-[var(--accent)] cursor-default"
             : claiming
-            ? "bg-white/5 text-zinc-500"
-            : "bg-orange-500 text-white hover:bg-orange-600 active:scale-[0.97]"
+            ? "bg-white/5 text-white/40"
+            : "bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] active:scale-[0.97]"
         }`}
       >
         {claimed ? (
-          <>
-            <Check className="w-3.5 h-3.5" />
-            Claimed
-          </>
+          <><Check className="w-3.5 h-3.5" /> Claimed</>
         ) : claiming ? (
           <Loader2 className="w-3.5 h-3.5 animate-spin" />
         ) : (
-          <>
-            <Flame className="w-3.5 h-3.5" />
-            Claim
-          </>
+          <><Flame className="w-3.5 h-3.5" /> Claim</>
         )}
       </button>
     </div>

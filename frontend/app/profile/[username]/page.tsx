@@ -159,6 +159,7 @@ function ProfilePageInner() {
                         lists={profile.lists}
                         customization={profile.customization}
                         nextRank={profile.next_rank}
+                        onOpenTab={(t) => setActiveTab(t as ProfileTab)}
                     />
                 )}
 

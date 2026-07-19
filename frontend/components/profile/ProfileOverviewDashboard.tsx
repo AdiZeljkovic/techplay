@@ -1,35 +1,25 @@
 "use client";
 
-import Link from "next/link";
 import { format } from "date-fns";
 import {
-    Gamepad2, Library, Trophy, Activity as ActivityIcon, ListChecks,
-    Dna, Coins, Hexagon, BarChart3, Target, Sparkles, Plus, Flame, CalendarClock,
+    Library, Trophy, Activity as ActivityIcon, ListChecks,
+    Dna, Sparkles, CalendarClock,
 } from "lucide-react";
 import SectionCard from "./dashboard/SectionCard";
-import EmptyState from "./dashboard/EmptyState";
 import PlayingNow from "./dashboard/PlayingNow";
 import CollectionSnapshot from "./dashboard/CollectionSnapshot";
-import DistributionBars from "./dashboard/DistributionBars";
 import GamerDnaPanel from "./dashboard/GamerDnaPanel";
-import CommunityRanking from "./dashboard/CommunityRanking";
-import ReputationBountyCard from "./dashboard/ReputationBountyCard";
-import ContributionMilestones from "./dashboard/ContributionMilestones";
 import CustomLists from "./dashboard/CustomLists";
 import LoyaltyCustomization from "./dashboard/LoyaltyCustomization";
 import HexBadge from "./dashboard/HexBadge";
 import ActivityFeed from "./ActivityFeed";
 import FriendActivityFeed from "./FriendActivityFeed";
-import LivePresenceBadge from "./dashboard/LivePresenceBadge";
-import DailyStreakWidget from "./dashboard/DailyStreakWidget";
-import QuestPanel from "./dashboard/QuestPanel";
 import UpcomingReleasesWidget from "./dashboard/UpcomingReleasesWidget";
-import SeasonBanner from "@/components/ui/SeasonBanner";
-import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview, CustomizationData, CollectionSnapshotTile, DistributionStat } from "@/lib/types/profile";
-
-/** Leaders (top half) orange, the tail green — matches the reference bars. */
-const rankColor = (_item: DistributionStat, i: number, total: number) =>
-    i < Math.ceil(total / 2) ? "var(--accent)" : "#22c55e";
+import ShowcaseStrip from "./dashboard/ShowcaseStrip";
+import CommunityStanding from "./dashboard/CommunityStanding";
+import ProfileChecklist from "./dashboard/ProfileChecklist";
+import DailyHub from "./dashboard/DailyHub";
+import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview, CustomizationData, CollectionSnapshotTile } from "@/lib/types/profile";
 
 interface Props {
     userData: ProfileUser;
@@ -49,182 +39,137 @@ interface Props {
     onOpenTab?: (tab: string) => void;
 }
 
-export default function ProfileOverviewDashboard({ userData, stats, achievements, isOwnProfile, collectionSnapshot = [], playingNow = [], platformsGenres, gamerDna, reputation, recognitions = [], milestones = [], lists = [], customization, nextRank }: Props) {
+/**
+ * Overview — showcase-first composition.
+ *
+ * Empty-state rules:
+ *  - Visitors NEVER see an empty card: sections without data don't render.
+ *  - The owner gets a single "Level up your profile" checklist instead of
+ *    a page full of empty cards.
+ */
+export default function ProfileOverviewDashboard({
+    userData, stats, achievements, isOwnProfile,
+    collectionSnapshot = [], playingNow = [], platformsGenres, gamerDna,
+    reputation, recognitions = [], lists = [], customization, nextRank,
+    onOpenTab = () => {},
+}: Props) {
     const recentUnlocked = (achievements || [])
         .filter((a) => a.is_unlocked)
         .sort((a, b) => new Date(b.unlocked_at || "").getTime() - new Date(a.unlocked_at || "").getTime())
-        .slice(0, 6);
+        .slice(0, 5);
 
-    const addCta = isOwnProfile ? (
-        <Link href="/games" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[11px] font-bold uppercase tracking-wider transition-colors">
-            <Plus className="w-3.5 h-3.5" /> Browse Games
-        </Link>
-    ) : undefined;
+    const nonZeroBuckets = collectionSnapshot.filter((t) => t.count > 0);
+    const hasCollection = (stats.games_count ?? 0) > 0;
+    const hasDna = !!gamerDna && (gamerDna.genres.length > 0 || gamerDna.playstyle.length > 0 || gamerDna.franchises.length > 0);
+    const hasGamertags = !!userData.gamertags && Object.values(userData.gamertags as Record<string, unknown>).some(Boolean);
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
-            {/* === LEFT COLUMN === */}
+            {/* === MAIN COLUMN === */}
             <div className="space-y-6 min-w-0">
-                {/* Playing Now */}
-                <SectionCard title="Playing Now" action={playingNow.length > 0 ? { label: `View All (${stats.playing_count ?? playingNow.length})`, href: "?tab=collection" } : undefined}>
-                    <div className="space-y-4">
-                        {/* Live presence badge — real-time "what they're playing right now" */}
-                        <LivePresenceBadge username={userData.username} userId={userData.id} />
-                        {playingNow.length > 0 ? (
-                            <PlayingNow games={playingNow} />
-                        ) : (
-                            <EmptyState
-                                icon={<Gamepad2 className="w-6 h-6" />}
-                                title={isOwnProfile ? "You're not playing anything yet" : "Nothing being played right now"}
-                                hint={isOwnProfile ? "Mark games as \"Playing\" to track your progress here." : undefined}
-                                cta={addCta}
-                            />
-                        )}
-                    </div>
-                </SectionCard>
-
-                {/* Collection Snapshot */}
-                <SectionCard title="Your Collection Snapshot" icon={<Library className="w-4 h-4 text-violet-400/70" />} action={{ label: "Manage Collection", href: "?tab=collection" }}>
-                    <CollectionSnapshot tiles={collectionSnapshot.length > 0 ? collectionSnapshot : [
-                        { status: "backlog", label: "Backlog", color: "#60a5fa", count: stats.backlog_count ?? 0, cover: null },
-                        { status: "completed", label: "Completed", color: "#22c55e", count: stats.completed_count ?? 0, cover: null },
-                        { status: "wishlist", label: "Wishlist", color: "#f472b6", count: stats.wishlist_count ?? 0, cover: null },
-                        { status: "favorites", label: "Favorites", color: "#facc15", count: stats.favorites_count ?? 0, cover: null },
-                    ]} />
-                </SectionCard>
-
-                {/* Upcoming Releases — own profile only */}
+                {/* Owner onboarding checklist — shows only while incomplete */}
                 {isOwnProfile && (
-                    <SectionCard title="Upcoming Releases" icon={<CalendarClock className="w-4 h-4 text-tp-accent/70" />} action={{ label: "View Calendar", href: "/calendar" }}>
+                    <ProfileChecklist
+                        stats={stats}
+                        listsCount={lists.length}
+                        hasGamertags={hasGamertags}
+                        onOpenTab={onOpenTab}
+                    />
+                )}
+
+                {/* Showcase — the visual centerpiece */}
+                <ShowcaseStrip
+                    playingNow={playingNow}
+                    snapshot={collectionSnapshot}
+                    playingCount={stats.playing_count ?? playingNow.length}
+                />
+
+                {/* Playing Now detail rail — only when playing more than the showcase shows */}
+                {playingNow.length > 4 && (
+                    <SectionCard title="Also Playing" action={{ label: "View Collection", href: "?tab=collection" }}>
+                        <PlayingNow games={playingNow.slice(4)} />
+                    </SectionCard>
+                )}
+
+                {/* Collection pulse — non-zero buckets only */}
+                {nonZeroBuckets.length > 0 && (
+                    <SectionCard title="Collection" icon={<Library className="w-4 h-4 text-[var(--accent)]" />} action={{ label: isOwnProfile ? "Manage" : "View All", href: "?tab=collection" }}>
+                        <CollectionSnapshot tiles={nonZeroBuckets} />
+                    </SectionCard>
+                )}
+
+                {/* Upcoming Releases — own only */}
+                {isOwnProfile && (
+                    <SectionCard title="Upcoming Releases" icon={<CalendarClock className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View Calendar", href: "/calendar" }}>
                         <UpcomingReleasesWidget />
                     </SectionCard>
                 )}
 
                 {/* Recent Activity */}
-                <SectionCard title="Recent Activity" icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View All Activity", href: "?tab=activity" }}>
+                <SectionCard title="Recent Activity" icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View All", href: "?tab=activity" }}>
                     <ActivityFeed username={userData.username} compact />
                 </SectionCard>
 
-                {/* Daily Streak — only own profile */}
-                {isOwnProfile && (
-                    <DailyStreakWidget />
-                )}
-
-                {/* Active Quests — only own profile */}
-                {isOwnProfile && (
-                    <SectionCard title="Quests" icon={<Target className="w-4 h-4 text-tp-accent" />}>
-                        <QuestPanel isOwnProfile={isOwnProfile} />
-                    </SectionCard>
-                )}
-
-                {/* Friend Activity — only visible on your own profile */}
-                {isOwnProfile && (
-                    <SectionCard title="Friend Activity" icon={<Sparkles className="w-4 h-4 text-sky-400/70" />} action={{ label: "All Friends", href: "/friends" }}>
-                        <FriendActivityFeed />
-                    </SectionCard>
-                )}
-
-                {/* Achievement Spotlight */}
-                <SectionCard title="Achievement Spotlight" icon={<Trophy className="w-4 h-4 text-yellow-400" />} action={{ label: "View All Achievements", href: "?tab=achievements" }}>
-                    {recentUnlocked.length > 0 ? (
+                {/* Achievement Spotlight — only with unlocks */}
+                {recentUnlocked.length > 0 && (
+                    <SectionCard title="Achievement Spotlight" icon={<Trophy className="w-4 h-4 text-yellow-400" />} action={{ label: "View All", href: "?tab=achievements" }}>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                            {recentUnlocked.slice(0, 5).map((ach) => (
-                                <div key={ach.id} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 flex flex-col items-center text-center hover:border-white/[0.12] transition-colors">
-                                    <div className="w-16 h-16 mb-3 flex items-center justify-center">
+                            {recentUnlocked.map((ach) => (
+                                <div key={ach.id} className="rounded-xl bg-white/[0.03] border border-[var(--border)] p-4 flex flex-col items-center text-center hover:border-white/[0.14] transition-colors">
+                                    <div className="w-14 h-14 mb-3 flex items-center justify-center">
                                         {ach.icon_path ? (
-                                            <img src={ach.icon_path} alt={ach.name} className="w-16 h-16 object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,0.5)]" />
+                                            <img src={ach.icon_path} alt={ach.name} className="w-14 h-14 object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,0.5)]" />
                                         ) : (
-                                            <HexBadge size={56} color="#f59e0b"><Trophy className="w-6 h-6" /></HexBadge>
+                                            <HexBadge size={52} color="#f59e0b"><Trophy className="w-5 h-5" /></HexBadge>
                                         )}
                                     </div>
-                                    <h4 className="font-bold text-[13px] text-white line-clamp-1 mb-1">{ach.name}</h4>
-                                    {ach.description && <p className="text-[10px] text-white/45 line-clamp-1 leading-tight mb-1.5">{ach.description}</p>}
+                                    <h4 className="font-bold text-[12.5px] text-white line-clamp-1 mb-1">{ach.name}</h4>
                                     {ach.unlocked_at && <span className="text-[10px] text-white/30">{format(new Date(ach.unlocked_at), "MMM d, yyyy")}</span>}
                                 </div>
                             ))}
                         </div>
-                    ) : (
-                        <EmptyState icon={<Trophy className="w-6 h-6" />} title="No achievements unlocked yet" compact />
-                    )}
-                </SectionCard>
+                    </SectionCard>
+                )}
 
-                {/* Custom Lists */}
-                <SectionCard title="Custom Lists" icon={<ListChecks className="w-4 h-4 text-sky-400/70" />} action={lists.length > 0 ? { label: "View All Lists", href: "?tab=lists" } : undefined}>
-                    {lists.length > 0 ? (
+                {/* Custom Lists — only when there are lists */}
+                {lists.length > 0 && (
+                    <SectionCard title="Game Lists" icon={<ListChecks className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View All", href: "?tab=lists" }}>
                         <CustomLists lists={lists} />
-                    ) : (
-                        <EmptyState
-                            icon={<ListChecks className="w-6 h-6" />}
-                            title={isOwnProfile ? "No lists created yet" : "No public lists"}
-                            hint={isOwnProfile ? "Curate lists like \"Best RPGs\" or \"Must-Play Co-op\"." : undefined}
-                            cta={isOwnProfile ? <a href="?tab=lists" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[11px] font-bold uppercase tracking-wider transition-colors">Create a List</a> : undefined}
-                        />
-                    )}
-                </SectionCard>
+                    </SectionCard>
+                )}
 
-                {/* Gamer DNA */}
-                <SectionCard title="Gamer DNA" icon={<Dna className="w-4 h-4 text-pink-400/70" />} action={{ label: "Your Taste Profile" }}>
-                    <GamerDnaPanel dna={gamerDna ?? { genres: [], platforms: [], playstyle: [], franchises: [] }} />
-                </SectionCard>
+                {/* Gamer DNA — only with data */}
+                {hasDna && (
+                    <SectionCard title="Gamer DNA" icon={<Dna className="w-4 h-4 text-[var(--accent)]" />}>
+                        <GamerDnaPanel dna={gamerDna!} />
+                    </SectionCard>
+                )}
+
+                {/* Friend Activity — own only */}
+                {isOwnProfile && (
+                    <SectionCard title="Friend Activity" icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "All Friends", href: "/friends" }}>
+                        <FriendActivityFeed />
+                    </SectionCard>
+                )}
             </div>
 
-            {/* === RIGHT COLUMN === */}
+            {/* === SIDEBAR — exactly 3 cards === */}
             <div className="space-y-6 min-w-0">
-                {/* Active Season banner */}
-                <SeasonBanner />
+                {/* 1. Community Standing (merges reputation + ranking + recognitions) */}
+                {reputation && (
+                    <SectionCard title="Community Standing">
+                        <CommunityStanding reputation={reputation} recognitions={recognitions} />
+                    </SectionCard>
+                )}
 
-                {/* Reputation & Bounty */}
-                <SectionCard title="Reputation & Bounty" icon={<Coins className="w-4 h-4 text-amber-400/70" />} action={{ label: "View Details", href: "?tab=stats" }}>
-                    {recognitions.length > 0 ? (
-                        <ReputationBountyCard recognitions={recognitions} bounty={stats.bounty_balance ?? 0} reputation={reputation} />
-                    ) : (
-                        <EmptyState icon={<Coins className="w-6 h-6" />} title="Reputation insights coming soon" compact />
-                    )}
-                </SectionCard>
+                {/* 2. Daily Hub — owner's engagement center */}
+                {isOwnProfile && (
+                    <DailyHub bounty={stats.bounty_balance ?? 0} onOpenTab={onOpenTab} />
+                )}
 
-                {/* Community Ranking */}
-                <SectionCard title="Community Ranking" icon={<Hexagon className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View Leaderboard", href: "/leaderboard" }}>
-                    {reputation ? (
-                        <CommunityRanking reputation={reputation} />
-                    ) : (
-                        <EmptyState icon={<Hexagon className="w-6 h-6" />} title="Ranking not available yet" compact />
-                    )}
-                </SectionCard>
-
-                {/* Platforms & Genres */}
-                <SectionCard title="Platforms & Genres" icon={<BarChart3 className="w-4 h-4 text-blue-400/70" />} action={{ label: "View Stats", href: "?tab=stats" }}>
-                    {platformsGenres && platformsGenres.total > 0 ? (
-                        <div className="space-y-5">
-                            {platformsGenres.platforms.length > 0 && (
-                                <div>
-                                    <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 mb-3">Platforms</h4>
-                                    <DistributionBars items={platformsGenres.platforms} inline colorFn={rankColor} />
-                                </div>
-                            )}
-                            {platformsGenres.genres.length > 0 && (
-                                <div>
-                                    <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 mb-3">Top Genres</h4>
-                                    <DistributionBars items={platformsGenres.genres} inline colorFn={rankColor} />
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <EmptyState icon={<BarChart3 className="w-6 h-6" />} title="No collection data yet" compact />
-                    )}
-                </SectionCard>
-
-                {/* Contribution Milestones */}
-                <SectionCard title="Contribution Milestones" icon={<Flame className="w-4 h-4 text-[var(--accent)]" />}>
-                    {milestones.length > 0 ? (
-                        <ContributionMilestones milestones={milestones} />
-                    ) : (
-                        <EmptyState icon={<Target className="w-6 h-6" />} title="Milestones coming soon" compact />
-                    )}
-                </SectionCard>
-
-                {/* Loyalty & Customization */}
-                <SectionCard title="Loyalty & Customization" icon={<Sparkles className="w-4 h-4 text-fuchsia-400/70" />} action={{ label: "View Perks", href: "?tab=rewards" }}>
-                    {customization ? (
+                {/* 3. Supporter & Cosmetics */}
+                {customization && (isOwnProfile || customization.tier || customization.equipped?.theme || customization.equipped?.frame || customization.equipped?.badge) && (
+                    <SectionCard title="Supporter & Cosmetics" icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />}>
                         <LoyaltyCustomization
                             data={customization}
                             isOwnProfile={isOwnProfile}
@@ -234,10 +179,8 @@ export default function ProfileOverviewDashboard({ userData, stats, achievements
                             nextTierName={nextRank?.name ?? null}
                             tierColor={reputation?.tier_color}
                         />
-                    ) : (
-                        <EmptyState icon={<Sparkles className="w-6 h-6" />} title="Customization unlocks coming soon" compact />
-                    )}
-                </SectionCard>
+                    </SectionCard>
+                )}
             </div>
         </div>
     );
