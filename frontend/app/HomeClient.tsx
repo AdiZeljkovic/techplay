@@ -53,9 +53,16 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                     <div className="lg:col-span-2">
                         <ReviewsSection articles={latestReviews} />
                     </div>
-                    <div className="lg:col-span-1 border-t lg:border-t-0 border-zinc-200 dark:border-white/5 lg:border-l lg:pl-10 xl:pl-[60px] pt-10 lg:pt-0 border-l-zinc-200 dark:border-l-white/5">
-                        <CommunityForum />
-                        <TopGamers />
+                    {/* CommunityForum uses h-full + flex-1 rows, so it must live in a
+                        flex-1 wrapper — putting it directly next to a sibling makes the
+                        column height and the widget height inflate each other. */}
+                    <div className="lg:col-span-1 border-t lg:border-t-0 border-zinc-200 dark:border-white/5 lg:border-l lg:pl-10 xl:pl-[60px] pt-10 lg:pt-0 border-l-zinc-200 dark:border-l-white/5 flex flex-col">
+                        <div className="flex-1 min-h-0">
+                            <CommunityForum />
+                        </div>
+                        <div className="shrink-0">
+                            <TopGamers />
+                        </div>
                     </div>
                 </div>
             </div>
