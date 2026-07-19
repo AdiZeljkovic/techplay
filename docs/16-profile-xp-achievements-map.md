@@ -222,3 +222,26 @@
 - `RewardItem`: ime, cijena, tip, slika
 - `RewardRedemption`: evidencija redempcija
 - Frontend implementacija UNKNOWN
+
+---
+
+## Changelog 2026-07-19 — Profil redizajn "Command Center" (Faze 1-4)
+
+Kompletan redizajn profila u 4 commita (e717f27, 69872cf, 8c75df1, 8d96adf).
+
+### Konsolidacija progresije (odluka: jedan metal ladder)
+- **Rank (XP)** je JEDINA metal progresija (Bronze -> God of Gaming, RankSeeder nepromijenjen).
+- **Community Ranking -> "Community Standing"**: config/ranking.php tieri preimenovani u ne-metal nivoe: Rookie / Contributor / Regular / Veteran / Elite / Legend (divisions III/II/I ostaju). Drivano reputacijom kao i prije.
+- Support tieri su vec bili ne-metal (TechPlay Fan / Super Fan / TechPlay Legend); UI labela "Loyalty" -> "Supporter & Cosmetics".
+
+### Backend (AuthController@show + servisi)
+- Payload za posjetioce keiran 60s (`profile.show.v1.{username}`); vlasnik uvijek svjez; viewer-specific `given_by_me` flagovi se apliciraju POSLIJE kesa.
+- Percentile keiran 1h po rep vrijednosti; achievement katalog 1h; platformsAndGenres = SQL unnest agregacija (pgsql) s PHP fallbackom; gamerDna reuse-a vec izracunat breakdown.
+- **Bug fixevi**: `achievement_user` -> `user_achievements` (Wrapped + friend feed su bili tiho polomljeni); ProfileCompare `avatar` -> `avatar_url` i `is_published` -> `status='published'`; `penndingRequests` typo.
+- **Ekonomija**: season xp/bounty multiplikatori se SADA stvarno primjenjuju (Season::multipliers(), kes 5 min); forum reply i quest XP idu kroz XpService (cap + bounty mirror + rank check); PostObserver achievemente dodjeljuje kroz AchievementService.
+
+### Frontend layout
+- **Hero**: avatar s SVG level ringom (XP progres), jedna rank linija, live presence badge, 2 primarne akcije + overflow meni, 4 klikabilna stat chipa (Games/Achievements/Reputation+Top%/Lists). `ProfileStatStrip` i `ReputationPowerCard` OBRISANI.
+- **Tabovi 8 -> 6**: Overview, Collection, Lists, Achievements, Activity, Stats (+ Rewards samo vlasnik). `?tab=forum` legacy redirect u Activity (watched/bookmarked su tamo, own-only).
+- **Overview**: ShowcaseStrip (cover art centerpiece), ProfileChecklist (own onboarding, mijenja prazne kartice), empty sekcije se NE renderuju posjetiocima. Sidebar = 3 kartice: CommunityStanding (spaja 3 stare), DailyHub (bounty + season + streak + questovi), Supporter & Cosmetics.
+- **Tema**: svi hardkodirani tp-accent/orange/rgba(252,65,0) u profile komponentama -> var(--accent); equipped tema sada boji cijelu stranicu. QuestPanel/DailyStreakWidget/SteamAchievements na tokenima + axios/SWR.
