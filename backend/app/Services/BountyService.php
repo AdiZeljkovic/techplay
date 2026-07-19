@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\BountyTransaction;
+use App\Models\Season;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -15,9 +16,15 @@ class BountyService
 {
     /**
      * Credit bounty to a user. Returns the new balance.
+     * Season bounty multiplier applies unless the caller already scaled the
+     * amount (e.g. the XpService mirror, which carries the XP multiplier).
      */
-    public function award(User $user, int $amount, string $reason, string $type = 'earn'): int
+    public function award(User $user, int $amount, string $reason, string $type = 'earn', bool $applySeason = true): int
     {
+        if ($applySeason) {
+            $amount = (int) round($amount * Season::multipliers()['bounty']);
+        }
+
         if ($amount <= 0) {
             return (int) ($user->bounty_balance ?? 0);
         }

@@ -84,7 +84,8 @@ class QuestService
     private function grantRewards(User $user, Quest $quest): void
     {
         if ($quest->xp_reward > 0) {
-            $user->increment('xp', $quest->xp_reward);
+            // Single XP path: daily cap, bounty mirror, season multiplier, rank check
+            $this->xpService->awardXp($user, $quest->xp_reward, 'quest');
         }
 
         if ($quest->bounty_reward > 0) {

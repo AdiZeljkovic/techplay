@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class Season extends Model
 {
@@ -28,5 +29,21 @@ class Season extends Model
     public static function active(): ?self
     {
         return static::where('is_active', true)->first();
+    }
+
+    /**
+     * Cached XP/bounty multipliers of the active season (1.0 when none).
+     * Used by XpService/BountyService so seasonal boosts actually apply.
+     */
+    public static function multipliers(): array
+    {
+        return Cache::remember('season.multipliers.v1', 300, function () {
+            $season = static::active();
+
+            $xp = $season && (float) $season->xp_multiplier > 0 ? (float) $season->xp_multiplier : 1.0;
+            $bounty = $season && (float) $season->bounty_multiplier > 0 ? (float) $season->bounty_multiplier : 1.0;
+
+            return ['xp' => $xp, 'bounty' => $bounty];
+        });
     }
 }

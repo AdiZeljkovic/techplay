@@ -2,10 +2,9 @@
 
 namespace App\Observers;
 
-use App\Models\Achievement;
 use App\Models\Post;
-use App\Models\Rank;
-use Illuminate\Support\Facades\Log;
+use App\Services\AchievementService;
+use App\Services\XpService;
 
 class PostObserver
 {
@@ -14,8 +13,6 @@ class PostObserver
      */
     public function created(Post $post): void
     {
-        Log::info('PostObserver: created logic passed', ['post_id' => $post->id]);
-
         if (! $post->relationLoaded('author')) {
             $post->load('author');
         }
@@ -25,40 +22,18 @@ class PostObserver
             return;
         }
 
-        // 1. Award Points
+        // Reputation is independent of XP (community standing signal)
         $user->increment('forum_reputation', 5);
-        $user->increment('xp', 20);
 
-        // 2. Check Rank Upgrade
-        $newRank = Rank::where('min_xp', '<=', $user->xp)
-            ->orderBy('min_xp', 'desc')
-            ->first();
+        // XP through the single service path: daily cap, bounty mirror,
+        // season multiplier and rank check all apply consistently
+        app(XpService::class)->awardXp($user, 20, 'forum_post');
 
-        if ($newRank && $user->rank_id !== $newRank->id) {
-            $user->update(['rank_id' => $newRank->id]);
-        }
-
-        // 3. Check Achievements
-        $postCount = $user->posts()->count();
-
-        // "First Steps" - First Post
-        if ($postCount === 1) {
-            $this->unlockAchievement($user, 'First Steps');
-        }
-
-        // "Active Voice" - 10 Posts
-        if ($postCount === 10) {
-            $this->unlockAchievement($user, 'Active Voice');
-        }
-    }
-
-    protected function unlockAchievement($user, $name)
-    {
-        $achievement = Achievement::where('name', $name)->first();
-        if ($achievement) {
-            if (! $user->achievements()->where('achievement_id', $achievement->id)->exists()) {
-                $user->achievements()->attach($achievement->id, ['unlocked_at' => now()]);
-            }
+        // Achievements through the central service (criteria-driven),
+        // replacing the old hardcoded "First Steps"/"Active Voice" unlocks
+        try {
+            app(AchievementService::class)->check($user, ['posts_count']);
+        } catch (\Throwable) {
         }
     }
 

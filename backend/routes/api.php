@@ -147,7 +147,7 @@ Route::prefix('v1')->group(function () {
 
         // Friends
         Route::get('/friends', [FriendController::class, 'index']);
-        Route::get('/friends/pending', [FriendController::class, 'penndingRequests']);
+        Route::get('/friends/pending', [FriendController::class, 'pendingRequests']);
         Route::get('/friends/search', [FriendController::class, 'search']);
         Route::post('/friends/request', [FriendController::class, 'sendRequest']);
         Route::post('/friends/block/{id}', [FriendController::class, 'block']);

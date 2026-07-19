@@ -59,7 +59,7 @@ class ProfileCompareController extends Controller
         return [
             'username' => $user->username,
             'display_name' => $user->display_name ?? $user->name,
-            'avatar' => $user->avatar,
+            'avatar' => $user->avatar_url,
             'xp' => $user->xp ?? 0,
             'rank' => optional($user->rank)->name,
         ];
@@ -76,7 +76,7 @@ class ProfileCompareController extends Controller
             'hours_played' => (int) (clone $games)->sum('hours_played'),
             'reputation' => $user->forum_reputation ?? 0,
             'forum_posts' => Post::where('user_id', $user->id)->count(),
-            'articles' => Article::where('author_id', $user->id)->where('is_published', true)->count(),
+            'articles' => Article::where('author_id', $user->id)->where('status', 'published')->count(),
         ];
     }
 }

@@ -38,7 +38,7 @@ class FriendController extends Controller
     }
 
     // List pending requests (received) - return only safe fields
-    public function penndingRequests()
+    public function pendingRequests()
     {
         $requests = Friendship::where('receiver_id', Auth::id())
             ->where('status', 'pending')

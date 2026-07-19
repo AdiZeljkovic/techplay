@@ -8,6 +8,7 @@ use App\Models\ReputationSnapshot;
 use App\Models\User;
 use App\Models\UserCustomization;
 use App\Models\UserGame;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -21,12 +22,12 @@ class ProfileService
     private const DEFAULT_WEIGHTS = ['post' => 5, 'comment' => 2, 'thread' => 10];
 
     private const DEFAULT_TIERS = [
-        ['name' => 'Bronze', 'min' => 0, 'color' => '#CD7F32'],
-        ['name' => 'Silver', 'min' => 2000, 'color' => '#C0C0C0'],
-        ['name' => 'Gold', 'min' => 5000, 'color' => '#FFD700'],
-        ['name' => 'Platinum', 'min' => 10000, 'color' => '#67E8F9'],
-        ['name' => 'Diamond', 'min' => 20000, 'color' => '#60A5FA'],
-        ['name' => 'Master', 'min' => 40000, 'color' => '#C084FC'],
+        ['name' => 'Rookie', 'min' => 0, 'color' => '#9CA3AF'],
+        ['name' => 'Contributor', 'min' => 2000, 'color' => '#4ADE80'],
+        ['name' => 'Regular', 'min' => 5000, 'color' => '#60A5FA'],
+        ['name' => 'Veteran', 'min' => 10000, 'color' => '#A78BFA'],
+        ['name' => 'Elite', 'min' => 20000, 'color' => '#FBBF24'],
+        ['name' => 'Legend', 'min' => 40000, 'color' => '#FC4100'],
     ];
 
     /**
@@ -117,6 +118,42 @@ class ProfileService
      */
     public function platformsAndGenres(User $user, int $top = 5): array
     {
+        // Postgres fast path: aggregate in SQL instead of loading the whole
+        // collection into PHP (a 500-game library was ~1000 array iterations).
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $total = UserGame::where('user_id', $user->id)->count();
+
+            $aggregate = function (string $column) use ($user, $top, $total) {
+                return DB::table('user_games')
+                    ->join('games', 'games.id', '=', 'user_games.game_id')
+                    ->where('user_games.user_id', $user->id)
+                    ->selectRaw("trim(both from unnest(games.{$column})) as name, count(*) as c")
+                    ->groupBy('name')
+                    ->havingRaw("trim(both from name) <> ''")
+                    ->orderByDesc('c')
+                    ->limit($top)
+                    ->get()
+                    ->map(fn ($row) => [
+                        'name' => $row->name,
+                        'count' => (int) $row->c,
+                        'percent' => $total > 0 ? (int) round(((int) $row->c / $total) * 100) : 0,
+                    ])
+                    ->all();
+            };
+
+            return [
+                'platforms' => $aggregate('platform_names'),
+                'genres' => $aggregate('genre_names'),
+                'total' => $total,
+            ];
+        }
+
+        return $this->platformsAndGenresPhp($user, $top);
+    }
+
+    /** In-PHP fallback for non-Postgres drivers (tests run on SQLite). */
+    private function platformsAndGenresPhp(User $user, int $top): array
+    {
         $games = UserGame::where('user_id', $user->id)
             ->with(['game:id,platform_names,genre_names'])
             ->get()
@@ -168,9 +205,15 @@ class ProfileService
      * Gamer DNA — favorite genres/platforms (from collection), playstyle tags
      * (user-set), and favorite franchises (favorited games' series names).
      */
-    public function gamerDna(User $user): array
+    public function gamerDna(User $user, ?array $pg = null): array
     {
-        $pg = $this->platformsAndGenres($user, 4);
+        // Reuse an already-computed platforms/genres breakdown when the caller
+        // has one (AuthController@show) instead of re-running the aggregation.
+        $pg = $pg ?? $this->platformsAndGenres($user, 4);
+        $pg = [
+            'genres' => array_slice($pg['genres'], 0, 4),
+            'platforms' => array_slice($pg['platforms'], 0, 4),
+        ];
 
         $franchises = UserGame::where('user_id', $user->id)
             ->where('is_favorite', true)
@@ -199,10 +242,15 @@ class ProfileService
     {
         $rep = (int) ($user->forum_reputation ?? 0);
 
-        // Percentile — "Top X%" of the community by reputation.
-        $total = User::count();
-        $higher = User::where('forum_reputation', '>', $rep)->count();
-        $percentile = $total > 0 ? max(1, (int) ceil((($higher + 1) / $total) * 100)) : 100;
+        // Percentile — "Top X%" of the community by reputation. Cached per
+        // reputation value (1h): previously this ran two full-table scans on
+        // EVERY profile view.
+        $percentile = Cache::remember("reputation.percentile.v1.{$rep}", 3600, function () use ($rep) {
+            $total = User::count();
+            $higher = User::where('forum_reputation', '>', $rep)->count();
+
+            return $total > 0 ? max(1, (int) ceil((($higher + 1) / $total) * 100)) : 100;
+        });
 
         // Community ranking tier + division.
         [$tierName, $tierColor, $division] = $this->rankingTier($rep);
@@ -380,7 +428,7 @@ class ProfileService
                 'profile_spotlight' => in_array('profile-spotlight', $ownedPerkSlugs, true),
             ],
             'summary' => $summary,
-            'tier' => optional(optional($user->activeSupport()->with('tier')->first())->tier)->name,
+            'tier' => $user->loadMissing('activeSupport.tier')->activeSupport?->tier?->name,
         ];
     }
 

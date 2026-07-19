@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Rank;
+use App\Models\Season;
 use App\Models\User;
 use App\Notifications\RankUpNotification;
 use Illuminate\Support\Facades\Cache;
@@ -25,9 +26,12 @@ class XpService
 
     /**
      * Award XP to a user for a specific action, respecting caps and cooldowns.
+     * Season XP multiplier is applied to the base amount (still subject to the daily cap).
      */
     public function awardXp(User $user, int $amount, string $actionType): void
     {
+        $amount = (int) round($amount * Season::multipliers()['xp']);
+
         // 1. Check strict cooldown for comments to prevent spam
         if ($actionType === 'comment') {
             $lastCommentKey = "user:{$user->id}:last_comment_time";
@@ -53,9 +57,10 @@ class XpService
         Cache::increment($dailyKey, $actualAmount);
 
         // Mirror the XP gain as Bounty currency (1:1) for the rewards store.
+        // applySeason=false — the amount already carries the season XP multiplier.
         if ($actualAmount > 0) {
             try {
-                app(BountyService::class)->award($user, $actualAmount, "Earned from {$actionType}");
+                app(BountyService::class)->award($user, $actualAmount, "Earned from {$actionType}", 'earn', false);
             } catch (\Throwable $e) {
                 // Never let bounty accounting block XP awarding.
                 \Log::warning('Bounty award failed: '.$e->getMessage());

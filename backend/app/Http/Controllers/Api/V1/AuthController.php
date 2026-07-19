@@ -16,6 +16,7 @@ use App\Traits\ApiResponse;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
@@ -168,6 +169,29 @@ class AuthController extends Controller
 
     public function show(string $username)
     {
+        $viewer = Auth::user();
+        $isOwner = $viewer !== null && strcasecmp($viewer->username ?? '', $username) === 0;
+
+        // Visitors share a short-lived cached payload (the build runs ~35+
+        // queries); the owner always gets fresh data.
+        $payload = $isOwner
+            ? $this->buildProfilePayload($username)
+            : Cache::remember('profile.show.v1.'.strtolower($username), 60, fn () => $this->buildProfilePayload($username));
+
+        // Viewer-specific overlay — "given_by_me" recognition flags must never
+        // come from the shared cache.
+        if ($viewer !== null && ! $isOwner) {
+            $target = User::select('id')->where('username', $username)->first();
+            if ($target) {
+                $payload['recognitions'] = (new ProfileService)->recognitions($target, $viewer->id);
+            }
+        }
+
+        return response()->json($payload);
+    }
+
+    private function buildProfilePayload(string $username): array
+    {
         // PERFORMANCE: Use loadCount to avoid N+1 queries for counts
         $user = User::where('username', $username)
             ->with(['rank', 'activeSupport.tier', 'achievements'])
@@ -222,8 +246,10 @@ class AuthController extends Controller
         $userAchievementsMap = $user->achievements->keyBy('id')->map(fn ($a) => $a->pivot->unlocked_at);
         $userUnlockedIds = $userAchievementsMap->keys()->toArray();
 
-        // Get all achievements and merge with user's unlocked status
-        $allAchievements = Achievement::all()->map(function ($achievement) use ($userAchievementsMap) {
+        // Get all achievements (catalog cached 1h — it was loaded on every view)
+        // and merge with user's unlocked status
+        $achievementCatalog = Cache::remember('achievements.catalog.v1', 3600, fn () => Achievement::all());
+        $allAchievements = $achievementCatalog->map(function ($achievement) use ($userAchievementsMap) {
             $isUnlocked = $userAchievementsMap->has($achievement->id);
 
             return [
@@ -264,12 +290,14 @@ class AuthController extends Controller
             'bounty_balance' => (int) ($user->bounty_balance ?? 0),
         ];
 
-        return response()->json([
-            'user' => new PublicUserResource($user),
+        $nextRank = $user->nextRank();
+
+        return [
+            'user' => (new PublicUserResource($user))->resolve(),
             'achievements' => $allAchievements,
-            'next_rank' => $user->nextRank() ? [
-                'name' => $user->nextRank()->name,
-                'min_xp' => $user->nextRank()->min_xp,
+            'next_rank' => $nextRank ? [
+                'name' => $nextRank->name,
+                'min_xp' => $nextRank->min_xp,
             ] : null,
             'recent_threads' => $recentThreads,
             'recent_comments' => $recentComments,
@@ -279,11 +307,12 @@ class AuthController extends Controller
             // Phase 1 — game collection dashboard blocks
             'collection_snapshot' => $profileService->collectionSnapshot($user),
             'playing_now' => $profileService->playingNow($user),
-            'platforms_genres' => $profileService->platformsAndGenres($user),
-            'gamer_dna' => $profileService->gamerDna($user),
+            'platforms_genres' => $platformsGenres = $profileService->platformsAndGenres($user),
+            'gamer_dna' => $profileService->gamerDna($user, $platformsGenres),
             // Phase 2 — reputation, ranking, recognitions, milestones
+            // (recognitions cached giver-agnostic; viewer overlay is applied in show())
             'reputation' => $profileService->reputation($user),
-            'recognitions' => $profileService->recognitions($user, Auth::id()),
+            'recognitions' => $profileService->recognitions($user, null),
             'milestones' => $profileService->milestones([
                 'forum_posts' => $stats['posts_count'],
                 'threads' => $stats['threads_count'],
@@ -302,7 +331,7 @@ class AuthController extends Controller
                 'days' => $user->daily_streak ?? 0,
                 'claimed_today' => $user->last_daily_claim && Carbon::parse($user->last_daily_claim)->isToday(),
             ],
-        ]);
+        ];
     }
 
     public function updateProfile(Request $request)

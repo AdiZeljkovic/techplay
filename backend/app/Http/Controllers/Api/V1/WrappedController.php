@@ -48,10 +48,10 @@ class WrappedController extends Controller
             ->first();
 
         // Achievements unlocked this year
-        $achievementsThisYear = DB::table('achievement_user')
-            ->join('achievements', 'achievements.id', '=', 'achievement_user.achievement_id')
-            ->where('achievement_user.user_id', $user->id)
-            ->whereBetween('achievement_user.unlocked_at', [$start, $end])
+        $achievementsThisYear = DB::table('user_achievements')
+            ->join('achievements', 'achievements.id', '=', 'user_achievements.achievement_id')
+            ->where('user_achievements.user_id', $user->id)
+            ->whereBetween('user_achievements.unlocked_at', [$start, $end])
             ->select('achievements.name', 'achievements.icon_path', 'achievements.points')
             ->orderByDesc('achievements.points')
             ->get();

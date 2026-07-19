@@ -92,15 +92,15 @@ class FriendActivityController extends Controller
         }
 
         // 3. Recent achievement unlocks (last 7 days).
-        $achievementActivity = DB::table('achievement_user')
-            ->join('users', 'users.id', '=', 'achievement_user.user_id')
-            ->join('achievements', 'achievements.id', '=', 'achievement_user.achievement_id')
-            ->whereIn('achievement_user.user_id', $friendIds)
-            ->where('achievement_user.unlocked_at', '>=', now()->subDays(7))
-            ->orderByDesc('achievement_user.unlocked_at')
+        $achievementActivity = DB::table('user_achievements')
+            ->join('users', 'users.id', '=', 'user_achievements.user_id')
+            ->join('achievements', 'achievements.id', '=', 'user_achievements.achievement_id')
+            ->whereIn('user_achievements.user_id', $friendIds)
+            ->where('user_achievements.unlocked_at', '>=', now()->subDays(7))
+            ->orderByDesc('user_achievements.unlocked_at')
             ->limit(15)
             ->select([
-                'achievement_user.unlocked_at',
+                'user_achievements.unlocked_at',
                 'users.id as user_id',
                 'users.username',
                 'users.display_name',
