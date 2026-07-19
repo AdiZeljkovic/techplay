@@ -31,6 +31,12 @@ class Season extends Model
         return static::where('is_active', true)->first();
     }
 
+    /** Cached id of the active season (null when none). */
+    public static function activeId(): ?int
+    {
+        return Cache::remember('season.active_id.v1', 300, fn () => static::active()?->id) ?: null;
+    }
+
     /**
      * Cached XP/bounty multipliers of the active season (1.0 when none).
      * Used by XpService/BountyService so seasonal boosts actually apply.

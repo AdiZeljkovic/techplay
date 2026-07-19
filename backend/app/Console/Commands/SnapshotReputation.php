@@ -14,12 +14,20 @@ use Illuminate\Console\Command;
  */
 class SnapshotReputation extends Command
 {
-    protected $signature = 'profile:snapshot-reputation {--period= : Period to snapshot as YYYY-MM (defaults to last month)}';
+    protected $signature = 'profile:snapshot-reputation
+        {--period= : Period to snapshot as YYYY-MM (defaults to last month)}
+        {--weekly : Snapshot the CURRENT week baseline (period like 2026-W29) for weekly leaderboards}';
 
-    protected $description = 'Snapshot each user\'s reputation and monthly contribution for MoM deltas';
+    protected $description = 'Snapshot each user\'s reputation/XP and monthly contribution for deltas and weekly leaderboards';
 
     public function handle(): int
     {
+        // Weekly mode: capture the start-of-week baseline (run Monday 00:10).
+        // Weekly leaderboards rank users by current value minus this baseline.
+        if ($this->option('weekly')) {
+            return $this->snapshotWeekly();
+        }
+
         $period = $this->option('period') ?: now()->subMonth()->format('Y-m');
 
         if (! preg_match('/^\d{4}-\d{2}$/', $period)) {
@@ -44,13 +52,43 @@ class SnapshotReputation extends Command
 
                 ReputationSnapshot::updateOrCreate(
                     ['user_id' => $user->id, 'period' => $period],
-                    ['reputation' => (int) ($user->forum_reputation ?? 0), 'contribution_points' => $contribution],
+                    [
+                        'reputation' => (int) ($user->forum_reputation ?? 0),
+                        'xp' => (int) ($user->xp ?? 0),
+                        'contribution_points' => $contribution,
+                    ],
                 );
                 $count++;
             }
         });
 
         $this->info("Done — {$count} snapshots written for {$period}. ✓");
+
+        return self::SUCCESS;
+    }
+
+    private function snapshotWeekly(): int
+    {
+        $period = now()->format('o-\WW'); // e.g. 2026-W29
+
+        $this->info("Snapshotting weekly baseline for {$period}…");
+        $count = 0;
+
+        User::query()->chunkById(500, function ($users) use ($period, &$count) {
+            foreach ($users as $user) {
+                ReputationSnapshot::updateOrCreate(
+                    ['user_id' => $user->id, 'period' => $period],
+                    [
+                        'reputation' => (int) ($user->forum_reputation ?? 0),
+                        'xp' => (int) ($user->xp ?? 0),
+                        'contribution_points' => 0,
+                    ],
+                );
+                $count++;
+            }
+        });
+
+        $this->info("Done — {$count} weekly baselines written for {$period}. ✓");
 
         return self::SUCCESS;
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Quest;
 use App\Models\QuestProgress;
+use App\Models\Season;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,7 +26,11 @@ class QuestController extends Controller
             ->where(function ($q) {
                 $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
             })
-            ->orderByRaw("CASE type WHEN 'daily' THEN 0 WHEN 'weekly' THEN 1 WHEN 'monthly' THEN 2 ELSE 3 END")
+            // Show global quests + the active season's quests only
+            ->where(function ($q) {
+                $q->whereNull('season_id')->orWhere('season_id', Season::activeId());
+            })
+            ->orderByRaw("CASE WHEN season_id IS NOT NULL THEN 0 ELSE 1 END, CASE type WHEN 'daily' THEN 0 WHEN 'weekly' THEN 1 WHEN 'monthly' THEN 2 ELSE 3 END")
             ->get();
 
         $progressMap = QuestProgress::where('user_id', $userId)
@@ -59,6 +64,7 @@ class QuestController extends Controller
                 'bounty_reward' => $quest->bounty_reward,
                 'progress' => $progress,
                 'completed' => $completed,
+                'is_seasonal' => $quest->season_id !== null,
                 'expires_at' => $quest->expires_at?->toIso8601String(),
             ];
         });

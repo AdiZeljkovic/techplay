@@ -11,6 +11,7 @@ interface Quest {
   description: string;
   icon: string | null;
   type: "daily" | "weekly" | "monthly" | "permanent";
+  is_seasonal?: boolean;
   criteria_value: number;
   xp_reward: number;
   bounty_reward: number;
@@ -50,9 +51,15 @@ function QuestRow({ quest, compact }: { quest: Quest; compact?: boolean }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             <p className="text-[13px] font-semibold text-white truncate">{quest.name}</p>
-            <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${cfg.color}`}>
-              {cfg.label}
-            </span>
+            {quest.is_seasonal ? (
+              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border text-[var(--accent)] bg-[var(--accent)]/10 border-[var(--accent)]/25">
+                Season
+              </span>
+            ) : (
+              <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${cfg.color}`}>
+                {cfg.label}
+              </span>
+            )}
           </div>
           {!compact && <p className="text-[11px] text-white/40 mb-2">{quest.description}</p>}
 

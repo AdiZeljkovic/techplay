@@ -11,11 +11,13 @@ class ReputationSnapshot extends Model
         'user_id',
         'period',
         'reputation',
+        'xp',
         'contribution_points',
     ];
 
     protected $casts = [
         'reputation' => 'integer',
+        'xp' => 'integer',
         'contribution_points' => 'integer',
     ];
 

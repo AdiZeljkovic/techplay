@@ -75,10 +75,13 @@ function rowGlow(pos: number): string {
 
 export default function LeaderboardPage() {
     const [active, setActive] = useState<BoardType>("xp");
+    const [period, setPeriod] = useState<"all" | "week">("all");
     const board = BOARDS.find((b) => b.id === active)!;
+    const weeklySupported = active === "xp" || active === "reputation";
+    const effectivePeriod = weeklySupported ? period : "all";
 
     const { data: entries = [], isLoading } = useSWR<LeaderboardEntry[]>(
-        `/leaderboard?type=${active}`,
+        `/leaderboard?type=${active}&period=${effectivePeriod}`,
         fetcher,
         { revalidateOnFocus: false, dedupingInterval: 60000 }
     );
@@ -115,6 +118,22 @@ export default function LeaderboardPage() {
                     })}
                 </div>
 
+                {/* Period toggle — weekly cut for the score boards */}
+                {weeklySupported && (
+                    <div className="flex justify-center mb-6">
+                        <div className="inline-flex rounded-xl border border-white/[0.07] bg-white/[0.03] p-1">
+                            {([["all", "All Time"], ["week", "This Week"]] as const).map(([id, label]) => (
+                                <button key={id} onClick={() => setPeriod(id)}
+                                    className={`px-4 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${
+                                        period === id ? "bg-[var(--accent)] text-white" : "text-white/40 hover:text-white"
+                                    }`}>
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {/* Leaderboard */}
                 <div className="rounded-2xl bg-[#0B0E14] border border-white/[0.07] overflow-hidden">
                     {/* Column headers */}
@@ -129,7 +148,9 @@ export default function LeaderboardPage() {
                             <Loader2 className="w-6 h-6 animate-spin" />
                         </div>
                     ) : entries.length === 0 ? (
-                        <div className="text-center py-16 text-white/30 text-[14px]">No data yet</div>
+                        <div className="text-center py-16 text-white/30 text-[14px]">
+                            {effectivePeriod === "week" ? "No activity yet this week — be the first!" : "No data yet"}
+                        </div>
                     ) : (
                         <div className="divide-y divide-white/[0.04]">
                             {entries.map((entry) => (

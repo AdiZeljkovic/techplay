@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Quest;
 use App\Models\QuestProgress;
+use App\Models\Season;
 use App\Models\User;
 use App\Notifications\QuestCompletedNotification;
 use Carbon\Carbon;
@@ -33,6 +34,10 @@ class QuestService
                 ->where('criteria_type', $criteriaType)
                 ->where(function ($q) {
                     $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+                })
+                // Seasonal quests only progress while their season is active
+                ->where(function ($q) {
+                    $q->whereNull('season_id')->orWhere('season_id', Season::activeId());
                 })
                 ->get();
 

@@ -19,19 +19,65 @@ class LeaderboardController extends Controller
     private const TTL = 300; // 5 min — fresh enough, cheap enough
 
     /**
-     * GET /leaderboard?type=xp|reputation|collection|completions
+     * GET /leaderboard?type=xp|reputation|collection|completions&period=all|week
+     * period=week ranks by delta since Monday's snapshot (xp/reputation only).
      */
     public function index(Request $request): JsonResponse
     {
         $type = $request->query('type', 'xp');
+        $period = $request->query('period', 'all');
 
         if (! in_array($type, ['xp', 'reputation', 'collection', 'completions'])) {
             return $this->error('Invalid leaderboard type', 422);
         }
 
-        $data = Cache::remember("leaderboard:{$type}", self::TTL, fn () => $this->build($type));
+        if (! in_array($period, ['all', 'week'])) {
+            return $this->error('Invalid leaderboard period', 422);
+        }
+
+        // Weekly cut only exists for the score-based boards
+        if ($period === 'week' && ! in_array($type, ['xp', 'reputation'])) {
+            $period = 'all';
+        }
+
+        $weekKey = now()->format('o-\WW');
+        $cacheKey = $period === 'week' ? "leaderboard:{$type}:week:{$weekKey}" : "leaderboard:{$type}";
+
+        $data = Cache::remember($cacheKey, self::TTL, fn () => $period === 'week'
+            ? $this->buildWeekly($type, $weekKey)
+            : $this->build($type));
 
         return $this->success($data);
+    }
+
+    /**
+     * Rank by gain since the start-of-week baseline snapshot. Users without
+     * a baseline (joined mid-week) count their full score as this week's gain.
+     */
+    private function buildWeekly(string $type, string $weekKey): array
+    {
+        $column = $type === 'xp' ? 'xp' : 'forum_reputation';
+        $snapshotColumn = $type === 'xp' ? 'xp' : 'reputation';
+        $label = $type === 'xp' ? 'XP this week' : 'Rep this week';
+
+        $rows = DB::table('users')
+            ->leftJoin('reputation_snapshots as s', function ($join) use ($weekKey) {
+                $join->on('s.user_id', '=', 'users.id')->where('s.period', '=', $weekKey);
+            })
+            ->selectRaw("users.id, users.username, users.display_name, users.avatar_url, (COALESCE(users.{$column},0) - COALESCE(s.{$snapshotColumn},0)) as delta")
+            ->orderByDesc('delta')
+            ->limit(self::LIMIT)
+            ->get();
+
+        return $rows->filter(fn ($r) => (int) $r->delta > 0)->values()->map(fn ($r, int $i) => [
+            'position' => $i + 1,
+            'username' => $r->username,
+            'name' => $r->display_name ?? $r->username,
+            'avatar_url' => $r->avatar_url,
+            'rank_title' => null,
+            'value' => (int) $r->delta,
+            'label' => $label,
+        ])->all();
     }
 
     private function build(string $type): array

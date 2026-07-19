@@ -41,5 +41,11 @@ Schedule::command('games:sync-new-releases')->weeklyOn(1, '04:00');
 // PROFILE: Snapshot reputation + monthly contribution on the 1st of each month
 Schedule::command('profile:snapshot-reputation')->monthlyOn(1, '00:30');
 
+// LEADERBOARD: Weekly baseline snapshot every Monday (powers period=week boards)
+Schedule::command('profile:snapshot-reputation --weekly')->weeklyOn(1, '00:10');
+
+// SEASONS: Conclude finished seasons (awards champion badges) — daily check
+Schedule::command('season:conclude')->dailyAt('00:20');
+
 // FORUM: Unpin bounty-funded self-pins once their 24h window expires
 Schedule::command('forum:clear-expired-pins')->hourly();
