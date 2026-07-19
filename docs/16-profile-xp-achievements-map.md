@@ -265,3 +265,10 @@ Kompletan redizajn profila u 4 commita (e717f27, 69872cf, 8c75df1, 8d96adf).
 - **Founder kampanja**: `campaign:founders` (scheduled daily 10:00, --limit=50 --min-games=5 --dry-run) - award-only "Founder" badge prvim korisnicima s 5+ igara (redoslijed po created_at 5. igre), DB notifikacija dobitnicima. `Customization::isAwardOnly()` (badge + cost 0 + bez tiera): skriven iz kataloga za ne-vlasnike i NE moze se kupiti - zatvorena rupa gdje je Season Champion badge bio besplatno acquirable svima.
 - **Motion polish**: `useCountUp` hook (rAF ease-out, respektuje prefers-reduced-motion) na hero stat chipovima + Gamerscore; level ring i XP bar pune se od nule na mount (reduced-motion preskace); `tp-fade-up`/`tp-d1..d6` stagger (globals.css) na hero elementima i Showcase karticama.
 - **Mobile pass**: ring 116px + manji LVL badge ispod 768px (matchMedia); action red se wrapa; Daily Hub se na mobilnom renderuje odmah nakon Showcasea u glavnoj koloni (sidebar kopija hidden lg:block; SWR dedupe pa je dupli mount jeftin).
+
+### Povezivanje ostrva (2026-07-19, vecer)
+- **Share-able liste**: `GET /users/{username}/lists/{slug}` (javna, privatna samo vlasniku) + SSR stranica `/lists/[username]/[slug]` (OG metadata, hero s coverima, grid igara, link na vlasnika); Share dugme u ListsTab detalju kopira javni URL.
+- **Homepage TopGamers widget** (`components/home/TopGamers.tsx`): top 5 sedmicnih XP dobitnika (fallback na all-time dok je sedmica prazna), ispod CommunityForum u Row 2; linkovi na profile + /leaderboard.
+- **Clan kartica** na profilu sada vodi na `/clans/[slug]` umjesto genericki /clans.
+- **Wrapped + Backlog Advisor**: dodani u Community (FORUM) header dropdown i kao precice u Daily Hub; nova `/wrapped` ruta redirecta prijavljenog korisnika na njegov Wrapped (gost -> login).
+- **Gamerscore chip** u heroju klikabilan (otvara Stats tab).
