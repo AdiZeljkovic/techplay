@@ -51,7 +51,7 @@ export default function CommunityStanding({ reputation, recognitions = [] }: {
             <div>
                 <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-black text-white tabular-nums leading-none">
-                        {reputation.reputation.toLocaleString()}
+                        {reputation.reputation.toLocaleString("en-US")}
                     </span>
                     <span className="text-[11px] font-bold uppercase tracking-wider text-white/40">Reputation</span>
                     {delta !== null && (
@@ -68,7 +68,7 @@ export default function CommunityStanding({ reputation, recognitions = [] }: {
             <div className="flex items-center justify-between py-3 border-y border-[var(--border)]">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-white/40">This month</span>
                 <span className="flex items-baseline gap-1.5">
-                    <span className="text-[15px] font-black text-white tabular-nums">{reputation.monthly_contribution.toLocaleString()}</span>
+                    <span className="text-[15px] font-black text-white tabular-nums">{reputation.monthly_contribution.toLocaleString("en-US")}</span>
                     <span className="text-[11px] text-white/40">pts</span>
                     {contribDelta !== null && (
                         <span className={`text-[10px] font-bold ${contribDelta >= 0 ? "text-emerald-400" : "text-red-400"}`}>

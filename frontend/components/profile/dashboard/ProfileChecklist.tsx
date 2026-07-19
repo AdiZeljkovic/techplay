@@ -1,22 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, Circle, Gamepad2, Play, ListChecks, Tag, MessagesSquare, Rocket } from "lucide-react";
+import axios from "@/lib/axios";
+import toast from "react-hot-toast";
+import { CheckCircle2, Circle, Gamepad2, Play, ListChecks, Tag, MessagesSquare, Rocket, Sparkles } from "lucide-react";
 import type { ProfileStats } from "@/lib/types/profile";
 
 interface Props {
     stats: ProfileStats;
     listsCount: number;
     hasGamertags: boolean;
+    steamConnected: boolean;
     onOpenTab: (tab: string) => void;
+}
+
+async function startSteamConnect() {
+    try {
+        const res = await axios.get("/connected-accounts/steam/connect");
+        const url = res.data?.data?.url;
+        if (url) { window.location.href = url; return; }
+        toast.error("Couldn't start the Steam connection.");
+    } catch {
+        toast.error("Couldn't start the Steam connection.");
+    }
 }
 
 /**
  * Own-profile onboarding card: one checklist instead of a page full of
  * empty-state cards. Each item is a CTA; the card disappears once complete.
  */
-export default function ProfileChecklist({ stats, listsCount, hasGamertags, onOpenTab }: Props) {
+export default function ProfileChecklist({ stats, listsCount, hasGamertags, steamConnected, onOpenTab }: Props) {
     const items = [
+        {
+            key: "steam",
+            label: "Connect Steam — import your library in 30s",
+            done: steamConnected,
+            icon: Sparkles,
+            onClick: startSteamConnect,
+        },
         {
             key: "game",
             label: "Add your first game",

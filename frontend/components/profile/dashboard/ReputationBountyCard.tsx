@@ -23,7 +23,7 @@ export default function ReputationBountyCard({ recognitions, bounty = 0, reputat
                 <div className="pr-5 border-r border-white/[0.06]">
                     <div className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/40 mb-1.5">Reputation</div>
                     <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-white tabular-nums leading-none">{(reputation?.reputation ?? 0).toLocaleString()}</span>
+                        <span className="text-2xl font-black text-white tabular-nums leading-none">{(reputation?.reputation ?? 0).toLocaleString("en-US")}</span>
                         {delta !== null && (
                             <span className={`inline-flex items-center gap-0.5 text-[11px] font-bold ${delta >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                                 {delta >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
@@ -40,7 +40,7 @@ export default function ReputationBountyCard({ recognitions, bounty = 0, reputat
                     <div className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/40 mb-1.5">Bounty Balance</div>
                     <div className="flex items-center gap-2">
                         <span className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-300 to-amber-500 flex items-center justify-center text-[12px] font-black text-amber-900 shadow">$</span>
-                        <span className="text-2xl font-black text-white tabular-nums leading-none">{bounty.toLocaleString()}</span>
+                        <span className="text-2xl font-black text-white tabular-nums leading-none">{bounty.toLocaleString("en-US")}</span>
                     </div>
                     <div className="text-[10px] text-white/35 mt-2 leading-snug">Use Bounty in the<br />Bounty Store</div>
                 </div>
@@ -60,7 +60,7 @@ export default function ReputationBountyCard({ recognitions, bounty = 0, reputat
                                 </div>
                                 <div className="min-w-0">
                                     <div className="text-[11px] font-semibold text-white/60 truncate">{r.label}</div>
-                                    <div className="text-[13px] font-black text-white tabular-nums leading-none">{r.count.toLocaleString()}</div>
+                                    <div className="text-[13px] font-black text-white tabular-nums leading-none">{r.count.toLocaleString("en-US")}</div>
                                 </div>
                             </div>
                         );

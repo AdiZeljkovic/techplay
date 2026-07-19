@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import Link from "next/link";
@@ -19,6 +19,7 @@ import ListsTab from "@/components/profile/ListsTab";
 import ForumActivityTab from "@/components/profile/ForumActivityTab";
 import ActivityFeed from "@/components/profile/ActivityFeed";
 import StatsPanel from "@/components/profile/StatsPanel";
+import WelcomeOnboarding from "@/components/profile/WelcomeOnboarding";
 import SectionCard from "@/components/profile/dashboard/SectionCard";
 import SteamAchievements from "@/components/profile/dashboard/SteamAchievements";
 import type { UserProfile } from "@/lib/types/profile";
@@ -46,8 +47,22 @@ function ProfilePageInner() {
     const [friendStatus, setFriendStatus] = useState<"none" | "pending" | "accepted">("none");
     const [loadingAction, setLoadingAction] = useState(false);
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+    const [welcomeOpen, setWelcomeOpen] = useState(false);
 
     const { data: profile, isLoading } = useSWR<UserProfile>(shouldFetch ? `/users/${username}` : null, fetcher);
+
+    const welcomeForced = searchParams.get("welcome") === "1";
+
+    // Activation wizard: own EMPTY profile (once) or forced via ?welcome=1
+    useEffect(() => {
+        if (!profile?.user || !currentUser) return;
+        if (currentUser.username !== profile.user.username) return;
+        let dismissed = false;
+        try { dismissed = localStorage.getItem("tp_welcome_dismissed") === "1"; } catch { /* ignore */ }
+        if (welcomeForced || ((profile.stats?.games_count ?? 0) === 0 && !dismissed)) {
+            setWelcomeOpen(true);
+        }
+    }, [profile, currentUser, welcomeForced]);
 
     const setActiveTab = (tab: ProfileTab) => {
         const qs = new URLSearchParams(searchParams.toString());
@@ -160,6 +175,7 @@ function ProfilePageInner() {
                         lists={profile.lists}
                         customization={profile.customization}
                         nextRank={profile.next_rank}
+                        connectedAccounts={profile.connected_accounts}
                         onOpenTab={(t) => setActiveTab(t as ProfileTab)}
                     />
                 )}
@@ -210,6 +226,14 @@ function ProfilePageInner() {
                 onClose={() => setIsMessageModalOpen(false)}
                 recipientUsername={userData.username}
             />
+
+            {welcomeOpen && isOwnProfile && (
+                <WelcomeOnboarding
+                    username={userData.username}
+                    forced={welcomeForced}
+                    onClose={() => setWelcomeOpen(false)}
+                />
+            )}
         </div>
     );
 }

@@ -55,7 +55,7 @@ export default function LoyaltyCustomization({ data, isOwnProfile, username, xp 
                     {nextTierName ? (
                         <>
                             <div className="text-[11px] text-white/45">Next Tier: {nextTierName}</div>
-                            <div className="text-[12px] font-bold text-[var(--accent)] mb-1.5"><span className="text-white">{xpToGo.toLocaleString()} XP</span> to go</div>
+                            <div className="text-[12px] font-bold text-[var(--accent)] mb-1.5"><span className="text-white">{xpToGo.toLocaleString("en-US")} XP</span> to go</div>
                             <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                                 <div className="h-full bg-gradient-to-r from-[var(--accent)] to-[#FF7A3D] rounded-full" style={{ width: `${Math.max(3, pct)}%` }} />
                             </div>
@@ -129,7 +129,7 @@ function CustomizationModal({ username, onClose }: { username: string; onClose: 
                 <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
                     <h3 className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-wider text-white"><Sparkles className="w-4 h-4 text-fuchsia-400" /> Customization</h3>
                     <div className="flex items-center gap-3">
-                        <span className="flex items-center gap-1.5 text-[13px] font-black text-amber-400 tabular-nums"><Coins className="w-3.5 h-3.5" /> {balance.toLocaleString()}</span>
+                        <span className="flex items-center gap-1.5 text-[13px] font-black text-amber-400 tabular-nums"><Coins className="w-3.5 h-3.5" /> {balance.toLocaleString("en-US")}</span>
                         <button onClick={onClose} className="p-1.5 rounded hover:bg-white/10 text-white/50"><X className="w-4 h-4" /></button>
                     </div>
                 </div>

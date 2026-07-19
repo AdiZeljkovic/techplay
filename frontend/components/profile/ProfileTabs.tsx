@@ -47,7 +47,7 @@ export default function ProfileTabs({ activeTab, onTabChange, isOwnProfile, coun
                                     <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md leading-none ${
                                         active ? "bg-[var(--accent)]/15 text-[var(--accent)]" : "bg-white/[0.06] text-white/40"
                                     }`}>
-                                        {count.toLocaleString()}
+                                        {count.toLocaleString("en-US")}
                                     </span>
                                 )}
                                 {active && <span className="absolute bottom-0 left-2 right-2 h-[3px] rounded-full bg-[var(--accent)]" />}

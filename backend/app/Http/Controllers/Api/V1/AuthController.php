@@ -332,6 +332,8 @@ class AuthController extends Controller
                 'days' => $user->daily_streak ?? 0,
                 'claimed_today' => $user->last_daily_claim && Carbon::parse($user->last_daily_claim)->isToday(),
             ],
+            // V3 — which external accounts are linked (providers only, no tokens)
+            'connected_accounts' => \App\Models\ConnectedAccount::where('user_id', $user->id)->pluck('provider')->values(),
         ];
     }
 

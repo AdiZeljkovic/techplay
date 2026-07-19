@@ -63,7 +63,7 @@ export default function RewardsStore({ username, isOwnProfile }: Props) {
                         </div>
                         <div>
                             <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">Your Bounty</div>
-                            <div className="text-2xl font-black text-amber-400 tabular-nums leading-none">{balance.toLocaleString()}</div>
+                            <div className="text-2xl font-black text-amber-400 tabular-nums leading-none">{balance.toLocaleString("en-US")}</div>
                         </div>
                     </div>
                     <span className="text-[11px] text-white/35 max-w-[200px] text-right hidden sm:block">Earn Bounty by posting, commenting and engaging across TechPlay.</span>
@@ -102,7 +102,7 @@ export default function RewardsStore({ username, isOwnProfile }: Props) {
                                         {item.description && <p className="text-[11px] text-white/45 leading-relaxed mb-3 line-clamp-2">{item.description}</p>}
                                         <div className="mt-auto flex items-center justify-between gap-2">
                                             <span className="flex items-center gap-1.5 text-[14px] font-black text-amber-400 tabular-nums">
-                                                <Coins className="w-3.5 h-3.5" /> {item.cost.toLocaleString()}
+                                                <Coins className="w-3.5 h-3.5" /> {item.cost.toLocaleString("en-US")}
                                             </span>
                                             {isOwnProfile && (
                                                 <button
@@ -137,7 +137,7 @@ export default function RewardsStore({ username, isOwnProfile }: Props) {
                                     <div className="text-[10px] text-white/30">{new Date(t.created_at).toLocaleDateString()}</div>
                                 </div>
                                 <span className={`text-[13px] font-black tabular-nums shrink-0 ${t.amount >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                                    {t.amount >= 0 ? "+" : ""}{t.amount.toLocaleString()}
+                                    {t.amount >= 0 ? "+" : ""}{t.amount.toLocaleString("en-US")}
                                 </span>
                             </div>
                         ))}

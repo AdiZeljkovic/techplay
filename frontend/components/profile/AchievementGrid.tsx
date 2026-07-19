@@ -50,7 +50,7 @@ export const AchievementGrid = ({ achievements }: AchievementGridProps) => {
                         </div>
                         <div>
                             <div className="text-3xl md:text-4xl font-black text-white tabular-nums">
-                                {totalXP.toLocaleString()}
+                                {totalXP.toLocaleString("en-US")}
                             </div>
                             <div className="text-xs uppercase tracking-[0.15em] text-white/40 font-semibold">
                                 Achievement Score

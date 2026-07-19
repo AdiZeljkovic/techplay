@@ -269,6 +269,7 @@ export interface UserProfile {
     collection_snapshot?: CollectionSnapshotTile[];
     playing_now?: PlayingNowGame[];
     showcase?: PlayingNowGame[];
+    connected_accounts?: string[];
     platforms_genres?: PlatformsGenres;
     gamer_dna?: GamerDna;
     reputation?: ReputationData;

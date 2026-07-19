@@ -32,7 +32,7 @@ export default function CommunityRanking({ reputation }: { reputation: Reputatio
             <div>
                 <div className="text-[11px] text-white/45 mb-1">Monthly Contribution</div>
                 <div className="flex items-baseline gap-2">
-                    <span className="text-xl font-black text-white tabular-nums leading-none">{monthly_contribution.toLocaleString()} <span className="text-[12px] font-semibold text-white/45">pts</span></span>
+                    <span className="text-xl font-black text-white tabular-nums leading-none">{monthly_contribution.toLocaleString("en-US")} <span className="text-[12px] font-semibold text-white/45">pts</span></span>
                     {contribDelta !== null && (
                         <span className={`inline-flex items-center gap-0.5 text-[11px] font-bold ${contribDelta >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                             {contribDelta >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}

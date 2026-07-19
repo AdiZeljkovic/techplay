@@ -203,7 +203,23 @@ export default function CollectionGrid({ username, isOwnProfile }: Props) {
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                     <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-white/30 mb-3"><Library className="w-6 h-6" /></div>
                     <p className="text-[13px] font-semibold text-white/55">{isOwnProfile ? "No games here yet" : "Nothing in this category"}</p>
-                    {isOwnProfile && <button onClick={() => setAddOpen(true)} className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[11px] font-bold uppercase tracking-wider"><Plus className="w-3.5 h-3.5" /> Add Game</button>}
+                    {isOwnProfile && (
+                        <div className="mt-4 flex items-center gap-2">
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        const res = await axios.get("/connected-accounts/steam/connect");
+                                        if (res.data?.data?.url) { window.location.href = res.data.data.url; return; }
+                                        toast.error("Couldn't start the Steam connection.");
+                                    } catch { toast.error("Couldn't start the Steam connection."); }
+                                }}
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[11px] font-bold uppercase tracking-wider"
+                            >
+                                Connect Steam
+                            </button>
+                            <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 text-white text-[11px] font-bold uppercase tracking-wider"><Plus className="w-3.5 h-3.5" /> Add Game</button>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">

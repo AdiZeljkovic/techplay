@@ -28,7 +28,7 @@ export default function DailyHub({ bounty, onOpenTab }: Props) {
                     </span>
                     <span className="text-left">
                         <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-white/40">Bounty</span>
-                        <span className="block text-[17px] font-black text-white tabular-nums leading-tight">{bounty.toLocaleString()}</span>
+                        <span className="block text-[17px] font-black text-white tabular-nums leading-tight">{bounty.toLocaleString("en-US")}</span>
                     </span>
                 </span>
                 <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-white/35 group-hover:text-[var(--accent)] transition-colors">

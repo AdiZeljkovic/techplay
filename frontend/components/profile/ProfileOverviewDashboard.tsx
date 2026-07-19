@@ -37,6 +37,7 @@ interface Props {
     lists?: GameListPreview[];
     customization?: CustomizationData;
     nextRank?: { name: string; min_xp: number } | null;
+    connectedAccounts?: string[];
     onOpenTab?: (tab: string) => void;
 }
 
@@ -52,6 +53,7 @@ export default function ProfileOverviewDashboard({
     userData, stats, achievements, isOwnProfile,
     collectionSnapshot = [], playingNow = [], showcase = [], platformsGenres, gamerDna,
     reputation, recognitions = [], lists = [], customization, nextRank,
+    connectedAccounts = [],
     onOpenTab = () => {},
 }: Props) {
     const recentUnlocked = (achievements || [])
@@ -74,6 +76,7 @@ export default function ProfileOverviewDashboard({
                         stats={stats}
                         listsCount={lists.length}
                         hasGamertags={hasGamertags}
+                        steamConnected={connectedAccounts.includes("steam")}
                         onOpenTab={onOpenTab}
                     />
                 )}

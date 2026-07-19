@@ -226,7 +226,7 @@ export default function ProfileHeader({
                             </div>
                             {nextRank && (
                                 <span className="text-[11px] font-bold uppercase tracking-wider text-white/40 shrink-0">
-                                    {Math.max(0, nextRankMinXP - currentXP).toLocaleString()} XP → {nextRank.name}
+                                    {Math.max(0, nextRankMinXP - currentXP).toLocaleString("en-US")} XP → {nextRank.name}
                                 </span>
                             )}
                         </div>
