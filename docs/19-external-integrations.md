@@ -175,3 +175,10 @@
 5. OPENAI_API_KEY → ima billing, rate limit na endpoint throttling
 6. BLIZZARD keys → Blizzard API zahtijeva registrovanu app s ispravnim redirect URLs
 7. IndexNow key fajl mora biti na `techplay.gg/{key}.txt` za validaciju
+
+## Xbox (OpenXBL) — dodano 2026-07-19
+
+- **Kako radi**: korisnik unese gamertag u Settings -> Connected Accounts -> Xbox. Backend preko OpenXBL (xbl.io, site API key u OPENXBL_API_KEY) rjesava gamertag -> XUID (GET /search/{gt}) i povlaci JAVNI title history (GET /achievements/player/{xuid}). Bez OAuth-a — cita se javno dostupan Xbox Live profil.
+- **Sync** (SyncXboxLibrary job): title type=Game -> match preko game_external_ids (provider xbox, external_id=titleId) pa matchByName; novi unosi: playing ako igran u zadnjih 14 dana, inace backlog, platform=Xbox, progress=achievement progressPercentage. Nikad ne gazi user-set status. NAPOMENA: Xbox API ne daje ukupne sate igranja.
+- **Fajlovi**: OpenXblService, SyncXboxLibrary, ConnectedAccountController@xboxConnect, ruta POST /connected-accounts/xbox/connect (throttle 10/min), frontend ConnectedAccountsSection (connectMode: gamertag).
+- **Ogranicenja**: privatni profili ne rade (poruka korisniku); gamerscore se dohvaca ali jos ne prikazuje na profilu (buduci widget).

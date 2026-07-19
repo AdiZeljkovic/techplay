@@ -241,6 +241,7 @@ Route::prefix('v1')->group(function () {
         Route::prefix('connected-accounts')->group(function () {
             Route::get('/', [ConnectedAccountController::class, 'index']);
             Route::get('/steam/connect', [ConnectedAccountController::class, 'steamConnectUrl']);
+            Route::middleware('throttle:10,1')->post('/xbox/connect', [ConnectedAccountController::class, 'xboxConnect']);
             Route::post('/{id}/sync', [ConnectedAccountController::class, 'sync']);
             Route::delete('/{id}', [ConnectedAccountController::class, 'destroy']);
         });

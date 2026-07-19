@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\SyncSteamLibrary;
+use App\Jobs\SyncXboxLibrary;
 use App\Models\ConnectedAccount;
 use App\Services\AchievementService;
+use App\Services\OpenXblService;
 use App\Services\SteamService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -105,6 +107,44 @@ class ConnectedAccountController extends Controller
     }
 
     /**
+     * POST /connected-accounts/xbox/connect — link an Xbox account by gamertag.
+     * Public Xbox Live data (title history, achievements) is read via OpenXBL,
+     * so no OAuth round-trip is needed.
+     */
+    public function xboxConnect(Request $request, OpenXblService $xbl): JsonResponse
+    {
+        $request->validate(['gamertag' => 'required|string|min:2|max:32']);
+
+        $profile = $xbl->findByGamertag($request->input('gamertag'));
+
+        if (! $profile) {
+            return $this->error("Couldn't find that gamertag on Xbox Live. Check the spelling — and note the profile must not be private.", 404);
+        }
+
+        $account = ConnectedAccount::updateOrCreate(
+            ['user_id' => $request->user()->id, 'provider' => 'xbox'],
+            [
+                'provider_user_id' => $profile['xuid'],
+                'display_name' => $profile['gamertag'],
+                'sync_status' => 'pending',
+                'visibility' => 'public',
+            ]
+        );
+
+        SyncXboxLibrary::dispatch($account->id)->onQueue('default');
+
+        try {
+            app(AchievementService::class)->check($request->user(), ['connected_accounts']);
+        } catch (\Throwable) {
+        }
+
+        return $this->success([
+            'gamertag' => $profile['gamertag'],
+            'gamerscore' => $profile['gamerscore'],
+        ], "Connected as {$profile['gamertag']} — importing your library now.");
+    }
+
+    /**
      * POST /connected-accounts/{id}/sync — re-trigger a sync.
      */
     public function sync(Request $request, int $id): JsonResponse
@@ -119,6 +159,7 @@ class ConnectedAccountController extends Controller
 
         match ($account->provider) {
             'steam' => SyncSteamLibrary::dispatch($account->id)->onQueue('default'),
+            'xbox' => SyncXboxLibrary::dispatch($account->id)->onQueue('default'),
             default => null,
         };
 

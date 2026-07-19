@@ -118,4 +118,9 @@ return [
         'api_key' => env('RAWG_API_KEY'),
     ],
 
+    'openxbl' => [
+        'api_key' => env('OPENXBL_API_KEY'),
+        'base_url' => 'https://xbl.io/api/v2',
+    ],
+
 ];
