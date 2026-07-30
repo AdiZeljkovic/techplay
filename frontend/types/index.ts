@@ -61,6 +61,8 @@ export interface Article {
     author?: User;
     status: 'draft' | 'published' | 'scheduled';
     published_at: string;
+    published_at_human?: string;
+    reading_time?: string;
     created_at: string;
     updated_at: string;
     views?: number;
