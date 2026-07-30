@@ -453,3 +453,11 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .tp-fade-up { animation: none; opacity: 1; transform: none; }
 }
+
+/* Hide scrollbars on horizontal rails (dashboard "Continue Playing" etc.) */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

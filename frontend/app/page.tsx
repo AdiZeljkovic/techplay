@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import HomeClient from "./HomeClient";
+import HomeGate from "./HomeGate";
 import { generatePageMetadata } from "@/lib/seo";
 import { getServerApiUrl } from "@/lib/api";
 import { Article } from "@/types";
@@ -52,5 +52,5 @@ async function getHomeData(): Promise<HomeData> {
 export default async function Home() {
   const homeData = await getHomeData();
 
-  return <HomeClient initialData={homeData} />;
+  return <HomeGate initialData={homeData} />;
 }

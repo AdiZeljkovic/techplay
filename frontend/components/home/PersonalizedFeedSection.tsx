@@ -13,10 +13,16 @@ const fetcher = (url: string, token: string) =>
     .then((r) => (r.ok ? r.json() : null))
     .then((j) => j?.data as Article[] | null);
 
-function ArticleCard({ article }: { article: Article }) {
-  const href = article.slug
-    ? `/${article.category?.type ?? "news"}/${article.slug}`
-    : "#";
+/** Maps a category type to its route segment — `tech` articles live under /hardware. */
+function articleHref(article: Article): string {
+  if (!article.slug) return "#";
+  const type = article.category?.type ?? "news";
+  const segment = type === "tech" ? "hardware" : type;
+  return `/${segment}/${article.slug}`;
+}
+
+export function ArticleCard({ article }: { article: Article }) {
+  const href = articleHref(article);
 
   return (
     <Link
