@@ -15,8 +15,8 @@ const TABS: { id: Tab; label: string }[] = [
     { id: "coming", label: "Coming Soon" },
 ];
 
-/** Entries vary by source: RAWG objects, Moby strings, or raw DB rows. */
-type RawNamed = string | { name?: string; platform?: { name?: string } } | null | undefined;
+/** Entries vary by source: RAWG objects, Moby rows ({platform_name}), strings, or raw DB rows. */
+type RawNamed = string | { name?: string; platform_name?: string; platform?: { name?: string } } | null | undefined;
 
 interface DiscoverGame {
     id: number | string;
@@ -34,7 +34,7 @@ interface DiscoverGame {
 /** Tolerates every shape the three data sources produce. */
 export function rawName(x: RawNamed): string {
     if (typeof x === "string") return x;
-    return x?.platform?.name ?? x?.name ?? "";
+    return x?.platform?.name ?? x?.platform_name ?? x?.name ?? "";
 }
 
 const isoDaysAgo = (days: number) => {
@@ -45,7 +45,9 @@ const isoDaysAgo = (days: number) => {
 
 async function fetchTab(tab: Tab): Promise<DiscoverGame[]> {
     if (tab === "trending") {
-        const r = await axios.get("/games", { params: { ordering: "-views", page_size: 10 } });
+        // -views surfaces zero-view catalog filler (views are mostly null, ties
+        // resolve by id) — top-rated modern hits ARE the trending rail for now
+        const r = await axios.get("/games", { params: { ordering: "-rating", min_rating: 8.5, page_size: 10 } });
         return (r.data?.results ?? []).slice(0, 5);
     }
     if (tab === "new") {
