@@ -136,6 +136,9 @@ class GameCollectionController extends Controller
         if ($entry->status === 'playing' && ! $entry->started_at) {
             $entry->started_at = now();
         }
+        if ($entry->status === 'playing') {
+            $entry->last_played_at = now();
+        }
         if ($entry->status === 'completed') {
             $entry->completed_at = $entry->completed_at ?? now();
             if (! $request->filled('progress')) {

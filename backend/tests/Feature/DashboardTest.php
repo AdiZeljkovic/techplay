@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Game;
 use App\Models\User;
+use App\Models\UserGame;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -56,5 +58,56 @@ class DashboardTest extends TestCase
         $this->assertSame([], $response->json('data.backlog_preview'));
         $this->assertSame(0, $response->json('data.streak.days'));
         $this->assertFalse($response->json('data.streak.claimed_today'));
+    }
+
+    public function test_recommendations_require_authentication(): void
+    {
+        $this->getJson('/api/v1/me/recommendations')->assertStatus(401);
+    }
+
+    public function test_recommendations_empty_library_returns_empty_list(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['username' => 'norecs']));
+
+        $response = $this->getJson('/api/v1/me/recommendations');
+
+        $response->assertStatus(200);
+        $this->assertSame([], $response->json('data'));
+    }
+
+    public function test_recommendations_score_by_genre_overlap(): void
+    {
+        $user = User::factory()->create(['username' => 'recsuser']);
+        Sanctum::actingAs($user);
+
+        $owned = Game::create([
+            'slug' => 'owned-rpg', 'name' => 'Owned RPG', 'rating' => 4.5,
+            'genre_names' => ['RPG', 'Action'], 'platform_names' => ['PC'],
+            'background_image' => 'https://img.test/owned.jpg', 'has_description' => true,
+        ]);
+        UserGame::create(['user_id' => $user->id, 'game_id' => $owned->id, 'status' => 'completed']);
+
+        $match = Game::create([
+            'slug' => 'great-rpg', 'name' => 'Great RPG', 'rating' => 4.8,
+            'genre_names' => ['RPG'], 'platform_names' => ['PC'],
+            'background_image' => 'https://img.test/match.jpg', 'has_description' => true,
+        ]);
+        Game::create([
+            'slug' => 'racing-game', 'name' => 'Racing Game', 'rating' => 4.9,
+            'genre_names' => ['Racing'], 'platform_names' => ['PC'],
+            'background_image' => 'https://img.test/racing.jpg', 'has_description' => true,
+        ]);
+
+        $response = $this->getJson('/api/v1/me/recommendations');
+
+        $response->assertStatus(200);
+        $items = $response->json('data');
+        $slugs = array_column($items, 'slug');
+
+        $this->assertContains($match->slug, $slugs);           // shares a genre
+        $this->assertNotContains('owned-rpg', $slugs);         // already in library
+        $this->assertNotContains('racing-game', $slugs);       // no genre overlap
+        $this->assertGreaterThanOrEqual(40, $items[0]['match_percent']);
+        $this->assertLessThanOrEqual(99, $items[0]['match_percent']);
     }
 }

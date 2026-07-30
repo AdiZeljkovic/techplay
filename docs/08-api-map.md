@@ -190,6 +190,7 @@
 | Metoda | Ruta | Controller::Metoda | Auth | Opis |
 |--------|------|--------------------|------|------|
 | GET | `/me/dashboard` | DashboardController::index | ✓ | Agregirani read-only payload za logovanu naslovnicu: user (level/xp/next_rank), collection stats, playing_now, favorites, backlog_preview, streak. Mutacije i feedovi ostaju na svojim endpointima. |
+| GET | `/me/recommendations` | DashboardController::recommendations | ✓ | Personalizovane preporuke igara s match % (žanrovski profil iz biblioteke + platform/rating bonus). Keš 1h po korisniku. Prazna biblioteka → prazan niz. |
 
 ---
 

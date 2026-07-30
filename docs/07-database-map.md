@@ -48,7 +48,7 @@
 | `game_companies` | Izdavači/developeri | id, name, slug, moby_id |
 | `game_external_ids` | Vanjski IDevi | game_id, provider (rawg/igdb/steam), external_id |
 | `game_ratings` | User ocjene | game_id, user_id, rating (0-10), review_text |
-| `user_games` | Korisnička biblioteka | user_id, game_id, status (playing/finished/wishlist/dropped/backlog), hours_played, notes |
+| `user_games` | Korisnička biblioteka | user_id, game_id, status (playing/completed/wishlist/dropped/backlog), progress, hours_played, last_played_at (pravi Continue Playing signal — pišu ga upsert status=playing, Steam sync i presence), is_favorite, showcase_order, platform, started_at, completed_at |
 | `game_lists` | Custom liste igara | id, user_id, name, slug, is_public |
 | `game_list_items` | Stavke u listama | list_id, game_id, position, notes |
 

@@ -215,6 +215,7 @@ Route::prefix('v1')->group(function () {
 
         // Logged-in homepage dashboard (aggregated read-only payload)
         Route::get('/me/dashboard', [DashboardController::class, 'index']);
+        Route::get('/me/recommendations', [DashboardController::class, 'recommendations']);
 
         // AI Backlog Advisor
         Route::post('/backlog/suggest', [BacklogAdvisorController::class, 'suggest']);

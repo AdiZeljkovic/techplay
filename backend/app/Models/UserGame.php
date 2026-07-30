@@ -20,6 +20,7 @@ class UserGame extends Model
         'platform',
         'started_at',
         'completed_at',
+        'last_played_at',
     ];
 
     protected $casts = [
@@ -29,6 +30,7 @@ class UserGame extends Model
         'hours_played' => 'integer',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
+        'last_played_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

@@ -7,6 +7,7 @@ import DashboardSkeleton from "./DashboardSkeleton";
 import WelcomeHero from "./WelcomeHero";
 import ProfileSummaryCard from "./ProfileSummaryCard";
 import ContinuePlayingRow from "./ContinuePlayingRow";
+import UpcomingForYouRow from "./UpcomingForYouRow";
 import RecommendedNext from "./RecommendedNext";
 import BacklogProgressCard from "./BacklogProgressCard";
 import QuickActionsGrid from "./QuickActionsGrid";
@@ -14,7 +15,6 @@ import FollowedGamesFeed from "./FollowedGamesFeed";
 import OnboardingCard from "./OnboardingCard";
 import SectionCard from "@/components/profile/dashboard/SectionCard";
 import DailyStreakWidget from "@/components/profile/dashboard/DailyStreakWidget";
-import UpcomingReleasesWidget from "@/components/profile/dashboard/UpcomingReleasesWidget";
 import QuestPanel from "@/components/profile/dashboard/QuestPanel";
 import FriendActivityFeed from "@/components/profile/FriendActivityFeed";
 import type { DashboardData } from "@/lib/types/dashboard";
@@ -52,6 +52,11 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                     </div>
                 )}
 
+                {/* Upcoming releases rail with Remind Me / Following toggle */}
+                <div className="mb-10 tp-fade-up tp-d3">
+                    <UpcomingForYouRow />
+                </div>
+
                 {/* Main + aside */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     <div className="lg:col-span-8 space-y-6 min-w-0 tp-fade-up tp-d3">
@@ -75,7 +80,6 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
 
                     <div className="lg:col-span-4 space-y-6 min-w-0 tp-fade-up tp-d4">
                         <DailyStreakWidget />
-                        <UpcomingReleasesWidget />
                         <QuestPanel isOwnProfile compact />
                         <QuickActionsGrid />
                     </div>

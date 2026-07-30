@@ -69,7 +69,10 @@ class SyncSteamLibrary implements ShouldQueue
 
                 if ($existingEntry) {
                     // Only update playtime — never overwrite a user-set status
-                    $existingEntry->update(['hours_played' => max($existingEntry->hours_played, $hoursPlayed)]);
+                    $existingEntry->update(array_filter([
+                        'hours_played' => max($existingEntry->hours_played, $hoursPlayed),
+                        'last_played_at' => $isRecent ? now() : null,
+                    ]));
                 } else {
                     $status = $isRecent ? 'playing' : 'backlog';
                     UserGame::create([
@@ -77,6 +80,7 @@ class SyncSteamLibrary implements ShouldQueue
                         'game_id' => $game->id,
                         'status' => $status,
                         'hours_played' => $hoursPlayed,
+                        'last_played_at' => $isRecent ? now() : null,
                     ]);
                 }
             }

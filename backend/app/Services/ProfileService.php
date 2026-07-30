@@ -94,7 +94,7 @@ class ProfileService
         return UserGame::where('user_id', $user->id)
             ->where('status', 'playing')
             ->with(['game:id,slug,name,background_image,platform_names'])
-            ->orderByDesc('updated_at')
+            ->orderByRaw('COALESCE(last_played_at, updated_at) DESC')
             ->limit($limit)
             ->get()
             ->map(fn (UserGame $ug) => [

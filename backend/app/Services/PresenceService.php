@@ -6,6 +6,7 @@ use App\Events\PresenceUpdated;
 use App\Models\Game;
 use App\Models\Presence;
 use App\Models\User;
+use App\Models\UserGame;
 use Illuminate\Support\Str;
 
 class PresenceService
@@ -31,6 +32,13 @@ class PresenceService
                 'started_at' => $sameGame ? ($existing->started_at ?? now()) : now(),
             ]
         );
+
+        // Live play signal → Continue Playing recency on the dashboard
+        if ($game) {
+            UserGame::where('user_id', $user->id)
+                ->where('game_id', $game->id)
+                ->update(['last_played_at' => now()]);
+        }
 
         broadcast(new PresenceUpdated(
             userId: $user->id,

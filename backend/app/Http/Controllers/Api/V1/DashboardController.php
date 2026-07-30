@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Game;
 use App\Models\GameRating;
 use App\Models\UserGame;
 use App\Services\ProfileService;
@@ -10,6 +11,8 @@ use App\Traits\ApiResponse;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -63,6 +66,110 @@ class DashboardController extends Controller
                 'claimed_today' => $user->last_daily_claim && Carbon::parse($user->last_daily_claim)->isToday(),
             ],
         ]);
+    }
+
+    /**
+     * GET /me/recommendations — personalized game picks with a match score.
+     *
+     * Match % = how much of the user's genre profile (from their library)
+     * a candidate covers, plus small platform-overlap and rating bonuses.
+     * Candidates are top-rated games not already in the library. Cached 1h.
+     */
+    public function recommendations(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $items = Cache::remember("recommendations:v1:{$user->id}", 3600, function () use ($user) {
+            $libraryGameIds = UserGame::where('user_id', $user->id)->pluck('game_id')->all();
+
+            if (count($libraryGameIds) === 0) {
+                return [];
+            }
+
+            // Genre + platform profile computed in PHP (portable across pgsql/sqlite)
+            $libraryGames = Game::whereIn('id', array_slice($libraryGameIds, 0, 300))
+                ->get(['id', 'genre_names', 'platform_names']);
+
+            $genreCounts = [];
+            $platformSet = [];
+            foreach ($libraryGames as $g) {
+                foreach ((array) $g->genre_names as $genre) {
+                    $genreCounts[$genre] = ($genreCounts[$genre] ?? 0) + 1;
+                }
+                foreach ((array) $g->platform_names as $p) {
+                    $platformSet[$p] = true;
+                }
+            }
+            if (! $genreCounts) {
+                return [];
+            }
+
+            arsort($genreCounts);
+            $topGenres = array_slice($genreCounts, 0, 5, true);
+            $total = array_sum($topGenres);
+            $genreWeights = array_map(fn ($c) => $c / $total, $topGenres);
+
+            // Candidates: well-rated games sharing at least one top genre, not in the library.
+            $query = Game::query()
+                ->whereNotIn('id', $libraryGameIds)
+                ->where('has_description', true)
+                ->whereNotNull('background_image')
+                ->where('rating', '>', 0);
+
+            if (DB::getDriverName() === 'pgsql') {
+                $genreList = array_keys($genreWeights);
+                $placeholders = implode(',', array_fill(0, count($genreList), '?'));
+                $query->whereRaw("genre_names && ARRAY[{$placeholders}]::text[]", $genreList);
+            }
+
+            $candidates = $query->orderByDesc('rating')->limit(150)
+                ->get(['id', 'slug', 'name', 'background_image', 'rating', 'metacritic', 'genre_names', 'platform_names']);
+
+            // Best possible genre coverage = all top genres present
+            $maxGenreScore = array_sum($genreWeights);
+
+            $scored = [];
+            foreach ($candidates as $g) {
+                $genres = (array) $g->genre_names;
+                $genreScore = 0.0;
+                $matched = [];
+                foreach ($genres as $genre) {
+                    if (isset($genreWeights[$genre])) {
+                        $genreScore += $genreWeights[$genre];
+                        $matched[] = $genre;
+                    }
+                }
+                if ($genreScore <= 0) {
+                    continue;
+                }
+
+                $platformOverlap = count(array_intersect((array) $g->platform_names, array_keys($platformSet))) > 0;
+                $rating5 = min(5, (float) $g->rating);
+
+                // 80% genre fit + 10% platform + 10% quality
+                $score = 0.8 * ($genreScore / $maxGenreScore) + ($platformOverlap ? 0.1 : 0) + 0.1 * ($rating5 / 5);
+                $match = (int) round(min(0.99, $score) * 100);
+
+                if ($match < 40) {
+                    continue;
+                }
+
+                $scored[] = [
+                    'slug' => $g->slug,
+                    'name' => $g->name,
+                    'background_image' => $g->background_image,
+                    'rating' => $g->rating,
+                    'match_percent' => $match,
+                    'matched_genres' => array_slice($matched, 0, 3),
+                ];
+            }
+
+            usort($scored, fn ($a, $b) => $b['match_percent'] <=> $a['match_percent']);
+
+            return array_slice($scored, 0, 8);
+        });
+
+        return $this->success($items);
     }
 
     /**
