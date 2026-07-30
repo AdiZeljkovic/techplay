@@ -19,13 +19,22 @@ return new class extends Migration
                 ->constrained('games')->nullOnDelete();
         });
 
-        DB::statement('
-            UPDATE game_ratings
-            SET game_id = games.id
-            FROM games
-            WHERE games.slug = game_ratings.game_slug
-              AND game_ratings.game_id IS NULL
-        ');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('
+                UPDATE game_ratings
+                SET game_id = games.id
+                FROM games
+                WHERE games.slug = game_ratings.game_slug
+                  AND game_ratings.game_id IS NULL
+            ');
+        } else {
+            // sqlite (tests): UPDATE ... FROM is Postgres syntax; correlated subquery instead
+            DB::statement('
+                UPDATE game_ratings
+                SET game_id = (SELECT id FROM games WHERE games.slug = game_ratings.game_slug)
+                WHERE game_id IS NULL
+            ');
+        }
     }
 
     public function down(): void

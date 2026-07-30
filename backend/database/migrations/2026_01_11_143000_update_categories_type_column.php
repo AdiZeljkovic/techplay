@@ -19,10 +19,11 @@ return new class extends Migration
                 DB::statement('ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_type_check');
                 DB::statement('ALTER TABLE categories ALTER COLUMN type TYPE VARCHAR(50)');
                 DB::statement("ALTER TABLE categories ALTER COLUMN type SET DEFAULT 'other'");
-            } else {
+            } elseif (DB::getDriverName() === 'mysql') {
                 // MySQL/MariaDB
                 DB::statement("ALTER TABLE categories MODIFY COLUMN type VARCHAR(50) NOT NULL DEFAULT 'other'");
             }
+            // sqlite (tests): enum was created as a plain column — nothing to alter
         });
     }
 

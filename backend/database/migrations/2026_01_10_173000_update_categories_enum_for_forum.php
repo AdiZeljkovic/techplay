@@ -17,6 +17,16 @@ return new class extends Migration
         // Laravel 10+ on Postgres usually creates a check constraint named "categories_type_check".
 
         // Let's drop the constraint and add a new one with 'forum' included.
+        if (DB::getDriverName() !== 'pgsql') {
+            // sqlite (tests): rebuild the enum column as a plain string so the
+            // original CHECK ('news','reviews','tech','other') stops rejecting 'forum'
+            Schema::table('categories', function (Blueprint $table) {
+                $table->string('type', 50)->default('other')->change();
+            });
+
+            return;
+        }
+
         DB::statement('ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_type_check');
         DB::statement("ALTER TABLE categories ADD CONSTRAINT categories_type_check CHECK (type IN ('news', 'reviews', 'tech', 'other', 'forum'))");
     }
@@ -27,6 +37,10 @@ return new class extends Migration
     public function down(): void
     {
         // Revert to original
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
         DB::statement('ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_type_check');
         DB::statement("ALTER TABLE categories ADD CONSTRAINT categories_type_check CHECK (type IN ('news', 'reviews', 'tech', 'other'))");
     }

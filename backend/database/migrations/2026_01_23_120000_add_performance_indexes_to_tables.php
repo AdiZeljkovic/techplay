@@ -10,6 +10,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() !== 'pgsql') {
+            return; // information_schema lookups are Postgres-only; indexes are perf-only anyway
+        }
+
         // Using raw SQL with IF NOT EXISTS for PostgreSQL to make migration idempotent
 
         // Articles table indexes

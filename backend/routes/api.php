@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\CommentController;
 use App\Http\Controllers\Api\V1\ConnectedAccountController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\CustomizationController;
+use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DiscordAdminController;
 use App\Http\Controllers\Api\V1\DiscordDailyController;
 use App\Http\Controllers\Api\V1\DiscordGiftController;
@@ -211,6 +212,9 @@ Route::prefix('v1')->group(function () {
 
         // Personalized feed
         Route::get('/feed/personalized', [FeedController::class, 'personalized']);
+
+        // Logged-in homepage dashboard (aggregated read-only payload)
+        Route::get('/me/dashboard', [DashboardController::class, 'index']);
 
         // AI Backlog Advisor
         Route::post('/backlog/suggest', [BacklogAdvisorController::class, 'suggest']);

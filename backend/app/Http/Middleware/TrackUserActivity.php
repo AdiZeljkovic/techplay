@@ -14,8 +14,13 @@ class TrackUserActivity
         $response = $next($request);
 
         if ($user = $request->user()) {
-            // Record user as online using a sorted set (score = unix timestamp for easy TTL pruning)
-            Redis::zadd('forum:users:online', now()->timestamp, $user->id);
+            // Record user as online using a sorted set (score = unix timestamp for easy TTL pruning).
+            // Best-effort: presence tracking must never fail the request (tests run without Redis).
+            try {
+                Redis::zadd('forum:users:online', now()->timestamp, $user->id);
+            } catch (\Throwable) {
+                // Redis unavailable — skip
+            }
         }
 
         return $response;
