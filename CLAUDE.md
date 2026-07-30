@@ -10,7 +10,7 @@ TechPlay (techplay.gg) is a gaming media platform with three independently deplo
 - **`frontend/`** — Next.js 16 app (React 19, TypeScript), SSR + ISR
 - **`discord/`** — TypeScript Discord bot named "Professor Buffy" (discord.js v14)
 
-Production URLs: `techplay.gg` (frontend), `api.techplay.gg` (backend). Beta: `beta.techplay.gg` / `api-beta.techplay.gg`.
+Production URLs (site is LIVE): `techplay.gg` (frontend), `api-beta.techplay.gg` (backend API + Filament admin — the "beta" in the hostname is historical, this IS production). There is no separate staging environment; every deploy goes straight to the live site.
 
 ---
 
