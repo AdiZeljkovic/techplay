@@ -7,13 +7,15 @@ import axios from "@/lib/axios";
 import SectionCard from "@/components/profile/dashboard/SectionCard";
 import { CalendarDays } from "lucide-react";
 
+import { rawName } from "./DiscoverGames";
+
 interface CalendarGame {
     slug: string;
     name: string;
     released: string | null;
     background_image: string | null;
-    genres?: { name: string }[];
-    platforms?: { platform: { name: string } }[];
+    genres?: (string | { name?: string } | null)[];
+    platforms?: (string | { platform?: { name?: string } } | null)[];
 }
 
 const fetcher = () =>
@@ -64,8 +66,8 @@ export default function ComingThisWeek() {
                         <div className="flex-1 min-w-0">
                             <p className="text-[13px] font-bold text-white line-clamp-1 group-hover:text-[var(--accent)] transition-colors">{g.name}</p>
                             <p className="text-[10px] uppercase tracking-wide text-white/40 mt-0.5 line-clamp-1">
-                                {(g.platforms ?? []).slice(0, 3).map((p) => p.platform.name).join(" · ")}
-                                {g.genres?.length ? ` · ${g.genres[0].name}` : ""}
+                                {(g.platforms ?? []).map(rawName).filter(Boolean).slice(0, 3).join(" · ")}
+                                {g.genres?.length && rawName(g.genres[0]) ? ` · ${rawName(g.genres[0])}` : ""}
                             </p>
                         </div>
                         <div className="shrink-0 w-11 text-center rounded-lg bg-white/[0.04] border border-white/[0.06] py-1.5 group-hover:border-[var(--accent)]/30 transition-colors">

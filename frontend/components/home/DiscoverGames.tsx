@@ -15,6 +15,9 @@ const TABS: { id: Tab; label: string }[] = [
     { id: "coming", label: "Coming Soon" },
 ];
 
+/** Entries vary by source: RAWG objects, Moby strings, or raw DB rows. */
+type RawNamed = string | { name?: string; platform?: { name?: string } } | null | undefined;
+
 interface DiscoverGame {
     id: number | string;
     slug: string;
@@ -24,8 +27,14 @@ interface DiscoverGame {
     metacritic?: number | null;
     genre_names?: string[];
     platform_names?: string[];
-    genres?: { name: string }[];
-    platforms?: { platform: { name: string } }[];
+    genres?: RawNamed[];
+    platforms?: RawNamed[];
+}
+
+/** Tolerates every shape the three data sources produce. */
+export function rawName(x: RawNamed): string {
+    if (typeof x === "string") return x;
+    return x?.platform?.name ?? x?.name ?? "";
 }
 
 const isoDaysAgo = (days: number) => {
@@ -49,8 +58,8 @@ async function fetchTab(tab: Tab): Promise<DiscoverGame[]> {
 
 /** Normalizes /games (TEXT[] columns) and /games/calendar (RAWG objects) shapes. */
 function meta(g: DiscoverGame) {
-    const genres = g.genre_names?.length ? g.genre_names : (g.genres ?? []).map((x) => x.name);
-    const platforms = g.platform_names?.length ? g.platform_names : (g.platforms ?? []).map((x) => x.platform.name);
+    const genres = g.genre_names?.length ? g.genre_names : (g.genres ?? []).map(rawName);
+    const platforms = g.platform_names?.length ? g.platform_names : (g.platforms ?? []).map(rawName);
     const score = g.metacritic ? (g.metacritic / 10).toFixed(1) : g.rating && g.rating > 0 ? (g.rating <= 5 ? g.rating * 2 : g.rating).toFixed(1) : null;
     return { genres: genres.filter(Boolean).slice(0, 2), platforms: platforms.filter(Boolean).slice(0, 2), score };
 }

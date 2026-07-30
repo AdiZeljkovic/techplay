@@ -8,12 +8,14 @@ import axios from "@/lib/axios";
 import { getApiUrl } from "@/lib/api";
 import { useLibraryIndex } from "@/hooks/useLibraryIndex";
 
+import { rawName } from "@/components/home/DiscoverGames";
+
 interface CalendarGame {
     slug: string;
     name: string;
     released: string | null;
     background_image: string | null;
-    platforms?: { platform: { name: string } }[];
+    platforms?: (string | { platform?: { name?: string } } | null)[];
 }
 
 const fetcher = () =>
@@ -24,9 +26,9 @@ function releaseLabel(released: string): string {
     return date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
 
-function shortPlatforms(platforms?: { platform: { name: string } }[]): string {
+function shortPlatforms(platforms?: CalendarGame["platforms"]): string {
     return (platforms ?? [])
-        .map((p) => p.platform.name)
+        .map(rawName)
         .filter((n) => /pc|windows|playstation|xbox|nintendo|switch/i.test(n))
         .slice(0, 3)
         .join(" · ");
