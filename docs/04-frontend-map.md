@@ -17,7 +17,7 @@ Sve stranice su u `frontend/app/`. Svaki folder = ruta.
 
 | Ruta | Stranica | Opis |
 |------|----------|------|
-| `/` | `app/page.tsx` | Homepage |
+| `/` | `app/page.tsx` | Homepage — ISR gost verzija; `app/HomeGate.tsx` client-side swapa logovane korisnike na dashboard (`components/home-dashboard/DashboardHome`, podaci iz `GET /me/dashboard` + self-fetching widgeti). Gate koristi `hooks/useAuth`, ne AuthContext |
 | `/news` | `app/news/` | News listing + `[slug]` detalj |
 | `/reviews` | `app/reviews/` | Reviews listing + `[slug]` detalj |
 | `/guides` | `app/guides/` | Guides listing + `[slug]` detalj |

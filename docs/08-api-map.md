@@ -185,6 +185,14 @@
 
 ---
 
+## Dashboard (logovana naslovnica)
+
+| Metoda | Ruta | Controller::Metoda | Auth | Opis |
+|--------|------|--------------------|------|------|
+| GET | `/me/dashboard` | DashboardController::index | ✓ | Agregirani read-only payload za logovanu naslovnicu: user (level/xp/next_rank), collection stats, playing_now, favorites, backlog_preview, streak. Mutacije i feedovi ostaju na svojim endpointima. |
+
+---
+
 ## Streak & Quests
 
 | Metoda | Ruta | Controller::Metoda | Auth | Opis |
