@@ -14,9 +14,8 @@ import {
     Menu, X, Search, User, LogOut, ShoppingCart,
     ChevronDown, Facebook, Twitter, Instagram, Youtube,
     Mail, Users, Sword, Monitor, Tag, Calendar, Gamepad2,
-    Newspaper, Trophy, Star, Cpu, ArrowRight,
-    Film, Mic, MessageSquare, Briefcase,
-    Clock, ThumbsUp, Gem, Rocket, Gauge, BookOpen, Shield
+    Newspaper, Trophy, ArrowRight,
+    MessageSquare, Gem, Rocket, Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchDropdown from "./SearchDropdown";
@@ -55,11 +54,21 @@ interface NavSubCategory {
     description?: string;
 }
 
+interface NavColumn {
+    title: string;
+    href: string;
+    items: NavSubCategory[];
+}
+
 interface NavItemType {
     name: string;
     href: string;
     hasDropdown?: boolean;
     children?: NavSubCategory[];
+    /** Multi-column mega panel (e.g. DISCOVER). Takes precedence over children. */
+    columns?: NavColumn[];
+    /** Path prefixes that mark this item active (defaults to [href]). */
+    activePaths?: string[];
     viewAllLabel?: string;
 }
 
@@ -88,10 +97,10 @@ const DB_PLATFORMS = [
 
 const DB_YEARS = ["2025", "2024", "2023", "2022", "2021", "2020"];
 
-// Mega-dropdown for DATABASE nav item
-function DatabaseNavItem() {
+// Mega-dropdown for the GAMES nav item (database + calendar)
+function GamesNavItem() {
     const pathname = usePathname();
-    const isActive = pathname.startsWith("/games");
+    const isActive = pathname.startsWith("/games") || pathname.startsWith("/calendar");
     const [isHovered, setIsHovered] = useState(false);
 
     useEffect(() => setIsHovered(false), [pathname]);
@@ -104,7 +113,7 @@ function DatabaseNavItem() {
                 "flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.06em] transition-colors whitespace-nowrap px-2 py-2.5",
                 isActive || isHovered ? "text-tp-accent" : "text-zinc-600 dark:text-slate-300 hover:text-tp-accent dark:hover:text-white"
             )}>
-                DATABASE
+                GAMES
                 <ChevronDown className={cn("w-3 h-3 mt-0.5 opacity-70 transition-transform duration-200", isHovered ? "rotate-180" : "rotate-0")} />
             </Link>
 
@@ -176,6 +185,9 @@ function DatabaseNavItem() {
                                     Browse All Games
                                     <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                                 </Link>
+                                <Link href="/calendar" className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-400 dark:text-white/40 hover:text-tp-accent dark:hover:text-white transition-colors">
+                                    <Calendar className="w-3 h-3" /> Release Calendar
+                                </Link>
                                 <Link href="/games/tag/open-world" className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-400 dark:text-white/30 hover:text-tp-accent dark:hover:text-white transition-colors">
                                     <Tag className="w-3 h-3" /> Popular Tags
                                 </Link>
@@ -189,61 +201,76 @@ function DatabaseNavItem() {
 }
 
 const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-    NEWS:     Newspaper,
-    REVIEWS:  Star,
-    TECH:     Cpu,
-    VIDEO:    Film,
-    GUIDES:   BookOpen,
-    CALENDAR: Calendar,
-    DATABASE: Gamepad2,
-    FORUM:    MessageSquare,
-    SHOP:     ShoppingCart,
+    DISCOVER:  Newspaper,
+    GAMES:     Gamepad2,
+    COMMUNITY: MessageSquare,
+    TOOLS:     Rocket,
+    SHOP:      ShoppingCart,
 };
 
-// Initial Nav Items (will be populated with children from API)
+// App-style grouped navigation. DISCOVER's column items are populated with
+// live categories from GET /navigation/tree (news/reviews/tech keys).
 const INITIAL_NAV_ITEMS: NavItemType[] = [
-    { name: "NEWS", href: "/news", hasDropdown: true, viewAllLabel: "All News", children: [
-        { name: "Gaming",      href: "/news/gaming",      icon: Gamepad2,      description: "Game news & announcements" },
-        { name: "PC",          href: "/news/pc",          icon: Cpu,           description: "PC gaming & hardware" },
-        { name: "Consoles",    href: "/news/consoles",    icon: Monitor,       description: "PlayStation, Xbox & Nintendo" },
-        { name: "Movies & TV", href: "/news/movies-tv",   icon: Film,          description: "Adaptations & entertainment" },
-        { name: "Industry",    href: "/news/industry",    icon: Briefcase,     description: "Business & dev news" },
-        { name: "E-sport",     href: "/news/e-sport",     icon: Trophy,        description: "Tournaments & pro gaming" },
-        { name: "Opinions",    href: "/news/opinions",    icon: MessageSquare, description: "Editorials & columns" },
-        { name: "Interviews",  href: "/news/interviews",  icon: Mic,           description: "Conversations with creators" },
-    ]},
-    { name: "REVIEWS", href: "/reviews", hasDropdown: true, viewAllLabel: "All Reviews", children: [
-        { name: "Latest",          href: "/reviews/latest",          icon: Clock,    description: "Fresh off the press" },
-        { name: "Editor's Choice", href: "/reviews/editors-choice",  icon: ThumbsUp, description: "Our top picks" },
-        { name: "AAA Titles",      href: "/reviews/aaa-titles",      icon: Gamepad2, description: "Big-budget blockbusters" },
-        { name: "Indie Gems",      href: "/reviews/indie-gems",      icon: Gem,      description: "Hidden indie treasures" },
-        { name: "Retro",           href: "/reviews/retro",           icon: Rocket,   description: "Classics revisited" },
-    ]},
-    { name: "TECH", href: "/hardware", hasDropdown: true, viewAllLabel: "All Hardware", children: [
-        { name: "Reviews",    href: "/hardware/reviews",    icon: Star,      description: "Hands-on hardware reviews" },
-        { name: "Benchmarks", href: "/hardware/benchmarks", icon: Gauge,     description: "Performance testing" },
-        { name: "Guides",     href: "/hardware/guides",     icon: BookOpen,  description: "Buying & build guides" },
-        { name: "Tech News",  href: "/hardware/news",       icon: Newspaper, description: "Latest tech headlines" },
-    ]},
-    { name: "VIDEO",    href: "/videos" },
-    { name: "GUIDES",   href: "/guides" },
-    { name: "CALENDAR", href: "/calendar" },
-    { name: "DATABASE", href: "/games", hasDropdown: true, children: [
-        { name: "All Games", href: "/games" },
-        { name: "── Genres ──", href: "/games" },
-        ...DB_GENRES.map(g => ({ name: g.label, href: `/games/genre/${g.slug}` })),
-        { name: "── Platforms ──", href: "/games" },
+    {
+        name: "DISCOVER", href: "/news", hasDropdown: true,
+        activePaths: ["/news", "/reviews", "/hardware", "/videos", "/guides"],
+        columns: [
+            { title: "News", href: "/news", items: [
+                { name: "Gaming",      href: "/news/gaming" },
+                { name: "PC",          href: "/news/pc" },
+                { name: "Consoles",    href: "/news/consoles" },
+                { name: "Industry",    href: "/news/industry" },
+                { name: "E-sport",     href: "/news/e-sport" },
+                { name: "Interviews",  href: "/news/interviews" },
+            ]},
+            { title: "Reviews", href: "/reviews", items: [
+                { name: "Latest",          href: "/reviews/latest" },
+                { name: "Editor's Choice", href: "/reviews/editors-choice" },
+                { name: "AAA Titles",      href: "/reviews/aaa-titles" },
+                { name: "Indie Gems",      href: "/reviews/indie-gems" },
+                { name: "Retro",           href: "/reviews/retro" },
+            ]},
+            { title: "Hardware", href: "/hardware", items: [
+                { name: "Reviews",    href: "/hardware/reviews" },
+                { name: "Benchmarks", href: "/hardware/benchmarks" },
+                { name: "Guides",     href: "/hardware/guides" },
+                { name: "Tech News",  href: "/hardware/news" },
+            ]},
+            { title: "Watch & Learn", href: "/videos", items: [
+                { name: "Videos", href: "/videos" },
+                { name: "Guides", href: "/guides" },
+            ]},
+        ],
+    },
+    // Desktop renders the bespoke GamesNavItem; children below feed the mobile accordion.
+    { name: "GAMES", href: "/games", hasDropdown: true, activePaths: ["/games", "/calendar"], children: [
+        { name: "All Games",        href: "/games" },
+        { name: "Release Calendar", href: "/calendar" },
+        ...DB_GENRES.slice(0, 8).map(g => ({ name: g.label, href: `/games/genre/${g.slug}` })),
         ...DB_PLATFORMS.map(p => ({ name: p.label, href: `/games/platform/${p.slug}` })),
     ]},
-    { name: "FORUM", href: "/forum", hasDropdown: true, viewAllLabel: "Open Forum", children: [
-        { name: "Forum",           href: "/forum",           icon: MessageSquare, description: "Discussions, help & clan halls" },
-        { name: "Leaderboard",     href: "/leaderboard",     icon: Trophy,        description: "Top gamers by XP & reputation" },
-        { name: "Clans",           href: "/clans",           icon: Shield,        description: "Join or create a clan" },
-        { name: "Friends",         href: "/friends",         icon: Users,         description: "Your gaming crew" },
-        { name: "Gaming Wrapped",  href: "/wrapped",         icon: Gem,           description: "Your year in gaming, shareable" },
-        { name: "Backlog Advisor", href: "/backlog-advisor", icon: Rocket,        description: "What should you play next?" },
-    ]},
-    { name: "SHOP",  href: "/shop" },
+    {
+        name: "COMMUNITY", href: "/forum", hasDropdown: true, viewAllLabel: "Open Forum",
+        activePaths: ["/forum", "/leaderboard", "/clans", "/friends", "/giveaways"],
+        children: [
+            { name: "Forum",       href: "/forum",       icon: MessageSquare, description: "Discussions, help & clan halls" },
+            { name: "Leaderboard", href: "/leaderboard", icon: Trophy,        description: "Top gamers by XP & reputation" },
+            { name: "Clans",       href: "/clans",       icon: Shield,        description: "Join or create a clan" },
+            { name: "Friends",     href: "/friends",     icon: Users,         description: "Your gaming crew" },
+            { name: "Giveaways",   href: "/giveaways",   icon: Gem,           description: "Win games & gear" },
+        ],
+    },
+    {
+        name: "TOOLS", href: "/wow-analyzer", hasDropdown: true, viewAllLabel: "All Tools",
+        activePaths: ["/wow-analyzer", "/backlog-advisor", "/compare", "/wrapped"],
+        children: [
+            { name: "WoW Analyzer",    href: "/wow-analyzer",    icon: Sword,  description: "AI character readiness check" },
+            { name: "Backlog Advisor", href: "/backlog-advisor", icon: Rocket, description: "What should you play next?" },
+            { name: "Profile Compare", href: "/compare",         icon: Users,  description: "Compare two gamer profiles" },
+            { name: "Gaming Wrapped",  href: "/wrapped",         icon: Gem,    description: "Your year in gaming, shareable" },
+        ],
+    },
+    { name: "SHOP", href: "/shop" },
 ];
 
 // Logo Component
@@ -268,9 +295,10 @@ function NavItem({ item, badge, onHoverChange }: {
     onHoverChange?: (name: string | null) => void;
 }) {
     const pathname = usePathname();
-    const isActive = pathname.startsWith(item.href);
+    const isActive = (item.activePaths ?? [item.href]).some((p) => pathname.startsWith(p));
     const [isOpen, setIsOpen] = useState(false);
     const isMegaMenu = !!(item.hasDropdown && item.children?.[0]?.icon);
+    const hasColumns = !!(item.hasDropdown && item.columns?.length);
 
     useEffect(() => { setIsOpen(false); onHoverChange?.(null); }, [pathname]);
 
@@ -310,7 +338,44 @@ function NavItem({ item, badge, onHoverChange }: {
             </Link>
 
             <AnimatePresence>
-                {item.hasDropdown && item.children && item.children.length > 0 && isOpen && (
+                {hasColumns && isOpen && (
+                    /* ── MULTI-COLUMN MEGA PANEL (DISCOVER) ── */
+                    <motion.div
+                        key="columns"
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                        className="absolute top-full left-0 z-[100] w-[640px] bg-white dark:bg-[#0D1117] border border-t-0 border-zinc-200 dark:border-white/[0.07] shadow-xl dark:shadow-[0_20px_48px_rgba(0,0,0,0.6)] rounded-b-xl overflow-hidden"
+                    >
+                        <div className="h-[3px] bg-tp-accent w-full" />
+                        <div className="p-5 grid grid-cols-4 gap-5">
+                            {item.columns!.map((col) => (
+                                <div key={col.title}>
+                                    <Link
+                                        href={col.href}
+                                        className="flex items-center gap-1.5 mb-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-white/45 hover:text-tp-accent transition-colors"
+                                    >
+                                        {col.title}
+                                        <ArrowRight className="w-2.5 h-2.5" />
+                                    </Link>
+                                    <div className="flex flex-col gap-0.5">
+                                        {col.items.slice(0, 6).map((child, idx) => (
+                                            <Link
+                                                key={idx}
+                                                href={child.href}
+                                                className="px-2 py-1.5 -mx-2 text-[12px] font-medium text-zinc-600 dark:text-[#A1A1AA] hover:text-tp-accent dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg transition-all"
+                                            >
+                                                {child.name}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+                {!hasColumns && item.hasDropdown && item.children && item.children.length > 0 && isOpen && (
                     isMegaMenu ? (
                         /* ── MEGA DROPDOWN — vertikalno, pozicionirano ispod nav linka ── */
                         <motion.div
@@ -425,20 +490,22 @@ export default function Header() {
                 const res = await axios.get('/navigation/tree');
                 const tree = res.data; // { news: [], reviews: [], tech: [] }
 
+                // Live categories feed DISCOVER's columns: news/reviews → same-named
+                // columns, tech → "Hardware". Static fallbacks stay when a key is absent.
+                const columnKeyMap: Record<string, string> = { News: 'news', Reviews: 'reviews', Hardware: 'tech' };
+
                 setNavItems((prevItems) => prevItems.map(item => {
-                    const key = item.name.toLowerCase();
-                    if (tree[key] && Array.isArray(tree[key])) {
-                        // Merge API children with existing icon/description by href match
-                        const apiChildren: NavSubCategory[] = tree[key];
-                        const mergedChildren = apiChildren.map((apiChild: NavSubCategory) => {
-                            const existing = item.children?.find(c =>
-                                c.href === apiChild.href || c.name.toLowerCase() === apiChild.name.toLowerCase()
-                            );
-                            return existing
-                                ? { ...apiChild, icon: existing.icon, description: existing.description }
-                                : apiChild;
-                        });
-                        return { ...item, children: mergedChildren };
+                    if (item.columns) {
+                        return {
+                            ...item,
+                            columns: item.columns.map((col) => {
+                                const treeKey = columnKeyMap[col.title];
+                                const apiChildren = treeKey ? tree[treeKey] : null;
+                                return Array.isArray(apiChildren) && apiChildren.length > 0
+                                    ? { ...col, items: apiChildren }
+                                    : col;
+                            }),
+                        };
                     }
                     return item;
                 }));
@@ -623,6 +690,23 @@ export default function Header() {
 
                                 <div className="h-6 w-px bg-white/10 mx-1" />
 
+                                {/* Level chip: level + progress toward the next 1000-XP step */}
+                                <Link
+                                    href="/profile/me"
+                                    title={`${(user.xp || 0).toLocaleString()} XP`}
+                                    className="flex items-center gap-2 px-2.5 h-6 rounded-full bg-white/5 border border-white/10 hover:border-[var(--accent)]/40 transition-colors"
+                                >
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-[var(--accent)]">
+                                        Lvl {Math.floor((user.xp || 0) / 1000) + 1}
+                                    </span>
+                                    <span className="w-10 h-1 rounded-full bg-white/10 overflow-hidden">
+                                        <span
+                                            className="block h-full rounded-full bg-[var(--accent)]"
+                                            style={{ width: `${Math.round((((user.xp || 0) % 1000) / 1000) * 100)}%` }}
+                                        />
+                                    </span>
+                                </Link>
+
                                 <Link href={`/profile/${user.username || 'me'}`} className="flex items-center gap-2 group">
                                     {user.avatar_url ? (
                                         <Image
@@ -638,14 +722,9 @@ export default function Header() {
                                             <User className="w-4 h-4" />
                                         </div>
                                     )}
-                                    <div className="flex flex-col">
-                                        <span className="text-gray-200 font-medium group-hover:text-[var(--accent)] text-xs leading-tight truncate max-w-[120px]">
-                                            {decodeHtml(user.display_name || user.username) || "My Profile"}
-                                        </span>
-                                        <span className="text-[10px] text-gray-400 font-mono leading-tight">
-                                            Lvl {Math.floor((user.xp || 0) / 1000) + 1}
-                                        </span>
-                                    </div>
+                                    <span className="text-gray-200 font-medium group-hover:text-[var(--accent)] text-xs leading-tight truncate max-w-[120px]">
+                                        {decodeHtml(user.display_name || user.username) || "My Profile"}
+                                    </span>
                                 </Link>
                                 <button onClick={logout} className="ml-2 text-gray-400 hover:text-red-400 transition-colors p-2 hover:bg-white/5 rounded-full" title="Sign Out">
                                     <LogOut className="w-4 h-4" />
@@ -670,13 +749,13 @@ export default function Header() {
                     {/* Desktop Nav (Center) */}
                     <nav className="hidden xl:flex items-center gap-5 h-full">
                         {navItems.map((item) =>
-                            item.name === "DATABASE" ? (
-                                <DatabaseNavItem key="DATABASE" />
+                            item.name === "GAMES" ? (
+                                <GamesNavItem key="GAMES" />
                             ) : (
                                 <NavItem
                                     key={item.name}
                                     item={item}
-                                    badge={item.name === 'FORUM' && notifications.forum_replies > 0 ? notifications.forum_replies : undefined}
+                                    badge={item.name === 'COMMUNITY' && notifications.forum_replies > 0 ? notifications.forum_replies : undefined}
                                 />
                             )
                         )}
@@ -877,9 +956,10 @@ export default function Header() {
                             <nav className="flex-1 overflow-y-auto py-1">
                                 {navItems.map((item) => {
                                     const Icon = NAV_ICONS[item.name];
+                                    const hasExpandable = !!(item.hasDropdown && (item.children?.length || item.columns?.length));
                                     return (
                                         <div key={item.name}>
-                                            {item.hasDropdown && item.children ? (
+                                            {hasExpandable ? (
                                                 <>
                                                     <button
                                                         onClick={() => setExpandedMobileItem(expandedMobileItem === item.name ? null : item.name)}
@@ -903,15 +983,35 @@ export default function Header() {
                                                                 className="overflow-hidden"
                                                             >
                                                                 <div className="ml-[52px] mr-4 mb-1 pl-3 border-l border-tp-accent/25 flex flex-col gap-0.5">
-                                                                    <Link href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-tp-accent text-[11px] font-bold uppercase tracking-widest">
-                                                                        All {item.name}
-                                                                    </Link>
-                                                                    {item.children.map((child, idx) => (
-                                                                        <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                                            className="py-1.5 text-[13px] text-slate-400 hover:text-white transition-colors">
-                                                                            {child.name}
-                                                                        </Link>
-                                                                    ))}
+                                                                    {item.columns ? (
+                                                                        /* Multi-column items (DISCOVER) flatten into titled groups */
+                                                                        item.columns.map((col) => (
+                                                                            <div key={col.title} className="mb-1.5">
+                                                                                <Link href={col.href} onClick={() => setIsMobileMenuOpen(false)}
+                                                                                    className="block py-2 text-tp-accent text-[11px] font-bold uppercase tracking-widest">
+                                                                                    {col.title}
+                                                                                </Link>
+                                                                                {col.items.slice(0, 6).map((child, idx) => (
+                                                                                    <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
+                                                                                        className="block py-1.5 text-[13px] text-slate-400 hover:text-white transition-colors">
+                                                                                        {child.name}
+                                                                                    </Link>
+                                                                                ))}
+                                                                            </div>
+                                                                        ))
+                                                                    ) : (
+                                                                        <>
+                                                                            <Link href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-tp-accent text-[11px] font-bold uppercase tracking-widest">
+                                                                                All {item.name}
+                                                                            </Link>
+                                                                            {item.children?.map((child, idx) => (
+                                                                                <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
+                                                                                    className="py-1.5 text-[13px] text-slate-400 hover:text-white transition-colors">
+                                                                                    {child.name}
+                                                                                </Link>
+                                                                            ))}
+                                                                        </>
+                                                                    )}
                                                                 </div>
                                                             </motion.div>
                                                         )}
