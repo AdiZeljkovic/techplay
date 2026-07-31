@@ -9,6 +9,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     helperText?: string;
 }
 
+/** The one text input — surface-2 well, S4 focus grammar. */
 const Input = forwardRef<HTMLInputElement, InputProps>(
     ({ className, label, error, helperText, id, ...props }, ref) => {
         const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
@@ -18,7 +19,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 {label && (
                     <label
                         htmlFor={inputId}
-                        className="block text-sm font-medium text-[var(--text-primary)] mb-2"
+                        className="block text-[12px] font-bold uppercase tracking-wider text-[var(--ink-low)] mb-2"
                     >
                         {label}
                     </label>
@@ -28,20 +29,20 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                     id={inputId}
                     ref={ref}
                     className={cn(
-                        "w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] placeholder:text-[var(--text-muted)] transition-all duration-200",
-                        "focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-light)]",
-                        error && "border-[var(--danger)] focus:border-[var(--danger)] focus:ring-red-100",
+                        "w-full h-11 px-4 bg-[var(--surface-2)] border border-[var(--line-strong)] rounded-[var(--radius-card)] text-[14px] text-[var(--ink-hi)] placeholder:text-[var(--ink-faint)] transition-colors duration-300",
+                        "focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_60%,transparent)] focus:ring-2 focus:ring-[var(--accent-soft)]",
+                        error && "border-[var(--danger)] focus:border-[var(--danger)] focus:ring-[color-mix(in_srgb,var(--danger)_15%,transparent)]",
                         className
                     )}
                     {...props}
                 />
 
                 {error && (
-                    <p className="mt-1.5 text-sm text-[var(--danger)]">{error}</p>
+                    <p className="mt-1.5 text-[12px] text-[var(--danger)]">{error}</p>
                 )}
 
                 {helperText && !error && (
-                    <p className="mt-1.5 text-sm text-[var(--text-muted)]">{helperText}</p>
+                    <p className="mt-1.5 text-[12px] text-[var(--ink-low)]">{helperText}</p>
                 )}
             </div>
         );

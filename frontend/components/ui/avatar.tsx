@@ -1,49 +1,57 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as AvatarPrimitive from "@radix-ui/react-avatar"
-import { cn } from "@/lib/utils"
+import Image from "next/image";
+import { User as UserIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const Avatar = React.forwardRef<
-    React.ElementRef<typeof AvatarPrimitive.Root>,
-    React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
->(({ className, ...props }, ref) => (
-    <AvatarPrimitive.Root
-        ref={ref}
-        className={cn(
-            "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
-            className
-        )}
-        {...props}
-    />
-))
-Avatar.displayName = AvatarPrimitive.Root.displayName
+const SIZES = { xs: 24, sm: 32, md: 40, lg: 56, xl: 84 } as const;
 
-const AvatarImage = React.forwardRef<
-    React.ElementRef<typeof AvatarPrimitive.Image>,
-    React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
->(({ className, ...props }, ref) => (
-    <AvatarPrimitive.Image
-        ref={ref}
-        className={cn("aspect-square h-full w-full", className)}
-        {...props}
-    />
-))
-AvatarImage.displayName = AvatarPrimitive.Image.displayName
+interface AvatarProps {
+    src?: string | null;
+    alt: string;
+    size?: keyof typeof SIZES;
+    /** Accent ring for the current user / highlighted contexts. */
+    ring?: boolean;
+    /** Emerald presence dot. */
+    online?: boolean;
+    className?: string;
+}
 
-const AvatarFallback = React.forwardRef<
-    React.ElementRef<typeof AvatarPrimitive.Fallback>,
-    React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
->(({ className, ...props }, ref) => (
-    <AvatarPrimitive.Fallback
-        ref={ref}
-        className={cn(
-            "flex h-full w-full items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800",
-            className
-        )}
-        {...props}
-    />
-))
-AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName
+/** The one avatar — token-pure, with icon fallback and optional presence dot. */
+export default function Avatar({ src, alt, size = "md", ring = false, online = false, className }: AvatarProps) {
+    const px = SIZES[size];
 
-export { Avatar, AvatarImage, AvatarFallback }
+    return (
+        <span className={cn("relative inline-block shrink-0", className)} style={{ width: px, height: px }}>
+            {src ? (
+                <Image
+                    src={src}
+                    alt={alt}
+                    width={px}
+                    height={px}
+                    unoptimized={src.includes("discord") || src.includes("gravatar")}
+                    className={cn(
+                        "w-full h-full rounded-full object-cover border",
+                        ring ? "border-2 border-[color-mix(in_srgb,var(--accent)_40%,transparent)]" : "border-[var(--line)]"
+                    )}
+                />
+            ) : (
+                <span
+                    className={cn(
+                        "w-full h-full rounded-full bg-[var(--surface-2)] border flex items-center justify-center text-[var(--ink-faint)]",
+                        ring ? "border-2 border-[color-mix(in_srgb,var(--accent)_40%,transparent)]" : "border-[var(--line)]"
+                    )}
+                >
+                    <UserIcon style={{ width: px * 0.45, height: px * 0.45 }} />
+                </span>
+            )}
+            {online && (
+                <span
+                    className="absolute rounded-full bg-emerald-500 ring-[3px] ring-[var(--surface-1)]"
+                    style={{ width: Math.max(8, px * 0.18), height: Math.max(8, px * 0.18), bottom: px * 0.02, right: px * 0.02 }}
+                    title="Online"
+                />
+            )}
+        </span>
+    );
+}
