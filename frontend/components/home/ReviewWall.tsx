@@ -48,26 +48,26 @@ export default function ReviewWall({ reviews }: { reviews: Article[] }) {
                                 )}
                                 <div className="absolute inset-0 scrim-card" />
 
-                                {/* bottom-right, matching Discover Games — one anchor site-wide */}
-                                <div className="absolute bottom-3 right-3">
-                                    <ScoreBadge score={score} />
-                                </div>
                             </div>
 
                             <div className="flex-1 flex flex-col p-4">
                                 <h3 className="font-display text-[14px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                                     {review.title}
                                 </h3>
-                                <div className="mt-auto pt-3 flex items-center gap-2 text-[11px] text-[var(--ink-low)]">
-                                    {review.author?.display_name || review.author?.name ? (
-                                        <>
-                                            <span className="text-[var(--ink-mid)] font-semibold truncate max-w-[110px]">
-                                                {review.author.display_name || review.author.name}
-                                            </span>
-                                            <span className="text-[var(--ink-faint)]">·</span>
-                                        </>
-                                    ) : null}
-                                    <span>{review.published_at_human}</span>
+                                {/* meta left, verdict right — same deck row as Discover Games */}
+                                <div className="mt-auto pt-3 flex items-center justify-between gap-2">
+                                    <span className="flex items-center gap-2 min-w-0 text-[11px] text-[var(--ink-low)]">
+                                        {review.author?.display_name || review.author?.name ? (
+                                            <>
+                                                <span className="text-[var(--ink-mid)] font-semibold truncate max-w-[90px]">
+                                                    {review.author.display_name || review.author.name}
+                                                </span>
+                                                <span className="text-[var(--ink-faint)]">·</span>
+                                            </>
+                                        ) : null}
+                                        <span className="truncate">{review.published_at_human}</span>
+                                    </span>
+                                    <ScoreBadge score={score} className="shrink-0" />
                                 </div>
                             </div>
                         </Link>

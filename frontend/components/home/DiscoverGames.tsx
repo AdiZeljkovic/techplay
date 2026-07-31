@@ -173,13 +173,6 @@ export default function DiscoverGames() {
                                 {/* whisper of a scrim so the seam to the footer never bands */}
                                 <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[var(--surface-1)] to-transparent" />
 
-                                {/* Anchored bottom-right: box art carries its own publisher
-                                    branding along the top edge, so the badge lives down here. */}
-                                {scoreValue !== null && (
-                                    <span className="absolute bottom-2.5 right-2.5">
-                                        <ScoreBadge score={scoreValue} />
-                                    </span>
-                                )}
                             </div>
 
                             {/* accent seam — draws itself across the card on hover */}
@@ -191,22 +184,25 @@ export default function DiscoverGames() {
                                     {g.name}
                                 </h3>
 
-                                <div className="flex items-center gap-2 min-w-0">
-                                    {m.platforms.map((p) => (
-                                        <span
-                                            key={p}
-                                            title={p}
-                                            className="shrink-0 w-7 h-7 rounded-[var(--radius-inner)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)] flex items-center justify-center text-[var(--accent)] transition-colors duration-300 group-hover:bg-[var(--accent)] group-hover:text-white group-hover:border-transparent"
-                                        >
-                                            <PlatformIcon label={p} className="w-4 h-4" />
-                                        </span>
-                                    ))}
-                                    {secondary && (
-                                        <span className="min-w-0 text-[10px] uppercase tracking-wider text-[var(--ink-faint)] truncate">
-                                            {secondary}
-                                        </span>
-                                    )}
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="flex items-center gap-1.5 min-w-0">
+                                        {m.platforms.map((p) => (
+                                            <span
+                                                key={p}
+                                                title={p}
+                                                className="shrink-0 w-7 h-7 rounded-[var(--radius-inner)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)] flex items-center justify-center text-[var(--accent)] transition-colors duration-300 group-hover:bg-[var(--accent)] group-hover:text-white group-hover:border-transparent"
+                                            >
+                                                <PlatformIcon label={p} className="w-4 h-4" />
+                                            </span>
+                                        ))}
+                                    </span>
+                                    {scoreValue !== null && <ScoreBadge score={scoreValue} className="shrink-0" />}
                                 </div>
+                                {secondary && (
+                                    <p className="-mt-1 text-[10px] uppercase tracking-wider text-[var(--ink-faint)] truncate">
+                                        {secondary}
+                                    </p>
+                                )}
                             </div>
                         </Link>
                     );

@@ -4,19 +4,18 @@ import { getScoreMeta } from "@/lib/score";
 interface ScoreBadgeProps {
     /** 0–10 scale */
     score: number;
-    variant?: "plate" | "pill";
-    /** Numeral size in px; the plate sizes itself around the content. */
-    size?: number;
+    /** bar = numeral + verdict word in one 28px rail (deck rows); pill = numeral only */
+    variant?: "bar" | "pill";
     className?: string;
 }
 
 /**
- * The one review-score treatment: a verdict-tinted plate carrying the numeral
- * and its verdict word. Auto-widths to the word — MASTERPIECE is the longest
- * label in the scale and must never spill past the border.
+ * The one review-score treatment. Lives in a card's info deck, never on the
+ * artwork — box art carries its own branding and every cover has a different
+ * brightness. Tinted, bordered and glowing in its verdict color.
  */
-export default function ScoreBadge({ score, variant = "plate", size = 18, className }: ScoreBadgeProps) {
-    const { color, label, glow } = getScoreMeta(score);
+export default function ScoreBadge({ score, variant = "bar", className }: ScoreBadgeProps) {
+    const { color, label } = getScoreMeta(score);
 
     if (variant === "pill") {
         return (
@@ -31,23 +30,18 @@ export default function ScoreBadge({ score, variant = "plate", size = 18, classN
 
     return (
         <span
-            className={cn("inline-flex flex-col items-center justify-center rounded-[var(--radius-inner)] border px-2.5 py-1.5 backdrop-blur-md", className)}
+            className={cn("inline-flex items-center gap-2 h-7 px-2.5 rounded-[var(--radius-inner)] border whitespace-nowrap", className)}
             style={{
-                borderColor: `color-mix(in srgb, ${color} 55%, transparent)`,
-                backgroundColor: `color-mix(in srgb, var(--surface-0) 82%, transparent)`,
-                boxShadow: `0 0 16px color-mix(in srgb, ${color} 28%, transparent)`,
+                borderColor: `color-mix(in srgb, ${color} 45%, transparent)`,
+                backgroundColor: `color-mix(in srgb, ${color} 10%, transparent)`,
+                boxShadow: `0 0 14px color-mix(in srgb, ${color} 20%, transparent)`,
             }}
         >
-            <span
-                className="font-display font-bold tabular-nums leading-none"
-                style={{ color, fontSize: size }}
-            >
+            <span className="font-display text-[14px] font-bold tabular-nums leading-none" style={{ color }}>
                 {score.toFixed(1)}
             </span>
-            <span
-                className="mt-1 font-black uppercase leading-none whitespace-nowrap"
-                style={{ color, fontSize: 7, letterSpacing: "0.1em", opacity: 0.9 }}
-            >
+            <span aria-hidden className="w-px h-3.5 rounded-full" style={{ backgroundColor: color, opacity: 0.35 }} />
+            <span className="text-[7px] font-black uppercase leading-none" style={{ color, letterSpacing: "0.12em", opacity: 0.95 }}>
                 {label}
             </span>
         </span>
