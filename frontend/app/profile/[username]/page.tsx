@@ -87,7 +87,7 @@ function ProfilePageInner() {
     if (isLoading || authLoading || (rawUsername === "me" && !currentUser)) {
         return (
             <div className="min-h-screen">
-                <div className="-mt-[120px] md:-mt-[116px] h-[460px] bg-gradient-to-b from-[var(--bg-secondary)] to-[var(--bg-primary)] animate-pulse" />
+                <div className="-mt-[86px] md:-mt-[82px] h-[460px] bg-gradient-to-b from-[var(--bg-secondary)] to-[var(--bg-primary)] animate-pulse" />
                 <div className="max-w-[1320px] mx-auto px-4 xl:px-0 -mt-24 space-y-4">
                     <div className="flex items-end gap-6">
                         <div className="w-32 h-32 rounded-full bg-white/5" />

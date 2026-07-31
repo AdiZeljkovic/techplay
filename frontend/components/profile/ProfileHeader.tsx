@@ -199,7 +199,7 @@ export default function ProfileHeader({
     const ghostBtnCls = "flex items-center justify-center gap-2 h-[42px] px-5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 text-white text-[12px] font-bold uppercase tracking-wider transition-colors";
 
     return (
-        <div className={`relative -mt-[120px] md:-mt-[116px]${hasSpotlight ? " ring-2 ring-[var(--accent)] shadow-[0_0_60px_color-mix(in_srgb,var(--accent)_25%,transparent)]" : ""}`}>
+        <div className={`relative -mt-[86px] md:-mt-[82px]${hasSpotlight ? " ring-2 ring-[var(--accent)] shadow-[0_0_60px_color-mix(in_srgb,var(--accent)_25%,transparent)]" : ""}`}>
             {/* === COVER === */}
             <div className="absolute inset-0 overflow-hidden">
                 {userData.cover_image ? (

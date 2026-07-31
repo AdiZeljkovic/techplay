@@ -56,7 +56,7 @@ export default function ForumSidebar() {
     const xpProgress = Math.min(100, Math.round((xp / Math.max(1, nextRankXp)) * 100));
 
     return (
-        <div className="space-y-4 sticky top-[130px]">
+        <div className="space-y-4 sticky top-[96px]">
             {/* ── PROFILE ── */}
             {user ? (
                 <div className={`${panelClass} p-5`}>

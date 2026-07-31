@@ -110,10 +110,10 @@ function GamesNavItem() {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}>
             <Link href="/games" className={cn(
-                "flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.06em] transition-colors whitespace-nowrap px-2 py-2.5",
+                "flex items-center gap-1 text-[13px] font-semibold tracking-[0.01em] transition-colors whitespace-nowrap px-2 py-2.5",
                 isActive || isHovered ? "text-tp-accent" : "text-zinc-600 dark:text-slate-300 hover:text-tp-accent dark:hover:text-white"
             )}>
-                GAMES
+                Games
                 <ChevronDown className={cn("w-3 h-3 mt-0.5 opacity-70 transition-transform duration-200", isHovered ? "rotate-180" : "rotate-0")} />
             </Link>
 
@@ -201,18 +201,18 @@ function GamesNavItem() {
 }
 
 const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-    DISCOVER:  Newspaper,
-    GAMES:     Gamepad2,
-    COMMUNITY: MessageSquare,
-    TOOLS:     Rocket,
-    SHOP:      ShoppingCart,
+    Discover:  Newspaper,
+    Games:     Gamepad2,
+    Community: MessageSquare,
+    Tools:     Rocket,
+    Shop:      ShoppingCart,
 };
 
 // App-style grouped navigation. DISCOVER's column items are populated with
 // live categories from GET /navigation/tree (news/reviews/tech keys).
 const INITIAL_NAV_ITEMS: NavItemType[] = [
     {
-        name: "DISCOVER", href: "/news", hasDropdown: true,
+        name: "Discover", href: "/news", hasDropdown: true,
         activePaths: ["/news", "/reviews", "/hardware", "/videos", "/guides"],
         columns: [
             { title: "News", href: "/news", items: [
@@ -243,14 +243,14 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
         ],
     },
     // Desktop renders the bespoke GamesNavItem; children below feed the mobile accordion.
-    { name: "GAMES", href: "/games", hasDropdown: true, activePaths: ["/games", "/calendar"], children: [
+    { name: "Games", href: "/games", hasDropdown: true, activePaths: ["/games", "/calendar"], children: [
         { name: "All Games",        href: "/games" },
         { name: "Release Calendar", href: "/calendar" },
         ...DB_GENRES.slice(0, 8).map(g => ({ name: g.label, href: `/games/genre/${g.slug}` })),
         ...DB_PLATFORMS.map(p => ({ name: p.label, href: `/games/platform/${p.slug}` })),
     ]},
     {
-        name: "COMMUNITY", href: "/forum", hasDropdown: true, viewAllLabel: "Open Forum",
+        name: "Community", href: "/forum", hasDropdown: true, viewAllLabel: "Open Forum",
         activePaths: ["/forum", "/leaderboard", "/clans", "/friends", "/giveaways"],
         children: [
             { name: "Forum",       href: "/forum",       icon: MessageSquare, description: "Discussions, help & clan halls" },
@@ -261,7 +261,7 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
         ],
     },
     {
-        name: "TOOLS", href: "/wow-analyzer", hasDropdown: true, viewAllLabel: "All Tools",
+        name: "Tools", href: "/wow-analyzer", hasDropdown: true, viewAllLabel: "All Tools",
         activePaths: ["/wow-analyzer", "/backlog-advisor", "/compare", "/wrapped"],
         children: [
             { name: "WoW Analyzer",    href: "/wow-analyzer",    icon: Sword,  description: "AI character readiness check" },
@@ -270,7 +270,7 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
             { name: "Gaming Wrapped",  href: "/wrapped",         icon: Gem,    description: "Your year in gaming, shareable" },
         ],
     },
-    { name: "SHOP", href: "/shop" },
+    { name: "Shop", href: "/shop" },
 ];
 
 // Logo Component
@@ -314,7 +314,7 @@ function NavItem({ item, badge, onHoverChange }: {
             <Link
                 href={item.href}
                 className={cn(
-                    "relative flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.06em] transition-colors whitespace-nowrap px-2 py-2.5",
+                    "relative flex items-center gap-1 text-[13px] font-semibold tracking-[0.01em] transition-colors whitespace-nowrap px-2 py-2.5",
                     isActive || isOpen ? "text-tp-accent" : "text-zinc-600 dark:text-slate-300 hover:text-tp-accent dark:hover:text-white"
                 )}
             >
@@ -459,7 +459,6 @@ function NavItem({ item, badge, onHoverChange }: {
 export default function Header() {
     const { isOpen: isMobileMenuOpen, setIsOpen: setIsMobileMenuOpen } = useMobileMenu();
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [expandedMobileItem, setExpandedMobileItem] = useState<string | null>(null);
     const { user, logout } = useAuth();
     const { itemCount } = useCart();
@@ -567,134 +566,68 @@ export default function Header() {
     }, [user]);
 
     // Close mobile menu and search on route change
-    useEffect(() => { setIsMobileMenuOpen(false); setIsSearchOpen(false); }, [pathname]);
-
-    // Close search on Escape
-    useEffect(() => {
-        if (!isSearchOpen) return;
-        const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") setIsSearchOpen(false); };
-        document.addEventListener("keydown", handleKey);
-        return () => document.removeEventListener("keydown", handleKey);
-    }, [isSearchOpen]);
+    useEffect(() => { setIsMobileMenuOpen(false); setMobileSearchOpen(false); }, [pathname]);
 
     return (
         <div className="w-full font-sans fixed top-0 left-0 right-0 z-50 flex flex-col shadow-2xl">
-            {/* MOBILE: TOP BAR (Sign In / Search) */}
-            <div className="border-b border-white/5 xl:hidden bg-[#020305]">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 flex justify-between items-center h-[34px]">
-                    {/* Left: Sign In / Register */}
-                    {user ? (
-                        <Link
-                            href={`/profile/${user.username || 'me'}`}
-                            className="flex items-center gap-2 text-white text-xs font-medium"
-                        >
-                            {user.avatar_url ? (
-                                <Image
-                                    src={user.avatar_url}
-                                    alt={user.username || 'Avatar'}
-                                    width={20}
-                                    height={20}
-                                    className="w-5 h-5 rounded-full object-cover"
-                                    unoptimized={user.avatar_url.includes('discord') || user.avatar_url.includes('gravatar')}
-                                />
+            {/* MAIN HEADER — single app-style bar */}
+            <header className="w-full bg-white/95 dark:bg-gradient-to-b dark:from-[#0F141D]/98 dark:to-[#05070A]/98 backdrop-blur-md border-b-[3px] border-tp-accent relative shadow-sm dark:shadow-none transition-colors duration-300">
+                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 h-[72px] flex items-center justify-between">
+                    {/* Logo (Left) */}
+                    <BrandLogo />
+
+                    {/* Desktop Nav (Center) */}
+                    <nav className="hidden xl:flex items-center gap-4 h-full">
+                        {navItems.map((item) =>
+                            item.name === "Games" ? (
+                                <GamesNavItem key="Games" />
                             ) : (
-                                <User className="w-4 h-4" />
-                            )}
-                            <span>{decodeHtml(user.display_name || user.username)}</span>
-                        </Link>
-                    ) : (
-                        <Link
-                            href="/login"
-                            className="flex items-center gap-2 text-white text-xs font-medium"
-                        >
-                            <User className="w-4 h-4" />
-                            <span className="uppercase tracking-wide">Sign In / Register</span>
-                        </Link>
-                    )}
+                                <NavItem
+                                    key={item.name}
+                                    item={item}
+                                    badge={item.name === 'Community' && notifications.forum_replies > 0 ? notifications.forum_replies : undefined}
+                                />
+                            )
+                        )}
+                    </nav>
 
-                    {/* Right: Search */}
-                    <button
-                        onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-                        className="p-2 text-gray-400 hover:text-white transition-colors"
-                        aria-label="Search"
-                    >
-                        <Search className="w-5 h-5" />
-                    </button>
-                </div>
-
-            </div>
-
-            {/* DESKTOP TOP BAR */}
-            <div className="hidden xl:block bg-zinc-100 dark:bg-[#020305] transition-colors duration-300">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 flex justify-between items-center h-[34px]">
-                    {/* Left: Utility Links */}
-                    <div className="flex items-center gap-6">
-                        {UTILITY_LINKS.map((link) => (
-                            <Link
-                                key={link.name}
-                                href={link.href}
-                                className={cn(
-                                    "text-[10px] uppercase font-bold transition-colors tracking-widest",
-                                    link.highlight ? "text-tp-accent" : "text-zinc-500 dark:text-slate-400 hover:text-tp-accent"
-                                )}
-                            >
-                                {link.name}
-                            </Link>
-                        ))}
-                    </div>
-
-                    {/* Right: Socials & Auth */}
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-3 pr-4 border-r border-zinc-200 dark:border-white/10">
-                            {socialLinks.map((social, idx) => (
-                                <Link key={idx} href={social.href} target="_blank" rel="noopener noreferrer" className="text-zinc-500 dark:text-slate-400 hover:text-tp-accent transition-colors" aria-label={`Follow us on ${social.name}`}>
-                                    <social.icon className="w-3.5 h-3.5" aria-hidden="true" />
-                                </Link>
-                            ))}
+                    {/* Actions (Right) */}
+                    <div className="flex items-center gap-3">
+                        {/* Inline search (desktop) */}
+                        <div className="hidden xl:block w-[260px] 2xl:w-[300px]">
+                            <SearchDropdown hotkey placeholder="Search games, news, guides..." />
                         </div>
 
-                        <Link href="/cart" className="relative text-gray-400 hover:text-white transition-colors" aria-label="Shopping cart">
-                            <ShoppingCart className="w-4 h-4" aria-hidden="true" />
-                            {itemCount > 0 && (
-                                <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-[var(--accent)] text-white text-[9px] font-bold rounded-full flex items-center justify-center" aria-label={`${itemCount} items in cart`}>
+                        {/* Cart — only when it has items */}
+                        {itemCount > 0 && (
+                            <Link href="/cart" className="relative p-2 text-slate-400 hover:text-white transition-colors" aria-label="Shopping cart">
+                                <ShoppingCart className="w-5 h-5" aria-hidden="true" />
+                                <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 px-1 bg-[var(--accent)] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                                     {itemCount}
                                 </span>
-                            )}
-                        </Link>
+                            </Link>
+                        )}
 
                         {user ? (
-                            <div className="flex items-center gap-4 pl-4 border-l border-white/10 ml-2">
-                                {/* Navigation Icons */}
-                                <div className="flex items-center gap-1">
-                                    <Link href="/messages" className="p-2 text-gray-400 hover:text-[var(--accent)] hover:bg-white/5 rounded-full transition-colors relative" title="Messages">
-                                        <Mail className="w-5 h-5" />
-                                        {notifications.unread_messages > 0 && (
-                                            <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-[#020816]">
-                                                {notifications.unread_messages}
-                                            </span>
-                                        )}
-                                    </Link>
-                                    <Link href="/friends" className="p-2 text-gray-400 hover:text-[var(--accent)] hover:bg-white/5 rounded-full transition-colors relative" title="Friends">
-                                        <Users className="w-5 h-5" />
-                                        {notifications.pending_requests > 0 && (
-                                            <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-[#020816]">
-                                                {notifications.pending_requests}
-                                            </span>
-                                        )}
-                                    </Link>
-                                    <NotificationPanel
-                                        unreadCount={notifications.unread_notifications}
-                                        onCountRefresh={refreshNotifCounts}
-                                    />
-                                </div>
-
-                                <div className="h-6 w-px bg-white/10 mx-1" />
+                            <div className="hidden xl:flex items-center gap-3">
+                                <Link href="/messages" className="relative p-2 text-slate-400 hover:text-[var(--accent)] hover:bg-white/5 rounded-full transition-colors" title="Messages">
+                                    <Mail className="w-5 h-5" />
+                                    {notifications.unread_messages > 0 && (
+                                        <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                                            {notifications.unread_messages}
+                                        </span>
+                                    )}
+                                </Link>
+                                <NotificationPanel
+                                    unreadCount={notifications.unread_notifications}
+                                    onCountRefresh={refreshNotifCounts}
+                                />
 
                                 {/* Level chip: level + progress toward the next 1000-XP step */}
                                 <Link
                                     href="/profile/me"
                                     title={`${(user.xp || 0).toLocaleString()} XP`}
-                                    className="flex items-center gap-2 px-2.5 h-6 rounded-full bg-white/5 border border-white/10 hover:border-[var(--accent)]/40 transition-colors"
+                                    className="flex items-center gap-2 px-2.5 h-7 rounded-full bg-white/5 border border-white/10 hover:border-[var(--accent)]/40 transition-colors"
                                 >
                                     <span className="text-[10px] font-black uppercase tracking-wider text-[var(--accent)]">
                                         Lvl {Math.floor((user.xp || 0) / 1000) + 1}
@@ -707,114 +640,51 @@ export default function Header() {
                                     </span>
                                 </Link>
 
-                                <Link href={`/profile/${user.username || 'me'}`} className="flex items-center gap-2 group">
+                                <Link href={`/profile/${user.username || 'me'}`} className="group shrink-0" title={decodeHtml(user.display_name || user.username) || "My Profile"}>
                                     {user.avatar_url ? (
                                         <Image
                                             src={user.avatar_url}
                                             alt={user.username || 'Avatar'}
-                                            width={32}
-                                            height={32}
-                                            className="w-8 h-8 rounded-full object-cover border border-white/20 group-hover:border-[var(--accent)] transition-colors"
+                                            width={34}
+                                            height={34}
+                                            className="w-[34px] h-[34px] rounded-full object-cover border border-white/20 group-hover:border-[var(--accent)] transition-colors"
                                             unoptimized={user.avatar_url.includes('discord') || user.avatar_url.includes('gravatar')}
                                         />
                                     ) : (
-                                        <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-[var(--accent)] transition-colors text-white">
+                                        <div className="w-[34px] h-[34px] bg-white/10 rounded-full flex items-center justify-center group-hover:bg-[var(--accent)] transition-colors text-white">
                                             <User className="w-4 h-4" />
                                         </div>
                                     )}
-                                    <span className="text-gray-200 font-medium group-hover:text-[var(--accent)] text-xs leading-tight truncate max-w-[120px]">
-                                        {decodeHtml(user.display_name || user.username) || "My Profile"}
-                                    </span>
                                 </Link>
-                                <button onClick={logout} className="ml-2 text-gray-400 hover:text-red-400 transition-colors p-2 hover:bg-white/5 rounded-full" title="Sign Out">
+                                <button onClick={logout} className="p-2 text-slate-400 hover:text-red-400 transition-colors hover:bg-white/5 rounded-full" title="Sign Out">
                                     <LogOut className="w-4 h-4" />
                                 </button>
                             </div>
                         ) : (
-                            <Link href="/login" className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors text-[10px] uppercase tracking-wide font-semibold">
-                                <User className="w-3 h-3" />
-                                Sign In
-                            </Link>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* MAIN HEADER */}
-            <header className="w-full bg-white/95 dark:bg-gradient-to-b dark:from-[#0F141D]/98 dark:to-[#05070A]/98 backdrop-blur-md border-b-[3px] border-tp-accent relative shadow-sm dark:shadow-none transition-colors duration-300">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 h-[72px] flex items-center justify-between">
-                    {/* Logo (Left) */}
-                    <BrandLogo />
-
-                    {/* Desktop Nav (Center) */}
-                    <nav className="hidden xl:flex items-center gap-5 h-full">
-                        {navItems.map((item) =>
-                            item.name === "GAMES" ? (
-                                <GamesNavItem key="GAMES" />
-                            ) : (
-                                <NavItem
-                                    key={item.name}
-                                    item={item}
-                                    badge={item.name === 'COMMUNITY' && notifications.forum_replies > 0 ? notifications.forum_replies : undefined}
-                                />
-                            )
-                        )}
-                    </nav>
-
-                    {/* Actions (Right) */}
-                    <div className="flex items-center gap-4">
-                        {/* Search button */}
-                        <button
-                            onClick={() => setIsSearchOpen(prev => !prev)}
-                            className={cn(
-                                "hidden xl:flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200",
-                                isSearchOpen
-                                    ? "bg-tp-accent text-white shadow-lg shadow-tp-accent/30"
-                                    : "text-zinc-600 dark:text-slate-400 hover:text-tp-accent dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5"
-                            )}
-                            aria-label="Toggle search"
-                        >
-                            <AnimatePresence mode="wait" initial={false}>
-                                {isSearchOpen ? (
-                                    <motion.span key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
-                                        <X className="w-[18px] h-[18px]" />
-                                    </motion.span>
-                                ) : (
-                                    <motion.span key="s" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
-                                        <Search className="w-[18px] h-[18px]" />
-                                    </motion.span>
-                                )}
-                            </AnimatePresence>
-                        </button>
-
-                        {/* Auth Buttons (main nav bar - desktop, guests only) */}
-                        {!user && (
-                            <div className="hidden xl:flex items-center gap-2">
+                            <div className="hidden xl:flex items-center gap-3">
                                 <Link
                                     href="/login"
-                                    className="text-slate-300 hover:text-white font-semibold transition-colors text-[11px] uppercase tracking-widest"
+                                    className="text-slate-300 hover:text-white font-semibold transition-colors text-[13px] px-2"
                                 >
                                     Sign In
                                 </Link>
                                 <Link
                                     href="/register"
-                                    className="inline-flex items-center justify-center bg-tp-accent hover:bg-tp-accent-hover text-white px-6 h-[34px] rounded-sm font-semibold transition-colors uppercase text-[11px] tracking-widest leading-none"
+                                    className="inline-flex items-center justify-center bg-tp-accent hover:bg-tp-accent-hover text-white px-5 h-10 rounded-lg font-bold transition-colors text-[13px] leading-none"
                                 >
-                                    Register
+                                    Join TechPlay
                                 </Link>
                             </div>
                         )}
-                        {/* Support Us (for logged-in users) */}
-                        {user && (
-                            <Link
-                                href="/support"
-                                className="hidden md:inline-flex items-center justify-center bg-tp-accent hover:bg-tp-accent-hover text-white px-6 h-[34px] rounded-sm font-semibold transition-colors uppercase text-[11px] tracking-widest leading-none"
-                            >
-                                Support Us
-                            </Link>
-                        )}
 
-                        {/* Hamburger Menu - Mobile Only */}
+                        {/* Mobile: search + hamburger */}
+                        <button
+                            onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+                            className="xl:hidden p-2 text-gray-300 hover:text-white transition-colors"
+                            aria-label="Search"
+                        >
+                            <Search className="w-6 h-6" />
+                        </button>
                         <button
                             className="xl:hidden p-2 text-gray-300 hover:text-white active:bg-white/10 rounded-lg transition-colors"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -845,31 +715,6 @@ export default function Header() {
                                 onClose={() => setMobileSearchOpen(false)}
                                 autoFocus={true}
                             />
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* DESKTOP SEARCH DROPDOWN */}
-            <AnimatePresence>
-                {isSearchOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                        className="hidden xl:block bg-[#0A0D13]/98 backdrop-blur-md border-b border-white/[0.06] w-full"
-                        style={{ boxShadow: "0 12px 40px rgba(0,0,0,0.5)" }}
-                    >
-                        <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-3 flex justify-end">
-                            <div className="w-[420px]">
-                                <SearchDropdown
-                                    isMobile={false}
-                                    placeholder="Search articles, games, reviews..."
-                                    onClose={() => setIsSearchOpen(false)}
-                                    autoFocus={true}
-                                />
-                            </div>
                         </div>
                     </motion.div>
                 )}

@@ -97,7 +97,7 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 140px;
+  scroll-padding-top: 104px; /* 72px fixed header + breathing room */
   background-color: #05070A;
   /* clip (not hidden) — prevents horizontal scroll from overflowing content
      without creating a scroll container that would break position: sticky */

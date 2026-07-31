@@ -467,7 +467,7 @@ export default function GamesClientPage() {
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
 
                     {/* ── FACET SIDEBAR (desktop) ── */}
-                    <aside className="hidden lg:block w-[280px] shrink-0 sticky top-[130px]">
+                    <aside className="hidden lg:block w-[280px] shrink-0 sticky top-[96px]">
                         <div className="relative overflow-hidden bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-[20px] p-6 shadow-sm dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-colors duration-300">
                             {/* Accent hairline along the top of the card */}
                             <span className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-tp-accent/70 via-tp-accent/15 to-transparent" />

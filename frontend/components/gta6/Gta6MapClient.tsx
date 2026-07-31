@@ -219,7 +219,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
     );
 
     return (
-        <div className="flex h-[calc(100dvh-106px)] min-h-[520px] overflow-hidden bg-[#05070A]">
+        <div className="flex h-[calc(100dvh-72px)] min-h-[520px] overflow-hidden bg-[#05070A]">
 
             {/* ── LEFT PANEL (desktop only) ─────────────────────────── */}
             <aside

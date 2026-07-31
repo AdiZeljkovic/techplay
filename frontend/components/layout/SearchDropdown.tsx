@@ -26,9 +26,11 @@ interface SearchDropdownProps {
     isMobile?: boolean;
     onClose?: () => void;
     autoFocus?: boolean;
+    /** Register Ctrl/⌘+K to focus the input and show a kbd hint chip. */
+    hotkey?: boolean;
 }
 
-export default function SearchDropdown({ className, placeholder = "Search...", isMobile = false, onClose, autoFocus = false }: SearchDropdownProps) {
+export default function SearchDropdown({ className, placeholder = "Search...", isMobile = false, onClose, autoFocus = false, hotkey = false }: SearchDropdownProps) {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<SearchResult[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +43,19 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
     useEffect(() => {
         if (autoFocus) inputRef.current?.focus();
     }, [autoFocus]);
+
+    // Ctrl/⌘+K focuses the search field
+    useEffect(() => {
+        if (!hotkey) return;
+        const onKey = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+                e.preventDefault();
+                inputRef.current?.focus();
+            }
+        };
+        document.addEventListener("keydown", onKey);
+        return () => document.removeEventListener("keydown", onKey);
+    }, [hotkey]);
 
     // Debounced search with proper cleanup to prevent memory leaks
     useEffect(() => {
@@ -162,6 +177,14 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                             : "rounded-lg py-2 pl-9 pr-8 text-sm"
                     )}
                 />
+
+                {/* Hotkey hint (hidden while typing so the clear button can take the slot) */}
+                {hotkey && !isMobile && query.length === 0 && !isLoading && (
+                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-0.5 pointer-events-none">
+                        <kbd className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] font-semibold text-white/40">Ctrl</kbd>
+                        <kbd className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] font-semibold text-white/40">K</kbd>
+                    </span>
+                )}
 
                 {/* Loading/Clear button */}
                 {(isLoading || query.length > 0) && (
