@@ -26,15 +26,15 @@ export function PlayingNowCard({ game: g, showResume = false, className = "" }: 
         <Link
             href={`/games/${g.slug}`}
             prefetch={false}
-            className={`group relative rounded-xl overflow-hidden border border-white/[0.06] bg-[#0B0E14] hover:border-[var(--accent)]/40 transition-all ${className}`}
+            className={`group relative rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300 ${className}`}
         >
-            <div className="relative aspect-[16/10] overflow-hidden bg-[#0B0E14]">
+            <div className="relative aspect-[16/10] overflow-hidden bg-[var(--surface-1)]">
                 {g.background_image ? (
-                    <img src={g.background_image} alt={g.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src={g.background_image} alt={g.name} className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]" />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-white/15"><Gamepad2 className="w-8 h-8" /></div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+                <div className="absolute inset-0 scrim-card" />
 
                 {/* corner platform badge */}
                 {plat && <div className="absolute top-2 right-2"><Badge>{plat}</Badge></div>}
@@ -42,15 +42,15 @@ export function PlayingNowCard({ game: g, showResume = false, className = "" }: 
                 {/* bottom overlay */}
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                     <div className="flex items-center justify-between gap-2 mb-2">
-                        <h4 className="text-[14px] font-bold text-white line-clamp-1 group-hover:text-[var(--accent)] transition-colors">{g.name}</h4>
+                        <h4 className="font-display text-[14px] font-bold text-white line-clamp-1 group-hover:text-[var(--accent)] transition-colors">{g.name}</h4>
                         {plat && <Badge>{plat}</Badge>}
                     </div>
                     <div className="flex items-center gap-2.5">
                         <span className="flex items-center gap-1 text-[10px] font-semibold text-white/60 shrink-0">
                             <Clock className="w-3 h-3" /> {g.hours_played}h
                         </span>
-                        <div className="flex-1 h-1.5 bg-white/15 rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-[var(--accent)] to-[#FF7A3D] rounded-full" style={{ width: `${g.progress}%` }} />
+                        <div className="flex-1 h-1.5 bg-[var(--track)] rounded-full overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-bright)] rounded-full" style={{ width: `${g.progress}%` }} />
                         </div>
                         <span className="text-[11px] font-bold text-white/90 tabular-nums shrink-0">{g.progress}%</span>
                     </div>

@@ -11,12 +11,12 @@ export default function ContinuePlayingRow({ games }: { games: PlayingNowGame[] 
     return (
         <section>
             <div className="flex items-center justify-between mb-4">
-                <h2 className="flex items-center gap-2.5 text-[15px] font-bold uppercase tracking-[0.08em] text-white font-display">
+                <h2 className="flex items-center gap-2.5 font-display text-[15px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
                     <span className="w-1 h-4 rounded-full bg-[var(--accent)]" />
                     <Play className="w-4 h-4 text-[var(--accent)]" />
                     Continue Playing
                 </h2>
-                <Link href="/profile/me?tab=collection" className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white/40 hover:text-[var(--accent)] transition-colors">
+                <Link href="/profile/me?tab=collection" className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors duration-150">
                     View all <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
             </div>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { User as UserIcon, Gamepad2, Heart, ListChecks, Star, Award, Plus } from "lucide-react";
 import type { DashboardData } from "@/lib/types/dashboard";
+import ProgressBar from "@/components/ui/ProgressBar";
 import AddFavoriteInline from "./AddFavoriteInline";
 
 export default function ProfileSummaryCard({ data }: { data: DashboardData }) {
@@ -23,37 +24,33 @@ export default function ProfileSummaryCard({ data }: { data: DashboardData }) {
     ];
 
     return (
-        <section className="rounded-2xl bg-[var(--bg-card)] border border-white/[0.06] p-5 md:p-6 h-full flex flex-col">
+        <section className="relative rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] p-6 md:p-8 h-full flex flex-col overflow-hidden">
+            <span aria-hidden className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent" />
             {/* Identity + XP */}
             <div className="flex items-start gap-4">
                 <Link href="/profile/me" className="relative shrink-0">
                     {user.avatar_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={user.avatar_url} alt={user.display_name} className="w-[84px] h-[84px] rounded-full object-cover border-2 border-white/10" />
+                        <img src={user.avatar_url} alt={user.display_name} className="w-[84px] h-[84px] rounded-full object-cover border-2 border-[var(--line-strong)]" />
                     ) : (
-                        <span className="w-[84px] h-[84px] rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                            <UserIcon className="w-8 h-8 text-white/30" />
+                        <span className="w-[84px] h-[84px] rounded-full bg-[var(--surface-2)] border border-[var(--line-strong)] flex items-center justify-center">
+                            <UserIcon className="w-8 h-8 text-[var(--ink-faint)]" />
                         </span>
                     )}
-                    <span className="absolute bottom-1.5 right-1.5 w-[14px] h-[14px] rounded-full bg-emerald-500 ring-[3px] ring-[var(--bg-card)]" title="Online" />
+                    <span className="absolute bottom-1.5 right-1.5 w-[14px] h-[14px] rounded-full bg-emerald-500 ring-[3px] ring-[var(--surface-1)]" title="Online" />
                 </Link>
 
                 <div className="flex-1 min-w-0">
-                    <Link href="/profile/me" className="block text-[20px] font-bold text-white truncate hover:text-[var(--accent)] transition-colors">
+                    <Link href="/profile/me" className="block font-display text-[20px] font-bold text-[var(--ink-hi)] truncate hover:text-[var(--accent)] transition-colors">
                         {user.display_name || user.username}
                     </Link>
-                    <p className="mt-1 text-[12.5px] text-white/45">
+                    <p className="mt-1 text-[13px] text-[var(--ink-low)]">
                         Level {user.level}
-                        {user.rank_name && <> <span className="text-white/25 px-0.5">•</span> <span className="text-white/60">{user.rank_name}</span></>}
+                        {user.rank_name && <> <span className="text-[var(--ink-faint)] px-0.5">•</span> <span className="text-[var(--ink-mid)]">{user.rank_name}</span></>}
                     </p>
 
-                    <div className="mt-3.5 h-[9px] rounded-full bg-white/[0.08] overflow-hidden">
-                        <div
-                            className="h-full rounded-full bg-gradient-to-r from-[var(--accent)] to-[#FFA04D]"
-                            style={{ width: `${xpPercent}%` }}
-                        />
-                    </div>
-                    <p className="mt-2 text-right text-[12px] text-white/45 tabular-nums">
+                    <ProgressBar value={xpPercent} className="mt-3.5 h-[9px]" />
+                    <p className="mt-2 text-right text-[12px] text-[var(--ink-low)] tabular-nums">
                         {nextXp
                             ? `${user.xp.toLocaleString()} / ${nextXp.toLocaleString()} XP`
                             : `${user.xp.toLocaleString()} XP · Max rank`}
@@ -62,31 +59,31 @@ export default function ProfileSummaryCard({ data }: { data: DashboardData }) {
             </div>
 
             {/* Counters — icon + label on one line, value beneath, left aligned */}
-            <div className="mt-5 pt-5 border-t border-white/[0.06] grid grid-cols-3 sm:grid-cols-5 gap-x-3 gap-y-4">
+            <div className="mt-5 pt-5 border-t border-[var(--line)] grid grid-cols-3 sm:grid-cols-5 gap-x-3 gap-y-4">
                 {counters.map((c) => (
                     <div key={c.label} className="min-w-0">
-                        <div className="flex items-center gap-1.5 text-white/40">
+                        <div className="flex items-center gap-1.5 text-[var(--ink-low)]">
                             <c.icon className="w-[15px] h-[15px] shrink-0" />
-                            <span className="text-[10.5px] leading-tight truncate">{c.label}</span>
+                            <span className="text-[10px] leading-tight truncate">{c.label}</span>
                         </div>
-                        <p className="mt-1 text-[20px] font-black text-white leading-none tabular-nums">{c.value}</p>
+                        <p className="mt-1 font-display text-[20px] font-bold text-[var(--ink-hi)] leading-none tabular-nums">{c.value}</p>
                     </div>
                 ))}
             </div>
 
             {/* Favorites — or a nudge to create some, so the panel never bottoms out empty */}
-            <div className="mt-5 pt-5 border-t border-white/[0.06] flex-1 flex flex-col">
+            <div className="mt-5 pt-5 border-t border-[var(--line)] flex-1 flex flex-col">
                 <div className="flex items-center justify-between mb-3">
-                    <p className="text-[13px] font-bold text-white">Favorite Games</p>
+                    <p className="font-display text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">Favorite Games</p>
                     {favorites.length > 0 && (
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setPickerOpen((v) => !v)}
-                                className="inline-flex items-center gap-1 text-[11.5px] font-bold text-white/45 hover:text-[var(--accent)] transition-colors"
+                                className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors"
                             >
                                 <Plus className="w-3.5 h-3.5" /> Add
                             </button>
-                            <Link href="/profile/me?tab=collection" className="text-[11.5px] font-bold text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors">
+                            <Link href="/profile/me?tab=collection" className="text-[10px] font-bold uppercase tracking-wider text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors">
                                 View all
                             </Link>
                         </div>
@@ -105,11 +102,11 @@ export default function ProfileSummaryCard({ data }: { data: DashboardData }) {
                                 href={`/games/${g.slug}`}
                                 prefetch={false}
                                 title={g.name}
-                                className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5 border border-white/[0.06] hover:border-[var(--accent)]/50 transition-colors"
+                                className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-[var(--fill-1)] border border-[var(--line)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors"
                             >
                                 {g.background_image && (
                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={g.background_image} alt={g.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                    <img src={g.background_image} alt={g.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]" />
                                 )}
                             </Link>
                         ))}

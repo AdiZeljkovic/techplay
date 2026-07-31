@@ -19,14 +19,14 @@ function StatChip({
         <div
             className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${
                 highlight
-                    ? "border-[var(--accent)]/30 bg-[var(--accent)]/[0.07]"
-                    : "border-white/[0.08] bg-white/[0.02]"
+                    ? "border-[color-mix(in_srgb,var(--accent)_30%,transparent)] bg-[var(--accent-soft)]"
+                    : "border-[var(--line-strong)] bg-[var(--fill-1)]"
             }`}
         >
             <span className="shrink-0 text-[var(--accent)]">{icon}</span>
             <div className="min-w-0">
-                <p className="text-[17px] font-black text-white leading-none tabular-nums">{value}</p>
-                <p className="mt-1 text-[10px] text-white/45 leading-tight whitespace-pre-line">{label}</p>
+                <p className="font-display text-[17px] font-bold text-[var(--ink-hi)] leading-none tabular-nums">{value}</p>
+                <p className="mt-1 text-[10px] text-[var(--ink-low)] leading-tight whitespace-pre-line">{label}</p>
             </div>
         </div>
     );
@@ -40,22 +40,22 @@ export default function WelcomeHero({ data }: { data: DashboardData }) {
     const backdrop = firstPlaying?.background_image ?? data.favorites[0]?.background_image ?? null;
 
     return (
-        <section className="relative rounded-2xl overflow-hidden bg-[var(--bg-card)] border border-white/[0.06] h-full">
+        <section className="relative rounded-[var(--radius-panel)] overflow-hidden bg-[var(--surface-1)] border border-[var(--line)] h-full">
             {backdrop && (
                 <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={backdrop} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-[0.14]" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-[var(--bg-card)] via-[var(--bg-card)]/92 to-[var(--bg-card)]/70" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[var(--surface-1)] via-[var(--surface-1)]/92 to-[var(--surface-1)]/70" />
                 </>
             )}
-            <span className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-[var(--accent)]/70 via-[var(--accent)]/15 to-transparent" />
+            <span aria-hidden className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent" />
 
             <div className="relative p-6 md:p-8 flex flex-col justify-between h-full">
                 <div>
-                    <h1 className="font-display text-[30px] md:text-[38px] font-black text-white leading-[1.05]">
+                    <h1 className="font-display text-[28px] md:text-[36px] font-black text-[var(--ink-hi)] leading-[1.05]">
                         Welcome back, <span className="text-[var(--accent)]">{user.display_name || user.username}.</span>
                     </h1>
-                    <p className="mt-3 text-[14px] text-white/50 leading-relaxed max-w-lg">
+                    <p className="mt-3 text-[14px] text-[var(--ink-mid)] leading-relaxed max-w-lg">
                         TechPlay helps you keep up with the games you love.
                         <br className="hidden sm:block" />
                         Continue playing, track releases, and discover what matters to you.
@@ -66,21 +66,21 @@ export default function WelcomeHero({ data }: { data: DashboardData }) {
                             <Link
                                 href={`/games/${firstPlaying.slug}`}
                                 prefetch={false}
-                                className="inline-flex items-center gap-2 px-6 h-12 rounded-xl bg-[var(--accent)] text-white text-[14px] font-bold hover:bg-[var(--accent-hover)] transition-colors"
+                                className="inline-flex items-center gap-2 px-6 h-12 rounded-[var(--radius-card)] bg-[var(--accent)] text-white font-display text-[13px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)]"
                             >
                                 <Play className="w-4 h-4 fill-current" /> Continue Playing
                             </Link>
                         ) : (
                             <Link
                                 href="/games"
-                                className="inline-flex items-center gap-2 px-6 h-12 rounded-xl bg-[var(--accent)] text-white text-[14px] font-bold hover:bg-[var(--accent-hover)] transition-colors"
+                                className="inline-flex items-center gap-2 px-6 h-12 rounded-[var(--radius-card)] bg-[var(--accent)] text-white font-display text-[13px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)]"
                             >
                                 <Play className="w-4 h-4 fill-current" /> Find Your First Game
                             </Link>
                         )}
                         <Link
                             href="/profile/me?tab=collection"
-                            className="inline-flex items-center gap-2 px-6 h-12 rounded-xl bg-white/[0.03] border border-white/10 text-white text-[14px] font-bold hover:border-[var(--accent)]/40 transition-colors"
+                            className="inline-flex items-center gap-2 px-6 h-12 rounded-[var(--radius-card)] bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-hi)] font-display text-[13px] font-bold uppercase tracking-wider hover:bg-[var(--fill-3)] transition-colors duration-300"
                         >
                             <LayoutGrid className="w-4 h-4" /> Open My Library
                         </Link>

@@ -43,14 +43,14 @@ function Card({
     children: React.ReactNode;
 }) {
     return (
-        <div className="rounded-2xl bg-[var(--bg-card)] border border-white/[0.06] p-4 flex flex-col">
+        <div className="rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] p-4 flex flex-col">
             <div className="flex items-center justify-between mb-3">
-                <h3 className="flex items-center gap-2 text-[13px] font-bold text-white">
+                <h3 className="flex items-center gap-2 font-display text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
                     <span className="text-[var(--accent)]">{icon}</span>
                     {title}
                 </h3>
                 {action && (
-                    <Link href={action.href} className="flex items-center gap-0.5 text-[11px] font-bold text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors">
+                    <Link href={action.href} className="flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors duration-150">
                         {action.label} <ChevronRight className="w-3 h-3" />
                     </Link>
                 )}
@@ -61,7 +61,7 @@ function Card({
 }
 
 const Hint = ({ children }: { children: React.ReactNode }) => (
-    <p className="flex-1 flex items-center justify-center text-center text-[11.5px] text-white/30 py-4 px-2">{children}</p>
+    <p className="flex-1 flex items-center justify-center text-center text-[11px] text-[var(--ink-faint)] py-4 px-2">{children}</p>
 );
 
 /**
@@ -74,7 +74,7 @@ export default function YourActivity() {
     if (!data) {
         return (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                {[0, 1, 2, 3].map((i) => <div key={i} className="h-[188px] rounded-2xl bg-white/[0.04] animate-pulse" />)}
+                {[0, 1, 2, 3].map((i) => <div key={i} className="h-[188px] rounded-[var(--radius-panel)] bg-[var(--fill-2)] animate-pulse" />)}
             </div>
         );
     }
@@ -83,7 +83,7 @@ export default function YourActivity() {
 
     return (
         <section>
-            <h2 className="flex items-center gap-2.5 text-[15px] font-bold uppercase tracking-[0.08em] text-white font-display mb-4">
+            <h2 className="flex items-center gap-2.5 font-display text-[15px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)] mb-5">
                 <span className="w-1 h-4 rounded-full bg-[var(--accent)]" />
                 Your Activity
             </h2>
@@ -93,22 +93,22 @@ export default function YourActivity() {
                 <Card title="Continue Reading" icon={<BookOpen className="w-3.5 h-3.5" />} action={reading ? { label: "View all", href: "/news" } : undefined}>
                     {reading ? (
                         <Link href={hrefFor(reading)} className="group flex gap-3">
-                            <div className="relative w-[74px] h-[74px] rounded-lg overflow-hidden shrink-0 bg-white/5">
+                            <div className="relative w-[74px] h-[74px] rounded-lg overflow-hidden shrink-0 bg-[var(--fill-2)]">
                                 {reading.featured_image_url && (
                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={reading.featured_image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                    <img src={reading.featured_image_url} alt="" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]" />
                                 )}
                             </div>
                             <div className="min-w-0 flex-1 flex flex-col">
-                                <p className="text-[12.5px] font-bold text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                                <p className="text-[13px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                                     {reading.title}
                                 </p>
-                                {reading.category && <p className="mt-1 text-[10.5px] text-white/35">{reading.category}</p>}
+                                {reading.category && <p className="mt-1 text-[10px] text-[var(--ink-faint)]">{reading.category}</p>}
                                 <div className="mt-auto pt-2 flex items-center gap-2">
-                                    <span className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                                    <span className="flex-1 h-1.5 rounded-full bg-[var(--track)] overflow-hidden">
                                         <span className="block h-full rounded-full bg-[var(--accent)]" style={{ width: `${reading.progress}%` }} />
                                     </span>
-                                    <span className="text-[10.5px] font-bold text-white/50 tabular-nums">{reading.progress}%</span>
+                                    <span className="text-[10px] font-bold text-[var(--ink-low)] tabular-nums">{reading.progress}%</span>
                                 </div>
                             </div>
                         </Link>
@@ -121,11 +121,11 @@ export default function YourActivity() {
                 <Card title="Saved Articles" icon={<Bookmark className="w-3.5 h-3.5" />} action={saved.total > 0 ? { label: "View all", href: "/profile/me?tab=activity" } : undefined}>
                     {saved.total > 0 ? (
                         <>
-                            <p className="text-[28px] font-black text-[var(--accent)] leading-none tabular-nums">{saved.total}</p>
-                            <p className="text-[10.5px] text-white/35 mt-1">Saved article{saved.total === 1 ? "" : "s"}</p>
+                            <p className="font-display text-[28px] font-bold text-[var(--accent)] leading-none tabular-nums">{saved.total}</p>
+                            <p className="text-[10px] text-[var(--ink-faint)] mt-1">Saved article{saved.total === 1 ? "" : "s"}</p>
                             <div className="mt-auto pt-3 flex gap-1.5">
                                 {saved.items.slice(0, 4).map((a) => (
-                                    <Link key={a.slug} href={hrefFor(a)} title={a.title} className="relative flex-1 aspect-square rounded-md overflow-hidden bg-white/5 border border-white/[0.06] hover:border-[var(--accent)]/50 transition-colors">
+                                    <Link key={a.slug} href={hrefFor(a)} title={a.title} className="relative flex-1 aspect-square rounded-md overflow-hidden bg-[var(--fill-1)] border border-[var(--line)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors">
                                         {a.featured_image_url && (
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img src={a.featured_image_url} alt="" className="w-full h-full object-cover" />
@@ -133,7 +133,7 @@ export default function YourActivity() {
                                     </Link>
                                 ))}
                                 {saved.total > 4 && (
-                                    <span className="flex-1 aspect-square rounded-md bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-[11px] font-bold text-white/50">
+                                    <span className="flex-1 aspect-square rounded-md bg-[var(--fill-2)] border border-[var(--line)] flex items-center justify-center text-[11px] font-bold text-[var(--ink-low)]">
                                         +{saved.total - 4}
                                     </span>
                                 )}
@@ -152,10 +152,10 @@ export default function YourActivity() {
                                 <Link
                                     key={term}
                                     href={`/games?search=${encodeURIComponent(term)}`}
-                                    className="group flex items-center gap-2 h-9 px-3 rounded-lg bg-white/[0.03] border border-white/[0.05] hover:border-[var(--accent)]/40 transition-colors"
+                                    className="group flex items-center gap-2 h-9 px-3 rounded-lg bg-[var(--fill-1)] border border-[var(--line)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
                                 >
-                                    <Search className="w-3 h-3 text-white/25 shrink-0" />
-                                    <span className="text-[12px] text-white/60 truncate group-hover:text-white transition-colors">{term}</span>
+                                    <Search className="w-3 h-3 text-[var(--ink-faint)] shrink-0" />
+                                    <span className="text-[12px] text-[var(--ink-mid)] truncate group-hover:text-white transition-colors">{term}</span>
                                 </Link>
                             ))}
                         </div>
@@ -169,23 +169,23 @@ export default function YourActivity() {
                     {drafts.total > 0 ? (
                         <div className="flex gap-3">
                             <div className="shrink-0">
-                                <p className="text-[28px] font-black text-[var(--accent)] leading-none tabular-nums">{drafts.total}</p>
-                                <p className="text-[10.5px] text-white/35 mt-1 max-w-[52px] leading-tight">Draft review{drafts.total === 1 ? "" : "s"}</p>
+                                <p className="font-display text-[28px] font-bold text-[var(--accent)] leading-none tabular-nums">{drafts.total}</p>
+                                <p className="text-[10px] text-[var(--ink-faint)] mt-1 max-w-[52px] leading-tight">Draft review{drafts.total === 1 ? "" : "s"}</p>
                             </div>
                             <div className="flex-1 min-w-0 space-y-1.5">
                                 {drafts.items.slice(0, 2).map((d) => (
                                     <Link key={d.slug} href={`/games/${d.slug}`} prefetch={false} className="group flex items-center gap-2">
-                                        <span className="relative w-[42px] h-[28px] rounded overflow-hidden shrink-0 bg-white/5">
+                                        <span className="relative w-[42px] h-[28px] rounded overflow-hidden shrink-0 bg-[var(--fill-2)]">
                                             {d.background_image ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={d.background_image} alt="" className="w-full h-full object-cover" />
                                             ) : (
-                                                <span className="w-full h-full flex items-center justify-center"><Gamepad2 className="w-3 h-3 text-white/20" /></span>
+                                                <span className="w-full h-full flex items-center justify-center"><Gamepad2 className="w-3 h-3 text-[var(--ink-faint)]" /></span>
                                             )}
                                         </span>
                                         <span className="min-w-0 flex-1">
-                                            <span className="block text-[11.5px] font-semibold text-white truncate group-hover:text-[var(--accent)] transition-colors">{d.name}</span>
-                                            <span className="block text-[10px] text-white/30">(Draft)</span>
+                                            <span className="block text-[11px] font-semibold text-white truncate group-hover:text-[var(--accent)] transition-colors">{d.name}</span>
+                                            <span className="block text-[10px] text-[var(--ink-faint)]">(Draft)</span>
                                         </span>
                                     </Link>
                                 ))}

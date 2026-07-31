@@ -18,16 +18,16 @@ export default function OnboardingCard() {
                 <Link
                     key={s.title}
                     href={s.href}
-                    className="group flex items-center gap-3.5 p-3 -mx-1 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:border-[var(--accent)]/40 transition-colors"
+                    className="group flex items-center gap-3.5 p-3 -mx-1 rounded-xl bg-[var(--fill-1)] border border-[var(--line)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
                 >
-                    <span className="w-10 h-10 rounded-xl bg-[var(--accent)]/10 flex items-center justify-center shrink-0">
-                        <s.icon className="w-4.5 h-4.5 text-[var(--accent)]" />
+                    <span className="w-10 h-10 rounded-xl bg-[var(--accent-soft)] flex items-center justify-center shrink-0">
+                        <s.icon className="w-[18px] h-[18px] text-[var(--accent)]" />
                     </span>
                     <span className="flex-1 min-w-0">
-                        <span className="block text-[13px] font-bold text-white group-hover:text-[var(--accent)] transition-colors">{s.title}</span>
-                        <span className="block text-[11px] text-white/40">{s.hint}</span>
+                        <span className="block font-display text-[13px] font-bold text-[var(--ink-hi)] group-hover:text-[var(--accent)] transition-colors">{s.title}</span>
+                        <span className="block text-[11px] text-[var(--ink-low)]">{s.hint}</span>
                     </span>
-                    <ChevronRight className="w-4 h-4 text-white/25 group-hover:text-[var(--accent)] transition-colors shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-[var(--ink-faint)] group-hover:text-[var(--accent)] transition-colors shrink-0" />
                 </Link>
             ))}
         </SectionCard>

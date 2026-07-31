@@ -38,36 +38,36 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
     const hasGames = data.stats.games_count > 0;
 
     return (
-        <main className="min-h-screen bg-[var(--bg-primary)] profile-grid-bg">
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 w-full py-8">
+        <main className="min-h-screen bg-[var(--surface-0)] bg-hud-grid">
+            <div className="container-page py-8 space-y-10">
                 {/* Welcome hero row — even split, panels stretch to match height */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10 items-stretch tp-fade-up tp-d1">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch tp-fade-up tp-d1">
                     <WelcomeHero data={data} />
                     <ProfileSummaryCard data={data} />
                 </div>
 
                 {/* Continue playing rail */}
                 {hasGames && (
-                    <div className="mb-10 tp-fade-up tp-d2">
+                    <div className="tp-fade-up tp-d2">
                         <ContinuePlayingRow games={data.playing_now} />
                     </div>
                 )}
 
                 {/* Upcoming releases rail with Remind Me / Following toggle */}
-                <div className="mb-10 tp-fade-up tp-d3">
+                <div className="tp-fade-up tp-d3">
                     <UpcomingForYouRow />
                 </div>
 
                 {/* Backlog & recommendations */}
                 {hasGames && (
-                    <div className="mb-10 grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch tp-fade-up tp-d4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch tp-fade-up tp-d4">
                         <RecommendedNext games={data.backlog_preview} />
                         <BacklogProgressCard stats={data.stats} suggestion={data.backlog_suggestion} />
                     </div>
                 )}
 
                 {/* Pick up where you left off */}
-                <div className="mb-10 tp-fade-up tp-d5">
+                <div className="tp-fade-up tp-d5">
                     <YourActivity />
                 </div>
 

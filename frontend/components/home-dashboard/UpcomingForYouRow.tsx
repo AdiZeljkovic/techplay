@@ -76,12 +76,12 @@ export default function UpcomingForYouRow() {
     return (
         <section>
             <div className="flex items-center justify-between mb-4">
-                <h2 className="flex items-center gap-2.5 text-[15px] font-bold uppercase tracking-[0.08em] text-white font-display">
+                <h2 className="flex items-center gap-2.5 font-display text-[15px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
                     <span className="w-1 h-4 rounded-full bg-[var(--accent)]" />
                     <CalendarDays className="w-4 h-4 text-[var(--accent)]" />
                     Upcoming For You
                 </h2>
-                <Link href="/calendar" className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white/40 hover:text-[var(--accent)] transition-colors">
+                <Link href="/calendar" className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors duration-150">
                     View all <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
             </div>
@@ -89,22 +89,22 @@ export default function UpcomingForYouRow() {
             <div className="flex gap-3 overflow-x-auto snap-x pb-2 -mx-4 px-4 xl:mx-0 xl:px-0 scrollbar-none">
                 {(games ? upcoming : Array.from({ length: 4 }, () => null)).map((g, i) =>
                     g ? (
-                        <div key={g.slug} className="w-[240px] shrink-0 snap-start rounded-xl overflow-hidden border border-white/[0.06] bg-[var(--bg-card)] hover:border-[var(--accent)]/30 transition-colors">
+                        <div key={g.slug} className="w-[240px] shrink-0 snap-start rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300">
                             <Link href={`/games/${g.slug}`} prefetch={false} className="group block relative aspect-[16/9]">
                                 {g.background_image ? (
                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={g.background_image} alt={g.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                    <img src={g.background_image} alt={g.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-white/10 bg-white/[0.02]"><Gamepad2 className="w-8 h-8" /></div>
+                                    <div className="w-full h-full flex items-center justify-center text-[var(--ink-faint)] bg-[var(--fill-1)]"><Gamepad2 className="w-8 h-8" /></div>
                                 )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                                <div className="absolute inset-0 scrim-card" />
                             </Link>
                             <div className="p-3">
-                                <Link href={`/games/${g.slug}`} prefetch={false} className="block text-[13px] font-bold text-white line-clamp-1 hover:text-[var(--accent)] transition-colors">
+                                <Link href={`/games/${g.slug}`} prefetch={false} className="block font-display text-[13px] font-bold text-[var(--ink-hi)] line-clamp-1 hover:text-[var(--accent)] transition-colors">
                                     {g.name}
                                 </Link>
-                                <p className="mt-0.5 text-[11px] text-white/45">{releaseLabel(g.released!)}</p>
-                                <p className="text-[9px] uppercase tracking-wide text-white/30 line-clamp-1 min-h-[13px]">{shortPlatforms(g.platforms)}</p>
+                                <p className="mt-0.5 text-[11px] text-[var(--ink-low)]">{releaseLabel(g.released!)}</p>
+                                <p className="text-[9px] uppercase tracking-wide text-[var(--ink-faint)] line-clamp-1 min-h-[13px]">{shortPlatforms(g.platforms)}</p>
                                 {(() => {
                                     const status = library[g.slug];
                                     const following = !!status;
@@ -115,8 +115,8 @@ export default function UpcomingForYouRow() {
                                             disabled={isPending}
                                             className={`mt-2.5 w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors ${
                                                 following
-                                                    ? "bg-[var(--accent)]/10 border border-[var(--accent)]/30 text-[var(--accent)]"
-                                                    : "bg-white/5 border border-white/10 text-white hover:border-[var(--accent)]/40"
+                                                    ? "bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] text-[var(--accent)]"
+                                                    : "bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-hi)] hover:bg-[var(--fill-3)]"
                                             }`}
                                             title={status && status !== "wishlist" ? `In your library (${status})` : undefined}
                                         >
@@ -133,7 +133,7 @@ export default function UpcomingForYouRow() {
                             </div>
                         </div>
                     ) : (
-                        <div key={i} className="w-[240px] shrink-0 rounded-xl bg-white/5 h-[210px] animate-pulse" />
+                        <div key={i} className="w-[240px] shrink-0 rounded-[var(--radius-card)] bg-[var(--fill-2)] h-[210px] animate-pulse" />
                     )
                 )}
             </div>

@@ -20,10 +20,10 @@ export default function QuickActionsGrid() {
                 <Link
                     key={a.label}
                     href={a.href}
-                    className="group flex flex-col items-center justify-center gap-2 rounded-xl bg-white/[0.03] border border-white/[0.05] py-4 px-2 hover:border-[var(--accent)]/40 transition-colors"
+                    className="group flex flex-col items-center justify-center gap-2 rounded-xl bg-[var(--fill-1)] border border-[var(--line)] py-4 px-2 hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
                 >
                     <a.icon className="w-5 h-5 text-[var(--accent)]" />
-                    <span className="text-[10px] font-bold text-white/60 group-hover:text-white text-center leading-tight transition-colors">
+                    <span className="text-[10px] font-bold text-[var(--ink-mid)] group-hover:text-[var(--ink-hi)] text-center leading-tight transition-colors">
                         {a.label}
                     </span>
                 </Link>
