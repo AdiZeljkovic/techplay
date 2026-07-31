@@ -47,11 +47,11 @@
   --color-track: var(--track);
 
   /* Review-score verdict palette (see lib/score.ts) */
-  --color-score-masterpiece: #f97316;
-  --color-score-great: #22c55e;
-  --color-score-good: #86efac;
-  --color-score-fair: #eab308;
-  --color-score-poor: #ef4444;
+  --color-score-masterpiece: var(--score-masterpiece);
+  --color-score-great: var(--score-great);
+  --color-score-good: var(--score-good);
+  --color-score-fair: var(--score-fair);
+  --color-score-poor: var(--score-poor);
 
   /* Radii: panel 16 / card+control 12 / inner thumb 8 */
   --radius-panel: 1rem;
@@ -141,6 +141,13 @@
 
   /* ── One track for every meter ── */
   --track: rgba(255, 255, 255, 0.08);
+
+  /* ── Review-score verdict palette (raw vars — lib/score.ts reads these) ── */
+  --score-masterpiece: #f97316;
+  --score-great: #22c55e;
+  --score-good: #86efac;
+  --score-fair: #eab308;
+  --score-poor: #ef4444;
 
   /* ── Status ── */
   --success: #10B981;

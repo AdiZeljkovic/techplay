@@ -176,16 +176,45 @@ export default function DiscoverGames() {
                             {/* accent seam — draws itself across the card on hover */}
                             <span aria-hidden className="h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]" />
 
-                            {/* Info deck on clean surface */}
-                            <div className="flex-1 flex items-start gap-3 p-3">
-                                <span className="flex-1 min-w-0">
-                                    <h3 className="font-display text-[13px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors duration-300">
+                            {/* Info deck — two aligned rows on clean surface */}
+                            <div className="flex-1 flex flex-col justify-between gap-2.5 p-3.5">
+                                <div className="flex items-start justify-between gap-3">
+                                    <h3 className="flex-1 min-w-0 font-display text-[13px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors duration-300">
                                         {g.name}
                                     </h3>
-                                    <span className="mt-2 flex items-center gap-2 min-h-[16px]">
+
+                                    {/* verdict emblem — notched plate, uniform 1px verdict outline
+                                        (two clipped layers so the border follows the notch diagonal),
+                                        drop-shadow so the glow follows the clipped shape */}
+                                    {scoreValue !== null && verdict && (
+                                        <span
+                                            className="relative shrink-0 block w-[46px] h-[32px]"
+                                            style={{ filter: `drop-shadow(0 0 6px color-mix(in srgb, ${verdict.color} 35%, transparent))` }}
+                                        >
+                                            <span
+                                                aria-hidden
+                                                className="absolute inset-0"
+                                                style={{ background: verdict.color, clipPath: "polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%)", opacity: 0.55 }}
+                                            />
+                                            <span
+                                                className="absolute inset-[1.25px] flex items-center justify-center font-display text-[15px] font-bold tabular-nums"
+                                                style={{
+                                                    color: verdict.color,
+                                                    background: `color-mix(in srgb, ${verdict.color} 10%, var(--surface-1))`,
+                                                    clipPath: "polygon(0 0, calc(100% - 8.5px) 0, 100% 8.5px, 100% 100%, 0 100%)",
+                                                }}
+                                            >
+                                                {scoreValue.toFixed(1)}
+                                            </span>
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="flex items-center justify-between gap-3">
+                                    <span className="flex items-center gap-2 min-w-0">
                                         {m.platforms.map((p) => (
-                                            <span key={p} title={p} className="text-[var(--accent)]">
-                                                <PlatformIcon label={p} className="w-4 h-4" />
+                                            <span key={p} title={p} className="shrink-0 text-[var(--accent)]">
+                                                <PlatformIcon label={p} className="w-[15px] h-[15px]" />
                                             </span>
                                         ))}
                                         {secondary && (
@@ -194,28 +223,12 @@ export default function DiscoverGames() {
                                             </span>
                                         )}
                                     </span>
-                                </span>
-
-                                {/* verdict emblem — notched plate that glows in its own color */}
-                                {scoreValue !== null && verdict && (
-                                    <span className="shrink-0 flex flex-col items-center gap-1.5 pt-0.5">
-                                        <span
-                                            className="flex items-center justify-center w-[44px] h-[32px] font-display text-[15px] font-bold tabular-nums transition-shadow duration-300"
-                                            style={{
-                                                color: verdict.color,
-                                                backgroundColor: `color-mix(in srgb, ${verdict.color} 12%, transparent)`,
-                                                border: `1px solid color-mix(in srgb, ${verdict.color} 45%, transparent)`,
-                                                boxShadow: `0 0 14px color-mix(in srgb, ${verdict.color} 25%, transparent)`,
-                                                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)",
-                                            }}
-                                        >
-                                            {scoreValue.toFixed(1)}
-                                        </span>
-                                        <span className="text-[7px] font-black uppercase tracking-[0.14em]" style={{ color: verdict.color, opacity: 0.85 }}>
+                                    {scoreValue !== null && verdict && (
+                                        <span className="shrink-0 text-[7px] font-black uppercase tracking-[0.16em]" style={{ color: verdict.color, opacity: 0.9 }}>
                                             {verdict.label}
                                         </span>
-                                    </span>
-                                )}
+                                    )}
+                                </div>
                             </div>
                         </Link>
                     );
