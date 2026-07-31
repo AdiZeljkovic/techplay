@@ -4,7 +4,8 @@ import Link from "next/link";
 import useSWR from "swr";
 import { Gem, Gamepad2, Users } from "lucide-react";
 import axios from "@/lib/axios";
-import SectionCard from "@/components/profile/dashboard/SectionCard";
+import Panel from "@/components/ui/Panel";
+import ScoreBadge from "@/components/ui/ScoreBadge";
 
 interface GemGame {
     slug: string;
@@ -31,45 +32,69 @@ export default function HiddenGems() {
     if (games && games.length === 0) return null;
 
     return (
-        <SectionCard
+        <Panel
             title="Hidden Gems"
             icon={<Gem className="w-3.5 h-3.5 text-[var(--accent)]" />}
             action={{ label: "Browse database", href: "/games" }}
-            bodyClassName="space-y-2"
+            className="h-full"
+            bodyClassName="p-4"
         >
-            {!games &&
-                [0, 1, 2, 3].map((i) => <div key={i} className="h-[62px] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />)}
+            <p className="text-[11px] text-[var(--ink-low)] mb-3.5">
+                Brilliantly rated. Almost nobody has played them.
+            </p>
 
-            {games?.slice(0, 4).map((g) => (
-                <Link
-                    key={g.slug}
-                    href={`/games/${g.slug}`}
-                    prefetch={false}
-                    className="group flex items-center gap-3.5 p-2 -mx-2 rounded-xl hover:bg-[var(--fill-1)] transition-colors duration-300"
-                >
-                    <div className="relative w-[76px] h-[48px] rounded-lg overflow-hidden shrink-0 bg-[var(--fill-1)]">
-                        {g.background_image ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={g.background_image} alt={g.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center text-[var(--ink-faint)]"><Gamepad2 className="w-4 h-4" /></div>
-                        )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <p className="font-display text-[13px] font-bold text-[var(--ink-hi)] line-clamp-1 group-hover:text-[var(--accent)] transition-colors">{g.name}</p>
-                        <p className="text-[10px] text-[var(--ink-faint)] line-clamp-1">
-                            {g.released ? new Date(g.released).getFullYear() : ""}
-                            {g.genres.length ? ` · ${g.genres.join(", ")}` : ""}
-                        </p>
-                    </div>
-                    <div className="shrink-0 text-right">
-                        <p className="font-display text-[15px] font-bold text-[var(--success)] tabular-nums leading-none">{g.rating.toFixed(1)}</p>
-                        <p className="mt-1 flex items-center justify-end gap-1 text-[9px] text-[var(--ink-faint)]">
-                            <Users className="w-2.5 h-2.5" /> {g.votes}
-                        </p>
-                    </div>
-                </Link>
-            ))}
-        </SectionCard>
+            <div className="grid grid-cols-2 gap-3">
+                {!games &&
+                    [0, 1, 2, 3].map((i) => (
+                        <div key={i} className="rounded-[var(--radius-card)] bg-[var(--fill-2)] h-[168px] animate-pulse" />
+                    ))}
+
+                {games?.slice(0, 4).map((g) => (
+                    <Link
+                        key={g.slug}
+                        href={`/games/${g.slug}`}
+                        prefetch={false}
+                        className="group flex flex-col rounded-[var(--radius-card)] overflow-hidden bg-[var(--surface-2)] border border-[var(--line)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.45)] transition-all duration-300"
+                    >
+                        {/* clean artwork */}
+                        <div className="relative aspect-[16/9] overflow-hidden bg-[var(--fill-1)]">
+                            {g.background_image ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    src={g.background_image}
+                                    alt={g.name}
+                                    loading="lazy"
+                                    className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]"
+                                />
+                            ) : (
+                                <span className="w-full h-full flex items-center justify-center text-[var(--ink-faint)]">
+                                    <Gamepad2 className="w-6 h-6" />
+                                </span>
+                            )}
+                            {/* rarity stamp — the whole point of the section */}
+                            <span className="absolute top-2 left-2 inline-flex items-center gap-1 h-5 px-1.5 rounded bg-[var(--surface-0)]/85 backdrop-blur-md border border-[var(--line-strong)] text-[9px] font-bold uppercase tracking-wider text-[var(--ink-mid)]">
+                                <Users className="w-2.5 h-2.5" />
+                                {g.votes} {g.votes === 1 ? "vote" : "votes"}
+                            </span>
+                        </div>
+
+                        {/* accent seam draws in on hover */}
+                        <span aria-hidden className="h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]" />
+
+                        <div className="flex-1 flex flex-col justify-between gap-2 p-3">
+                            <p className="font-display text-[12px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors duration-300">
+                                {g.name}
+                            </p>
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="text-[10px] uppercase tracking-wider text-[var(--ink-faint)] truncate">
+                                    {[g.released ? new Date(g.released).getFullYear() : null, g.genres[0]].filter(Boolean).join(" · ")}
+                                </span>
+                                <ScoreBadge score={g.rating} className="shrink-0 scale-90 origin-right" />
+                            </div>
+                        </div>
+                    </Link>
+                ))}
+            </div>
+        </Panel>
     );
 }
