@@ -196,7 +196,7 @@ interface NavArticle {
 
 /** /news ignores per_page and always paginates 13 — the cap has to happen here. */
 const navNewsFetcher = () =>
-    axios.get("/news").then((r) => ((r.data?.data ?? []) as NavArticle[]).slice(0, 3));
+    axios.get("/news").then((r) => ((r.data?.data ?? []) as NavArticle[]).slice(0, 5));
 
 const articleHref = (a: NavArticle) =>
     a.category?.type === "reviews" ? `/reviews/${a.slug}` : `/news/${a.slug}`;
@@ -306,8 +306,9 @@ function NavFeatured({ active }: { active: boolean }) {
             {!data && (
                 <div className="space-y-3">
                     <div className="aspect-[16/9] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />
-                    <div className="h-[52px] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />
-                    <div className="h-[52px] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />
+                    {[0, 1, 2, 3].map((i) => (
+                        <div key={i} className="h-[52px] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />
+                    ))}
                 </div>
             )}
 
@@ -603,7 +604,7 @@ function NavItem({ item, badge, onHoverChange }: {
                     /* ── MULTI-COLUMN MEGA PANEL (DISCOVER) ── */
                     <MegaPanel
                         key="columns"
-                        className="left-0 w-[940px] max-w-[calc(100vw-2rem)]"
+                        className="left-0 w-[1020px] max-w-[calc(100vw-2rem)]"
                         innerClassName="grid grid-cols-[1fr_340px] items-stretch"
                     >
                         <div className="flex flex-col min-w-0">
@@ -611,7 +612,7 @@ function NavItem({ item, badge, onHoverChange }: {
                                 {item.columns!.map((col) => (
                                     <div
                                         key={col.title}
-                                        className="min-w-0 px-5 first:pl-0 last:pr-0 border-r border-[var(--line)] last:border-r-0"
+                                        className="min-w-0 px-4 first:pl-0 last:pr-0 border-r border-[var(--line)] last:border-r-0"
                                     >
                                         <MegaHeading title={col.title} href={col.href} icon={COLUMN_ICONS[col.title]} />
                                         <div className="flex flex-col">
