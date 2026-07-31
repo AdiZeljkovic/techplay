@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Gamepad2, Facebook, Twitter, Instagram, Youtube } from "lucide-react";
+import { Gamepad2, Facebook, Twitter, Instagram, Youtube, ArrowRight, ArrowUp } from "lucide-react";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 const DiscordIcon = ({ className }: { className?: string }) => (
@@ -25,9 +25,11 @@ const SOCIAL_ICON_MAP: Record<string, { Icon: React.ComponentType<{ className?: 
     tiktok_url:    { Icon: TikTokIcon,  label: "TikTok" },
 };
 
+const DISCORD_FALLBACK = "https://discord.gg/wPQG9gUMXH";
+
 const NAV = [
     {
-        heading: "EXPLORE",
+        heading: "Explore",
         links: [
             { name: "News",         href: "/news" },
             { name: "Reviews",      href: "/reviews" },
@@ -39,7 +41,7 @@ const NAV = [
         ],
     },
     {
-        heading: "DATABASE",
+        heading: "Database",
         links: [
             { name: "All Games",        href: "/games" },
             { name: "Release Calendar", href: "/calendar" },
@@ -49,24 +51,31 @@ const NAV = [
         ],
     },
     {
-        heading: "COMMUNITY",
+        heading: "Community",
         links: [
             { name: "Forum",       href: "/forum" },
             { name: "Leaderboard", href: "/leaderboard" },
             { name: "Clans",       href: "/clans" },
-            { name: "Discord",     href: "https://discord.gg/wPQG9gUMXH" },
+            { name: "Discord",     href: DISCORD_FALLBACK },
         ],
     },
     {
-        heading: "SUPPORT",
+        heading: "Company",
         links: [
-            { name: "About Us",         href: "/about" },
-            { name: "Contact",          href: "/contact" },
-            { name: "Roadmap",          href: "/roadmap" },
-            { name: "Privacy Policy",   href: "/privacy" },
-            { name: "Terms of Service", href: "/terms" },
+            { name: "About Us",          href: "/about" },
+            { name: "Contact",           href: "/contact" },
+            { name: "Advertise With Us", href: "/marketing" },
+            { name: "Our Rating System", href: "/rating-system" },
+            { name: "Roadmap",           href: "/roadmap" },
         ],
     },
+];
+
+const LEGAL = [
+    { name: "Privacy Policy",   href: "/privacy" },
+    { name: "Terms of Service", href: "/terms" },
+    { name: "Cookies",          href: "/cookies" },
+    { name: "Impressum",        href: "/impressum" },
 ];
 
 export default function Footer() {
@@ -76,34 +85,56 @@ export default function Footer() {
         .filter(key => settings[key])
         .map(key => ({ ...SOCIAL_ICON_MAP[key], href: settings[key] || '#' }));
 
+    const discordUrl = settings.discord_url || DISCORD_FALLBACK;
+
     return (
         <footer className="relative bg-[var(--surface-0)] border-t border-[var(--line)] overflow-hidden">
-            {/* Ambient glow */}
-            <div className="absolute -top-[200px] left-[10%] w-[500px] h-[400px] bg-[var(--accent)]/5 blur-[120px] rounded-full pointer-events-none" />
+            {/* The Crown */}
+            <span aria-hidden className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent" />
+            {/* ambient depth */}
+            <span aria-hidden className="absolute inset-0 bg-hud-grid opacity-50 pointer-events-none" />
+            <span
+                aria-hidden
+                className="pointer-events-none absolute -top-40 left-[8%] w-[520px] h-[420px] rounded-full opacity-[0.07]"
+                style={{ background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)" }}
+            />
 
-            {/* Top accent line */}
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent" />
-
-            <div className="relative container-page pt-16 pb-12">
-                <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-16">
+            <div className="relative container-page pt-14 pb-10">
+                <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-12 lg:gap-16">
 
                     {/* Brand column */}
                     <div className="flex flex-col">
-                        <Link href="/" className="flex items-center gap-3 group mb-5">
-                            <div className="w-10 h-10 bg-[var(--accent)] rounded-lg flex items-center justify-center shadow-[var(--glow-accent)] group-hover:bg-[var(--accent-hover)] transition-colors">
+                        <Link href="/" className="flex items-center gap-3 group mb-5 w-fit">
+                            <span className="w-10 h-10 bg-[var(--accent)] rounded-[var(--radius-inner)] flex items-center justify-center shadow-[var(--glow-accent)] group-hover:bg-[var(--accent-hover)] transition-colors duration-300">
                                 <Gamepad2 className="w-5 h-5 text-white" strokeWidth={2} />
-                            </div>
-                            <div className="flex flex-col leading-none">
-                                <span className="font-display font-bold text-[18px] text-white tracking-tight leading-none">TECHPLAY</span>
+                            </span>
+                            <span className="flex flex-col leading-none">
+                                <span className="font-display font-bold text-[18px] text-[var(--ink-hi)] tracking-tight leading-none">TECHPLAY</span>
                                 <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--ink-low)] mt-[3px]">GAMING PORTAL</span>
-                            </div>
+                            </span>
                         </Link>
 
-                        <p className="text-[13px] text-[var(--ink-low)] leading-relaxed mb-8 max-w-[260px]">
+                        <p className="text-[13px] text-[var(--ink-low)] leading-relaxed mb-6 max-w-[280px]">
                             Your home for gaming news, honest reviews, release dates, and a community that actually cares about games.
                         </p>
 
-                        {/* Social icons */}
+                        {/* Discord CTA — the community door, and it earns the column its space */}
+                        <Link
+                            href={discordUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group flex items-center gap-3 p-3 rounded-[var(--radius-card)] bg-[var(--fill-1)] border border-[var(--line)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300 mb-6 max-w-[280px]"
+                        >
+                            <span className="shrink-0 w-9 h-9 rounded-[var(--radius-inner)] bg-[var(--accent-soft)] flex items-center justify-center text-[var(--accent)] group-hover:bg-[var(--accent)] group-hover:text-white transition-colors duration-300">
+                                <DiscordIcon className="w-[18px] h-[18px]" />
+                            </span>
+                            <span className="flex-1 min-w-0">
+                                <span className="block font-display text-[12px] font-bold text-[var(--ink-hi)]">Join our Discord</span>
+                                <span className="block text-[11px] text-[var(--ink-faint)]">Talk games with the community</span>
+                            </span>
+                            <ArrowRight className="w-4 h-4 shrink-0 text-[var(--ink-faint)] group-hover:text-[var(--accent)] group-hover:translate-x-0.5 transition-all duration-300" />
+                        </Link>
+
                         {socialLinks.length > 0 && (
                             <div className="flex items-center gap-2">
                                 {socialLinks.map((s, i) => (
@@ -113,7 +144,8 @@ export default function Footer() {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         aria-label={s.label}
-                                        className="w-9 h-9 rounded-lg bg-[var(--fill-2)] border border-[var(--line-strong)] flex items-center justify-center text-[var(--ink-low)] hover:text-white hover:bg-[var(--accent-soft)] hover:border-[color-mix(in_srgb,var(--accent)_30%,transparent)] transition-all duration-200"
+                                        title={s.label}
+                                        className="w-9 h-9 rounded-[var(--radius-inner)] bg-[var(--fill-2)] border border-[var(--line-strong)] flex items-center justify-center text-[var(--ink-low)] hover:text-white hover:bg-[var(--accent)] hover:border-transparent transition-colors duration-300"
                                     >
                                         <s.Icon className="w-[16px] h-[16px]" />
                                     </Link>
@@ -123,22 +155,24 @@ export default function Footer() {
                     </div>
 
                     {/* Nav columns */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-10">
                         {NAV.map((col) => (
                             <div key={col.heading}>
-                                <div className="flex items-center gap-2 mb-5">
+                                <div className="flex items-center gap-2 mb-4">
                                     <span className="w-1 h-4 rounded-full bg-[var(--accent)]" />
                                     <h4 className="font-display text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
                                         {col.heading}
                                     </h4>
                                 </div>
-                                <ul className="flex flex-col gap-3">
+                                <ul className="flex flex-col gap-2.5">
                                     {col.links.map(item => (
                                         <li key={item.name}>
                                             <Link
                                                 href={item.href}
-                                                className="text-[13px] text-[var(--ink-low)] hover:text-white transition-colors duration-150 hover:translate-x-0.5 inline-block"
+                                                className="group inline-flex items-center gap-1.5 text-[13px] text-[var(--ink-low)] hover:text-[var(--ink-hi)] transition-colors duration-150"
                                             >
+                                                {/* accent tick slides in on hover */}
+                                                <span aria-hidden className="w-0 h-px bg-[var(--accent)] group-hover:w-2.5 transition-all duration-300 ease-[var(--ease-hud)]" />
                                                 {item.name}
                                             </Link>
                                         </li>
@@ -152,13 +186,39 @@ export default function Footer() {
 
             {/* Bottom bar */}
             <div className="relative border-t border-[var(--line)]">
-                <div className="container-page py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-                    <p className="text-[12px] text-[var(--ink-faint)]">
-                        © {new Date().getFullYear()} TechPlay Gaming Portal. All rights reserved.
-                    </p>
-                    <p className="text-[12px] text-[var(--ink-faint)]">
-                        Made by <Link href="https://luminor.agency" target="_blank" rel="noopener noreferrer" className="text-[var(--ink-low)] hover:text-white transition-colors font-medium">Luminor Solutions</Link>
-                    </p>
+                <div className="container-page py-4 flex flex-col lg:flex-row items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+                        <p className="text-[12px] text-[var(--ink-faint)]">
+                            © {new Date().getFullYear()} TechPlay Gaming Portal
+                        </p>
+                        <span aria-hidden className="hidden sm:block w-px h-3 bg-[var(--line-strong)]" />
+                        {LEGAL.map((l) => (
+                            <Link
+                                key={l.name}
+                                href={l.href}
+                                className="text-[12px] text-[var(--ink-faint)] hover:text-[var(--accent)] transition-colors duration-150"
+                            >
+                                {l.name}
+                            </Link>
+                        ))}
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <p className="text-[12px] text-[var(--ink-faint)]">
+                            Made by{" "}
+                            <Link href="https://luminor.agency" target="_blank" rel="noopener noreferrer" className="text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors font-medium">
+                                Luminor Solutions
+                            </Link>
+                        </p>
+                        <button
+                            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                            aria-label="Back to top"
+                            title="Back to top"
+                            className="w-8 h-8 rounded-[var(--radius-inner)] bg-[var(--fill-2)] border border-[var(--line-strong)] flex items-center justify-center text-[var(--ink-low)] hover:text-white hover:bg-[var(--accent)] hover:border-transparent transition-colors duration-300"
+                        >
+                            <ArrowUp className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
             </div>
         </footer>
