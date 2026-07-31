@@ -6,7 +6,7 @@ import useSWR from "swr";
 import { Gamepad2, ChevronRight } from "lucide-react";
 import axios from "@/lib/axios";
 import { cn } from "@/lib/utils";
-import ScoreBadge from "@/components/ui/ScoreBadge";
+import { getScoreMeta } from "@/lib/score";
 
 type Tab = "trending" | "new" | "coming";
 
@@ -144,74 +144,68 @@ export default function DiscoverGames() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
-                {(games ?? Array.from({ length: 5 }, () => null)).map((g, i) =>
-                    g ? (
+                {(games ?? Array.from({ length: 5 }, () => null)).map((g, i) => {
+                    if (!g) {
+                        return <div key={i} className="rounded-[var(--radius-card)] bg-[var(--fill-2)] aspect-[3/5] animate-pulse" />;
+                    }
+                    const m = meta(g);
+                    const secondary = tab === "trending" ? m.genres.join(" · ") : releaseLabel(g.released);
+                    const scoreValue = m.score ? parseFloat(m.score) : null;
+                    const verdict = scoreValue !== null ? getScoreMeta(scoreValue) : null;
+
+                    return (
                         <Link
                             key={`${g.slug}-${i}`}
                             href={`/games/${g.slug}`}
                             prefetch={false}
-                            className="group relative rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] transition-all duration-300"
+                            className="group relative flex flex-col rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_16px_44px_rgba(0,0,0,0.55)] transition-all duration-300"
                         >
-                            <div className="relative aspect-[3/4]">
+                            {/* Artwork — untouched, no overlays fighting the cover */}
+                            <div className="relative aspect-[3/4] overflow-hidden">
                                 {g.background_image ? (
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img src={g.background_image} alt={g.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-[var(--ink-faint)]"><Gamepad2 className="w-10 h-10" /></div>
+                                    <div className="w-full h-full flex items-center justify-center text-[var(--ink-faint)] bg-[var(--fill-1)]"><Gamepad2 className="w-10 h-10" /></div>
                                 )}
-                                <div className="absolute inset-0 scrim-card" />
+                                {/* whisper of a scrim so the seam to the footer never bands */}
+                                <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[var(--surface-1)] to-transparent" />
+                            </div>
 
-                                {/* chart rank — outlined ghost numeral, ignites accent on hover */}
-                                <span
-                                    aria-hidden
-                                    className="absolute top-1 left-2.5 font-display text-[56px] font-black leading-none select-none text-transparent transition-all duration-300 [-webkit-text-stroke:1.5px_rgba(255,255,255,0.28)] group-hover:[-webkit-text-stroke:1.5px_var(--accent)] group-hover:drop-shadow-[0_0_10px_color-mix(in_srgb,var(--accent)_45%,transparent)]"
-                                >
+                            {/* accent seam — draws itself across the card on hover */}
+                            <span aria-hidden className="h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]" />
+
+                            {/* Info deck on clean surface */}
+                            <div className="flex-1 flex items-start gap-2.5 p-3">
+                                {/* rank plate */}
+                                <span className="shrink-0 w-8 h-8 rounded-[var(--radius-inner)] bg-[var(--fill-2)] border border-[var(--line)] flex items-center justify-center font-display text-[14px] font-bold tabular-nums text-[var(--ink-low)] transition-all duration-300 group-hover:bg-[var(--accent)] group-hover:border-transparent group-hover:text-white group-hover:shadow-[var(--glow-accent)]">
                                     {i + 1}
                                 </span>
 
-                                {meta(g).score && (
-                                    <span className="absolute top-2 right-2">
-                                        <ScoreBadge score={parseFloat(meta(g).score!)} variant="pill" />
-                                    </span>
-                                )}
-
-                                <div className="absolute bottom-0 left-0 right-0 p-3">
-                                    <h3 className="font-display text-[14px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                                <span className="flex-1 min-w-0">
+                                    <h3 className="font-display text-[13px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors duration-300">
                                         {g.name}
                                     </h3>
-                                    {(() => {
-                                        const m = meta(g);
-                                        const secondary = tab === "trending" ? m.genres.join(", ") : releaseLabel(g.released);
-                                        return (
-                                            <>
-                                                {m.platforms.length > 0 && (
-                                                    <div className="mt-2 flex flex-wrap gap-1">
-                                                        {m.platforms.map((p) => (
-                                                            <span key={p} className="px-1.5 py-0.5 rounded bg-black/50 backdrop-blur-sm border border-white/15 text-[9px] font-bold uppercase tracking-wider text-white/85">
-                                                                {p}
-                                                            </span>
-                                                        ))}
-                                                        {secondary && (
-                                                            <span className="px-1.5 py-0.5 rounded bg-[color-mix(in_srgb,var(--accent)_25%,transparent)] backdrop-blur-sm border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] text-[9px] font-bold uppercase tracking-wider text-white/90">
-                                                                {secondary}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                )}
-                                                {/* reveal CTA — slides up on hover */}
-                                                <span className="flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--accent)] max-h-0 opacity-0 group-hover:max-h-6 group-hover:opacity-100 group-hover:mt-2 overflow-hidden transition-all duration-300">
-                                                    View game <ChevronRight className="w-3 h-3" />
-                                                </span>
-                                            </>
-                                        );
-                                    })()}
-                                </div>
+                                    <p className="mt-1 text-[10px] uppercase tracking-wider text-[var(--ink-faint)] truncate">
+                                        {[m.platforms.join(" · "), secondary].filter(Boolean).join("  ·  ")}
+                                    </p>
+                                </span>
+
+                                {/* verdict-colored score */}
+                                {scoreValue !== null && verdict && (
+                                    <span className="shrink-0 text-right leading-none pt-0.5">
+                                        <span className="block font-display text-[16px] font-bold tabular-nums" style={{ color: verdict.color }}>
+                                            {scoreValue.toFixed(1)}
+                                        </span>
+                                        <span className="block mt-1 text-[7px] font-black uppercase tracking-[0.12em]" style={{ color: verdict.color, opacity: 0.75 }}>
+                                            {verdict.label}
+                                        </span>
+                                    </span>
+                                )}
                             </div>
                         </Link>
-                    ) : (
-                        <div key={i} className="rounded-[var(--radius-card)] bg-[var(--fill-2)] aspect-[3/4] animate-pulse" />
-                    )
-                )}
+                    );
+                })}
             </div>
         </section>
     );
