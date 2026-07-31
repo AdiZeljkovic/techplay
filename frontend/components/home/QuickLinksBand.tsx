@@ -11,9 +11,8 @@ const LINKS = [
 ];
 
 /**
- * Platform quick links — four destination cards with a HUD index, an icon
- * that ignites on hover, and a reveal CTA line. The band is the "what can
- * I do here" map, so every tile has to beg for the click.
+ * Platform quick links — four centered destination cards. The CTA is a real
+ * button bar that ignites to full accent when the card is hovered.
  */
 export default function QuickLinksBand() {
     return (
@@ -22,7 +21,7 @@ export default function QuickLinksBand() {
                 <Link
                     key={link.title}
                     href={link.href}
-                    className="group relative overflow-hidden rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-[var(--line)] p-5 hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
+                    className="group relative overflow-hidden flex flex-col items-center text-center rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-[var(--line)] p-5 pb-4 hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
                 >
                     {/* accent wash rising from the bottom on hover */}
                     <span
@@ -43,25 +42,23 @@ export default function QuickLinksBand() {
                         0{i + 1}
                     </span>
 
-                    <div className="relative">
-                        {/* icon ignites */}
-                        <span className="inline-flex w-12 h-12 rounded-[var(--radius-card)] bg-[var(--accent-soft)] items-center justify-center transition-all duration-300 group-hover:bg-[var(--accent)] group-hover:shadow-[var(--glow-accent)]">
-                            <link.icon className="w-[22px] h-[22px] text-[var(--accent)] group-hover:text-white transition-colors duration-300" />
-                        </span>
+                    {/* icon ignites */}
+                    <span className="relative inline-flex w-12 h-12 rounded-[var(--radius-card)] bg-[var(--accent-soft)] items-center justify-center transition-all duration-300 group-hover:bg-[var(--accent)] group-hover:shadow-[var(--glow-accent)]">
+                        <link.icon className="w-[22px] h-[22px] text-[var(--accent)] group-hover:text-white transition-colors duration-300" />
+                    </span>
 
-                        <p className="mt-4 font-display text-[15px] font-bold text-[var(--ink-hi)] leading-tight">
-                            {link.title}
-                        </p>
-                        <p className="mt-1 text-[12px] text-[var(--ink-low)] leading-snug">
-                            {link.sub}
-                        </p>
+                    <p className="relative mt-4 font-display text-[15px] font-bold text-[var(--ink-hi)] leading-tight">
+                        {link.title}
+                    </p>
+                    <p className="relative mt-1 text-[12px] text-[var(--ink-low)] leading-snug max-w-[220px]">
+                        {link.sub}
+                    </p>
 
-                        {/* reveal CTA line */}
-                        <span className="mt-4 flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--ink-faint)] group-hover:text-[var(--accent)] transition-colors duration-300">
-                            {link.cta}
-                            <ArrowRight className="w-3 h-3 -translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300" />
-                        </span>
-                    </div>
+                    {/* CTA bar — ignites to full accent with the card */}
+                    <span className="relative mt-4 w-full inline-flex items-center justify-center gap-1.5 h-9 rounded-[var(--radius-inner)] bg-[var(--fill-2)] border border-[var(--line)] font-display text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--ink-mid)] transition-all duration-300 group-hover:bg-[var(--accent)] group-hover:border-transparent group-hover:text-white group-hover:shadow-[var(--glow-accent)]">
+                        {link.cta}
+                        <ArrowRight className="w-3 h-3 -translate-x-0.5 group-hover:translate-x-0 transition-transform duration-300" />
+                    </span>
                 </Link>
             ))}
         </section>
