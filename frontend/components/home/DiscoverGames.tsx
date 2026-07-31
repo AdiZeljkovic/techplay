@@ -6,7 +6,7 @@ import useSWR from "swr";
 import { Gamepad2, ChevronRight } from "lucide-react";
 import axios from "@/lib/axios";
 import { cn } from "@/lib/utils";
-import { getScoreMeta } from "@/lib/score";
+import ScoreBadge from "@/components/ui/ScoreBadge";
 import PlatformIcon from "@/components/games/PlatformIcon";
 
 type Tab = "trending" | "new" | "coming";
@@ -102,7 +102,9 @@ function shortPlatform(name: string): string {
     if (s.includes("xbox series")) return "SERIES";
     if (s.includes("xbox")) return "XBOX";
     if (s.includes("nintendo") || s.includes("switch")) return "SWITCH";
-    if (s.includes("pc") || s.includes("windows")) return "PC";
+    if (s.includes("mac")) return "MAC";
+    if (s.includes("ios") || s.includes("android") || s.includes("mobile")) return "MOBILE";
+    if (s.includes("pc") || s.includes("windows") || s.includes("linux")) return "PC";
     return name;
 }
 
@@ -152,7 +154,6 @@ export default function DiscoverGames() {
                     const m = meta(g);
                     const secondary = tab === "trending" ? m.genres.join(" · ") : releaseLabel(g.released);
                     const scoreValue = m.score ? parseFloat(m.score) : null;
-                    const verdict = scoreValue !== null ? getScoreMeta(scoreValue) : null;
 
                     return (
                         <Link
@@ -171,61 +172,37 @@ export default function DiscoverGames() {
                                 )}
                                 {/* whisper of a scrim so the seam to the footer never bands */}
                                 <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[var(--surface-1)] to-transparent" />
+
+                                {/* one score treatment across the product (same as TechPlay Reviews) */}
+                                {scoreValue !== null && (
+                                    <span className="absolute top-2.5 right-2.5">
+                                        <ScoreBadge score={scoreValue} size={48} />
+                                    </span>
+                                )}
                             </div>
 
                             {/* accent seam — draws itself across the card on hover */}
                             <span aria-hidden className="h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]" />
 
-                            {/* Info deck — two aligned rows on clean surface */}
-                            <div className="flex-1 flex flex-col justify-between gap-2.5 p-3.5">
-                                <div className="flex items-start justify-between gap-3">
-                                    <h3 className="flex-1 min-w-0 font-display text-[13px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors duration-300">
-                                        {g.name}
-                                    </h3>
+                            {/* Info deck — title, then platform plates + context line */}
+                            <div className="flex-1 flex flex-col justify-between gap-3 p-3.5">
+                                <h3 className="font-display text-[13px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors duration-300">
+                                    {g.name}
+                                </h3>
 
-                                    {/* verdict emblem — notched plate, uniform 1px verdict outline
-                                        (two clipped layers so the border follows the notch diagonal),
-                                        drop-shadow so the glow follows the clipped shape */}
-                                    {scoreValue !== null && verdict && (
+                                <div className="flex items-center gap-2 min-w-0">
+                                    {m.platforms.map((p) => (
                                         <span
-                                            className="relative shrink-0 block w-[46px] h-[32px]"
-                                            style={{ filter: `drop-shadow(0 0 6px color-mix(in srgb, ${verdict.color} 35%, transparent))` }}
+                                            key={p}
+                                            title={p}
+                                            className="shrink-0 w-7 h-7 rounded-[var(--radius-inner)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)] flex items-center justify-center text-[var(--accent)] transition-colors duration-300 group-hover:bg-[var(--accent)] group-hover:text-white group-hover:border-transparent"
                                         >
-                                            <span
-                                                aria-hidden
-                                                className="absolute inset-0"
-                                                style={{ background: verdict.color, clipPath: "polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%)", opacity: 0.55 }}
-                                            />
-                                            <span
-                                                className="absolute inset-[1.25px] flex items-center justify-center font-display text-[15px] font-bold tabular-nums"
-                                                style={{
-                                                    color: verdict.color,
-                                                    background: `color-mix(in srgb, ${verdict.color} 10%, var(--surface-1))`,
-                                                    clipPath: "polygon(0 0, calc(100% - 8.5px) 0, 100% 8.5px, 100% 100%, 0 100%)",
-                                                }}
-                                            >
-                                                {scoreValue.toFixed(1)}
-                                            </span>
+                                            <PlatformIcon label={p} className="w-4 h-4" />
                                         </span>
-                                    )}
-                                </div>
-
-                                <div className="flex items-center justify-between gap-3">
-                                    <span className="flex items-center gap-2 min-w-0">
-                                        {m.platforms.map((p) => (
-                                            <span key={p} title={p} className="shrink-0 text-[var(--accent)]">
-                                                <PlatformIcon label={p} className="w-[15px] h-[15px]" />
-                                            </span>
-                                        ))}
-                                        {secondary && (
-                                            <span className="text-[9px] uppercase tracking-wider text-[var(--ink-faint)] truncate">
-                                                {secondary}
-                                            </span>
-                                        )}
-                                    </span>
-                                    {scoreValue !== null && verdict && (
-                                        <span className="shrink-0 text-[7px] font-black uppercase tracking-[0.16em]" style={{ color: verdict.color, opacity: 0.9 }}>
-                                            {verdict.label}
+                                    ))}
+                                    {secondary && (
+                                        <span className="min-w-0 text-[10px] uppercase tracking-wider text-[var(--ink-faint)] truncate">
+                                            {secondary}
                                         </span>
                                     )}
                                 </div>
