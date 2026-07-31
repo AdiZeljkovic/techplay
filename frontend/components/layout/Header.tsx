@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -16,7 +16,7 @@ import {
     ChevronDown, Facebook, Twitter, Instagram, Youtube,
     Mail, Users, Sword, Tag, Calendar, Gamepad2,
     Newspaper, Trophy, ArrowRight, Star, Cpu, PlayCircle, Monitor, History,
-    MessageSquare, Gem, Rocket, Shield
+    MessageSquare, Gem, Rocket, Shield, Bookmark, Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ScoreBadge from "@/components/ui/ScoreBadge";
@@ -810,6 +810,162 @@ function NavItem({ item, badge, onHoverChange }: {
     );
 }
 
+interface HeaderUser {
+    username?: string | null;
+    display_name?: string | null;
+    avatar_url?: string | null;
+    xp?: number | null;
+}
+
+const MENU_LINKS = [
+    { name: "My Profile", href: "/profile/me", icon: User },
+    { name: "My Lists",   href: "/lists",      icon: Bookmark },
+    { name: "Friends",    href: "/friends",    icon: Users },
+    { name: "Settings",   href: "/settings",   icon: Settings },
+];
+
+/**
+ * Identity cluster: avatar, level and XP progress read as one unit, with
+ * account actions behind it. Sign-out lives in the menu rather than as a
+ * bare icon in the bar — it was one mis-click away from the profile link.
+ */
+function UserMenu({ user, logout }: { user: HeaderUser; logout: () => void }) {
+    const [open, setOpen] = useState(false);
+    const pathname = usePathname();
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => setOpen(false), [pathname]);
+
+    useEffect(() => {
+        if (!open) return;
+        const onDown = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+        };
+        const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+        document.addEventListener("mousedown", onDown);
+        document.addEventListener("keydown", onKey);
+        return () => {
+            document.removeEventListener("mousedown", onDown);
+            document.removeEventListener("keydown", onKey);
+        };
+    }, [open]);
+
+    const xp = user.xp || 0;
+    const level = Math.floor(xp / 1000) + 1;
+    const intoLevel = xp % 1000;
+    const percent = Math.round((intoLevel / 1000) * 100);
+    const name = decodeHtml(user.display_name || user.username || "") || "My Profile";
+    const profileHref = `/profile/${user.username || "me"}`;
+
+    const avatar = (size: number) =>
+        user.avatar_url ? (
+            <Image
+                src={user.avatar_url}
+                alt={user.username || "Avatar"}
+                width={size}
+                height={size}
+                style={{ width: size, height: size }}
+                className="rounded-full object-cover"
+                unoptimized={user.avatar_url.includes("discord") || user.avatar_url.includes("gravatar")}
+            />
+        ) : (
+            <span
+                style={{ width: size, height: size }}
+                className="rounded-full bg-[var(--fill-3)] flex items-center justify-center text-white"
+            >
+                <User className="w-4 h-4" />
+            </span>
+        );
+
+    return (
+        <div ref={ref} className="relative">
+            <button
+                onClick={() => setOpen((v) => !v)}
+                aria-expanded={open}
+                aria-haspopup="menu"
+                className="group flex items-center gap-2.5 pl-1 pr-2 py-1 rounded-full border border-transparent hover:border-[var(--line-strong)] hover:bg-[var(--fill-1)] transition-colors duration-300"
+            >
+                <span className="relative shrink-0">
+                    <span className="block rounded-full ring-2 ring-[var(--line-strong)] group-hover:ring-[color-mix(in_srgb,var(--accent)_55%,transparent)] transition-colors duration-300">
+                        {avatar(34)}
+                    </span>
+                    <span
+                        aria-hidden
+                        className="absolute bottom-0 right-0 w-[10px] h-[10px] rounded-full bg-[var(--success,#22c55e)] border-2 border-[var(--surface-0)]"
+                    />
+                </span>
+
+                <span className="flex flex-col items-start gap-1 w-[92px]">
+                    <span className="font-display text-[11px] font-bold uppercase tracking-[0.1em] tabular-nums text-[var(--ink-hi)] leading-none">
+                        Level {level}
+                    </span>
+                    <span className="w-full h-[3px] rounded-full bg-[var(--track)] overflow-hidden">
+                        <span
+                            className="block h-full rounded-full bg-[var(--accent)]"
+                            style={{ width: `${percent}%` }}
+                        />
+                    </span>
+                </span>
+
+                <ChevronDown
+                    className={cn(
+                        "w-3.5 h-3.5 shrink-0 text-[var(--ink-faint)] transition-transform duration-300",
+                        open ? "rotate-180 text-[var(--accent)]" : ""
+                    )}
+                    aria-hidden="true"
+                />
+            </button>
+
+            <AnimatePresence>
+                {open && (
+                    <MegaPanel className="right-0 w-[260px] rounded-t-[var(--radius-panel)] border-t mt-2">
+                        {/* identity header */}
+                        <Link
+                            href={profileHref}
+                            className="group/id flex items-center gap-3 p-4 border-b border-[var(--line)] hover:bg-[var(--fill-1)] transition-colors duration-300"
+                        >
+                            <span className="shrink-0 rounded-full ring-2 ring-[color-mix(in_srgb,var(--accent)_45%,transparent)]">
+                                {avatar(40)}
+                            </span>
+                            <span className="min-w-0 flex-1">
+                                <span className="block font-display text-[13px] font-bold text-[var(--ink-hi)] truncate group-hover/id:text-[var(--accent)] transition-colors duration-150">
+                                    {name}
+                                </span>
+                                <span className="block text-[11px] tabular-nums text-[var(--ink-low)]">
+                                    {intoLevel.toLocaleString()} / 1,000 XP to Level {level + 1}
+                                </span>
+                            </span>
+                        </Link>
+
+                        <div className="p-2 flex flex-col">
+                            {MENU_LINKS.map(({ name: label, href, icon: Icon }) => (
+                                <Link
+                                    key={label}
+                                    href={href === "/profile/me" ? profileHref : href}
+                                    className="group/row flex items-center gap-3 px-2.5 py-2 rounded-[var(--radius-inner)] text-[13px] font-medium text-[var(--ink-low)] hover:text-[var(--ink-hi)] hover:bg-[var(--fill-2)] transition-colors duration-150"
+                                >
+                                    <Icon className="w-4 h-4 shrink-0 text-[var(--ink-faint)] group-hover/row:text-[var(--accent)] transition-colors duration-150" />
+                                    {label}
+                                </Link>
+                            ))}
+                        </div>
+
+                        <div className="p-2 border-t border-[var(--line)]">
+                            <button
+                                onClick={() => { setOpen(false); logout(); }}
+                                className="w-full flex items-center gap-3 px-2.5 py-2 rounded-[var(--radius-inner)] text-[13px] font-medium text-[var(--ink-low)] hover:text-[#f87171] hover:bg-[color-mix(in_srgb,#ef4444_10%,transparent)] transition-colors duration-150"
+                            >
+                                <LogOut className="w-4 h-4 shrink-0" />
+                                Sign Out
+                            </button>
+                        </div>
+                    </MegaPanel>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
 export default function Header() {
     const { isOpen: isMobileMenuOpen, setIsOpen: setIsMobileMenuOpen } = useMobileMenu();
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -982,42 +1138,9 @@ export default function Header() {
                                     onCountRefresh={refreshNotifCounts}
                                 />
 
-                                {/* Level chip: level + progress toward the next 1000-XP step */}
-                                <Link
-                                    href="/profile/me"
-                                    title={`${(user.xp || 0).toLocaleString()} XP`}
-                                    className="flex items-center gap-2 px-2.5 h-7 rounded-full bg-[var(--fill-2)] border border-[var(--line-strong)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
-                                >
-                                    <span className="font-display text-[10px] font-bold uppercase tracking-wider tabular-nums text-[var(--accent)]">
-                                        Lvl {Math.floor((user.xp || 0) / 1000) + 1}
-                                    </span>
-                                    <span className="w-10 h-1 rounded-full bg-[var(--track)] overflow-hidden">
-                                        <span
-                                            className="block h-full rounded-full bg-[var(--accent)]"
-                                            style={{ width: `${Math.round((((user.xp || 0) % 1000) / 1000) * 100)}%` }}
-                                        />
-                                    </span>
-                                </Link>
+                                <span aria-hidden className="w-px h-6 bg-[var(--line-strong)]" />
 
-                                <Link href={`/profile/${user.username || 'me'}`} className="group shrink-0" title={decodeHtml(user.display_name || user.username) || "My Profile"}>
-                                    {user.avatar_url ? (
-                                        <Image
-                                            src={user.avatar_url}
-                                            alt={user.username || 'Avatar'}
-                                            width={34}
-                                            height={34}
-                                            className="w-[34px] h-[34px] rounded-full object-cover border border-[var(--line-strong)] group-hover:border-[var(--accent)] transition-colors"
-                                            unoptimized={user.avatar_url.includes('discord') || user.avatar_url.includes('gravatar')}
-                                        />
-                                    ) : (
-                                        <div className="w-[34px] h-[34px] bg-[var(--fill-3)] rounded-full flex items-center justify-center group-hover:bg-[var(--accent)] transition-colors text-white">
-                                            <User className="w-4 h-4" />
-                                        </div>
-                                    )}
-                                </Link>
-                                <button onClick={logout} className="p-2 text-[var(--ink-low)] hover:text-red-400 transition-colors hover:bg-[var(--fill-2)] rounded-full" title="Sign Out">
-                                    <LogOut className="w-4 h-4" />
-                                </button>
+                                <UserMenu user={user} logout={logout} />
                             </div>
                         ) : (
                             <div className="hidden xl:flex items-center gap-3">
