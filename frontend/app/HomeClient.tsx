@@ -9,7 +9,6 @@ import ReviewWall from "@/components/home/ReviewWall";
 import HiddenGems from "@/components/home/HiddenGems";
 import OnThisDay from "@/components/home/OnThisDay";
 import ProfileCtaBand from "@/components/home/ProfileCtaBand";
-import NewsletterCTA from "@/components/home/NewsletterCTA";
 import { useHome } from "@/hooks/useApi";
 
 interface HomeClientProps {
@@ -49,8 +48,6 @@ export default function HomeClient({ initialData }: HomeClientProps) {
 
                 <ProfileCtaBand />
             </div>
-
-            <NewsletterCTA />
         </main>
     );
 }
