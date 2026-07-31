@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, Gamepad2, CalendarDays, Users, UserPlus, Compass } from "lucide-react";
 import { Article } from "@/types";
+import HeroSlider from "./HeroSlider";
 
 const STAT_CHIPS = [
     { icon: Gamepad2, title: "200K+", sub: "Games in database" },
@@ -21,7 +21,6 @@ const STAT_CHIPS = [
 export default function HomeHero({ heroArticles }: { heroArticles: Article[] }) {
     const router = useRouter();
     const [query, setQuery] = useState("");
-    const featured = heroArticles.find((a) => a.featured_image_url) ?? null;
 
     const submitSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -30,12 +29,18 @@ export default function HomeHero({ heroArticles }: { heroArticles: Article[] }) 
     };
 
     return (
-        <section className="relative rounded-2xl overflow-hidden bg-[var(--bg-card)] border border-white/[0.06]">
+        <section className="relative rounded-2xl overflow-hidden bg-[var(--bg-card)] border border-white/[0.06] lg:min-h-[460px]">
             <span className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-[var(--accent)]/70 via-[var(--accent)]/15 to-transparent z-10" />
-            <div className="grid grid-cols-1 lg:grid-cols-12">
+            {/* ambient accent glow behind the copy */}
+            <span
+                aria-hidden
+                className="pointer-events-none absolute -left-24 -top-24 w-[420px] h-[420px] rounded-full opacity-[0.07]"
+                style={{ background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)" }}
+            />
+            <div className="relative grid grid-cols-1 lg:grid-cols-12">
                 {/* Copy + search + CTAs */}
                 <div className="lg:col-span-7 p-6 md:p-10 flex flex-col justify-center">
-                    <h1 className="font-display text-[34px] md:text-[48px] font-black leading-[1.05] text-white">
+                    <h1 className="font-display text-[34px] md:text-[48px] xl:text-[54px] font-black leading-[1.03] text-white">
                         Your gaming world.
                         <br />
                         <span className="text-[var(--accent)]">All in one place.</span>
@@ -45,14 +50,22 @@ export default function HomeHero({ heroArticles }: { heroArticles: Article[] }) 
                     </p>
 
                     <form onSubmit={submitSearch} className="mt-6 max-w-md">
-                        <div className="flex items-center gap-2 h-12 px-4 rounded-xl bg-white/[0.04] border border-white/10 focus-within:border-[var(--accent)]/50 transition-colors">
+                        <div className="flex items-center gap-2 h-12 pl-4 pr-1.5 rounded-xl bg-white/[0.04] border border-white/10 focus-within:border-[var(--accent)]/50 transition-colors">
                             <Search className="w-4 h-4 text-white/35 shrink-0" />
                             <input
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 placeholder="Search games, news, guides..."
-                                className="flex-1 bg-transparent text-[14px] text-white placeholder:text-white/30 outline-none"
+                                aria-label="Search games"
+                                className="flex-1 min-w-0 bg-transparent text-[14px] text-white placeholder:text-white/30 outline-none"
                             />
+                            <button
+                                type="submit"
+                                aria-label="Search"
+                                className="shrink-0 w-9 h-9 rounded-lg bg-white/5 hover:bg-[var(--accent)] text-white/60 hover:text-white flex items-center justify-center transition-colors"
+                            >
+                                <Search className="w-4 h-4" />
+                            </button>
                         </div>
                     </form>
 
@@ -86,28 +99,9 @@ export default function HomeHero({ heroArticles }: { heroArticles: Article[] }) 
                     </div>
                 </div>
 
-                {/* Featured visual (current hero article) */}
-                <div className="lg:col-span-5 relative min-h-[240px] lg:min-h-0">
-                    {featured ? (
-                        <Link href={`/news/${featured.slug}`} className="group absolute inset-0 block">
-                            <Image
-                                src={featured.featured_image_url!}
-                                alt={featured.title}
-                                fill
-                                priority
-                                className="object-cover group-hover:scale-[1.03] transition-transform duration-700"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent lg:bg-gradient-to-r lg:from-[var(--bg-card)] lg:via-transparent lg:to-transparent" />
-                            <div className="absolute bottom-0 left-0 right-0 p-5">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--accent)] mb-1.5">Featured</p>
-                                <p className="text-[15px] font-bold text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
-                                    {featured.title}
-                                </p>
-                            </div>
-                        </Link>
-                    ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/15 via-transparent to-transparent" />
-                    )}
+                {/* Featured stories slider */}
+                <div className="lg:col-span-5 relative min-h-[320px] sm:min-h-[380px] lg:min-h-0">
+                    <HeroSlider articles={heroArticles} />
                 </div>
             </div>
         </section>

@@ -4,12 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { Article } from "@/types";
-
-function articleHref(article: Article): string {
-    const type = article.category?.type ?? "news";
-    const segment = type === "tech" ? "hardware" : type;
-    return `/${segment}/${article.slug}`;
-}
+import { articleHref } from "@/lib/articleHref";
 
 const KICKER: Record<string, string> = { news: "News", reviews: "Reviews", tech: "Hardware" };
 

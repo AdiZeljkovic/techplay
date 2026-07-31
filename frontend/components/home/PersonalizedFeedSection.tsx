@@ -6,20 +6,13 @@ import Image from "next/image";
 import { Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { getApiUrl } from "@/lib/api";
+import { articleHref } from "@/lib/articleHref";
 import { Article } from "@/types";
 
 const fetcher = (url: string, token: string) =>
   fetch(url, { headers: { Authorization: `Bearer ${token}` } })
     .then((r) => (r.ok ? r.json() : null))
     .then((j) => j?.data as Article[] | null);
-
-/** Maps a category type to its route segment — `tech` articles live under /hardware. */
-function articleHref(article: Article): string {
-  if (!article.slug) return "#";
-  const type = article.category?.type ?? "news";
-  const segment = type === "tech" ? "hardware" : type;
-  return `/${segment}/${article.slug}`;
-}
 
 export function ArticleCard({ article }: { article: Article }) {
   const href = articleHref(article);
