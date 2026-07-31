@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Gamepad2, Wand2 } from "lucide-react";
+import { Gamepad2, Wand2, ListPlus } from "lucide-react";
 import type { BacklogSuggestion, DashboardStats } from "@/lib/types/dashboard";
 
 export default function BacklogProgressCard({
@@ -13,11 +13,37 @@ export default function BacklogProgressCard({
 }) {
     const total = stats.playing_count + stats.backlog_count + stats.completed_count;
     const percent = total > 0 ? Math.round((stats.completed_count / total) * 100) : 0;
+    const isEmpty = total === 0;
 
     // SVG donut geometry
     const r = 42;
     const circumference = 2 * Math.PI * r;
     const dash = (percent / 100) * circumference;
+
+    // A backlog of zero has nothing to chart and the advisor rejects it (422),
+    // so show the way in instead of a row of zeros.
+    if (isEmpty) {
+        return (
+            <div className="rounded-2xl bg-[var(--bg-card)] border border-white/[0.06] p-5 h-full flex flex-col">
+                <h3 className="text-[14px] font-bold text-white mb-3">Backlog Progress</h3>
+                <div className="flex-1 min-h-[180px] flex flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-white/10 bg-white/[0.02] px-6 text-center">
+                    <span className="w-10 h-10 rounded-full bg-[var(--accent)]/10 flex items-center justify-center">
+                        <ListPlus className="w-[18px] h-[18px] text-[var(--accent)]" />
+                    </span>
+                    <p className="text-[13px] font-semibold text-white/70">Your backlog is empty</p>
+                    <p className="text-[11.5px] text-white/35 max-w-[260px]">
+                        Add games you plan to play and this turns into a progress tracker — plus AI picks for what to start next.
+                    </p>
+                    <Link
+                        href="/games"
+                        className="mt-1 inline-flex items-center gap-1.5 px-4 h-9 rounded-lg bg-[var(--accent)] text-white text-[12px] font-bold hover:bg-[var(--accent-hover)] transition-colors"
+                    >
+                        <ListPlus className="w-3.5 h-3.5" /> Build your backlog
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="rounded-2xl bg-[var(--bg-card)] border border-white/[0.06] p-5 h-full flex flex-col">
@@ -39,11 +65,14 @@ export default function BacklogProgressCard({
                 <div className="relative shrink-0 w-[100px] h-[100px]">
                     <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
                         <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="8" />
-                        <circle
-                            cx="50" cy="50" r={r} fill="none"
-                            stroke="var(--accent)" strokeWidth="8" strokeLinecap="round"
-                            strokeDasharray={`${dash} ${circumference - dash}`}
-                        />
+                        {/* a round cap on a zero-length dash still paints a dot — skip the arc entirely */}
+                        {percent > 0 && (
+                            <circle
+                                cx="50" cy="50" r={r} fill="none"
+                                stroke="var(--accent)" strokeWidth="8" strokeLinecap="round"
+                                strokeDasharray={`${dash} ${circumference - dash}`}
+                            />
+                        )}
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <span className="text-[19px] font-black text-[var(--accent)] tabular-nums leading-none">{percent}%</span>

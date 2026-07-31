@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { Gamepad2, ChevronRight } from "lucide-react";
+import { Gamepad2, ChevronRight, Sparkles } from "lucide-react";
 import axios from "@/lib/axios";
 import MatchRing from "./MatchRing";
 import type { DashboardGameCover } from "@/lib/types/dashboard";
@@ -74,7 +74,7 @@ export default function RecommendedNext({ games }: { games: DashboardGameCover[]
     });
 
     const hasRecs = !!recs?.length;
-    if (!hasRecs && !games.length) return null;
+    const loading = !recs;
 
     return (
         <div className="rounded-2xl bg-[var(--bg-card)] border border-white/[0.06] p-5 h-full flex flex-col">
@@ -85,15 +85,38 @@ export default function RecommendedNext({ games }: { games: DashboardGameCover[]
                 </Link>
             </div>
 
-            <div className="flex-1 divide-y divide-white/[0.04]">
-                {hasRecs
-                    ? recs!.slice(0, 4).map((r) => (
-                        <Row key={r.slug} slug={r.slug} name={r.name} image={r.background_image} genres={r.matched_genres} match={r.match_percent} />
-                    ))
-                    : games.slice(0, 4).map((g) => (
-                        <Row key={g.slug} slug={g.slug} name={g.name} image={g.background_image} genres={[]} />
-                    ))}
-            </div>
+            {loading && !games.length ? (
+                <div className="flex-1 space-y-2">
+                    {[0, 1, 2, 3].map((i) => <div key={i} className="h-[78px] rounded-xl bg-white/[0.04] animate-pulse" />)}
+                </div>
+            ) : hasRecs || games.length ? (
+                <div className="flex-1 divide-y divide-white/[0.04]">
+                    {hasRecs
+                        ? recs!.slice(0, 4).map((r) => (
+                            <Row key={r.slug} slug={r.slug} name={r.name} image={r.background_image} genres={r.matched_genres} match={r.match_percent} />
+                        ))
+                        : games.slice(0, 4).map((g) => (
+                            <Row key={g.slug} slug={g.slug} name={g.name} image={g.background_image} genres={[]} />
+                        ))}
+                </div>
+            ) : (
+                // Recommendations are derived from the library — say so instead of vanishing
+                <div className="flex-1 min-h-[180px] flex flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-white/10 bg-white/[0.02] px-6 text-center">
+                    <span className="w-10 h-10 rounded-full bg-[var(--accent)]/10 flex items-center justify-center">
+                        <Sparkles className="w-[18px] h-[18px] text-[var(--accent)]" />
+                    </span>
+                    <p className="text-[13px] font-semibold text-white/70">No picks yet</p>
+                    <p className="text-[11.5px] text-white/35 max-w-[260px]">
+                        Track a few games and we&apos;ll match the catalog against the genres and platforms you actually play.
+                    </p>
+                    <Link
+                        href="/games"
+                        className="mt-1 inline-flex items-center gap-1.5 px-4 h-9 rounded-lg bg-[var(--accent)] text-white text-[12px] font-bold hover:bg-[var(--accent-hover)] transition-colors"
+                    >
+                        <Gamepad2 className="w-3.5 h-3.5" /> Explore games
+                    </Link>
+                </div>
+            )}
         </div>
     );
 }
