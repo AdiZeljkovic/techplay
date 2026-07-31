@@ -2,43 +2,183 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Clock, Newspaper, Star, Cpu, BookOpen, Film, User as UserIcon } from "lucide-react";
 import { Article } from "@/types";
 import { articleHref } from "@/lib/articleHref";
 
-const KICKER: Record<string, string> = { news: "News", reviews: "Reviews", tech: "Hardware" };
+const TYPE_META: Record<string, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
+    news: { label: "News", icon: Newspaper },
+    reviews: { label: "Reviews", icon: Star },
+    tech: { label: "Hardware", icon: Cpu },
+    guides: { label: "Guides", icon: BookOpen },
+    videos: { label: "Videos", icon: Film },
+};
 
-function SideCard({ article }: { article: Article }) {
-    const kicker = KICKER[article.category?.type ?? "news"] ?? "News";
+const typeMeta = (a: Article) => TYPE_META[a.category?.type ?? "news"] ?? TYPE_META.news;
+
+/** Round-robin across the verticals so the rail never turns into one long news list. */
+function interleave(...lists: Article[][]): Article[] {
+    const out: Article[] = [];
+    const longest = Math.max(...lists.map((l) => l.length), 0);
+    for (let i = 0; i < longest; i++) {
+        for (const list of lists) if (list[i]) out.push(list[i]);
+    }
+    return out;
+}
+
+function Kicker({ article, className = "" }: { article: Article; className?: string }) {
+    const { label, icon: Icon } = typeMeta(article);
     return (
-        <Link href={articleHref(article)} className="group flex gap-4 items-stretch rounded-xl border border-white/[0.06] bg-[var(--bg-card)] overflow-hidden hover:border-[var(--accent)]/40 transition-colors">
-            <div className="relative w-[130px] shrink-0">
+        <span className={`inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[var(--accent)] ${className}`}>
+            <Icon className="w-3 h-3" />
+            {label}
+        </span>
+    );
+}
+
+function Meta({ article, withAuthor = false }: { article: Article; withAuthor?: boolean }) {
+    const author = article.author?.display_name || article.author?.name;
+    return (
+        <div className="flex items-center gap-2 text-[11px] text-white/40">
+            {withAuthor && author && (
+                <>
+                    <span className="flex items-center gap-1.5 text-white/60 font-semibold">
+                        {article.author?.avatar_url ? (
+                            <Image src={article.author.avatar_url} alt={author} width={20} height={20} className="w-5 h-5 rounded-full object-cover" unoptimized />
+                        ) : (
+                            <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center"><UserIcon className="w-2.5 h-2.5 text-white/40" /></span>
+                        )}
+                        {author}
+                    </span>
+                    <span className="text-white/20">·</span>
+                </>
+            )}
+            {article.published_at_human && <span>{article.published_at_human}</span>}
+            {article.reading_time && (
+                <>
+                    <span className="text-white/20">·</span>
+                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{article.reading_time}</span>
+                </>
+            )}
+        </div>
+    );
+}
+
+/** Big lead story — image fills the card, copy sits on the gradient. */
+function FeaturedCard({ article }: { article: Article }) {
+    return (
+        <Link
+            href={articleHref(article)}
+            className="group relative flex flex-col justify-end rounded-2xl overflow-hidden border border-white/[0.06] bg-[var(--bg-card)] min-h-[340px] lg:min-h-[420px] hover:border-[var(--accent)]/40 transition-colors"
+        >
+            {article.featured_image_url && (
+                <Image
+                    src={article.featured_image_url}
+                    alt={article.title}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 58vw"
+                    className="object-cover transition-transform duration-[900ms] group-hover:scale-[1.04]"
+                />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-transparent" />
+            <div className="relative p-6 md:p-7">
+                <div className="flex items-center gap-2.5 mb-3">
+                    <span className="inline-flex items-center h-[22px] px-2.5 rounded-full bg-[var(--accent)] text-white text-[10px] font-black uppercase tracking-widest">
+                        Featured
+                    </span>
+                    <Kicker article={article} className="!text-white/60" />
+                </div>
+                <h3 className="font-display text-[24px] md:text-[30px] font-black text-white leading-[1.15] line-clamp-3 drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)] group-hover:text-[var(--accent)] transition-colors">
+                    {article.title}
+                </h3>
+                {article.excerpt && (
+                    <p className="mt-2.5 text-[13px] text-white/55 line-clamp-2 max-w-xl">{article.excerpt}</p>
+                )}
+                <div className="mt-4"><Meta article={article} withAuthor /></div>
+            </div>
+        </Link>
+    );
+}
+
+/** Compact horizontal row for the right rail. */
+function SideCard({ article }: { article: Article }) {
+    return (
+        <Link
+            href={articleHref(article)}
+            className="group relative flex gap-4 items-stretch rounded-xl border border-white/[0.06] bg-[var(--bg-card)] overflow-hidden hover:border-[var(--accent)]/40 transition-colors"
+        >
+            <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--accent)] scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300" />
+            <div className="relative w-[120px] sm:w-[132px] shrink-0 overflow-hidden">
                 {article.featured_image_url && (
-                    <Image src={article.featured_image_url} alt={article.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <Image
+                        src={article.featured_image_url}
+                        alt={article.title}
+                        fill
+                        sizes="132px"
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
                 )}
             </div>
             <div className="flex-1 min-w-0 py-3.5 pr-4">
-                <p className="text-[9px] font-black uppercase tracking-widest text-[var(--accent)] mb-1">{kicker}</p>
-                <p className="text-[14px] font-bold text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                <Kicker article={article} />
+                <p className="mt-1.5 text-[14px] font-bold text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                     {article.title}
                 </p>
-                <p className="mt-1.5 text-[11px] text-white/35">
-                    {article.published_at_human}{article.reading_time ? ` · ${article.reading_time}` : ""}
+                <div className="mt-2"><Meta article={article} /></div>
+            </div>
+        </Link>
+    );
+}
+
+/** Poster card for the bottom row. */
+function GridCard({ article }: { article: Article }) {
+    return (
+        <Link
+            href={articleHref(article)}
+            className="group flex flex-col rounded-xl border border-white/[0.06] bg-[var(--bg-card)] overflow-hidden hover:border-[var(--accent)]/40 transition-colors"
+        >
+            <div className="relative aspect-[16/9] overflow-hidden bg-white/[0.03]">
+                {article.featured_image_url && (
+                    <Image
+                        src={article.featured_image_url}
+                        alt={article.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, 33vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+            </div>
+            <div className="flex-1 flex flex-col p-4">
+                <Kicker article={article} />
+                <p className="mt-1.5 text-[14px] font-bold text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                    {article.title}
                 </p>
+                <div className="mt-auto pt-3"><Meta article={article} /></div>
             </div>
         </Link>
     );
 }
 
 /**
- * Featured story + one pick per editorial vertical (news / reviews / hardware).
- * Data comes from the /home payload (props), so links are in the SSR HTML.
+ * Lead story + a rail of three + a bottom row of three, drawn round-robin from
+ * news / reviews / hardware so every vertical is represented. Data arrives as
+ * props from the /home payload, so all links ship in the SSR HTML.
  */
 export default function EditorialSpotlight({ news, reviews, tech }: { news: Article[]; reviews: Article[]; tech: Article[] }) {
     const featured = news[0];
     if (!featured) return null;
 
-    const side = [news[1], reviews[0], tech[0]].filter(Boolean) as Article[];
+    // Distinct stories after the lead, mixed across verticals
+    const seen = new Set([featured.slug]);
+    const rest = interleave(news.slice(1), reviews, tech).filter((a) => {
+        if (!a?.slug || seen.has(a.slug)) return false;
+        seen.add(a.slug);
+        return true;
+    });
+
+    const side = rest.slice(0, 3);
+    const grid = rest.slice(3, 6);
 
     return (
         <section>
@@ -52,34 +192,22 @@ export default function EditorialSpotlight({ news, reviews, tech }: { news: Arti
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                {/* Featured story */}
-                <Link href={articleHref(featured)} className="group relative rounded-2xl overflow-hidden border border-white/[0.06] bg-[var(--bg-card)] min-h-[320px] hover:border-[var(--accent)]/40 transition-colors">
-                    {featured.featured_image_url && (
-                        <Image src={featured.featured_image_url} alt={featured.title} fill className="object-cover group-hover:scale-[1.03] transition-transform duration-700" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-[var(--accent)] mb-2">Featured</p>
-                        <h3 className="font-display text-[22px] md:text-[26px] font-black text-white leading-tight line-clamp-3 group-hover:text-[var(--accent)] transition-colors">
-                            {featured.title}
-                        </h3>
-                        {featured.excerpt && (
-                            <p className="mt-2 text-[13px] text-white/55 line-clamp-2 max-w-lg">{featured.excerpt}</p>
-                        )}
-                        <p className="mt-3 text-[11px] text-white/40">
-                            {featured.author?.display_name || featured.author?.name}
-                            {featured.published_at_human ? ` · ${featured.published_at_human}` : ""}
-                            {featured.reading_time ? ` · ${featured.reading_time}` : ""}
-                        </p>
-                    </div>
-                </Link>
-
-                {/* Vertical picks */}
-                <div className="flex flex-col gap-4">
-                    {side.map((a) => <SideCard key={a.id} article={a} />)}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                <div className="lg:col-span-7"><FeaturedCard article={featured} /></div>
+                <div className="lg:col-span-5 flex flex-col gap-4">
+                    {side.map((a) => <SideCard key={a.slug} article={a} />)}
                 </div>
             </div>
+
+            {grid.length > 0 && (
+                <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {grid.map((a, i) => (
+                        <div key={a.slug} className={`tp-fade-up tp-d${Math.min(6, i + 1)}`}>
+                            <GridCard article={a} />
+                        </div>
+                    ))}
+                </div>
+            )}
         </section>
     );
 }
