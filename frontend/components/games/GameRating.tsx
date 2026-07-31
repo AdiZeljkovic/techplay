@@ -53,6 +53,7 @@ export default function GameRating({ slug }: Props) {
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [submitSuccess, setSubmitSuccess]   = useState(false);
     const [submitError, setSubmitError]       = useState<string | null>(null);
+    const [isDraft, setIsDraft]               = useState(false);
 
     useEffect(() => {
         fetchRatings(1);
@@ -82,11 +83,12 @@ export default function GameRating({ slug }: Props) {
             if (res.data) {
                 setMyRating(res.data.rating);
                 setMyReview(res.data.review ?? "");
+                setIsDraft(!!res.data.is_draft);
             }
         } catch {}
     }
 
-    async function submitRating() {
+    async function submitRating(asDraft = false) {
         if (!myRating) return;
         setSubmitting(true);
         setSubmitError(null);
@@ -94,11 +96,13 @@ export default function GameRating({ slug }: Props) {
             await axios.post(`/games/${slug}/ratings`, {
                 rating: myRating,
                 review: myReview.trim() || null,
+                is_draft: asDraft,
             });
-            setShowForm(false);
+            setIsDraft(asDraft);
+            setShowForm(asDraft); // keep the editor open so a draft can be finished
             setSubmitSuccess(true);
             setTimeout(() => setSubmitSuccess(false), 3000);
-            fetchRatings(1);
+            if (!asDraft) fetchRatings(1);
         } catch (e: any) {
             const msg = e?.response?.data?.message ?? e?.response?.data?.errors?.review?.[0] ?? "Something went wrong.";
             setSubmitError(msg);
@@ -229,12 +233,19 @@ export default function GameRating({ slug }: Props) {
                                 rows={3}
                                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 resize-none focus:outline-none focus:border-[var(--accent)]"
                             />
-                            <div className="flex items-center gap-2">
-                                <button onClick={submitRating} disabled={submitting}
+                            <div className="flex flex-wrap items-center gap-2">
+                                <button onClick={() => submitRating(false)} disabled={submitting}
                                     className="flex items-center gap-2 px-4 py-2 bg-[var(--accent)] hover:opacity-90 text-white rounded-xl text-sm font-semibold transition-all disabled:opacity-50">
                                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                                    Submit
+                                    {isDraft ? "Publish review" : "Submit"}
                                 </button>
+                                {/* Drafts stay private and earn nothing until published */}
+                                {myReview.trim().length >= 10 && (
+                                    <button onClick={() => submitRating(true)} disabled={submitting}
+                                        className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 rounded-xl text-sm transition-all disabled:opacity-50">
+                                        Save draft
+                                    </button>
+                                )}
                                 <button onClick={() => { setShowForm(false); setSubmitError(null); }}
                                     className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl text-sm transition-all">
                                     Cancel
@@ -243,6 +254,11 @@ export default function GameRating({ slug }: Props) {
                                     <span className="ml-auto text-xs text-gray-500">{myReview.length}/1000</span>
                                 )}
                             </div>
+                            {isDraft && (
+                                <p className="text-[11px] text-amber-400/80">
+                                    Saved as a draft — only you can see it until you publish.
+                                </p>
+                            )}
                         </div>
                     )}
                 </div>

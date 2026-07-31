@@ -12,6 +12,7 @@ import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import AdUnit from "@/components/ads/AdUnit";
 import SocialShare from "@/components/share/SocialShare";
 import RecommendedNews from "@/components/news/RecommendedNews";
+import ReadingTracker from "@/components/news/ReadingTracker";
 import ReleaseCalendarSection from "@/components/home/ReleaseCalendarSection";
 import DiscordWidget from "@/components/home/DiscordWidget";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
@@ -250,7 +251,8 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                             {decodeHtml(article.category?.name) || "News"}
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-2 flex-nowrap">
+                                    <div className="flex items-center gap-3 flex-nowrap">
+                                        <ReadingTracker slug={article.slug} />
                                         <span className="text-[#71717A] text-[11px] font-bold uppercase tracking-widest shrink-0">SHARE:</span>
                                         <SocialShare
                                             url={`/news/${article.slug}`}

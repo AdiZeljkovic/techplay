@@ -84,7 +84,8 @@ class DashboardController extends Controller
                 'wishlist_count' => $counts['wishlist_count'],
                 'favorites_count' => $counts['favorites_count'],
                 'achievements_count' => $user->achievements()->count(),
-                'reviews_count' => GameRating::where('user_id', $user->id)->count(),
+                // published reviews only — drafts are private
+                'reviews_count' => GameRating::where('user_id', $user->id)->where('is_draft', false)->count(),
                 'completed_this_month' => $completedThisMonth,
             ],
             'playing_now' => $this->profileService->playingNow($user, 8),

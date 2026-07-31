@@ -20,7 +20,9 @@ class GameRatingController extends Controller
      */
     public function index(string $slug)
     {
+        // Drafts are private — excluded from both the score and the review list
         $aggregate = GameRating::where('game_slug', $slug)
+            ->where('is_draft', false)
             ->selectRaw('COUNT(*) as count, AVG(rating) as average, '.
                 'SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) as r5, '.
                 'SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) as r4, '.
@@ -30,6 +32,7 @@ class GameRatingController extends Controller
             ->first();
 
         $reviews = GameRating::where('game_slug', $slug)
+            ->where('is_draft', false)
             ->whereNotNull('review')
             ->with('user:id,name,username,avatar')
             ->orderByDesc('created_at')
@@ -116,22 +119,32 @@ class GameRatingController extends Controller
         $validated = $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'review' => 'nullable|string|min:10|max:1000',
+            'is_draft' => 'sometimes|boolean',
         ]);
 
         if (! empty($validated['review'])) {
             $validated['review'] = strip_tags($validated['review']);
         }
 
+        $validated['is_draft'] = (bool) ($validated['is_draft'] ?? false);
         $validated['game_id'] = Game::where('slug', $slug)->value('id');
+
+        $wasDraft = GameRating::where('user_id', $request->user()->id)
+            ->where('game_slug', $slug)
+            ->value('is_draft');
 
         $rating = GameRating::updateOrCreate(
             ['user_id' => $request->user()->id, 'game_slug' => $slug],
             $validated
         );
 
-        // First-time rating with a written review: XP for progression +
-        // direct bounty (economy split — bounty no longer mirrors XP)
-        if ($rating->wasRecentlyCreated && ! empty($validated['review'])) {
+        // Rewards fire when a review first goes public — drafts earn nothing,
+        // and publishing an existing draft still counts as the first time.
+        $justPublished = ! $validated['is_draft']
+            && ! empty($validated['review'])
+            && ($rating->wasRecentlyCreated || $wasDraft);
+
+        if ($justPublished) {
             try {
                 app(XpService::class)->awardXp($request->user(), XpService::XP_GAME_REVIEW, 'game_review');
                 app(BountyService::class)->award($request->user(), 15, "Game review written: {$slug}", 'milestone');

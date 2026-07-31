@@ -22,6 +22,7 @@ class SearchController extends Controller
         ]);
 
         $query = $request->input('q');
+        ReadingController::rememberSearch($request->user()?->id, $query);
         $cacheKey = 'search.articles.'.md5($query);
 
         // Cache for 60 seconds to prevent hammering
@@ -80,6 +81,7 @@ class SearchController extends Controller
         ]);
 
         $query = $request->input('q');
+        ReadingController::rememberSearch($request->user()?->id, $query);
         $cacheKey = 'search.games.'.md5($query);
 
         $result = Cache::remember($cacheKey, 60, function () use ($query) {

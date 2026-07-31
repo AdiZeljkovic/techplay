@@ -8,6 +8,7 @@ import WelcomeHero from "./WelcomeHero";
 import ProfileSummaryCard from "./ProfileSummaryCard";
 import ContinuePlayingRow from "./ContinuePlayingRow";
 import UpcomingForYouRow from "./UpcomingForYouRow";
+import YourActivity from "./YourActivity";
 import RecommendedNext from "./RecommendedNext";
 import BacklogProgressCard from "./BacklogProgressCard";
 import QuickActionsGrid from "./QuickActionsGrid";
@@ -64,6 +65,11 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                         <BacklogProgressCard stats={data.stats} suggestion={data.backlog_suggestion} />
                     </div>
                 )}
+
+                {/* Pick up where you left off */}
+                <div className="mb-10 tp-fade-up tp-d5">
+                    <YourActivity />
+                </div>
 
                 {/* Main + aside */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

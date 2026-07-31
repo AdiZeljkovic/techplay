@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GameRating extends Model
 {
-    protected $fillable = ['user_id', 'game_id', 'game_slug', 'rating', 'review'];
+    protected $fillable = ['user_id', 'game_id', 'game_slug', 'rating', 'review', 'is_draft'];
 
     protected $casts = [
         'rating' => 'integer',
+        'is_draft' => 'boolean',
     ];
 
     public function user(): BelongsTo

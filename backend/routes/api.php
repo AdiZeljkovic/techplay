@@ -50,6 +50,7 @@ use App\Http\Controllers\Api\V1\PresenceController;
 use App\Http\Controllers\Api\V1\PriveeGiveawayController;
 use App\Http\Controllers\Api\V1\ProfileCompareController;
 use App\Http\Controllers\Api\V1\QuestController;
+use App\Http\Controllers\Api\V1\ReadingController;
 use App\Http\Controllers\Api\V1\RecognitionController;
 use App\Http\Controllers\Api\V1\RedirectController;
 use App\Http\Controllers\Api\V1\ReportController;
@@ -216,6 +217,11 @@ Route::prefix('v1')->group(function () {
         // Logged-in homepage dashboard (aggregated read-only payload)
         Route::get('/me/dashboard', [DashboardController::class, 'index']);
         Route::get('/me/recommendations', [DashboardController::class, 'recommendations']);
+
+        // Reading list, progress and search history
+        Route::get('/me/reading', [ReadingController::class, 'index']);
+        Route::post('/articles/{slug}/bookmark', [ReadingController::class, 'toggleBookmark'])->middleware('throttle:60,1');
+        Route::put('/articles/{slug}/progress', [ReadingController::class, 'updateProgress'])->middleware('throttle:120,1');
 
         // AI Backlog Advisor
         Route::post('/backlog/suggest', [BacklogAdvisorController::class, 'suggest']);
