@@ -103,8 +103,17 @@ const DB_YEARS = ["2025", "2024", "2023", "2022", "2021", "2020"];
    grammar, one heading — every dropdown in the bar uses these.
    ────────────────────────────────────────────────────────────── */
 
-/** Panel shell: crown hairline, HUD field, depth. */
-function MegaPanel({ className, children }: { className?: string; children: React.ReactNode }) {
+/**
+ * Panel shell: crown hairline, HUD field, depth.
+ * `className` positions/sizes the panel; `innerClassName` lays out the
+ * content — they must stay separate, since the decorative spans are
+ * siblings of the content wrapper and would otherwise become grid items.
+ */
+function MegaPanel({ className, innerClassName, children }: {
+    className?: string;
+    innerClassName?: string;
+    children: React.ReactNode;
+}) {
     return (
         <motion.div
             initial={{ opacity: 0, y: -6 }}
@@ -120,7 +129,7 @@ function MegaPanel({ className, children }: { className?: string; children: Reac
         >
             <span aria-hidden className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[var(--accent)] via-[color-mix(in_srgb,var(--accent)_55%,transparent)] to-transparent" />
             <span aria-hidden className="absolute inset-0 bg-hud-grid opacity-40 pointer-events-none" />
-            <div className="relative">{children}</div>
+            <div className={cn("relative", innerClassName)}>{children}</div>
         </motion.div>
     );
 }
@@ -162,8 +171,9 @@ interface NavArticle {
     category: { name: string; slug: string; type: string } | null;
 }
 
+/** /news ignores per_page and always paginates 13 — the cap has to happen here. */
 const navNewsFetcher = () =>
-    axios.get("/news", { params: { per_page: 3 } }).then((r) => (r.data?.data ?? []) as NavArticle[]);
+    axios.get("/news").then((r) => ((r.data?.data ?? []) as NavArticle[]).slice(0, 3));
 
 const articleHref = (a: NavArticle) =>
     a.category?.type === "reviews" ? `/reviews/${a.slug}` : `/news/${a.slug}`;
@@ -494,8 +504,8 @@ function NavItem({ item, badge, onHoverChange }: {
             <AnimatePresence>
                 {hasColumns && isOpen && (
                     /* ── MULTI-COLUMN MEGA PANEL (DISCOVER) ── */
-                    <MegaPanel key="columns" className="left-0 w-[940px] grid grid-cols-[1fr_340px]">
-                        <div className="p-6 grid grid-cols-4 gap-x-5">
+                    <MegaPanel key="columns" className="left-0 w-[940px]" innerClassName="grid grid-cols-[1fr_340px] items-stretch">
+                        <div className="p-6 grid grid-cols-4 gap-x-5 content-start">
                             {item.columns!.map((col) => (
                                 <div key={col.title} className="min-w-0">
                                     <MegaHeading title={col.title} href={col.href} />
