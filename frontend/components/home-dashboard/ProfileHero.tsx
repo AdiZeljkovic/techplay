@@ -10,6 +10,7 @@ import type { DashboardData } from "@/lib/types/dashboard";
 import { useCountUp } from "@/hooks/useCountUp";
 import RingMeter from "@/components/ui/RingMeter";
 import ProfileTabStrip from "./ProfileTabStrip";
+import { LevelCrest, RankEmblem, XpRail } from "./RankInsignia";
 
 /** 12480 → "12.5K" — hours read as a badge, not a spreadsheet. */
 function compact(n: number): string {
@@ -166,36 +167,35 @@ export default function ProfileHero({ data }: { data: DashboardData }) {
                                 {user.display_name || user.username}
                             </h1>
 
-                            {/* level · inline XP rail · numerals — one compact line */}
-                            <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2">
-                                <span className="inline-flex items-center h-[24px] px-3 rounded-full bg-[var(--accent)] text-white font-display text-[10px] font-bold uppercase tracking-[0.1em] tabular-nums shadow-[var(--glow-accent)]">
-                                    Level {user.level}
-                                </span>
-                                {user.rank_name && (
-                                    <span className="inline-flex items-center h-[24px] px-3 rounded-full bg-[var(--fill-2)] border border-[var(--line-strong)] font-display text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--ink-mid)]">
-                                        {user.rank_name}
-                                    </span>
-                                )}
-                                <span className="flex items-center gap-2.5 min-w-0">
-                                    <span className="w-[110px] h-[6px] rounded-full bg-[var(--track)] overflow-hidden shrink-0">
-                                        <span
-                                            className="block h-full rounded-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-bright)]"
-                                            style={{
-                                                width: `${ringValue}%`,
-                                                boxShadow: "0 0 10px color-mix(in srgb, var(--accent) 45%, transparent)",
-                                            }}
-                                        />
-                                    </span>
-                                    <span className="text-[11px] tabular-nums text-[var(--ink-low)] whitespace-nowrap">
-                                        <span className="font-display font-bold text-[var(--ink-mid)]">{animatedXp.toLocaleString()}</span>
-                                        {nextXp ? ` / ${nextXp.toLocaleString()} XP` : " XP"}
-                                    </span>
-                                </span>
-                                {nextXp && user.next_rank && (
-                                    <span className="text-[11px] tabular-nums text-[var(--ink-faint)] whitespace-nowrap">
-                                        {(nextXp - user.xp).toLocaleString()} to <span className="text-[var(--ink-low)]">{user.next_rank.name}</span>
-                                    </span>
-                                )}
+                            {/* ── the insignia block: crest · rank metal · segmented XP gauge ── */}
+                            <div className="mt-3 flex items-center gap-3.5">
+                                <LevelCrest level={user.level} size={62} />
+
+                                <div className="min-w-0 flex-1 max-w-[420px]">
+                                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                                        {user.rank_name && <RankEmblem name={user.rank_name} color={user.rank_color} />}
+                                        {nextXp && user.next_rank && (
+                                            <span className="text-[10px] font-bold uppercase tracking-wider tabular-nums text-[var(--ink-faint)] whitespace-nowrap">
+                                                {(nextXp - user.xp).toLocaleString()} XP to{" "}
+                                                <span style={{ color: user.next_rank.color || "var(--ink-low)" }}>
+                                                    {user.next_rank.name}
+                                                </span>
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <XpRail percent={ringValue} />
+
+                                    <p className="mt-1.5 flex items-baseline justify-between gap-2 text-[10px] uppercase tracking-wider text-[var(--ink-faint)]">
+                                        <span className="tabular-nums">
+                                            <span className="font-display text-[12px] font-bold text-[var(--ink-hi)] normal-case tracking-normal">
+                                                {animatedXp.toLocaleString()}
+                                            </span>
+                                            {nextXp ? ` / ${nextXp.toLocaleString()} XP` : " XP"}
+                                        </span>
+                                        <span className="font-display font-bold tabular-nums text-[var(--accent)]">{ringValue}%</span>
+                                    </p>
+                                </div>
                             </div>
 
                             {/* meta row */}

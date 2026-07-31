@@ -91,9 +91,13 @@ class DashboardController extends Controller
                 'level' => (int) floor(($user->xp ?? 0) / 1000) + 1,
                 'xp' => (int) ($user->xp ?? 0),
                 'rank_name' => $user->rank?->name,
+                // the ladder carries a tier colour per rank — the UI paints with it
+                'rank_color' => $user->rank?->color,
+                'rank_icon' => $user->rank?->icon,
                 'next_rank' => $nextRank ? [
                     'name' => $nextRank->name,
                     'min_xp' => $nextRank->min_xp,
+                    'color' => $nextRank->color,
                 ] : null,
             ],
             'stats' => [

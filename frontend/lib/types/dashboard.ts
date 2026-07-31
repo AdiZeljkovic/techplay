@@ -21,7 +21,10 @@ export interface DashboardUser {
     level: number;
     xp: number;
     rank_name: string | null;
-    next_rank: { name: string; min_xp: number } | null;
+    /** Tier colour from the rank ladder (Bronze #cd7f32 … Radiant #00e5ff) */
+    rank_color: string | null;
+    rank_icon: string | null;
+    next_rank: { name: string; min_xp: number; color: string | null } | null;
 }
 
 export interface DashboardStats {
