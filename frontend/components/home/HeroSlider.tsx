@@ -97,7 +97,8 @@ export default function HeroSlider({ articles }: { articles: Article[] }) {
             </AnimatePresence>
 
             {/* Caption */}
-            <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">
+            {/* lg left padding clears the hero's diagonal seam */}
+            <div className="absolute inset-x-0 bottom-0 p-5 md:p-6 lg:pl-12">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={index}
@@ -176,7 +177,7 @@ export default function HeroSlider({ articles }: { articles: Article[] }) {
                     <button
                         onClick={() => go(index - 1)}
                         aria-label="Previous story"
-                        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/45 backdrop-blur-sm border border-white/10 text-white/80 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 focus-visible:opacity-100 hover:bg-[var(--accent)] hover:border-[var(--accent)] transition-all"
+                        className="absolute left-3 lg:left-12 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/45 backdrop-blur-sm border border-white/10 text-white/80 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 focus-visible:opacity-100 hover:bg-[var(--accent)] hover:border-[var(--accent)] transition-all"
                     >
                         <ChevronLeft className="w-4 h-4" />
                     </button>

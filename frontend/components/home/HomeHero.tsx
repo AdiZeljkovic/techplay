@@ -119,10 +119,10 @@ export default function HomeHero({ heroArticles }: { heroArticles: Article[] }) 
                     <div
                         aria-hidden
                         className="hidden lg:block absolute inset-0 bg-gradient-to-b from-[color-mix(in_srgb,var(--accent)_55%,transparent)] to-transparent"
-                        style={{ clipPath: "polygon(13.4% 0, 14% 0, 2.6% 100%, 2% 100%)" }}
+                        style={{ clipPath: "polygon(9.5% 0, 10% 0, 0.5% 100%, 0% 100%)" }}
                     />
                     <div
-                        className="absolute inset-0 lg:[clip-path:polygon(14%_0,100%_0,100%_100%,2.6%_100%)]"
+                        className="absolute inset-0 lg:[clip-path:polygon(10%_0,100%_0,100%_100%,0%_100%)]"
                     >
                         <HeroSlider articles={heroArticles} />
                     </div>
