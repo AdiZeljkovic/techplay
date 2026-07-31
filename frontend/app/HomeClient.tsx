@@ -5,8 +5,9 @@ import HomeHero from "@/components/home/HomeHero";
 import QuickLinksBand from "@/components/home/QuickLinksBand";
 import DiscoverGames from "@/components/home/DiscoverGames";
 import EditorialSpotlight from "@/components/home/EditorialSpotlight";
-import ComingThisWeek from "@/components/home/ComingThisWeek";
-import CommunityPulse from "@/components/home/CommunityPulse";
+import ReviewWall from "@/components/home/ReviewWall";
+import HiddenGems from "@/components/home/HiddenGems";
+import OnThisDay from "@/components/home/OnThisDay";
 import ProfileCtaBand from "@/components/home/ProfileCtaBand";
 import NewsletterCTA from "@/components/home/NewsletterCTA";
 import { useHome } from "@/hooks/useApi";
@@ -38,10 +39,12 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                 <div className="tp-fade-up tp-d3"><DiscoverGames /></div>
                 <EditorialSpotlight news={news} reviews={reviews} tech={tech} />
 
-                {/* Releases + community signals */}
+                <ReviewWall reviews={reviews} />
+
+                {/* Database discovery — content only a 200K-title catalog can produce */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                    <ComingThisWeek />
-                    <CommunityPulse latestReview={reviews[0]} />
+                    <HiddenGems />
+                    <OnThisDay />
                 </div>
 
                 <ProfileCtaBand />

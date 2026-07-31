@@ -9,6 +9,7 @@ use App\Models\Game;
 use App\Services\RawgService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
 
@@ -373,6 +374,96 @@ class GameController extends Controller
      * Without params: returns upcoming releases from today (used by sidebar/home widgets).
      * Responses are cached; falls back to the local games DB if RAWG is unavailable.
      */
+    /**
+     * GET /games/hidden-gems — highly rated games almost nobody has voted on.
+     *
+     * "Hidden" = a trustworthy score (rating >= 8) from a small crowd
+     * (3-80 votes). Candidates are pulled off the rating index and only then
+     * have their vote count extracted, so this never scans the whole catalog.
+     * The daily cache key doubles as the rotation seed.
+     */
+    public function hiddenGems()
+    {
+        $today = now()->toDateString();
+
+        $payload = Cache::remember("games.hidden_gems.v1.{$today}", 86400, function () use ($today) {
+            $votes = DB::getDriverName() === 'pgsql'
+                ? "(details_data->>'ratings_count')::int"
+                : "CAST(json_extract(details_data, '$.ratings_count') AS INTEGER)";
+
+            return Game::query()
+                ->where('has_description', true)
+                ->whereNotNull('background_image')
+                ->whereNotNull('released')
+                ->where('rating', '>=', 8)
+                ->orderByDesc('rating')
+                ->limit(800)
+                ->get(['slug', 'name', 'background_image', 'rating', 'released', 'genre_names', DB::raw("{$votes} as votes")])
+                // enough votes to trust the score, then the least-known first
+                ->filter(fn ($g) => $g->votes !== null && $g->votes >= 3)
+                ->sortBy('votes')
+                ->take(60)
+                // deterministic per-day shuffle so the rail rotates without a random seed
+                ->sortBy(fn ($g) => md5($g->slug.$today))
+                ->take(6)
+                ->map(fn ($g) => [
+                    'slug' => $g->slug,
+                    'name' => $g->name,
+                    'background_image' => $g->background_image,
+                    'rating' => (float) $g->rating,
+                    'released' => $g->released?->toDateString(),
+                    'genres' => array_slice((array) $g->genre_names, 0, 2),
+                    'votes' => (int) $g->votes,
+                ])
+                ->values()
+                ->all();
+        });
+
+        return response()->json(['results' => $payload])
+            ->header('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+    }
+
+    /**
+     * GET /games/on-this-day — notable games released on today's date in past years.
+     */
+    public function onThisDay()
+    {
+        $today = now();
+
+        $payload = Cache::remember("games.on_this_day.v1.{$today->format('m-d')}", 86400, function () use ($today) {
+            $q = Game::query()
+                ->where('has_description', true)
+                ->whereNotNull('background_image')
+                ->whereNotNull('released')
+                ->whereYear('released', '<', $today->year)
+                ->where('rating', '>=', 7);
+
+            if (DB::getDriverName() === 'pgsql') {
+                $q->whereRaw('EXTRACT(MONTH FROM released) = ? AND EXTRACT(DAY FROM released) = ?', [$today->month, $today->day]);
+            } else {
+                $q->whereRaw("strftime('%m-%d', released) = ?", [$today->format('m-d')]);
+            }
+
+            return $q->orderByDesc('rating')
+                ->limit(6)
+                ->get(['slug', 'name', 'background_image', 'rating', 'released', 'genre_names'])
+                ->map(fn ($g) => [
+                    'slug' => $g->slug,
+                    'name' => $g->name,
+                    'background_image' => $g->background_image,
+                    'rating' => (float) $g->rating,
+                    'released' => $g->released?->toDateString(),
+                    'genres' => array_slice((array) $g->genre_names, 0, 2),
+                    'years_ago' => $today->year - (int) $g->released->format('Y'),
+                ])
+                ->values()
+                ->all();
+        });
+
+        return response()->json(['results' => $payload, 'date' => $today->format('F j')])
+            ->header('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+    }
+
     public function calendar(Request $request, RawgService $rawg)
     {
         $start = $request->query('start_date');
