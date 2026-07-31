@@ -15,7 +15,7 @@ import {
     Menu, X, Search, User, LogOut, ShoppingCart,
     ChevronDown, Facebook, Twitter, Instagram, Youtube,
     Mail, Users, Sword, Tag, Calendar, Gamepad2,
-    Newspaper, Trophy, ArrowRight, Star, Cpu, PlayCircle,
+    Newspaper, Trophy, ArrowRight, Star, Cpu, PlayCircle, Monitor, History,
     MessageSquare, Gem, Rocket, Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -382,6 +382,120 @@ function NavFeatured({ active }: { active: boolean }) {
     );
 }
 
+interface CalendarGame {
+    id: number | string;
+    slug: string;
+    name: string;
+    background_image: string | null;
+    released: string | null;
+    added?: number;
+    platforms?: ({ name?: string; platform?: { name?: string } } | null)[];
+}
+
+const MONTHS_SHORT = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+const platformNames = (g: CalendarGame) =>
+    (g.platforms ?? []).map((p) => p?.platform?.name ?? p?.name ?? "").filter(Boolean);
+
+/**
+ * The calendar is chronological, but the next fortnight is mostly
+ * shovelware — rank a chronological window by how many players track the
+ * title, keep the notable ones, then restore date order.
+ */
+const navCalendarFetcher = () =>
+    axios.get("/games/calendar").then((r) => {
+        const all = (r.data?.results ?? []) as CalendarGame[];
+        return [...all.slice(0, 24)]
+            .sort((a, b) => (b.added ?? 0) - (a.added ?? 0))
+            .slice(0, 5)
+            .sort((a, b) => (a.released ?? "").localeCompare(b.released ?? ""));
+    });
+
+/** Date tile — month over day, day in Command Numerals. */
+function DateChip({ released }: { released: string | null }) {
+    const d = released ? new Date(released) : null;
+    const valid = d && !Number.isNaN(d.getTime());
+    return (
+        <span className="w-[46px] shrink-0 rounded-[var(--radius-inner)] bg-[var(--fill-2)] border border-[var(--line-strong)] overflow-hidden text-center group-hover/rel:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300">
+            <span className="block bg-[var(--accent)] text-white text-[8px] font-bold uppercase tracking-[0.1em] leading-none py-[3px]">
+                {valid ? MONTHS_SHORT[d!.getMonth()] : "TBA"}
+            </span>
+            <span className="block font-display text-[15px] font-bold tabular-nums text-[var(--ink-hi)] leading-none py-1.5">
+                {valid ? String(d!.getDate()).padStart(2, "0") : "--"}
+            </span>
+        </span>
+    );
+}
+
+/** Upcoming releases rail — the calendar, promoted out of the footer. */
+function NavReleaseRadar({ active }: { active: boolean }) {
+    const { data } = useSWR(active ? "nav-calendar" : null, navCalendarFetcher, {
+        dedupingInterval: 300_000,
+        revalidateOnFocus: false,
+    });
+
+    return (
+        <div className="flex flex-col border-l border-[var(--line)] bg-[var(--surface-1)] p-5">
+            <div className="flex items-center justify-between mb-3.5">
+                <span className="flex items-center gap-2">
+                    <span aria-hidden className="w-1 h-4 rounded-full bg-[var(--accent)]" />
+                    <span className="font-display text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
+                        Release Radar
+                    </span>
+                </span>
+                <Link href="/calendar" className="group/all flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-faint)] hover:text-[var(--accent)] transition-colors duration-150">
+                    Calendar
+                    <ArrowRight className="w-3 h-3 group-hover/all:translate-x-0.5 transition-transform duration-300" />
+                </Link>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+                {!data &&
+                    [0, 1, 2, 3, 4].map((i) => (
+                        <div key={i} className="h-[52px] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />
+                    ))}
+
+                {data?.map((g) => {
+                    const plats = platformNames(g);
+                    return (
+                        <Link
+                            key={g.id}
+                            href={`/games/${g.slug}`}
+                            prefetch={false}
+                            className="group/rel flex items-center gap-2.5 p-1.5 rounded-[var(--radius-card)] border border-transparent hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] hover:bg-[var(--fill-1)] transition-colors duration-300"
+                        >
+                            <DateChip released={g.released} />
+
+                            <span className="relative w-[52px] h-[36px] shrink-0 rounded-[var(--radius-inner)] overflow-hidden bg-[var(--fill-1)] border border-[var(--line)]">
+                                {g.background_image && (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                        src={g.background_image}
+                                        alt={g.name}
+                                        loading="lazy"
+                                        className="w-full h-full object-cover group-hover/rel:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]"
+                                    />
+                                )}
+                            </span>
+
+                            <span className="min-w-0 flex-1">
+                                <span className="block text-[12px] font-semibold text-[var(--ink-mid)] leading-snug line-clamp-2 group-hover/rel:text-[var(--accent)] transition-colors duration-150">
+                                    {g.name}
+                                </span>
+                                {plats.length > 0 && (
+                                    <span className="block mt-0.5 text-[10px] uppercase tracking-wider text-[var(--ink-faint)] truncate">
+                                        {plats.slice(0, 3).join(" · ")}
+                                    </span>
+                                )}
+                            </span>
+                        </Link>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
 // Mega-dropdown for the GAMES nav item (database + calendar)
 function GamesNavItem() {
     const pathname = usePathname();
@@ -404,12 +518,17 @@ function GamesNavItem() {
 
             <AnimatePresence>
                 {isHovered && (
-                    <MegaPanel className="left-1/2 -translate-x-1/2 w-[560px]">
-                        <div className="p-6">
-                            <div className="grid grid-cols-3 gap-6">
+                    /* anchored left, not centred: a 900px panel centred on the nav
+                       item would run off the left edge of the viewport */
+                    <MegaPanel
+                        className="left-0 w-[900px] max-w-[calc(100vw-2rem)]"
+                        innerClassName="grid grid-cols-[1fr_340px] items-stretch"
+                    >
+                        <div className="flex flex-col min-w-0">
+                            <div className="p-6 grid grid-cols-[1.6fr_1fr] gap-5">
                                 {/* Genres */}
-                                <div className="col-span-2">
-                                    <MegaHeading title="Genres" href="/games" />
+                                <div className="min-w-0 pr-5 border-r border-[var(--line)]">
+                                    <MegaHeading title="Genres" href="/games" icon={Sword} />
                                     <div className="grid grid-cols-2 gap-x-5">
                                         {DB_GENRES.map((g) => (
                                             <MegaLink key={g.slug} href={`/games/genre/${g.slug}`}>{g.label}</MegaLink>
@@ -418,9 +537,9 @@ function GamesNavItem() {
                                 </div>
 
                                 {/* Platforms + Years */}
-                                <div className="flex flex-col gap-5">
+                                <div className="min-w-0 flex flex-col gap-5">
                                     <div>
-                                        <MegaHeading title="Platforms" href="/games" />
+                                        <MegaHeading title="Platforms" href="/games" icon={Monitor} />
                                         <div className="flex flex-col">
                                             {DB_PLATFORMS.map((p) => (
                                                 <MegaLink key={p.slug} href={`/games/platform/${p.slug}`}>{p.label}</MegaLink>
@@ -429,7 +548,7 @@ function GamesNavItem() {
                                     </div>
 
                                     <div>
-                                        <MegaHeading title="Years" href="/calendar" />
+                                        <MegaHeading title="Years" href="/games" icon={History} />
                                         <div className="grid grid-cols-2 gap-x-3">
                                             {DB_YEARS.map((y) => (
                                                 <MegaLink key={y} href={`/games/year/${y}`}>{y}</MegaLink>
@@ -438,23 +557,20 @@ function GamesNavItem() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Footer strip */}
-                        <div className="px-6 py-3 border-t border-[var(--line)] bg-[var(--fill-1)] flex items-center justify-between gap-4">
-                            <Link href="/games" className="group/all flex items-center gap-1.5 font-display text-[11px] font-bold text-[var(--accent)] hover:text-[var(--accent-hover)] uppercase tracking-[0.12em] transition-colors duration-150">
-                                Browse all games
-                                <ArrowRight className="w-3 h-3 group-hover/all:translate-x-0.5 transition-transform duration-300" />
-                            </Link>
-                            <span className="flex items-center gap-4">
-                                <Link href="/calendar" className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors duration-150">
-                                    <Calendar className="w-3 h-3" /> Release Calendar
+                            {/* Footer strip */}
+                            <div className="mt-auto px-6 py-3 border-t border-[var(--line)] bg-[var(--fill-1)] flex items-center justify-between gap-4">
+                                <Link href="/games" className="group/all flex items-center gap-1.5 font-display text-[11px] font-bold text-[var(--accent)] hover:text-[var(--accent-hover)] uppercase tracking-[0.12em] transition-colors duration-150">
+                                    Browse all games
+                                    <ArrowRight className="w-3 h-3 group-hover/all:translate-x-0.5 transition-transform duration-300" />
                                 </Link>
-                                <Link href="/games/tag/open-world" className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--ink-faint)] hover:text-[var(--accent)] transition-colors duration-150">
+                                <Link href="/games/tag/open-world" className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors duration-150">
                                     <Tag className="w-3 h-3" /> Popular Tags
                                 </Link>
-                            </span>
+                            </div>
                         </div>
+
+                        <NavReleaseRadar active={isHovered} />
                     </MegaPanel>
                 )}
             </AnimatePresence>
