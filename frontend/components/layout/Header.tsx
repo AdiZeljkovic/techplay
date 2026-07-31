@@ -111,7 +111,7 @@ function GamesNavItem() {
             onMouseLeave={() => setIsHovered(false)}>
             <Link href="/games" className={cn(
                 "flex items-center gap-1 text-[13px] font-semibold tracking-[0.01em] transition-colors whitespace-nowrap px-2 py-2.5",
-                isActive || isHovered ? "text-tp-accent" : "text-zinc-600 dark:text-slate-300 hover:text-tp-accent dark:hover:text-white"
+                isActive || isHovered ? "text-accent" : "text-[var(--ink-mid)] hover:text-[var(--ink-hi)]"
             )}>
                 Games
                 <ChevronDown className={cn("w-3 h-3 mt-0.5 opacity-70 transition-transform duration-200", isHovered ? "rotate-180" : "rotate-0")} />
@@ -123,22 +123,22 @@ function GamesNavItem() {
                         initial={{ opacity: 0, y: 10, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.97 }}
-                        transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[520px] rounded-xl shadow-2xl overflow-hidden z-[100] bg-white dark:bg-[#0D1117] backdrop-blur-xl border border-zinc-200 dark:border-white/5"
+                        transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[520px] rounded-xl shadow-2xl overflow-hidden z-[100] bg-[var(--surface-2)] backdrop-blur-xl border border-[var(--line)]"
                     >
-                        <div className="h-[3px] bg-tp-accent w-full" />
+                        <div className="h-[3px] bg-accent w-full" />
                         <div className="p-5">
                             <div className="grid grid-cols-3 gap-5">
                                 {/* Genres */}
                                 <div className="col-span-2">
                                     <div className="flex items-center gap-2 mb-3">
-                                        <Sword className="w-3.5 h-3.5 text-tp-accent" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-white/40">Genres</span>
+                                        <Sword className="w-3.5 h-3.5 text-accent" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--ink-low)]">Genres</span>
                                     </div>
                                     <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
                                         {DB_GENRES.map((g) => (
                                             <Link key={g.slug} href={`/games/genre/${g.slug}`} prefetch={false}
-                                                className="px-2 py-1.5 text-[12px] font-medium text-zinc-600 dark:text-[#A1A1AA] hover:text-tp-accent dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg transition-all">
+                                                className="px-2 py-1.5 text-[12px] font-medium text-[var(--ink-mid)] hover:text-accent hover:bg-[var(--fill-2)] rounded-lg transition-all">
                                                 {g.label}
                                             </Link>
                                         ))}
@@ -149,13 +149,13 @@ function GamesNavItem() {
                                 <div className="flex flex-col gap-5">
                                     <div>
                                         <div className="flex items-center gap-2 mb-3">
-                                            <Monitor className="w-3.5 h-3.5 text-tp-accent" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-white/40">Platforms</span>
+                                            <Monitor className="w-3.5 h-3.5 text-accent" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--ink-low)]">Platforms</span>
                                         </div>
                                         <div className="flex flex-col gap-0.5">
                                             {DB_PLATFORMS.map((p) => (
                                                 <Link key={p.slug} href={`/games/platform/${p.slug}`} prefetch={false}
-                                                    className="px-2 py-1.5 text-[12px] font-medium text-zinc-600 dark:text-[#A1A1AA] hover:text-tp-accent dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg transition-all">
+                                                    className="px-2 py-1.5 text-[12px] font-medium text-[var(--ink-mid)] hover:text-accent hover:bg-[var(--fill-2)] rounded-lg transition-all">
                                                     {p.label}
                                                 </Link>
                                             ))}
@@ -164,13 +164,13 @@ function GamesNavItem() {
 
                                     <div>
                                         <div className="flex items-center gap-2 mb-3">
-                                            <Calendar className="w-3.5 h-3.5 text-tp-accent" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-white/40">Years</span>
+                                            <Calendar className="w-3.5 h-3.5 text-accent" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--ink-low)]">Years</span>
                                         </div>
                                         <div className="flex flex-col gap-0.5">
                                             {DB_YEARS.map((y) => (
                                                 <Link key={y} href={`/games/year/${y}`} prefetch={false}
-                                                    className="px-2 py-1.5 text-[12px] font-medium text-zinc-600 dark:text-[#A1A1AA] hover:text-tp-accent dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg transition-all">
+                                                    className="px-2 py-1.5 text-[12px] font-medium text-[var(--ink-mid)] hover:text-accent hover:bg-[var(--fill-2)] rounded-lg transition-all">
                                                     {y}
                                                 </Link>
                                             ))}
@@ -180,15 +180,15 @@ function GamesNavItem() {
                             </div>
 
                             {/* Footer */}
-                            <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-white/5 flex items-center justify-between">
-                                <Link href="/games" className="flex items-center gap-1.5 text-[11px] font-bold text-tp-accent hover:text-tp-accent-hover uppercase tracking-wider transition-colors group">
+                            <div className="mt-4 pt-4 border-t border-[var(--line)] flex items-center justify-between">
+                                <Link href="/games" className="flex items-center gap-1.5 text-[11px] font-bold text-accent hover:text-accent-hover uppercase tracking-wider transition-colors group">
                                     Browse All Games
                                     <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                                 </Link>
-                                <Link href="/calendar" className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-400 dark:text-white/40 hover:text-tp-accent dark:hover:text-white transition-colors">
+                                <Link href="/calendar" className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--ink-low)] hover:text-accent transition-colors">
                                     <Calendar className="w-3 h-3" /> Release Calendar
                                 </Link>
-                                <Link href="/games/tag/open-world" className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-400 dark:text-white/30 hover:text-tp-accent dark:hover:text-white transition-colors">
+                                <Link href="/games/tag/open-world" className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--ink-faint)] hover:text-accent transition-colors">
                                     <Tag className="w-3 h-3" /> Popular Tags
                                 </Link>
                             </div>
@@ -277,12 +277,12 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
 function BrandLogo() {
     return (
         <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-tp-accent rounded-lg flex items-center justify-center shadow-lg group-hover:bg-tp-accent-hover transition-colors">
+            <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center shadow-lg group-hover:bg-accent-hover transition-colors">
                 <Gamepad2 className="w-5 h-5 text-white" strokeWidth={2} />
             </div>
             <div className="flex flex-col leading-none">
-                <span className="font-display font-bold text-[18px] text-zinc-900 dark:text-white tracking-tight leading-none">TECHPLAY</span>
-                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500 dark:text-slate-400 mt-[3px]">GAMING PORTAL</span>
+                <span className="font-display font-bold text-[18px] text-[var(--ink-hi)] tracking-tight leading-none">TECHPLAY</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--ink-low)] mt-[3px]">GAMING PORTAL</span>
             </div>
         </Link>
     );
@@ -315,7 +315,7 @@ function NavItem({ item, badge, onHoverChange }: {
                 href={item.href}
                 className={cn(
                     "relative flex items-center gap-1 text-[13px] font-semibold tracking-[0.01em] transition-colors whitespace-nowrap px-2 py-2.5",
-                    isActive || isOpen ? "text-tp-accent" : "text-zinc-600 dark:text-slate-300 hover:text-tp-accent dark:hover:text-white"
+                    isActive || isOpen ? "text-accent" : "text-[var(--ink-mid)] hover:text-[var(--ink-hi)]"
                 )}
             >
                 {item.name}
@@ -346,15 +346,15 @@ function NavItem({ item, badge, onHoverChange }: {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -4 }}
                         transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                        className="absolute top-full left-0 z-[100] w-[640px] bg-white dark:bg-[#0D1117] border border-t-0 border-zinc-200 dark:border-white/[0.07] shadow-xl dark:shadow-[0_20px_48px_rgba(0,0,0,0.6)] rounded-b-xl overflow-hidden"
+                        className="absolute top-full left-0 z-[100] w-[640px] bg-[var(--surface-2)] border border-t-0 border-[var(--line)] shadow-[0_20px_48px_rgba(0,0,0,0.6)] rounded-b-xl overflow-hidden"
                     >
-                        <div className="h-[3px] bg-tp-accent w-full" />
+                        <div className="h-[3px] bg-accent w-full" />
                         <div className="p-5 grid grid-cols-4 gap-5">
                             {item.columns!.map((col) => (
                                 <div key={col.title}>
                                     <Link
                                         href={col.href}
-                                        className="flex items-center gap-1.5 mb-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-white/45 hover:text-tp-accent transition-colors"
+                                        className="flex items-center gap-1.5 mb-3 text-[10px] font-black uppercase tracking-widest text-[var(--ink-low)] hover:text-accent transition-colors"
                                     >
                                         {col.title}
                                         <ArrowRight className="w-2.5 h-2.5" />
@@ -364,7 +364,7 @@ function NavItem({ item, badge, onHoverChange }: {
                                             <Link
                                                 key={idx}
                                                 href={child.href}
-                                                className="px-2 py-1.5 -mx-2 text-[12px] font-medium text-zinc-600 dark:text-[#A1A1AA] hover:text-tp-accent dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg transition-all"
+                                                className="px-2 py-1.5 -mx-2 text-[12px] font-medium text-[var(--ink-mid)] hover:text-accent hover:bg-[var(--fill-2)] rounded-lg transition-all"
                                             >
                                                 {child.name}
                                             </Link>
@@ -384,7 +384,7 @@ function NavItem({ item, badge, onHoverChange }: {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -4 }}
                             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                            className="absolute top-full left-0 z-[100] w-[300px] bg-white dark:bg-[#0D1117] border border-t-0 border-zinc-200 dark:border-white/[0.07] shadow-xl dark:shadow-[0_20px_48px_rgba(0,0,0,0.6)] rounded-b-xl overflow-hidden"
+                            className="absolute top-full left-0 z-[100] w-[300px] bg-[var(--surface-2)] border border-t-0 border-[var(--line)] shadow-[0_20px_48px_rgba(0,0,0,0.6)] rounded-b-xl overflow-hidden"
                         >
                             <div className="flex flex-col p-2">
                                 {item.children.map((child, idx) => {
@@ -393,19 +393,19 @@ function NavItem({ item, badge, onHoverChange }: {
                                         <Link
                                             key={idx}
                                             href={child.href}
-                                            className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-zinc-50 dark:hover:bg-white/[0.05] group transition-all duration-150"
+                                            className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-[var(--fill-2)] group transition-all duration-150"
                                         >
                                             {Icon && (
-                                                <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/[0.07] group-hover:bg-tp-accent/10 group-hover:border-tp-accent/25 flex items-center justify-center shrink-0 transition-all duration-150">
-                                                    <Icon className="w-[18px] h-[18px] text-zinc-500 dark:text-[#A1A1AA] group-hover:text-tp-accent transition-colors duration-150" />
+                                                <div className="w-10 h-10 rounded-lg bg-[var(--fill-2)] border border-[var(--line)] group-hover:bg-accent/10 group-hover:border-accent/25 flex items-center justify-center shrink-0 transition-all duration-150">
+                                                    <Icon className="w-[18px] h-[18px] text-[var(--ink-low)] group-hover:text-accent transition-colors duration-150" />
                                                 </div>
                                             )}
                                             <div className="flex flex-col min-w-0">
-                                                <span className="text-[13px] font-bold text-zinc-900 dark:text-white group-hover:text-tp-accent transition-colors duration-150 leading-tight">
+                                                <span className="text-[13px] font-bold text-[var(--ink-hi)] group-hover:text-accent transition-colors duration-150 leading-tight">
                                                     {child.name}
                                                 </span>
                                                 {child.description && (
-                                                    <span className="text-[11px] text-zinc-500 dark:text-[#6B7280] leading-tight mt-0.5">
+                                                    <span className="text-[11px] text-[var(--ink-low)] leading-tight mt-0.5">
                                                         {child.description}
                                                     </span>
                                                 )}
@@ -416,10 +416,10 @@ function NavItem({ item, badge, onHoverChange }: {
                             </div>
 
                             {item.viewAllLabel && (
-                                <div className="px-5 py-3 border-t border-zinc-100 dark:border-white/[0.06] bg-zinc-50/50 dark:bg-white/[0.02]">
+                                <div className="px-5 py-3 border-t border-[var(--line)] bg-[var(--fill-1)]">
                                     <Link
                                         href={item.href}
-                                        className="flex items-center gap-1.5 text-[11px] font-bold text-tp-accent hover:text-tp-accent-hover uppercase tracking-wider transition-colors group"
+                                        className="flex items-center gap-1.5 text-[11px] font-bold text-accent hover:text-accent-hover uppercase tracking-wider transition-colors group"
                                     >
                                         VIEW ALL {item.name}
                                         <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform duration-150" />
@@ -435,14 +435,14 @@ function NavItem({ item, badge, onHoverChange }: {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -4 }}
                             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                            className="absolute top-full left-0 z-[100] w-[220px] bg-white dark:bg-[#0D1117] border border-t-0 border-zinc-200 dark:border-white/[0.07] shadow-xl dark:shadow-[0_20px_48px_rgba(0,0,0,0.6)] rounded-b-xl overflow-hidden"
+                            className="absolute top-full left-0 z-[100] w-[220px] bg-[var(--surface-2)] border border-t-0 border-[var(--line)] shadow-[0_20px_48px_rgba(0,0,0,0.6)] rounded-b-xl overflow-hidden"
                         >
                             <div className="p-2 flex flex-col">
                                 {item.children.map((child, idx) => (
                                     <Link
                                         key={idx}
                                         href={child.href}
-                                        className="block px-4 py-3 text-[13px] font-medium text-zinc-700 dark:text-[#A1A1AA] hover:text-tp-accent dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg transition-all"
+                                        className="block px-4 py-3 text-[13px] font-medium text-[var(--ink-mid)] hover:text-accent hover:bg-[var(--fill-2)] rounded-lg transition-all"
                                     >
                                         {child.name}
                                     </Link>
@@ -571,8 +571,13 @@ export default function Header() {
     return (
         <div className="w-full font-sans fixed top-0 left-0 right-0 z-50 flex flex-col shadow-2xl">
             {/* MAIN HEADER — single app-style bar */}
-            <header className="w-full bg-white/95 dark:bg-gradient-to-b dark:from-[#0F141D]/98 dark:to-[#05070A]/98 backdrop-blur-md border-b-[3px] border-tp-accent relative shadow-sm dark:shadow-none transition-colors duration-300">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 h-[72px] flex items-center justify-between">
+            <header className="w-full bg-[var(--surface-0)]/95 backdrop-blur-md border-b border-[var(--line)] relative">
+                {/* The Crown (S2) — the header's single accent line */}
+                <span
+                    aria-hidden
+                    className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent"
+                />
+                <div className="container-page h-[72px] flex items-center justify-between">
                     {/* Logo (Left) */}
                     <BrandLogo />
 
@@ -600,7 +605,7 @@ export default function Header() {
 
                         {/* Cart — only when it has items */}
                         {itemCount > 0 && (
-                            <Link href="/cart" className="relative p-2 text-slate-400 hover:text-white transition-colors" aria-label="Shopping cart">
+                            <Link href="/cart" className="relative p-2 text-[var(--ink-low)] hover:text-white transition-colors" aria-label="Shopping cart">
                                 <ShoppingCart className="w-5 h-5" aria-hidden="true" />
                                 <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 px-1 bg-[var(--accent)] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                                     {itemCount}
@@ -610,7 +615,7 @@ export default function Header() {
 
                         {user ? (
                             <div className="hidden xl:flex items-center gap-3">
-                                <Link href="/messages" className="relative p-2 text-slate-400 hover:text-[var(--accent)] hover:bg-white/5 rounded-full transition-colors" title="Messages">
+                                <Link href="/messages" className="relative p-2 text-[var(--ink-low)] hover:text-[var(--accent)] hover:bg-[var(--fill-2)] rounded-full transition-colors" title="Messages">
                                     <Mail className="w-5 h-5" />
                                     {notifications.unread_messages > 0 && (
                                         <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
@@ -627,12 +632,12 @@ export default function Header() {
                                 <Link
                                     href="/profile/me"
                                     title={`${(user.xp || 0).toLocaleString()} XP`}
-                                    className="flex items-center gap-2 px-2.5 h-7 rounded-full bg-white/5 border border-white/10 hover:border-[var(--accent)]/40 transition-colors"
+                                    className="flex items-center gap-2 px-2.5 h-7 rounded-full bg-[var(--fill-2)] border border-[var(--line-strong)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
                                 >
-                                    <span className="text-[10px] font-black uppercase tracking-wider text-[var(--accent)]">
+                                    <span className="font-display text-[10px] font-bold uppercase tracking-wider tabular-nums text-[var(--accent)]">
                                         Lvl {Math.floor((user.xp || 0) / 1000) + 1}
                                     </span>
-                                    <span className="w-10 h-1 rounded-full bg-white/10 overflow-hidden">
+                                    <span className="w-10 h-1 rounded-full bg-[var(--track)] overflow-hidden">
                                         <span
                                             className="block h-full rounded-full bg-[var(--accent)]"
                                             style={{ width: `${Math.round((((user.xp || 0) % 1000) / 1000) * 100)}%` }}
@@ -647,16 +652,16 @@ export default function Header() {
                                             alt={user.username || 'Avatar'}
                                             width={34}
                                             height={34}
-                                            className="w-[34px] h-[34px] rounded-full object-cover border border-white/20 group-hover:border-[var(--accent)] transition-colors"
+                                            className="w-[34px] h-[34px] rounded-full object-cover border border-[var(--line-strong)] group-hover:border-[var(--accent)] transition-colors"
                                             unoptimized={user.avatar_url.includes('discord') || user.avatar_url.includes('gravatar')}
                                         />
                                     ) : (
-                                        <div className="w-[34px] h-[34px] bg-white/10 rounded-full flex items-center justify-center group-hover:bg-[var(--accent)] transition-colors text-white">
+                                        <div className="w-[34px] h-[34px] bg-[var(--fill-3)] rounded-full flex items-center justify-center group-hover:bg-[var(--accent)] transition-colors text-white">
                                             <User className="w-4 h-4" />
                                         </div>
                                     )}
                                 </Link>
-                                <button onClick={logout} className="p-2 text-slate-400 hover:text-red-400 transition-colors hover:bg-white/5 rounded-full" title="Sign Out">
+                                <button onClick={logout} className="p-2 text-[var(--ink-low)] hover:text-red-400 transition-colors hover:bg-[var(--fill-2)] rounded-full" title="Sign Out">
                                     <LogOut className="w-4 h-4" />
                                 </button>
                             </div>
@@ -664,13 +669,13 @@ export default function Header() {
                             <div className="hidden xl:flex items-center gap-3">
                                 <Link
                                     href="/login"
-                                    className="text-slate-300 hover:text-white font-semibold transition-colors text-[13px] px-2"
+                                    className="text-[var(--ink-mid)] hover:text-white font-semibold transition-colors text-[13px] px-2"
                                 >
                                     Sign In
                                 </Link>
                                 <Link
                                     href="/register"
-                                    className="inline-flex items-center justify-center bg-tp-accent hover:bg-tp-accent-hover text-white px-5 h-10 rounded-lg font-bold transition-colors text-[13px] leading-none"
+                                    className="inline-flex items-center justify-center bg-accent hover:bg-accent-hover text-white px-5 h-10 rounded-lg font-bold transition-colors text-[13px] leading-none"
                                 >
                                     Join TechPlay
                                 </Link>
@@ -680,13 +685,13 @@ export default function Header() {
                         {/* Mobile: search + hamburger */}
                         <button
                             onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-                            className="xl:hidden p-2 text-gray-300 hover:text-white transition-colors"
+                            className="xl:hidden p-2 text-[var(--ink-mid)] hover:text-white transition-colors"
                             aria-label="Search"
                         >
                             <Search className="w-6 h-6" />
                         </button>
                         <button
-                            className="xl:hidden p-2 text-gray-300 hover:text-white active:bg-white/10 rounded-lg transition-colors"
+                            className="xl:hidden p-2 text-[var(--ink-mid)] hover:text-white active:bg-[var(--fill-3)] rounded-lg transition-colors"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Toggle menu"
                         >
@@ -705,7 +710,7 @@ export default function Header() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
                         transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                        className="xl:hidden bg-[#0A0D13]/98 backdrop-blur-md border-b border-white/[0.06] w-full"
+                        className="xl:hidden bg-[var(--surface-0)]/95 backdrop-blur-md border-b border-[var(--line)] w-full"
                         style={{ boxShadow: "0 12px 40px rgba(0,0,0,0.5)" }}
                     >
                         <div className="max-w-[1320px] mx-auto px-4 py-3">
@@ -742,23 +747,23 @@ export default function Header() {
                             animate={{ x: 0 }}
                             exit={{ x: "100%" }}
                             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                            className="xl:hidden fixed inset-0 bg-[#080B11] z-[60] flex flex-col"
+                            className="xl:hidden fixed inset-0 bg-[var(--surface-1)] z-[60] flex flex-col"
                             style={{ boxShadow: "-20px 0 60px rgba(0,0,0,0.7)" }}
                         >
                             {/* Drawer header */}
-                            <div className="flex items-center justify-between px-5 h-[60px] border-b border-white/[0.06] shrink-0">
+                            <div className="flex items-center justify-between px-5 h-[60px] border-b border-[var(--line)] shrink-0">
                                 <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5">
-                                    <div className="w-8 h-8 bg-tp-accent rounded-lg flex items-center justify-center shadow-lg shadow-tp-accent/30">
+                                    <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center shadow-lg shadow-accent/30">
                                         <Gamepad2 className="w-4 h-4 text-white" strokeWidth={2} />
                                     </div>
                                     <div className="flex flex-col leading-none">
                                         <span className="font-display font-bold text-[15px] text-white tracking-tight">TECHPLAY</span>
-                                        <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400 mt-[2px]">GAMING PORTAL</span>
+                                        <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--ink-low)] mt-[2px]">GAMING PORTAL</span>
                                     </div>
                                 </Link>
                                 <button
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="w-8 h-8 rounded-lg bg-white/5 border border-white/[0.08] flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+                                    className="w-8 h-8 rounded-lg bg-[var(--fill-2)] border border-[var(--line-strong)] flex items-center justify-center text-[var(--ink-low)] hover:text-white transition-colors"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
@@ -766,30 +771,30 @@ export default function Header() {
 
                             {/* User card */}
                             {user && (
-                                <div className="px-4 py-3 border-b border-white/[0.06] shrink-0">
+                                <div className="px-4 py-3 border-b border-[var(--line)] shrink-0">
                                     <Link href={`/profile/${user.username || 'me'}`} onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 mb-3">
                                         {user.avatar_url ? (
                                             <Image src={user.avatar_url} alt={user.username || ''} width={40} height={40}
-                                                className="w-10 h-10 rounded-full object-cover border-2 border-tp-accent/40"
+                                                className="w-10 h-10 rounded-full object-cover border-2 border-accent/40"
                                                 unoptimized={user.avatar_url.includes('discord') || user.avatar_url.includes('gravatar')} />
                                         ) : (
-                                            <div className="w-10 h-10 rounded-full bg-tp-accent/15 border-2 border-tp-accent/30 flex items-center justify-center">
-                                                <User className="w-5 h-5 text-tp-accent" />
+                                            <div className="w-10 h-10 rounded-full bg-accent/15 border-2 border-accent/30 flex items-center justify-center">
+                                                <User className="w-5 h-5 text-accent" />
                                             </div>
                                         )}
                                         <div>
                                             <div className="text-white font-bold text-[14px] leading-tight">{decodeHtml(user.display_name || user.username)}</div>
-                                            <div className="text-[11px] text-slate-400 mt-0.5">Level {Math.floor((user.xp || 0) / 1000) + 1} · {user.xp || 0} XP</div>
+                                            <div className="text-[11px] text-[var(--ink-low)] mt-0.5">Level {Math.floor((user.xp || 0) / 1000) + 1} · {user.xp || 0} XP</div>
                                         </div>
                                     </Link>
                                     <div className="flex gap-2">
                                         <Link href="/messages" onClick={() => setIsMobileMenuOpen(false)}
-                                            className="relative flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white/5 border border-white/[0.08] text-slate-400 text-[11px] font-bold uppercase tracking-wide hover:text-white hover:bg-white/10 transition-colors">
+                                            className="relative flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-low)] text-[11px] font-bold uppercase tracking-wide hover:text-white hover:bg-[var(--fill-3)] transition-colors">
                                             <Mail className="w-3.5 h-3.5" /> Messages
                                             {notifications.unread_messages > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center">{notifications.unread_messages}</span>}
                                         </Link>
                                         <Link href="/friends" onClick={() => setIsMobileMenuOpen(false)}
-                                            className="relative flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white/5 border border-white/[0.08] text-slate-400 text-[11px] font-bold uppercase tracking-wide hover:text-white hover:bg-white/10 transition-colors">
+                                            className="relative flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-low)] text-[11px] font-bold uppercase tracking-wide hover:text-white hover:bg-[var(--fill-3)] transition-colors">
                                             <Users className="w-3.5 h-3.5" /> Friends
                                             {notifications.pending_requests > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center">{notifications.pending_requests}</span>}
                                         </Link>
@@ -808,15 +813,15 @@ export default function Header() {
                                                 <>
                                                     <button
                                                         onClick={() => setExpandedMobileItem(expandedMobileItem === item.name ? null : item.name)}
-                                                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors group"
+                                                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[var(--fill-1)] transition-colors group"
                                                     >
                                                         {Icon && (
-                                                            <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.07] flex items-center justify-center shrink-0 group-hover:bg-tp-accent/10 group-hover:border-tp-accent/20 transition-all">
-                                                                <Icon className="w-[15px] h-[15px] text-slate-400 group-hover:text-tp-accent transition-colors" />
+                                                            <div className="w-8 h-8 rounded-lg bg-[var(--fill-2)] border border-[var(--line)] flex items-center justify-center shrink-0 group-hover:bg-accent/10 group-hover:border-accent/20 transition-all">
+                                                                <Icon className="w-[15px] h-[15px] text-[var(--ink-low)] group-hover:text-accent transition-colors" />
                                                             </div>
                                                         )}
-                                                        <span className="flex-1 text-[13px] font-bold uppercase tracking-[0.07em] text-slate-200 group-hover:text-white transition-colors text-left">{item.name}</span>
-                                                        <ChevronDown className={cn("w-4 h-4 text-slate-500 transition-transform duration-200 shrink-0", expandedMobileItem === item.name ? "rotate-180 text-tp-accent" : "")} />
+                                                        <span className="flex-1 text-[13px] font-bold uppercase tracking-[0.07em] text-[var(--ink-hi)] group-hover:text-white transition-colors text-left">{item.name}</span>
+                                                        <ChevronDown className={cn("w-4 h-4 text-[var(--ink-faint)] transition-transform duration-200 shrink-0", expandedMobileItem === item.name ? "rotate-180 text-accent" : "")} />
                                                     </button>
                                                     <AnimatePresence>
                                                         {expandedMobileItem === item.name && (
@@ -827,18 +832,18 @@ export default function Header() {
                                                                 transition={{ duration: 0.18 }}
                                                                 className="overflow-hidden"
                                                             >
-                                                                <div className="ml-[52px] mr-4 mb-1 pl-3 border-l border-tp-accent/25 flex flex-col gap-0.5">
+                                                                <div className="ml-[52px] mr-4 mb-1 pl-3 border-l border-accent/25 flex flex-col gap-0.5">
                                                                     {item.columns ? (
                                                                         /* Multi-column items (DISCOVER) flatten into titled groups */
                                                                         item.columns.map((col) => (
                                                                             <div key={col.title} className="mb-1.5">
                                                                                 <Link href={col.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                                                    className="block py-2 text-tp-accent text-[11px] font-bold uppercase tracking-widest">
+                                                                                    className="block py-2 text-accent text-[11px] font-bold uppercase tracking-widest">
                                                                                     {col.title}
                                                                                 </Link>
                                                                                 {col.items.slice(0, 6).map((child, idx) => (
                                                                                     <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                                                        className="block py-1.5 text-[13px] text-slate-400 hover:text-white transition-colors">
+                                                                                        className="block py-1.5 text-[13px] text-[var(--ink-low)] hover:text-white transition-colors">
                                                                                         {child.name}
                                                                                     </Link>
                                                                                 ))}
@@ -846,12 +851,12 @@ export default function Header() {
                                                                         ))
                                                                     ) : (
                                                                         <>
-                                                                            <Link href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-tp-accent text-[11px] font-bold uppercase tracking-widest">
+                                                                            <Link href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-accent text-[11px] font-bold uppercase tracking-widest">
                                                                                 All {item.name}
                                                                             </Link>
                                                                             {item.children?.map((child, idx) => (
                                                                                 <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                                                    className="py-1.5 text-[13px] text-slate-400 hover:text-white transition-colors">
+                                                                                    className="py-1.5 text-[13px] text-[var(--ink-low)] hover:text-white transition-colors">
                                                                                     {child.name}
                                                                                 </Link>
                                                                             ))}
@@ -864,13 +869,13 @@ export default function Header() {
                                                 </>
                                             ) : (
                                                 <Link href={item.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                    className="flex items-center gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors group">
+                                                    className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--fill-1)] transition-colors group">
                                                     {Icon && (
-                                                        <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.07] flex items-center justify-center shrink-0 group-hover:bg-tp-accent/10 group-hover:border-tp-accent/20 transition-all">
-                                                            <Icon className="w-[15px] h-[15px] text-slate-400 group-hover:text-tp-accent transition-colors" />
+                                                        <div className="w-8 h-8 rounded-lg bg-[var(--fill-2)] border border-[var(--line)] flex items-center justify-center shrink-0 group-hover:bg-accent/10 group-hover:border-accent/20 transition-all">
+                                                            <Icon className="w-[15px] h-[15px] text-[var(--ink-low)] group-hover:text-accent transition-colors" />
                                                         </div>
                                                     )}
-                                                    <span className="text-[13px] font-bold uppercase tracking-[0.07em] text-slate-200 group-hover:text-white transition-colors">{item.name}</span>
+                                                    <span className="text-[13px] font-bold uppercase tracking-[0.07em] text-[var(--ink-hi)] group-hover:text-white transition-colors">{item.name}</span>
                                                 </Link>
                                             )}
                                         </div>
@@ -878,11 +883,11 @@ export default function Header() {
                                 })}
 
                                 {/* Utility links */}
-                                <div className="mx-4 mt-2 pt-3 border-t border-white/[0.06] grid grid-cols-2 gap-1">
+                                <div className="mx-4 mt-2 pt-3 border-t border-[var(--line)] grid grid-cols-2 gap-1">
                                     {UTILITY_LINKS.map((link) => (
                                         <Link key={link.name} href={link.href} onClick={() => setIsMobileMenuOpen(false)}
-                                            className={cn("py-2 px-2 text-[11px] font-semibold tracking-wider rounded-lg hover:bg-white/5 transition-colors",
-                                                link.highlight ? "text-tp-accent" : "text-slate-500 hover:text-slate-300")}>
+                                            className={cn("py-2 px-2 text-[11px] font-semibold tracking-wider rounded-lg hover:bg-[var(--fill-2)] transition-colors",
+                                                link.highlight ? "text-accent" : "text-[var(--ink-faint)] hover:text-[var(--ink-mid)]")}>
                                             {link.name}
                                         </Link>
                                     ))}
@@ -890,12 +895,12 @@ export default function Header() {
                             </nav>
 
                             {/* Bottom */}
-                            <div className="shrink-0 border-t border-white/[0.06] px-4 py-4 flex flex-col gap-3">
+                            <div className="shrink-0 border-t border-[var(--line)] px-4 py-4 flex flex-col gap-3">
                                 {socialLinks.length > 0 && (
                                     <div className="flex items-center gap-2">
                                         {socialLinks.map((social, idx) => (
                                             <Link key={idx} href={social.href} target="_blank" rel="noopener noreferrer"
-                                                className="w-8 h-8 rounded-lg bg-white/5 border border-white/[0.08] flex items-center justify-center text-slate-400 hover:text-white hover:bg-tp-accent/10 hover:border-tp-accent/30 transition-all">
+                                                className="w-8 h-8 rounded-lg bg-[var(--fill-2)] border border-[var(--line-strong)] flex items-center justify-center text-[var(--ink-low)] hover:text-white hover:bg-accent/10 hover:border-accent/30 transition-all">
                                                 <social.icon className="w-[14px] h-[14px]" />
                                             </Link>
                                         ))}
@@ -908,7 +913,7 @@ export default function Header() {
                                     </button>
                                 ) : (
                                     <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}
-                                        className="w-full text-center py-3 font-bold text-white bg-tp-accent hover:bg-tp-accent-hover rounded-xl transition-colors text-[12px] uppercase tracking-widest shadow-lg shadow-tp-accent/20">
+                                        className="w-full text-center py-3 font-bold text-white bg-accent hover:bg-accent-hover rounded-xl transition-colors text-[12px] uppercase tracking-widest shadow-lg shadow-accent/20">
                                         Sign In / Register
                                     </Link>
                                 )}

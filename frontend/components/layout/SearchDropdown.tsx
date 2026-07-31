@@ -159,7 +159,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                 <Search className={cn(
                     "absolute top-1/2 -translate-y-1/2 transition-colors pointer-events-none",
                     isMobile ? "w-5 h-5 left-4" : "w-4 h-4 left-3",
-                    isLoading ? "text-tp-accent" : "text-[#4B5563] group-focus-within:text-tp-accent"
+                    isLoading ? "text-[var(--accent)]" : "text-[var(--ink-faint)] group-focus-within:text-[var(--accent)]"
                 )} />
 
                 <input
@@ -171,7 +171,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                     onFocus={() => query.length >= 2 && results.length > 0 && setIsOpen(true)}
                     placeholder={placeholder}
                     className={cn(
-                        "w-full bg-[#0D1117] border border-white/[0.1] text-white focus:outline-none focus:border-tp-accent focus:ring-1 focus:ring-tp-accent/50 transition-all placeholder:text-[#4B5563]",
+                        "w-full bg-[var(--surface-2)] border border-[var(--line-strong)] text-white focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_60%,transparent)] focus:ring-1 focus:ring-[var(--accent-soft)] transition-all placeholder:text-[var(--ink-faint)]",
                         isMobile
                             ? "rounded-xl py-3 pl-12 pr-10 text-base"
                             : "rounded-lg py-2 pl-9 pr-8 text-sm"
@@ -181,8 +181,8 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                 {/* Hotkey hint (hidden while typing so the clear button can take the slot) */}
                 {hotkey && !isMobile && query.length === 0 && !isLoading && (
                     <span className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-0.5 pointer-events-none">
-                        <kbd className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] font-semibold text-white/40">Ctrl</kbd>
-                        <kbd className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-[10px] font-semibold text-white/40">K</kbd>
+                        <kbd className="px-1.5 py-0.5 rounded border border-[var(--line-strong)] bg-[var(--fill-2)] text-[10px] font-semibold text-white/40">Ctrl</kbd>
+                        <kbd className="px-1.5 py-0.5 rounded border border-[var(--line-strong)] bg-[var(--fill-2)] text-[10px] font-semibold text-white/40">K</kbd>
                     </span>
                 )}
 
@@ -213,12 +213,12 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                         exit={{ opacity: 0, y: -6, scale: 0.98 }}
                         transition={{ duration: 0.15, ease: "easeOut" }}
                         className={cn(
-                            "absolute z-50 bg-[#0D1117] backdrop-blur-xl border border-white/[0.07] rounded-xl shadow-2xl overflow-hidden",
+                            "absolute z-50 bg-[var(--surface-2)] backdrop-blur-xl border border-white/[0.07] rounded-xl shadow-2xl overflow-hidden",
                             isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[min(400px,calc(100vw-2rem))]"
                         )}
                         style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(252,65,0,0.1)" }}
                     >
-                        <div className="h-[2px] bg-gradient-to-r from-tp-accent/80 to-tp-accent/20 w-full" />
+                        <div className="h-[2px] bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent w-full" />
                         <div className="max-h-[400px] overflow-y-auto">
                             {results.map((result, index) => (
                                 <button
@@ -228,7 +228,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                                         "w-full flex items-start gap-3 p-3 text-left transition-colors",
                                         selectedIndex === index
                                             ? "bg-[var(--accent)]/20"
-                                            : "hover:bg-white/5"
+                                            : "hover:bg-[var(--fill-2)]"
                                     )}
                                 >
                                     {/* Thumbnail */}
@@ -239,7 +239,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                                             className="w-16 h-12 object-cover rounded-lg flex-shrink-0"
                                         />
                                     ) : (
-                                        <div className="w-16 h-12 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <div className="w-16 h-12 bg-[var(--fill-3)] rounded-lg flex items-center justify-center flex-shrink-0">
                                             {result.type === 'game'
                                                 ? <Gamepad2 className="w-5 h-5 text-gray-400" />
                                                 : result.type === 'user'
@@ -262,10 +262,10 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                         </div>
 
                         {/* Footer */}
-                        <div className="px-4 py-2 border-t border-white/10 bg-white/5">
+                        <div className="px-4 py-2 border-t border-[var(--line-strong)] bg-[var(--fill-2)]">
                             <p className="text-xs text-gray-400 text-center">
-                                Press <kbd className="px-1 py-0.5 bg-white/10 rounded text-gray-400">↵</kbd> to select,
-                                <kbd className="px-1 py-0.5 bg-white/10 rounded text-gray-400 ml-1">↑↓</kbd> to navigate
+                                Press <kbd className="px-1 py-0.5 bg-[var(--fill-3)] rounded text-gray-400">↵</kbd> to select,
+                                <kbd className="px-1 py-0.5 bg-[var(--fill-3)] rounded text-gray-400 ml-1">↑↓</kbd> to navigate
                             </p>
                         </div>
                     </motion.div>
@@ -279,7 +279,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                         exit={{ opacity: 0, y: -6, scale: 0.98 }}
                         transition={{ duration: 0.15, ease: "easeOut" }}
                         className={cn(
-                            "absolute z-50 bg-[#0D1117] backdrop-blur-xl border border-white/[0.07] rounded-xl shadow-2xl p-6 text-center",
+                            "absolute z-50 bg-[var(--surface-2)] backdrop-blur-xl border border-white/[0.07] rounded-xl shadow-2xl p-6 text-center",
                             isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[min(300px,calc(100vw-2rem))]"
                         )}
                         style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}

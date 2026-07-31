@@ -77,30 +77,29 @@ export default function Footer() {
         .map(key => ({ ...SOCIAL_ICON_MAP[key], href: settings[key] || '#' }));
 
     return (
-        <footer className="relative bg-[#070A10] border-t border-white/[0.06] overflow-hidden">
+        <footer className="relative bg-[var(--surface-0)] border-t border-[var(--line)] overflow-hidden">
             {/* Ambient glow */}
-            <div className="absolute -top-[200px] left-[10%] w-[500px] h-[400px] bg-tp-accent/5 blur-[120px] rounded-full pointer-events-none" />
-            <div className="absolute -top-[100px] right-[15%] w-[300px] h-[300px] bg-blue-500/3 blur-[100px] rounded-full pointer-events-none" />
+            <div className="absolute -top-[200px] left-[10%] w-[500px] h-[400px] bg-[var(--accent)]/5 blur-[120px] rounded-full pointer-events-none" />
 
             {/* Top accent line */}
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-tp-accent/60 to-transparent" />
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent" />
 
-            <div className="relative max-w-[1320px] mx-auto px-4 xl:px-0 pt-16 pb-12">
+            <div className="relative container-page pt-16 pb-12">
                 <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-16">
 
                     {/* Brand column */}
                     <div className="flex flex-col">
                         <Link href="/" className="flex items-center gap-3 group mb-5">
-                            <div className="w-10 h-10 bg-tp-accent rounded-lg flex items-center justify-center shadow-lg shadow-tp-accent/30 group-hover:bg-tp-accent-hover transition-colors">
+                            <div className="w-10 h-10 bg-[var(--accent)] rounded-lg flex items-center justify-center shadow-[var(--glow-accent)] group-hover:bg-[var(--accent-hover)] transition-colors">
                                 <Gamepad2 className="w-5 h-5 text-white" strokeWidth={2} />
                             </div>
                             <div className="flex flex-col leading-none">
                                 <span className="font-display font-bold text-[18px] text-white tracking-tight leading-none">TECHPLAY</span>
-                                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mt-[3px]">GAMING PORTAL</span>
+                                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--ink-low)] mt-[3px]">GAMING PORTAL</span>
                             </div>
                         </Link>
 
-                        <p className="text-[13px] text-[#6B7280] leading-relaxed mb-8 max-w-[260px]">
+                        <p className="text-[13px] text-[var(--ink-low)] leading-relaxed mb-8 max-w-[260px]">
                             Your home for gaming news, honest reviews, release dates, and a community that actually cares about games.
                         </p>
 
@@ -114,7 +113,7 @@ export default function Footer() {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         aria-label={s.label}
-                                        className="w-9 h-9 rounded-lg bg-white/5 border border-white/[0.08] flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-tp-accent/10 hover:border-tp-accent/30 transition-all duration-200"
+                                        className="w-9 h-9 rounded-lg bg-[var(--fill-2)] border border-[var(--line-strong)] flex items-center justify-center text-[var(--ink-low)] hover:text-white hover:bg-[var(--accent-soft)] hover:border-[color-mix(in_srgb,var(--accent)_30%,transparent)] transition-all duration-200"
                                     >
                                         <s.Icon className="w-[16px] h-[16px]" />
                                     </Link>
@@ -128,8 +127,8 @@ export default function Footer() {
                         {NAV.map((col) => (
                             <div key={col.heading}>
                                 <div className="flex items-center gap-2 mb-5">
-                                    <span className="w-[3px] h-3 rounded-full bg-tp-accent" />
-                                    <h4 className="text-[11px] font-black uppercase tracking-[0.14em] text-white">
+                                    <span className="w-1 h-4 rounded-full bg-[var(--accent)]" />
+                                    <h4 className="font-display text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
                                         {col.heading}
                                     </h4>
                                 </div>
@@ -138,7 +137,7 @@ export default function Footer() {
                                         <li key={item.name}>
                                             <Link
                                                 href={item.href}
-                                                className="text-[13px] text-[#6B7280] hover:text-white transition-colors duration-150 hover:translate-x-0.5 inline-block"
+                                                className="text-[13px] text-[var(--ink-low)] hover:text-white transition-colors duration-150 hover:translate-x-0.5 inline-block"
                                             >
                                                 {item.name}
                                             </Link>
@@ -152,13 +151,13 @@ export default function Footer() {
             </div>
 
             {/* Bottom bar */}
-            <div className="relative border-t border-white/[0.06]">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-                    <p className="text-[12px] text-[#4B5563]">
-                        © 2026 TechPlay Gaming Portal. All rights reserved.
+            <div className="relative border-t border-[var(--line)]">
+                <div className="container-page py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+                    <p className="text-[12px] text-[var(--ink-faint)]">
+                        © {new Date().getFullYear()} TechPlay Gaming Portal. All rights reserved.
                     </p>
-                    <p className="text-[12px] text-[#4B5563]">
-                        Made by <Link href="https://luminor.agency" target="_blank" rel="noopener noreferrer" className="text-[#6B7280] hover:text-white transition-colors font-medium">Luminor Solutions</Link>
+                    <p className="text-[12px] text-[var(--ink-faint)]">
+                        Made by <Link href="https://luminor.agency" target="_blank" rel="noopener noreferrer" className="text-[var(--ink-low)] hover:text-white transition-colors font-medium">Luminor Solutions</Link>
                     </p>
                 </div>
             </div>

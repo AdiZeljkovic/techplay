@@ -81,7 +81,7 @@ export default function NotificationPanel({ unreadCount, onCountRefresh }: Props
             {/* Bell button */}
             <button
                 onClick={() => setOpen((v) => !v)}
-                className="p-2 text-gray-400 hover:text-[var(--accent)] hover:bg-white/5 rounded-full transition-colors relative"
+                className="p-2 text-gray-400 hover:text-[var(--accent)] hover:bg-[var(--fill-2)] rounded-full transition-colors relative"
                 title="Notifications"
             >
                 <Bell className="w-5 h-5" />
@@ -94,7 +94,7 @@ export default function NotificationPanel({ unreadCount, onCountRefresh }: Props
 
             {/* Dropdown panel */}
             {open && (
-                <div className="absolute right-0 top-10 z-50 w-80 rounded-2xl bg-[#0d1117] border border-white/10 shadow-2xl overflow-hidden">
+                <div className="absolute right-0 top-10 z-50 w-80 rounded-2xl bg-[var(--surface-2)] border border-[var(--line-strong)] shadow-2xl overflow-hidden">
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.07]">
                         <span className="text-[13px] font-bold text-white">Notifications</span>
