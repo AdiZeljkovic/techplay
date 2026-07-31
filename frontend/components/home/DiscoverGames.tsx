@@ -23,6 +23,8 @@ interface DiscoverGame {
     slug: string;
     name: string;
     background_image: string | null;
+    released?: string | null;
+    added?: number;
     rating?: number;
     metacritic?: number | null;
     genre_names?: string[];
@@ -43,6 +45,16 @@ const isoDaysAgo = (days: number) => {
     return d.toISOString().slice(0, 10);
 };
 
+/** RAWG's `added` (how many users track it) separates real launches from shovelware. */
+const byPopularity = (a: DiscoverGame, b: DiscoverGame) => (b.added ?? 0) - (a.added ?? 0);
+
+async function fetchReleasedSince(days: number): Promise<DiscoverGame[]> {
+    const r = await axios.get("/games/calendar", {
+        params: { start_date: isoDaysAgo(days), end_date: isoDaysAgo(0) },
+    });
+    return (r.data?.results ?? []) as DiscoverGame[];
+}
+
 async function fetchTab(tab: Tab): Promise<DiscoverGame[]> {
     if (tab === "trending") {
         // -views surfaces zero-view catalog filler (views are mostly null, ties
@@ -51,11 +63,24 @@ async function fetchTab(tab: Tab): Promise<DiscoverGame[]> {
         return (r.data?.results ?? []).slice(0, 5);
     }
     if (tab === "new") {
-        const r = await axios.get("/games/calendar", { params: { start_date: isoDaysAgo(30), end_date: isoDaysAgo(0) } });
-        return (r.data?.results ?? []).slice().reverse().slice(0, 5);
+        // Last 10 days of actual launches; a quiet fortnight would leave the rail
+        // half-empty, so widen to 21 days when the short window is thin.
+        let games = await fetchReleasedSince(10);
+        if (games.length < 5) games = await fetchReleasedSince(21);
+        return games.sort(byPopularity).slice(0, 5);
     }
     const r = await axios.get("/games/calendar"); // upcoming 90 days
-    return (r.data?.results ?? []).slice(0, 5);
+    return ((r.data?.results ?? []) as DiscoverGame[]).sort(byPopularity).slice(0, 5);
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function releaseLabel(released?: string | null): string | null {
+    if (!released) return null;
+    const d = new Date(released);
+    if (Number.isNaN(d.getTime())) return null;
+    const sameYear = d.getFullYear() === new Date().getFullYear();
+    return `${MONTHS[d.getMonth()]} ${d.getDate()}${sameYear ? "" : `, ${d.getFullYear()}`}`;
 }
 
 /** Normalizes /games (TEXT[] columns) and /games/calendar (RAWG objects) shapes. */
@@ -63,7 +88,9 @@ function meta(g: DiscoverGame) {
     const genres = g.genre_names?.length ? g.genre_names : (g.genres ?? []).map(rawName);
     const platforms = g.platform_names?.length ? g.platform_names : (g.platforms ?? []).map(rawName);
     const score = g.metacritic ? (g.metacritic / 10).toFixed(1) : g.rating && g.rating > 0 ? (g.rating <= 5 ? g.rating * 2 : g.rating).toFixed(1) : null;
-    return { genres: genres.filter(Boolean).slice(0, 2), platforms: platforms.filter(Boolean).slice(0, 2), score };
+    // dedupe after shortening — "Nintendo Switch" + "Nintendo Switch 2" both read SWITCH
+    const shortPlatforms = [...new Set(platforms.filter(Boolean).map(shortPlatform))].slice(0, 2);
+    return { genres: genres.filter(Boolean).slice(0, 2), platforms: shortPlatforms, score };
 }
 
 function shortPlatform(name: string): string {
@@ -141,10 +168,22 @@ export default function DiscoverGames() {
                                     <h3 className="text-[13px] font-bold text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                                         {g.name}
                                     </h3>
-                                    <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/50">
-                                        {meta(g).platforms.map(shortPlatform).join(" · ")}
-                                    </p>
-                                    <p className="text-[10px] text-white/35">{meta(g).genres.join(", ")}</p>
+                                    {(() => {
+                                        const m = meta(g);
+                                        // release date is the useful sub-line on the date-driven tabs;
+                                        // Trending falls back to genres (and renders nothing if absent)
+                                        const secondary = tab === "trending" ? m.genres.join(", ") : releaseLabel(g.released);
+                                        return (
+                                            <>
+                                                {m.platforms.length > 0 && (
+                                                    <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/50">
+                                                        {m.platforms.join(" · ")}
+                                                    </p>
+                                                )}
+                                                {secondary && <p className="text-[10px] text-white/35">{secondary}</p>}
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         </Link>
