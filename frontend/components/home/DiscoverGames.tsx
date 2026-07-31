@@ -7,6 +7,7 @@ import { Gamepad2, ChevronRight } from "lucide-react";
 import axios from "@/lib/axios";
 import { cn } from "@/lib/utils";
 import { getScoreMeta } from "@/lib/score";
+import PlatformIcon from "@/components/games/PlatformIcon";
 
 type Tab = "trending" | "new" | "coming";
 
@@ -98,7 +99,7 @@ function shortPlatform(name: string): string {
     const s = name.toLowerCase();
     if (s.includes("playstation 5")) return "PS5";
     if (s.includes("playstation")) return "PS";
-    if (s.includes("xbox series")) return "XSX";
+    if (s.includes("xbox series")) return "SERIES";
     if (s.includes("xbox")) return "XBOX";
     if (s.includes("nintendo") || s.includes("switch")) return "SWITCH";
     if (s.includes("pc") || s.includes("windows")) return "PC";
@@ -176,28 +177,41 @@ export default function DiscoverGames() {
                             <span aria-hidden className="h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]" />
 
                             {/* Info deck on clean surface */}
-                            <div className="flex-1 flex items-start gap-2.5 p-3">
-                                {/* rank plate */}
-                                <span className="shrink-0 w-8 h-8 rounded-[var(--radius-inner)] bg-[var(--fill-2)] border border-[var(--line)] flex items-center justify-center font-display text-[14px] font-bold tabular-nums text-[var(--ink-low)] transition-all duration-300 group-hover:bg-[var(--accent)] group-hover:border-transparent group-hover:text-white group-hover:shadow-[var(--glow-accent)]">
-                                    {i + 1}
-                                </span>
-
+                            <div className="flex-1 flex items-start gap-3 p-3">
                                 <span className="flex-1 min-w-0">
                                     <h3 className="font-display text-[13px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors duration-300">
                                         {g.name}
                                     </h3>
-                                    <p className="mt-1 text-[10px] uppercase tracking-wider text-[var(--ink-faint)] truncate">
-                                        {[m.platforms.join(" · "), secondary].filter(Boolean).join("  ·  ")}
-                                    </p>
+                                    <span className="mt-2 flex items-center gap-2 min-h-[16px]">
+                                        {m.platforms.map((p) => (
+                                            <span key={p} title={p} className="text-[var(--accent)]">
+                                                <PlatformIcon label={p} className="w-4 h-4" />
+                                            </span>
+                                        ))}
+                                        {secondary && (
+                                            <span className="text-[9px] uppercase tracking-wider text-[var(--ink-faint)] truncate">
+                                                {secondary}
+                                            </span>
+                                        )}
+                                    </span>
                                 </span>
 
-                                {/* verdict-colored score */}
+                                {/* verdict emblem — notched plate that glows in its own color */}
                                 {scoreValue !== null && verdict && (
-                                    <span className="shrink-0 text-right leading-none pt-0.5">
-                                        <span className="block font-display text-[16px] font-bold tabular-nums" style={{ color: verdict.color }}>
+                                    <span className="shrink-0 flex flex-col items-center gap-1.5 pt-0.5">
+                                        <span
+                                            className="flex items-center justify-center w-[44px] h-[32px] font-display text-[15px] font-bold tabular-nums transition-shadow duration-300"
+                                            style={{
+                                                color: verdict.color,
+                                                backgroundColor: `color-mix(in srgb, ${verdict.color} 12%, transparent)`,
+                                                border: `1px solid color-mix(in srgb, ${verdict.color} 45%, transparent)`,
+                                                boxShadow: `0 0 14px color-mix(in srgb, ${verdict.color} 25%, transparent)`,
+                                                clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)",
+                                            }}
+                                        >
                                             {scoreValue.toFixed(1)}
                                         </span>
-                                        <span className="block mt-1 text-[7px] font-black uppercase tracking-[0.12em]" style={{ color: verdict.color, opacity: 0.75 }}>
+                                        <span className="text-[7px] font-black uppercase tracking-[0.14em]" style={{ color: verdict.color, opacity: 0.85 }}>
                                             {verdict.label}
                                         </span>
                                     </span>
