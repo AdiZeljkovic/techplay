@@ -20,7 +20,6 @@ import { getServerApiUrl } from "@/lib/api";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
 import { CartProvider } from "@/context/CartContext";
-import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
 import { MobileMenuProvider } from "@/context/MobileMenuContext";
@@ -181,9 +180,6 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net" />
 
-        {/* Anti-flash: apply saved theme class before first paint */}
-        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('techplay-theme');if(t==='light'){document.documentElement.classList.remove('dark');}else{document.documentElement.classList.add('dark');}}catch(e){}})();` }} />
-
         {/* Hide cookie banner before React hydration for returning users — runs sync, no flash */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('cookie_preferences')){var s=document.createElement('style');s.textContent='#cookie-banner{display:none!important}';document.head.appendChild(s);}}catch(e){}})();` }} />
 
@@ -213,8 +209,7 @@ export default async function RootLayout({
             crossOrigin="anonymous"
         />
 
-        <ThemeProvider>
-          <SiteSettingsProvider>
+        <SiteSettingsProvider>
             <MobileMenuProvider>
               <CartProvider>
                 <AuthProvider>
@@ -228,8 +223,7 @@ export default async function RootLayout({
                 </AuthProvider>
               </CartProvider>
             </MobileMenuProvider>
-          </SiteSettingsProvider>
-        </ThemeProvider>
+        </SiteSettingsProvider>
       </body>
     </html>
   );

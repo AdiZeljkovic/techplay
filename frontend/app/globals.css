@@ -13,40 +13,94 @@
 
 @theme {
 
-  /* Template-compatible accent tokens */
-  --color-tp-accent: #FC4100;
-  --color-tp-accent-hover: #d43600;
-  --color-tp-bg-main: #05070A;
+  /* ── Design System v2 ("Refined HUD") ──────────────────────────
+     Surfaces: exactly four near-blacks. Everything darker/lighter
+     is a token violation — never hardcode a near-black hex again. */
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
 
-  /* Colors */
-  --color-border: var(--border);
-  --color-input: var(--bg-elevated);
+  /* Hairlines: two weights only */
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  /* Translucent fills: tint / rest / hover */
+  --color-fill-1: var(--fill-1);
+  --color-fill-2: var(--fill-2);
+  --color-fill-3: var(--fill-3);
+
+  /* Ink (text emphasis ladder): hi / mid / low / faint */
+  --color-ink: var(--ink-hi);
+  --color-ink-mid: var(--ink-mid);
+  --color-ink-low: var(--ink-low);
+  --color-ink-faint: var(--ink-faint);
+
+  /* Accent ramp — every step derives from --accent so per-user
+     profile theming recolors the entire system */
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-bright: var(--accent-bright);
+  --color-accent-soft: var(--accent-soft);
+
+  /* One track for every progress bar / ring */
+  --color-track: var(--track);
+
+  /* Review-score verdict palette (see lib/score.ts) */
+  --color-score-masterpiece: #f97316;
+  --color-score-great: #22c55e;
+  --color-score-good: #86efac;
+  --color-score-fair: #eab308;
+  --color-score-poor: #ef4444;
+
+  /* Radii: panel 16 / card+control 12 / inner thumb 8 */
+  --radius-panel: 1rem;
+  --radius-card: 0.75rem;
+  --radius-inner: 0.5rem;
+
+  /* The one easing curve (ease-hud) */
+  --ease-hud: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Keyframes formerly stranded in the inert tailwind.config.ts */
+  --animate-spin-slow: tp-spin 4s linear infinite;
+  --animate-fadeIn: tp-fade-in 0.5s var(--ease-hud);
+
+  /* ── Legacy aliases (do not use in new code) ─────────────────── */
+  --color-tp-accent: var(--accent);
+  --color-tp-accent-hover: var(--accent-hover);
+  --color-tp-bg-main: var(--surface-0);
+
+  /* shadcn-shaped aliases — Dialog is the last consumer; delete after migration */
+  --color-border: var(--line);
+  --color-input: var(--surface-2);
   --color-ring: var(--accent);
-  --color-background: var(--bg-primary);
-  --color-foreground: var(--text-primary);
-
+  --color-background: var(--surface-0);
+  --color-foreground: var(--ink-hi);
   --color-primary: var(--accent);
   --color-primary-foreground: #ffffff;
-
-  --color-secondary: var(--bg-elevated);
-  --color-secondary-foreground: var(--text-primary);
-
+  --color-secondary: var(--surface-2);
+  --color-secondary-foreground: var(--ink-hi);
   --color-destructive: var(--danger);
   --color-destructive-foreground: #ffffff;
-
-  --color-muted: var(--bg-secondary);
-  --color-muted-foreground: var(--text-muted);
-
-  --color-accent: var(--accent);
+  --color-muted: var(--surface-1);
+  --color-muted-foreground: var(--ink-low);
   --color-accent-foreground: #ffffff;
-  --color-accent-hover: var(--accent-hover);
-  --color-accent-light: var(--accent-light);
+  --color-accent-light: var(--accent-soft);
+  --color-card: var(--surface-1);
+  --color-card-foreground: var(--ink-hi);
 
-  --color-card: var(--bg-card);
-  --color-card-foreground: var(--text-primary);
-
+  /* still consumed by checkout + orphaned Hero — remove in phase 2 */
   --color-neon-cyan: #06b6d4;
   --color-neon-purple: #8b5cf6;
+}
+
+@keyframes tp-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes tp-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* ========================================
@@ -54,41 +108,62 @@
    ======================================== */
 
 :root {
-  /* DEFAULT THEME (Dark Gaming - TechPlay Identity)
-     NOTE: remapped to the new design palette — all legacy pages that
-     still use var(--bg-card) / var(--border) etc. inherit the redesign. */
+  /* ── Surfaces: the ONLY four near-blacks in the product ─────── */
+  --surface-0: #05070A;   /* page, scrims, header bar */
+  --surface-1: #0B0E14;   /* panels, cards */
+  --surface-2: #10141B;   /* elevated: dropdowns, modals, inputs, inner cards */
+  --surface-3: #161B22;   /* topmost: active/hover fills */
 
-  /* Backgrounds */
-  --bg-primary: #05070A;
-  --bg-secondary: #0B0E14;
-  --bg-card: #0B0E14;
-  --bg-elevated: #10141B;
+  /* ── Hairlines ── */
+  --line: rgba(255, 255, 255, 0.06);          /* default borders, dividers */
+  --line-strong: rgba(255, 255, 255, 0.12);   /* interactive, dashed, inputs */
 
-  /* Text */
-  --text-primary: #FFFFFF;
-  --text-secondary: #A1A1AA;
-  --text-muted: #71717A;
+  /* ── Fills ── */
+  --fill-1: rgba(255, 255, 255, 0.03);
+  --fill-2: rgba(255, 255, 255, 0.06);
+  --fill-3: rgba(255, 255, 255, 0.10);
 
-  /* Accent - User Specified Orange/Red */
+  /* ── Ink (text) ── */
+  --ink-hi: #FFFFFF;
+  --ink-mid: rgba(255, 255, 255, 0.70);
+  --ink-low: rgba(255, 255, 255, 0.45);
+  --ink-faint: rgba(255, 255, 255, 0.30);
+
+  /* ── Accent ramp — #FC4100 is the ONLY hardcoded accent value.
+       Everything derives via color-mix so per-user profile themes
+       (inline --accent override) recolor the whole system. ── */
   --accent: #FC4100;
-  --accent-hover: #d43600;
-  --accent-light: rgba(252, 65, 0, 0.15);
-  --accent-rgb: 252, 65, 0;
+  --accent-hover: color-mix(in srgb, var(--accent) 85%, black);
+  --accent-bright: color-mix(in oklab, var(--accent) 62%, white);
+  --accent-soft: color-mix(in srgb, var(--accent) 15%, transparent);
+  --glow-accent: 0 0 20px color-mix(in srgb, var(--accent) 30%, transparent);
+  --accent-rgb: 252, 65, 0; /* legacy — migrate consumers to color-mix */
 
-  /* Borders */
-  --border: #161B22;
-  --border-light: rgba(255, 255, 255, 0.08);
+  /* ── One track for every meter ── */
+  --track: rgba(255, 255, 255, 0.08);
 
-  /* Status */
+  /* ── Status ── */
   --success: #10B981;
   --warning: #F59E0B;
   --danger: #EF4444;
   --info: #3B82F6;
 
-  /* Shadows */
+  /* ── Shadows ── */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.5);
+
+  /* ── Legacy aliases (out-of-scope pages) — do not use in new code ── */
+  --bg-primary: var(--surface-0);
+  --bg-secondary: var(--surface-1);
+  --bg-card: var(--surface-1);
+  --bg-elevated: var(--surface-2);
+  --text-primary: var(--ink-hi);
+  --text-secondary: #A1A1AA;
+  --text-muted: #71717A;
+  --border: var(--surface-3);
+  --border-light: var(--line-strong);
+  --accent-light: var(--accent-soft);
 }
 
 /* ========================================
@@ -98,19 +173,33 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 104px; /* 72px fixed header + breathing room */
-  background-color: #05070A;
+  background-color: var(--surface-0);
   /* clip (not hidden) — prevents horizontal scroll from overflowing content
      without creating a scroll container that would break position: sticky */
   overflow-x: clip;
+  /* Firefox scrollbars, matched to the webkit thumb below */
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  scrollbar-width: thin;
 }
 
 body {
   font-family: var(--font-body);
-  background-color: #05070A;
-  color: var(--text-primary);
+  background-color: var(--surface-0);
+  color: var(--ink-hi);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
+}
+
+/* Page container — replaces the 91 retyped `max-w-[1320px] mx-auto px-4 xl:px-0` */
+.container-page {
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+@media (min-width: 1280px) {
+  .container-page { padding-inline: 0; }
 }
 
 /* Custom Scrollbar */
@@ -131,57 +220,39 @@ body {
   background: var(--accent);
 }
 
-/* Premium Glassmorphism & Cards */
+/* Glass — sanctioned only on the fixed header bar and modal overlays.
+   Retoned from the legacy blue tint to the surface scale. */
 .glass {
-  background: rgba(4, 18, 37, 0.7);
+  background: color-mix(in srgb, var(--surface-0) 70%, transparent);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .glass-card {
-  background: linear-gradient(135deg, rgba(4, 18, 37, 0.9) 0%, rgba(5, 24, 48, 0.8) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--surface-1) 90%, transparent);
+  border: 1px solid var(--line);
   backdrop-filter: blur(20px);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.3s var(--ease-hud), box-shadow 0.3s var(--ease-hud);
 }
 .glass-card:hover {
-  border-color: rgba(252, 65, 0, 0.3);
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(252, 65, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
 }
 
-/* Glow & Neon Effects */
-.glow-border {
-  position: relative;
+/* Signature scrims — the ONLY two image overlays in the product */
+.scrim-card {
+  background: linear-gradient(to top,
+    rgba(5, 7, 10, 0.92),
+    rgba(5, 7, 10, 0.5) 45%,
+    transparent 75%);
 }
-.glow-border::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, var(--accent), rgba(252, 65, 0, 0.1), transparent);
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-.glow-border:hover::before {
-  opacity: 1;
-}
-
-.bg-tech-grid {
-  background-size: 30px 30px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-}
-
-/* Ticker scroll animation */
-@keyframes ticker-scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-33.333%); }
+.scrim-hero {
+  background:
+    linear-gradient(to right, rgba(5, 7, 10, 0.92), rgba(5, 7, 10, 0.45) 55%, transparent),
+    linear-gradient(to top, rgba(5, 7, 10, 0.85), transparent 40%);
 }
 
 /* Tab content fade-in — replaces framer-motion in NewsTabsWidget */
@@ -191,33 +262,6 @@ body {
 }
 .animate-tab-content {
   animation: tab-content-in 0.2s ease-out;
-}
-
-/* High-Fidelity Text Glow */
-.text-glow {
-  text-shadow: 0 0 15px rgba(252, 65, 0, 0.4), 0 0 2px rgba(252, 65, 0, 0.2);
-}
-
-.text-glow-white {
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.15), 0 0 40px rgba(255, 255, 255, 0.05);
-}
-
-/* Precision HUD lines */
-.hud-line-h {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border), transparent);
-}
-
-.hud-line-v {
-  width: 1px;
-  background: linear-gradient(180deg, transparent, var(--border), transparent);
-}
-
-/* Subtle Noise Texture */
-.bg-noise {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3column%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.02;
-  pointer-events: none;
 }
 
 
@@ -260,7 +304,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #ffffff;
-  background: #1e293b;
+  background: var(--surface-2);
   border: 1px solid var(--border);
 }
 
@@ -285,34 +329,19 @@ body {
 }
 
 /* ========================================
-   PROFILE PAGE - GAMING UI
+   HUD GRID — signature backdrop texture (S5)
+   Rule: behind hero bands / page backdrops only, never inside a panel.
    ======================================== */
 
-/* Animated avatar ring */
-@keyframes spin-ring {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Achievement glow on hover */
-@keyframes achievement-glow {
-  0%, 100% { box-shadow: 0 0 5px rgba(252, 65, 0, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(252, 65, 0, 0.6); }
-}
-
-.achievement-unlocked:hover {
-  animation: achievement-glow 2s ease-in-out infinite;
-}
-
-/* HUD grid pattern background */
-.profile-grid-bg {
+.bg-hud-grid,
+.profile-grid-bg /* legacy alias — remove after phase-2 migration */ {
   background-image:
     linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
-/* Glow card - gradient border on hover */
+/* Glow card — gradient border on hover (accent-only; purple removed) */
 .glow-card {
   position: relative;
   overflow: hidden;
@@ -332,10 +361,10 @@ body {
   pointer-events: none;
 }
 .glow-card:hover::before {
-  background: linear-gradient(135deg, var(--accent), #8b5cf6, transparent, transparent);
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 35%, transparent), transparent, transparent);
 }
 
-/* Profile section header with accent bar */
+/* Legacy profile section header — SpecsCard still consumes; migrate then delete */
 .profile-section-header {
   display: flex;
   align-items: center;
@@ -441,7 +470,7 @@ body {
 }
 .tp-fade-up {
   opacity: 0;
-  animation: tp-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: tp-fade-up 0.5s var(--ease-hud) forwards;
 }
 .tp-d1 { animation-delay: 0.05s; }
 .tp-d2 { animation-delay: 0.12s; }
