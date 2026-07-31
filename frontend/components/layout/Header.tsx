@@ -15,10 +15,11 @@ import {
     Menu, X, Search, User, LogOut, ShoppingCart,
     ChevronDown, Facebook, Twitter, Instagram, Youtube,
     Mail, Users, Sword, Tag, Calendar, Gamepad2,
-    Newspaper, Trophy, ArrowRight,
+    Newspaper, Trophy, ArrowRight, Star, Cpu, PlayCircle,
     MessageSquare, Gem, Rocket, Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ScoreBadge from "@/components/ui/ScoreBadge";
 import SearchDropdown from "./SearchDropdown";
 import { decodeHtml } from "@/lib/decode";
 import NotificationPanel from "./NotificationPanel";
@@ -134,11 +135,24 @@ function MegaPanel({ className, innerClassName, children }: {
     );
 }
 
-/** Column heading on the S1 tick, with an arrow that arrives on hover. */
-function MegaHeading({ title, href }: { title: string; href: string }) {
+/**
+ * Column heading. The tick marks a *section*; an icon marks a *category
+ * column* — two ranks, so the eye can tell the panel's parts apart.
+ */
+function MegaHeading({ title, href, icon: Icon }: {
+    title: string;
+    href: string;
+    icon?: React.ComponentType<{ className?: string }>;
+}) {
     return (
         <Link href={href} className="group/head flex items-center gap-2 mb-3.5">
-            <span aria-hidden className="w-1 h-4 rounded-full bg-[var(--accent)]" />
+            {Icon ? (
+                <span className="w-5 h-5 shrink-0 rounded-[6px] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)] flex items-center justify-center text-[var(--accent)] group-hover/head:bg-[var(--accent)] group-hover/head:text-white group-hover/head:border-transparent transition-colors duration-300">
+                    <Icon className="w-3 h-3" />
+                </span>
+            ) : (
+                <span aria-hidden className="w-1 h-4 rounded-full bg-[var(--accent)]" />
+            )}
             <span className="font-display text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)] group-hover/head:text-[var(--accent)] transition-colors duration-150 whitespace-nowrap">
                 {title}
             </span>
@@ -146,6 +160,14 @@ function MegaHeading({ title, href }: { title: string; href: string }) {
         </Link>
     );
 }
+
+/** Each Discover column gets its own mark — kills four identical text blocks. */
+const COLUMN_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+    "News": Newspaper,
+    "Reviews": Star,
+    "Hardware": Cpu,
+    "Watch & Learn": PlayCircle,
+};
 
 /** Link grammar shared with the footer: an accent tick draws itself in. */
 function MegaLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -168,6 +190,7 @@ interface NavArticle {
     featured_image_url: string | null;
     published_at_human: string | null;
     reading_time: string | null;
+    review_score: number | string | null;
     category: { name: string; slug: string; type: string } | null;
 }
 
@@ -177,6 +200,80 @@ const navNewsFetcher = () =>
 
 const articleHref = (a: NavArticle) =>
     a.category?.type === "reviews" ? `/reviews/${a.slug}` : `/news/${a.slug}`;
+
+const navReviewsFetcher = () =>
+    axios.get("/reviews").then((r) =>
+        ((r.data?.data ?? []) as NavArticle[]).filter((a) => Number(a.review_score) > 0).slice(0, 3)
+    );
+
+/**
+ * Scored reviews shelf. The column block only fills the top of the panel;
+ * rather than leave a void beneath it, the space carries TechPlay's
+ * loudest signal — verdicts with artwork.
+ */
+function NavReviewShelf({ active }: { active: boolean }) {
+    const { data } = useSWR(active ? "nav-reviews" : null, navReviewsFetcher, {
+        dedupingInterval: 300_000,
+        revalidateOnFocus: false,
+    });
+
+    if (data && data.length === 0) return null;
+
+    return (
+        <div className="mt-auto border-t border-[var(--line)] bg-[var(--fill-1)] p-5">
+            <div className="flex items-center justify-between mb-3">
+                <span className="flex items-center gap-2">
+                    <span aria-hidden className="w-1 h-4 rounded-full bg-[var(--accent)]" />
+                    <span className="font-display text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
+                        Latest verdicts
+                    </span>
+                </span>
+                <Link href="/reviews" className="group/all flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-faint)] hover:text-[var(--accent)] transition-colors duration-150">
+                    All reviews
+                    <ArrowRight className="w-3 h-3 group-hover/all:translate-x-0.5 transition-transform duration-300" />
+                </Link>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+                {!data &&
+                    [0, 1, 2].map((i) => (
+                        <div key={i} className="h-[148px] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />
+                    ))}
+
+                {data?.map((a) => (
+                    <Link
+                        key={a.id}
+                        href={`/reviews/${a.slug}`}
+                        prefetch={false}
+                        className="group/rev flex flex-col rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-2)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
+                    >
+                        <span className="relative block aspect-[16/9] overflow-hidden bg-[var(--fill-1)]">
+                            {a.featured_image_url && (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    src={a.featured_image_url}
+                                    alt={decodeHtml(a.title)}
+                                    loading="lazy"
+                                    className="w-full h-full object-cover group-hover/rev:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]"
+                                />
+                            )}
+                        </span>
+                        {/* accent seam draws in on hover — same grammar as the game cards */}
+                        <span aria-hidden className="h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover/rev:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]" />
+                        <span className="flex-1 flex flex-col gap-2 p-2.5">
+                            <span className="block text-[12px] font-semibold text-[var(--ink-mid)] leading-snug line-clamp-2 group-hover/rev:text-[var(--accent)] transition-colors duration-150">
+                                {decodeHtml(a.title)}
+                            </span>
+                            <span className="mt-auto flex justify-end">
+                                <ScoreBadge score={Number(a.review_score)} className="scale-90 origin-right" />
+                            </span>
+                        </span>
+                    </Link>
+                ))}
+            </div>
+        </div>
+    );
+}
 
 /**
  * Live editorial rail inside DISCOVER — the menu stops being a list of
@@ -504,20 +601,30 @@ function NavItem({ item, badge, onHoverChange }: {
             <AnimatePresence>
                 {hasColumns && isOpen && (
                     /* ── MULTI-COLUMN MEGA PANEL (DISCOVER) ── */
-                    <MegaPanel key="columns" className="left-0 w-[940px]" innerClassName="grid grid-cols-[1fr_340px] items-stretch">
-                        <div className="p-6 grid grid-cols-4 gap-x-5 content-start">
-                            {item.columns!.map((col) => (
-                                <div key={col.title} className="min-w-0">
-                                    <MegaHeading title={col.title} href={col.href} />
-                                    <div className="flex flex-col">
-                                        {col.items.slice(0, 7).map((child, idx) => (
-                                            <MegaLink key={idx} href={child.href}>
-                                                {child.name}
-                                            </MegaLink>
-                                        ))}
+                    <MegaPanel
+                        key="columns"
+                        className="left-0 w-[940px] max-w-[calc(100vw-2rem)]"
+                        innerClassName="grid grid-cols-[1fr_340px] items-stretch"
+                    >
+                        <div className="flex flex-col min-w-0">
+                            <div className="p-6 grid grid-cols-4">
+                                {item.columns!.map((col) => (
+                                    <div
+                                        key={col.title}
+                                        className="min-w-0 px-5 first:pl-0 last:pr-0 border-r border-[var(--line)] last:border-r-0"
+                                    >
+                                        <MegaHeading title={col.title} href={col.href} icon={COLUMN_ICONS[col.title]} />
+                                        <div className="flex flex-col">
+                                            {col.items.slice(0, 7).map((child, idx) => (
+                                                <MegaLink key={idx} href={child.href}>
+                                                    {child.name}
+                                                </MegaLink>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+                            <NavReviewShelf active={isOpen} />
                         </div>
                         <NavFeatured active={isOpen} />
                     </MegaPanel>
