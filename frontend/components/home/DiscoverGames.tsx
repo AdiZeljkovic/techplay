@@ -143,14 +143,14 @@ export default function DiscoverGames() {
                 </Link>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
                 {(games ?? Array.from({ length: 5 }, () => null)).map((g, i) =>
                     g ? (
                         <Link
                             key={`${g.slug}-${i}`}
                             href={`/games/${g.slug}`}
                             prefetch={false}
-                            className="group relative rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
+                            className="group relative rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] transition-all duration-300"
                         >
                             <div className="relative aspect-[3/4]">
                                 {g.background_image ? (
@@ -160,28 +160,48 @@ export default function DiscoverGames() {
                                     <div className="w-full h-full flex items-center justify-center text-[var(--ink-faint)]"><Gamepad2 className="w-10 h-10" /></div>
                                 )}
                                 <div className="absolute inset-0 scrim-card" />
+
+                                {/* chart rank — outlined ghost numeral, ignites accent on hover */}
+                                <span
+                                    aria-hidden
+                                    className="absolute top-1 left-2.5 font-display text-[56px] font-black leading-none select-none text-transparent transition-all duration-300 [-webkit-text-stroke:1.5px_rgba(255,255,255,0.28)] group-hover:[-webkit-text-stroke:1.5px_var(--accent)] group-hover:drop-shadow-[0_0_10px_color-mix(in_srgb,var(--accent)_45%,transparent)]"
+                                >
+                                    {i + 1}
+                                </span>
+
                                 {meta(g).score && (
                                     <span className="absolute top-2 right-2">
                                         <ScoreBadge score={parseFloat(meta(g).score!)} variant="pill" />
                                     </span>
                                 )}
+
                                 <div className="absolute bottom-0 left-0 right-0 p-3">
-                                    <h3 className="font-display text-[13px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                                    <h3 className="font-display text-[14px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                                         {g.name}
                                     </h3>
                                     {(() => {
                                         const m = meta(g);
-                                        // release date is the useful sub-line on the date-driven tabs;
-                                        // Trending falls back to genres (and renders nothing if absent)
                                         const secondary = tab === "trending" ? m.genres.join(", ") : releaseLabel(g.released);
                                         return (
                                             <>
                                                 {m.platforms.length > 0 && (
-                                                    <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--ink-low)]">
-                                                        {m.platforms.join(" · ")}
-                                                    </p>
+                                                    <div className="mt-2 flex flex-wrap gap-1">
+                                                        {m.platforms.map((p) => (
+                                                            <span key={p} className="px-1.5 py-0.5 rounded bg-black/50 backdrop-blur-sm border border-white/15 text-[9px] font-bold uppercase tracking-wider text-white/85">
+                                                                {p}
+                                                            </span>
+                                                        ))}
+                                                        {secondary && (
+                                                            <span className="px-1.5 py-0.5 rounded bg-[color-mix(in_srgb,var(--accent)_25%,transparent)] backdrop-blur-sm border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] text-[9px] font-bold uppercase tracking-wider text-white/90">
+                                                                {secondary}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 )}
-                                                {secondary && <p className="text-[10px] text-[var(--ink-faint)]">{secondary}</p>}
+                                                {/* reveal CTA — slides up on hover */}
+                                                <span className="flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--accent)] max-h-0 opacity-0 group-hover:max-h-6 group-hover:opacity-100 group-hover:mt-2 overflow-hidden transition-all duration-300">
+                                                    View game <ChevronRight className="w-3 h-3" />
+                                                </span>
                                             </>
                                         );
                                     })()}
