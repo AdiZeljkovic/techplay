@@ -91,8 +91,8 @@ export default function HeroSlider({ articles }: { articles: Article[] }) {
                     </motion.div>
 
                     {/* Readability scrims: bottom for the caption, left to blend into the card */}
+                    {/* bottom scrim only — the diagonal seam replaces the old side blend */}
                     <div className="absolute inset-0 scrim-card" />
-                    <div className="absolute inset-0 lg:bg-gradient-to-r lg:from-[var(--surface-1)] lg:via-[var(--surface-1)]/25 lg:to-transparent" />
                 </motion.div>
             </AnimatePresence>
 
