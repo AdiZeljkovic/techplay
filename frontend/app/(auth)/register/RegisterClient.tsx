@@ -92,7 +92,7 @@ export default function RegisterClient() {
                     <span aria-hidden className="absolute top-0 left-8 right-8 h-[2px] z-10 bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent" />
 
                 {/* ── Left: brand panel ── */}
-                <div className="relative hidden lg:flex flex-col justify-between p-10 bg-[#05070A] overflow-hidden">
+                <div className="relative hidden lg:flex flex-col justify-between p-10 bg-[var(--surface-0)] overflow-hidden">
                     <div className="absolute -top-[120px] -left-[80px] w-[400px] h-[400px] bg-[var(--accent)]/15 blur-[120px] rounded-full pointer-events-none" />
                     <div className="absolute -bottom-[150px] -right-[100px] w-[350px] h-[350px] bg-[var(--accent)]/10 blur-[100px] rounded-full pointer-events-none" />
                     <div

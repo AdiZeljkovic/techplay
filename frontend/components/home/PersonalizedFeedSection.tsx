@@ -20,25 +20,26 @@ export function ArticleCard({ article }: { article: Article }) {
   return (
     <Link
       href={href}
-      className="group flex gap-4 items-start hover:bg-white/[0.03] p-2 -mx-2 rounded-xl transition-colors"
+      className="group flex gap-4 items-start hover:bg-[var(--fill-1)] p-2 -mx-2 rounded-xl transition-colors"
     >
-      <div className="relative w-24 h-16 rounded-lg overflow-hidden shrink-0 bg-white/5">
+      <div className="relative w-24 h-16 rounded-lg overflow-hidden shrink-0 bg-[var(--fill-1)]">
         {article.featured_image_url && (
           <Image
             src={article.featured_image_url}
             alt={article.title}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            sizes="96px"
+            className="object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]"
           />
         )}
       </div>
       <div className="flex-1 min-w-0">
         {article.category?.name && (
-          <p className="text-[10px] font-bold uppercase tracking-wider text-tp-accent mb-1">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--accent)] mb-1">
             {article.category.name}
           </p>
         )}
-        <p className="text-sm font-bold text-white leading-snug line-clamp-2 group-hover:text-tp-accent transition-colors">
+        <p className="font-display text-[13px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
           {article.title}
         </p>
       </div>
@@ -61,7 +62,7 @@ export default function PersonalizedFeedSection() {
     <div className="max-w-[1320px] mx-auto px-4 xl:px-0 w-full mb-20">
       <div className="border-t border-zinc-200 dark:border-white/5 pt-10">
         <div className="flex items-center gap-3 mb-6">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-tp-accent/10 border border-tp-accent/20 text-tp-accent text-[11px] font-black tracking-widest uppercase">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_20%,transparent)] text-[var(--accent)] text-[11px] font-black tracking-widest uppercase">
             <Sparkles className="w-3 h-3" />
             For You
           </div>

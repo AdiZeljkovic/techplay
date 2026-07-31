@@ -22,7 +22,7 @@ const labelClass = "block text-[10px] font-bold uppercase tracking-[0.18em] text
 /* Left-side brand panel shared visual */
 function BrandPanel() {
     return (
-        <div className="relative hidden lg:flex flex-col justify-between p-10 bg-[#05070A] overflow-hidden">
+        <div className="relative hidden lg:flex flex-col justify-between p-10 bg-[var(--surface-0)] overflow-hidden">
             {/* Decorations */}
             <div className="absolute -top-[120px] -left-[80px] w-[400px] h-[400px] bg-[var(--accent)]/15 blur-[120px] rounded-full pointer-events-none" />
             <div className="absolute -bottom-[150px] -right-[100px] w-[350px] h-[350px] bg-[var(--accent)]/10 blur-[100px] rounded-full pointer-events-none" />
