@@ -31,22 +31,25 @@ export default function HomeClient({ initialData }: HomeClientProps) {
     const { hero: heroArticles, news, reviews, tech } = useHome(initialData);
 
     return (
-        <main className="min-h-screen bg-[var(--bg-primary)] font-sans text-slate-300">
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 w-full py-6 md:py-8 space-y-12 md:space-y-16">
-                <div className="tp-fade-up tp-d1"><HomeHero heroArticles={heroArticles} /></div>
-                <div className="tp-fade-up tp-d2 !mt-6"><QuickLinksBand /></div>
-                <div className="tp-fade-up tp-d3"><DiscoverGames /></div>
-                <EditorialSpotlight news={news} reviews={reviews} tech={tech} />
-
-                <ReviewWall reviews={reviews} />
+        <main className="min-h-screen bg-[var(--surface-0)] font-sans text-[var(--ink-mid)]">
+            <div className="container-page py-6 md:py-8 space-y-10 md:space-y-14">
+                {/* Hero + quick links enter as one band; the choreography then
+                    walks the full page — no section appears without its cue */}
+                <div className="tp-fade-up tp-d1 space-y-6">
+                    <HomeHero heroArticles={heroArticles} />
+                    <QuickLinksBand />
+                </div>
+                <div className="tp-fade-up tp-d2"><DiscoverGames /></div>
+                <div className="tp-fade-up tp-d3"><EditorialSpotlight news={news} reviews={reviews} tech={tech} /></div>
+                <div className="tp-fade-up tp-d4"><ReviewWall reviews={reviews} /></div>
 
                 {/* Database discovery — content only a 200K-title catalog can produce */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                <div className="tp-fade-up tp-d5 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                     <HiddenGems />
                     <OnThisDay />
                 </div>
 
-                <ProfileCtaBand />
+                <div className="tp-fade-up tp-d6"><ProfileCtaBand /></div>
             </div>
         </main>
     );

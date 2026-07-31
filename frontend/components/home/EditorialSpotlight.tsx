@@ -39,10 +39,10 @@ function Kicker({ article, className = "" }: { article: Article; className?: str
 function Meta({ article, withAuthor = false }: { article: Article; withAuthor?: boolean }) {
     const author = article.author?.display_name || article.author?.name;
     return (
-        <div className="flex items-center gap-2 text-[11px] text-white/40">
+        <div className="flex items-center gap-2 text-[11px] text-[var(--ink-low)]">
             {withAuthor && author && (
                 <>
-                    <span className="flex items-center gap-1.5 text-white/60 font-semibold">
+                    <span className="flex items-center gap-1.5 text-[var(--ink-mid)] font-semibold">
                         {article.author?.avatar_url ? (
                             <Image src={article.author.avatar_url} alt={author} width={20} height={20} className="w-5 h-5 rounded-full object-cover" unoptimized />
                         ) : (
@@ -50,13 +50,13 @@ function Meta({ article, withAuthor = false }: { article: Article; withAuthor?: 
                         )}
                         {author}
                     </span>
-                    <span className="text-white/20">·</span>
+                    <span className="text-[var(--ink-faint)]">·</span>
                 </>
             )}
             {article.published_at_human && <span>{article.published_at_human}</span>}
             {article.reading_time && (
                 <>
-                    <span className="text-white/20">·</span>
+                    <span className="text-[var(--ink-faint)]">·</span>
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{article.reading_time}</span>
                 </>
             )}
@@ -69,7 +69,7 @@ function FeaturedCard({ article }: { article: Article }) {
     return (
         <Link
             href={articleHref(article)}
-            className="group relative flex flex-col justify-end rounded-2xl overflow-hidden border border-white/[0.06] bg-[var(--bg-card)] min-h-[340px] lg:min-h-[420px] hover:border-[var(--accent)]/40 transition-colors"
+            className="group relative flex flex-col justify-end rounded-[var(--radius-panel)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] min-h-[340px] lg:min-h-[420px] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
         >
             {article.featured_image_url && (
                 <Image
@@ -77,10 +77,10 @@ function FeaturedCard({ article }: { article: Article }) {
                     alt={article.title}
                     fill
                     sizes="(max-width: 1024px) 100vw, 58vw"
-                    className="object-cover transition-transform duration-[900ms] group-hover:scale-[1.04]"
+                    className="object-cover transition-transform duration-700 ease-[var(--ease-hud)] group-hover:scale-[1.04]"
                 />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-transparent" />
+            <div className="absolute inset-0 scrim-card" />
             <div className="relative p-6 md:p-7">
                 <div className="flex items-center gap-2.5 mb-3">
                     <span className="inline-flex items-center h-[22px] px-2.5 rounded-full bg-[var(--accent)] text-white text-[10px] font-black uppercase tracking-widest">
@@ -92,7 +92,7 @@ function FeaturedCard({ article }: { article: Article }) {
                     {article.title}
                 </h3>
                 {article.excerpt && (
-                    <p className="mt-2.5 text-[13px] text-white/55 line-clamp-2 max-w-xl">{article.excerpt}</p>
+                    <p className="mt-2.5 text-[13px] text-[var(--ink-mid)] line-clamp-2 max-w-xl">{article.excerpt}</p>
                 )}
                 <div className="mt-4"><Meta article={article} withAuthor /></div>
             </div>
@@ -105,7 +105,7 @@ function SideCard({ article }: { article: Article }) {
     return (
         <Link
             href={articleHref(article)}
-            className="group relative flex gap-4 items-stretch rounded-xl border border-white/[0.06] bg-[var(--bg-card)] overflow-hidden hover:border-[var(--accent)]/40 transition-colors"
+            className="group relative flex gap-4 items-stretch rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
         >
             <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--accent)] scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300" />
             <div className="relative w-[120px] sm:w-[132px] shrink-0 overflow-hidden">
@@ -115,13 +115,13 @@ function SideCard({ article }: { article: Article }) {
                         alt={article.title}
                         fill
                         sizes="132px"
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="object-cover transition-transform duration-700 ease-[var(--ease-hud)] group-hover:scale-[1.04]"
                     />
                 )}
             </div>
             <div className="flex-1 min-w-0 py-3.5 pr-4">
                 <Kicker article={article} />
-                <p className="mt-1.5 text-[14px] font-bold text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                <p className="mt-1.5 font-display text-[14px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                     {article.title}
                 </p>
                 <div className="mt-2"><Meta article={article} /></div>
@@ -135,23 +135,23 @@ function GridCard({ article }: { article: Article }) {
     return (
         <Link
             href={articleHref(article)}
-            className="group flex flex-col rounded-xl border border-white/[0.06] bg-[var(--bg-card)] overflow-hidden hover:border-[var(--accent)]/40 transition-colors"
+            className="group flex flex-col rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
         >
-            <div className="relative aspect-[16/9] overflow-hidden bg-white/[0.03]">
+            <div className="relative aspect-[16/9] overflow-hidden bg-[var(--fill-1)]">
                 {article.featured_image_url && (
                     <Image
                         src={article.featured_image_url}
                         alt={article.title}
                         fill
                         sizes="(max-width: 640px) 100vw, 33vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="object-cover transition-transform duration-700 ease-[var(--ease-hud)] group-hover:scale-[1.04]"
                     />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                <div className="absolute inset-0 scrim-card" />
             </div>
             <div className="flex-1 flex flex-col p-4">
                 <Kicker article={article} />
-                <p className="mt-1.5 text-[14px] font-bold text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                <p className="mt-1.5 font-display text-[14px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                     {article.title}
                 </p>
                 <div className="mt-auto pt-3"><Meta article={article} /></div>
@@ -183,18 +183,18 @@ export default function EditorialSpotlight({ news, reviews, tech }: { news: Arti
     return (
         <section>
             <div className="flex items-center justify-between mb-5">
-                <h2 className="flex items-center gap-2.5 text-[18px] font-bold text-white font-display">
-                    <span className="w-1.5 h-5 rounded-sm bg-[var(--accent)]" />
+                <h2 className="flex items-center gap-2.5 font-display text-[15px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
+                    <span className="w-1 h-4 rounded-full bg-[var(--accent)]" />
                     Editorial Spotlight
                 </h2>
-                <Link href="/news" className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors">
+                <Link href="/news" className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors duration-150">
                     View all stories <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                 <div className="lg:col-span-7"><FeaturedCard article={featured} /></div>
-                <div className="lg:col-span-5 flex flex-col gap-4">
+                <div className="lg:col-span-5 flex flex-col gap-5">
                     {side.map((a) => <SideCard key={a.slug} article={a} />)}
                 </div>
             </div>

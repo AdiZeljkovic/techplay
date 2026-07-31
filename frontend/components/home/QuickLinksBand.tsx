@@ -12,21 +12,21 @@ const LINKS = [
 
 export default function QuickLinksBand() {
     return (
-        <section className="rounded-2xl bg-[var(--bg-card)] border border-white/[0.06] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 divide-white/[0.05] lg:divide-x">
+        <section className="rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 divide-[var(--line)] lg:divide-x">
             {LINKS.map((link) => (
                 <Link
                     key={link.title}
                     href={link.href}
-                    className="group flex items-center gap-3.5 p-5 hover:bg-white/[0.02] transition-colors"
+                    className="group flex items-center gap-3.5 p-5 hover:bg-[var(--fill-1)] transition-colors"
                 >
-                    <span className="w-11 h-11 rounded-xl bg-[var(--accent)]/10 flex items-center justify-center shrink-0 group-hover:bg-[var(--accent)]/20 transition-colors">
+                    <span className="w-11 h-11 rounded-xl bg-[var(--accent-soft)] flex items-center justify-center shrink-0 group-hover:bg-[color-mix(in_srgb,var(--accent)_22%,transparent)] transition-colors">
                         <link.icon className="w-5 h-5 text-[var(--accent)]" />
                     </span>
                     <span className="flex-1 min-w-0">
-                        <span className="block text-[14px] font-bold text-white group-hover:text-[var(--accent)] transition-colors">{link.title}</span>
-                        <span className="block text-[11px] text-white/40 leading-tight mt-0.5">{link.sub}</span>
+                        <span className="block font-display text-[14px] font-bold text-[var(--ink-hi)] group-hover:text-[var(--accent)] transition-colors">{link.title}</span>
+                        <span className="block text-[11px] text-[var(--ink-low)] leading-tight mt-0.5">{link.sub}</span>
                     </span>
-                    <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-[var(--accent)] group-hover:translate-x-0.5 transition-all shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-[var(--ink-faint)] group-hover:text-[var(--accent)] group-hover:translate-x-0.5 transition-all shrink-0" />
                 </Link>
             ))}
         </section>

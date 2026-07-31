@@ -38,33 +38,33 @@ export default function HiddenGems() {
             bodyClassName="space-y-2"
         >
             {!games &&
-                [0, 1, 2, 3].map((i) => <div key={i} className="h-[62px] rounded-xl bg-white/5 animate-pulse" />)}
+                [0, 1, 2, 3].map((i) => <div key={i} className="h-[62px] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />)}
 
             {games?.slice(0, 4).map((g) => (
                 <Link
                     key={g.slug}
                     href={`/games/${g.slug}`}
                     prefetch={false}
-                    className="group flex items-center gap-3.5 p-2 -mx-2 rounded-xl hover:bg-white/[0.03] transition-colors"
+                    className="group flex items-center gap-3.5 p-2 -mx-2 rounded-xl hover:bg-[var(--fill-1)] transition-colors duration-300"
                 >
-                    <div className="relative w-[76px] h-[48px] rounded-lg overflow-hidden shrink-0 bg-white/5">
+                    <div className="relative w-[76px] h-[48px] rounded-lg overflow-hidden shrink-0 bg-[var(--fill-1)]">
                         {g.background_image ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={g.background_image} alt={g.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <img src={g.background_image} alt={g.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]" />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center text-white/15"><Gamepad2 className="w-4 h-4" /></div>
+                            <div className="w-full h-full flex items-center justify-center text-[var(--ink-faint)]"><Gamepad2 className="w-4 h-4" /></div>
                         )}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-bold text-white line-clamp-1 group-hover:text-[var(--accent)] transition-colors">{g.name}</p>
-                        <p className="text-[10px] text-white/35 line-clamp-1">
+                        <p className="font-display text-[13px] font-bold text-[var(--ink-hi)] line-clamp-1 group-hover:text-[var(--accent)] transition-colors">{g.name}</p>
+                        <p className="text-[10px] text-[var(--ink-faint)] line-clamp-1">
                             {g.released ? new Date(g.released).getFullYear() : ""}
                             {g.genres.length ? ` · ${g.genres.join(", ")}` : ""}
                         </p>
                     </div>
                     <div className="shrink-0 text-right">
-                        <p className="text-[15px] font-black text-emerald-400 tabular-nums leading-none">{g.rating.toFixed(1)}</p>
-                        <p className="mt-1 flex items-center justify-end gap-1 text-[9px] text-white/30">
+                        <p className="font-display text-[15px] font-bold text-[var(--success)] tabular-nums leading-none">{g.rating.toFixed(1)}</p>
+                        <p className="mt-1 flex items-center justify-end gap-1 text-[9px] text-[var(--ink-faint)]">
                             <Users className="w-2.5 h-2.5" /> {g.votes}
                         </p>
                     </div>

@@ -91,8 +91,8 @@ export default function HeroSlider({ articles }: { articles: Article[] }) {
                     </motion.div>
 
                     {/* Readability scrims: bottom for the caption, left to blend into the card */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-transparent" />
-                    <div className="absolute inset-0 lg:bg-gradient-to-r lg:from-[var(--bg-card)] lg:via-[var(--bg-card)]/25 lg:to-transparent" />
+                    <div className="absolute inset-0 scrim-card" />
+                    <div className="absolute inset-0 lg:bg-gradient-to-r lg:from-[var(--surface-1)] lg:via-[var(--surface-1)]/25 lg:to-transparent" />
                 </motion.div>
             </AnimatePresence>
 
@@ -111,7 +111,7 @@ export default function HeroSlider({ articles }: { articles: Article[] }) {
                                 Featured
                             </span>
                             {current.category?.name && (
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-mid)]">
                                     {current.category.name}
                                 </span>
                             )}
@@ -123,9 +123,9 @@ export default function HeroSlider({ articles }: { articles: Article[] }) {
                             </h2>
                         </Link>
 
-                        <div className="mt-2.5 flex items-center gap-3 text-[11px] text-white/55">
+                        <div className="mt-2.5 flex items-center gap-3 text-[11px] text-[var(--ink-low)]">
                             {current.author?.display_name || current.author?.name ? (
-                                <span className="font-semibold text-white/70">
+                                <span className="font-semibold text-[var(--ink-mid)]">
                                     {current.author.display_name || current.author.name}
                                 </span>
                             ) : null}
@@ -163,7 +163,7 @@ export default function HeroSlider({ articles }: { articles: Article[] }) {
                                 )}
                             </button>
                         ))}
-                        <span className="ml-auto text-[10px] font-bold tabular-nums text-white/45">
+                        <span className="ml-auto text-[10px] font-bold tabular-nums text-[var(--ink-low)]">
                             {String(index + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
                         </span>
                     </div>

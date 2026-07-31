@@ -6,6 +6,7 @@ import useSWR from "swr";
 import { Gamepad2, ChevronRight } from "lucide-react";
 import axios from "@/lib/axios";
 import { cn } from "@/lib/utils";
+import ScoreBadge from "@/components/ui/ScoreBadge";
 
 type Tab = "trending" | "new" | "coming";
 
@@ -116,8 +117,8 @@ export default function DiscoverGames() {
         <section>
             <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
                 <div className="flex items-center gap-5">
-                    <h2 className="flex items-center gap-2.5 text-[18px] font-bold text-white font-display">
-                        <span className="w-1.5 h-5 rounded-sm bg-[var(--accent)]" />
+                    <h2 className="flex items-center gap-2.5 font-display text-[15px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
+                        <span className="w-1 h-4 rounded-full bg-[var(--accent)]" />
                         Discover Games
                     </h2>
                     <div className="flex items-center gap-1">
@@ -128,8 +129,8 @@ export default function DiscoverGames() {
                                 className={cn(
                                     "px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-colors",
                                     tab === t.id
-                                        ? "bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/30"
-                                        : "text-white/40 border border-transparent hover:text-white"
+                                        ? "bg-[var(--accent-soft)] text-[var(--accent)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)]"
+                                        : "text-[var(--ink-low)] border border-transparent hover:text-[var(--ink-hi)]"
                                 )}
                             >
                                 {t.label}
@@ -137,7 +138,7 @@ export default function DiscoverGames() {
                         ))}
                     </div>
                 </div>
-                <Link href="/games" className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors">
+                <Link href="/games" className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors duration-150">
                     View all games <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
             </div>
@@ -149,23 +150,23 @@ export default function DiscoverGames() {
                             key={`${g.slug}-${i}`}
                             href={`/games/${g.slug}`}
                             prefetch={false}
-                            className="group relative rounded-xl overflow-hidden border border-white/[0.06] bg-[var(--bg-card)] hover:border-[var(--accent)]/40 transition-all"
+                            className="group relative rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
                         >
                             <div className="relative aspect-[3/4]">
                                 {g.background_image ? (
                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={g.background_image} alt={g.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                    <img src={g.background_image} alt={g.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-white/10"><Gamepad2 className="w-10 h-10" /></div>
+                                    <div className="w-full h-full flex items-center justify-center text-[var(--ink-faint)]"><Gamepad2 className="w-10 h-10" /></div>
                                 )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
+                                <div className="absolute inset-0 scrim-card" />
                                 {meta(g).score && (
-                                    <span className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-[var(--accent)] text-white text-[12px] font-black tabular-nums">
-                                        {meta(g).score}
+                                    <span className="absolute top-2 right-2">
+                                        <ScoreBadge score={parseFloat(meta(g).score!)} variant="pill" />
                                     </span>
                                 )}
                                 <div className="absolute bottom-0 left-0 right-0 p-3">
-                                    <h3 className="text-[13px] font-bold text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                                    <h3 className="font-display text-[13px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                                         {g.name}
                                     </h3>
                                     {(() => {
@@ -176,11 +177,11 @@ export default function DiscoverGames() {
                                         return (
                                             <>
                                                 {m.platforms.length > 0 && (
-                                                    <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/50">
+                                                    <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--ink-low)]">
                                                         {m.platforms.join(" · ")}
                                                     </p>
                                                 )}
-                                                {secondary && <p className="text-[10px] text-white/35">{secondary}</p>}
+                                                {secondary && <p className="text-[10px] text-[var(--ink-faint)]">{secondary}</p>}
                                             </>
                                         );
                                     })()}
@@ -188,7 +189,7 @@ export default function DiscoverGames() {
                             </div>
                         </Link>
                     ) : (
-                        <div key={i} className="rounded-xl bg-white/5 aspect-[3/4] animate-pulse" />
+                        <div key={i} className="rounded-[var(--radius-card)] bg-[var(--fill-2)] aspect-[3/4] animate-pulse" />
                     )
                 )}
             </div>
