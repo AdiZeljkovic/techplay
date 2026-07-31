@@ -43,7 +43,12 @@ function Card({
     children: React.ReactNode;
 }) {
     return (
-        <div className="rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] p-4 flex flex-col">
+        <div className="group/card relative rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] p-4 flex flex-col overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors duration-300">
+            {/* accent rail draws across the card on hover */}
+            <span
+                aria-hidden
+                className="absolute top-0 left-0 right-0 h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover/card:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]"
+            />
             <div className="flex items-center justify-between mb-3">
                 <h3 className="flex items-center gap-2 font-display text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
                     <span className="text-[var(--accent)]">{icon}</span>
@@ -73,7 +78,7 @@ export default function YourActivity() {
 
     if (!data) {
         return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[0, 1, 2, 3].map((i) => <div key={i} className="h-[188px] rounded-[var(--radius-panel)] bg-[var(--fill-2)] animate-pulse" />)}
             </div>
         );
@@ -88,7 +93,7 @@ export default function YourActivity() {
                 Your Activity
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Continue reading */}
                 <Card title="Continue Reading" icon={<BookOpen className="w-3.5 h-3.5" />} action={reading ? { label: "View all", href: "/news" } : undefined}>
                     {reading ? (

@@ -23,7 +23,23 @@ const fetcher = () =>
 
 function releaseLabel(released: string): string {
     const date = new Date(released);
-    return date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+/** Days until launch, as a countdown a gamer actually reads. */
+function countdown(released: string): { label: string; imminent: boolean } | null {
+    const date = new Date(released);
+    if (Number.isNaN(date.getTime())) return null;
+
+    const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const days = Math.round((startOfDay(date) - startOfDay(new Date())) / 86_400_000);
+
+    if (days < 0) return { label: "Out now", imminent: false };
+    if (days === 0) return { label: "Out today", imminent: true };
+    if (days === 1) return { label: "Tomorrow", imminent: true };
+    if (days < 7) return { label: `${days} days`, imminent: true };
+    if (days < 30) return { label: `${Math.round(days / 7)} weeks`, imminent: false };
+    return { label: `${Math.round(days / 30)} months`, imminent: false };
 }
 
 function shortPlatforms(platforms?: CalendarGame["platforms"]): string {
@@ -89,7 +105,7 @@ export default function UpcomingForYouRow() {
             <div className="flex gap-3 overflow-x-auto snap-x pb-2 -mx-4 px-4 xl:mx-0 xl:px-0 scrollbar-none">
                 {(games ? upcoming : Array.from({ length: 4 }, () => null)).map((g, i) =>
                     g ? (
-                        <div key={g.slug} className="w-[240px] shrink-0 snap-start rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300">
+                        <div key={g.slug} className={`group/card w-[240px] shrink-0 snap-start rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_14px_36px_rgba(0,0,0,0.45)] transition-all duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}>
                             <Link href={`/games/${g.slug}`} prefetch={false} className="group block relative aspect-[16/9]">
                                 {g.background_image ? (
                                     // eslint-disable-next-line @next/next/no-img-element
@@ -98,12 +114,30 @@ export default function UpcomingForYouRow() {
                                     <div className="w-full h-full flex items-center justify-center text-[var(--ink-faint)] bg-[var(--fill-1)]"><Gamepad2 className="w-8 h-8" /></div>
                                 )}
                                 <div className="absolute inset-0 scrim-card" />
+                                {/* launch countdown — the reason to care */}
+                                {(() => {
+                                    const c = g.released ? countdown(g.released) : null;
+                                    if (!c) return null;
+                                    return (
+                                        <span
+                                            className={`absolute top-2 left-2 inline-flex items-center h-[22px] px-2.5 rounded-full backdrop-blur-md text-[9px] font-bold uppercase tracking-[0.1em] ${
+                                                c.imminent
+                                                    ? "bg-[var(--accent)] text-white shadow-[var(--glow-accent)]"
+                                                    : "bg-[color-mix(in_srgb,var(--surface-0)_80%,transparent)] border border-[var(--line-strong)] text-[var(--ink-mid)]"
+                                            }`}
+                                        >
+                                            {c.label}
+                                        </span>
+                                    );
+                                })()}
                             </Link>
+                            {/* accent seam draws across on hover */}
+                            <span aria-hidden className="block h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover/card:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]" />
                             <div className="p-3">
                                 <Link href={`/games/${g.slug}`} prefetch={false} className="block font-display text-[13px] font-bold text-[var(--ink-hi)] line-clamp-1 hover:text-[var(--accent)] transition-colors">
                                     {g.name}
                                 </Link>
-                                <p className="mt-0.5 text-[11px] text-[var(--ink-low)]">{releaseLabel(g.released!)}</p>
+                                <p className="mt-0.5 text-[11px] tabular-nums text-[var(--ink-low)]">{releaseLabel(g.released!)}</p>
                                 <p className="text-[9px] uppercase tracking-wide text-[var(--ink-faint)] line-clamp-1 min-h-[13px]">{shortPlatforms(g.platforms)}</p>
                                 {(() => {
                                     const status = library[g.slug];
@@ -113,10 +147,10 @@ export default function UpcomingForYouRow() {
                                         <button
                                             onClick={() => toggle(g)}
                                             disabled={isPending}
-                                            className={`mt-2.5 w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                                            className={`mt-2.5 w-full flex items-center justify-center gap-1.5 h-9 rounded-[var(--radius-inner)] font-display text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 ${
                                                 following
                                                     ? "bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] text-[var(--accent)]"
-                                                    : "bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-hi)] hover:bg-[var(--fill-3)]"
+                                                    : "bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-hi)] hover:bg-[var(--accent)] hover:border-transparent hover:text-white"
                                             }`}
                                             title={status && status !== "wishlist" ? `In your library (${status})` : undefined}
                                         >

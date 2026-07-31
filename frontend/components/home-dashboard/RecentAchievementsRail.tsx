@@ -33,13 +33,13 @@ export default function RecentAchievementsRail({ achievements }: { achievements:
                 />
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                    {achievements.slice(0, 5).map((a) => (
+                    {achievements.slice(0, 5).map((a, i) => (
                         <div
                             key={a.id}
                             title={a.description ?? a.name}
-                            className="group flex flex-col items-center text-center gap-2 p-3 rounded-[var(--radius-card)] bg-[var(--fill-1)] border border-[var(--line)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
+                            className={`group flex flex-col items-center text-center gap-2 p-3 rounded-[var(--radius-card)] bg-[var(--fill-1)] border border-[var(--line)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:bg-[var(--fill-2)] transition-colors duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}
                         >
-                            <span className="w-12 h-12 rounded-[var(--radius-inner)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)] flex items-center justify-center overflow-hidden">
+                            <span className="w-12 h-12 rounded-[var(--radius-inner)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)] flex items-center justify-center overflow-hidden transition-transform duration-500 ease-[var(--ease-hud)] group-hover:scale-[1.08] group-hover:shadow-[var(--glow-accent)]">
                                 {a.icon_path ? (
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img src={a.icon_path} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />

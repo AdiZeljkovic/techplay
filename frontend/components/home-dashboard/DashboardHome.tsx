@@ -64,7 +64,7 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                     <div className="lg:col-span-8 space-y-6 min-w-0">
                         {!hasGames && (
                             <div className="tp-fade-up tp-d2">
-                                <OnboardingCard />
+                                <OnboardingCard stats={data.stats} />
                             </div>
                         )}
 

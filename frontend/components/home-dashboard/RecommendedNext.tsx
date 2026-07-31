@@ -35,9 +35,9 @@ function Row({
         <Link
             href={`/games/${slug}`}
             prefetch={false}
-            className="group flex items-center gap-3.5 p-2 -mx-2 rounded-xl hover:bg-[var(--fill-1)] transition-colors duration-300"
+            className="group relative flex items-center gap-3.5 p-2 -mx-2 rounded-[var(--radius-card)] border border-transparent hover:border-[color-mix(in_srgb,var(--accent)_30%,transparent)] hover:bg-[var(--fill-1)] transition-colors duration-300"
         >
-            <div className="relative w-[112px] h-[62px] rounded-lg overflow-hidden shrink-0 bg-[var(--fill-1)]">
+            <div className="relative w-[112px] h-[62px] rounded-[var(--radius-inner)] overflow-hidden shrink-0 bg-[var(--fill-1)] border border-[var(--line)]">
                 {image ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={image} alt={name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]" />
@@ -48,8 +48,8 @@ function Row({
 
             <div className="min-w-0 flex-1">
                 <p className="font-display text-[14px] font-bold text-[var(--ink-hi)] line-clamp-1 group-hover:text-[var(--accent)] transition-colors">{name}</p>
-                <p className="mt-1 text-[11px] text-[var(--ink-low)] line-clamp-1">
-                    {genres.length ? genres.join(", ") : "From your backlog"}
+                <p className="mt-1 text-[10px] uppercase tracking-wider text-[var(--ink-faint)] line-clamp-1">
+                    {genres.length ? genres.join(" · ") : "From your backlog"}
                 </p>
             </div>
 

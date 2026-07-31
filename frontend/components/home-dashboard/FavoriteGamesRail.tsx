@@ -37,13 +37,13 @@ export default function FavoriteGamesRail({
                 <AddFavoriteInline username={username} defaultOpen onDismiss={() => setPickerOpen(false)} />
             ) : (
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
-                    {favorites.slice(0, 5).map((g) => (
+                    {favorites.slice(0, 5).map((g, i) => (
                         <Link
                             key={g.slug}
                             href={`/games/${g.slug}`}
                             prefetch={false}
                             title={g.name}
-                            className="group relative aspect-[3/4] rounded-[var(--radius-card)] overflow-hidden bg-[var(--fill-1)] border border-[var(--line)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
+                            className={`group relative aspect-[3/4] rounded-[var(--radius-card)] overflow-hidden bg-[var(--fill-1)] border border-[var(--line)] hover:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] hover:shadow-[0_12px_30px_rgba(0,0,0,0.5)] transition-all duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}
                         >
                             {g.background_image && (
                                 // eslint-disable-next-line @next/next/no-img-element
