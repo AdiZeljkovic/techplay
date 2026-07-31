@@ -48,7 +48,8 @@ export default function ReviewWall({ reviews }: { reviews: Article[] }) {
                                 )}
                                 <div className="absolute inset-0 scrim-card" />
 
-                                <div className="absolute top-3 right-3">
+                                {/* bottom-right, matching Discover Games — one anchor site-wide */}
+                                <div className="absolute bottom-3 right-3">
                                     <ScoreBadge score={score} />
                                 </div>
                             </div>

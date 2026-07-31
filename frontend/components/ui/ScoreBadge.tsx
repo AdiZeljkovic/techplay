@@ -1,26 +1,27 @@
 import { cn } from "@/lib/utils";
 import { getScoreMeta } from "@/lib/score";
-import RingMeter from "./RingMeter";
 
 interface ScoreBadgeProps {
     /** 0–10 scale */
     score: number;
-    variant?: "ring" | "pill";
+    variant?: "plate" | "pill";
+    /** Numeral size in px; the plate sizes itself around the content. */
     size?: number;
     className?: string;
 }
 
 /**
- * The one review-score treatment: verdict-colored ring with the word
- * (MASTERPIECE / GREAT / …) or a compact pill for dense grids.
+ * The one review-score treatment: a verdict-tinted plate carrying the numeral
+ * and its verdict word. Auto-widths to the word — MASTERPIECE is the longest
+ * label in the scale and must never spill past the border.
  */
-export default function ScoreBadge({ score, variant = "ring", size = 52, className }: ScoreBadgeProps) {
+export default function ScoreBadge({ score, variant = "plate", size = 18, className }: ScoreBadgeProps) {
     const { color, label, glow } = getScoreMeta(score);
 
     if (variant === "pill") {
         return (
             <span
-                className={cn("inline-flex items-center px-2 py-1 rounded-[var(--radius-inner)] text-[12px] font-display font-bold tabular-nums text-white", className)}
+                className={cn("inline-flex items-center px-2 py-1 rounded-[var(--radius-inner)] font-display text-[12px] font-bold tabular-nums text-white", className)}
                 style={{ backgroundColor: color }}
             >
                 {score.toFixed(1)}
@@ -29,22 +30,26 @@ export default function ScoreBadge({ score, variant = "ring", size = 52, classNa
     }
 
     return (
-        <div
-            className={cn("flex flex-col items-center justify-center rounded-[var(--radius-card)] border-[1.5px] backdrop-blur-sm", className)}
+        <span
+            className={cn("inline-flex flex-col items-center justify-center rounded-[var(--radius-inner)] border px-2.5 py-1.5 backdrop-blur-md", className)}
             style={{
-                width: size,
-                height: size,
-                borderColor: color,
-                backgroundColor: "color-mix(in srgb, var(--surface-0) 90%, transparent)",
-                boxShadow: `0 0 18px ${glow}`,
+                borderColor: `color-mix(in srgb, ${color} 55%, transparent)`,
+                backgroundColor: `color-mix(in srgb, var(--surface-0) 82%, transparent)`,
+                boxShadow: `0 0 16px color-mix(in srgb, ${color} 28%, transparent)`,
             }}
         >
-            <span className="font-display text-[19px] font-bold leading-none tabular-nums" style={{ color }}>
+            <span
+                className="font-display font-bold tabular-nums leading-none"
+                style={{ color, fontSize: size }}
+            >
                 {score.toFixed(1)}
             </span>
-            <span className="text-[7px] font-black uppercase tracking-[0.1em] mt-0.5" style={{ color }}>
+            <span
+                className="mt-1 font-black uppercase leading-none whitespace-nowrap"
+                style={{ color, fontSize: 7, letterSpacing: "0.1em", opacity: 0.9 }}
+            >
                 {label}
             </span>
-        </div>
+        </span>
     );
 }

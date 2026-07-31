@@ -173,10 +173,11 @@ export default function DiscoverGames() {
                                 {/* whisper of a scrim so the seam to the footer never bands */}
                                 <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[var(--surface-1)] to-transparent" />
 
-                                {/* one score treatment across the product (same as TechPlay Reviews) */}
+                                {/* Anchored bottom-right: box art carries its own publisher
+                                    branding along the top edge, so the badge lives down here. */}
                                 {scoreValue !== null && (
-                                    <span className="absolute top-2.5 right-2.5">
-                                        <ScoreBadge score={scoreValue} size={48} />
+                                    <span className="absolute bottom-2.5 right-2.5">
+                                        <ScoreBadge score={scoreValue} />
                                     </span>
                                 )}
                             </div>
