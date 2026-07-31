@@ -1,37 +1,50 @@
 "use client";
 
 /**
- * Mirrors DashboardHome's geometry (hero row + right card, horizontal card row,
- * main/aside grid) so the skeleton → data swap causes no layout shift.
+ * Mirrors DashboardHome's geometry (profile hero + tab strip, highlight
+ * strip, 8/4 grid) so the skeleton → data swap causes no layout shift.
+ * Also shown by HomeGate while auth resolves — keep it deterministic.
  */
 export default function DashboardSkeleton() {
     return (
         <main className="min-h-screen bg-[var(--surface-0)] bg-hud-grid">
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 w-full py-8 animate-pulse">
-                {/* Welcome hero row */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-                    <div className="rounded-2xl bg-[var(--fill-2)] h-[340px]" />
-                    <div className="rounded-2xl bg-[var(--fill-2)] h-[340px]" />
+            <div className="container-page py-8 space-y-6 animate-pulse">
+                {/* Profile hero + tab strip */}
+                <div>
+                    <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[318px]" />
+                    <div className="h-11 mt-px rounded bg-[var(--fill-1)]" />
                 </div>
 
-                {/* Continue playing row */}
-                <div className="h-5 w-44 rounded bg-[var(--fill-2)] mb-4" />
-                <div className="flex gap-3 mb-10 overflow-hidden">
-                    {[0, 1, 2, 3].map((i) => (
-                        <div key={i} className="w-[280px] shrink-0 rounded-[var(--radius-card)] bg-[var(--fill-2)] aspect-[16/10]" />
-                    ))}
+                {/* Highlight strip */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="h-[54px] rounded-[var(--radius-card)] bg-[var(--fill-2)]" />
+                    <div className="h-[54px] rounded-[var(--radius-card)] bg-[var(--fill-2)]" />
                 </div>
 
                 {/* Main + aside grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     <div className="lg:col-span-8 space-y-6">
+                        {/* favorites rail */}
                         <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[220px]" />
+                        {/* achievements */}
+                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[190px]" />
+                        {/* upcoming */}
+                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[260px]" />
+                        {/* reviews */}
+                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[240px]" />
+                        {/* feeds */}
                         <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[280px]" />
                     </div>
                     <div className="lg:col-span-4 space-y-6">
-                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[90px]" />
-                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[220px]" />
-                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[180px]" />
+                        {/* currently playing */}
+                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[300px]" />
+                        {/* completion */}
+                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[130px]" />
+                        {/* streak + quests */}
+                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[74px]" />
+                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[230px]" />
+                        {/* friends online */}
+                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[190px]" />
                     </div>
                 </div>
             </div>

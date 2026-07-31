@@ -47,28 +47,28 @@ export default function DailyStreakWidget() {
 
   return (
     <div
-      className={`rounded-xl border p-3.5 flex items-center gap-3.5 transition-all ${
+      className={`rounded-[var(--radius-card)] border p-3.5 flex items-center gap-3.5 transition-colors duration-300 ${
         claimed
-          ? "border-[var(--accent)]/20 bg-[var(--accent)]/[0.04]"
-          : "border-[var(--border)] bg-white/[0.02] hover:border-[var(--accent)]/30"
+          ? "border-[color-mix(in_srgb,var(--accent)_20%,transparent)] bg-[color-mix(in_srgb,var(--accent)_4%,transparent)]"
+          : "border-[var(--line)] bg-[var(--fill-1)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)]"
       }`}
     >
       <div className="relative shrink-0">
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${claimed ? "bg-[var(--accent)]/15" : "bg-white/5"}`}>
-          <Flame className={`w-5 h-5 ${claimed ? "text-[var(--accent)]" : "text-white/35"}`} />
+        <div className={`w-11 h-11 rounded-[var(--radius-inner)] flex items-center justify-center ${claimed ? "bg-[var(--accent-soft)]" : "bg-[var(--fill-2)]"}`}>
+          <Flame className={`w-5 h-5 ${claimed ? "text-[var(--accent)]" : "text-[var(--ink-faint)]"}`} />
         </div>
         {days > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[var(--accent)] text-white text-[10px] font-black flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[var(--accent)] text-white text-[10px] font-black tabular-nums flex items-center justify-center">
             {days > 99 ? "99+" : days}
           </span>
         )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-bold text-white">
+        <p className="font-display text-[13px] font-bold text-[var(--ink-hi)]">
           {days > 0 ? `${days}-day streak` : "Start your streak"}
         </p>
-        <p className="text-[11px] text-white/40">
+        <p className="text-[11px] text-[var(--ink-low)]">
           {claimed ? "Come back tomorrow" : `Claim +${streak.next_bounty} bounty`}
         </p>
       </div>
@@ -76,11 +76,11 @@ export default function DailyStreakWidget() {
       <button
         onClick={handleClaim}
         disabled={claimed || claiming}
-        className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all ${
+        className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-card)] font-display text-[11px] font-bold uppercase tracking-wider transition-colors duration-300 ${
           claimed
-            ? "bg-[var(--accent)]/10 text-[var(--accent)] cursor-default"
+            ? "bg-[var(--accent-soft)] text-[var(--accent)] cursor-default"
             : claiming
-            ? "bg-white/5 text-white/40"
+            ? "bg-[var(--fill-2)] text-[var(--ink-low)]"
             : "bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] active:scale-[0.97]"
         }`}
       >

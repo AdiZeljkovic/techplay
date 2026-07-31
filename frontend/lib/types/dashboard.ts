@@ -13,6 +13,11 @@ export interface DashboardUser {
     username: string;
     display_name: string;
     avatar_url: string | null;
+    cover_image: string | null;
+    bio: string | null;
+    location: string | null;
+    tagline: string | null;
+    playstyle_tags: string[];
     level: number;
     xp: number;
     rank_name: string | null;
@@ -29,6 +34,39 @@ export interface DashboardStats {
     achievements_count: number;
     reviews_count: number;
     completed_this_month: number;
+    hours_played: number;
+    friends_count: number;
+}
+
+export interface DashboardAchievement {
+    id: number;
+    name: string;
+    description: string | null;
+    icon_path: string | null;
+    points: number;
+    unlocked_at: string | null;
+}
+
+export interface DashboardReview {
+    id: number;
+    /** 1–5 scale — multiply by 2 for the 10-point ScoreBadge */
+    rating: number;
+    excerpt: string;
+    created_at: string | null;
+    game: DashboardGameCover;
+}
+
+export interface FriendOnline {
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+    game_name: string | null;
+    game_slug: string | null;
+}
+
+export interface ProfileCompletion {
+    percent: number;
+    missing: { key: string; label: string }[];
 }
 
 export interface BacklogSuggestion {
@@ -50,4 +88,8 @@ export interface DashboardData {
     /** Shape mirrors StreakService::info */
     streak: { streak: number; claimed_today: boolean; last_claim: string | null; next_bounty: number };
     highlights: { updates_from_followed: number; releases_this_week: number };
+    recent_achievements: DashboardAchievement[];
+    recent_reviews: DashboardReview[];
+    friends_online: FriendOnline[];
+    profile_completion: ProfileCompletion;
 }

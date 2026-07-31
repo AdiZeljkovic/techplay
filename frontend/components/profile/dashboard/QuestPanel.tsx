@@ -26,7 +26,7 @@ const TYPE_CONFIG = {
   daily: { label: "Daily", color: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20" },
   weekly: { label: "Weekly", color: "text-blue-400 bg-blue-400/10 border-blue-400/20" },
   monthly: { label: "Monthly", color: "text-purple-400 bg-purple-400/10 border-purple-400/20" },
-  permanent: { label: "Quest", color: "text-white/40 bg-white/5 border-white/10" },
+  permanent: { label: "Quest", color: "text-[var(--ink-low)] bg-[var(--fill-2)] border-[var(--line)]" },
 };
 
 function QuestRow({ quest, compact }: { quest: Quest; compact?: boolean }) {
@@ -35,22 +35,22 @@ function QuestRow({ quest, compact }: { quest: Quest; compact?: boolean }) {
 
   return (
     <div
-      className={`rounded-xl border p-3 transition-all ${
+      className={`rounded-[var(--radius-card)] border p-3 transition-colors duration-300 ${
         quest.completed
           ? "border-emerald-500/20 bg-emerald-500/5"
-          : "border-[var(--border)] bg-white/[0.02]"
+          : "border-[var(--line)] bg-[var(--fill-1)]"
       }`}
     >
       <div className="flex items-start gap-3">
         {!compact && (
-          <div className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 ${cfg.color}`}>
+          <div className={`w-9 h-9 rounded-[var(--radius-inner)] border flex items-center justify-center shrink-0 ${cfg.color}`}>
             <Trophy className="w-4 h-4" />
           </div>
         )}
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <p className="text-[13px] font-semibold text-white truncate">{quest.name}</p>
+            <p className="text-[13px] font-semibold text-[var(--ink-hi)] truncate">{quest.name}</p>
             {quest.is_seasonal ? (
               <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border text-[var(--accent)] bg-[var(--accent)]/10 border-[var(--accent)]/25">
                 Season
@@ -61,16 +61,16 @@ function QuestRow({ quest, compact }: { quest: Quest; compact?: boolean }) {
               </span>
             )}
           </div>
-          {!compact && <p className="text-[11px] text-white/40 mb-2">{quest.description}</p>}
+          {!compact && <p className="text-[11px] text-[var(--ink-low)] mb-2">{quest.description}</p>}
 
           <div className={`flex items-center gap-2${compact ? " mt-1.5" : ""}`}>
-            <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+            <div className="flex-1 h-1.5 rounded-full bg-[var(--track)] overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all ${quest.completed ? "bg-emerald-500" : "bg-[var(--accent)]"}`}
+                className={`h-full rounded-full transition-all duration-300 ${quest.completed ? "bg-emerald-500" : "bg-[var(--accent)]"}`}
                 style={{ width: `${pct}%` }}
               />
             </div>
-            <span className="text-[10px] text-white/40 font-mono shrink-0">
+            <span className="text-[10px] text-[var(--ink-low)] font-display font-bold tabular-nums shrink-0">
               {quest.progress}/{quest.criteria_value}
             </span>
           </div>
@@ -78,13 +78,13 @@ function QuestRow({ quest, compact }: { quest: Quest; compact?: boolean }) {
 
         <div className="flex flex-col items-end gap-1 shrink-0">
           {quest.bounty_reward > 0 && (
-            <span className="text-[10px] font-bold text-amber-400">
-              +{quest.bounty_reward} <span className="text-white/35">B</span>
+            <span className="text-[10px] font-bold tabular-nums text-amber-400">
+              +{quest.bounty_reward} <span className="text-[var(--ink-faint)]">B</span>
             </span>
           )}
           {quest.xp_reward > 0 && (
-            <span className="text-[10px] font-bold text-blue-400">
-              +{quest.xp_reward} <span className="text-white/35">XP</span>
+            <span className="text-[10px] font-bold tabular-nums text-blue-400">
+              +{quest.xp_reward} <span className="text-[var(--ink-faint)]">XP</span>
             </span>
           )}
         </div>
@@ -114,7 +114,7 @@ export default function QuestPanel({ isOwnProfile, compact = false }: { isOwnPro
         <QuestRow key={q.id} quest={q} compact={compact} />
       ))}
       {shown.length === 0 && (
-        <p className="text-[12px] text-white/40 text-center py-3">
+        <p className="text-[12px] text-[var(--ink-low)] text-center py-3">
           All quests completed — nice work!
         </p>
       )}

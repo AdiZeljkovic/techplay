@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Article;
+use App\Models\ConnectedAccount;
+use App\Models\Friendship;
 use App\Models\Game;
 use App\Models\GameRating;
+use App\Models\Presence;
 use App\Models\UserGame;
 use App\Services\ProfileService;
 use App\Services\StreakService;
@@ -14,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class DashboardController extends Controller
 {
@@ -62,12 +66,28 @@ class DashboardController extends Controller
             ->where('completed_at', '>=', now()->startOfMonth())
             ->count();
 
+        // published reviews only — drafts are private; feeds stats AND completion
+        $reviewsCount = GameRating::where('user_id', $user->id)->where('is_draft', false)->count();
+
+        // Accepted friendships, resolved to the *other* user's id (one query,
+        // reused for both the counter and the online rail).
+        $friendIds = Friendship::where('status', 'accepted')
+            ->where(fn ($q) => $q->where('sender_id', $user->id)->orWhere('receiver_id', $user->id))
+            ->get(['sender_id', 'receiver_id'])
+            ->map(fn ($f) => $f->sender_id === $user->id ? $f->receiver_id : $f->sender_id);
+
         return $this->success([
             'user' => [
                 'id' => $user->id,
                 'username' => $user->username,
                 'display_name' => $user->display_name ?? $user->name,
                 'avatar_url' => $user->avatar_url,
+                // relative storage path in the DB — same conversion as PublicUserResource
+                'cover_image' => $user->cover_image ? asset('storage/'.$user->cover_image) : null,
+                'bio' => $user->bio,
+                'location' => $user->location,
+                'tagline' => $user->tagline,
+                'playstyle_tags' => array_values((array) ($user->playstyle_tags ?? [])),
                 'level' => (int) floor(($user->xp ?? 0) / 1000) + 1,
                 'xp' => (int) ($user->xp ?? 0),
                 'rank_name' => $user->rank?->name,
@@ -84,9 +104,10 @@ class DashboardController extends Controller
                 'wishlist_count' => $counts['wishlist_count'],
                 'favorites_count' => $counts['favorites_count'],
                 'achievements_count' => $user->achievements()->count(),
-                // published reviews only — drafts are private
-                'reviews_count' => GameRating::where('user_id', $user->id)->where('is_draft', false)->count(),
+                'reviews_count' => $reviewsCount,
                 'completed_this_month' => $completedThisMonth,
+                'hours_played' => (int) UserGame::where('user_id', $user->id)->sum('hours_played'),
+                'friends_count' => $friendIds->count(),
             ],
             'playing_now' => $this->profileService->playingNow($user, 8),
             'favorites' => $this->gameCovers($user, ['is_favorite' => true], 6),
@@ -97,7 +118,112 @@ class DashboardController extends Controller
                 'updates_from_followed' => $updatesFromFollowed,
                 'releases_this_week' => $releasesThisWeek,
             ],
+            'recent_achievements' => $this->recentAchievements($user),
+            'recent_reviews' => $this->recentReviews($user),
+            'friends_online' => $this->friendsOnline($friendIds->all()),
+            'profile_completion' => $this->profileCompletion($user, $counts, $reviewsCount),
         ]);
+    }
+
+    /** Latest unlocked achievements, newest first. */
+    private function recentAchievements($user): array
+    {
+        return $user->achievements()
+            ->orderByPivot('unlocked_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(fn ($a) => [
+                'id' => $a->id,
+                'name' => $a->name,
+                'description' => $a->description,
+                'icon_path' => $a->icon_path,
+                'points' => (int) $a->points,
+                'unlocked_at' => $a->pivot->unlocked_at,
+            ])->all();
+    }
+
+    /** Latest published reviews with text, joined to their games. */
+    private function recentReviews($user): array
+    {
+        return GameRating::where('user_id', $user->id)
+            ->where('is_draft', false)
+            ->whereNotNull('review')
+            ->with('game:id,slug,name,background_image')
+            ->orderByDesc('created_at')
+            ->limit(3)
+            ->get()
+            ->map(fn (GameRating $r) => [
+                'id' => $r->id,
+                'rating' => (int) $r->rating,
+                'excerpt' => Str::limit(strip_tags((string) $r->review), 180),
+                'created_at' => $r->created_at?->toISOString(),
+                'game' => [
+                    'slug' => $r->game?->slug,
+                    'name' => $r->game?->name,
+                    'background_image' => $r->game?->background_image,
+                ],
+            ])
+            ->filter(fn ($r) => $r['game']['slug'] !== null)
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Friends with an active presence right now. Privacy: only is_active rows
+     * leave the server — never last_seen_at or stale sessions.
+     */
+    private function friendsOnline(array $friendIds): array
+    {
+        if (! $friendIds) {
+            return [];
+        }
+
+        return Presence::whereIn('user_id', $friendIds)
+            ->where('is_active', true)
+            ->with('user:id,username,display_name,avatar_url')
+            ->orderByDesc('started_at')
+            ->limit(8)
+            ->get()
+            ->map(fn (Presence $p) => [
+                'username' => $p->user?->username,
+                'display_name' => $p->user?->display_name,
+                'avatar_url' => $p->user?->avatar_url,
+                'game_name' => $p->game_name,
+                'game_slug' => $p->game_slug,
+            ])
+            ->filter(fn ($f) => $f['username'] !== null)
+            ->values()
+            ->all();
+    }
+
+    /**
+     * How "finished" the profile looks, from cheap signals already on hand.
+     * The frontend maps `key` to a settings/action link.
+     */
+    private function profileCompletion($user, array $counts, int $reviewsCount): array
+    {
+        $signals = [
+            'avatar' => ['label' => 'Add a profile picture', 'done' => ! empty($user->avatar_url)],
+            'cover' => ['label' => 'Add a profile banner', 'done' => ! empty($user->cover_image)],
+            'bio' => ['label' => 'Write your bio', 'done' => ! empty($user->bio)],
+            'location' => ['label' => 'Add location or tagline', 'done' => ! empty($user->location) || ! empty($user->tagline)],
+            'playstyle' => ['label' => 'Pick playstyle tags', 'done' => ! empty($user->playstyle_tags)],
+            'gamertags' => ['label' => 'Add your gamertags', 'done' => ! empty(array_filter((array) ($user->gamertags ?? [])))],
+            'favorite' => ['label' => 'Star a favorite game', 'done' => $counts['favorites_count'] > 0],
+            'review' => ['label' => 'Publish a game review', 'done' => $reviewsCount > 0],
+            'connect' => ['label' => 'Link a gaming account', 'done' => ConnectedAccount::where('user_id', $user->id)->exists()],
+        ];
+
+        $done = count(array_filter($signals, fn ($s) => $s['done']));
+
+        return [
+            'percent' => (int) round($done / count($signals) * 100),
+            'missing' => collect($signals)
+                ->reject(fn ($s) => $s['done'])
+                ->map(fn ($s, $key) => ['key' => $key, 'label' => $s['label']])
+                ->values()
+                ->all(),
+        ];
     }
 
     /**
