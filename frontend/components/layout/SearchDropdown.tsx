@@ -178,14 +178,6 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                     )}
                 />
 
-                {/* Hotkey hint (hidden while typing so the clear button can take the slot) */}
-                {hotkey && !isMobile && query.length === 0 && !isLoading && (
-                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-0.5 pointer-events-none">
-                        <kbd className="px-1.5 py-0.5 rounded border border-[var(--line-strong)] bg-[var(--fill-2)] text-[10px] font-semibold text-white/40">Ctrl</kbd>
-                        <kbd className="px-1.5 py-0.5 rounded border border-[var(--line-strong)] bg-[var(--fill-2)] text-[10px] font-semibold text-white/40">K</kbd>
-                    </span>
-                )}
-
                 {/* Loading/Clear button */}
                 {(isLoading || query.length > 0) && (
                     <button
