@@ -28,6 +28,16 @@ export interface DashboardStats {
     favorites_count: number;
     achievements_count: number;
     reviews_count: number;
+    completed_this_month: number;
+}
+
+export interface BacklogSuggestion {
+    slug: string;
+    name: string;
+    background_image: string | null;
+    genres: string[];
+    /** null when the library is too thin to score against */
+    match_percent: number | null;
 }
 
 export interface DashboardData {
@@ -36,6 +46,7 @@ export interface DashboardData {
     playing_now: PlayingNowGame[];
     favorites: DashboardGameCover[];
     backlog_preview: DashboardGameCover[];
+    backlog_suggestion: BacklogSuggestion | null;
     /** Shape mirrors StreakService::info */
     streak: { streak: number; claimed_today: boolean; last_claim: string | null; next_bounty: number };
     highlights: { updates_from_followed: number; releases_this_week: number };

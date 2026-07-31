@@ -56,6 +56,12 @@ class DashboardController extends Controller
                 ->whereDate('released', '<=', now()->addDays(7)))
             ->count();
 
+        $completedThisMonth = UserGame::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->whereNotNull('completed_at')
+            ->where('completed_at', '>=', now()->startOfMonth())
+            ->count();
+
         return $this->success([
             'user' => [
                 'id' => $user->id,
@@ -79,10 +85,12 @@ class DashboardController extends Controller
                 'favorites_count' => $counts['favorites_count'],
                 'achievements_count' => $user->achievements()->count(),
                 'reviews_count' => GameRating::where('user_id', $user->id)->count(),
+                'completed_this_month' => $completedThisMonth,
             ],
             'playing_now' => $this->profileService->playingNow($user, 8),
             'favorites' => $this->gameCovers($user, ['is_favorite' => true], 6),
             'backlog_preview' => $this->gameCovers($user, ['status' => 'backlog'], 4),
+            'backlog_suggestion' => $this->backlogSuggestion($user, $libraryGameIds->all()),
             'streak' => $this->streakService->info($user),
             'highlights' => [
                 'updates_from_followed' => $updatesFromFollowed,
@@ -104,33 +112,13 @@ class DashboardController extends Controller
 
         $items = Cache::remember("recommendations:v1:{$user->id}", 3600, function () use ($user) {
             $libraryGameIds = UserGame::where('user_id', $user->id)->pluck('game_id')->all();
+            $profile = $this->tasteProfile($libraryGameIds);
 
-            if (count($libraryGameIds) === 0) {
+            if (! $profile) {
                 return [];
             }
 
-            // Genre + platform profile computed in PHP (portable across pgsql/sqlite)
-            $libraryGames = Game::whereIn('id', array_slice($libraryGameIds, 0, 300))
-                ->get(['id', 'genre_names', 'platform_names']);
-
-            $genreCounts = [];
-            $platformSet = [];
-            foreach ($libraryGames as $g) {
-                foreach ((array) $g->genre_names as $genre) {
-                    $genreCounts[$genre] = ($genreCounts[$genre] ?? 0) + 1;
-                }
-                foreach ((array) $g->platform_names as $p) {
-                    $platformSet[$p] = true;
-                }
-            }
-            if (! $genreCounts) {
-                return [];
-            }
-
-            arsort($genreCounts);
-            $topGenres = array_slice($genreCounts, 0, 5, true);
-            $total = array_sum($topGenres);
-            $genreWeights = array_map(fn ($c) => $c / $total, $topGenres);
+            ['weights' => $genreWeights, 'platforms' => $platformSet] = $profile;
 
             // Candidates: well-rated games sharing at least one top genre, not in the library.
             $query = Game::query()
@@ -148,32 +136,11 @@ class DashboardController extends Controller
             $candidates = $query->orderByDesc('rating')->limit(150)
                 ->get(['id', 'slug', 'name', 'background_image', 'rating', 'metacritic', 'genre_names', 'platform_names']);
 
-            // Best possible genre coverage = all top genres present
-            $maxGenreScore = array_sum($genreWeights);
-
             $scored = [];
             foreach ($candidates as $g) {
-                $genres = (array) $g->genre_names;
-                $genreScore = 0.0;
-                $matched = [];
-                foreach ($genres as $genre) {
-                    if (isset($genreWeights[$genre])) {
-                        $genreScore += $genreWeights[$genre];
-                        $matched[] = $genre;
-                    }
-                }
-                if ($genreScore <= 0) {
-                    continue;
-                }
+                $match = $this->matchAgainstProfile($g, $profile);
 
-                $platformOverlap = count(array_intersect((array) $g->platform_names, array_keys($platformSet))) > 0;
-                $rating5 = min(5, (float) $g->rating);
-
-                // 80% genre fit + 10% platform + 10% quality
-                $score = 0.8 * ($genreScore / $maxGenreScore) + ($platformOverlap ? 0.1 : 0) + 0.1 * ($rating5 / 5);
-                $match = (int) round(min(0.99, $score) * 100);
-
-                if ($match < 40) {
+                if ($match === null || $match['percent'] < 40) {
                     continue;
                 }
 
@@ -182,8 +149,8 @@ class DashboardController extends Controller
                     'name' => $g->name,
                     'background_image' => $g->background_image,
                     'rating' => $g->rating,
-                    'match_percent' => $match,
-                    'matched_genres' => array_slice($matched, 0, 3),
+                    'match_percent' => $match['percent'],
+                    'matched_genres' => $match['genres'],
                 ];
             }
 
@@ -193,6 +160,132 @@ class DashboardController extends Controller
         });
 
         return $this->success($items);
+    }
+
+    /**
+     * The backlog game that best fits the user's taste — "play this next".
+     * Falls back to the most recently added backlog entry when nothing scores.
+     */
+    private function backlogSuggestion($user, array $libraryGameIds): ?array
+    {
+        $backlog = UserGame::where('user_id', $user->id)
+            ->where('status', 'backlog')
+            ->with('game:id,slug,name,background_image,rating,genre_names,platform_names')
+            ->orderByDesc('updated_at')
+            ->limit(40)
+            ->get()
+            ->pluck('game')
+            ->filter();
+
+        if ($backlog->isEmpty()) {
+            return null;
+        }
+
+        $profile = $this->tasteProfile($libraryGameIds);
+        $best = null;
+
+        if ($profile) {
+            foreach ($backlog as $game) {
+                $match = $this->matchAgainstProfile($game, $profile);
+                if ($match && (! $best || $match['percent'] > $best['match_percent'])) {
+                    $best = [
+                        'slug' => $game->slug,
+                        'name' => $game->name,
+                        'background_image' => $game->background_image,
+                        'genres' => $match['genres'],
+                        'match_percent' => $match['percent'],
+                    ];
+                }
+            }
+        }
+
+        if ($best) {
+            return $best;
+        }
+
+        $fallback = $backlog->first();
+
+        return [
+            'slug' => $fallback->slug,
+            'name' => $fallback->name,
+            'background_image' => $fallback->background_image,
+            'genres' => array_slice((array) $fallback->genre_names, 0, 3),
+            'match_percent' => null,
+        ];
+    }
+
+    /**
+     * The user's taste profile: weighted top genres + platforms they own on,
+     * derived from their library. Null when there's nothing to learn from.
+     *
+     * @return array{weights: array<string,float>, platforms: array<string,bool>}|null
+     */
+    private function tasteProfile(array $libraryGameIds): ?array
+    {
+        if (count($libraryGameIds) === 0) {
+            return null;
+        }
+
+        // Computed in PHP so the same code runs on pgsql and sqlite
+        $libraryGames = Game::whereIn('id', array_slice($libraryGameIds, 0, 300))
+            ->get(['id', 'genre_names', 'platform_names']);
+
+        $genreCounts = [];
+        $platformSet = [];
+        foreach ($libraryGames as $g) {
+            foreach ((array) $g->genre_names as $genre) {
+                $genreCounts[$genre] = ($genreCounts[$genre] ?? 0) + 1;
+            }
+            foreach ((array) $g->platform_names as $p) {
+                $platformSet[$p] = true;
+            }
+        }
+
+        if (! $genreCounts) {
+            return null;
+        }
+
+        arsort($genreCounts);
+        $topGenres = array_slice($genreCounts, 0, 5, true);
+        $total = array_sum($topGenres);
+
+        return [
+            'weights' => array_map(fn ($c) => $c / $total, $topGenres),
+            'platforms' => $platformSet,
+        ];
+    }
+
+    /**
+     * Score one game against a taste profile: 80% genre fit, 10% platform
+     * overlap, 10% quality. Null when the game shares no genre with the profile.
+     *
+     * @return array{percent: int, genres: array<int,string>}|null
+     */
+    private function matchAgainstProfile(Game $game, array $profile): ?array
+    {
+        $weights = $profile['weights'];
+        $genreScore = 0.0;
+        $matched = [];
+
+        foreach ((array) $game->genre_names as $genre) {
+            if (isset($weights[$genre])) {
+                $genreScore += $weights[$genre];
+                $matched[] = $genre;
+            }
+        }
+
+        if ($genreScore <= 0) {
+            return null;
+        }
+
+        $platformOverlap = count(array_intersect((array) $game->platform_names, array_keys($profile['platforms']))) > 0;
+        $rating5 = min(5, (float) $game->rating);
+        $score = 0.8 * ($genreScore / array_sum($weights)) + ($platformOverlap ? 0.1 : 0) + 0.1 * ($rating5 / 5);
+
+        return [
+            'percent' => (int) round(min(0.99, $score) * 100),
+            'genres' => array_slice($matched, 0, 3),
+        ];
     }
 
     /**

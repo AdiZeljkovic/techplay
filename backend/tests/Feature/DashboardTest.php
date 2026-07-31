@@ -63,6 +63,51 @@ class DashboardTest extends TestCase
         $this->assertSame(0, $response->json('data.highlights.releases_this_week'));
     }
 
+    public function test_backlog_suggestion_prefers_the_best_taste_match(): void
+    {
+        $user = User::factory()->create(['username' => 'backlogger']);
+        Sanctum::actingAs($user);
+
+        $played = Game::create([
+            'slug' => 'played-rpg', 'name' => 'Played RPG', 'rating' => 4.5,
+            'genre_names' => ['RPG'], 'platform_names' => ['PC'], 'has_description' => true,
+        ]);
+        $match = Game::create([
+            'slug' => 'backlog-rpg', 'name' => 'Backlog RPG', 'rating' => 4.6,
+            'genre_names' => ['RPG'], 'platform_names' => ['PC'], 'has_description' => true,
+        ]);
+        $mismatch = Game::create([
+            'slug' => 'backlog-racing', 'name' => 'Backlog Racing', 'rating' => 4.9,
+            'genre_names' => ['Racing'], 'platform_names' => ['PC'], 'has_description' => true,
+        ]);
+
+        UserGame::create(['user_id' => $user->id, 'game_id' => $played->id, 'status' => 'completed']);
+        UserGame::create(['user_id' => $user->id, 'game_id' => $mismatch->id, 'status' => 'backlog']);
+        UserGame::create(['user_id' => $user->id, 'game_id' => $match->id, 'status' => 'backlog']);
+
+        $response = $this->getJson('/api/v1/me/dashboard');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.backlog_suggestion.slug', 'backlog-rpg');
+        $this->assertGreaterThan(0, $response->json('data.backlog_suggestion.match_percent'));
+    }
+
+    public function test_completed_this_month_counts_only_the_current_month(): void
+    {
+        $user = User::factory()->create(['username' => 'finisher']);
+        Sanctum::actingAs($user);
+
+        $a = Game::create(['slug' => 'done-now', 'name' => 'Done Now', 'rating' => 4]);
+        $b = Game::create(['slug' => 'done-before', 'name' => 'Done Before', 'rating' => 4]);
+
+        UserGame::create(['user_id' => $user->id, 'game_id' => $a->id, 'status' => 'completed', 'completed_at' => now()]);
+        UserGame::create(['user_id' => $user->id, 'game_id' => $b->id, 'status' => 'completed', 'completed_at' => now()->subMonths(2)]);
+
+        $this->getJson('/api/v1/me/dashboard')
+            ->assertStatus(200)
+            ->assertJsonPath('data.stats.completed_this_month', 1);
+    }
+
     public function test_recommendations_require_authentication(): void
     {
         $this->getJson('/api/v1/me/recommendations')->assertStatus(401);

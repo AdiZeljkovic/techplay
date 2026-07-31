@@ -57,16 +57,18 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                     <UpcomingForYouRow />
                 </div>
 
+                {/* Backlog & recommendations */}
+                {hasGames && (
+                    <div className="mb-10 grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch tp-fade-up tp-d4">
+                        <RecommendedNext games={data.backlog_preview} />
+                        <BacklogProgressCard stats={data.stats} suggestion={data.backlog_suggestion} />
+                    </div>
+                )}
+
                 {/* Main + aside */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    <div className="lg:col-span-8 space-y-6 min-w-0 tp-fade-up tp-d3">
+                    <div className="lg:col-span-8 space-y-6 min-w-0 tp-fade-up tp-d5">
                         {!hasGames && <OnboardingCard />}
-                        {hasGames && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                                <RecommendedNext games={data.backlog_preview} />
-                                <BacklogProgressCard stats={data.stats} />
-                            </div>
-                        )}
                         <FollowedGamesFeed />
                         <SectionCard
                             title="Community Feed"
@@ -78,7 +80,7 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                         </SectionCard>
                     </div>
 
-                    <div className="lg:col-span-4 space-y-6 min-w-0 tp-fade-up tp-d4">
+                    <div className="lg:col-span-4 space-y-6 min-w-0 tp-fade-up tp-d6">
                         <DailyStreakWidget />
                         <QuestPanel isOwnProfile compact />
                         <QuickActionsGrid />
