@@ -39,10 +39,10 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
     return (
         <main className="min-h-screen bg-[var(--bg-primary)] profile-grid-bg">
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 w-full py-8">
-                {/* Welcome hero row */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10 tp-fade-up tp-d1">
-                    <div className="lg:col-span-8"><WelcomeHero data={data} /></div>
-                    <div className="lg:col-span-4"><ProfileSummaryCard data={data} /></div>
+                {/* Welcome hero row — even split, panels stretch to match height */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10 items-stretch tp-fade-up tp-d1">
+                    <WelcomeHero data={data} />
+                    <ProfileSummaryCard data={data} />
                 </div>
 
                 {/* Continue playing rail */}

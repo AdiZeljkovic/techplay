@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Article;
 use App\Models\Game;
 use App\Models\GameRating;
 use App\Models\UserGame;
 use App\Services\ProfileService;
+use App\Services\StreakService;
 use App\Traits\ApiResponse;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -18,7 +19,10 @@ class DashboardController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(protected ProfileService $profileService) {}
+    public function __construct(
+        protected ProfileService $profileService,
+        protected StreakService $streakService,
+    ) {}
 
     /**
      * GET /me/dashboard — aggregated payload for the logged-in homepage dashboard.
@@ -33,6 +37,24 @@ class DashboardController extends Controller
 
         $counts = $this->profileService->collectionCounts($user);
         $nextRank = $user->nextRank();
+        $libraryGameIds = UserGame::where('user_id', $user->id)->pluck('game_id');
+
+        // Fresh coverage of games the user tracks (the "new updates" chip)
+        $updatesFromFollowed = $libraryGameIds->isEmpty() ? 0 : Article::query()
+            ->whereIn('game_id', $libraryGameIds)
+            ->where('status', 'published')
+            ->where('published_at', '>=', now()->subDays(7))
+            ->where('published_at', '<=', now())
+            ->count();
+
+        // Tracked games landing within the week
+        $releasesThisWeek = UserGame::where('user_id', $user->id)
+            ->whereIn('status', ['wishlist', 'backlog'])
+            ->whereHas('game', fn ($q) => $q
+                ->whereNotNull('released')
+                ->whereDate('released', '>=', now())
+                ->whereDate('released', '<=', now()->addDays(7)))
+            ->count();
 
         return $this->success([
             'user' => [
@@ -61,9 +83,10 @@ class DashboardController extends Controller
             'playing_now' => $this->profileService->playingNow($user, 8),
             'favorites' => $this->gameCovers($user, ['is_favorite' => true], 6),
             'backlog_preview' => $this->gameCovers($user, ['status' => 'backlog'], 4),
-            'streak' => [
-                'days' => $user->daily_streak ?? 0,
-                'claimed_today' => $user->last_daily_claim && Carbon::parse($user->last_daily_claim)->isToday(),
+            'streak' => $this->streakService->info($user),
+            'highlights' => [
+                'updates_from_followed' => $updatesFromFollowed,
+                'releases_this_week' => $releasesThisWeek,
             ],
         ]);
     }

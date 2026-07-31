@@ -37,7 +37,8 @@ class DashboardTest extends TestCase
                     'playing_now',
                     'favorites',
                     'backlog_preview',
-                    'streak' => ['days', 'claimed_today'],
+                    'streak' => ['streak', 'claimed_today', 'next_bounty'],
+                    'highlights' => ['updates_from_followed', 'releases_this_week'],
                 ],
             ]);
 
@@ -56,8 +57,10 @@ class DashboardTest extends TestCase
         $this->assertSame([], $response->json('data.playing_now'));
         $this->assertSame([], $response->json('data.favorites'));
         $this->assertSame([], $response->json('data.backlog_preview'));
-        $this->assertSame(0, $response->json('data.streak.days'));
+        $this->assertSame(0, $response->json('data.streak.streak'));
         $this->assertFalse($response->json('data.streak.claimed_today'));
+        $this->assertSame(0, $response->json('data.highlights.updates_from_followed'));
+        $this->assertSame(0, $response->json('data.highlights.releases_this_week'));
     }
 
     public function test_recommendations_require_authentication(): void

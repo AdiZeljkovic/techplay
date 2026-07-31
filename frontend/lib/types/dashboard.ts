@@ -36,5 +36,7 @@ export interface DashboardData {
     playing_now: PlayingNowGame[];
     favorites: DashboardGameCover[];
     backlog_preview: DashboardGameCover[];
-    streak: { days: number; claimed_today: boolean };
+    /** Shape mirrors StreakService::info */
+    streak: { streak: number; claimed_today: boolean; last_claim: string | null; next_bounty: number };
+    highlights: { updates_from_followed: number; releases_this_week: number };
 }

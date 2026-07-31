@@ -9,9 +9,9 @@ export default function DashboardSkeleton() {
         <main className="min-h-screen bg-[var(--bg-primary)]">
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 w-full py-8 animate-pulse">
                 {/* Welcome hero row */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
-                    <div className="lg:col-span-8 rounded-2xl bg-white/5 h-[260px]" />
-                    <div className="lg:col-span-4 rounded-2xl bg-white/5 h-[260px]" />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+                    <div className="rounded-2xl bg-white/5 h-[340px]" />
+                    <div className="rounded-2xl bg-white/5 h-[340px]" />
                 </div>
 
                 {/* Continue playing row */}
