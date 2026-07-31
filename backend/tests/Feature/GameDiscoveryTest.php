@@ -20,16 +20,16 @@ class GameDiscoveryTest extends TestCase
             'has_description' => true,
             'released' => '2015-06-15',
             'genre_names' => ['Action'],
-            'details_data' => ['ratings_count' => 12],
+            'details_data' => ['num_votes' => 12],
         ], $attrs));
     }
 
     public function test_hidden_gems_returns_low_vote_high_rated_games(): void
     {
-        $gem = $this->makeGame(['slug' => 'obscure-gem', 'details_data' => ['ratings_count' => 7]]);
-        $this->makeGame(['slug' => 'famous-game', 'details_data' => ['ratings_count' => 50000]]);
-        $this->makeGame(['slug' => 'low-rated', 'rating' => 4.0, 'details_data' => ['ratings_count' => 5]]);
-        $this->makeGame(['slug' => 'untrusted-score', 'details_data' => ['ratings_count' => 1]]);
+        $gem = $this->makeGame(['slug' => 'obscure-gem', 'details_data' => ['num_votes' => 7]]);
+        $this->makeGame(['slug' => 'famous-game', 'details_data' => ['num_votes' => 50000]]);
+        $this->makeGame(['slug' => 'low-rated', 'rating' => 4.0, 'details_data' => ['num_votes' => 5]]);
+        $this->makeGame(['slug' => 'untrusted-score', 'details_data' => ['num_votes' => 1]]);
 
         $response = $this->getJson('/api/v1/games/hidden-gems');
 
@@ -42,10 +42,30 @@ class GameDiscoveryTest extends TestCase
         $this->assertLessThanOrEqual(6, count($slugs));
     }
 
+    /**
+     * Guards the bug that shipped empty to production: hidden-gems read
+     * `details_data->ratings_count`, but Moby stores `num_votes` and only the
+     * show payload renames it. Tying both endpoints to one fixture means
+     * renaming the key on either side fails here.
+     */
+    public function test_vote_count_key_agrees_with_the_show_endpoint(): void
+    {
+        $game = $this->makeGame(['slug' => 'vote-key-check', 'details_data' => ['num_votes' => 9]]);
+
+        $this->getJson("/api/v1/games/{$game->slug}")
+            ->assertStatus(200)
+            ->assertJsonPath('ratings_count', 9);
+
+        $gems = $this->getJson('/api/v1/games/hidden-gems')->json('results');
+
+        $this->assertContains($game->slug, array_column($gems, 'slug'));
+        $this->assertSame(9, $gems[0]['votes']);
+    }
+
     public function test_hidden_gems_rotation_is_stable_within_a_day(): void
     {
         foreach (range(1, 8) as $i) {
-            $this->makeGame(['slug' => "gem-{$i}", 'details_data' => ['ratings_count' => 5 + $i]]);
+            $this->makeGame(['slug' => "gem-{$i}", 'details_data' => ['num_votes' => 5 + $i]]);
         }
 
         $first = $this->getJson('/api/v1/games/hidden-gems')->json('results');

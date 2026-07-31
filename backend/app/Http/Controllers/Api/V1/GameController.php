@@ -386,10 +386,12 @@ class GameController extends Controller
     {
         $today = now()->toDateString();
 
-        $payload = Cache::remember("games.hidden_gems.v1.{$today}", 86400, function () use ($today) {
+        $payload = Cache::remember("games.hidden_gems.v2.{$today}", 86400, function () use ($today) {
+            // Moby stores the vote count as `num_votes`; the show payload is what
+            // renames it to ratings_count on the way out.
             $votes = DB::getDriverName() === 'pgsql'
-                ? "(details_data->>'ratings_count')::int"
-                : "CAST(json_extract(details_data, '$.ratings_count') AS INTEGER)";
+                ? "(details_data->>'num_votes')::int"
+                : "CAST(json_extract(details_data, '$.num_votes') AS INTEGER)";
 
             return Game::query()
                 ->where('has_description', true)
