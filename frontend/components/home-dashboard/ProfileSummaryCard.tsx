@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { User as UserIcon, Gamepad2, Heart, ListChecks, Star, Award, Plus } from "lucide-react";
 import type { DashboardData } from "@/lib/types/dashboard";
+import AddFavoriteInline from "./AddFavoriteInline";
 
 export default function ProfileSummaryCard({ data }: { data: DashboardData }) {
     const { user, stats, favorites } = data;
+    const [pickerOpen, setPickerOpen] = useState(false);
 
     // XP progress toward the next rank; full bar at max rank.
     const nextXp = user.next_rank?.min_xp ?? null;
@@ -76,13 +79,25 @@ export default function ProfileSummaryCard({ data }: { data: DashboardData }) {
                 <div className="flex items-center justify-between mb-3">
                     <p className="text-[13px] font-bold text-white">Favorite Games</p>
                     {favorites.length > 0 && (
-                        <Link href="/profile/me?tab=collection" className="text-[11.5px] font-bold text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors">
-                            View all
-                        </Link>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setPickerOpen((v) => !v)}
+                                className="inline-flex items-center gap-1 text-[11.5px] font-bold text-white/45 hover:text-[var(--accent)] transition-colors"
+                            >
+                                <Plus className="w-3.5 h-3.5" /> Add
+                            </button>
+                            <Link href="/profile/me?tab=collection" className="text-[11.5px] font-bold text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors">
+                                View all
+                            </Link>
+                        </div>
                     )}
                 </div>
 
-                {favorites.length > 0 ? (
+                {favorites.length === 0 ? (
+                    <AddFavoriteInline username={user.username} />
+                ) : pickerOpen ? (
+                    <AddFavoriteInline username={user.username} defaultOpen onDismiss={() => setPickerOpen(false)} />
+                ) : (
                     <div className="grid grid-cols-5 gap-2.5">
                         {favorites.slice(0, 5).map((g) => (
                             <Link
@@ -99,19 +114,6 @@ export default function ProfileSummaryCard({ data }: { data: DashboardData }) {
                             </Link>
                         ))}
                     </div>
-                ) : (
-                    <Link
-                        href="/games"
-                        className="group flex-1 min-h-[104px] flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/10 bg-white/[0.02] hover:border-[var(--accent)]/40 transition-colors px-4 text-center"
-                    >
-                        <span className="w-9 h-9 rounded-full bg-[var(--accent)]/10 flex items-center justify-center">
-                            <Plus className="w-4 h-4 text-[var(--accent)]" />
-                        </span>
-                        <span className="text-[12.5px] font-semibold text-white/70 group-hover:text-white transition-colors">
-                            Star games you love
-                        </span>
-                        <span className="text-[11px] text-white/35">They&apos;ll show up here for everyone visiting your profile</span>
-                    </Link>
                 )}
             </div>
         </section>
