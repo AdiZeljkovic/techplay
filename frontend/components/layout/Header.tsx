@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import useSWR from "swr";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/context/CartContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
@@ -13,7 +14,7 @@ import axios from "@/lib/axios";
 import {
     Menu, X, Search, User, LogOut, ShoppingCart,
     ChevronDown, Facebook, Twitter, Instagram, Youtube,
-    Mail, Users, Sword, Monitor, Tag, Calendar, Gamepad2,
+    Mail, Users, Sword, Tag, Calendar, Gamepad2,
     Newspaper, Trophy, ArrowRight,
     MessageSquare, Gem, Rocket, Shield
 } from "lucide-react";
@@ -97,6 +98,182 @@ const DB_PLATFORMS = [
 
 const DB_YEARS = ["2025", "2024", "2023", "2022", "2021", "2020"];
 
+/* ──────────────────────────────────────────────────────────────
+   Shared mega-panel language. One chrome recipe, one link
+   grammar, one heading — every dropdown in the bar uses these.
+   ────────────────────────────────────────────────────────────── */
+
+/** Panel shell: crown hairline, HUD field, depth. */
+function MegaPanel({ className, children }: { className?: string; children: React.ReactNode }) {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className={cn(
+                "absolute top-full z-[100] overflow-hidden rounded-b-[var(--radius-panel)]",
+                "bg-[var(--surface-2)] border border-t-0 border-[var(--line-strong)]",
+                "shadow-[0_28px_70px_rgba(0,0,0,0.7)]",
+                className
+            )}
+        >
+            <span aria-hidden className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[var(--accent)] via-[color-mix(in_srgb,var(--accent)_55%,transparent)] to-transparent" />
+            <span aria-hidden className="absolute inset-0 bg-hud-grid opacity-40 pointer-events-none" />
+            <div className="relative">{children}</div>
+        </motion.div>
+    );
+}
+
+/** Column heading on the S1 tick, with an arrow that arrives on hover. */
+function MegaHeading({ title, href }: { title: string; href: string }) {
+    return (
+        <Link href={href} className="group/head flex items-center gap-2 mb-3.5">
+            <span aria-hidden className="w-1 h-4 rounded-full bg-[var(--accent)]" />
+            <span className="font-display text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)] group-hover/head:text-[var(--accent)] transition-colors duration-150 whitespace-nowrap">
+                {title}
+            </span>
+            <ArrowRight className="w-3 h-3 shrink-0 text-[var(--accent)] opacity-0 -translate-x-1 group-hover/head:opacity-100 group-hover/head:translate-x-0 transition-all duration-300 ease-[var(--ease-hud)]" />
+        </Link>
+    );
+}
+
+/** Link grammar shared with the footer: an accent tick draws itself in. */
+function MegaLink({ href, children }: { href: string; children: React.ReactNode }) {
+    return (
+        <Link
+            href={href}
+            prefetch={false}
+            className="group/link flex items-center gap-1.5 py-[5px] text-[13px] font-medium text-[var(--ink-low)] hover:text-[var(--ink-hi)] transition-colors duration-150"
+        >
+            <span aria-hidden className="w-0 h-px shrink-0 bg-[var(--accent)] group-hover/link:w-2.5 transition-all duration-300 ease-[var(--ease-hud)]" />
+            <span className="truncate">{children}</span>
+        </Link>
+    );
+}
+
+interface NavArticle {
+    id: number;
+    title: string;
+    slug: string;
+    featured_image_url: string | null;
+    published_at_human: string | null;
+    reading_time: string | null;
+    category: { name: string; slug: string; type: string } | null;
+}
+
+const navNewsFetcher = () =>
+    axios.get("/news", { params: { per_page: 3 } }).then((r) => (r.data?.data ?? []) as NavArticle[]);
+
+const articleHref = (a: NavArticle) =>
+    a.category?.type === "reviews" ? `/reviews/${a.slug}` : `/news/${a.slug}`;
+
+/**
+ * Live editorial rail inside DISCOVER — the menu stops being a list of
+ * routes and starts being the reason to click one. Fetches only after the
+ * menu has been opened once, so it costs nothing on page load.
+ */
+function NavFeatured({ active }: { active: boolean }) {
+    const { data } = useSWR(active ? "nav-latest" : null, navNewsFetcher, {
+        dedupingInterval: 300_000,
+        revalidateOnFocus: false,
+    });
+
+    const [lead, ...rest] = data ?? [];
+
+    return (
+        <div className="flex flex-col h-full border-l border-[var(--line)] bg-[var(--surface-1)] p-5">
+            <div className="flex items-center justify-between mb-3.5">
+                <span className="flex items-center gap-2">
+                    <span aria-hidden className="w-1 h-4 rounded-full bg-[var(--accent)]" />
+                    <span className="font-display text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
+                        Fresh off the press
+                    </span>
+                </span>
+                <Link href="/news" className="group/all flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-faint)] hover:text-[var(--accent)] transition-colors duration-150">
+                    All
+                    <ArrowRight className="w-3 h-3 group-hover/all:translate-x-0.5 transition-transform duration-300" />
+                </Link>
+            </div>
+
+            {!data && (
+                <div className="space-y-3">
+                    <div className="aspect-[16/9] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />
+                    <div className="h-[52px] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />
+                    <div className="h-[52px] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />
+                </div>
+            )}
+
+            {lead && (
+                <Link
+                    href={articleHref(lead)}
+                    prefetch={false}
+                    className="group/lead block rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-2)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
+                >
+                    <span className="relative block aspect-[16/9] overflow-hidden bg-[var(--fill-1)]">
+                        {lead.featured_image_url && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                                src={lead.featured_image_url}
+                                alt={decodeHtml(lead.title)}
+                                loading="lazy"
+                                className="w-full h-full object-cover group-hover/lead:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]"
+                            />
+                        )}
+                        <span aria-hidden className="absolute inset-0 scrim-card" />
+                        {lead.category?.name && (
+                            <span className="absolute top-2 left-2 inline-flex items-center h-5 px-2 rounded-full bg-[var(--accent)] text-white text-[9px] font-bold uppercase tracking-wider">
+                                {lead.category.name}
+                            </span>
+                        )}
+                    </span>
+                    <span className="block p-3">
+                        <span className="block font-display text-[13px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover/lead:text-[var(--accent)] transition-colors duration-300">
+                            {decodeHtml(lead.title)}
+                        </span>
+                        <span className="block mt-1.5 text-[10px] uppercase tracking-wider text-[var(--ink-faint)]">
+                            {[lead.published_at_human, lead.reading_time].filter(Boolean).join(" · ")}
+                        </span>
+                    </span>
+                </Link>
+            )}
+
+            {rest.length > 0 && (
+                <div className="mt-3 flex flex-col divide-y divide-[var(--line)]">
+                    {rest.map((a) => (
+                        <Link
+                            key={a.id}
+                            href={articleHref(a)}
+                            prefetch={false}
+                            className="group/row flex items-center gap-3 py-2.5 first:pt-0"
+                        >
+                            <span className="relative w-[56px] h-[38px] shrink-0 rounded-[var(--radius-inner)] overflow-hidden bg-[var(--fill-1)] border border-[var(--line)]">
+                                {a.featured_image_url && (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                        src={a.featured_image_url}
+                                        alt={decodeHtml(a.title)}
+                                        loading="lazy"
+                                        className="w-full h-full object-cover group-hover/row:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]"
+                                    />
+                                )}
+                            </span>
+                            <span className="min-w-0 flex-1">
+                                <span className="block text-[12px] font-semibold text-[var(--ink-mid)] leading-snug line-clamp-2 group-hover/row:text-[var(--accent)] transition-colors duration-150">
+                                    {decodeHtml(a.title)}
+                                </span>
+                                <span className="block mt-0.5 text-[10px] text-[var(--ink-faint)]">
+                                    {a.published_at_human}
+                                </span>
+                            </span>
+                        </Link>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 // Mega-dropdown for the GAMES nav item (database + calendar)
 function GamesNavItem() {
     const pathname = usePathname();
@@ -119,28 +296,15 @@ function GamesNavItem() {
 
             <AnimatePresence>
                 {isHovered && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.97 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.97 }}
-                        transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[520px] rounded-xl shadow-2xl overflow-hidden z-[100] bg-[var(--surface-2)] backdrop-blur-xl border border-[var(--line)]"
-                    >
-                        <div className="h-[3px] bg-accent w-full" />
-                        <div className="p-5">
-                            <div className="grid grid-cols-3 gap-5">
+                    <MegaPanel className="left-1/2 -translate-x-1/2 w-[560px]">
+                        <div className="p-6">
+                            <div className="grid grid-cols-3 gap-6">
                                 {/* Genres */}
                                 <div className="col-span-2">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <Sword className="w-3.5 h-3.5 text-accent" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--ink-low)]">Genres</span>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
+                                    <MegaHeading title="Genres" href="/games" />
+                                    <div className="grid grid-cols-2 gap-x-5">
                                         {DB_GENRES.map((g) => (
-                                            <Link key={g.slug} href={`/games/genre/${g.slug}`} prefetch={false}
-                                                className="px-2 py-1.5 text-[12px] font-medium text-[var(--ink-mid)] hover:text-accent hover:bg-[var(--fill-2)] rounded-lg transition-all">
-                                                {g.label}
-                                            </Link>
+                                            <MegaLink key={g.slug} href={`/games/genre/${g.slug}`}>{g.label}</MegaLink>
                                         ))}
                                     </div>
                                 </div>
@@ -148,52 +312,42 @@ function GamesNavItem() {
                                 {/* Platforms + Years */}
                                 <div className="flex flex-col gap-5">
                                     <div>
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <Monitor className="w-3.5 h-3.5 text-accent" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--ink-low)]">Platforms</span>
-                                        </div>
-                                        <div className="flex flex-col gap-0.5">
+                                        <MegaHeading title="Platforms" href="/games" />
+                                        <div className="flex flex-col">
                                             {DB_PLATFORMS.map((p) => (
-                                                <Link key={p.slug} href={`/games/platform/${p.slug}`} prefetch={false}
-                                                    className="px-2 py-1.5 text-[12px] font-medium text-[var(--ink-mid)] hover:text-accent hover:bg-[var(--fill-2)] rounded-lg transition-all">
-                                                    {p.label}
-                                                </Link>
+                                                <MegaLink key={p.slug} href={`/games/platform/${p.slug}`}>{p.label}</MegaLink>
                                             ))}
                                         </div>
                                     </div>
 
                                     <div>
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <Calendar className="w-3.5 h-3.5 text-accent" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--ink-low)]">Years</span>
-                                        </div>
-                                        <div className="flex flex-col gap-0.5">
+                                        <MegaHeading title="Years" href="/calendar" />
+                                        <div className="grid grid-cols-2 gap-x-3">
                                             {DB_YEARS.map((y) => (
-                                                <Link key={y} href={`/games/year/${y}`} prefetch={false}
-                                                    className="px-2 py-1.5 text-[12px] font-medium text-[var(--ink-mid)] hover:text-accent hover:bg-[var(--fill-2)] rounded-lg transition-all">
-                                                    {y}
-                                                </Link>
+                                                <MegaLink key={y} href={`/games/year/${y}`}>{y}</MegaLink>
                                             ))}
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Footer */}
-                            <div className="mt-4 pt-4 border-t border-[var(--line)] flex items-center justify-between">
-                                <Link href="/games" className="flex items-center gap-1.5 text-[11px] font-bold text-accent hover:text-accent-hover uppercase tracking-wider transition-colors group">
-                                    Browse All Games
-                                    <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                                </Link>
-                                <Link href="/calendar" className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--ink-low)] hover:text-accent transition-colors">
+                        {/* Footer strip */}
+                        <div className="px-6 py-3 border-t border-[var(--line)] bg-[var(--fill-1)] flex items-center justify-between gap-4">
+                            <Link href="/games" className="group/all flex items-center gap-1.5 font-display text-[11px] font-bold text-[var(--accent)] hover:text-[var(--accent-hover)] uppercase tracking-[0.12em] transition-colors duration-150">
+                                Browse all games
+                                <ArrowRight className="w-3 h-3 group-hover/all:translate-x-0.5 transition-transform duration-300" />
+                            </Link>
+                            <span className="flex items-center gap-4">
+                                <Link href="/calendar" className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors duration-150">
                                     <Calendar className="w-3 h-3" /> Release Calendar
                                 </Link>
-                                <Link href="/games/tag/open-world" className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--ink-faint)] hover:text-accent transition-colors">
+                                <Link href="/games/tag/open-world" className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--ink-faint)] hover:text-[var(--accent)] transition-colors duration-150">
                                     <Tag className="w-3 h-3" /> Popular Tags
                                 </Link>
-                            </div>
+                            </span>
                         </div>
-                    </motion.div>
+                    </MegaPanel>
                 )}
             </AnimatePresence>
         </div>
@@ -340,68 +494,44 @@ function NavItem({ item, badge, onHoverChange }: {
             <AnimatePresence>
                 {hasColumns && isOpen && (
                     /* ── MULTI-COLUMN MEGA PANEL (DISCOVER) ── */
-                    <motion.div
-                        key="columns"
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                        className="absolute top-full left-0 z-[100] w-[640px] bg-[var(--surface-2)] border border-t-0 border-[var(--line)] shadow-[0_20px_48px_rgba(0,0,0,0.6)] rounded-b-xl overflow-hidden"
-                    >
-                        <div className="h-[3px] bg-accent w-full" />
-                        <div className="p-5 grid grid-cols-4 gap-5">
+                    <MegaPanel key="columns" className="left-0 w-[940px] grid grid-cols-[1fr_340px]">
+                        <div className="p-6 grid grid-cols-4 gap-x-5">
                             {item.columns!.map((col) => (
-                                <div key={col.title}>
-                                    <Link
-                                        href={col.href}
-                                        className="flex items-center gap-1.5 mb-3 text-[10px] font-black uppercase tracking-widest text-[var(--ink-low)] hover:text-accent transition-colors"
-                                    >
-                                        {col.title}
-                                        <ArrowRight className="w-2.5 h-2.5" />
-                                    </Link>
-                                    <div className="flex flex-col gap-0.5">
-                                        {col.items.slice(0, 6).map((child, idx) => (
-                                            <Link
-                                                key={idx}
-                                                href={child.href}
-                                                className="px-2 py-1.5 -mx-2 text-[12px] font-medium text-[var(--ink-mid)] hover:text-accent hover:bg-[var(--fill-2)] rounded-lg transition-all"
-                                            >
+                                <div key={col.title} className="min-w-0">
+                                    <MegaHeading title={col.title} href={col.href} />
+                                    <div className="flex flex-col">
+                                        {col.items.slice(0, 7).map((child, idx) => (
+                                            <MegaLink key={idx} href={child.href}>
                                                 {child.name}
-                                            </Link>
+                                            </MegaLink>
                                         ))}
                                     </div>
                                 </div>
                             ))}
                         </div>
-                    </motion.div>
+                        <NavFeatured active={isOpen} />
+                    </MegaPanel>
                 )}
                 {!hasColumns && item.hasDropdown && item.children && item.children.length > 0 && isOpen && (
                     isMegaMenu ? (
-                        /* ── MEGA DROPDOWN — vertikalno, pozicionirano ispod nav linka ── */
-                        <motion.div
-                            key="mega"
-                            initial={{ opacity: 0, y: -4 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -4 }}
-                            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                            className="absolute top-full left-0 z-[100] w-[300px] bg-[var(--surface-2)] border border-t-0 border-[var(--line)] shadow-[0_20px_48px_rgba(0,0,0,0.6)] rounded-b-xl overflow-hidden"
-                        >
-                            <div className="flex flex-col p-2">
+                        /* ── ICON MEGA DROPDOWN (COMMUNITY / TOOLS) ── */
+                        <MegaPanel key="mega" className="left-0 w-[330px]">
+                            <div className="flex flex-col p-2.5 gap-0.5">
                                 {item.children.map((child, idx) => {
                                     const Icon = child.icon;
                                     return (
                                         <Link
                                             key={idx}
                                             href={child.href}
-                                            className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-[var(--fill-2)] group transition-all duration-150"
+                                            className="group/row flex items-center gap-3 p-2.5 rounded-[var(--radius-card)] border border-transparent hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] hover:bg-[var(--fill-1)] transition-colors duration-300"
                                         >
                                             {Icon && (
-                                                <div className="w-10 h-10 rounded-lg bg-[var(--fill-2)] border border-[var(--line)] group-hover:bg-accent/10 group-hover:border-accent/25 flex items-center justify-center shrink-0 transition-all duration-150">
-                                                    <Icon className="w-[18px] h-[18px] text-[var(--ink-low)] group-hover:text-accent transition-colors duration-150" />
-                                                </div>
+                                                <span className="w-10 h-10 shrink-0 rounded-[var(--radius-inner)] bg-[var(--fill-2)] border border-[var(--line)] flex items-center justify-center text-[var(--ink-low)] group-hover/row:bg-[var(--accent)] group-hover/row:border-transparent group-hover/row:text-white transition-colors duration-300">
+                                                    <Icon className="w-[18px] h-[18px]" />
+                                                </span>
                                             )}
-                                            <div className="flex flex-col min-w-0">
-                                                <span className="text-[13px] font-bold text-[var(--ink-hi)] group-hover:text-accent transition-colors duration-150 leading-tight">
+                                            <span className="flex flex-col min-w-0 flex-1">
+                                                <span className="font-display text-[13px] font-bold text-[var(--ink-hi)] leading-tight">
                                                     {child.name}
                                                 </span>
                                                 {child.description && (
@@ -409,7 +539,8 @@ function NavItem({ item, badge, onHoverChange }: {
                                                         {child.description}
                                                     </span>
                                                 )}
-                                            </div>
+                                            </span>
+                                            <ArrowRight className="w-3.5 h-3.5 shrink-0 text-[var(--ink-faint)] opacity-0 -translate-x-1 group-hover/row:opacity-100 group-hover/row:translate-x-0 group-hover/row:text-[var(--accent)] transition-all duration-300 ease-[var(--ease-hud)]" />
                                         </Link>
                                     );
                                 })}
@@ -419,36 +550,25 @@ function NavItem({ item, badge, onHoverChange }: {
                                 <div className="px-5 py-3 border-t border-[var(--line)] bg-[var(--fill-1)]">
                                     <Link
                                         href={item.href}
-                                        className="flex items-center gap-1.5 text-[11px] font-bold text-accent hover:text-accent-hover uppercase tracking-wider transition-colors group"
+                                        className="group/all flex items-center gap-1.5 font-display text-[11px] font-bold text-[var(--accent)] hover:text-[var(--accent-hover)] uppercase tracking-[0.12em] transition-colors duration-150"
                                     >
-                                        VIEW ALL {item.name}
-                                        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform duration-150" />
+                                        {item.viewAllLabel}
+                                        <ArrowRight className="w-3 h-3 group-hover/all:translate-x-0.5 transition-transform duration-300" />
                                     </Link>
                                 </div>
                             )}
-                        </motion.div>
+                        </MegaPanel>
                     ) : (
                         /* ── REGULAR DROPDOWN ── */
-                        <motion.div
-                            key="dropdown"
-                            initial={{ opacity: 0, y: -4 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -4 }}
-                            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                            className="absolute top-full left-0 z-[100] w-[220px] bg-[var(--surface-2)] border border-t-0 border-[var(--line)] shadow-[0_20px_48px_rgba(0,0,0,0.6)] rounded-b-xl overflow-hidden"
-                        >
-                            <div className="p-2 flex flex-col">
+                        <MegaPanel key="dropdown" className="left-0 w-[230px]">
+                            <div className="p-2.5 flex flex-col">
                                 {item.children.map((child, idx) => (
-                                    <Link
-                                        key={idx}
-                                        href={child.href}
-                                        className="block px-4 py-3 text-[13px] font-medium text-[var(--ink-mid)] hover:text-accent hover:bg-[var(--fill-2)] rounded-lg transition-all"
-                                    >
+                                    <MegaLink key={idx} href={child.href}>
                                         {child.name}
-                                    </Link>
+                                    </MegaLink>
                                 ))}
                             </div>
-                        </motion.div>
+                        </MegaPanel>
                     )
                 )}
             </AnimatePresence>
