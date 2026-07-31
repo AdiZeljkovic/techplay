@@ -5,7 +5,6 @@ import { Users } from "lucide-react";
 import axios from "@/lib/axios";
 import DashboardSkeleton from "./DashboardSkeleton";
 import ProfileHero from "./ProfileHero";
-import ProfileTabStrip from "./ProfileTabStrip";
 import HighlightStrip from "./HighlightStrip";
 import FavoriteGamesRail from "./FavoriteGamesRail";
 import RecentAchievementsRail from "./RecentAchievementsRail";
@@ -51,10 +50,9 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
     return (
         <main className="min-h-screen bg-[var(--surface-0)] bg-hud-grid">
             <div className="container-page py-8 space-y-6">
-                {/* Identity — the whole page hangs off this */}
+                {/* Identity — the whole page hangs off this (tabs live inside it) */}
                 <div className="tp-fade-up tp-d1">
                     <ProfileHero data={data} />
-                    <ProfileTabStrip />
                 </div>
 
                 <div className="tp-fade-up tp-d2">
