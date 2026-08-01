@@ -1,5 +1,6 @@
 import { Trophy, Lock, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
+import { getStorageUrl } from "@/lib/imageUrl";
 
 interface Achievement {
     id: number;
@@ -99,9 +100,9 @@ export const AchievementGrid = ({ achievements }: AchievementGridProps) => {
                         >
                             {achievement.icon_path ? (
                                 <img
-                                    src={achievement.icon_path}
+                                    src={getStorageUrl(achievement.icon_path)}
                                     alt={achievement.name}
-                                    className={`w-8 h-8 object-contain ${!achievement.is_unlocked ? "grayscale opacity-40" : ""}`}
+                                    className={`w-full h-full object-contain ${!achievement.is_unlocked ? "grayscale opacity-40" : ""}`}
                                 />
                             ) : (
                                 <Trophy className={`w-7 h-7 ${achievement.is_unlocked ? "text-[var(--accent)]" : "text-white/20"}`} />

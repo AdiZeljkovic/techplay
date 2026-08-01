@@ -33,10 +33,33 @@ function timeAgo(iso: string | null): string {
     return `${Math.floor(days / 30)}mo ago`;
 }
 
-/** Hex medal struck in its tier's metal, holding the achievement icon. */
+/**
+ * The artwork already ships as a finished badge with its own framing, so
+ * when an icon exists it stands alone — wrapping it in a second hex would
+ * be a frame inside a frame. The struck medal is the fallback for
+ * achievements that have no artwork yet.
+ */
 function Medallion({ achievement, size = 66 }: { achievement: DashboardAchievement; size?: number }) {
     const tier = tierFor(achievement.points);
     const icon = getStorageUrl(achievement.icon_path);
+
+    if (icon) {
+        return (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+                src={icon}
+                alt=""
+                aria-hidden
+                loading="lazy"
+                className="block shrink-0 object-contain"
+                style={{
+                    width: size + 12,
+                    height: size + 12,
+                    filter: `drop-shadow(0 3px 10px color-mix(in srgb, ${tier.color} 40%, transparent))`,
+                }}
+            />
+        );
+    }
 
     return (
         <span className="relative block shrink-0" style={{ width: size, height: size }}>
@@ -62,21 +85,8 @@ function Medallion({ achievement, size = 66 }: { achievement: DashboardAchieveme
                     background: `linear-gradient(150deg, color-mix(in srgb, ${tier.color} 26%, transparent) 0%, transparent 55%)`,
                 }}
             />
-            {/* the icon — or the trophy, until the artwork lands */}
             <span className="absolute inset-0 flex items-center justify-center">
-                {icon ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                        src={icon}
-                        alt=""
-                        aria-hidden
-                        loading="lazy"
-                        className="object-contain"
-                        style={{ width: size * 0.5, height: size * 0.5 }}
-                    />
-                ) : (
-                    <Trophy style={{ width: size * 0.34, height: size * 0.34, color: tier.color }} />
-                )}
+                <Trophy style={{ width: size * 0.34, height: size * 0.34, color: tier.color }} />
             </span>
         </span>
     );

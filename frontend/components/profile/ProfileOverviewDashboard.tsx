@@ -6,6 +6,7 @@ import {
     Library, Trophy, Activity as ActivityIcon, ListChecks,
     Dna, Sparkles, CalendarClock, MessagesSquare, Shield,
 } from "lucide-react";
+import { getStorageUrl } from "@/lib/imageUrl";
 import CommentsSection from "@/components/comments/CommentsSection";
 import SectionCard from "./dashboard/SectionCard";
 import PlayingNow from "./dashboard/PlayingNow";
@@ -135,7 +136,7 @@ export default function ProfileOverviewDashboard({
                                 <div key={ach.id} className="rounded-xl bg-white/[0.03] border border-[var(--border)] p-4 flex flex-col items-center text-center hover:border-white/[0.14] transition-colors">
                                     <div className="w-14 h-14 mb-3 flex items-center justify-center">
                                         {ach.icon_path ? (
-                                            <img src={ach.icon_path} alt={ach.name} className="w-14 h-14 object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,0.5)]" />
+                                            <img src={getStorageUrl(ach.icon_path)} alt={ach.name} className="w-14 h-14 object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,0.5)]" />
                                         ) : (
                                             <HexBadge size={52} color="#f59e0b"><Trophy className="w-5 h-5" /></HexBadge>
                                         )}

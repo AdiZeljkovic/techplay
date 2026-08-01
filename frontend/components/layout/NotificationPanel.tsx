@@ -5,6 +5,7 @@ import useSWR, { mutate } from "swr";
 import axios from "@/lib/axios";
 import Link from "next/link";
 import { Bell, Trophy, Users, MessageSquare, X, CheckCheck, Loader2 } from "lucide-react";
+import { getStorageUrl } from "@/lib/imageUrl";
 import { formatDistanceToNow } from "date-fns";
 
 interface AppNotification {
@@ -142,7 +143,7 @@ export default function NotificationPanel({ unreadCount, onCountRefresh }: Props
                                         {/* Icon */}
                                         <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.07] flex items-center justify-center shrink-0">
                                             {n.icon_path ? (
-                                                <img src={n.icon_path} alt="" className="w-5 h-5 object-contain" />
+                                                <img src={getStorageUrl(n.icon_path)} alt="" className="w-5 h-5 object-contain" />
                                             ) : (
                                                 typeIcon(n.type)
                                             )}
