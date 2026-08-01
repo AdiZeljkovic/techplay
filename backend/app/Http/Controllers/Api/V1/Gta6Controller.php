@@ -23,11 +23,11 @@ class Gta6Controller extends Controller
      */
     public function locations(Request $request): JsonResponse
     {
-        $category  = $request->get('category');
-        $search    = $request->get('search');
+        $category = $request->get('category');
+        $search = $request->get('search');
         $confirmed = $request->boolean('confirmed');
 
-        $cacheKey = 'gta6.locations.' . md5(serialize(compact('category', 'search', 'confirmed')));
+        $cacheKey = 'gta6.locations.'.md5(serialize(compact('category', 'search', 'confirmed')));
 
         $data = Cache::remember($cacheKey, CacheService::TTL_DAY, function () use ($category, $search, $confirmed) {
             $query = GtaLocation::whereNotNull('lat')->whereNotNull('lng');
@@ -41,7 +41,7 @@ class Gta6Controller extends Controller
             }
 
             if ($search) {
-                $query->where('name', 'ilike', '%' . $search . '%');
+                $query->where('name', 'ilike', '%'.$search.'%');
             }
 
             return $query

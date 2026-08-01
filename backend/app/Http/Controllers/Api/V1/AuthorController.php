@@ -25,11 +25,11 @@ class AuthorController extends Controller
 
     private array $rolePriority = [
         'Editor-in-Chief' => 1,
-        'Editor'          => 2,
-        'Journalist'      => 3,
-        'Moderator'       => 4,
-        'Admin'           => 5,
-        'Super Admin'     => 6,
+        'Editor' => 2,
+        'Journalist' => 3,
+        'Moderator' => 4,
+        'Admin' => 5,
+        'Super Admin' => 6,
     ];
 
     private function normalizeRole(string $name): string
@@ -74,6 +74,7 @@ class AuthorController extends Controller
 
         // Fallback: prettify role column value
         $col = $user->role ?? 'Editor';
+
         return ucwords(str_replace('_', ' ', $col));
     }
 
@@ -101,31 +102,31 @@ class AuthorController extends Controller
                 ->where('status', 'published')
                 ->count();
 
-            $newsCount    = $articlesByType->get('news', 0);
+            $newsCount = $articlesByType->get('news', 0);
             $reviewsCount = $articlesByType->get('reviews', 0) + $articlesByType->get('review', 0);
-            $techCount    = $articlesByType->get('tech', 0);
-            $total        = $newsCount + $reviewsCount + $techCount + $guidesCount;
+            $techCount = $articlesByType->get('tech', 0);
+            $total = $newsCount + $reviewsCount + $techCount + $guidesCount;
 
             $coverImage = null;
             if ($user->cover_image) {
                 $coverImage = str_starts_with($user->cover_image, 'http')
                     ? $user->cover_image
-                    : asset('storage/' . $user->cover_image);
+                    : asset('storage/'.$user->cover_image);
             }
 
             $socialLinks = $user->author_social_links ?? [];
             $socialUrls = array_filter([
                 isset($socialLinks['twitter']) && $socialLinks['twitter']
-                    ? 'https://x.com/' . ltrim($socialLinks['twitter'], '/')
+                    ? 'https://x.com/'.ltrim($socialLinks['twitter'], '/')
                     : null,
                 isset($socialLinks['linkedin']) && $socialLinks['linkedin']
-                    ? 'https://linkedin.com/in/' . ltrim($socialLinks['linkedin'], '/')
+                    ? 'https://linkedin.com/in/'.ltrim($socialLinks['linkedin'], '/')
                     : null,
                 isset($socialLinks['youtube']) && $socialLinks['youtube']
                     ? $socialLinks['youtube']
                     : null,
                 isset($socialLinks['instagram']) && $socialLinks['instagram']
-                    ? 'https://instagram.com/' . ltrim($socialLinks['instagram'], '/')
+                    ? 'https://instagram.com/'.ltrim($socialLinks['instagram'], '/')
                     : null,
                 isset($socialLinks['website']) && $socialLinks['website']
                     ? $socialLinks['website']
@@ -134,25 +135,25 @@ class AuthorController extends Controller
 
             return [
                 'author' => [
-                    'id'           => $user->id,
-                    'username'     => $user->username,
-                    'author_slug'  => $user->author_slug,
+                    'id' => $user->id,
+                    'username' => $user->username,
+                    'author_slug' => $user->author_slug,
                     'display_name' => $user->display_name ?? $user->username,
-                    'avatar_url'   => $user->avatar_url,
-                    'cover_image'  => $coverImage,
-                    'bio'          => $user->bio,
-                    'tagline'      => $user->tagline,
-                    'role'         => $this->getDisplayRole($user),
-                    'joined_at'    => $user->created_at->format('M Y'),
+                    'avatar_url' => $user->avatar_url,
+                    'cover_image' => $coverImage,
+                    'bio' => $user->bio,
+                    'tagline' => $user->tagline,
+                    'role' => $this->getDisplayRole($user),
+                    'joined_at' => $user->created_at->format('M Y'),
                     'social_links' => $socialLinks,
-                    'social_urls'  => array_values($socialUrls),
+                    'social_urls' => array_values($socialUrls),
                 ],
                 'stats' => [
-                    'total'   => $total,
-                    'news'    => $newsCount,
+                    'total' => $total,
+                    'news' => $newsCount,
                     'reviews' => $reviewsCount,
-                    'tech'    => $techCount,
-                    'guides'  => $guidesCount,
+                    'tech' => $techCount,
+                    'guides' => $guidesCount,
                 ],
             ];
         });
@@ -182,23 +183,23 @@ class AuthorController extends Controller
                     ->paginate(12, ['*'], 'page', $page);
 
                 $items = $guides->getCollection()->map(fn ($g) => [
-                    'id'                 => $g->id,
-                    'title'              => $g->title,
-                    'slug'               => $g->slug,
-                    'excerpt'            => $g->excerpt,
+                    'id' => $g->id,
+                    'title' => $g->title,
+                    'slug' => $g->slug,
+                    'excerpt' => $g->excerpt,
                     'featured_image_url' => $g->featured_image_url,
-                    'published_at'       => $g->published_at,
-                    'type'               => 'guides',
-                    'url_path'           => '/guides/' . $g->slug,
-                    'category'           => ['id' => 0, 'name' => 'Guides', 'slug' => 'guides', 'type' => 'guides'],
+                    'published_at' => $g->published_at,
+                    'type' => 'guides',
+                    'url_path' => '/guides/'.$g->slug,
+                    'category' => ['id' => 0, 'name' => 'Guides', 'slug' => 'guides', 'type' => 'guides'],
                 ]);
 
                 return [
-                    'data'         => $items,
+                    'data' => $items,
                     'current_page' => $guides->currentPage(),
-                    'last_page'    => $guides->lastPage(),
-                    'total'        => $guides->total(),
-                    'per_page'     => $guides->perPage(),
+                    'last_page' => $guides->lastPage(),
+                    'total' => $guides->total(),
+                    'per_page' => $guides->perPage(),
                 ];
             }
 
@@ -214,11 +215,11 @@ class AuthorController extends Controller
             $articles = $query->latest('published_at')->paginate(12, ['*'], 'page', $page);
 
             return [
-                'data'         => ArticleResource::collection($articles),
+                'data' => ArticleResource::collection($articles),
                 'current_page' => $articles->currentPage(),
-                'last_page'    => $articles->lastPage(),
-                'total'        => $articles->total(),
-                'per_page'     => $articles->perPage(),
+                'last_page' => $articles->lastPage(),
+                'total' => $articles->total(),
+                'per_page' => $articles->perPage(),
             ];
         });
 

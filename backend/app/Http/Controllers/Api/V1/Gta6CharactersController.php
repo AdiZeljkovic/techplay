@@ -20,9 +20,9 @@ class Gta6CharactersController extends Controller
     public function index(Request $request): JsonResponse
     {
         $search = $request->get('search');
-        $role   = $request->get('role');
+        $role = $request->get('role');
 
-        $cacheKey = 'gta6.characters.' . md5(serialize(compact('search', 'role')));
+        $cacheKey = 'gta6.characters.'.md5(serialize(compact('search', 'role')));
 
         $data = Cache::remember($cacheKey, CacheService::TTL_DAY, function () use ($search, $role) {
             $query = Gta6Character::query()->where('is_published', true);
@@ -33,8 +33,8 @@ class Gta6CharactersController extends Controller
 
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('name', 'ilike', '%' . $search . '%')
-                        ->orWhere('alias', 'ilike', '%' . $search . '%');
+                    $q->where('name', 'ilike', '%'.$search.'%')
+                        ->orWhere('alias', 'ilike', '%'.$search.'%');
                 });
             }
 

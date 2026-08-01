@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ScoreBadge from "@/components/ui/ScoreBadge";
+import { levelForXp } from "@/lib/level";
 import SearchDropdown from "./SearchDropdown";
 import { decodeHtml } from "@/lib/decode";
 import NotificationPanel from "./NotificationPanel";
@@ -851,7 +852,7 @@ function UserMenu({ user, logout }: { user: HeaderUser; logout: () => void }) {
     }, [open]);
 
     const xp = user.xp || 0;
-    const level = Math.floor(xp / 1000) + 1;
+    const level = levelForXp(xp);
     const intoLevel = xp % 1000;
     const percent = Math.round((intoLevel / 1000) * 100);
     const name = decodeHtml(user.display_name || user.username || "") || "My Profile";
@@ -1261,7 +1262,7 @@ export default function Header() {
                                         )}
                                         <div>
                                             <div className="text-white font-bold text-[14px] leading-tight">{decodeHtml(user.display_name || user.username)}</div>
-                                            <div className="text-[11px] text-[var(--ink-low)] mt-0.5">Level {Math.floor((user.xp || 0) / 1000) + 1} · {user.xp || 0} XP</div>
+                                            <div className="text-[11px] text-[var(--ink-low)] mt-0.5">Level {levelForXp(user.xp)} · {user.xp || 0} XP</div>
                                         </div>
                                     </Link>
                                     <div className="flex gap-2">

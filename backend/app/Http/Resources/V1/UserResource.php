@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\V1;
 
+use App\Services\LevelService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -38,7 +39,7 @@ class UserResource extends JsonResource
             'post_color' => $this->post_color,
             'created_at' => $this->created_at,
             'posts_count' => ($this->posts_count ?? $this->posts()->count()) + ($this->threads_count ?? $this->threads()->count()),
-            'level' => floor(($this->xp ?? 0) / 1000) + 1,
+            'level' => app(LevelService::class)->forXp($this->xp),
             'xp' => $this->xp ?? 0,
             'roles' => $this->getRoleNames(),
         ];

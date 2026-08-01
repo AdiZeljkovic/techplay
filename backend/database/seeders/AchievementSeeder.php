@@ -158,11 +158,13 @@ class AchievementSeeder extends Seeder
             ['name' => 'Local Legend', 'description' => 'Reach 1,000 reputation', 'points' => 750, 'criteria_type' => 'reputation', 'criteria_value' => 1000],
             ['name' => 'Hall of Fame', 'description' => 'Reach 5,000 reputation', 'points' => 1000, 'criteria_type' => 'reputation', 'criteria_value' => 5000],
 
-            // ── 9. Level progression (level = floor(xp / 1000) + 1) ──────────
-            ['name' => 'Level 5', 'description' => 'Reach level 5', 'points' => 100, 'criteria_type' => 'xp', 'criteria_value' => 4000],
-            ['name' => 'Level 10', 'description' => 'Reach level 10', 'points' => 250, 'criteria_type' => 'xp', 'criteria_value' => 9000],
-            ['name' => 'Level 25', 'description' => 'Reach level 25', 'points' => 500, 'criteria_type' => 'xp', 'criteria_value' => 24000],
-            ['name' => 'Level 50', 'description' => 'Reach level 50', 'points' => 1000, 'criteria_type' => 'xp', 'criteria_value' => 49000],
+            // ── 9. Level progression ─────────────────────────────────────────
+            // Thresholds come from LevelService::xpForLevel() — the curve is
+            // anchored to the rank ladder, so these are NOT xp/1000.
+            ['name' => 'Level 5', 'description' => 'Reach level 5', 'points' => 100, 'criteria_type' => 'xp', 'criteria_value' => 600],
+            ['name' => 'Level 10', 'description' => 'Reach level 10', 'points' => 250, 'criteria_type' => 'xp', 'criteria_value' => 1750],
+            ['name' => 'Level 25', 'description' => 'Reach level 25', 'points' => 500, 'criteria_type' => 'xp', 'criteria_value' => 8125],
+            ['name' => 'Level 50', 'description' => 'Reach level 50', 'points' => 1000, 'criteria_type' => 'xp', 'criteria_value' => 29000],
 
             // ── 10a. Unbroken streak ─────────────────────────────────────────
             ['name' => 'Warming Up', 'description' => 'Stay active 3 days in a row', 'points' => 50, 'criteria_type' => 'daily_streak', 'criteria_value' => 3],

@@ -14,8 +14,8 @@ class RankSeeder extends Seeder
     {
         $ranks = [
             // Tier 1: Casual / Starter (0 - 900 XP)
-            ['name' => 'Noob', 'min_xp' => 0, 'color' => '#808080'],
-            ['name' => 'Newbie', 'min_xp' => 100, 'color' => '#909090'],
+            ['name' => 'Newcomer', 'min_xp' => 0, 'color' => '#808080'],
+            ['name' => 'Player', 'min_xp' => 100, 'color' => '#909090'],
             ['name' => 'Rookie', 'min_xp' => 300, 'color' => '#a0a0a0'],
             ['name' => 'Bronze', 'min_xp' => 600, 'color' => '#cd7f32'],
 
@@ -33,15 +33,15 @@ class RankSeeder extends Seeder
 
             // Tier 4: Pro (25000 - 60000 XP)
             ['name' => 'Veteran', 'min_xp' => 30000, 'color' => '#ff6d00'],
-            ['name' => 'Legendary', 'min_xp' => 45000, 'color' => '#ff9100'],
+            ['name' => 'Legend', 'min_xp' => 45000, 'color' => '#ff9100'],
             ['name' => 'Mythic', 'min_xp' => 60000, 'color' => '#ffcc00'],
             ['name' => 'Immortal', 'min_xp' => 80000, 'color' => '#ffe57f'],
 
             // Tier 5: God Tier (100k+ XP)
-            ['name' => 'Radiant', 'min_xp' => 100000, 'color' => '#00e5ff'],
-            ['name' => 'Global Elite', 'min_xp' => 150000, 'color' => '#2979ff'],
-            ['name' => 'Ascendant', 'min_xp' => 250000, 'color' => '#3d5afe'],
-            ['name' => 'God of Gaming', 'min_xp' => 500000, 'color' => '#651fff'], // Ultimate Rank
+            ['name' => 'Ascendant', 'min_xp' => 100000, 'color' => '#00e5ff'],
+            ['name' => 'Radiant', 'min_xp' => 150000, 'color' => '#2979ff'],
+            ['name' => 'Apex', 'min_xp' => 250000, 'color' => '#3d5afe'],
+            ['name' => 'Eternal', 'min_xp' => 500000, 'color' => '#651fff'], // Ultimate Rank
         ];
 
         foreach ($ranks as $rank) {

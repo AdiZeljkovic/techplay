@@ -54,7 +54,9 @@ class DashboardTest extends TestCase
                 ],
             ]);
 
-        $this->assertSame(3, $response->json('data.user.level')); // floor(2500/1000)+1
+        // 2500 XP sits between Gold (2000 → L11) and Platinum (3500 → L15),
+        // a band that costs 375 XP per level — see LevelService.
+        $this->assertSame(12, $response->json('data.user.level'));
     }
 
     public function test_empty_account_returns_zeroed_stats_not_errors(): void

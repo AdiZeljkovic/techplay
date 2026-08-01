@@ -17,46 +17,46 @@ class Gta6CharactersSeeder extends Seeder
     {
         $characters = [
             [
-                'name'        => 'Lucia Caminos',
-                'role'        => 'protagonist',
+                'name' => 'Lucia Caminos',
+                'role' => 'protagonist',
                 'description' => 'One of two playable protagonists and the first female lead in the Grand Theft Auto series. Introduced fresh out of prison, Lucia is sharp, determined and ready to do whatever it takes to change her fortunes alongside Jason.',
-                'sort_order'  => 1,
+                'sort_order' => 1,
             ],
             [
-                'name'        => 'Jason Duval',
-                'role'        => 'protagonist',
+                'name' => 'Jason Duval',
+                'role' => 'protagonist',
                 'description' => 'The second playable protagonist, drawn into a life of crime in the Keys. Jason\'s partnership with Lucia drives the story — a modern Bonnie-and-Clyde tale set across Leonida.',
-                'sort_order'  => 2,
+                'sort_order' => 2,
             ],
             [
-                'name'        => 'Cal Hampton',
-                'role'        => 'supporting',
+                'name' => 'Cal Hampton',
+                'role' => 'supporting',
                 'description' => 'An associate seen in the second trailer, part of the criminal network surrounding Jason and Lucia.',
-                'sort_order'  => 10,
+                'sort_order' => 10,
             ],
             [
-                'name'        => 'Boobie Ike',
-                'role'        => 'supporting',
+                'name' => 'Boobie Ike',
+                'role' => 'supporting',
                 'description' => 'A businessman and fixture of the Vice City underworld revealed in promotional material for GTA VI.',
-                'sort_order'  => 11,
+                'sort_order' => 11,
             ],
             [
-                'name'        => 'Dre\'Quan Priest',
-                'role'        => 'supporting',
+                'name' => 'Dre\'Quan Priest',
+                'role' => 'supporting',
                 'description' => 'A rising figure tied to the music scene of Leonida, featured in GTA VI marketing.',
-                'sort_order'  => 12,
+                'sort_order' => 12,
             ],
             [
-                'name'        => 'Brian Heder',
-                'role'        => 'supporting',
+                'name' => 'Brian Heder',
+                'role' => 'supporting',
                 'description' => 'A character connected to the rural, swampland side of Leonida shown in the trailers.',
-                'sort_order'  => 13,
+                'sort_order' => 13,
             ],
             [
-                'name'        => 'Raul Bautista',
-                'role'        => 'supporting',
+                'name' => 'Raul Bautista',
+                'role' => 'supporting',
                 'description' => 'A crew member referenced in GTA VI material, linked to higher-stakes scores.',
-                'sort_order'  => 14,
+                'sort_order' => 14,
             ],
         ];
 
@@ -65,7 +65,7 @@ class Gta6CharactersSeeder extends Seeder
             Gta6Character::updateOrCreate(
                 ['slug' => Str::slug($c['name'])],
                 array_merge($c, [
-                    'status'       => 'confirmed',
+                    'status' => 'confirmed',
                     'is_published' => true,
                 ])
             );

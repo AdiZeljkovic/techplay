@@ -7,6 +7,7 @@ import axios from "@/lib/axios";
 import RingMeter from "@/components/ui/RingMeter";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Avatar from "@/components/ui/Avatar";
+import { levelForXp } from "@/lib/level";
 
 const FEATURES = [
     { icon: Gamepad2, title: "Track Games", sub: "Log and organize your collection" },
@@ -52,7 +53,7 @@ export default function ProfileCtaBand() {
     const xp = profile?.stats.xp ?? champion?.value ?? 0;
     const nextXp = profile?.next_rank?.min_xp ?? null;
     const xpPercent = nextXp ? Math.min(100, Math.round((xp / nextXp) * 100)) : 100;
-    const level = profile?.stats.level ?? Math.floor(xp / 1000) + 1;
+    const level = profile?.stats.level ?? levelForXp(xp);
 
     return (
         <section className="relative rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] overflow-hidden">

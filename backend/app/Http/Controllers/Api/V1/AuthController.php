@@ -12,6 +12,7 @@ use App\Models\ConnectedAccount;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\AchievementService;
+use App\Services\LevelService;
 use App\Services\PremiumService;
 use App\Services\ProfileService;
 use App\Services\ReCaptchaService;
@@ -286,7 +287,7 @@ class AuthController extends Controller
             'reputation' => $user->forum_reputation ?? 0,
             'joined_at' => $user->created_at->format('M Y'), // Only month/year
             'achievements_count' => $unlockedCount,
-            'level' => floor(($user->xp ?? 0) / 1000) + 1,
+            'level' => app(LevelService::class)->forXp($user->xp),
             'xp' => $user->xp ?? 0,
             'reviews_count' => $isStaff ? $user->published_articles_count : 0,
             // Game collection counts (Phase 1).

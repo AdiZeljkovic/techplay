@@ -16,6 +16,7 @@ class Gta6LocationsSeeder extends Seeder
 
         if (! file_exists($path)) {
             $this->command->error("File not found: {$path}");
+
             return;
         }
 
@@ -23,6 +24,7 @@ class Gta6LocationsSeeder extends Seeder
 
         if (! $data) {
             $this->command->error('Failed to parse gta6_landmarks.json');
+
             return;
         }
 
@@ -37,19 +39,19 @@ class Gta6LocationsSeeder extends Seeder
                 continue;
             }
 
-            $categories   = $loc[6] ?? [];
+            $categories = $loc[6] ?? [];
             $isUnconfirmed = in_array('unconfirmed', $categories) || in_array('may-not-exist', $categories);
 
             GtaLocation::updateOrCreate(
                 ['gtadb_key' => $key],
                 [
-                    'name'          => $loc[0],
-                    'game_x'        => $loc[1][0] ?? null,
-                    'game_y'        => $loc[1][1] ?? null,
-                    'real_address'  => $loc[3] ?? null,
-                    'lat'           => $lat,
-                    'lng'           => $lng,
-                    'categories'    => $categories,
+                    'name' => $loc[0],
+                    'game_x' => $loc[1][0] ?? null,
+                    'game_y' => $loc[1][1] ?? null,
+                    'real_address' => $loc[3] ?? null,
+                    'lat' => $lat,
+                    'lng' => $lng,
+                    'categories' => $categories,
                     'is_unconfirmed' => $isUnconfirmed,
                 ]
             );
@@ -57,6 +59,6 @@ class Gta6LocationsSeeder extends Seeder
             $imported++;
         }
 
-        $this->command->info("Imported {$imported} GTA VI locations (out of " . count($data) . " total).");
+        $this->command->info("Imported {$imported} GTA VI locations (out of ".count($data).' total).');
     }
 }

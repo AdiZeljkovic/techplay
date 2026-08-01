@@ -20,9 +20,9 @@ class Gta6VehiclesController extends Controller
     public function index(Request $request): JsonResponse
     {
         $search = $request->get('search');
-        $class  = $request->get('class');
+        $class = $request->get('class');
 
-        $cacheKey = 'gta6.vehicles.' . md5(serialize(compact('search', 'class')));
+        $cacheKey = 'gta6.vehicles.'.md5(serialize(compact('search', 'class')));
 
         $data = Cache::remember($cacheKey, CacheService::TTL_DAY, function () use ($search, $class) {
             $query = Gta6Vehicle::query()->where('is_published', true);
@@ -32,7 +32,7 @@ class Gta6VehiclesController extends Controller
             }
 
             if ($search) {
-                $query->where('name', 'ilike', '%' . $search . '%');
+                $query->where('name', 'ilike', '%'.$search.'%');
             }
 
             return $query

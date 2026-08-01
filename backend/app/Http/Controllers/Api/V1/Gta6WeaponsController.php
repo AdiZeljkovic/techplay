@@ -20,9 +20,9 @@ class Gta6WeaponsController extends Controller
     public function index(Request $request): JsonResponse
     {
         $search = $request->get('search');
-        $type   = $request->get('type');
+        $type = $request->get('type');
 
-        $cacheKey = 'gta6.weapons.' . md5(serialize(compact('search', 'type')));
+        $cacheKey = 'gta6.weapons.'.md5(serialize(compact('search', 'type')));
 
         $data = Cache::remember($cacheKey, CacheService::TTL_DAY, function () use ($search, $type) {
             $query = Gta6Weapon::query()->where('is_published', true);
@@ -32,7 +32,7 @@ class Gta6WeaponsController extends Controller
             }
 
             if ($search) {
-                $query->where('name', 'ilike', '%' . $search . '%');
+                $query->where('name', 'ilike', '%'.$search.'%');
             }
 
             return $query

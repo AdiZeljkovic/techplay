@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Game;
+use App\Services\LevelService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -142,7 +143,7 @@ class SearchController extends Controller
                     'slug' => $u->username,
                     'excerpt' => null,
                     'image' => $u->avatar_url,
-                    'category' => trim('Lv '.(intdiv((int) ($u->xp ?? 0), 1000) + 1).' · '.($u->rank->name ?? 'Member')),
+                    'category' => trim('Lv '.app(LevelService::class)->forXp($u->xp).' · '.($u->rank->name ?? 'Member')),
                     'category_slug' => 'users',
                     'type' => 'user',
                     'url' => "/profile/{$u->username}",

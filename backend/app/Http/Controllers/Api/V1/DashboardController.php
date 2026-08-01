@@ -10,6 +10,7 @@ use App\Models\Game;
 use App\Models\GameRating;
 use App\Models\Presence;
 use App\Models\UserGame;
+use App\Services\LevelService;
 use App\Services\ProfileService;
 use App\Services\StreakService;
 use App\Traits\ApiResponse;
@@ -88,7 +89,7 @@ class DashboardController extends Controller
                 'location' => $user->location,
                 'tagline' => $user->tagline,
                 'playstyle_tags' => array_values((array) ($user->playstyle_tags ?? [])),
-                'level' => (int) floor(($user->xp ?? 0) / 1000) + 1,
+                'level' => app(LevelService::class)->forXp($user->xp),
                 'xp' => (int) ($user->xp ?? 0),
                 'rank_name' => $user->rank?->name,
                 // the ladder carries a tier colour per rank — the UI paints with it
