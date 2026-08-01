@@ -24,3 +24,6 @@ vendor/
 .env
 .env.*
 !.env.example
+
+# Generated at runtime by the backend (SitemapController/commands)
+backend/public/sitemap-news.xml
