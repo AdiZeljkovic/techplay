@@ -13,6 +13,7 @@ import { SendMessageModal } from "@/components/messaging/SendMessageModal";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileTabs, { type ProfileTab, PROFILE_TABS } from "@/components/profile/ProfileTabs";
 import ProfileOverviewDashboard from "@/components/profile/ProfileOverviewDashboard";
+import DashboardHome from "@/components/home-dashboard/DashboardHome";
 import CollectionGrid from "@/components/profile/CollectionGrid";
 import RewardsStore from "@/components/profile/RewardsStore";
 import ListsTab from "@/components/profile/ListsTab";
@@ -127,6 +128,17 @@ function ProfilePageInner() {
     const rootStyle = themeColor
         ? ({ ["--accent" as any]: themeColor, ["--accent-hover" as any]: themeColor } as React.CSSProperties)
         : undefined;
+
+    // Your own Overview *is* the logged-in homepage — literally the same page,
+    // reachable at both / and /profile/{you}. Other tabs, and everyone else's
+    // profile, keep the classic header + tab chrome below.
+    if (isOwnProfile && effectiveTab === "overview") {
+        return (
+            <div style={rootStyle}>
+                <DashboardHome user={currentUser} />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen" style={rootStyle}>
