@@ -21,10 +21,14 @@ class UserGame extends Model
         'started_at',
         'completed_at',
         'last_played_at',
+        // Set by the controller on a backlog→completed transition; never
+        // accepted from request input (the update validator whitelists fields).
+        'from_backlog',
     ];
 
     protected $casts = [
         'is_favorite' => 'boolean',
+        'from_backlog' => 'boolean',
         'showcase_order' => 'integer',
         'progress' => 'integer',
         'hours_played' => 'integer',

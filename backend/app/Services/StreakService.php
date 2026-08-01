@@ -42,10 +42,14 @@ class StreakService
 
             $fresh->daily_streak = $streak;
             $fresh->last_daily_claim = now();
+            // Total distinct active days — scored separately from the unbroken
+            // streak, so breaking a streak never costs accumulated days.
+            $fresh->active_days_count = (int) ($fresh->active_days_count ?? 0) + 1;
             $fresh->save();
 
             $user->daily_streak = $streak;
             $user->last_daily_claim = $fresh->last_daily_claim;
+            $user->active_days_count = $fresh->active_days_count;
 
             // Award bounty: base + streak bonus
             $bonus = min(($streak - 1) * self::STREAK_BONUS_PER_DAY, self::MAX_STREAK_BONUS);
@@ -55,6 +59,12 @@ class StreakService
             // Fire quest progress
             $this->questService->progress($fresh, 'streak_days', 1);
             $this->questService->progress($fresh, 'daily_login', 1);
+
+            // Streak and active-day trophies had no trigger before this
+            try {
+                app(AchievementService::class)->check($fresh, ['daily_streak', 'active_days']);
+            } catch (\Throwable) {
+            }
 
             return [
                 'streak' => $streak,

@@ -13,6 +13,11 @@ class Achievement extends Model
         'points',
         'criteria_type',
         'criteria_value',
+        'is_hidden',
+    ];
+
+    protected $casts = [
+        'is_hidden' => 'boolean',
     ];
 
     public function users()

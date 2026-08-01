@@ -5,9 +5,12 @@ namespace App\Services;
 use App\Models\Achievement;
 use App\Models\ConnectedAccount;
 use App\Models\Friendship;
+use App\Models\GameRating;
 use App\Models\Order;
 use App\Models\User;
 use App\Notifications\AchievementUnlockedNotification;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AchievementService
@@ -25,7 +28,8 @@ class AchievementService
             $earnedIds = $user->achievements()->pluck('achievement_id');
 
             $query = Achievement::whereNotIn('id', $earnedIds)
-                ->where('criteria_type', '!=', 'special'); // special = manual admin grant only
+                ->where('criteria_type', '!=', 'special') // special = manual admin grant only
+                ->where('is_hidden', false);              // unreleased features stay unreachable
 
             if (! empty($types)) {
                 $query->whereIn('criteria_type', $types);
@@ -54,6 +58,13 @@ class AchievementService
                         }
                     }
                 }
+            }
+
+            // Meta achievements count other achievements, so an unlock can
+            // itself satisfy one. Sweep once more — but only when this pass
+            // wasn't already the meta pass, so it can never recurse.
+            if ($unlocked && $types !== ['achievements_count']) {
+                $unlocked = array_merge($unlocked, $this->check($user, ['achievements_count']));
             }
 
             return $unlocked;
@@ -155,8 +166,71 @@ class AchievementService
 
             'connected_accounts' => ConnectedAccount::where('user_id', $user->id)->count(),
 
+            // ─── 2026 catalog ────────────────────────────────────────────────
+
+            // Distinct platforms the user has tagged entries with
+            'collection_platforms' => $user->userGames()
+                ->whereNotNull('platform')
+                ->where('platform', '!=', '')
+                ->distinct()
+                ->count('platform'),
+
+            // Completions that came out of the backlog — its own progression line
+            'backlog_completed' => $user->userGames()
+                ->where('status', 'completed')
+                ->where('from_backlog', true)
+                ->count(),
+
+            // Published ratings that actually say something (empty scores don't count)
+            'ratings_count' => GameRating::where('user_id', $user->id)
+                ->where('is_draft', false)
+                ->whereNotNull('review')
+                ->count(),
+
+            // ~500 words ≈ 2500 characters; portable across pgsql and sqlite
+            'long_posts' => $user->posts()->whereRaw('LENGTH(content) >= ?', [2500])->count(),
+
+            // Distinct days with real activity, as opposed to the unbroken streak
+            'active_days' => (int) ($user->active_days_count ?? 0),
+
+            // Upvotes collected on threads the user started
+            'thread_upvotes_received' => $this->resolveThreadUpvotes($user),
+
+            // Meta: how many achievements are already unlocked
+            'achievements_count' => $user->achievements()->count(),
+
+            // Registered before the public launch date
+            'early_adopter' => $this->resolveEarlyAdopter($user),
+
             default => null,
         };
+    }
+
+    private function resolveThreadUpvotes(User $user): int
+    {
+        try {
+            return (int) DB::table('thread_upvotes')
+                ->join('threads', 'thread_upvotes.thread_id', '=', 'threads.id')
+                ->where('threads.user_id', $user->id)
+                ->count();
+        } catch (\Throwable) {
+            return 0;
+        }
+    }
+
+    private function resolveEarlyAdopter(User $user): int
+    {
+        $cutoff = config('achievements.early_adopter_before');
+
+        if (! $cutoff || ! $user->created_at) {
+            return 0;
+        }
+
+        try {
+            return $user->created_at->lt(Carbon::parse($cutoff)) ? 1 : 0;
+        } catch (\Throwable) {
+            return 0;
+        }
     }
 
     private function resolveCommentLikes(User $user): int

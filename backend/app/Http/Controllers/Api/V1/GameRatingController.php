@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Game;
 use App\Models\GameRating;
+use App\Services\AchievementService;
 use App\Services\BountyService;
 use App\Services\XpService;
 use Illuminate\Http\Request;
@@ -148,6 +149,7 @@ class GameRatingController extends Controller
             try {
                 app(XpService::class)->awardXp($request->user(), XpService::XP_GAME_REVIEW, 'game_review');
                 app(BountyService::class)->award($request->user(), 15, "Game review written: {$slug}", 'milestone');
+                app(AchievementService::class)->check($request->user(), ['ratings_count']);
             } catch (\Throwable) {
             }
         }

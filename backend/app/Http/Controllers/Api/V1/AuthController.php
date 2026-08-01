@@ -11,6 +11,7 @@ use App\Models\ClanMember;
 use App\Models\ConnectedAccount;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\AchievementService;
 use App\Services\PremiumService;
 use App\Services\ProfileService;
 use App\Services\ReCaptchaService;
@@ -250,7 +251,13 @@ class AuthController extends Controller
 
         // Get all achievements (catalog cached 1h — it was loaded on every view)
         // and merge with user's unlocked status
-        $achievementCatalog = Cache::remember('achievements.catalog.v1', 3600, fn () => Achievement::all());
+        // v2: hidden entries (features that haven't shipped) stay out of the
+        // catalog so the profile never advertises an unreachable trophy.
+        $achievementCatalog = Cache::remember(
+            'achievements.catalog.v2',
+            3600,
+            fn () => Achievement::where('is_hidden', false)->get()
+        );
         $allAchievements = $achievementCatalog->map(function ($achievement) use ($userAchievementsMap) {
             $isUnlocked = $userAchievementsMap->has($achievement->id);
 
@@ -413,6 +420,12 @@ class AuthController extends Controller
             'gamertags' => $validated['gamertags'] ?? $user->gamertags,
             'pc_specs' => $validated['pc_specs'] ?? $user->pc_specs,
         ]);
+
+        // Gamer Tag / Multi-Platform / Battlestation had no trigger before this
+        try {
+            app(AchievementService::class)->check($user, ['gamertags', 'pc_specs']);
+        } catch (\Throwable) {
+        }
 
         return response()->json([
             'message' => 'Profile updated successfully',

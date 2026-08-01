@@ -150,12 +150,23 @@ class GameCollectionController extends Controller
         // Capture BEFORE save() — save() syncs originals, which made the
         // completion bounty unreachable for status transitions
         $previousStatus = $wasNew ? null : $entry->getOriginal('status');
+
+        // The backlog line is scored separately from plain completions, so mark
+        // the entry the moment it graduates from backlog to completed. Sticky:
+        // once earned it stays, even if the status is later changed again.
+        if ($entry->status === 'completed' && $previousStatus === 'backlog') {
+            $entry->from_backlog = true;
+        }
+
         $entry->save();
         $entry->load(['game:id,slug,name,released,rating,background_image,platform_names,genre_names']);
 
         // Trigger achievement checks after collection change (fire-and-forget)
         try {
-            $types = ['games_added', 'games_completed', 'games_playing', 'games_wishlisted'];
+            $types = [
+                'games_added', 'games_completed', 'games_playing', 'games_wishlisted',
+                'collection_platforms', 'backlog_completed',
+            ];
             app(AchievementService::class)->check($request->user(), $types);
         } catch (\Throwable) {
         }
