@@ -13,9 +13,9 @@ export default function DashboardSkeleton() {
                 <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[298px]" />
 
                 {/* Highlight strip */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="h-[54px] rounded-[var(--radius-card)] bg-[var(--fill-2)]" />
-                    <div className="h-[54px] rounded-[var(--radius-card)] bg-[var(--fill-2)]" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="h-[88px] rounded-[var(--radius-panel)] bg-[var(--fill-2)]" />
+                    <div className="h-[88px] rounded-[var(--radius-panel)] bg-[var(--fill-2)]" />
                 </div>
 
                 {/* Main + aside grid */}
