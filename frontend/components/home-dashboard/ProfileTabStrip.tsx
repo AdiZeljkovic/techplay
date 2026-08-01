@@ -10,7 +10,7 @@ import { PROFILE_TABS } from "@/components/profile/ProfileTabs";
  * the tab it lands on. PROFILE_TABS is the single source of truth, shared
  * with the profile page's own strip.
  */
-export default function ProfileTabStrip() {
+export default function ProfileTabStrip({ activeTab = "overview" }: { activeTab?: string }) {
     return (
         <nav
             className="relative flex items-center justify-between gap-4 border-t border-[var(--line)] bg-[color-mix(in_srgb,var(--surface-0)_50%,transparent)] px-3 md:px-5"
@@ -18,7 +18,7 @@ export default function ProfileTabStrip() {
         >
             <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none">
                 {PROFILE_TABS.map(({ id, label, icon: Icon }) =>
-                    id === "overview" ? (
+                    id === activeTab ? (
                         <span
                             key={id}
                             aria-current="page"
@@ -31,7 +31,7 @@ export default function ProfileTabStrip() {
                     ) : (
                         <Link
                             key={id}
-                            href={`/profile/me?tab=${id}`}
+                            href={id === "overview" ? "/profile/me" : `/profile/me?tab=${id}`}
                             className="group/tab shrink-0 flex items-center gap-2 px-3.5 py-3.5 font-display text-[12px] font-bold uppercase tracking-[0.08em] text-[var(--ink-low)] hover:text-[var(--ink-hi)] transition-colors duration-150"
                         >
                             <Icon className="w-4 h-4 text-[var(--ink-faint)] group-hover/tab:text-[var(--accent)] transition-colors duration-150" />

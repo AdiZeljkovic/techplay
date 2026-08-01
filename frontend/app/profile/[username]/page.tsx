@@ -14,6 +14,7 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileTabs, { type ProfileTab, PROFILE_TABS } from "@/components/profile/ProfileTabs";
 import ProfileOverviewDashboard from "@/components/profile/ProfileOverviewDashboard";
 import DashboardHome from "@/components/home-dashboard/DashboardHome";
+import OwnProfileShell from "@/components/home-dashboard/OwnProfileShell";
 import CollectionGrid from "@/components/profile/CollectionGrid";
 import RewardsStore from "@/components/profile/RewardsStore";
 import ListsTab from "@/components/profile/ListsTab";
@@ -142,6 +143,15 @@ function ProfilePageInner() {
 
     return (
         <div className="min-h-screen" style={rootStyle}>
+            {/* Your own profile wears the new identity band on every tab, so
+                Collection no longer drops back to a different-looking page.
+                Visitors still get the classic header. */}
+            {isOwnProfile ? (
+                <div className="container-page pt-8">
+                    <OwnProfileShell activeTab={effectiveTab} />
+                </div>
+            ) : (
+            <>
             <ProfileHeader
                 userData={userData}
                 stats={stats}
@@ -169,6 +179,8 @@ function ProfilePageInner() {
                     achievements: stats?.achievements_count ?? 0,
                 }}
             />
+            </>
+            )}
 
             <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
                 {effectiveTab === "overview" && (

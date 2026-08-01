@@ -63,7 +63,7 @@ function StatCard({
  * The identity band the whole page hangs off — banner art on the right,
  * identity on the left, stat cards floating between them, tabs beneath.
  */
-export default function ProfileHero({ data }: { data: DashboardData }) {
+export default function ProfileHero({ data, activeTab }: { data: DashboardData; activeTab?: string }) {
     const { user, stats, playing_now } = data;
     const [copied, setCopied] = useState(false);
 
@@ -273,7 +273,7 @@ export default function ProfileHero({ data }: { data: DashboardData }) {
                 </div>
             </div>
 
-            <ProfileTabStrip />
+            <ProfileTabStrip activeTab={activeTab} />
         </section>
     );
 }
