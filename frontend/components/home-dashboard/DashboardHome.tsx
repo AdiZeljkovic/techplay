@@ -18,9 +18,8 @@ import BacklogProgressCard from "./BacklogProgressCard";
 import QuickActionsGrid from "./QuickActionsGrid";
 import FollowedGamesFeed from "./FollowedGamesFeed";
 import OnboardingCard from "./OnboardingCard";
+import DailyMissions from "./DailyMissions";
 import Panel from "@/components/ui/Panel";
-import DailyStreakWidget from "@/components/profile/dashboard/DailyStreakWidget";
-import QuestPanel from "@/components/profile/dashboard/QuestPanel";
 import FriendActivityFeed from "@/components/profile/FriendActivityFeed";
 import type { DashboardData } from "@/lib/types/dashboard";
 
@@ -119,10 +118,8 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                             <CurrentlyPlayingSidebar games={data.playing_now} />
                         </div>
 
-                        {/* shared wrapper: both may render null pre-data — no stray gaps */}
-                        <div className="space-y-6 tp-fade-up tp-d4">
-                            <DailyStreakWidget />
-                            <QuestPanel isOwnProfile compact />
+                        <div className="tp-fade-up tp-d3">
+                            <DailyMissions streak={data.streak} />
                         </div>
 
                         <div className="tp-fade-up tp-d5">

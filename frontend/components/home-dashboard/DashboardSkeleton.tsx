@@ -35,9 +35,8 @@ export default function DashboardSkeleton() {
                     <div className="lg:col-span-4 space-y-6">
                         {/* currently playing */}
                         <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[300px]" />
-                        {/* streak + quests */}
-                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[74px]" />
-                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[230px]" />
+                        {/* daily missions: streak + quest board */}
+                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[430px]" />
                         {/* friends online */}
                         <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[190px]" />
                     </div>
