@@ -73,7 +73,10 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                         </div>
 
                         <div className="tp-fade-up tp-d3">
-                            <RecentAchievementsRail achievements={data.recent_achievements} />
+                            <RecentAchievementsRail
+                                achievements={data.recent_achievements}
+                                total={data.stats.achievements_count}
+                            />
                         </div>
 
                         <div className="tp-fade-up tp-d3">
