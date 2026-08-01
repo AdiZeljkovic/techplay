@@ -1,22 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Home, Gamepad2, Activity, PenLine, Trophy, Users, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
+import { PROFILE_TABS } from "@/components/profile/ProfileTabs";
 
 /**
- * Profile-style tab row. Overview IS this page; the rest deep-link into
- * the full profile (which owns collection/activity/achievements) and
- * /friends. No local tab state — honest navigation, not an illusion.
+ * The logged-in homepage *is* the profile's Overview, so this strip renders
+ * the real profile tabs rather than an invented set — every label matches
+ * the tab it lands on. PROFILE_TABS is the single source of truth, shared
+ * with the profile page's own strip.
  */
-const TABS: { label: string; href: string | null; icon: React.ComponentType<{ className?: string }> }[] = [
-    { label: "Overview", href: null, icon: Home },
-    { label: "Games", href: "/profile/me?tab=collection", icon: Gamepad2 },
-    { label: "Activity", href: "/profile/me?tab=activity", icon: Activity },
-    { label: "Reviews", href: "/profile/me?tab=activity", icon: PenLine },
-    { label: "Achievements", href: "/profile/me?tab=achievements", icon: Trophy },
-    { label: "Friends", href: "/friends", icon: Users },
-];
-
 export default function ProfileTabStrip() {
     return (
         <nav
@@ -24,10 +17,10 @@ export default function ProfileTabStrip() {
             aria-label="Profile sections"
         >
             <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none">
-                {TABS.map(({ label, href, icon: Icon }) =>
-                    href === null ? (
+                {PROFILE_TABS.map(({ id, label, icon: Icon }) =>
+                    id === "overview" ? (
                         <span
-                            key={label}
+                            key={id}
                             aria-current="page"
                             className="relative shrink-0 flex items-center gap-2 px-3.5 py-3.5 font-display text-[12px] font-bold uppercase tracking-[0.08em] text-[var(--ink-hi)]"
                         >
@@ -37,8 +30,8 @@ export default function ProfileTabStrip() {
                         </span>
                     ) : (
                         <Link
-                            key={label}
-                            href={href}
+                            key={id}
+                            href={`/profile/me?tab=${id}`}
                             className="group/tab shrink-0 flex items-center gap-2 px-3.5 py-3.5 font-display text-[12px] font-bold uppercase tracking-[0.08em] text-[var(--ink-low)] hover:text-[var(--ink-hi)] transition-colors duration-150"
                         >
                             <Icon className="w-4 h-4 text-[var(--ink-faint)] group-hover/tab:text-[var(--accent)] transition-colors duration-150" />
