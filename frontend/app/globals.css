@@ -510,6 +510,14 @@ body {
 }
 .tp-sweep { animation: tp-sweep 2s var(--ease-hud) 0.4s 1 both; }
 
+/* XP bar: a highlight travels along the filled portion, battle-pass style. */
+@keyframes tp-xp-shimmer {
+  0%   { transform: translateX(-140%) skewX(-20deg); }
+  60%  { transform: translateX(420%) skewX(-20deg); }
+  100% { transform: translateX(420%) skewX(-20deg); }
+}
+.tp-xp-shimmer { animation: tp-xp-shimmer 3.2s var(--ease-hud) infinite; }
+
 /* Presence halo behind the online dot. */
 @keyframes tp-pulse-ring {
   0%   { transform: scale(1); opacity: 0.5; }
@@ -519,7 +527,7 @@ body {
 .tp-pulse-ring { animation: tp-pulse-ring 2.6s var(--ease-hud) infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  .tp-drift, .tp-sweep, .tp-pulse-ring { animation: none; }
+  .tp-drift, .tp-sweep, .tp-pulse-ring, .tp-xp-shimmer { animation: none; }
 }
 
 /* Hide scrollbars on horizontal rails (dashboard "Continue Playing" etc.) */

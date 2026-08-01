@@ -186,14 +186,16 @@ export default function ProfileHero({ data }: { data: DashboardData }) {
 
                                     <XpRail percent={ringValue} />
 
-                                    <p className="mt-1.5 flex items-baseline justify-between gap-2 text-[10px] uppercase tracking-wider text-[var(--ink-faint)]">
+                                    <p className="mt-2 flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider text-[var(--ink-faint)]">
                                         <span className="tabular-nums">
-                                            <span className="font-display text-[12px] font-bold text-[var(--ink-hi)] normal-case tracking-normal">
+                                            <span className="font-display text-[13px] font-bold text-[var(--ink-hi)] normal-case tracking-normal">
                                                 {animatedXp.toLocaleString()}
                                             </span>
                                             {nextXp ? ` / ${nextXp.toLocaleString()} XP` : " XP"}
                                         </span>
-                                        <span className="font-display font-bold tabular-nums text-[var(--accent)]">{ringValue}%</span>
+                                        <span className="inline-flex items-center h-[18px] px-2 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] font-display text-[10px] font-bold tabular-nums text-[var(--accent)]">
+                                            {ringValue}%
+                                        </span>
                                     </p>
                                 </div>
                             </div>

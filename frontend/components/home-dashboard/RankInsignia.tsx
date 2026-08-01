@@ -96,45 +96,72 @@ export function RankEmblem({ name, color }: { name: string; color: string | null
 }
 
 /**
- * Segmented XP rail. Notches read as a HUD gauge rather than a web
- * progress bar; the leading edge carries a moving shine.
+ * XP bar built like a battle-pass gauge rather than a web progress bar:
+ * a recessed track, a lit fill with a gloss crown, notches *engraved*
+ * across the whole rail (not gaps between blocks), a bright leading edge,
+ * and a highlight that keeps travelling along the filled portion.
  */
 export function XpRail({
     percent,
-    segments = 18,
+    segments = 10,
     className = "",
 }: {
     percent: number;
     segments?: number;
     className?: string;
 }) {
-    const filled = (percent / 100) * segments;
+    const p = Math.max(0, Math.min(100, percent));
+    const notch = 100 / segments;
 
     return (
-        <span className={`flex items-center gap-[3px] ${className}`} aria-hidden>
-            {Array.from({ length: segments }, (_, i) => {
-                const fill = Math.max(0, Math.min(1, filled - i));
-                const leading = fill > 0 && fill < 1;
-                return (
-                    <span
-                        key={i}
-                        className="relative flex-1 h-[9px] rounded-[2px] overflow-hidden bg-[var(--track)]"
-                    >
-                        {fill > 0 && (
-                            <span
-                                className="absolute inset-y-0 left-0 rounded-[2px]"
-                                style={{
-                                    width: `${fill * 100}%`,
-                                    background: leading
-                                        ? "var(--accent-bright)"
-                                        : "linear-gradient(180deg, var(--accent-bright) 0%, var(--accent) 100%)",
-                                    boxShadow: `0 0 ${leading ? 10 : 6}px color-mix(in srgb, var(--accent) ${leading ? 75 : 45}%, transparent)`,
-                                }}
-                            />
-                        )}
-                    </span>
-                );
-            })}
+        <span
+            className={`relative block h-[14px] rounded-full overflow-hidden bg-[var(--surface-0)] border border-[var(--line-strong)] ${className}`}
+            style={{ boxShadow: "inset 0 2px 5px rgba(0,0,0,0.65)" }}
+            aria-hidden
+        >
+            {/* lit fill */}
+            {p > 0 && (
+                <span
+                    className="absolute inset-y-0 left-0 rounded-full overflow-hidden"
+                    style={{
+                        width: `${p}%`,
+                        background:
+                            "linear-gradient(180deg, var(--accent-bright) 0%, var(--accent) 52%, var(--accent-hover) 100%)",
+                        boxShadow:
+                            "0 0 16px color-mix(in srgb, var(--accent) 65%, transparent), inset 0 -1px 3px rgba(0,0,0,0.35)",
+                    }}
+                >
+                    {/* gloss crown along the top half */}
+                    <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/35 to-transparent" />
+                    {/* travelling highlight */}
+                    <span className="tp-xp-shimmer absolute inset-y-0 -left-1/4 w-1/4 bg-gradient-to-r from-transparent via-white/45 to-transparent" />
+                </span>
+            )}
+
+            {/* notches engraved across the whole rail */}
+            <span
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                    background: `repeating-linear-gradient(90deg, transparent 0, transparent calc(${notch}% - 2px), rgba(0,0,0,0.5) calc(${notch}% - 2px), rgba(0,0,0,0.5) ${notch}%)`,
+                }}
+            />
+
+            {/* bright leading edge */}
+            {p > 1 && p < 100 && (
+                <span
+                    className="absolute top-[1px] bottom-[1px] w-[2px] rounded-full bg-white"
+                    style={{
+                        left: `calc(${p}% - 1px)`,
+                        boxShadow: "0 0 8px rgba(255,255,255,0.9), 0 0 16px color-mix(in srgb, var(--accent) 80%, transparent)",
+                    }}
+                />
+            )}
+
+            {/* inner rim so the rail reads as recessed metal */}
+            <span
+                className="absolute inset-0 rounded-full pointer-events-none"
+                style={{ boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.06)" }}
+            />
         </span>
     );
 }
