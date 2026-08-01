@@ -15,7 +15,6 @@ import UpcomingForYouRow from "./UpcomingForYouRow";
 import YourActivity from "./YourActivity";
 import RecommendedNext from "./RecommendedNext";
 import BacklogProgressCard from "./BacklogProgressCard";
-import QuickActionsGrid from "./QuickActionsGrid";
 import FollowedGamesFeed from "./FollowedGamesFeed";
 import OnboardingCard from "./OnboardingCard";
 import DailyMissions from "./DailyMissions";
@@ -124,10 +123,6 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
 
                         <div className="tp-fade-up tp-d5">
                             <FriendsOnlineWidget friends={data.friends_online} />
-                        </div>
-
-                        <div className="tp-fade-up tp-d6">
-                            <QuickActionsGrid />
                         </div>
                     </div>
                 </div>

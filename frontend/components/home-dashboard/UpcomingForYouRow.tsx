@@ -63,7 +63,7 @@ export default function UpcomingForYouRow() {
     const { mutate } = useSWRConfig();
     const [pending, setPending] = useState<string | null>(null);
 
-    const upcoming = (games ?? []).filter((g) => g.released).slice(0, 8);
+    const upcoming = (games ?? []).filter((g) => g.released).slice(0, 4);
     if (games && upcoming.length === 0) return null;
 
     const refreshLibrary = () => {
