@@ -26,20 +26,20 @@ function releaseLabel(released: string): string {
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-/** Days until launch, as a countdown a gamer actually reads. */
-function countdown(released: string): { label: string; imminent: boolean } | null {
+/** Days until launch, split so the number can carry the tile. */
+function countdown(released: string): { value: string; unit: string; imminent: boolean } | null {
     const date = new Date(released);
     if (Number.isNaN(date.getTime())) return null;
 
     const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
     const days = Math.round((startOfDay(date) - startOfDay(new Date())) / 86_400_000);
 
-    if (days < 0) return { label: "Out now", imminent: false };
-    if (days === 0) return { label: "Out today", imminent: true };
-    if (days === 1) return { label: "Tomorrow", imminent: true };
-    if (days < 7) return { label: `${days} days`, imminent: true };
-    if (days < 30) return { label: `${Math.round(days / 7)} weeks`, imminent: false };
-    return { label: `${Math.round(days / 30)} months`, imminent: false };
+    if (days < 0) return { value: "OUT", unit: "now", imminent: false };
+    if (days === 0) return { value: "0", unit: "today", imminent: true };
+    if (days === 1) return { value: "1", unit: "day", imminent: true };
+    if (days < 7) return { value: String(days), unit: "days", imminent: true };
+    if (days < 30) return { value: String(Math.round(days / 7)), unit: "weeks", imminent: false };
+    return { value: String(Math.round(days / 30)), unit: "months", imminent: false };
 }
 
 function shortPlatforms(platforms?: CalendarGame["platforms"]): string {
@@ -102,10 +102,12 @@ export default function UpcomingForYouRow() {
                 </Link>
             </div>
 
-            <div className="flex gap-3 overflow-x-auto snap-x pb-2 -mx-4 px-4 xl:mx-0 xl:px-0 scrollbar-none">
+            {/* A grid, not a clipped rail — a card sliced in half by the panel
+                edge reads as broken rather than as "there is more". */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {(games ? upcoming : Array.from({ length: 4 }, () => null)).map((g, i) =>
                     g ? (
-                        <div key={g.slug} className={`group/card w-[240px] shrink-0 snap-start rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_14px_36px_rgba(0,0,0,0.45)] transition-all duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}>
+                        <div key={g.slug} className={`group/card flex flex-col rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_14px_36px_rgba(0,0,0,0.45)] transition-all duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}>
                             <Link href={`/games/${g.slug}`} prefetch={false} className="group block relative aspect-[16/9]">
                                 {g.background_image ? (
                                     // eslint-disable-next-line @next/next/no-img-element
@@ -114,31 +116,35 @@ export default function UpcomingForYouRow() {
                                     <div className="w-full h-full flex items-center justify-center text-[var(--ink-faint)] bg-[var(--fill-1)]"><Gamepad2 className="w-8 h-8" /></div>
                                 )}
                                 <div className="absolute inset-0 scrim-card" />
-                                {/* launch countdown — the reason to care */}
+                                {/* launch countdown — the reason to care, as a tile */}
                                 {(() => {
                                     const c = g.released ? countdown(g.released) : null;
                                     if (!c) return null;
                                     return (
                                         <span
-                                            className={`absolute top-2 left-2 inline-flex items-center h-[22px] px-2.5 rounded-full backdrop-blur-md text-[9px] font-bold uppercase tracking-[0.1em] ${
+                                            className={`absolute top-2 left-2 flex flex-col items-center justify-center w-[46px] py-1.5 rounded-[var(--radius-inner)] backdrop-blur-md leading-none ${
                                                 c.imminent
                                                     ? "bg-[var(--accent)] text-white shadow-[var(--glow-accent)]"
-                                                    : "bg-[color-mix(in_srgb,var(--surface-0)_80%,transparent)] border border-[var(--line-strong)] text-[var(--ink-mid)]"
+                                                    : "bg-[color-mix(in_srgb,var(--surface-0)_82%,transparent)] border border-[var(--line-strong)] text-[var(--ink-hi)]"
                                             }`}
                                         >
-                                            {c.label}
+                                            <span className="font-display text-[16px] font-bold tabular-nums">{c.value}</span>
+                                            <span className="mt-0.5 text-[8px] font-bold uppercase tracking-[0.12em] opacity-80">{c.unit}</span>
                                         </span>
                                     );
                                 })()}
                             </Link>
                             {/* accent seam draws across on hover */}
                             <span aria-hidden className="block h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover/card:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]" />
-                            <div className="p-3">
-                                <Link href={`/games/${g.slug}`} prefetch={false} className="block font-display text-[13px] font-bold text-[var(--ink-hi)] line-clamp-1 hover:text-[var(--accent)] transition-colors">
+                            {/* Fixed rhythm: two title lines are always reserved, so
+                                every card's date, platforms and button line up. */}
+                            <div className="flex-1 flex flex-col p-3">
+                                <Link href={`/games/${g.slug}`} prefetch={false} className="block font-display text-[13px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 min-h-[34px] hover:text-[var(--accent)] transition-colors">
                                     {g.name}
                                 </Link>
-                                <p className="mt-0.5 text-[11px] tabular-nums text-[var(--ink-low)]">{releaseLabel(g.released!)}</p>
+                                <p className="mt-1 text-[11px] tabular-nums text-[var(--ink-low)]">{releaseLabel(g.released!)}</p>
                                 <p className="text-[9px] uppercase tracking-wide text-[var(--ink-faint)] line-clamp-1 min-h-[13px]">{shortPlatforms(g.platforms)}</p>
+                                <span className="flex-1" />
                                 {(() => {
                                     const status = library[g.slug];
                                     const following = !!status;
@@ -167,7 +173,7 @@ export default function UpcomingForYouRow() {
                             </div>
                         </div>
                     ) : (
-                        <div key={i} className="w-[240px] shrink-0 rounded-[var(--radius-card)] bg-[var(--fill-2)] h-[210px] animate-pulse" />
+                        <div key={i} className="rounded-[var(--radius-card)] bg-[var(--fill-2)] h-[236px] animate-pulse" />
                     )
                 )}
             </div>
