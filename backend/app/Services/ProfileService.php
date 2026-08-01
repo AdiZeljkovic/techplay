@@ -104,6 +104,9 @@ class ProfileService
                 'platform_names' => $ug->game?->platform_names ?? [],
                 'progress' => $ug->progress,
                 'hours_played' => $ug->hours_played,
+                // null when nothing measured it — the UI says "not tracked"
+                // instead of showing a zero as if it were data
+                'playtime_source' => $ug->playtime_source,
             ])
             ->filter(fn ($g) => $g['slug'] !== null)
             ->values()
@@ -128,6 +131,9 @@ class ProfileService
                 'platform_names' => $ug->game?->platform_names ?? [],
                 'progress' => $ug->progress,
                 'hours_played' => $ug->hours_played,
+                // null when nothing measured it — the UI says "not tracked"
+                // instead of showing a zero as if it were data
+                'playtime_source' => $ug->playtime_source,
             ])
             ->filter(fn ($g) => $g['slug'] !== null)
             ->values()

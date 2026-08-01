@@ -24,11 +24,15 @@ class UserGame extends Model
         // Set by the controller on a backlog→completed transition; never
         // accepted from request input (the update validator whitelists fields).
         'from_backlog',
+        // Written by SyncSteamLibrary and PresenceService only.
+        'playtime_minutes',
+        'playtime_source',
     ];
 
     protected $casts = [
         'is_favorite' => 'boolean',
         'from_backlog' => 'boolean',
+        'playtime_minutes' => 'integer',
         'showcase_order' => 'integer',
         'progress' => 'integer',
         'hours_played' => 'integer',

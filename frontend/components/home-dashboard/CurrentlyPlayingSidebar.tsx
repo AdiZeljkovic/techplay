@@ -7,6 +7,14 @@ import Panel from "@/components/ui/Panel";
 import ProgressBar from "@/components/ui/ProgressBar";
 import EmptyState from "@/components/ui/EmptyState";
 
+/** Playtime is only ever as good as the signal behind it — name the signal. */
+const SOURCE_LABEL: Record<string, string> = {
+    steam: "via Steam",
+    discord: "via Discord",
+    presence: "via presence",
+    manual: "entered by you",
+};
+
 /** Compact in-progress list with real progress — the sidebar's anchor. */
 export default function CurrentlyPlayingSidebar({ games }: { games: PlayingNowGame[] }) {
     return (
@@ -56,11 +64,26 @@ export default function CurrentlyPlayingSidebar({ games }: { games: PlayingNowGa
                                 <span className="block text-[12px] font-semibold text-[var(--ink-hi)] truncate group-hover:text-[var(--accent)] transition-colors duration-150">
                                     {g.name}
                                 </span>
-                                <ProgressBar value={g.progress} className="mt-1.5 h-[4px]" />
-                                <span className="mt-1 flex items-center justify-between text-[10px] tabular-nums text-[var(--ink-faint)]">
-                                    <span>{g.hours_played}h played</span>
-                                    <span className="font-display font-bold text-[var(--ink-low)]">{g.progress}%</span>
-                                </span>
+
+                                {g.playtime_source ? (
+                                    <>
+                                        {g.progress > 0 && <ProgressBar value={g.progress} className="mt-1.5 h-[4px]" />}
+                                        <span className="mt-1 flex items-center justify-between gap-2 text-[10px] tabular-nums text-[var(--ink-faint)]">
+                                            <span>
+                                                <span className="font-display font-bold text-[var(--ink-low)]">{g.hours_played}h</span> played
+                                            </span>
+                                            <span className="inline-flex items-center gap-1 uppercase tracking-wider not-italic">
+                                                {SOURCE_LABEL[g.playtime_source] ?? "tracked"}
+                                            </span>
+                                        </span>
+                                    </>
+                                ) : (
+                                    // Nothing measured this title — say so, and say what would
+                                    <span className="mt-1 block text-[10px] text-[var(--ink-faint)]">
+                                        Playtime not tracked ·{" "}
+                                        <span className="text-[var(--accent)]">connect Steam or Discord</span>
+                                    </span>
+                                )}
                             </span>
                         </Link>
                     ))}

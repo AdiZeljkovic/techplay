@@ -104,6 +104,11 @@ export interface PlayingNowGame {
     platform_names: string[];
     progress: number;
     hours_played: number;
+    /**
+     * Where the playtime came from. null means nothing measured it — show
+     * a prompt to connect Steam or Discord rather than "0h played".
+     */
+    playtime_source?: "steam" | "discord" | "presence" | "manual" | null;
 }
 
 export interface DistributionStat {

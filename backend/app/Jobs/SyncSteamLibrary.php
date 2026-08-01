@@ -68,9 +68,13 @@ class SyncSteamLibrary implements ShouldQueue
                     ->first();
 
                 if ($existingEntry) {
-                    // Only update playtime — never overwrite a user-set status
+                    // Only update playtime — never overwrite a user-set status.
+                    // Steam reports lifetime playtime, so it wins over any
+                    // session total we accumulated ourselves.
                     $existingEntry->update(array_filter([
                         'hours_played' => max($existingEntry->hours_played, $hoursPlayed),
+                        'playtime_minutes' => max((int) $existingEntry->playtime_minutes, $minutesPlayed),
+                        'playtime_source' => 'steam',
                         'last_played_at' => $isRecent ? now() : null,
                     ]));
                 } else {
@@ -80,6 +84,8 @@ class SyncSteamLibrary implements ShouldQueue
                         'game_id' => $game->id,
                         'status' => $status,
                         'hours_played' => $hoursPlayed,
+                        'playtime_minutes' => $minutesPlayed,
+                        'playtime_source' => 'steam',
                         'last_played_at' => $isRecent ? now() : null,
                     ]);
                 }
