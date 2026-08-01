@@ -10,7 +10,6 @@ import FavoriteGamesRail from "./FavoriteGamesRail";
 import RecentAchievementsRail from "./RecentAchievementsRail";
 import RecentReviews from "./RecentReviews";
 import CurrentlyPlayingSidebar from "./CurrentlyPlayingSidebar";
-import ProfileCompletionWidget from "./ProfileCompletionWidget";
 import FriendsOnlineWidget from "./FriendsOnlineWidget";
 import UpcomingForYouRow from "./UpcomingForYouRow";
 import YourActivity from "./YourActivity";
@@ -118,10 +117,6 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                     <div className="lg:col-span-4 space-y-6 min-w-0">
                         <div className="tp-fade-up tp-d2">
                             <CurrentlyPlayingSidebar games={data.playing_now} />
-                        </div>
-
-                        <div className="tp-fade-up tp-d3">
-                            <ProfileCompletionWidget completion={data.profile_completion} />
                         </div>
 
                         {/* shared wrapper: both may render null pre-data — no stray gaps */}

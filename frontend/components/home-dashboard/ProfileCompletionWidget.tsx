@@ -1,10 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import useSWR from "swr";
 import { UserCheck, Check, ChevronRight } from "lucide-react";
-import type { ProfileCompletion } from "@/lib/types/dashboard";
+import axios from "@/lib/axios";
+import type { DashboardData, ProfileCompletion } from "@/lib/types/dashboard";
 import Panel from "@/components/ui/Panel";
 import RingMeter from "@/components/ui/RingMeter";
+
+/** Shares the dashboard's SWR key, so this costs nothing where it's cached. */
+const fetcher = (url: string) =>
+    axios.get(url).then((r) => (r.data?.data as DashboardData)?.profile_completion);
 
 /** Where each missing signal gets fixed. */
 const ACTION_HREFS: Record<string, string> = {
@@ -19,8 +25,26 @@ const ACTION_HREFS: Record<string, string> = {
     review: "/profile/me?tab=collection",
 };
 
-/** Completion ring + the next steps that raise it. */
-export default function ProfileCompletionWidget({ completion }: { completion: ProfileCompletion }) {
+/**
+ * Completion ring + the next steps that raise it. Lives in Settings, where
+ * the steps can actually be acted on. Pass `completion` to render from data
+ * you already hold; omit it and the widget fetches its own.
+ */
+export default function ProfileCompletionWidget({ completion: passed }: { completion?: ProfileCompletion }) {
+    const { data: fetched } = useSWR(passed ? null : "/me/dashboard", fetcher, {
+        revalidateOnFocus: false,
+    });
+
+    const completion = passed ?? fetched;
+
+    if (!completion) {
+        return (
+            <Panel title="Profile Completion" icon={<UserCheck className="w-3.5 h-3.5 text-[var(--accent)]" />} bodyClassName="p-4">
+                <div className="h-[64px] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />
+            </Panel>
+        );
+    }
+
     const done = completion.percent >= 100;
 
     return (

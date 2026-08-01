@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Loader2, Save, User, Gamepad2, Cpu, Monitor, Lock, CheckCircle, ShieldCheck, Download, Trash2, Link2 } from "lucide-react";
 import ConnectedAccountsSection from "@/components/settings/ConnectedAccountsSection";
+import ProfileCompletionWidget from "@/components/home-dashboard/ProfileCompletionWidget";
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 import { AnimatePresence, motion } from "framer-motion";
@@ -99,6 +100,8 @@ export default function SettingsClient() {
             if (user?.username) {
                 mutate(`/users/${user.username}`);
             }
+            // Completion is computed from these very fields — refresh it now
+            mutate('/me/dashboard');
             toast.success('Settings saved successfully!');
             router.refresh();
         } catch (error: any) {
@@ -199,6 +202,11 @@ export default function SettingsClient() {
                             Save Changes
                         </Button>
                     )}
+                </div>
+
+                {/* What's still missing — every step here is actionable on this page */}
+                <div className="mb-6">
+                    <ProfileCompletionWidget />
                 </div>
 
                 <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">

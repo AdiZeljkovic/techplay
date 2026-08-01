@@ -35,8 +35,6 @@ export default function DashboardSkeleton() {
                     <div className="lg:col-span-4 space-y-6">
                         {/* currently playing */}
                         <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[300px]" />
-                        {/* completion */}
-                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[130px]" />
                         {/* streak + quests */}
                         <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[74px]" />
                         <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[230px]" />
