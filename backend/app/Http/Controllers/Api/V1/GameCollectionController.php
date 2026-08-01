@@ -14,6 +14,7 @@ use App\Services\QuestService;
 use App\Services\RawgService;
 use App\Services\XpService;
 use App\Traits\ApiResponse;
+use App\Traits\ProfilePrivacy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,7 @@ use Illuminate\Validation\Rule;
 
 class GameCollectionController extends Controller
 {
-    use ApiResponse;
+    use ApiResponse, ProfilePrivacy;
 
     /**
      * Public: list a user's game collection, optionally filtered by status / favorites.
@@ -32,6 +33,10 @@ class GameCollectionController extends Controller
     public function index(Request $request, string $username)
     {
         $user = User::where('username', $username)->firstOrFail();
+
+        if ($this->profileHidden($user)) {
+            return $this->error('This profile is private.', 403);
+        }
 
         $status = $request->query('status');
         $favorite = $request->boolean('favorite');

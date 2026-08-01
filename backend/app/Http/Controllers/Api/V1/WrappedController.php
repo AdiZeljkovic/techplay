@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Traits\ApiResponse;
+use App\Traits\ProfilePrivacy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class WrappedController extends Controller
 {
-    use ApiResponse;
+    use ApiResponse, ProfilePrivacy;
 
     /**
      * GET /users/{username}/wrapped/{year} — Year-in-Review stats.
@@ -18,6 +19,10 @@ class WrappedController extends Controller
     public function show(string $username, int $year): JsonResponse
     {
         $user = User::where('username', $username)->firstOrFail();
+
+        if ($this->profileHidden($user)) {
+            return $this->error('This profile is private.', 403);
+        }
 
         $start = "{$year}-01-01";
         $end = "{$year}-12-31 23:59:59";

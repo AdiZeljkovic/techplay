@@ -1,18 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { Loader2, Save, User, Gamepad2, Cpu, Monitor, Lock, CheckCircle, ShieldCheck, Download, Trash2, Link2 } from "lucide-react";
+import { Loader2, Save, User, Gamepad2, Cpu, Monitor, Lock, CheckCircle, ShieldCheck, Download, Trash2, Link2, Eye, Globe, Users, Check } from "lucide-react";
 import ConnectedAccountsSection from "@/components/settings/ConnectedAccountsSection";
 import ProfileCompletionWidget from "@/components/home-dashboard/ProfileCompletionWidget";
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 import { AnimatePresence, motion } from "framer-motion";
 import toast from "react-hot-toast";
+
+type Visibility = 'public' | 'friends';
+
+const VISIBILITY_OPTIONS: { id: Visibility; label: string; description: string; icon: typeof Globe }[] = [
+    {
+        id: 'public',
+        label: 'Public',
+        description: 'Anyone can open your profile, and you appear on leaderboards and in member search.',
+        icon: Globe,
+    },
+    {
+        id: 'friends',
+        label: 'Friends only',
+        description: 'Only accepted friends see your collection, stats and activity. Everyone else gets your name, level and rank — and a way to send a friend request.',
+        icon: Users,
+    },
+];
 
 export default function SettingsClient() {
     const { user, isLoading, logout } = useAuth({ middleware: 'auth' });
@@ -37,6 +54,40 @@ export default function SettingsClient() {
 
     // Password State
     const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
+
+    // Visibility saves on click rather than waiting for the Save button —
+    // it lives on a different tab from the profile form.
+    const [visibility, setVisibility] = useState<Visibility>((user?.profile_visibility as Visibility) || 'public');
+    const [savingVisibility, setSavingVisibility] = useState(false);
+
+    // Adopt the server value once, on first load. After that the local state
+    // wins, so an optimistic toggle isn't reverted by a stale auth payload.
+    const visibilitySynced = useRef(false);
+    useEffect(() => {
+        if (visibilitySynced.current || !user) return;
+        visibilitySynced.current = true;
+        setVisibility((user.profile_visibility as Visibility) || 'public');
+    }, [user]);
+
+    const handleVisibilityChange = async (next: Visibility) => {
+        if (next === visibility || savingVisibility) return;
+        const previous = visibility;
+        setVisibility(next);
+        setSavingVisibility(true);
+        try {
+            const form = new FormData();
+            form.append('_method', 'PUT');
+            form.append('profile_visibility', next);
+            await axios.post('/user/profile', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+            if (user?.username) mutate(`/users/${user.username}`);
+            toast.success(next === 'friends' ? 'Your profile is now friends only.' : 'Your profile is public.');
+        } catch {
+            setVisibility(previous);
+            toast.error('Could not update profile visibility.');
+        } finally {
+            setSavingVisibility(false);
+        }
+    };
 
     // Sync state when user loads
     if (user) {
@@ -515,6 +566,58 @@ export default function SettingsClient() {
 
                         {activeTab === 'privacy' && (
                             <div className="max-w-lg mx-auto space-y-8">
+                                {/* Who can see the profile */}
+                                <div className="p-5 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl">
+                                    <div className="flex items-start gap-3 mb-4">
+                                        <div className="p-2 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)]">
+                                            <Eye className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-[var(--text-primary)]">Profile Visibility</h3>
+                                            <p className="text-sm text-[var(--text-muted)] mt-1">
+                                                Controls who can open your collection, stats, activity and achievements.
+                                                Your forum posts, comments and published reviews stay public either way —
+                                                they were posted to public pages.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        {VISIBILITY_OPTIONS.map((opt) => {
+                                            const active = visibility === opt.id;
+                                            return (
+                                                <button
+                                                    key={opt.id}
+                                                    onClick={() => handleVisibilityChange(opt.id)}
+                                                    disabled={savingVisibility}
+                                                    className={`w-full text-left p-4 rounded-lg border transition-colors disabled:opacity-60 ${
+                                                        active
+                                                            ? 'border-[var(--accent)] bg-[var(--accent)]/[0.07]'
+                                                            : 'border-[var(--border)] hover:border-[var(--text-muted)]'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <opt.icon className={`w-4 h-4 ${active ? 'text-[var(--accent)]' : 'text-[var(--text-muted)]'}`} />
+                                                        <span className={`font-bold text-sm ${active ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'}`}>
+                                                            {opt.label}
+                                                        </span>
+                                                        {active && <Check className="w-4 h-4 ml-auto text-[var(--accent)]" />}
+                                                    </div>
+                                                    <p className="text-xs text-[var(--text-muted)] mt-1.5 leading-relaxed">{opt.description}</p>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {visibility === 'friends' && (
+                                        <p className="mt-3 text-xs text-[var(--text-muted)] leading-relaxed">
+                                            While private you also drop off the leaderboards and out of member search.
+                                            Anyone with your link still sees your name, level and rank — with an
+                                            <strong> Add Friend</strong> button.
+                                        </p>
+                                    )}
+                                </div>
+
                                 {/* Export Data */}
                                 <div className="p-5 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl">
                                     <div className="flex items-start gap-3 mb-4">

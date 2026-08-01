@@ -55,7 +55,12 @@ export interface ProfileStats {
     xp: number;
     achievements_count: number;
     level: number;
+    /** Published game reviews — same definition as /me/dashboard */
     reviews_count?: number;
+    /** Published articles, staff only */
+    articles_count?: number;
+    hours_played?: number;
+    friends_count?: number;
     // Game collection counts (Phase 1 — default 0 until populated)
     games_count?: number;
     playing_count?: number;
@@ -264,11 +269,19 @@ export interface ActivityItem {
     created_at: string | null;
 }
 
+/** How the viewer relates to the profile owner. 'incoming' = they asked me. */
+export type FriendStatus = "self" | "none" | "pending" | "incoming" | "accepted";
+
 export interface UserProfile {
     user: ProfileUser;
     stats: ProfileStats;
     achievements: Achievement[];
-    next_rank: { name: string; min_xp: number } | null;
+    next_rank: { name: string; min_xp: number; color?: string | null } | null;
+    is_online?: boolean;
+    /** Owner's setting. `can_view` is the resolved answer for *this* viewer. */
+    is_private?: boolean;
+    can_view?: boolean;
+    friend_status?: FriendStatus;
     recent_articles?: RecentArticle[];
     is_staff?: boolean;
     collection_snapshot?: CollectionSnapshotTile[];

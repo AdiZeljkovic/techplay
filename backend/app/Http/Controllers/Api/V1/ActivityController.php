@@ -6,11 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\ActivityService;
 use App\Traits\ApiResponse;
+use App\Traits\ProfilePrivacy;
 use Illuminate\Http\Request;
 
 class ActivityController extends Controller
 {
-    use ApiResponse;
+    use ApiResponse, ProfilePrivacy;
 
     /**
      * Public: a user's unified activity feed (paginated, optional category filter).
@@ -19,6 +20,10 @@ class ActivityController extends Controller
     public function index(Request $request, string $username, ActivityService $activity)
     {
         $user = User::where('username', $username)->firstOrFail();
+
+        if ($this->profileHidden($user)) {
+            return $this->error('This profile is private.', 403);
+        }
 
         $category = $request->query('category');
         $valid = ['forum', 'games', 'achievements', 'rewards'];

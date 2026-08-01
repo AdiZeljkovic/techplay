@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Customization;
+use App\Models\Friendship;
 use App\Models\GameList;
 use App\Models\ReputationSnapshot;
 use App\Models\User;
@@ -53,6 +54,71 @@ class ProfileService
             'dropped_count' => (int) ($byStatus['dropped'] ?? 0),
             'favorites_count' => (int) $favorites,
         ];
+    }
+
+    /** Total hours across the collection — the hero's "Hours Played" tile. */
+    public function hoursPlayed(User $user): int
+    {
+        return (int) UserGame::where('user_id', $user->id)->sum('hours_played');
+    }
+
+    /** Ids of everyone this user has an accepted friendship with. */
+    public function friendIds(User $user): array
+    {
+        return Friendship::where('status', 'accepted')
+            ->where(fn ($q) => $q->where('sender_id', $user->id)->orWhere('receiver_id', $user->id))
+            ->get(['sender_id', 'receiver_id'])
+            ->map(fn ($f) => (int) ($f->sender_id === $user->id ? $f->receiver_id : $f->sender_id))
+            ->all();
+    }
+
+    /**
+     * The viewer's relationship to $target, from the viewer's point of view.
+     *
+     * @return 'self'|'none'|'incoming'|'pending'|'accepted'
+     */
+    public function friendStatus(User $target, ?User $viewer): string
+    {
+        if (! $viewer) {
+            return 'none';
+        }
+
+        if ($viewer->id === $target->id) {
+            return 'self';
+        }
+
+        $row = Friendship::where(fn ($q) => $q
+            ->where(fn ($p) => $p->where('sender_id', $viewer->id)->where('receiver_id', $target->id))
+            ->orWhere(fn ($p) => $p->where('sender_id', $target->id)->where('receiver_id', $viewer->id))
+        )->first(['sender_id', 'status']);
+
+        if (! $row) {
+            return 'none';
+        }
+
+        if ($row->status === 'accepted') {
+            return 'accepted';
+        }
+
+        // A request they sent me is actionable ("Accept"); one I sent is not.
+        return (int) $row->sender_id === (int) $viewer->id ? 'pending' : 'incoming';
+    }
+
+    /**
+     * May $viewer see $target's aggregates? Owner always; public profiles
+     * always; private profiles only for accepted friends.
+     */
+    public function canViewProfile(User $target, ?User $viewer): bool
+    {
+        if (! $target->hasPrivateProfile()) {
+            return true;
+        }
+
+        if (! $viewer) {
+            return false;
+        }
+
+        return $viewer->id === $target->id || $this->friendStatus($target, $viewer) === 'accepted';
     }
 
     /**

@@ -157,6 +157,18 @@
 | GET | `/users/{username}/wrapped/{year}` | WrappedController::show | - | Annual wrapped |
 | GET | `/compare/{username}/{other}` | ProfileCompareController::compare | - | Usporedi profile |
 
+### Privatnost (08/2026)
+
+Svi `/users/{username}*` endpointi prolaze kroz `ProfileService::canViewProfile()` (trait `App\Traits\ProfilePrivacy`). Ako je profil `friends`-only, a gledalac nije prihvaćeni prijatelj:
+
+- `/users/{username}` vraća **200** sa skraćenim teaser payloadom: `user` (username, display_name, avatar_url, cover_image, rank), `stats` (level, xp, joined_at), `is_private: true`, `can_view: false`, `friend_status`. Namjerno **nije 404** — stranac mora imati razlog da pošalje zahtjev.
+- Svi ostali (`/collection`, `/lists`, `/lists/{slug}`, `/activity`, `/steam-achievements`, `/recognitions`, `/wrapped/{year}`) vraćaju **403**.
+
+Pun payload dodatno nosi `friend_status` (`self|none|pending|incoming|accepted`), `is_online`, `is_private`, `can_view: true`, te `stats.hours_played` i `stats.friends_count`.
+`stats.reviews_count` su **objavljene game recenzije** (isto kao `/me/dashboard`); broj članaka za redakciju je sada `stats.articles_count`.
+
+`PUT /user/profile` prima i `profile_visibility` (`public|friends`) i pritom briše `profile.show.v1.{username}` + sve `leaderboard:*` cache ključeve.
+
 ---
 
 ## Friends

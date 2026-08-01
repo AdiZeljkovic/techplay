@@ -69,7 +69,13 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'battlenet_region',
         'battletag',
         'post_color',
+        'profile_visibility',
     ];
+
+    /** Only accepted friends may open the profile. */
+    public const VISIBILITY_FRIENDS = 'friends';
+
+    public const VISIBILITY_PUBLIC = 'public';
 
     /**
      * The attributes that should be hidden for serialization.
@@ -198,6 +204,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return Rank::where('min_xp', '>', $this->xp ?? 0)
             ->orderBy('min_xp', 'asc')
             ->first();
+    }
+
+    /**
+     * A private profile hides the *aggregates* (collection, stats, activity,
+     * achievements) from strangers. It never unpublishes forum posts,
+     * comments or reviews — those were posted to public pages.
+     */
+    public function hasPrivateProfile(): bool
+    {
+        return ($this->profile_visibility ?? self::VISIBILITY_PUBLIC) === self::VISIBILITY_FRIENDS;
     }
 
     public function isCurrentlyBanned(): bool

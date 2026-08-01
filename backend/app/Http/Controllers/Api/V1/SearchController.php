@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Game;
+use App\Models\User;
 use App\Services\LevelService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -131,6 +132,9 @@ class SearchController extends Controller
                     $q->where('username', 'ILIKE', "%{$query}%")
                         ->orWhere('display_name', 'ILIKE', "%{$query}%");
                 })
+                // Friends-only profiles aren't browsable. A direct link still
+                // works — it lands on the locked teaser with "Add Friend".
+                ->where(fn ($q) => $q->whereNull('profile_visibility')->orWhere('profile_visibility', 'public'))
                 ->with('rank:id,name')
                 ->orderByDesc('xp')
                 ->limit(5)

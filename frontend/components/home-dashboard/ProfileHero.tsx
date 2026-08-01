@@ -4,9 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import {
     User as UserIcon, MapPin, Play, Pencil, Share2, Check,
-    Gamepad2, Star, Clock3, Award, Users,
+    Gamepad2, Star, Clock3, Award, Users, UserPlus, Clock, MessageSquare,
 } from "lucide-react";
-import type { DashboardData } from "@/lib/types/dashboard";
+import type { HeroModel } from "@/lib/hero";
+import type { ProfileTab } from "@/lib/profileTabs";
+import type { FriendStatus } from "@/lib/types/profile";
 import { useCountUp } from "@/hooks/useCountUp";
 import RingMeter from "@/components/ui/RingMeter";
 import ProfileTabStrip from "./ProfileTabStrip";
@@ -17,6 +19,22 @@ function compact(n: number): string {
     if (n >= 10_000) return `${Math.round(n / 1000)}K`;
     if (n >= 1_000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K`;
     return n.toLocaleString();
+}
+
+const BTN_GHOST =
+    "inline-flex items-center gap-2 px-4 h-10 rounded-[var(--radius-card)] bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-hi)] font-display text-[11px] font-bold uppercase tracking-wider hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] hover:bg-[var(--fill-3)] transition-colors duration-300";
+
+const BTN_PRIMARY =
+    "group/cta relative inline-flex items-center gap-2 px-5 h-10 rounded-[var(--radius-card)] bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider overflow-hidden hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)]";
+
+/** The diagonal light that wipes across a primary button on hover. */
+function Sheen() {
+    return (
+        <span
+            aria-hidden
+            className="absolute inset-y-0 -left-1/2 w-1/2 skew-x-[-18deg] bg-white/25 -translate-x-full group-hover/cta:translate-x-[420%] transition-transform duration-700 ease-[var(--ease-hud)]"
+        />
+    );
 }
 
 /**
@@ -33,21 +51,21 @@ function StatCard({
     icon: React.ComponentType<{ className?: string }>;
     value: number;
     label: string;
-    href: string;
+    href?: string;
 }) {
     const animated = useCountUp(value, 1100);
+    const cls =
+        "group relative flex flex-col items-center justify-center gap-1.5 min-w-0 px-2 py-4 rounded-[var(--radius-card)] border border-[var(--line-strong)] bg-[color-mix(in_srgb,var(--surface-0)_78%,transparent)] backdrop-blur-md overflow-hidden transition-colors duration-300";
 
-    return (
-        <Link
-            href={href}
-            title={label}
-            className="group relative flex flex-col items-center justify-center gap-1.5 min-w-0 px-2 py-4 rounded-[var(--radius-card)] border border-[var(--line-strong)] bg-[color-mix(in_srgb,var(--surface-0)_78%,transparent)] backdrop-blur-md overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] hover:bg-[color-mix(in_srgb,var(--surface-0)_88%,transparent)] transition-colors duration-300"
-        >
+    const body = (
+        <>
             {/* accent rail draws across the card on hover */}
-            <span
-                aria-hidden
-                className="absolute top-0 left-0 right-0 h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]"
-            />
+            {href && (
+                <span
+                    aria-hidden
+                    className="absolute top-0 left-0 right-0 h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]"
+                />
+            )}
             <Icon className="w-4 h-4 text-[var(--ink-faint)] group-hover:text-[var(--accent)] transition-colors duration-300" />
             <p className="font-display text-[22px] font-bold tabular-nums text-[var(--ink-hi)] leading-none group-hover:text-[var(--accent)] transition-colors duration-300">
                 {compact(animated)}
@@ -55,34 +73,117 @@ function StatCard({
             <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-[var(--ink-faint)] leading-tight truncate max-w-full">
                 {label}
             </p>
-        </Link>
+        </>
     );
+
+    // Not every tile leads somewhere on someone else's profile (Friends
+    // doesn't) — those render as plain cards rather than dead links.
+    return href ? (
+        <Link
+            href={href}
+            title={label}
+            className={`${cls} hover:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] hover:bg-[color-mix(in_srgb,var(--surface-0)_88%,transparent)]`}
+        >
+            {body}
+        </Link>
+    ) : (
+        <div title={label} className={cls}>
+            {body}
+        </div>
+    );
+}
+
+/** The visitor's relationship button — one control, five states. */
+function FriendAction({
+    status,
+    busy,
+    onAdd,
+}: {
+    status: FriendStatus;
+    busy: boolean;
+    onAdd: () => void;
+}) {
+    if (status === "accepted") {
+        return (
+            <span className={`${BTN_GHOST} cursor-default`}>
+                <Check className="w-3.5 h-3.5 text-emerald-400" /> Friends
+            </span>
+        );
+    }
+
+    if (status === "pending") {
+        return (
+            <span className={`${BTN_GHOST} cursor-default opacity-70`}>
+                <Clock className="w-3.5 h-3.5" /> Request Sent
+            </span>
+        );
+    }
+
+    if (status === "incoming") {
+        return (
+            <Link href="/friends" className={BTN_PRIMARY}>
+                <Sheen />
+                <UserPlus className="relative w-3.5 h-3.5" />
+                <span className="relative">Respond to Request</span>
+            </Link>
+        );
+    }
+
+    return (
+        <button onClick={onAdd} disabled={busy} className={`${BTN_PRIMARY} disabled:opacity-60`}>
+            <Sheen />
+            <UserPlus className="relative w-3.5 h-3.5" />
+            <span className="relative">{busy ? "Sending…" : "Add Friend"}</span>
+        </button>
+    );
+}
+
+interface Props {
+    hero: HeroModel;
+    activeTab?: string;
+    /** Owner sees Continue Playing / Edit; visitors see the friend actions. */
+    isOwnProfile?: boolean;
+    counts?: Partial<Record<ProfileTab, number>>;
+    friendStatus?: FriendStatus;
+    friendActionBusy?: boolean;
+    onAddFriend?: () => void;
+    onMessage?: () => void;
+    /** Signed-out visitors get no relationship controls at all. */
+    viewerSignedIn?: boolean;
 }
 
 /**
  * The identity band the whole page hangs off — banner art on the right,
  * identity on the left, stat cards floating between them, tabs beneath.
+ * The same component renders your own profile and everyone else's; only the
+ * action row and the tab links differ.
  */
-export default function ProfileHero({ data, activeTab }: { data: DashboardData; activeTab?: string }) {
-    const { user, stats, playing_now } = data;
+export default function ProfileHero({
+    hero,
+    activeTab,
+    isOwnProfile = true,
+    counts,
+    friendStatus = "none",
+    friendActionBusy = false,
+    onAddFriend,
+    onMessage,
+    viewerSignedIn = false,
+}: Props) {
     const [copied, setCopied] = useState(false);
 
-    const firstPlaying = playing_now[0];
-    const backdrop =
-        user.cover_image ??
-        firstPlaying?.background_image ??
-        data.favorites[0]?.background_image ??
-        null;
+    const backdrop = hero.cover_image ?? hero.backdrop_fallback;
 
-    const nextXp = user.next_rank?.min_xp ?? null;
-    const xpPercent = nextXp ? Math.min(100, Math.round((user.xp / nextXp) * 100)) : 100;
+    const nextXp = hero.next_rank?.min_xp ?? null;
+    const xpPercent = nextXp ? Math.min(100, Math.round((hero.xp / nextXp) * 100)) : 100;
 
     // the ring draws itself and the inline bar fills in step with it
     const ringValue = useCountUp(xpPercent, 1200);
-    const animatedXp = useCountUp(user.xp, 1200);
+    const animatedXp = useCountUp(hero.xp, 1200);
+
+    const base = `/profile/${hero.username}`;
 
     const share = () => {
-        const url = `${window.location.origin}/profile/${user.username}`;
+        const url = `${window.location.origin}${base}`;
         navigator.clipboard?.writeText(url).then(() => {
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
@@ -90,14 +191,15 @@ export default function ProfileHero({ data, activeTab }: { data: DashboardData; 
     };
 
     const tiles = [
-        { label: "Games", value: stats.games_count, icon: Gamepad2, href: "/profile/me?tab=collection" },
-        { label: "Reviews", value: stats.reviews_count, icon: Star, href: "/profile/me?tab=activity" },
-        { label: "Hours Played", value: stats.hours_played, icon: Clock3, href: "/profile/me?tab=collection" },
-        { label: "Achievements", value: stats.achievements_count, icon: Award, href: "/profile/me?tab=achievements" },
-        { label: "Friends", value: stats.friends_count, icon: Users, href: "/friends" },
+        { label: "Games", value: hero.stats.games, icon: Gamepad2, href: `${base}?tab=collection` },
+        { label: "Reviews", value: hero.stats.reviews, icon: Star, href: `${base}?tab=activity` },
+        { label: "Hours Played", value: hero.stats.hours, icon: Clock3, href: `${base}?tab=collection` },
+        { label: "Achievements", value: hero.stats.achievements, icon: Award, href: `${base}?tab=achievements` },
+        // your friend list is yours; a visitor just sees the number
+        { label: "Friends", value: hero.stats.friends, icon: Users, href: isOwnProfile ? "/friends" : undefined },
     ];
 
-    const tags = (user.playstyle_tags ?? []).slice(0, 3);
+    const tags = hero.playstyle_tags.slice(0, 3);
 
     return (
         <section className="relative rounded-[var(--radius-panel)] overflow-hidden bg-[var(--surface-1)] border border-[var(--line)]">
@@ -109,7 +211,7 @@ export default function ProfileHero({ data, activeTab }: { data: DashboardData; 
                         <img
                             src={backdrop}
                             alt=""
-                            className={`tp-drift w-full h-full object-cover ${user.cover_image ? "opacity-95" : "opacity-60"}`}
+                            className={`tp-drift w-full h-full object-cover ${hero.cover_image ? "opacity-95" : "opacity-60"}`}
                         />
                         {/* solid through the identity column, clearing by ~65% so the art breathes */}
                         <span className="absolute inset-0 bg-gradient-to-r from-[var(--surface-1)] from-[22%] via-[color-mix(in_srgb,var(--surface-1)_72%,transparent)] via-[52%] to-[color-mix(in_srgb,var(--surface-1)_18%,transparent)]" />
@@ -141,13 +243,13 @@ export default function ProfileHero({ data, activeTab }: { data: DashboardData; 
                 <div className="flex flex-col xl:flex-row xl:items-center gap-6">
                     {/* ── identity ── */}
                     <div className="flex items-center gap-5 flex-1 min-w-0">
-                        <Link href="/profile/me" className="relative shrink-0 group/av">
+                        <Link href={base} className="relative shrink-0 group/av">
                             <RingMeter value={ringValue} size={124} strokeWidth={3} glow>
-                                {user.avatar_url ? (
+                                {hero.avatar_url ? (
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img
-                                        src={user.avatar_url}
-                                        alt={user.display_name}
+                                        src={hero.avatar_url}
+                                        alt={hero.display_name}
                                         className="w-[100px] h-[100px] rounded-full object-cover transition-transform duration-500 ease-[var(--ease-hud)] group-hover/av:scale-[1.04]"
                                     />
                                 ) : (
@@ -156,29 +258,32 @@ export default function ProfileHero({ data, activeTab }: { data: DashboardData; 
                                     </span>
                                 )}
                             </RingMeter>
-                            <span className="absolute bottom-2 right-2 w-[16px] h-[16px]" title="Online">
-                                <span aria-hidden className="tp-pulse-ring absolute inset-0 rounded-full bg-emerald-500" />
-                                <span className="relative block w-full h-full rounded-full bg-emerald-500 ring-[3px] ring-[var(--surface-1)]" />
-                            </span>
+                            {/* your own page means you're here, so you're online */}
+                            {(hero.is_online || isOwnProfile) && (
+                                <span className="absolute bottom-2 right-2 w-[16px] h-[16px]" title="Online">
+                                    <span aria-hidden className="tp-pulse-ring absolute inset-0 rounded-full bg-emerald-500" />
+                                    <span className="relative block w-full h-full rounded-full bg-emerald-500 ring-[3px] ring-[var(--surface-1)]" />
+                                </span>
+                            )}
                         </Link>
 
                         <div className="min-w-0 flex-1">
                             <h1 className="font-display text-[24px] md:text-[30px] font-black text-[var(--ink-hi)] leading-none truncate">
-                                {user.display_name || user.username}
+                                {hero.display_name}
                             </h1>
 
                             {/* ── the insignia block: crest · rank metal · segmented XP gauge ── */}
                             <div className="mt-3 flex items-center gap-3.5">
-                                <LevelCrest level={user.level} size={62} />
+                                <LevelCrest level={hero.level} size={62} />
 
                                 <div className="min-w-0 flex-1 max-w-[420px]">
                                     <div className="flex flex-wrap items-center gap-2 mb-2">
-                                        {user.rank_name && <RankEmblem name={user.rank_name} color={user.rank_color} />}
-                                        {nextXp && user.next_rank && (
+                                        {hero.rank_name && <RankEmblem name={hero.rank_name} color={hero.rank_color} />}
+                                        {nextXp && hero.next_rank && (
                                             <span className="text-[10px] font-bold uppercase tracking-wider tabular-nums text-[var(--ink-faint)] whitespace-nowrap">
-                                                {(nextXp - user.xp).toLocaleString()} XP to{" "}
-                                                <span style={{ color: user.next_rank.color || "var(--ink-low)" }}>
-                                                    {user.next_rank.name}
+                                                {(nextXp - hero.xp).toLocaleString()} XP to{" "}
+                                                <span style={{ color: hero.next_rank.color || "var(--ink-low)" }}>
+                                                    {hero.next_rank.name}
                                                 </span>
                                             </span>
                                         )}
@@ -201,11 +306,11 @@ export default function ProfileHero({ data, activeTab }: { data: DashboardData; 
                             </div>
 
                             {/* meta row */}
-                            {(user.location || tags.length > 0) && (
+                            {(hero.location || tags.length > 0) && (
                                 <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12px]">
-                                    {user.location && (
+                                    {hero.location && (
                                         <span className="inline-flex items-center gap-1 text-[var(--ink-low)]">
-                                            <MapPin className="w-3 h-3 text-[var(--ink-faint)]" /> {user.location}
+                                            <MapPin className="w-3 h-3 text-[var(--ink-faint)]" /> {hero.location}
                                         </span>
                                     )}
                                     {tags.map((t) => (
@@ -219,37 +324,50 @@ export default function ProfileHero({ data, activeTab }: { data: DashboardData; 
                                 </div>
                             )}
 
-                            {(user.tagline || user.bio) && (
+                            {(hero.tagline || hero.bio) && (
                                 <p className="mt-2 text-[12px] text-[var(--ink-mid)] line-clamp-1 max-w-[520px]">
-                                    {user.tagline || user.bio}
+                                    {hero.tagline || hero.bio}
                                 </p>
                             )}
 
                             {/* actions live with the identity, compact like a profile page */}
                             <div className="mt-4 flex flex-wrap items-center gap-2">
-                                <Link
-                                    href={firstPlaying ? `/games/${firstPlaying.slug}` : "/games"}
-                                    prefetch={false}
-                                    className="group/cta relative inline-flex items-center gap-2 px-5 h-10 rounded-[var(--radius-card)] bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider overflow-hidden hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)]"
-                                >
-                                    <span
-                                        aria-hidden
-                                        className="absolute inset-y-0 -left-1/2 w-1/2 skew-x-[-18deg] bg-white/25 -translate-x-full group-hover/cta:translate-x-[420%] transition-transform duration-700 ease-[var(--ease-hud)]"
-                                    />
-                                    <Play className="relative w-3.5 h-3.5 fill-current" />
-                                    <span className="relative">{firstPlaying ? "Continue Playing" : "Find Your First Game"}</span>
-                                </Link>
-                                <Link
-                                    href="/settings"
-                                    className="inline-flex items-center gap-2 px-4 h-10 rounded-[var(--radius-card)] bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-hi)] font-display text-[11px] font-bold uppercase tracking-wider hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] hover:bg-[var(--fill-3)] transition-colors duration-300"
-                                >
-                                    <Pencil className="w-3.5 h-3.5" /> Edit Profile
-                                </Link>
-                                <button
-                                    onClick={share}
-                                    title="Copy profile link"
-                                    className="inline-flex items-center gap-2 px-4 h-10 rounded-[var(--radius-card)] bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-hi)] font-display text-[11px] font-bold uppercase tracking-wider hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] hover:bg-[var(--fill-3)] transition-colors duration-300"
-                                >
+                                {isOwnProfile ? (
+                                    <>
+                                        <Link
+                                            href={hero.continue_playing ? `/games/${hero.continue_playing.slug}` : "/games"}
+                                            prefetch={false}
+                                            className={BTN_PRIMARY}
+                                        >
+                                            <Sheen />
+                                            <Play className="relative w-3.5 h-3.5 fill-current" />
+                                            <span className="relative">
+                                                {hero.continue_playing ? "Continue Playing" : "Find Your First Game"}
+                                            </span>
+                                        </Link>
+                                        <Link href="/settings" className={BTN_GHOST}>
+                                            <Pencil className="w-3.5 h-3.5" /> Edit Profile
+                                        </Link>
+                                    </>
+                                ) : viewerSignedIn ? (
+                                    <>
+                                        <FriendAction
+                                            status={friendStatus}
+                                            busy={friendActionBusy}
+                                            onAdd={() => onAddFriend?.()}
+                                        />
+                                        <button onClick={() => onMessage?.()} className={BTN_GHOST}>
+                                            <MessageSquare className="w-3.5 h-3.5" /> Message
+                                        </button>
+                                    </>
+                                ) : (
+                                    <Link href="/login" className={BTN_PRIMARY}>
+                                        <Sheen />
+                                        <UserPlus className="relative w-3.5 h-3.5" />
+                                        <span className="relative">Sign In To Connect</span>
+                                    </Link>
+                                )}
+                                <button onClick={share} title="Copy profile link" className={BTN_GHOST}>
                                     {copied ? (
                                         <>
                                             <Check className="w-3.5 h-3.5 text-emerald-400" /> Copied
@@ -273,7 +391,12 @@ export default function ProfileHero({ data, activeTab }: { data: DashboardData; 
                 </div>
             </div>
 
-            <ProfileTabStrip activeTab={activeTab} />
+            <ProfileTabStrip
+                username={hero.username}
+                activeTab={activeTab}
+                isOwnProfile={isOwnProfile}
+                counts={counts}
+            />
         </section>
     );
 }

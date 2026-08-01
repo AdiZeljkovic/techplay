@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\UserRecognition;
 use App\Notifications\RecognitionNotification;
 use App\Traits\ApiResponse;
+use App\Traits\ProfilePrivacy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class RecognitionController extends Controller
 {
-    use ApiResponse;
+    use ApiResponse, ProfilePrivacy;
 
     private const VALID_TYPES = ['helpful', 'insightful', 'friendly', 'leader'];
 
@@ -26,6 +27,11 @@ class RecognitionController extends Controller
     public function index(string $username): JsonResponse
     {
         $target = User::where('username', $username)->firstOrFail();
+
+        if ($this->profileHidden($target)) {
+            return $this->error('This profile is private.', 403);
+        }
+
         $authId = Auth::id();
 
         $counts = UserRecognition::where('receiver_id', $target->id)

@@ -25,6 +25,11 @@ class UserResource extends JsonResource
             'avatar_url' => $this->avatar_url,
             'bio' => $this->bio,
             'email' => $this->when($request->user()?->id === $this->id, $this->email),
+            // Own setting only — nobody else needs to know how you're configured
+            'profile_visibility' => $this->when(
+                $request->user()?->id === $this->id,
+                $this->profile_visibility ?? 'public'
+            ),
             'rank' => $this->whenLoaded('rank', function () {
                 return [
                     'id' => $this->rank->id,

@@ -20,6 +20,7 @@ import OnboardingCard from "./OnboardingCard";
 import DailyMissions from "./DailyMissions";
 import Panel from "@/components/ui/Panel";
 import FriendActivityFeed from "@/components/profile/FriendActivityFeed";
+import { heroFromDashboard } from "@/lib/hero";
 import type { DashboardData } from "@/lib/types/dashboard";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data as DashboardData);
@@ -49,7 +50,7 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
             <div className="container-page py-8 space-y-6">
                 {/* Identity — the whole page hangs off this (tabs live inside it) */}
                 <div className="tp-fade-up tp-d1">
-                    <ProfileHero data={data} />
+                    <ProfileHero hero={heroFromDashboard(data)} counts={{ collection: data.stats.games_count, achievements: data.stats.achievements_count }} />
                 </div>
 
                 <div className="tp-fade-up tp-d2">

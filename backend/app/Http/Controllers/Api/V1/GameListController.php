@@ -8,12 +8,13 @@ use App\Models\GameList;
 use App\Models\GameListItem;
 use App\Models\User;
 use App\Traits\ApiResponse;
+use App\Traits\ProfilePrivacy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class GameListController extends Controller
 {
-    use ApiResponse;
+    use ApiResponse, ProfilePrivacy;
 
     /**
      * Public: a user's public lists (preview with item count + cover collage).
@@ -22,6 +23,10 @@ class GameListController extends Controller
     public function index(string $username)
     {
         $user = User::where('username', $username)->firstOrFail();
+
+        if ($this->profileHidden($user)) {
+            return $this->error('This profile is private.', 403);
+        }
 
         $lists = GameList::where('user_id', $user->id)
             ->where('is_public', true)
@@ -79,6 +84,12 @@ class GameListController extends Controller
 
         if (! $list->is_public && optional($request->user('sanctum'))->id !== $list->user_id) {
             return $this->forbidden('This list is private.');
+        }
+
+        // A friends-only profile locks its lists too — the profile-level
+        // setting is the stronger intent.
+        if ($this->profileHidden($user)) {
+            return $this->error('This profile is private.', 403);
         }
 
         return $this->success($this->presentList($list, true));

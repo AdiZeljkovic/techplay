@@ -217,9 +217,9 @@ Sve rute su pod prefiksom `/api/v1/`. Organizovane su u grupe:
 | `OpenAIService` | GPT-4 Turbo AI pozivi |
 | `PayPalService` | PayPal API pozivi |
 | `PremiumService` | Premium/subscription logika |
-| `PresenceService` | Game presence tracking |
+| `PresenceService` | Game presence tracking + banking odigranog vremena (`bankSession`: 2min–12h, samo igre već u kolekciji, nikad ne dira Steam-owned unose) |
 | `PriveeService` | Privée giveaway integracija |
-| `ProfileService` | Profilni podaci agregacija |
+| `ProfileService` | Profilni podaci agregacija + `canViewProfile()` / `friendStatus()` / `friendIds()` / `hoursPlayed()` |
 | `QuestService` | Quest dodjela i praćenje |
 | `RaiderIOService` | RaiderIO Mythic+ data |
 | `RawgService` | RAWG game screenshots/movies |
@@ -230,6 +230,7 @@ Sve rute su pod prefiksom `/api/v1/`. Organizovane su u grupe:
 | `SeoAnalyzerService` | SEO analiza sadržaja |
 | `SteamService` | Steam Web API |
 | `StreakService` | Daily streak logika |
+| `LevelService` | XP → level kriva (piecewise, sidrena na 20 rangova). **Mora ostati identična `frontend/lib/level.ts`** |
 | `XpService` | XP dodjela (100 XP/day cap, 60s cooldown) |
 
 ---
@@ -346,3 +347,12 @@ Svaki observer na publish/update poziva `CacheRevalidationService`:
 | `throttle:5,60` | 5 req/60min (newsletter verify) |
 | `throttle:3,10` | 3 req/10min (contact form) |
 | `auth:sanctum` | Bearer token auth provjera |
+
+---
+
+## Traits (`app/Traits/`)
+
+| Trait | Svrha |
+|-------|-------|
+| `ApiResponse` | Standardizovan `{ success, data, message }` odgovor — koristiti u svim kontrolerima |
+| `ProfilePrivacy` | `profileHidden(User)` — gate za svaki `/users/{username}/*` endpoint. Bez njega bi privatni podaci bili jedan `curl` daleko |

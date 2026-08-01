@@ -127,17 +127,31 @@
 
 ## User Profiles
 
-**Status:** COMPLETE (public profil), PARTIAL (dashboard/private settings)
+**Status:** COMPLETE
 
-**Opis:** Javni korisnički profil s XP, rangom, kolekcijom, achievementima, aktivnošću.
+**Opis:** Profil je istovremeno logovana naslovnica. Jedna komponenta servira sve profile; sekcije su `?tab=` na `/profile/{username}`.
 
-**Frontend:** `app/profile/`, `components/profile/`
-**Backend:** `AuthController::show`, `ProfileService`, `ActivityService`
+**Frontend:** `app/profile/[username]/page.tsx`, `components/home-dashboard/` (ProfileHero, ProfileTabStrip, DashboardHome), `components/profile/`, `lib/hero.ts`, `lib/profileTabs.ts`
+**Backend:** `AuthController::show`, `ProfileService`, `ActivityService`, `LevelService`
 **Admin:** `UserResource`
-**Database:** `users`, `user_games`, `achievements`, `user_recognitions`, `presences`
+**Database:** `users` (+ `profile_visibility`), `user_games`, `achievements`, `user_recognitions`, `presences`
 **API:** `GET /users/{username}`, `GET /users/{username}/activity`, `GET /users/{username}/collection`
 **Discord bot:** `/profile` komanda prikazuje profil
-**Napomene:** Profil je deriviran od više tabela — `ProfileService` agregira. Recognition sistem (user-to-user). Steam achievements prikaz.
+**Napomene:** Profil je deriviran od više tabela — `ProfileService` agregira. Recognition sistem (user-to-user). Steam achievements prikaz. `/` i `/profile/{ti}` renderuju isti `DashboardHome` — redirect nije moguć jer je auth client-side, a `/` je ISR.
+
+---
+
+## Profile Privacy
+
+**Status:** COMPLETE (08/2026)
+
+**Opis:** Dva nivoa — Public (default) i Friends only. Skriva agregate profila, ne dira javno objavljen sadržaj (forum, komentari, recenzije).
+
+**Frontend:** `app/settings/` (Privacy & Data tab), `components/profile/LockedProfile.tsx`
+**Backend:** `ProfileService::canViewProfile()`, trait `App\Traits\ProfilePrivacy`, `AuthController::show` + `updateProfile`
+**Database:** `users.profile_visibility` (`public` \| `friends`)
+**API:** `PUT /user/profile` (`profile_visibility`); svi `/users/{username}*` gate-ovani
+**Napomene:** Privatan profil ispada iz leaderboarda i member searcha, ali direktan link i dalje vodi na teaser s Add Friend dugmetom — nikad 404. Provjera je isključivo serverska. Testovi: `tests/Feature/ProfileVisibilityTest.php`.
 
 ---
 

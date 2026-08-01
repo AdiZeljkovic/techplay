@@ -17,7 +17,7 @@
 
 | Tabela | Opis | Ključne kolone |
 |--------|------|---------------|
-| `users` | Korisnici | id, username, email, password, xp, rank_id, discord_id, discord_username, streak, steam_id, paypal_*  |
+| `users` | Korisnici | id, username, email, password, xp, rank_id, discord_id, discord_username, streak, steam_id, paypal_*, **profile_visibility**, **active_days_count** |
 | `personal_access_tokens` | Sanctum tokeni | id, tokenable_id, token, abilities |
 | `connected_accounts` | Steam/Discord/BNet linkovi | user_id, provider, provider_id |
 | `ranks` | XP rangovi | id, name, xp_required, color, icon |
@@ -48,7 +48,7 @@
 | `game_companies` | Izdavači/developeri | id, name, slug, moby_id |
 | `game_external_ids` | Vanjski IDevi | game_id, provider (rawg/igdb/steam), external_id |
 | `game_ratings` | User ocjene | game_id, user_id, rating (0-10), review_text |
-| `user_games` | Korisnička biblioteka | user_id, game_id, status (playing/completed/wishlist/dropped/backlog), progress, hours_played, last_played_at (pravi Continue Playing signal — pišu ga upsert status=playing, Steam sync i presence), is_favorite, showcase_order, platform, started_at, completed_at |
+| `user_games` | Korisnička biblioteka | user_id, game_id, status (playing/completed/wishlist/dropped/backlog), progress, hours_played, last_played_at (pravi Continue Playing signal — pišu ga upsert status=playing, Steam sync i presence), is_favorite, showcase_order, platform, started_at, completed_at, **from_backlog** (je li završena igra prošla kroz backlog), **playtime_minutes**, **playtime_source** (`steam` \| `discord` \| `presence` \| `manual` \| null — bez izvora UI kaže "not tracked", ne "0h") |
 | `game_lists` | Custom liste igara | id, user_id, name, slug, is_public |
 | `game_list_items` | Stavke u listama | list_id, game_id, position, notes |
 
@@ -71,7 +71,7 @@
 
 | Tabela | Opis | Ključne kolone |
 |--------|------|---------------|
-| `achievements` | Achievement definicije | id, name, description, icon, xp_reward, trigger |
+| `achievements` | Achievement definicije | id, name, description, icon_path (RELATIVNA putanja → frontend uvijek kroz `getStorageUrl()`), points, criteria_type, criteria_value, **is_hidden** (feature još ne postoji — ne prikazuje se u katalogu) |
 | `quests` | Quest definicije | id, title, type (daily/weekly/seasonal), xp_reward, goal_type, goal_value, season_id |
 | `quest_progress` | Napredak korisnika | user_id, quest_id, progress, completed_at, claimed_at |
 | `seasons` | Sezone | id, name, start_date, end_date, is_active |
@@ -175,6 +175,18 @@ Thread ──── hasMany ───→ Post
 Comment ─── morphsTo ──→ Article / Review / Guide / Video / Game
 Comment ─── hasMany ───→ Comment (parent_id, nesting)
 ```
+
+---
+
+## Privatnost profila (08/2026)
+
+`users.profile_visibility` ima dvije vrijednosti — `public` (default) i `friends`.
+
+- **Skriva agregate:** kolekcija, statistika, activity feed, achievementi, sati, liste, wrapped, recognitions.
+- **NE skriva javni sadržaj:** forum threadovi, postovi, komentari i objavljene recenzije ostaju na svojim javnim stranicama — objavljeni su tamo, a ne na profilu.
+- **Provjera je isključivo serverska:** `ProfileService::canViewProfile()`, primijenjena kroz trait `App\Traits\ProfilePrivacy` u svakom `/users/{username}/*` endpointu. Skrivanje na frontendu ne bi značilo ništa.
+- **Isključuje iz javnih površina:** leaderboard (`/leaderboard`, svi tipovi + weekly) i member search (`/search/users`). Direktan link i dalje radi — vodi na zaključani teaser s dugmetom Add Friend.
+- **Cache:** promjena postavke odmah briše `profile.show.v1.{username}` i sve `leaderboard:*` ključeve.
 
 ---
 

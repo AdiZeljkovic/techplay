@@ -6,10 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\SteamAchievement;
 use App\Models\User;
 use App\Traits\ApiResponse;
+use App\Traits\ProfilePrivacy;
 
 class SteamAchievementController extends Controller
 {
-    use ApiResponse;
+    use ApiResponse, ProfilePrivacy;
 
     /**
      * GET /users/{username}/steam-achievements
@@ -18,6 +19,10 @@ class SteamAchievementController extends Controller
     public function index(string $username)
     {
         $user = User::where('username', $username)->firstOrFail();
+
+        if ($this->profileHidden($user)) {
+            return $this->error('This profile is private.', 403);
+        }
 
         $achieved = SteamAchievement::where('user_id', $user->id)
             ->where('achieved', true)

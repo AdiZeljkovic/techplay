@@ -9,7 +9,9 @@ use App\Http\Resources\V1\UserResource;
 use App\Models\Achievement;
 use App\Models\ClanMember;
 use App\Models\ConnectedAccount;
+use App\Models\GameRating;
 use App\Models\Order;
+use App\Models\Presence;
 use App\Models\User;
 use App\Services\AchievementService;
 use App\Services\LevelService;
@@ -174,7 +176,20 @@ class AuthController extends Controller
     public function show(string $username)
     {
         $viewer = Auth::user();
-        $isOwner = $viewer !== null && strcasecmp($viewer->username ?? '', $username) === 0;
+        $profileService = new ProfileService;
+
+        $target = User::where('username', $username)->with('rank')->firstOrFail();
+        $isOwner = $viewer !== null && $viewer->id === $target->id;
+
+        // Viewer-specific and therefore never cached alongside the payload.
+        $friendStatus = $profileService->friendStatus($target, $viewer);
+        $canView = $isOwner || ! $target->hasPrivateProfile() || $friendStatus === 'accepted';
+
+        // A locked profile is a doorway, not a dead end: identity + rank stay
+        // visible so a stranger has a reason to send the friend request.
+        if (! $canView) {
+            return response()->json($this->buildLockedPayload($target) + ['friend_status' => $friendStatus]);
+        }
 
         // Visitors share a short-lived cached payload (the build runs ~35+
         // queries); the owner always gets fresh data.
@@ -182,16 +197,47 @@ class AuthController extends Controller
             ? $this->buildProfilePayload($username)
             : Cache::remember('profile.show.v1.'.strtolower($username), 60, fn () => $this->buildProfilePayload($username));
 
+        $payload['friend_status'] = $friendStatus;
+
         // Viewer-specific overlay — "given_by_me" recognition flags must never
         // come from the shared cache.
         if ($viewer !== null && ! $isOwner) {
-            $target = User::select('id')->where('username', $username)->first();
-            if ($target) {
-                $payload['recognitions'] = (new ProfileService)->recognitions($target, $viewer->id);
-            }
+            $payload['recognitions'] = $profileService->recognitions($target, $viewer->id);
         }
 
         return response()->json($payload);
+    }
+
+    /**
+     * What a stranger sees of a friends-only profile: who you are and how far
+     * you've come — nothing about what you own, play or wrote.
+     */
+    private function buildLockedPayload(User $user): array
+    {
+        return [
+            'user' => [
+                'id' => $user->id,
+                'username' => $user->username,
+                'display_name' => $user->display_name,
+                'avatar_url' => $user->avatar_url,
+                'cover_image' => $user->cover_image ? asset('storage/'.$user->cover_image) : null,
+                'created_at' => $user->created_at,
+                'xp' => $user->xp ?? 0,
+                'rank' => $user->rank ? [
+                    'name' => $user->rank->name,
+                    'min_xp' => $user->rank->min_xp,
+                    'color' => $user->rank->color,
+                    'icon' => $user->rank->icon,
+                ] : null,
+            ],
+            'stats' => [
+                'level' => app(LevelService::class)->forXp($user->xp),
+                'xp' => $user->xp ?? 0,
+                'joined_at' => $user->created_at->format('M Y'),
+            ],
+            'is_private' => true,
+            'can_view' => false,
+        ];
     }
 
     private function buildProfilePayload(string $username): array
@@ -289,7 +335,10 @@ class AuthController extends Controller
             'achievements_count' => $unlockedCount,
             'level' => app(LevelService::class)->forXp($user->xp),
             'xp' => $user->xp ?? 0,
-            'reviews_count' => $isStaff ? $user->published_articles_count : 0,
+            // Published game reviews — same definition as /me/dashboard, so the
+            // hero deck reads the same number whoever is looking.
+            'reviews_count' => GameRating::where('user_id', $user->id)->where('is_draft', false)->count(),
+            'articles_count' => $isStaff ? $user->published_articles_count : 0,
             // Game collection counts (Phase 1).
             'games_count' => $collectionCounts['games_count'],
             'playing_count' => $collectionCounts['playing_count'],
@@ -298,6 +347,9 @@ class AuthController extends Controller
             'wishlist_count' => $collectionCounts['wishlist_count'],
             'favorites_count' => $collectionCounts['favorites_count'],
             'bounty_balance' => (int) ($user->bounty_balance ?? 0),
+            // Hero deck — same five numbers the owner sees on their own page
+            'hours_played' => $profileService->hoursPlayed($user),
+            'friends_count' => count($profileService->friendIds($user)),
         ];
 
         $nextRank = $user->nextRank();
@@ -308,7 +360,13 @@ class AuthController extends Controller
             'next_rank' => $nextRank ? [
                 'name' => $nextRank->name,
                 'min_xp' => $nextRank->min_xp,
+                'color' => $nextRank->color,
             ] : null,
+            // The hero's presence dot. Only the live flag leaves the server —
+            // never last_seen_at.
+            'is_online' => Presence::where('user_id', $user->id)->where('is_active', true)->exists(),
+            'is_private' => $user->hasPrivateProfile(),
+            'can_view' => true,
             'recent_threads' => $recentThreads,
             'recent_comments' => $recentComments,
             'recent_articles' => $recentArticles, // For staff profiles
@@ -398,6 +456,7 @@ class AuthController extends Controller
             'pc_specs.case' => 'nullable|string|max:255',
             'avatar' => 'nullable|image|max:2048', // 2MB Max
             'cover_image' => 'nullable|image|max:5120', // 5MB Max
+            'profile_visibility' => 'nullable|in:public,friends',
         ]);
 
         // Handle Avatar Upload
@@ -420,7 +479,21 @@ class AuthController extends Controller
             'playstyle_tags' => $validated['playstyle_tags'] ?? $user->playstyle_tags,
             'gamertags' => $validated['gamertags'] ?? $user->gamertags,
             'pc_specs' => $validated['pc_specs'] ?? $user->pc_specs,
+            'profile_visibility' => $validated['profile_visibility'] ?? $user->profile_visibility ?? User::VISIBILITY_PUBLIC,
         ]);
+
+        // Going private has to evict the shared visitor cache immediately,
+        // otherwise the old public payload keeps serving for another minute.
+        Cache::forget('profile.show.v1.'.strtolower($user->username));
+
+        // …and drop off the public boards now rather than in five minutes.
+        if ($user->wasChanged('profile_visibility')) {
+            $weekKey = now()->format('o-\WW');
+            foreach (['xp', 'reputation', 'collection', 'completions'] as $board) {
+                Cache::forget("leaderboard:{$board}");
+                Cache::forget("leaderboard:{$board}:week:{$weekKey}");
+            }
+        }
 
         // Gamer Tag / Multi-Platform / Battlestation had no trigger before this
         try {

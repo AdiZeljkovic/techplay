@@ -125,13 +125,30 @@ Sve stranice su u `frontend/app/`. Svaki folder = ruta.
 | `components/reviews/` | ReviewCard, ReviewBody |
 | `components/games/` | GameCard, GameFilter, GameGrid |
 | `components/forum/` | ThreadCard, ThreadList, PostCard |
-| `components/profile/` | ProfileHeader, ProfileStats, AchievementBadge |
+| `components/profile/` | CollectionGrid, ListsTab, ActivityFeed, StatsPanel, AchievementGrid, LockedProfile |
+| `components/home-dashboard/` | ProfileHero, ProfileTabStrip, RankInsignia, DailyMissions, DashboardHome — identitet i sekcije profila/logovane naslovnice |
 | `components/comments/` | CommentForm, CommentList, CommentItem |
 | `components/home/` | Hero, FeaturedSection, LatestNews |
 | `components/seo/` | GlobalSeo, PageSeo, JsonLd |
 | `components/ads/` | AdBanner, InTextAd |
 | `components/tracking/` | View tracking komponente |
 | `components/providers/` | Context provider omotači |
+
+---
+
+## Profil = logovana naslovnica (08/2026)
+
+Jedna komponenta servira svaki profil. Nema više odvojenog "dashboarda" i "profila".
+
+- **`/profile/{username}`** je jedina stranica. Sekcije su `?tab=` query parametri (`collection`, `lists`, `achievements`, `activity`, `stats`, `rewards`) — nisu zasebne rute, nema reloada.
+- **Tvoj Overview** renderuje `DashboardHome` — isti sadržaj koji `HomeGate` prikazuje na `/` kad si logovan. Isti komponent, dva URL-a.
+- **Svaki drugi tab** (tvoj ili tuđi) renderuje `ProfileHero` + sadržaj taba. Hero je isti za sve; razlikuju se samo akcije (Continue Playing / Edit vs Add Friend / Message) i to da `Rewards` tab postoji samo na tvom profilu.
+- **`lib/hero.ts`** normalizuje dva različita payloada (`/me/dashboard` i `/users/{username}`) u jedan `HeroModel` — hero ne zna odakle podaci dolaze.
+- **`lib/profileTabs.ts`** je jedini izvor tab seta (`PROFILE_TABS`).
+- **`LockedProfile`** je ono što stranac vidi na `friends`-only profilu: avatar, ime, level, rank, "member since" i Add Friend. Nikad 404.
+- **`lib/level.ts` mora ostati identičan `backend/app/Services/LevelService.php`** — ako se mijenja kriva, mijenjaju se oba, inače header i profil pokazuju različit level.
+
+Obrisano: `ProfileHeader.tsx`, `ProfileTabs.tsx`, `OwnProfileShell.tsx`.
 
 ---
 

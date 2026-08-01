@@ -19,6 +19,12 @@ class LeaderboardController extends Controller
     private const TTL = 300; // 5 min — fresh enough, cheap enough
 
     /**
+     * Friends-only profiles opt out of every public ranking. The flag is
+     * worthless if the board still publishes your name, avatar and XP.
+     */
+    private const PUBLIC_ONLY = "COALESCE(users.profile_visibility, 'public') = 'public'";
+
+    /**
      * GET /leaderboard?type=xp|reputation|collection|completions&period=all|week
      * period=week ranks by delta since Monday's snapshot (xp/reputation only).
      */
@@ -65,6 +71,7 @@ class LeaderboardController extends Controller
                 $join->on('s.user_id', '=', 'users.id')->where('s.period', '=', $weekKey);
             })
             ->selectRaw("users.id, users.username, users.display_name, users.avatar_url, (COALESCE(users.{$column},0) - COALESCE(s.{$snapshotColumn},0)) as delta")
+            ->whereRaw(self::PUBLIC_ONLY)
             ->orderByDesc('delta')
             ->limit(self::LIMIT)
             ->get();
@@ -93,6 +100,7 @@ class LeaderboardController extends Controller
     private function buildXp(): array
     {
         return User::with('rank')
+            ->whereRaw(self::PUBLIC_ONLY)
             ->orderByDesc('xp')
             ->limit(self::LIMIT)
             ->get(['id', 'username', 'display_name', 'avatar_url', 'xp', 'rank_id'])
@@ -111,7 +119,8 @@ class LeaderboardController extends Controller
 
     private function buildReputation(): array
     {
-        return User::orderByDesc('forum_reputation')
+        return User::whereRaw(self::PUBLIC_ONLY)
+            ->orderByDesc('forum_reputation')
             ->limit(self::LIMIT)
             ->get(['id', 'username', 'display_name', 'avatar_url', 'forum_reputation'])
             ->values()
@@ -136,6 +145,7 @@ class LeaderboardController extends Controller
                 '=',
                 'ug.user_id'
             )
+            ->whereRaw(self::PUBLIC_ONLY)
             ->orderByDesc('ug.games_count')
             ->limit(self::LIMIT)
             ->get(['users.id', 'users.username', 'users.display_name', 'users.avatar_url', 'ug.games_count']);
@@ -160,6 +170,7 @@ class LeaderboardController extends Controller
                 '=',
                 'ug.user_id'
             )
+            ->whereRaw(self::PUBLIC_ONLY)
             ->orderByDesc('ug.completed_count')
             ->limit(self::LIMIT)
             ->get(['users.id', 'users.username', 'users.display_name', 'users.avatar_url', 'ug.completed_count']);
