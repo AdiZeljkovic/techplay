@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
     User as UserIcon, MapPin, Play, Pencil, Share2, Check, BadgeCheck, MoreHorizontal,
     Gamepad2, Star, Clock3, Award, UserPlus, Clock, MessageSquare, Sparkles, ShieldCheck, LinkIcon, GitCompare,
-    TrendingUp, Flame, Gift,
+    TrendingUp, Flame,
 } from "lucide-react";
 import PlatformIcon from "@/components/games/PlatformIcon";
 import type { HeroModel } from "@/lib/hero";
@@ -761,46 +761,33 @@ export default function ProfileHero({
                         <span aria-hidden className="lg:hidden h-px mx-5 bg-white/[0.07]" />
 
                         {/* ── what is waiting at the top of the bar ── */}
-                        <div className="shrink-0 lg:w-[224px] px-5 py-5 flex items-center gap-4">
-                            <span
-                                className="relative flex items-center justify-center w-[58px] h-[58px] shrink-0 rounded-[14px] border"
-                                style={{
-                                    borderColor: rankUpNext
-                                        ? `color-mix(in srgb, ${hero.next_rank?.color || "var(--accent)"} 45%, transparent)`
-                                        : "rgba(255,255,255,0.09)",
-                                    background: rankUpNext
-                                        ? `color-mix(in srgb, ${hero.next_rank?.color || "var(--accent)"} 14%, #0d0b0a)`
-                                        : "#0d0b0a",
-                                }}
-                            >
-                                <Gift
-                                    className="relative w-7 h-7"
-                                    style={{ color: rankUpNext ? hero.next_rank?.color || "var(--accent)" : "var(--ink-faint)" }}
-                                />
-                            </span>
+                        <div className="shrink-0 lg:w-[236px] px-5 py-5 flex items-center gap-3.5">
+                            {/* The crate is named on its own side panel, so the
+                                caption beside it never has to repeat it. */}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src="/rewards/level-cache.png"
+                                alt="Level cache"
+                                width={86}
+                                height={86}
+                                className="w-[86px] h-[86px] shrink-0 object-contain"
+                                style={{ filter: "drop-shadow(0 4px 14px rgba(0,0,0,0.7))" }}
+                            />
 
                             <div className="min-w-0">
                                 <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.2em] text-[var(--ink-faint)]">
-                                    Reward at level {hero.level + 1}
+                                    Reward at
+                                </p>
+                                <p className="mt-1 font-display text-[19px] font-black uppercase tracking-[0.05em] leading-none text-white">
+                                    Level {hero.level + 1}
                                 </p>
                                 {rankUpNext ? (
-                                    <>
-                                        <p
-                                            className="mt-1 font-display text-[15px] font-black uppercase tracking-[0.06em] leading-none truncate"
-                                            style={{ color: hero.next_rank?.color || "var(--ink-hi)" }}
-                                        >
-                                            {hero.next_rank?.name}
-                                        </p>
-                                        <p className="mt-1 text-[11px] text-[var(--ink-low)]">Rank promotion</p>
-                                    </>
+                                    <p className="mt-1.5 text-[11px] font-semibold" style={{ color: hero.next_rank?.color || "var(--ink-low)" }}>
+                                        {hero.next_rank?.name} promotion
+                                    </p>
                                 ) : (
-                                    <>
-                                        <p className="mt-1 font-display text-[15px] font-black uppercase tracking-[0.06em] leading-none text-[var(--ink-mid)]">
-                                            Level cache
-                                        </p>
-                                        {/* honest until the reward table exists */}
-                                        <p className="mt-1 text-[11px] text-[var(--ink-faint)]">Contents to be revealed</p>
-                                    </>
+                                    /* honest until the reward table exists */
+                                    <p className="mt-1.5 text-[11px] text-[var(--ink-faint)]">Contents to be revealed</p>
                                 )}
                             </div>
                         </div>
