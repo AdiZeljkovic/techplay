@@ -96,6 +96,9 @@ class DashboardController extends Controller
                 // the ladder carries a tier colour per rank — the UI paints with it
                 'rank_color' => $user->rank?->color,
                 'rank_icon' => $user->rank?->icon,
+                // where the current band starts — the gauge measures the band,
+                // not the whole ladder
+                'rank_min_xp' => (int) ($user->rank?->min_xp ?? 0),
                 'next_rank' => $nextRank ? [
                     'name' => $nextRank->name,
                     'min_xp' => $nextRank->min_xp,

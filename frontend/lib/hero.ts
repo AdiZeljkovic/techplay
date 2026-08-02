@@ -28,6 +28,9 @@ export interface HeroModel {
     platforms: string[];
     /** Paint for the avatar ring, from the equipped frame cosmetic. */
     frame_value: string | null;
+    /** Where the current rank band starts — the gauge fills across the band. */
+    rank_min_xp: number;
+    streak_days: number;
     stats: { games: number; reviews: number; hours: number; achievements: number; friends: number };
     /** Used behind the identity when no cover image is set. */
     backdrop_fallback: string | null;
@@ -58,6 +61,8 @@ export function heroFromDashboard(data: DashboardData): HeroModel {
         verified: !!user.is_staff,
         platforms: user.platforms ?? [],
         frame_value: user.frame ?? null,
+        rank_min_xp: user.rank_min_xp ?? 0,
+        streak_days: data.streak?.streak ?? 0,
         stats: {
             games: stats.games_count,
             reviews: stats.reviews_count,
@@ -96,6 +101,8 @@ export function heroFromProfile(profile: UserProfile): HeroModel {
             .filter(([, v]) => !!v)
             .map(([k]) => k),
         frame_value: profile.customization?.equipped?.frame?.value ?? null,
+        rank_min_xp: user.rank?.min_xp ?? 0,
+        streak_days: profile.streak?.days ?? 0,
         stats: {
             games: stats.games_count ?? 0,
             reviews: stats.reviews_count ?? 0,

@@ -29,6 +29,8 @@ export interface DashboardUser {
     /** Tier colour from the rank ladder (Bronze #cd7f32 … Radiant #00e5ff) */
     rank_color: string | null;
     rank_icon: string | null;
+    /** Floor of the current rank band — the gauge fills across the band. */
+    rank_min_xp: number;
     next_rank: { name: string; min_xp: number; color: string | null } | null;
     is_staff: boolean;
     /** Gamertag keys with a value — drives the platform icons in the hero. */

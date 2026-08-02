@@ -58,6 +58,85 @@ export function LevelCrest({ level, size = 62 }: { level: number; size?: number 
 }
 
 /**
+ * The level, drawn as an outlined hex rather than a filled one. Hollow reads
+ * as a rating shield; filled reads as a button. Paired with its own caption so
+ * the numeral never has to explain itself.
+ */
+export function LevelHex({ level, size = 92 }: { level: number; size?: number }) {
+    const shown = useCountUp(level, 900);
+
+    return (
+        <span className="relative block shrink-0" style={{ width: size, height: size }} title={`Level ${level}`}>
+            {/* accent edge */}
+            <span
+                aria-hidden
+                className="absolute inset-0"
+                style={{
+                    clipPath: HEX,
+                    background: "var(--accent)",
+                    filter: "drop-shadow(0 0 14px color-mix(in srgb, var(--accent) 45%, transparent))",
+                }}
+            />
+            {/* hollow it out */}
+            <span
+                aria-hidden
+                className="absolute"
+                style={{
+                    inset: 2.5,
+                    clipPath: HEX,
+                    background: "linear-gradient(165deg, #14110f 0%, #0a0908 100%)",
+                }}
+            />
+            <span
+                className="absolute inset-0 flex items-center justify-center font-display font-black tabular-nums text-white leading-none"
+                style={{ fontSize: size * 0.42 }}
+            >
+                {shown}
+            </span>
+        </span>
+    );
+}
+
+/**
+ * The rank's medal, struck in that tier's own metal. A hex plate with a
+ * bevelled face and a cold highlight — the object the name refers to.
+ */
+export function RankMedal({ color, size = 46 }: { color: string | null; size?: number }) {
+    const c = color || "#9ca3af";
+
+    return (
+        <span className="relative block shrink-0" style={{ width: size, height: size }} aria-hidden>
+            <span
+                className="absolute inset-0"
+                style={{
+                    clipPath: HEX,
+                    background: `linear-gradient(150deg, color-mix(in srgb, ${c} 70%, white) 0%, ${c} 42%, color-mix(in srgb, ${c} 45%, black) 100%)`,
+                    filter: `drop-shadow(0 0 12px color-mix(in srgb, ${c} 45%, transparent))`,
+                }}
+            />
+            {/* bevelled face */}
+            <span
+                className="absolute"
+                style={{
+                    inset: size * 0.14,
+                    clipPath: HEX,
+                    background: `linear-gradient(150deg, color-mix(in srgb, ${c} 88%, white) 0%, color-mix(in srgb, ${c} 60%, black) 100%)`,
+                }}
+            />
+            {/* cold highlight across the top-left facet */}
+            <span
+                className="absolute"
+                style={{
+                    inset: size * 0.14,
+                    clipPath: "polygon(50% 0%, 93% 25%, 50% 50%, 7% 25%)",
+                    background: "linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.05) 100%)",
+                }}
+            />
+        </span>
+    );
+}
+
+/**
  * Rank emblem painted in that tier's own metal — Bronze burns copper,
  * Silver goes cold, Diamond glows cyan. The ladder already stores the
  * colour; this is what makes it mean something.

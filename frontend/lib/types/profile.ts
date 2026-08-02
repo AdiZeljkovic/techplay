@@ -278,6 +278,7 @@ export interface UserProfile {
     achievements: Achievement[];
     next_rank: { name: string; min_xp: number; color?: string | null } | null;
     is_online?: boolean;
+    streak?: { days: number; claimed_today: boolean };
     /** Owner's setting. `can_view` is the resolved answer for *this* viewer. */
     is_private?: boolean;
     can_view?: boolean;
