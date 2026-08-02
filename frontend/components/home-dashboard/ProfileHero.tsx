@@ -22,15 +22,20 @@ function compact(n: number): string {
     return n.toLocaleString();
 }
 
-/** Gamertag key → the mark PlatformIcon draws, and the brand it lights up in. */
+/**
+ * Gamertag key → the mark PlatformIcon draws, and the brand it wears.
+ * Brands are lifted toward the light end of each palette: the official values
+ * (Xbox #107C10, PlayStation #0070D1) are picked for white backgrounds and go
+ * muddy on ours.
+ */
 const PLATFORMS: Record<string, { label: string; name: string; brand: string }> = {
-    steam: { label: "STEAM", name: "Steam", brand: "#c7d5e0" },
-    psn: { label: "PS", name: "PlayStation", brand: "#4c8bf5" },
-    xbox: { label: "XBOX", name: "Xbox", brand: "#4ade80" },
-    epic: { label: "EPIC", name: "Epic Games", brand: "#ffffff" },
-    discord: { label: "DISCORD", name: "Discord", brand: "#7d88f5" },
+    steam: { label: "STEAM", name: "Steam", brand: "#66c0f4" },
+    psn: { label: "PS", name: "PlayStation", brand: "#2b8fe6" },
+    xbox: { label: "XBOX", name: "Xbox", brand: "#43b649" },
+    epic: { label: "EPIC", name: "Epic Games", brand: "#f2f2f2" },
+    discord: { label: "DISCORD", name: "Discord", brand: "#5865f2" },
     pc: { label: "PC", name: "PC", brand: "#e5e7eb" },
-    switch: { label: "SWITCH", name: "Nintendo Switch", brand: "#f87171" },
+    switch: { label: "SWITCH", name: "Nintendo Switch", brand: "#f04a4a" },
 };
 
 /**
@@ -422,26 +427,16 @@ export default function ProfileHero({
                 <div className="flex flex-col xl:flex-row xl:items-center gap-6">
                     {/* ── identity ── */}
                     <div className="flex items-start gap-5 md:gap-6 flex-1 min-w-0">
-                        <div className="relative shrink-0">
-                            <Link href={base} className="group/av block">
-                                <AvatarFrame
-                                    src={hero.avatar_url}
-                                    alt={hero.display_name}
-                                    frame={hero.frame_value}
-                                    online={online}
-                                />
-                            </Link>
-
-                            {isOwnProfile && (
-                                <Link
-                                    href="/settings"
-                                    title="Change your avatar"
-                                    className="absolute top-0 right-0 w-9 h-9 rounded-full bg-[var(--surface-1)] border border-[var(--line-strong)] flex items-center justify-center text-[var(--ink-low)] hover:text-[var(--accent)] hover:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] transition-colors duration-300"
-                                >
-                                    <Pencil className="w-3.5 h-3.5" />
-                                </Link>
-                            )}
-                        </div>
+                        {/* No edit affordance stuck on the portrait — changing it
+                            lives in Customize Profile, one button away. */}
+                        <Link href={base} className="group/av block shrink-0">
+                            <AvatarFrame
+                                src={hero.avatar_url}
+                                alt={hero.display_name}
+                                frame={hero.frame_value}
+                                online={online}
+                            />
+                        </Link>
 
                         <div className="min-w-0 flex-1">
                             {/* name + verification */}
@@ -487,7 +482,7 @@ export default function ProfileHero({
                                                         key={p}
                                                         title={meta.name}
                                                         style={{ ["--brand" as string]: meta.brand }}
-                                                        className="group/pf inline-flex items-center justify-center w-[42px] h-[42px] rounded-[13px] border border-white/[0.08] bg-[color-mix(in_srgb,#100e0c_78%,transparent)] text-white/40 hover:text-[var(--brand)] hover:border-[color-mix(in_srgb,var(--brand)_45%,transparent)] hover:-translate-y-0.5 transition-all duration-300"
+                                                        className="group/pf inline-flex items-center justify-center w-[42px] h-[42px] rounded-[13px] border border-white/[0.08] bg-[color-mix(in_srgb,#100e0c_78%,transparent)] text-[var(--brand)] hover:border-[color-mix(in_srgb,var(--brand)_55%,transparent)] hover:bg-[color-mix(in_srgb,var(--brand)_12%,#100e0c)] hover:-translate-y-0.5 transition-all duration-300"
                                                     >
                                                         <PlatformIcon label={meta.label} className="w-[19px] h-[19px]" />
                                                     </span>
