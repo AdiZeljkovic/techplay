@@ -117,13 +117,15 @@ function AvatarFrame({
                 {portrait}
             </span>
 
+            {/* The ring art carries its own lighting — the only shadow here is
+                the one that seats it against the panel, never a halo behind it. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
                 src="/frames/hud-ring.png"
                 alt=""
                 aria-hidden
                 className="absolute inset-0 w-full h-full pointer-events-none select-none"
-                style={{ filter: "drop-shadow(0 0 16px color-mix(in srgb, var(--accent) 45%, transparent))" }}
+                style={{ filter: "drop-shadow(0 2px 10px rgba(0,0,0,0.75))" }}
             />
 
             {/* the socket is cast into the ring; this is the lamp inside it */}
@@ -409,10 +411,6 @@ export default function ProfileHero({
                     />
                 )}
                 <span className="absolute inset-0 bg-hud-grid opacity-30" />
-                <span
-                    className="absolute -left-24 -top-28 w-[440px] h-[440px] rounded-full opacity-[0.18]"
-                    style={{ background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)" }}
-                />
                 {/* one-shot power-on sweep */}
                 <span className="tp-sweep absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />
             </div>
