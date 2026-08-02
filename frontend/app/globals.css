@@ -526,8 +526,38 @@ body {
 }
 .tp-pulse-ring { animation: tp-pulse-ring 2.6s var(--ease-hud) infinite; }
 
+/* The bell keeps nagging while something is unread — a short shake, then a
+   long pause, so it reads as "look at me" rather than a broken loop. */
+@keyframes tp-bell-ring {
+  0%, 62%, 100% { transform: rotate(0deg); }
+  64%  { transform: rotate(16deg); }
+  67%  { transform: rotate(-14deg); }
+  70%  { transform: rotate(11deg); }
+  73%  { transform: rotate(-9deg); }
+  76%  { transform: rotate(6deg); }
+  79%  { transform: rotate(-4deg); }
+  82%  { transform: rotate(0deg); }
+}
+.tp-bell-ring { animation: tp-bell-ring 3.4s ease-in-out infinite; transform-origin: 50% 15%; }
+
+/* A notification badge lands rather than appears. */
+@keyframes tp-badge-in {
+  0%   { transform: scale(0) rotate(-25deg); opacity: 0; }
+  60%  { transform: scale(1.28) rotate(6deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.tp-badge-in { animation: tp-badge-in 0.5s var(--ease-hud) both; }
+
+/* Slow gloss travelling across the profile rail. */
+@keyframes tp-rail-sheen {
+  0%   { transform: translateX(-60%) skewX(-14deg); }
+  100% { transform: translateX(320%) skewX(-14deg); }
+}
+.tp-rail-sheen { animation: tp-rail-sheen 7s linear infinite; }
+
 @media (prefers-reduced-motion: reduce) {
-  .tp-drift, .tp-sweep, .tp-pulse-ring, .tp-xp-shimmer { animation: none; }
+  .tp-drift, .tp-sweep, .tp-pulse-ring, .tp-xp-shimmer,
+  .tp-bell-ring, .tp-badge-in, .tp-rail-sheen { animation: none; }
 }
 
 /* Hide scrollbars on horizontal rails (dashboard "Continue Playing" etc.) */
