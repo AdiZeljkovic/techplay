@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Settings } from "lucide-react";
 import { PROFILE_TABS, type ProfileTab } from "@/lib/profileTabs";
 
 /**
@@ -26,7 +25,7 @@ export default function ProfileTabStrip({
 
     return (
         <nav
-            className="relative flex items-center justify-between gap-4 border-t border-[var(--line)] bg-[color-mix(in_srgb,var(--surface-0)_50%,transparent)] px-3 md:px-5"
+            className="relative flex items-center border-t border-[var(--line)] bg-[color-mix(in_srgb,var(--surface-0)_50%,transparent)] px-3 md:px-5"
             aria-label="Profile sections"
         >
             <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-none">
@@ -65,14 +64,6 @@ export default function ProfileTabStrip({
                 })}
             </div>
 
-            {isOwnProfile && (
-                <Link
-                    href="/settings"
-                    className="hidden md:inline-flex shrink-0 items-center gap-2 h-9 px-3.5 rounded-[var(--radius-card)] bg-[var(--fill-2)] border border-[var(--line-strong)] text-[11px] font-semibold text-[var(--ink-low)] hover:text-[var(--ink-hi)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
-                >
-                    <Settings className="w-3.5 h-3.5" /> Customize Profile
-                </Link>
-            )}
         </nav>
     );
 }

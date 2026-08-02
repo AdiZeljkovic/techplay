@@ -25,6 +25,9 @@ export interface DashboardUser {
     rank_color: string | null;
     rank_icon: string | null;
     next_rank: { name: string; min_xp: number; color: string | null } | null;
+    is_staff: boolean;
+    /** Gamertag keys with a value — drives the platform icons in the hero. */
+    platforms: string[];
 }
 
 export interface DashboardStats {

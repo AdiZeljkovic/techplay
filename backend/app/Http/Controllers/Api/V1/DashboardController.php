@@ -100,6 +100,10 @@ class DashboardController extends Controller
                     'min_xp' => $nextRank->min_xp,
                     'color' => $nextRank->color,
                 ] : null,
+                // hero identity line: verified tick + the platforms you play on
+                'is_staff' => $user->hasRole(['admin', 'Admin', 'Super Admin', 'editor', 'Editor', 'Editor-in-Chief', 'moderator', 'Moderator', 'Journalist'])
+                    || in_array(strtolower($user->role ?? ''), ['admin', 'editor', 'moderator', 'journalist', 'super_admin']),
+                'platforms' => array_values(array_keys(array_filter((array) ($user->gamertags ?? [])))),
             ],
             'stats' => [
                 'games_count' => $counts['games_count'],

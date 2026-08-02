@@ -22,6 +22,10 @@ export interface HeroModel {
     rank_color: string | null;
     next_rank: { name: string; min_xp: number; color: string | null } | null;
     is_online: boolean;
+    /** Staff tick next to the name. */
+    verified: boolean;
+    /** Gamertag keys — steam / psn / xbox / epic / discord. */
+    platforms: string[];
     stats: { games: number; reviews: number; hours: number; achievements: number; friends: number };
     /** Used behind the identity when no cover image is set. */
     backdrop_fallback: string | null;
@@ -49,6 +53,8 @@ export function heroFromDashboard(data: DashboardData): HeroModel {
         next_rank: user.next_rank,
         // You are looking at your own page, so you are online by definition.
         is_online: true,
+        verified: !!user.is_staff,
+        platforms: user.platforms ?? [],
         stats: {
             games: stats.games_count,
             reviews: stats.reviews_count,
@@ -82,6 +88,10 @@ export function heroFromProfile(profile: UserProfile): HeroModel {
             ? { name: profile.next_rank.name, min_xp: profile.next_rank.min_xp, color: profile.next_rank.color ?? null }
             : null,
         is_online: profile.is_online ?? false,
+        verified: !!profile.is_staff,
+        platforms: Object.entries(user.gamertags ?? {})
+            .filter(([, v]) => !!v)
+            .map(([k]) => k),
         stats: {
             games: stats.games_count ?? 0,
             reviews: stats.reviews_count ?? 0,

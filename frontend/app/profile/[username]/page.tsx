@@ -190,6 +190,7 @@ function ProfilePageInner() {
                             onAddFriend={handleSendRequest}
                             onMessage={() => setIsMessageModalOpen(true)}
                             viewerSignedIn={!!currentUser}
+                            viewerUsername={currentUser?.username}
                         />
                     </div>
                 )}

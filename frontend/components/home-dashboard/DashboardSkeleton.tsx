@@ -10,7 +10,7 @@ export default function DashboardSkeleton() {
         <main className="min-h-screen bg-[var(--surface-0)] bg-hud-grid">
             <div className="container-page py-8 space-y-6 animate-pulse">
                 {/* Profile hero — tab strip is inside it */}
-                <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[298px]" />
+                <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[340px]" />
 
                 {/* Highlight strip */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
