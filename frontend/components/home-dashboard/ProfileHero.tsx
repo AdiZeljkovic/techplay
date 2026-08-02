@@ -684,23 +684,20 @@ export default function ProfileHero({
                                     boxShadow: `0 0 12px ${hero.rank_color || "var(--accent)"}`,
                                 }}
                             />
+                            {/* The insignia is the statement; the name is its
+                                caption, not its equal. */}
                             <RankInsigniaMark
                                 icon={hero.rank_icon}
                                 color={hero.rank_color}
                                 name={hero.rank_name}
-                                size={78}
+                                size={112}
                             />
-                            <div className="lg:text-center min-w-0">
-                                <p
-                                    className="font-display text-[21px] font-black uppercase tracking-[0.07em] leading-none truncate"
-                                    style={{ color: hero.rank_color || "var(--ink-hi)" }}
-                                >
-                                    {hero.rank_name || "Unranked"}
-                                </p>
-                                <p className="mt-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.2em] text-[var(--ink-faint)]">
-                                    Current Rank
-                                </p>
-                            </div>
+                            <p
+                                className="font-display text-[13px] font-bold uppercase tracking-[0.22em] leading-none truncate lg:text-center min-w-0"
+                                style={{ color: hero.rank_color || "var(--ink-hi)" }}
+                            >
+                                {hero.rank_name || "Unranked"}
+                            </p>
                         </div>
 
                         <span aria-hidden className="hidden lg:block w-px my-5 bg-white/[0.07]" />
