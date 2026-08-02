@@ -681,12 +681,12 @@ export default function ProfileHero({
                 {/* ── upper deck: where you stand, how far to the next rung ── */}
                 <div className="relative flex flex-col lg:flex-row items-stretch">
                     {/* rank */}
-                    <div className="flex items-center gap-3.5 shrink-0 lg:w-[228px] px-5 py-4">
+                    <div className="flex items-center gap-4 shrink-0 lg:w-[250px] px-5 py-4">
                         <RankInsigniaMark
                             icon={hero.rank_icon}
                             color={hero.rank_color}
                             name={hero.rank_name}
-                            size={66}
+                            size={92}
                         />
                         <div className="min-w-0">
                             <p
@@ -705,10 +705,9 @@ export default function ProfileHero({
                     <span aria-hidden className="lg:hidden h-px mx-5 bg-white/[0.09]" />
 
                     {/* the climb */}
-                    {/* The rung you're on and the one you're climbing to bookend
-                        the track, so the gauge reads as travel between two
-                        levels rather than a bar with a number beside it. The
-                        next hex sits in unlit metal until you reach it. */}
+                    {/* The level you're on anchors the track. The one you're
+                        climbing to is already named by the reward cell — a
+                        second copy at the far end was the same number twice. */}
                     <div className="flex-1 min-w-0 px-5 py-4 flex items-center gap-3.5">
                         <span className="flex flex-col items-center gap-1.5 shrink-0">
                             <LevelHex level={hero.level} size={46} />
@@ -749,16 +748,10 @@ export default function ProfileHero({
                                     <span className="text-white/60">{levelDoneShown.toLocaleString()}</span>
                                     {` / ${levelSize.toLocaleString()} XP`}
                                 </span>
-                                <span className="text-[var(--accent-bright)]">{fillPercent}%</span>
+                                <span className="text-[var(--xp-bright)]">{fillPercent}%</span>
                             </div>
                         </div>
 
-                        <span className="flex flex-col items-center gap-1.5 shrink-0">
-                            <LevelHex level={hero.level + 1} size={40} dim />
-                            <span className="font-display text-[8px] font-bold uppercase tracking-[0.2em] text-white/25">
-                                Next
-                            </span>
-                        </span>
                     </div>
 
                     <span aria-hidden className="hidden lg:block w-px my-4 bg-white/[0.09]" />

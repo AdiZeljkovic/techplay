@@ -139,6 +139,16 @@
   --glow-accent: 0 0 20px color-mix(in srgb, var(--accent) 30%, transparent);
   --accent-rgb: 252, 65, 0; /* legacy — migrate consumers to color-mix */
 
+  /* ── Progression palette ──
+     XP deliberately does NOT ride the brand accent. The accent means "act on
+     this"; levelling is a state, and it sits on an accent-tinted band where an
+     accent gauge would vanish into its own background. Violet is the one hue
+     that stays legible on that surface and never gets confused for a button.
+     Fixed on purpose — it must not shift with per-user accent themes. ── */
+  --xp: #8b5cf6;
+  --xp-bright: #b39cff;
+  --xp-deep: #6d28d9;
+
   /* ── One track for every meter ── */
   --track: rgba(255, 255, 255, 0.08);
 

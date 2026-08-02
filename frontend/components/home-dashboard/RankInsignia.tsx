@@ -84,9 +84,10 @@ export function LevelHex({
                 aria-hidden
                 className="absolute inset-0"
                 style={{
+                    // the level system wears the XP colour, not the brand accent
                     clipPath: HEX,
-                    background: dim ? "rgba(255,255,255,0.16)" : "var(--accent)",
-                    filter: dim ? "none" : "drop-shadow(0 0 14px color-mix(in srgb, var(--accent) 45%, transparent))",
+                    background: dim ? "rgba(255,255,255,0.16)" : "var(--xp)",
+                    filter: dim ? "none" : "drop-shadow(0 0 14px color-mix(in srgb, var(--xp) 50%, transparent))",
                 }}
             />
             {/* hollow it out */}
@@ -236,77 +237,64 @@ export function RankEmblem({ name, color }: { name: string; color: string | null
 export function XpRail({
     percent,
     className = "",
-    segments = 10,
+    segments = 14,
 }: {
     percent: number;
     className?: string;
     segments?: number;
 }) {
     const p = Math.max(0, Math.min(100, percent));
-    const step = 100 / segments;
+    const charged = (p / 100) * segments;
 
     return (
-        <span
-            className={`relative block h-[16px] rounded-[4px] overflow-hidden ${className}`}
-            style={{
-                background: "linear-gradient(180deg, #070605 0%, #131010 100%)",
-                boxShadow: "inset 0 2px 7px rgba(0,0,0,0.9), inset 0 0 0 1px rgba(255,255,255,0.06)",
-            }}
-            aria-hidden
-        >
-            {p > 0 && (
-                <span
-                    className="absolute inset-y-[2px] left-[2px] rounded-[2px] overflow-hidden"
-                    style={{
-                        width: `calc(${p}% - 4px)`,
-                        background:
-                            "linear-gradient(180deg, var(--accent-bright) 0%, var(--accent) 50%, var(--accent-hover) 100%)",
-                        boxShadow: "0 0 18px color-mix(in srgb, var(--accent) 60%, transparent)",
-                    }}
-                >
-                    {/* the charge is moving */}
+        <span className={`relative flex items-stretch gap-[3px] h-[18px] ${className}`} aria-hidden>
+            {Array.from({ length: segments }).map((_, i) => {
+                // The boundary cell fills partially, so the gauge stays precise
+                // while still reading as discrete earned units.
+                const fill = Math.max(0, Math.min(1, charged - i));
+                const lit = fill > 0;
+
+                return (
                     <span
-                        className="tp-xp-stripes absolute inset-0"
+                        key={i}
+                        className="relative flex-1 overflow-hidden"
                         style={{
-                            backgroundImage:
-                                "repeating-linear-gradient(115deg, rgba(255,255,255,0.14) 0px, rgba(255,255,255,0.14) 6px, transparent 6px, transparent 13px)",
-                            backgroundSize: "26px 100%",
+                            // sheared cells — the shape every progression HUD in
+                            // the genre uses, and the reason this can't be
+                            // mistaken for a browser progress element
+                            transform: "skewX(-16deg)",
+                            borderRadius: 2,
+                            background: "linear-gradient(180deg, #0a0807 0%, #15100f 100%)",
+                            boxShadow: lit
+                                ? "inset 0 0 0 1px rgba(255,255,255,0.05)"
+                                : "inset 0 1px 3px rgba(0,0,0,0.85), inset 0 0 0 1px rgba(255,255,255,0.045)",
                         }}
-                    />
-                    {/* gloss crown along the top third, shadow along the bottom */}
-                    <span className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/40 to-transparent" />
-                    <span className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/25 to-transparent" />
-                </span>
-            )}
+                    >
+                        {lit && (
+                            <span
+                                className="absolute inset-y-0 left-0"
+                                style={{
+                                    width: `${fill * 100}%`,
+                                    background:
+                                        "linear-gradient(180deg, var(--xp-bright) 0%, var(--xp) 52%, var(--xp-deep) 100%)",
+                                    boxShadow: "0 0 12px color-mix(in srgb, var(--xp) 70%, transparent)",
+                                }}
+                            >
+                                <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent" />
+                            </span>
+                        )}
+                    </span>
+                );
+            })}
 
-            {/*
-             * Segment marks, engraved rather than drawn: a dark groove with a
-             * light lip beside it. One layer then reads on both surfaces — the
-             * groove shows against the lit charge, the lip against the empty
-             * channel — which a single-colour divider can never do.
-             */}
-            <span
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                    background: `repeating-linear-gradient(90deg,
-                        transparent 0,
-                        transparent calc(${step}% - 2px),
-                        rgba(0,0,0,0.55) calc(${step}% - 2px),
-                        rgba(0,0,0,0.55) calc(${step}% - 1px),
-                        rgba(255,255,255,0.10) calc(${step}% - 1px),
-                        rgba(255,255,255,0.10) ${step}%)`,
-                }}
-            />
-
-            {/* the hot edge where the charge ends */}
-            {p > 1 && p < 100 && (
+            {/* one highlight travelling the charged run, so the gauge reads live */}
+            {p > 4 && (
                 <span
-                    className="absolute top-0 bottom-0 w-[2px] bg-white"
-                    style={{
-                        left: `calc(${p}% - 1px)`,
-                        boxShadow: "0 0 9px rgba(255,255,255,0.95), 0 0 20px color-mix(in srgb, var(--accent) 85%, transparent)",
-                    }}
-                />
+                    className="absolute inset-y-0 left-0 overflow-hidden pointer-events-none"
+                    style={{ width: `${p}%` }}
+                >
+                    <span className="tp-xp-shimmer absolute inset-y-0 -left-1/4 w-1/4 bg-gradient-to-r from-transparent via-white/35 to-transparent" />
+                </span>
             )}
         </span>
     );
