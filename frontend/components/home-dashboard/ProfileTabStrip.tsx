@@ -28,10 +28,13 @@ export default function ProfileTabStrip({
     username,
     activeTab = "overview",
     isOwnProfile = true,
+    bare = false,
 }: {
     username: string;
     activeTab?: string;
     isOwnProfile?: boolean;
+    /** Rendered inside the console band, which already paints the surface. */
+    bare?: boolean;
 }) {
     const tabs = PROFILE_TABS.filter((t) => !t.ownOnly || isOwnProfile);
     const base = `/profile/${username}`;
@@ -39,30 +42,38 @@ export default function ProfileTabStrip({
     return (
         <nav
             className="relative"
-            style={{
-                background:
-                    "linear-gradient(180deg, color-mix(in srgb, var(--accent) 15%, #0b0908) 0%, color-mix(in srgb, var(--accent) 7%, #0b0908) 100%)",
-            }}
+            style={
+                bare
+                    ? undefined
+                    : {
+                          background:
+                              "linear-gradient(180deg, color-mix(in srgb, var(--accent) 15%, #0b0908) 0%, color-mix(in srgb, var(--accent) 7%, #0b0908) 100%)",
+                      }
+            }
             aria-label="Profile sections"
         >
-            {/* the filament: a hot line where the rail meets the hero */}
-            <span
-                aria-hidden
-                className="absolute inset-x-0 top-0 h-px"
-                style={{
-                    background:
-                        "linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--accent) 70%, transparent) 22%, color-mix(in srgb, var(--accent) 70%, transparent) 78%, transparent 100%)",
-                }}
-            />
-            {/* embers pooling along the bottom edge */}
-            <span
-                aria-hidden
-                className="absolute inset-x-0 bottom-0 h-14 pointer-events-none"
-                style={{
-                    background:
-                        "radial-gradient(120% 100% at 50% 130%, color-mix(in srgb, var(--accent) 34%, transparent) 0%, transparent 70%)",
-                }}
-            />
+            {!bare && (
+                <>
+                    {/* the filament: a hot line where the rail meets the hero */}
+                    <span
+                        aria-hidden
+                        className="absolute inset-x-0 top-0 h-px"
+                        style={{
+                            background:
+                                "linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--accent) 70%, transparent) 22%, color-mix(in srgb, var(--accent) 70%, transparent) 78%, transparent 100%)",
+                        }}
+                    />
+                    {/* embers pooling along the bottom edge */}
+                    <span
+                        aria-hidden
+                        className="absolute inset-x-0 bottom-0 h-14 pointer-events-none"
+                        style={{
+                            background:
+                                "radial-gradient(120% 100% at 50% 130%, color-mix(in srgb, var(--accent) 34%, transparent) 0%, transparent 70%)",
+                        }}
+                    />
+                </>
+            )}
 
             <div className="relative flex items-center justify-start lg:justify-center overflow-x-auto scrollbar-none px-2 md:px-4">
                 {tabs.map(({ id, label, icon: Icon }, i) => {

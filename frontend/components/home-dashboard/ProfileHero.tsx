@@ -644,158 +644,147 @@ export default function ProfileHero({
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* ── the progression console ──
-                    Rank is the anchor: its insignia is the largest object here
-                    and the artwork slot is ready for the real icons. The gauge
-                    measures the *level* band, because a level is what actually
-                    ticks over and what the next reward hangs off. ── */}
-                <div
-                    className="relative mt-6 rounded-[20px] border border-white/[0.07] overflow-hidden"
+            {/* ── the console band ──
+                Progression and navigation share one lit surface at the foot of
+                the hero: rank, the level gauge and the next crate on the upper
+                deck, the sections beneath them. Two panels stacked here read as
+                two components; one band reads as the machine's front plate. ── */}
+            <div
+                className="relative"
+                style={{
+                    background:
+                        "linear-gradient(180deg, color-mix(in srgb, var(--accent) 15%, #0b0908) 0%, color-mix(in srgb, var(--accent) 7%, #0b0908) 100%)",
+                }}
+            >
+                {/* the filament where the band meets the hero */}
+                <span
+                    aria-hidden
+                    className="absolute inset-x-0 top-0 h-px"
                     style={{
-                        background: "linear-gradient(180deg, rgba(17,14,12,0.9) 0%, rgba(9,8,7,0.95) 100%)",
-                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
+                        background:
+                            "linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--accent) 70%, transparent) 22%, color-mix(in srgb, var(--accent) 70%, transparent) 78%, transparent 100%)",
                     }}
-                >
-                    {/* the tier's own metal bleeds out of the insignia */}
-                    {hero.rank_color && (
-                        <span
-                            aria-hidden
-                            className="absolute inset-y-0 left-0 w-2/3 pointer-events-none"
-                            style={{
-                                background: `linear-gradient(90deg, color-mix(in srgb, ${hero.rank_color} 15%, transparent) 0%, transparent 70%)`,
-                            }}
-                        />
-                    )}
-                    <span
-                        aria-hidden
-                        className="absolute right-4 top-4 w-6 h-6 pointer-events-none border-t border-r rounded-tr-[4px]"
-                        style={{ borderColor: "color-mix(in srgb, var(--accent) 45%, transparent)" }}
-                    />
+                />
+                {/* embers pooling along the bottom edge */}
+                <span
+                    aria-hidden
+                    className="absolute inset-x-0 bottom-0 h-14 pointer-events-none"
+                    style={{
+                        background:
+                            "radial-gradient(120% 100% at 50% 130%, color-mix(in srgb, var(--accent) 30%, transparent) 0%, transparent 70%)",
+                    }}
+                />
 
-                    <div className="relative flex flex-col lg:flex-row items-stretch">
-                        {/* ── rank: the anchor ── */}
-                        <div className="relative flex items-center lg:flex-col lg:justify-center gap-4 lg:gap-3 shrink-0 lg:w-[212px] px-5 py-5">
-                            <span
-                                aria-hidden
-                                className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-12 rounded-r-full"
-                                style={{
-                                    background: hero.rank_color || "var(--accent)",
-                                    boxShadow: `0 0 12px ${hero.rank_color || "var(--accent)"}`,
-                                }}
-                            />
-                            {/* The insignia is the statement; the name is its
-                                caption, not its equal. */}
-                            <RankInsigniaMark
-                                icon={hero.rank_icon}
-                                color={hero.rank_color}
-                                name={hero.rank_name}
-                                size={112}
-                            />
+                {/* ── upper deck: where you stand, how far to the next rung ── */}
+                <div className="relative flex flex-col lg:flex-row items-stretch">
+                    {/* rank */}
+                    <div className="flex items-center gap-3.5 shrink-0 lg:w-[228px] px-5 py-4">
+                        <RankInsigniaMark
+                            icon={hero.rank_icon}
+                            color={hero.rank_color}
+                            name={hero.rank_name}
+                            size={66}
+                        />
+                        <div className="min-w-0">
                             <p
-                                className="font-display text-[13px] font-bold uppercase tracking-[0.22em] leading-none truncate lg:text-center min-w-0"
+                                className="font-display text-[15px] font-black uppercase tracking-[0.16em] leading-none truncate"
                                 style={{ color: hero.rank_color || "var(--ink-hi)" }}
                             >
                                 {hero.rank_name || "Unranked"}
                             </p>
+                            <p className="mt-1.5 font-display text-[9px] font-bold uppercase tracking-[0.2em] text-white/35">
+                                Rank
+                            </p>
+                        </div>
+                    </div>
+
+                    <span aria-hidden className="hidden lg:block w-px my-4 bg-white/[0.09]" />
+                    <span aria-hidden className="lg:hidden h-px mx-5 bg-white/[0.09]" />
+
+                    {/* the climb */}
+                    <div className="flex-1 min-w-0 px-5 py-4 flex flex-col justify-center">
+                        <div className="flex items-end justify-between gap-3">
+                            <span className="flex items-center gap-2.5 min-w-0">
+                                <LevelHex level={hero.level} size={44} />
+                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.2em] text-white/35">
+                                    Level
+                                </span>
+                            </span>
+
+                            <span className="flex items-baseline gap-3 shrink-0 font-display text-[11px] font-bold uppercase tracking-[0.1em] tabular-nums">
+                                <span className="text-white/40">
+                                    <span className="text-white">{levelToGoShown.toLocaleString()}</span> XP to go
+                                </span>
+                                <span className="text-[var(--accent-bright)]">{fillPercent}%</span>
+                            </span>
                         </div>
 
-                        <span aria-hidden className="hidden lg:block w-px my-5 bg-white/[0.07]" />
-                        <span aria-hidden className="lg:hidden h-px mx-5 bg-white/[0.07]" />
+                        <XpRail percent={fillPercent} className="mt-2.5" />
 
-                        {/* ── the climb ── */}
-                        <div className="flex-1 min-w-0 px-5 py-5">
-                            <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-3 min-w-0">
-                                    <LevelHex level={hero.level} size={52} />
-                                    <div className="min-w-0">
-                                        <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.2em] text-[var(--ink-faint)]">
-                                            Level
-                                        </p>
-                                        <p className="mt-0.5 font-display text-[17px] font-black tabular-nums leading-none text-white">
-                                            {hero.level}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="text-right shrink-0">
-                                    <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.2em] text-[var(--ink-faint)]">
-                                        Next
-                                    </p>
-                                    <p className="mt-0.5 font-display text-[17px] font-black tabular-nums leading-none text-[var(--accent)]">
-                                        {hero.level + 1}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <XpRail percent={fillPercent} className="mt-3.5" />
-
-                            <div className="mt-2 flex items-center justify-between gap-3 font-display text-[12px] font-bold tabular-nums">
-                                <span className="text-[var(--ink-faint)]">
-                                    <span className="text-white">{levelToGoShown.toLocaleString()}</span> XP TO GO
+                        <div className="mt-2.5 flex items-center gap-4 font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/35">
+                            <span className="inline-flex items-center gap-1.5">
+                                <TrendingUp className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                Total XP
+                                <span className="text-white tabular-nums tracking-normal text-[11px]">
+                                    {animatedXp.toLocaleString()}
                                 </span>
-                                <span className="text-[var(--accent)]">{fillPercent}%</span>
-                            </div>
-
-                            {/* the two figures that describe momentum, kept small */}
-                            <div className="mt-3 flex items-center gap-4 font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-[var(--ink-faint)]">
-                                <span className="inline-flex items-center gap-1.5">
-                                    <TrendingUp className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                    Total XP
-                                    <span className="text-white tabular-nums tracking-normal text-[11px]">
-                                        {animatedXp.toLocaleString()}
-                                    </span>
+                            </span>
+                            <span aria-hidden className="w-px h-3 bg-white/15" />
+                            <span className="inline-flex items-center gap-1.5">
+                                <Flame className={`w-3.5 h-3.5 ${hero.streak_days > 0 ? "text-orange-400" : "text-white/35"}`} />
+                                Streak
+                                <span className="text-white tabular-nums tracking-normal text-[11px]">
+                                    {hero.streak_days}d
                                 </span>
-                                <span aria-hidden className="w-px h-3 bg-white/10" />
-                                <span className="inline-flex items-center gap-1.5">
-                                    <Flame className={`w-3.5 h-3.5 ${hero.streak_days > 0 ? "text-orange-400" : "text-[var(--ink-faint)]"}`} />
-                                    Streak
-                                    <span className="text-white tabular-nums tracking-normal text-[11px]">
-                                        {hero.streak_days}d
-                                    </span>
-                                </span>
-                            </div>
+                            </span>
                         </div>
+                    </div>
 
-                        <span aria-hidden className="hidden lg:block w-px my-5 bg-white/[0.07]" />
-                        <span aria-hidden className="lg:hidden h-px mx-5 bg-white/[0.07]" />
+                    <span aria-hidden className="hidden lg:block w-px my-4 bg-white/[0.09]" />
+                    <span aria-hidden className="lg:hidden h-px mx-5 bg-white/[0.09]" />
 
-                        {/* ── what is waiting at the top of the bar ── */}
-                        <div className="shrink-0 lg:w-[236px] px-5 py-5 flex items-center gap-3.5">
-                            {/* The crate is named on its own side panel, so the
-                                caption beside it never has to repeat it. */}
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                                src="/rewards/level-cache.png"
-                                alt="Level cache"
-                                width={86}
-                                height={86}
-                                className="w-[86px] h-[86px] shrink-0 object-contain"
-                                style={{ filter: "drop-shadow(0 4px 14px rgba(0,0,0,0.7))" }}
-                            />
-
-                            <div className="min-w-0">
-                                <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.2em] text-[var(--ink-faint)]">
-                                    Reward at
+                    {/* what is waiting at the top of the bar */}
+                    <div className="shrink-0 lg:w-[238px] px-5 py-4 flex items-center gap-3.5">
+                        {/* the crate is named on its own side panel, so the
+                            caption beside it never has to repeat it */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src="/rewards/level-cache.png"
+                            alt="Level cache"
+                            width={68}
+                            height={68}
+                            className="w-[68px] h-[68px] shrink-0 object-contain"
+                            style={{ filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.7))" }}
+                        />
+                        <div className="min-w-0">
+                            <p className="font-display text-[9px] font-bold uppercase tracking-[0.2em] text-white/35">
+                                Reward at
+                            </p>
+                            <p className="mt-1 font-display text-[16px] font-black uppercase tracking-[0.05em] leading-none text-white">
+                                Level {hero.level + 1}
+                            </p>
+                            {rankUpNext ? (
+                                <p
+                                    className="mt-1.5 text-[10.5px] font-semibold truncate"
+                                    style={{ color: hero.next_rank?.color || "rgba(255,255,255,0.5)" }}
+                                >
+                                    {hero.next_rank?.name} promotion
                                 </p>
-                                <p className="mt-1 font-display text-[19px] font-black uppercase tracking-[0.05em] leading-none text-white">
-                                    Level {hero.level + 1}
-                                </p>
-                                {rankUpNext ? (
-                                    <p className="mt-1.5 text-[11px] font-semibold" style={{ color: hero.next_rank?.color || "var(--ink-low)" }}>
-                                        {hero.next_rank?.name} promotion
-                                    </p>
-                                ) : (
-                                    /* honest until the reward table exists */
-                                    <p className="mt-1.5 text-[11px] text-[var(--ink-faint)]">Contents to be revealed</p>
-                                )}
-                            </div>
+                            ) : (
+                                /* honest until the reward table exists */
+                                <p className="mt-1.5 text-[10.5px] text-white/35">Contents to be revealed</p>
+                            )}
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <ProfileTabStrip username={hero.username} activeTab={activeTab} isOwnProfile={isOwnProfile} />
+                <span aria-hidden className="block h-px mx-5 bg-white/[0.09]" />
+
+                {/* ── lower deck: the sections ── */}
+                <ProfileTabStrip username={hero.username} activeTab={activeTab} isOwnProfile={isOwnProfile} bare />
+            </div>
         </section>
     );
 }
