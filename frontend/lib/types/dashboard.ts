@@ -6,6 +6,11 @@ export interface DashboardGameCover {
     slug: string;
     name: string;
     background_image: string | null;
+    hours_played?: number;
+    progress?: number;
+    /** null means nothing measured it — show "not tracked", never "0h". */
+    playtime_source?: "steam" | "discord" | "presence" | "manual" | null;
+    status?: string;
 }
 
 export interface DashboardUser {

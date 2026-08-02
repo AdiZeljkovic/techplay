@@ -119,7 +119,8 @@ class DashboardController extends Controller
                 'friends_count' => $friendIds->count(),
             ],
             'playing_now' => $this->profileService->playingNow($user, 8),
-            'favorites' => $this->gameCovers($user, ['is_favorite' => true], 6),
+            // the shelf scrolls now, so it's worth sending more than fits
+            'favorites' => $this->gameCovers($user, ['is_favorite' => true], 12),
             'backlog_preview' => $this->gameCovers($user, ['status' => 'backlog'], 4),
             'backlog_suggestion' => $this->backlogSuggestion($user, $libraryGameIds->all()),
             'streak' => $this->streakService->info($user),
@@ -439,6 +440,12 @@ class DashboardController extends Controller
                 'slug' => $ug->game?->slug,
                 'name' => $ug->game?->name,
                 'background_image' => $ug->game?->background_image,
+                'hours_played' => (int) ($ug->hours_played ?? 0),
+                'progress' => (int) ($ug->progress ?? 0),
+                // null means nothing measured it — the shelf says "not tracked"
+                // rather than printing a confident 0h
+                'playtime_source' => $ug->playtime_source,
+                'status' => $ug->status,
             ])
             ->filter(fn ($g) => $g['slug'] !== null)
             ->values()

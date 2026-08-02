@@ -67,7 +67,11 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                         )}
 
                         <div className="tp-fade-up tp-d2">
-                            <FavoriteGamesRail favorites={data.favorites} username={data.user.username} />
+                            <FavoriteGamesRail
+                                favorites={data.favorites}
+                                username={data.user.username}
+                                total={data.stats.favorites_count}
+                            />
                         </div>
 
                         <div className="tp-fade-up tp-d3">
