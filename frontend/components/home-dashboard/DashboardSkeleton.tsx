@@ -10,8 +10,12 @@ export default function DashboardSkeleton() {
         <main className="min-h-screen bg-[var(--surface-0)] bg-hud-grid">
             <div className="container-page py-8 space-y-6 animate-pulse">
                 {/* Profile hero — tab strip is inside it */}
-                {/* identity block + the console band beneath it */}
-                <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[400px]" />
+                {/* identity card, progression panel, section bar */}
+                <div className="space-y-4">
+                    <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[300px]" />
+                    <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[236px]" />
+                    <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[62px]" />
+                </div>
 
                 {/* Highlight strip */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -27,18 +27,27 @@ export interface HeroModel {
     is_online: boolean;
     /** Staff tick next to the name. */
     verified: boolean;
-    /** Gamertag keys — steam / psn / xbox / epic / discord. */
-    platforms: string[];
+    /** Platform handles in display order — key plus the tag itself. */
+    platforms: { key: string; handle: string }[];
     /** Paint for the avatar ring, from the equipped frame cosmetic. */
     frame_value: string | null;
     /** Where the current rank band starts — the gauge fills across the band. */
     rank_min_xp: number;
     streak_days: number;
-    stats: { games: number; reviews: number; hours: number; achievements: number; friends: number };
+    stats: { games: number; completed: number; reviews: number; achievements: number; hours: number };
     /** Used behind the identity when no cover image is set. */
     backdrop_fallback: string | null;
     /** Drives the owner's primary CTA; visitors get a friend action instead. */
     continue_playing: { slug: string; name: string } | null;
+}
+
+/** Drops empty tags and fixes the order, so the chips never shuffle. */
+const PLATFORM_ORDER = ["steam", "epic", "psn", "xbox", "discord", "pc", "switch"];
+
+function toPlatforms(gamertags: Record<string, string> | undefined | null) {
+    const tags = gamertags ?? {};
+
+    return PLATFORM_ORDER.filter((key) => !!tags[key]).map((key) => ({ key, handle: tags[key] }));
 }
 
 export function heroFromDashboard(data: DashboardData): HeroModel {
@@ -63,16 +72,16 @@ export function heroFromDashboard(data: DashboardData): HeroModel {
         // You are looking at your own page, so you are online by definition.
         is_online: true,
         verified: !!user.is_staff,
-        platforms: user.platforms ?? [],
+        platforms: toPlatforms(user.gamertags),
         frame_value: user.frame ?? null,
         rank_min_xp: user.rank_min_xp ?? 0,
         streak_days: data.streak?.streak ?? 0,
         stats: {
             games: stats.games_count,
+            completed: stats.completed_count,
             reviews: stats.reviews_count,
-            hours: stats.hours_played,
             achievements: stats.achievements_count,
-            friends: stats.friends_count,
+            hours: stats.hours_played,
         },
         backdrop_fallback: firstPlaying?.background_image ?? data.favorites[0]?.background_image ?? null,
         continue_playing: firstPlaying ? { slug: firstPlaying.slug, name: firstPlaying.name } : null,
@@ -102,18 +111,16 @@ export function heroFromProfile(profile: UserProfile): HeroModel {
             : null,
         is_online: profile.is_online ?? false,
         verified: !!profile.is_staff,
-        platforms: Object.entries(user.gamertags ?? {})
-            .filter(([, v]) => !!v)
-            .map(([k]) => k),
+        platforms: toPlatforms(user.gamertags),
         frame_value: profile.customization?.equipped?.frame?.value ?? null,
         rank_min_xp: user.rank?.min_xp ?? 0,
         streak_days: profile.streak?.days ?? 0,
         stats: {
             games: stats.games_count ?? 0,
+            completed: stats.completed_count ?? 0,
             reviews: stats.reviews_count ?? 0,
-            hours: stats.hours_played ?? 0,
             achievements: stats.achievements_count,
-            friends: stats.friends_count ?? 0,
+            hours: stats.hours_played ?? 0,
         },
         backdrop_fallback: firstPlaying?.background_image ?? profile.showcase?.[0]?.background_image ?? null,
         continue_playing: firstPlaying ? { slug: firstPlaying.slug, name: firstPlaying.name } : null,

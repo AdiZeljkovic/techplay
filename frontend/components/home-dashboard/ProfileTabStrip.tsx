@@ -1,25 +1,21 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { PROFILE_TABS } from "@/lib/profileTabs";
+import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { PROFILE_TABS, type ProfileTab } from "@/lib/profileTabs";
+
+/** What fits on the bar before the rest goes under More. */
+const PRIMARY: ProfileTab[] = ["overview", "collection", "achievements", "activity"];
 
 /**
- * The profile's section rail — an ember band with a machined face.
+ * The profile's section bar — its own card, sitting under the identity and the
+ * progression panel rather than fused to either.
  *
- * The accent is folded into near-black rather than used raw: at this width raw
- * accent stops being a highlight and becomes a surface, and nothing on it can
- * mark position. Kept dark, the rail leaves headroom for the active tab to be
- * the brightest thing on it.
- *
- * The rail is typography-led. Labels carry wide tracking and own the weight;
- * glyphs are drawn thin and sit back at low opacity, so they identify a
- * section without competing with its name. Hairlines between items give the
- * row a rhythm instead of an even smear of words.
- *
- * Deliberately no counts here. A number beside a section is a static
- * inventory figure, not a notification — parking it where a notification goes
- * trains people to check something that never changes, and the hero's stat
- * deck already carries the same figures a few pixels above.
+ * Four sections stay on the bar and the remainder move under More, so the row
+ * keeps its rhythm instead of degrading into seven equal words. The active
+ * section is the only lit thing on it: accent glyph in a plate, accent label,
+ * and a filament seated on the card's bottom edge.
  *
  * PROFILE_TABS is the single source of truth, shared by your own profile and
  * everyone else's.
@@ -28,109 +24,76 @@ export default function ProfileTabStrip({
     username,
     activeTab = "overview",
     isOwnProfile = true,
-    bare = false,
 }: {
     username: string;
     activeTab?: string;
     isOwnProfile?: boolean;
-    /** Rendered inside the console band, which already paints the surface. */
-    bare?: boolean;
 }) {
+    const [moreOpen, setMoreOpen] = useState(false);
+    const moreRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!moreOpen) return;
+        const close = (e: MouseEvent) => {
+            if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
+        };
+        document.addEventListener("mousedown", close);
+        return () => document.removeEventListener("mousedown", close);
+    }, [moreOpen]);
+
     const tabs = PROFILE_TABS.filter((t) => !t.ownOnly || isOwnProfile);
     const base = `/profile/${username}`;
+    const href = (id: ProfileTab) => (id === "overview" ? base : `${base}?tab=${id}`);
+
+    // A section hidden under More still has to show it's the live one, so it
+    // takes a slot on the bar when it's active.
+    const onBar = tabs.filter((t) => PRIMARY.includes(t.id) || t.id === activeTab);
+    const overflow = tabs.filter((t) => !onBar.includes(t));
 
     return (
         <nav
-            className="relative"
-            style={
-                bare
-                    ? undefined
-                    : {
-                          background:
-                              "linear-gradient(180deg, color-mix(in srgb, var(--accent) 15%, #0b0908) 0%, color-mix(in srgb, var(--accent) 7%, #0b0908) 100%)",
-                      }
-            }
+            className="relative rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden"
             aria-label="Profile sections"
         >
-            {!bare && (
-                <>
-                    {/* the filament: a hot line where the rail meets the hero */}
-                    <span
-                        aria-hidden
-                        className="absolute inset-x-0 top-0 h-px"
-                        style={{
-                            background:
-                                "linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--accent) 70%, transparent) 22%, color-mix(in srgb, var(--accent) 70%, transparent) 78%, transparent 100%)",
-                        }}
-                    />
-                    {/* embers pooling along the bottom edge */}
-                    <span
-                        aria-hidden
-                        className="absolute inset-x-0 bottom-0 h-14 pointer-events-none"
-                        style={{
-                            background:
-                                "radial-gradient(120% 100% at 50% 130%, color-mix(in srgb, var(--accent) 34%, transparent) 0%, transparent 70%)",
-                        }}
-                    />
-                </>
-            )}
-
-            <div className="relative flex items-center justify-start lg:justify-center overflow-x-auto scrollbar-none px-2 md:px-4">
-                {tabs.map(({ id, label, icon: Icon }, i) => {
+            <div className="flex items-center overflow-x-auto scrollbar-none px-2 md:px-3">
+                {onBar.map(({ id, label, icon: Icon }) => {
                     const active = id === activeTab;
-
-                    const inner = (
-                        <>
-                            {/* hairline between sections — rhythm, not decoration */}
-                            {i > 0 && (
-                                <span
-                                    aria-hidden
-                                    className="absolute left-0 top-1/2 -translate-y-1/2 w-px h-[18px] bg-white/[0.07]"
-                                />
-                            )}
-
-                            <Icon
-                                strokeWidth={1.6}
-                                className={`relative w-[15px] h-[15px] shrink-0 transition-colors duration-300 ${
-                                    active ? "text-[var(--accent-bright)]" : "text-white/30 group-hover/tab:text-white/60"
-                                }`}
-                            />
-                            <span
-                                className={`relative font-display text-[11px] font-bold uppercase whitespace-nowrap transition-colors duration-300 ${
-                                    active ? "text-white" : "text-white/50 group-hover/tab:text-white/85"
-                                }`}
-                                style={{ letterSpacing: "0.15em" }}
-                            >
-                                {label}
-                            </span>
-                        </>
-                    );
 
                     if (active) {
                         return (
                             <span
                                 key={id}
                                 aria-current="page"
-                                className="group/tab relative shrink-0 flex items-center gap-2.5 h-[54px] pl-5 pr-5"
+                                className="relative shrink-0 flex items-center gap-2.5 h-[62px] px-4 md:px-6"
                             >
-                                {/* the section burns up from the floor */}
+                                {/* the live section burns up from the card's floor */}
                                 <span
                                     aria-hidden
-                                    className="absolute inset-x-2 bottom-0 h-9 pointer-events-none"
+                                    className="absolute inset-x-2 bottom-0 h-10 pointer-events-none"
                                     style={{
                                         background:
-                                            "radial-gradient(75% 100% at 50% 125%, color-mix(in srgb, var(--accent) 52%, transparent) 0%, transparent 72%)",
+                                            "radial-gradient(70% 100% at 50% 125%, color-mix(in srgb, var(--accent) 42%, transparent) 0%, transparent 72%)",
                                     }}
                                 />
-                                {inner}
-                                {/* tapered filament under the live section */}
+                                <span
+                                    className="relative inline-flex items-center justify-center w-8 h-8 rounded-[9px] shrink-0"
+                                    style={{
+                                        background: "color-mix(in srgb, var(--accent) 16%, transparent)",
+                                        boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent)",
+                                    }}
+                                >
+                                    <Icon className="w-[17px] h-[17px] text-[var(--accent)]" strokeWidth={1.9} />
+                                </span>
+                                <span className="relative font-display text-[12.5px] font-bold uppercase tracking-[0.13em] text-[var(--accent)] whitespace-nowrap">
+                                    {label}
+                                </span>
                                 <span
                                     aria-hidden
                                     className="absolute bottom-0 left-3 right-3 h-[2px]"
                                     style={{
                                         background:
-                                            "linear-gradient(90deg, transparent 0%, var(--accent-bright) 26%, var(--accent-bright) 74%, transparent 100%)",
-                                        filter: "drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 90%, transparent))",
+                                            "linear-gradient(90deg, transparent 0%, var(--accent) 22%, var(--accent) 78%, transparent 100%)",
+                                        filter: "drop-shadow(0 0 7px color-mix(in srgb, var(--accent) 90%, transparent))",
                                     }}
                                 />
                             </span>
@@ -140,23 +103,55 @@ export default function ProfileTabStrip({
                     return (
                         <Link
                             key={id}
-                            href={id === "overview" ? base : `${base}?tab=${id}`}
+                            href={href(id)}
                             scroll={false}
-                            className="group/tab relative shrink-0 flex items-center gap-2.5 h-[54px] pl-5 pr-5"
+                            className="group/tab relative shrink-0 flex items-center gap-2.5 h-[62px] px-4 md:px-6 text-white/45 hover:text-white transition-colors duration-300"
                         >
-                            {inner}
-                            {/* same filament, unlit — it fades up on approach */}
-                            <span
-                                aria-hidden
-                                className="absolute bottom-0 left-3 right-3 h-[2px] opacity-0 group-hover/tab:opacity-100 transition-opacity duration-300"
-                                style={{
-                                    background:
-                                        "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.42) 26%, rgba(255,255,255,0.42) 74%, transparent 100%)",
-                                }}
+                            <Icon
+                                className="w-[17px] h-[17px] shrink-0 text-white/35 group-hover/tab:text-white/70 transition-colors duration-300"
+                                strokeWidth={1.9}
                             />
+                            <span className="font-display text-[12.5px] font-bold uppercase tracking-[0.13em] whitespace-nowrap">
+                                {label}
+                            </span>
                         </Link>
                     );
                 })}
+
+                {overflow.length > 0 && (
+                    <div ref={moreRef} className="relative ml-auto shrink-0">
+                        <button
+                            onClick={() => setMoreOpen((v) => !v)}
+                            aria-expanded={moreOpen}
+                            className="flex items-center gap-2 h-[62px] px-4 md:px-5 text-white/45 hover:text-white transition-colors duration-300"
+                        >
+                            <MoreHorizontal className="w-[17px] h-[17px]" />
+                            <span className="font-display text-[12.5px] font-bold uppercase tracking-[0.13em]">More</span>
+                            <ChevronDown
+                                className={`w-4 h-4 transition-transform duration-300 ${moreOpen ? "rotate-180" : ""}`}
+                            />
+                        </button>
+
+                        {moreOpen && (
+                            <div
+                                onClick={() => setMoreOpen(false)}
+                                className="absolute right-0 bottom-full mb-2 z-50 min-w-[200px] p-1.5 rounded-[12px] border border-[var(--line-strong)] bg-[var(--surface-1)] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.85)]"
+                            >
+                                {overflow.map(({ id, label, icon: Icon }) => (
+                                    <Link
+                                        key={id}
+                                        href={href(id)}
+                                        scroll={false}
+                                        className="w-full flex items-center gap-2.5 px-2.5 h-10 rounded-[8px] font-display text-[11.5px] font-bold uppercase tracking-[0.1em] text-[var(--ink-low)] hover:text-[var(--ink-hi)] hover:bg-[var(--fill-2)] transition-colors duration-150"
+                                    >
+                                        <Icon className="w-4 h-4 text-[var(--ink-faint)]" strokeWidth={1.9} />
+                                        {label}
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </nav>
     );

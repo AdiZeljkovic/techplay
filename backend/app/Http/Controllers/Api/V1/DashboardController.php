@@ -107,7 +107,9 @@ class DashboardController extends Controller
                 // hero identity line: verified tick + the platforms you play on
                 'is_staff' => $user->hasRole(['admin', 'Admin', 'Super Admin', 'editor', 'Editor', 'Editor-in-Chief', 'moderator', 'Moderator', 'Journalist'])
                     || in_array(strtolower($user->role ?? ''), ['admin', 'editor', 'moderator', 'journalist', 'super_admin']),
-                'platforms' => array_values(array_keys(array_filter((array) ($user->gamertags ?? [])))),
+                // the handles themselves, not just which platforms exist — the
+                // hero prints them under each platform mark
+                'gamertags' => array_filter((array) ($user->gamertags ?? [])),
                 // a bought avatar frame has to actually show up on the avatar
                 'frame' => UserCustomization::where('user_customizations.user_id', $user->id)
                     ->where('user_customizations.is_equipped', true)

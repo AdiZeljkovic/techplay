@@ -33,8 +33,8 @@ export interface DashboardUser {
     rank_min_xp: number;
     next_rank: { name: string; min_xp: number; color: string | null } | null;
     is_staff: boolean;
-    /** Gamertag keys with a value — drives the platform icons in the hero. */
-    platforms: string[];
+    /** Platform handles, keyed by platform — drives the hero's platform chips. */
+    gamertags: Record<string, string>;
     /** Equipped avatar-frame cosmetic: a CSS colour or gradient, or null. */
     frame: string | null;
 }

@@ -3,14 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
-    User as UserIcon, MapPin, Play, Pencil, Share2, Check, BadgeCheck, MoreHorizontal,
-    Gamepad2, Star, Clock3, Award, UserPlus, Clock, MessageSquare, Sparkles, ShieldCheck, LinkIcon, GitCompare,
-    TrendingUp, Flame,
+    User as UserIcon, Play, Pencil, Share2, Check, BadgeCheck, MoreHorizontal,
+    Gamepad2, Star, Trophy, Medal, TrendingUp, Flame,
+    UserPlus, Clock, MessageSquare, Sparkles, ShieldCheck, LinkIcon, GitCompare,
 } from "lucide-react";
 import PlatformIcon from "@/components/games/PlatformIcon";
 import type { HeroModel } from "@/lib/hero";
-import type { ProfileTab } from "@/lib/profileTabs";
 import type { FriendStatus } from "@/lib/types/profile";
+import { rankTier } from "@/lib/ranks";
 import { useCountUp } from "@/hooks/useCountUp";
 import ProfileTabStrip from "./ProfileTabStrip";
 import { LevelHex, RankInsigniaMark, XpRail } from "./RankInsignia";
@@ -24,13 +24,13 @@ function compact(n: number): string {
 }
 
 /**
- * Gamertag key → the mark PlatformIcon draws, and the brand it wears.
- * Brands are lifted toward the light end of each palette: the official values
- * (Xbox #107C10, PlayStation #0070D1) are picked for white backgrounds and go
- * muddy on ours.
+ * Gamertag key → the mark PlatformIcon draws, its label, and the brand it
+ * wears. Brands are lifted toward the light end of each palette: the official
+ * values (Xbox #107C10, PlayStation #0070D1) are picked for white backgrounds
+ * and go muddy on ours.
  */
 const PLATFORMS: Record<string, { label: string; name: string; brand: string }> = {
-    steam: { label: "STEAM", name: "Steam", brand: "#66c0f4" },
+    steam: { label: "STEAM", name: "Steam", brand: "#c7d5e0" },
     psn: { label: "PS", name: "PlayStation", brand: "#2b8fe6" },
     xbox: { label: "XBOX", name: "Xbox", brand: "#43b649" },
     epic: { label: "EPIC", name: "Epic Games", brand: "#f2f2f2" },
@@ -39,21 +39,18 @@ const PLATFORMS: Record<string, { label: string; name: string; brand: string }> 
     switch: { label: "SWITCH", name: "Nintendo Switch", brand: "#f04a4a" },
 };
 
-/**
- * The avatar frame.
- *
- * The default is a rendered HUD ring — armoured segments, lit channels and a
- * status socket cast into the metal at the lower right. The portrait sits in
- * the ring's hole, tucked a hair under its inner edge so no seam shows.
- *
- * A purchased frame cosmetic replaces it with that frame's own paint, because
- * the whole point of buying one is that it shows.
- */
+/* ── avatar ───────────────────────────────────────────────────────────── */
 
 /** Measured off the ring art: hole diameter, and where the status socket sits. */
 const RING_HOLE_INSET = "20%";
 const NODE = { left: "76.2%", top: "74.6%", size: "10.5%" };
 
+/**
+ * The default frame is the rendered HUD ring — armoured segments, lit channels
+ * and a status socket cast into the metal at the lower right. A purchased frame
+ * cosmetic replaces it with that frame's own paint, because the whole point of
+ * buying one is that it shows.
+ */
 function AvatarFrame({
     src,
     alt,
@@ -78,11 +75,9 @@ function AvatarFrame({
         </span>
     );
 
-    // A bought frame is a flat painted band — no socket cast into it, so the
-    // presence node gets drawn on top the way it always was.
     if (frame) {
         return (
-            <div className="relative w-[116px] h-[116px] md:w-[136px] md:h-[136px] shrink-0">
+            <div className="relative w-[124px] h-[124px] md:w-[152px] md:h-[152px] shrink-0">
                 <span
                     aria-hidden
                     className="absolute inset-0 rounded-full"
@@ -90,23 +85,9 @@ function AvatarFrame({
                 />
                 <span aria-hidden className="absolute inset-[3px] rounded-full bg-[var(--surface-1)]" />
                 <span className="absolute inset-[6px] rounded-full overflow-hidden bg-[var(--surface-2)]">{portrait}</span>
-
                 {online && (
-                    <span
-                        className="absolute bottom-[2px] right-[2px] flex items-center justify-center w-[28px] h-[28px] rounded-full bg-[var(--surface-1)]"
-                        title="Online now"
-                    >
-                        <span className="relative flex items-center justify-center w-[15px] h-[15px]">
-                            <span aria-hidden className="tp-pulse-ring absolute inset-0 rounded-full bg-emerald-400" />
-                            <span
-                                className="relative block w-full h-full rounded-full"
-                                style={{
-                                    background: "radial-gradient(circle at 35% 30%, #6ee7b7 0%, #10b981 55%, #047857 100%)",
-                                    boxShadow: "0 0 10px rgba(16,185,129,0.95), inset 0 1px 0 rgba(255,255,255,0.5)",
-                                }}
-                            />
-                        </span>
-                        <span className="sr-only">Online</span>
+                    <span className="absolute bottom-[6px] right-[6px] w-[26px] h-[26px] rounded-full bg-[var(--surface-1)] flex items-center justify-center" title="Online now">
+                        <span className="relative block w-[15px] h-[15px] rounded-full" style={ONLINE_LAMP} />
                     </span>
                 )}
             </div>
@@ -114,12 +95,9 @@ function AvatarFrame({
     }
 
     return (
-        <div className="relative w-[124px] h-[124px] md:w-[148px] md:h-[148px] shrink-0">
+        <div className="relative w-[132px] h-[132px] md:w-[164px] md:h-[164px] shrink-0">
             {/* portrait first — the ring's inner edge overlaps it */}
-            <span
-                className="absolute rounded-full overflow-hidden bg-[var(--surface-2)]"
-                style={{ inset: RING_HOLE_INSET }}
-            >
+            <span className="absolute rounded-full overflow-hidden bg-[var(--surface-2)]" style={{ inset: RING_HOLE_INSET }}>
                 {portrait}
             </span>
 
@@ -137,91 +115,39 @@ function AvatarFrame({
             {/* the socket is cast into the ring; this is the lamp inside it */}
             <span
                 className="absolute rounded-full"
-                style={{
-                    left: NODE.left,
-                    top: NODE.top,
-                    width: NODE.size,
-                    height: NODE.size,
-                    transform: "translate(-50%, -50%)",
-                }}
+                style={{ left: NODE.left, top: NODE.top, width: NODE.size, height: NODE.size, transform: "translate(-50%, -50%)" }}
                 title={online ? "Online now" : "Offline"}
             >
-                {online && (
-                    <span aria-hidden className="tp-pulse-ring absolute inset-0 rounded-full bg-emerald-400" />
-                )}
-                <span
-                    className="relative block w-full h-full rounded-full"
-                    style={
-                        online
-                            ? {
-                                  background: "radial-gradient(circle at 35% 30%, #a7f3d0 0%, #10b981 55%, #047857 100%)",
-                                  boxShadow: "0 0 12px rgba(16,185,129,0.95), inset 0 1px 0 rgba(255,255,255,0.55)",
-                              }
-                            : {
-                                  // covers the socket's cast-in lamp so an offline
-                                  // profile never shows a green light
-                                  background: "radial-gradient(circle at 35% 30%, #3f3f46 0%, #27272a 60%, #18181b 100%)",
-                                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
-                              }
-                    }
-                />
+                {online && <span aria-hidden className="tp-pulse-ring absolute inset-0 rounded-full bg-emerald-400" />}
+                <span className="relative block w-full h-full rounded-full" style={online ? ONLINE_LAMP : OFFLINE_LAMP} />
                 <span className="sr-only">{online ? "Online" : "Offline"}</span>
             </span>
         </div>
     );
 }
 
-/**
- * Chamfered corners — top-left and bottom-right cut away. Every HUD in the
- * genre uses the same trick to say "this is hardware, not a web form", and it
- * costs one clip-path.
- */
-const CUT = "polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px)";
-
-const HUD_BTN =
-    "group/cta relative inline-flex items-center justify-center gap-2 h-11 px-4 font-display text-[11px] font-bold uppercase tracking-[0.11em] overflow-hidden transition-colors duration-300 disabled:opacity-60";
-
-const BTN_PRIMARY = `${HUD_BTN} text-white hover:brightness-110`;
-const BTN_GHOST = `${HUD_BTN} text-[var(--ink-hi)]`;
-
-/** Flat accent — one colour, no gradient. The shape carries the interest. */
-const primaryStyle: React.CSSProperties = {
-    clipPath: CUT,
-    background: "var(--accent)",
+const ONLINE_LAMP: React.CSSProperties = {
+    background: "radial-gradient(circle at 35% 30%, #a7f3d0 0%, #10b981 55%, #047857 100%)",
+    boxShadow: "0 0 12px rgba(16,185,129,0.95), inset 0 1px 0 rgba(255,255,255,0.55)",
 };
 
-/** The outer element paints the edge; an inset layer paints the face. */
-const ghostStyle: React.CSSProperties = {
-    clipPath: CUT,
-    background: "rgba(255,255,255,0.13)",
+/** Covers the socket's cast-in lamp so an offline profile shows no green light. */
+const OFFLINE_LAMP: React.CSSProperties = {
+    background: "radial-gradient(circle at 35% 30%, #3f3f46 0%, #27272a 60%, #18181b 100%)",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
 };
 
-function GhostFace() {
-    return (
-        <span
-            aria-hidden
-            className="absolute inset-[1px] bg-[#141210] group-hover/cta:bg-[#1c1815] transition-colors duration-300"
-            style={{ clipPath: CUT }}
-        />
-    );
-}
+/* ── small parts ──────────────────────────────────────────────────────── */
 
-/** The diagonal light that wipes across a primary button on hover. */
-function Sheen() {
-    return (
-        <span
-            aria-hidden
-            className="absolute inset-y-0 -left-1/2 w-1/2 skew-x-[-18deg] bg-white/25 -translate-x-full group-hover/cta:translate-x-[420%] transition-transform duration-700 ease-[var(--ease-hud)]"
-        />
-    );
-}
+const BTN =
+    "group/cta relative inline-flex items-center justify-center gap-2 h-10 px-4 rounded-[10px] border text-[12.5px] font-semibold transition-colors duration-300 disabled:opacity-60";
 
-/**
- * A stat card: the label sits beside its glyph on the top line, the number
- * owns the bottom. Reading order is "what, then how much" — the opposite of
- * a table cell.
- */
-function StatCard({
+const BTN_GHOST = `${BTN} border-white/[0.12] bg-white/[0.04] text-[var(--ink-hi)] hover:bg-white/[0.09] hover:border-white/25`;
+
+const BTN_PRIMARY = `${BTN} border-transparent bg-[var(--accent)] text-white hover:brightness-110`;
+
+/** One figure from the identity row: glyph, numeral, and what it counts. */
+function HeroStat({
     icon: Icon,
     value,
     label,
@@ -232,46 +158,32 @@ function StatCard({
     label: string;
     href?: string;
 }) {
-    const animated = useCountUp(value, 1100);
-    // Same chamfer as the buttons beneath: outer paints the edge, the inset
-    // layer paints the face, since clip-path would eat a real border.
-    const cls = "group relative flex flex-col items-center justify-center gap-2 min-w-0 px-2 py-5 overflow-hidden";
+    const shown = useCountUp(value, 1100);
 
     const body = (
         <>
-            <span
-                aria-hidden
-                className="absolute inset-[1px] bg-[#0d0b0a] group-hover:bg-[#151210] transition-colors duration-300"
-                style={{ clipPath: CUT }}
-            />
-            {href && (
-                <span
-                    aria-hidden
-                    className="absolute top-0 left-3 right-0 h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]"
-                />
-            )}
-            <Icon className="relative w-[18px] h-[18px] shrink-0 text-white/85 group-hover:text-[var(--accent)] transition-colors duration-300" />
-            <span className="relative font-display text-[28px] font-black tabular-nums leading-none text-white">
-                {compact(animated)}
-            </span>
-            <span className="relative text-[11.5px] font-medium text-white/45 leading-none truncate max-w-full">
-                {label}
+            <Icon className="w-[18px] h-[18px] shrink-0 text-[var(--accent)] transition-transform duration-300 group-hover/stat:scale-110" />
+            <span className="min-w-0">
+                <span className="block font-display text-[22px] font-black tabular-nums leading-none text-white">
+                    {compact(shown)}
+                </span>
+                <span className="block mt-1 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 truncate">
+                    {label}
+                </span>
             </span>
         </>
     );
 
-    const edge: React.CSSProperties = { clipPath: CUT, background: "rgba(255,255,255,0.08)" };
+    const cls = "group/stat flex items-center gap-2.5 min-w-0";
 
-    // Not every tile leads somewhere on someone else's profile — those render
-    // as plain cards rather than dead links.
     return href ? (
-        <Link href={href} title={label} className={cls} style={edge}>
+        <Link href={href} className={cls} title={label}>
             {body}
         </Link>
     ) : (
-        <div title={label} className={cls} style={edge}>
+        <span className={cls} title={label}>
             {body}
-        </div>
+        </span>
     );
 }
 
@@ -279,39 +191,28 @@ function StatCard({
 function FriendAction({ status, busy, onAdd }: { status: FriendStatus; busy: boolean; onAdd: () => void }) {
     if (status === "accepted") {
         return (
-            <span className={`${BTN_GHOST} col-span-2 cursor-default`} style={ghostStyle}>
-                <GhostFace />
-                <Check className="relative w-3.5 h-3.5 text-emerald-400" />
-                <span className="relative">Friends</span>
+            <span className={`${BTN_GHOST} cursor-default`}>
+                <Check className="w-4 h-4 text-emerald-400" /> Friends
             </span>
         );
     }
-
     if (status === "pending") {
         return (
-            <span className={`${BTN_GHOST} col-span-2 cursor-default opacity-70`} style={ghostStyle}>
-                <GhostFace />
-                <Clock className="relative w-3.5 h-3.5" />
-                <span className="relative">Request Sent</span>
+            <span className={`${BTN_GHOST} cursor-default opacity-70`}>
+                <Clock className="w-4 h-4" /> Request sent
             </span>
         );
     }
-
     if (status === "incoming") {
         return (
-            <Link href="/friends" className={`${BTN_PRIMARY} col-span-2`} style={primaryStyle}>
-                <Sheen />
-                <UserPlus className="relative w-3.5 h-3.5" />
-                <span className="relative">Respond</span>
+            <Link href="/friends" className={BTN_PRIMARY}>
+                <UserPlus className="w-4 h-4" /> Respond
             </Link>
         );
     }
-
     return (
-        <button onClick={onAdd} disabled={busy} className={`${BTN_PRIMARY} col-span-2`} style={primaryStyle}>
-            <Sheen />
-            <UserPlus className="relative w-3.5 h-3.5" />
-            <span className="relative">{busy ? "Sending…" : "Add Friend"}</span>
+        <button onClick={onAdd} disabled={busy} className={BTN_PRIMARY}>
+            <UserPlus className="w-4 h-4" /> {busy ? "Sending…" : "Add friend"}
         </button>
     );
 }
@@ -336,17 +237,15 @@ function MoreMenu({ children }: { children: React.ReactNode }) {
                 onClick={() => setOpen((v) => !v)}
                 aria-label="More profile actions"
                 aria-expanded={open}
-                className={`${BTN_GHOST} w-full text-[var(--ink-low)] hover:text-[var(--ink-hi)]`}
-                style={ghostStyle}
+                className={`${BTN_GHOST} w-10 px-0`}
             >
-                <GhostFace />
-                <MoreHorizontal className="relative w-4 h-4" />
+                <MoreHorizontal className="w-4 h-4" />
             </button>
 
             {open && (
                 <div
                     onClick={() => setOpen(false)}
-                    className="absolute right-0 top-full mt-2 z-50 min-w-[230px] p-1.5 rounded-[var(--radius-card)] border border-[var(--line-strong)] bg-[var(--surface-1)] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.8)]"
+                    className="absolute right-0 top-full mt-2 z-50 min-w-[230px] p-1.5 rounded-[12px] border border-[var(--line-strong)] bg-[var(--surface-1)] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.85)]"
                 >
                     {children}
                 </div>
@@ -356,29 +255,22 @@ function MoreMenu({ children }: { children: React.ReactNode }) {
 }
 
 const MENU_ITEM =
-    "w-full flex items-center gap-2.5 px-2.5 h-9 rounded-[var(--radius-inner)] text-[12px] font-semibold text-[var(--ink-low)] hover:text-[var(--ink-hi)] hover:bg-[var(--fill-2)] transition-colors duration-150";
+    "w-full flex items-center gap-2.5 px-2.5 h-9 rounded-[8px] text-[12px] font-semibold text-[var(--ink-low)] hover:text-[var(--ink-hi)] hover:bg-[var(--fill-2)] transition-colors duration-150";
+
+/* ── the hero ─────────────────────────────────────────────────────────── */
 
 interface Props {
     hero: HeroModel;
     activeTab?: string;
-    /** Owner sees Customize / Continue Playing; visitors see friend actions. */
     isOwnProfile?: boolean;
     friendStatus?: FriendStatus;
     friendActionBusy?: boolean;
     onAddFriend?: () => void;
     onMessage?: () => void;
-    /** Signed-out visitors get no relationship controls at all. */
     viewerSignedIn?: boolean;
-    /** Used only to build the compare link in the overflow menu. */
     viewerUsername?: string;
 }
 
-/**
- * The identity band the whole page hangs off — banner art on the right,
- * identity on the left, stat cards floating between them, tabs beneath.
- * The same component renders your own profile and everyone else's; only the
- * action row and the tab links differ.
- */
 export default function ProfileHero({
     hero,
     activeTab,
@@ -393,7 +285,6 @@ export default function ProfileHero({
     const [copied, setCopied] = useState(false);
 
     const backdrop = hero.cover_image ?? hero.backdrop_fallback;
-
     const nextXp = hero.next_rank?.min_xp ?? null;
 
     // The gauge measures the *level* band. A level is the thing that ticks over
@@ -411,11 +302,11 @@ export default function ProfileHero({
 
     const fillPercent = useCountUp(xpPercent, 1200);
     const animatedXp = useCountUp(hero.xp, 1200);
-    const levelToGoShown = useCountUp(levelToGo, 1200);
     const levelDoneShown = useCountUp(levelDone, 1200);
 
     const base = `/profile/${hero.username}`;
     const online = hero.is_online || isOwnProfile;
+    const tier = rankTier(hero.rank_name);
 
     const share = () => {
         const url = `${window.location.origin}${base}`;
@@ -425,68 +316,106 @@ export default function ProfileHero({
         });
     };
 
-    const tiles = [
+    const stats = [
         { label: "Games", value: hero.stats.games, icon: Gamepad2, href: `${base}?tab=collection` },
+        { label: "Completed", value: hero.stats.completed, icon: Trophy, href: `${base}?tab=collection` },
         { label: "Reviews", value: hero.stats.reviews, icon: Star, href: `${base}?tab=activity` },
-        { label: "Hours", value: hero.stats.hours, icon: Clock3, href: `${base}?tab=collection` },
-        { label: "Achievements", value: hero.stats.achievements, icon: Award, href: `${base}?tab=achievements` },
+        { label: "Achievements", value: hero.stats.achievements, icon: Medal, href: `${base}?tab=achievements` },
+        { label: "Total XP", value: hero.xp, icon: TrendingUp, href: `${base}?tab=stats` },
     ];
 
-    const tags = hero.playstyle_tags.slice(0, 3);
-    const platforms = hero.platforms.filter((p) => PLATFORMS[p]).slice(0, 5);
+    const platforms = hero.platforms.filter((p) => PLATFORMS[p.key]).slice(0, 5);
 
     return (
-        <section className="relative rounded-[var(--radius-panel)] overflow-hidden bg-[var(--surface-1)] border border-[var(--line)]">
-            {/* ── banner field: art stays legible on the right, text side goes solid ── */}
-            <div aria-hidden className="absolute inset-0 overflow-hidden">
-                {backdrop ? (
-                    <>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                            src={backdrop}
-                            alt=""
-                            className={`tp-drift w-full h-full object-cover ${hero.cover_image ? "opacity-95" : "opacity-60"}`}
-                        />
-                        {/* solid through the identity column, clearing by ~65% so the art breathes */}
-                        <span className="absolute inset-0 bg-gradient-to-r from-[var(--surface-1)] from-[24%] via-[color-mix(in_srgb,var(--surface-1)_74%,transparent)] via-[54%] to-[color-mix(in_srgb,var(--surface-1)_18%,transparent)]" />
-                        <span className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[var(--surface-1)] to-transparent" />
+        <div className="space-y-4">
+            {/* ── identity ── */}
+            <section className="relative rounded-[var(--radius-panel)] overflow-hidden bg-[var(--surface-1)] border border-[var(--line)]">
+                <div aria-hidden className="absolute inset-0 overflow-hidden">
+                    {backdrop ? (
+                        <>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={backdrop}
+                                alt=""
+                                className={`tp-drift w-full h-full object-cover ${hero.cover_image ? "opacity-95" : "opacity-60"}`}
+                            />
+                            <span className="absolute inset-0 bg-gradient-to-r from-[var(--surface-1)] from-[28%] via-[color-mix(in_srgb,var(--surface-1)_74%,transparent)] via-[58%] to-[color-mix(in_srgb,var(--surface-1)_20%,transparent)]" />
+                            <span className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[var(--surface-1)] to-transparent" />
+                        </>
+                    ) : (
                         <span
                             className="absolute inset-0"
-                            style={{ background: "radial-gradient(120% 110% at 50% 35%, transparent 40%, color-mix(in srgb, var(--surface-0) 62%, transparent) 100%)" }}
+                            style={{ background: "radial-gradient(120% 140% at 15% 0%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 60%)" }}
                         />
-                    </>
-                ) : (
-                    <span
-                        className="absolute inset-0"
-                        style={{ background: "radial-gradient(120% 140% at 15% 0%, color-mix(in srgb, var(--accent) 18%, transparent) 0%, transparent 60%)" }}
-                    />
-                )}
-                <span className="absolute inset-0 bg-hud-grid opacity-30" />
-                {/* one-shot power-on sweep */}
-                <span className="tp-sweep absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />
-            </div>
+                    )}
+                    <span className="absolute inset-0 bg-hud-grid opacity-25" />
+                    <span className="tp-sweep absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+                </div>
 
-            {/* The Crown — this hero owns the page */}
-            <span aria-hidden className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--accent)_70%,transparent)] to-transparent" />
+                <div className="relative p-5 md:p-7">
+                    {/* actions park in the corner, out of the identity's way */}
+                    <div className="absolute top-5 right-5 md:top-6 md:right-6 flex items-center gap-2">
+                        {isOwnProfile ? (
+                            <>
+                                <Link href="/settings" className={BTN_GHOST}>
+                                    <Pencil className="w-3.5 h-3.5" /> Edit profile
+                                </Link>
+                                <MoreMenu>
+                                    <button onClick={share} className={MENU_ITEM}>
+                                        <LinkIcon className="w-3.5 h-3.5" /> {copied ? "Link copied" : "Copy profile link"}
+                                    </button>
+                                    <Link
+                                        href={hero.continue_playing ? `/games/${hero.continue_playing.slug}` : "/games"}
+                                        prefetch={false}
+                                        className={MENU_ITEM}
+                                    >
+                                        <Play className="w-3.5 h-3.5" />
+                                        {hero.continue_playing ? `Continue ${hero.continue_playing.name}` : "Find your first game"}
+                                    </Link>
+                                    <Link href={`/wrapped/${hero.username}`} className={MENU_ITEM}>
+                                        <Sparkles className="w-3.5 h-3.5" /> Your Wrapped
+                                    </Link>
+                                    <Link href="/settings" className={MENU_ITEM}>
+                                        <ShieldCheck className="w-3.5 h-3.5" /> Privacy settings
+                                    </Link>
+                                </MoreMenu>
+                            </>
+                        ) : viewerSignedIn ? (
+                            <>
+                                <FriendAction status={friendStatus} busy={friendActionBusy} onAdd={() => onAddFriend?.()} />
+                                <button onClick={() => onMessage?.()} className={BTN_GHOST}>
+                                    <MessageSquare className="w-4 h-4" /> Message
+                                </button>
+                                <MoreMenu>
+                                    <button onClick={share} className={MENU_ITEM}>
+                                        <LinkIcon className="w-3.5 h-3.5" /> {copied ? "Link copied" : "Copy profile link"}
+                                    </button>
+                                    {viewerUsername && (
+                                        <Link href={`/compare/${viewerUsername}/${hero.username}`} className={MENU_ITEM}>
+                                            <GitCompare className="w-3.5 h-3.5" /> Compare with me
+                                        </Link>
+                                    )}
+                                </MoreMenu>
+                            </>
+                        ) : (
+                            <>
+                                <Link href="/login" className={BTN_PRIMARY}>
+                                    <UserPlus className="w-4 h-4" /> Sign in to connect
+                                </Link>
+                                <button onClick={share} className={`${BTN_GHOST} w-10 px-0`} title="Copy profile link">
+                                    {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
+                                </button>
+                            </>
+                        )}
+                    </div>
 
-            <div className="relative p-5 md:p-7">
-                <div className="flex flex-col xl:flex-row xl:items-center gap-6">
-                    {/* ── identity ── */}
-                    <div className="flex items-start gap-5 md:gap-6 flex-1 min-w-0">
-                        {/* No edit affordance stuck on the portrait — changing it
-                            lives in Customize Profile, one button away. */}
+                    <div className="flex items-start gap-5 md:gap-7">
                         <Link href={base} className="group/av block shrink-0">
-                            <AvatarFrame
-                                src={hero.avatar_url}
-                                alt={hero.display_name}
-                                frame={hero.frame_value}
-                                online={online}
-                            />
+                            <AvatarFrame src={hero.avatar_url} alt={hero.display_name} frame={hero.frame_value} online={online} />
                         </Link>
 
-                        <div className="min-w-0 flex-1">
-                            {/* name + verification */}
-                            <h1 className="flex items-center gap-2 font-display text-[26px] md:text-[34px] font-black text-[var(--ink-hi)] leading-none min-w-0">
+                        <div className="min-w-0 flex-1 pt-1">
+                            <h1 className="flex items-center gap-2.5 font-display text-[28px] md:text-[38px] font-black text-white leading-none min-w-0">
                                 <span className="truncate">{hero.display_name}</span>
                                 {hero.verified && (
                                     <BadgeCheck
@@ -497,306 +426,228 @@ export default function ProfileHero({
                                 )}
                             </h1>
 
-                            {/* handle · tagline */}
-                            <p className="mt-2 flex items-center gap-2.5 text-[13.5px] text-[var(--ink-low)] min-w-0">
+                            <p className="mt-2.5 flex items-center gap-2.5 text-[13.5px] text-white/55 min-w-0">
                                 <span className="font-bold text-[var(--accent)] shrink-0">@{hero.username}</span>
                                 {(hero.tagline || hero.bio) && (
                                     <>
-                                        <span aria-hidden className="text-[var(--ink-faint)]">·</span>
+                                        <span aria-hidden className="text-white/25">·</span>
                                         <span className="truncate">{hero.tagline || hero.bio}</span>
                                     </>
                                 )}
                             </p>
 
-                            {/* where you are, what you play on, how you play */}
-                            {(hero.location || platforms.length > 0 || tags.length > 0) && (
-                                <div className="mt-3.5 flex flex-wrap items-center gap-x-3 gap-y-2">
-                                    {hero.location && (
-                                        <span className="inline-flex items-center gap-1.5 h-[24px] px-2.5 rounded-full bg-[var(--fill-2)] border border-[var(--line)] text-[11px] font-semibold text-[var(--ink-mid)]">
-                                            <MapPin className="w-3 h-3 text-[var(--ink-faint)]" /> {hero.location}
-                                        </span>
-                                    )}
-
-                                    {/* the platforms you're actually on — greyed metal that
-                                        lights up in its own brand when you reach for it */}
-                                    {platforms.length > 0 && (
-                                        <span className="inline-flex items-center gap-1.5">
-                                            {platforms.map((p) => {
-                                                const meta = PLATFORMS[p];
-                                                return (
-                                                    <span
-                                                        key={p}
-                                                        title={meta.name}
-                                                        style={{ ["--brand" as string]: meta.brand }}
-                                                        className="group/pf inline-flex items-center justify-center w-[42px] h-[42px] rounded-[13px] border border-white/[0.08] bg-[color-mix(in_srgb,#100e0c_78%,transparent)] text-[var(--brand)] hover:border-[color-mix(in_srgb,var(--brand)_55%,transparent)] hover:bg-[color-mix(in_srgb,var(--brand)_12%,#100e0c)] hover:-translate-y-0.5 transition-all duration-300"
-                                                    >
-                                                        <PlatformIcon label={meta.label} className="w-[19px] h-[19px]" />
+                            {/* the platforms you're on, and who you are on them */}
+                            {platforms.length > 0 && (
+                                <div className="mt-4 flex flex-wrap items-center gap-2">
+                                    {platforms.map(({ key, handle }) => {
+                                        const meta = PLATFORMS[key];
+                                        return (
+                                            <span
+                                                key={key}
+                                                style={{ ["--brand" as string]: meta.brand }}
+                                                className="group/pf inline-flex items-center gap-2.5 h-[46px] pl-2.5 pr-3.5 rounded-[12px] border border-white/[0.09] bg-[color-mix(in_srgb,#0e0c0b_72%,transparent)] backdrop-blur-md hover:border-[color-mix(in_srgb,var(--brand)_45%,transparent)] transition-colors duration-300"
+                                            >
+                                                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/[0.07] text-[var(--brand)] shrink-0">
+                                                    <PlatformIcon label={meta.label} className="w-[15px] h-[15px]" />
+                                                </span>
+                                                <span className="min-w-0">
+                                                    <span className="block text-[10.5px] leading-none text-white/40">{meta.name}</span>
+                                                    <span className="block mt-1 text-[12px] font-bold leading-none text-white truncate max-w-[130px]">
+                                                        {handle}
                                                     </span>
-                                                );
-                                            })}
-                                        </span>
-                                    )}
-
-                                    {tags.map((t) => (
-                                        <span
-                                            key={t}
-                                            className="inline-flex items-center h-[24px] px-2.5 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)] text-[10px] font-bold uppercase tracking-wider text-[var(--accent)]"
-                                        >
-                                            {t}
-                                        </span>
-                                    ))}
+                                                </span>
+                                            </span>
+                                        );
+                                    })}
                                 </div>
                             )}
 
-                        </div>
-                    </div>
-
-                    {/* ── the numbers, and the actions that belong beside them ──
-                        Both rows run the same four-column grid, so every button
-                        edge lands on a card edge. ── */}
-                    <div className="shrink-0 xl:w-[560px] space-y-2.5">
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                            {tiles.map((t) => (
-                                <StatCard key={t.label} icon={t.icon} value={t.value} label={t.label} href={t.href} />
-                            ))}
-                        </div>
-
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                                {isOwnProfile ? (
-                                    <>
-                                        <Link href="/settings" className={`${BTN_PRIMARY} col-span-2`} style={primaryStyle}>
-                                            <Sheen />
-                                            <Pencil className="relative w-3.5 h-3.5" />
-                                            <span className="relative">Customize</span>
-                                        </Link>
-                                        <button onClick={share} className={BTN_GHOST} style={ghostStyle}>
-                                            <GhostFace />
-                                            {copied ? (
-                                                <>
-                                                    <Check className="relative w-3.5 h-3.5 text-emerald-400" />
-                                                    <span className="relative">Copied</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Share2 className="relative w-3.5 h-3.5" />
-                                                    <span className="relative">Share</span>
-                                                </>
-                                            )}
-                                        </button>
-                                        <MoreMenu>
-                                            <Link
-                                                href={hero.continue_playing ? `/games/${hero.continue_playing.slug}` : "/games"}
-                                                prefetch={false}
-                                                className={MENU_ITEM}
-                                            >
-                                                <Play className="w-3.5 h-3.5" />
-                                                {hero.continue_playing ? `Continue ${hero.continue_playing.name}` : "Find your first game"}
-                                            </Link>
-                                            <Link href={`/wrapped/${hero.username}`} className={MENU_ITEM}>
-                                                <Sparkles className="w-3.5 h-3.5" /> Your Wrapped
-                                            </Link>
-                                            <Link href="/settings" className={MENU_ITEM}>
-                                                <ShieldCheck className="w-3.5 h-3.5" /> Privacy settings
-                                            </Link>
-                                        </MoreMenu>
-                                    </>
-                                ) : viewerSignedIn ? (
-                                    <>
-                                        <FriendAction status={friendStatus} busy={friendActionBusy} onAdd={() => onAddFriend?.()} />
-                                        <button onClick={() => onMessage?.()} className={BTN_GHOST} style={ghostStyle}>
-                                            <GhostFace />
-                                            <MessageSquare className="relative w-3.5 h-3.5" />
-                                            <span className="relative">Message</span>
-                                        </button>
-                                        <MoreMenu>
-                                            <button onClick={share} className={MENU_ITEM}>
-                                                <LinkIcon className="w-3.5 h-3.5" /> {copied ? "Link copied" : "Copy profile link"}
-                                            </button>
-                                            {viewerUsername && (
-                                                <Link href={`/compare/${viewerUsername}/${hero.username}`} className={MENU_ITEM}>
-                                                    <GitCompare className="w-3.5 h-3.5" /> Compare with me
-                                                </Link>
-                                            )}
-                                        </MoreMenu>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Link href="/login" className={`${BTN_PRIMARY} col-span-2`} style={primaryStyle}>
-                                            <Sheen />
-                                            <UserPlus className="relative w-3.5 h-3.5" />
-                                            <span className="relative">Sign In</span>
-                                        </Link>
-                                        <button onClick={share} className={`${BTN_GHOST} col-span-2`} style={ghostStyle}>
-                                            <GhostFace />
-                                            {copied ? (
-                                                <>
-                                                    <Check className="relative w-3.5 h-3.5 text-emerald-400" />
-                                                    <span className="relative">Copied</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Share2 className="relative w-3.5 h-3.5" />
-                                                    <span className="relative">Share</span>
-                                                </>
-                                            )}
-                                        </button>
-                                    </>
-                                )}
+                            {/* the figures, inline and divided — a line of record,
+                                not a deck of cards */}
+                            <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-4">
+                                {stats.map((s, i) => (
+                                    <span key={s.label} className="flex items-center gap-6">
+                                        {i > 0 && <span aria-hidden className="w-px h-9 bg-white/[0.09]" />}
+                                        <HeroStat icon={s.icon} value={s.value} label={s.label} href={s.href} />
+                                    </span>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            {/* ── the console band ──
-                Progression and navigation share one lit surface at the foot of
-                the hero: rank, the level gauge and the next crate on the upper
-                deck, the sections beneath them. Two panels stacked here read as
-                two components; one band reads as the machine's front plate. ── */}
-            <div
-                className="relative"
+            {/* ── progression ── */}
+            <section
+                className="relative rounded-[var(--radius-panel)] border overflow-hidden"
                 style={{
-                    background:
-                        "linear-gradient(180deg, color-mix(in srgb, var(--accent) 15%, #0b0908) 0%, color-mix(in srgb, var(--accent) 7%, #0b0908) 100%)",
+                    borderColor: "color-mix(in srgb, var(--accent) 22%, transparent)",
+                    background: "linear-gradient(180deg, #131110 0%, #0c0a09 100%)",
                 }}
             >
-                {/* the filament where the band meets the hero */}
+                {/* the accent seeps in from the panel's own edges */}
                 <span
                     aria-hidden
-                    className="absolute inset-x-0 top-0 h-px"
+                    className="absolute inset-0 pointer-events-none"
                     style={{
                         background:
-                            "linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--accent) 70%, transparent) 22%, color-mix(in srgb, var(--accent) 70%, transparent) 78%, transparent 100%)",
-                    }}
-                />
-                {/* embers pooling along the bottom edge */}
-                <span
-                    aria-hidden
-                    className="absolute inset-x-0 bottom-0 h-14 pointer-events-none"
-                    style={{
-                        background:
-                            "radial-gradient(120% 100% at 50% 130%, color-mix(in srgb, var(--accent) 30%, transparent) 0%, transparent 70%)",
+                            "radial-gradient(70% 130% at 0% 0%, color-mix(in srgb, var(--accent) 13%, transparent) 0%, transparent 60%), radial-gradient(70% 130% at 100% 100%, color-mix(in srgb, var(--accent) 10%, transparent) 0%, transparent 60%)",
                     }}
                 />
 
-                {/* ── upper deck: where you stand, how far to the next rung ── */}
-                <div className="relative flex flex-col lg:flex-row items-stretch">
-                    {/* rank */}
-                    <div className="flex items-center gap-4 shrink-0 lg:w-[250px] px-5 py-4">
-                        <RankInsigniaMark
-                            icon={hero.rank_icon}
-                            color={hero.rank_color}
-                            name={hero.rank_name}
-                            size={92}
-                        />
-                        <div className="min-w-0">
-                            <p
-                                className="font-display text-[15px] font-black uppercase tracking-[0.16em] leading-none truncate"
-                                style={{ color: hero.rank_color || "var(--ink-hi)" }}
-                            >
-                                {hero.rank_name || "Unranked"}
-                            </p>
-                            <p className="mt-1.5 font-display text-[9px] font-bold uppercase tracking-[0.2em] text-white/35">
-                                Rank
-                            </p>
+                <div className="relative flex flex-col xl:flex-row items-stretch gap-5 p-5 md:p-6">
+                    {/* rank · level · gauge */}
+                    <div className="flex-1 min-w-0 flex flex-col sm:flex-row items-center sm:items-stretch gap-5 md:gap-7">
+                        <div className="flex items-center gap-4 shrink-0">
+                            <RankInsigniaMark icon={hero.rank_icon} color={hero.rank_color} name={hero.rank_name} size={104} />
+                            <div className="min-w-0">
+                                <p className="font-display text-[10.5px] font-bold uppercase tracking-[0.16em] text-[var(--accent)]">
+                                    Current rank
+                                </p>
+                                <p className="mt-1.5 font-display text-[26px] font-black uppercase tracking-[0.02em] leading-none text-white truncate">
+                                    {hero.rank_name || "Unranked"}
+                                </p>
+                                {tier && (
+                                    <span className="mt-2.5 inline-flex items-center h-[22px] px-2.5 rounded-[6px] bg-white/[0.07] border border-white/[0.09] font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/55">
+                                        {tier}
+                                    </span>
+                                )}
+                            </div>
                         </div>
-                    </div>
 
-                    <span aria-hidden className="hidden lg:block w-px my-4 bg-white/[0.09]" />
-                    <span aria-hidden className="lg:hidden h-px mx-5 bg-white/[0.09]" />
-
-                    {/* the climb */}
-                    {/* The level you're on anchors the track. The one you're
-                        climbing to is already named by the reward cell — a
-                        second copy at the far end was the same number twice. */}
-                    <div className="flex-1 min-w-0 px-5 py-4 flex items-center gap-3.5">
-                        <span className="flex flex-col items-center gap-1.5 shrink-0">
-                            <LevelHex level={hero.level} size={46} />
-                            <span className="font-display text-[8px] font-bold uppercase tracking-[0.2em] text-white/35">
+                        <div className="flex items-center gap-2 shrink-0 flex-col justify-center">
+                            <LevelHex level={hero.level} size={78} />
+                            <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.2em] text-white/40">
                                 Level
                             </span>
-                        </span>
-
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-baseline justify-between gap-3 mb-2">
-                                <span className="flex items-center gap-3 font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/35">
-                                    <span className="inline-flex items-center gap-1.5">
-                                        <TrendingUp className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                        Total XP
-                                        <span className="text-white tabular-nums tracking-normal text-[11px]">
-                                            {animatedXp.toLocaleString()}
-                                        </span>
-                                    </span>
-                                    <span aria-hidden className="w-px h-3 bg-white/15" />
-                                    <span className="inline-flex items-center gap-1.5">
-                                        <Flame className={`w-3.5 h-3.5 ${hero.streak_days > 0 ? "text-orange-400" : "text-white/35"}`} />
-                                        Streak
-                                        <span className="text-white tabular-nums tracking-normal text-[11px]">
-                                            {hero.streak_days}d
-                                        </span>
-                                    </span>
-                                </span>
-
-                                <span className="shrink-0 font-display text-[11px] font-bold uppercase tracking-[0.1em] tabular-nums text-white/40">
-                                    <span className="text-white">{levelToGoShown.toLocaleString()}</span> XP to go
-                                </span>
-                            </div>
-
-                            <XpRail percent={fillPercent} />
-
-                            <div className="mt-1.5 flex items-baseline justify-between gap-3 font-display text-[10px] font-bold uppercase tracking-[0.1em] tabular-nums">
-                                <span className="text-white/30">
-                                    <span className="text-white/60">{levelDoneShown.toLocaleString()}</span>
-                                    {` / ${levelSize.toLocaleString()} XP`}
-                                </span>
-                                <span className="text-[var(--xp-bright)]">{fillPercent}%</span>
-                            </div>
                         </div>
 
+                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                            <p className="flex items-center gap-2 font-display text-[10.5px] font-bold uppercase tracking-[0.16em] text-white/45">
+                                <span
+                                    aria-hidden
+                                    className="inline-block w-3.5 h-3.5 shrink-0"
+                                    style={{
+                                        clipPath: "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)",
+                                        background: "var(--xp)",
+                                    }}
+                                />
+                                <span className="text-[var(--xp-bright)]">XP</span> progress
+                            </p>
+
+                            <XpRail percent={fillPercent} className="mt-2.5" />
+
+                            <div className="mt-3 flex items-end justify-between gap-4">
+                                <p className="font-display text-[15px] font-black tabular-nums leading-none text-white/35">
+                                    <span className="text-[var(--xp-bright)]">{levelDoneShown.toLocaleString()}</span>
+                                    {` / ${levelSize.toLocaleString()} XP`}
+                                </p>
+                                <p className="text-right">
+                                    <span className="font-display text-[15px] font-black tabular-nums leading-none text-[var(--xp-bright)]">
+                                        {levelToGo.toLocaleString()} XP
+                                    </span>
+                                    <span className="block mt-1 font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/35">
+                                        To level {hero.level + 1}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
-                    <span aria-hidden className="hidden lg:block w-px my-4 bg-white/[0.09]" />
-                    <span aria-hidden className="lg:hidden h-px mx-5 bg-white/[0.09]" />
-
-                    {/* what is waiting at the top of the bar */}
-                    <div className="shrink-0 lg:w-[238px] px-5 py-4 flex items-center gap-3.5">
-                        {/* the crate is named on its own side panel, so the
-                            caption beside it never has to repeat it */}
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                            src="/rewards/level-cache.png"
-                            alt="Level cache"
-                            width={68}
-                            height={68}
-                            className="w-[68px] h-[68px] shrink-0 object-contain"
-                            style={{ filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.7))" }}
+                    {/* what's waiting at the top of the bar */}
+                    <div
+                        className="relative shrink-0 xl:w-[330px] rounded-[16px] border border-white/[0.07] bg-white/[0.02] px-4 py-4 flex items-center gap-3"
+                    >
+                        <span
+                            aria-hidden
+                            className="absolute right-3 top-3 w-5 h-5 border-t border-r rounded-tr-[4px]"
+                            style={{ borderColor: "color-mix(in srgb, var(--accent) 45%, transparent)" }}
                         />
-                        <div className="min-w-0">
-                            <p className="font-display text-[9px] font-bold uppercase tracking-[0.2em] text-white/35">
-                                Reward at
+                        <div className="min-w-0 flex-1">
+                            <p className="font-display text-[10.5px] font-bold uppercase tracking-[0.16em] text-[var(--accent)]">
+                                Next reward
                             </p>
-                            <p className="mt-1 font-display text-[16px] font-black uppercase tracking-[0.05em] leading-none text-white">
+                            <p className="mt-1.5 font-display text-[22px] font-black uppercase tracking-[0.02em] leading-none text-white">
                                 Level {hero.level + 1}
                             </p>
                             {rankUpNext ? (
                                 <p
-                                    className="mt-1.5 text-[10.5px] font-semibold truncate"
+                                    className="mt-2 text-[12px] font-semibold leading-snug"
                                     style={{ color: hero.next_rank?.color || "rgba(255,255,255,0.5)" }}
                                 >
                                     {hero.next_rank?.name} promotion
                                 </p>
                             ) : (
                                 /* honest until the reward table exists */
-                                <p className="mt-1.5 text-[10.5px] text-white/35">Contents to be revealed</p>
+                                <p className="mt-2 text-[12px] text-white/40 leading-snug">Contents to be revealed</p>
                             )}
                         </div>
+
+                        {/* the crate is named on its own side panel, so the copy
+                            beside it never has to repeat it */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src="/rewards/level-cache.png"
+                            alt="Level cache"
+                            width={104}
+                            height={104}
+                            className="w-[104px] h-[104px] shrink-0 object-contain"
+                            style={{ filter: "drop-shadow(0 6px 16px rgba(0,0,0,0.7))" }}
+                        />
                     </div>
                 </div>
 
-                <span aria-hidden className="block h-px mx-5 bg-white/[0.09]" />
+                {/* the three figures that describe momentum */}
+                <div className="relative mx-5 md:mx-6 border-t border-white/[0.07] grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.07]">
+                    <span className="flex items-center gap-3 py-4 sm:pr-6">
+                        <span
+                            aria-hidden
+                            className="inline-flex items-center justify-center w-9 h-9 shrink-0 font-display text-[10px] font-black text-white"
+                            style={{
+                                clipPath: "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)",
+                                background: "linear-gradient(160deg, var(--xp-bright) 0%, var(--xp) 55%, var(--xp-deep) 100%)",
+                            }}
+                        >
+                            XP
+                        </span>
+                        <span>
+                            <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/40">
+                                Total XP
+                            </span>
+                            <span className="block mt-1 font-display text-[17px] font-black tabular-nums leading-none text-white">
+                                {animatedXp.toLocaleString()}
+                            </span>
+                        </span>
+                    </span>
 
-                {/* ── lower deck: the sections ── */}
-                <ProfileTabStrip username={hero.username} activeTab={activeTab} isOwnProfile={isOwnProfile} bare />
-            </div>
-        </section>
+                    <span className="flex items-center gap-3 py-4 sm:px-6">
+                        <Flame className={`w-[22px] h-[22px] shrink-0 ${hero.streak_days > 0 ? "text-orange-400" : "text-white/25"}`} />
+                        <span>
+                            <span className="block font-display text-[17px] font-black tabular-nums leading-none text-white">
+                                {hero.streak_days} {hero.streak_days === 1 ? "day" : "days"}
+                            </span>
+                            <span className="block mt-1 font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/40">
+                                Streak
+                            </span>
+                        </span>
+                    </span>
+
+                    <span className="flex items-center gap-3 py-4 sm:pl-6">
+                        <TrendingUp className="w-[22px] h-[22px] shrink-0 text-[var(--accent)]" />
+                        <span>
+                            <span className="block font-display text-[17px] font-black tabular-nums leading-none text-white">
+                                {fillPercent}%
+                            </span>
+                            <span className="block mt-1 font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/40">
+                                To next level
+                            </span>
+                        </span>
+                    </span>
+                </div>
+            </section>
+
+            {/* ── sections ── */}
+            <ProfileTabStrip username={hero.username} activeTab={activeTab} isOwnProfile={isOwnProfile} />
+        </div>
     );
 }
