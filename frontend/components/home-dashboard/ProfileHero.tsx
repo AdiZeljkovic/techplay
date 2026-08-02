@@ -34,12 +34,20 @@ const PLATFORMS: Record<string, { label: string; name: string; brand: string }> 
 };
 
 /**
- * The avatar frame. A single solid ring — the paint comes from the equipped
- * frame cosmetic when there is one, so a bought frame actually shows — with a
- * dark bezel separating it from the portrait and four reticle ticks sitting
- * outside it. No gradient by default: a gradient ring reads as decoration,
- * a machined one reads as equipment.
+ * The avatar frame.
+ *
+ * The default is a rendered HUD ring — armoured segments, lit channels and a
+ * status socket cast into the metal at the lower right. The portrait sits in
+ * the ring's hole, tucked a hair under its inner edge so no seam shows.
+ *
+ * A purchased frame cosmetic replaces it with that frame's own paint, because
+ * the whole point of buying one is that it shows.
  */
+
+/** Measured off the ring art: hole diameter, and where the status socket sits. */
+const RING_HOLE_INSET = "20%";
+const NODE = { left: "76.2%", top: "74.6%", size: "10.5%" };
+
 function AvatarFrame({
     src,
     alt,
@@ -51,68 +59,106 @@ function AvatarFrame({
     frame: string | null;
     online: boolean;
 }) {
-    const paint = frame || "var(--accent)";
+    const portrait = src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+            src={src}
+            alt={alt}
+            className="w-full h-full object-cover transition-transform duration-500 ease-[var(--ease-hud)] group-hover/av:scale-[1.05]"
+        />
+    ) : (
+        <span className="w-full h-full flex items-center justify-center">
+            <UserIcon className="w-10 h-10 text-[var(--ink-faint)]" />
+        </span>
+    );
 
-    return (
-        <div className="relative w-[116px] h-[116px] md:w-[136px] md:h-[136px] shrink-0">
-            {/* reticle ticks, parked on the diagonals outside the ring */}
-            {[45, 135, 225, 315].map((deg) => (
+    // A bought frame is a flat painted band — no socket cast into it, so the
+    // presence node gets drawn on top the way it always was.
+    if (frame) {
+        return (
+            <div className="relative w-[116px] h-[116px] md:w-[136px] md:h-[136px] shrink-0">
                 <span
-                    key={deg}
                     aria-hidden
-                    className="absolute left-1/2 top-1/2 w-[3px] h-[9px] rounded-full"
-                    style={{
-                        background: "var(--accent)",
-                        opacity: 0.75,
-                        transform: `translate(-50%, -50%) rotate(${deg}deg) translateY(-78px)`,
-                        boxShadow: "0 0 8px color-mix(in srgb, var(--accent) 70%, transparent)",
-                    }}
+                    className="absolute inset-0 rounded-full"
+                    style={{ background: frame, boxShadow: "0 0 22px -2px color-mix(in srgb, var(--accent) 45%, transparent)" }}
                 />
-            ))}
+                <span aria-hidden className="absolute inset-[3px] rounded-full bg-[var(--surface-1)]" />
+                <span className="absolute inset-[6px] rounded-full overflow-hidden bg-[var(--surface-2)]">{portrait}</span>
 
-            {/* the ring itself */}
-            <span
-                aria-hidden
-                className="absolute inset-0 rounded-full"
-                style={{ background: paint, boxShadow: "0 0 22px -2px color-mix(in srgb, var(--accent) 45%, transparent)" }}
-            />
-            {/* bezel — keeps the portrait from touching the paint */}
-            <span aria-hidden className="absolute inset-[3px] rounded-full bg-[var(--surface-1)]" />
-
-            <span className="absolute inset-[6px] rounded-full overflow-hidden bg-[var(--surface-2)]">
-                {src ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                        src={src}
-                        alt={alt}
-                        className="w-full h-full object-cover transition-transform duration-500 ease-[var(--ease-hud)] group-hover/av:scale-[1.05]"
-                    />
-                ) : (
-                    <span className="w-full h-full flex items-center justify-center">
-                        <UserIcon className="w-10 h-10 text-[var(--ink-faint)]" />
+                {online && (
+                    <span
+                        className="absolute bottom-[2px] right-[2px] flex items-center justify-center w-[28px] h-[28px] rounded-full bg-[var(--surface-1)]"
+                        title="Online now"
+                    >
+                        <span className="relative flex items-center justify-center w-[15px] h-[15px]">
+                            <span aria-hidden className="tp-pulse-ring absolute inset-0 rounded-full bg-emerald-400" />
+                            <span
+                                className="relative block w-full h-full rounded-full"
+                                style={{
+                                    background: "radial-gradient(circle at 35% 30%, #6ee7b7 0%, #10b981 55%, #047857 100%)",
+                                    boxShadow: "0 0 10px rgba(16,185,129,0.95), inset 0 1px 0 rgba(255,255,255,0.5)",
+                                }}
+                            />
+                        </span>
+                        <span className="sr-only">Online</span>
                     </span>
                 )}
+            </div>
+        );
+    }
+
+    return (
+        <div className="relative w-[124px] h-[124px] md:w-[148px] md:h-[148px] shrink-0">
+            {/* portrait first — the ring's inner edge overlaps it */}
+            <span
+                className="absolute rounded-full overflow-hidden bg-[var(--surface-2)]"
+                style={{ inset: RING_HOLE_INSET }}
+            >
+                {portrait}
             </span>
 
-            {/* presence node, punched through the frame */}
-            {online && (
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+                src="/frames/hud-ring.png"
+                alt=""
+                aria-hidden
+                className="absolute inset-0 w-full h-full pointer-events-none select-none"
+                style={{ filter: "drop-shadow(0 0 16px color-mix(in srgb, var(--accent) 45%, transparent))" }}
+            />
+
+            {/* the socket is cast into the ring; this is the lamp inside it */}
+            <span
+                className="absolute rounded-full"
+                style={{
+                    left: NODE.left,
+                    top: NODE.top,
+                    width: NODE.size,
+                    height: NODE.size,
+                    transform: "translate(-50%, -50%)",
+                }}
+                title={online ? "Online now" : "Offline"}
+            >
+                {online && (
+                    <span aria-hidden className="tp-pulse-ring absolute inset-0 rounded-full bg-emerald-400" />
+                )}
                 <span
-                    className="absolute bottom-[2px] right-[2px] flex items-center justify-center w-[28px] h-[28px] rounded-full bg-[var(--surface-1)]"
-                    title="Online now"
-                >
-                    <span className="relative flex items-center justify-center w-[15px] h-[15px]">
-                        <span aria-hidden className="tp-pulse-ring absolute inset-0 rounded-full bg-emerald-400" />
-                        <span
-                            className="relative block w-full h-full rounded-full"
-                            style={{
-                                background: "radial-gradient(circle at 35% 30%, #6ee7b7 0%, #10b981 55%, #047857 100%)",
-                                boxShadow: "0 0 10px rgba(16,185,129,0.95), inset 0 1px 0 rgba(255,255,255,0.5)",
-                            }}
-                        />
-                    </span>
-                    <span className="sr-only">Online</span>
-                </span>
-            )}
+                    className="relative block w-full h-full rounded-full"
+                    style={
+                        online
+                            ? {
+                                  background: "radial-gradient(circle at 35% 30%, #a7f3d0 0%, #10b981 55%, #047857 100%)",
+                                  boxShadow: "0 0 12px rgba(16,185,129,0.95), inset 0 1px 0 rgba(255,255,255,0.55)",
+                              }
+                            : {
+                                  // covers the socket's cast-in lamp so an offline
+                                  // profile never shows a green light
+                                  background: "radial-gradient(circle at 35% 30%, #3f3f46 0%, #27272a 60%, #18181b 100%)",
+                                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
+                              }
+                    }
+                />
+                <span className="sr-only">{online ? "Online" : "Offline"}</span>
+            </span>
         </div>
     );
 }
