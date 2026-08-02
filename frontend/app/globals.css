@@ -526,20 +526,6 @@ body {
 }
 .tp-pulse-ring { animation: tp-pulse-ring 2.6s var(--ease-hud) infinite; }
 
-/* The bell keeps nagging while something is unread — a short shake, then a
-   long pause, so it reads as "look at me" rather than a broken loop. */
-@keyframes tp-bell-ring {
-  0%, 62%, 100% { transform: rotate(0deg); }
-  64%  { transform: rotate(16deg); }
-  67%  { transform: rotate(-14deg); }
-  70%  { transform: rotate(11deg); }
-  73%  { transform: rotate(-9deg); }
-  76%  { transform: rotate(6deg); }
-  79%  { transform: rotate(-4deg); }
-  82%  { transform: rotate(0deg); }
-}
-.tp-bell-ring { animation: tp-bell-ring 3.4s ease-in-out infinite; transform-origin: 50% 15%; }
-
 /* A count badge settles in rather than blinking on. */
 @keyframes tp-badge-in {
   0%   { transform: scale(0.7); opacity: 0; }
@@ -549,7 +535,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .tp-drift, .tp-sweep, .tp-pulse-ring, .tp-xp-shimmer,
-  .tp-bell-ring, .tp-badge-in { animation: none; }
+  .tp-badge-in { animation: none; }
 }
 
 /* Hide scrollbars on horizontal rails (dashboard "Continue Playing" etc.) */

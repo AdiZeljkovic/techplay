@@ -1,4 +1,4 @@
-import { User, Gamepad2, Sparkles, Award, List, Gift, BarChart3 } from "lucide-react";
+import { User, Gamepad2, Sparkles, Award, List, Gift, BarChart3, type LucideIcon } from "lucide-react";
 
 /**
  * The profile's section set — one source of truth for the tab strip, the
@@ -9,7 +9,7 @@ export type ProfileTab = "overview" | "collection" | "lists" | "achievements" | 
 export const PROFILE_TABS: {
     id: ProfileTab;
     label: string;
-    icon: React.ComponentType<{ className?: string }>;
+    icon: LucideIcon;
     /** Your economy hub — never shown on someone else's profile. */
     ownOnly?: boolean;
 }[] = [

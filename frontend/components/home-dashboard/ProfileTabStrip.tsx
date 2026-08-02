@@ -1,34 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import useSWR from "swr";
-import { Bell, MessageSquare, UserPlus, MessagesSquare } from "lucide-react";
-import axios from "@/lib/axios";
 import { PROFILE_TABS, type ProfileTab } from "@/lib/profileTabs";
 
-interface NotificationCounts {
-    unread_messages: number;
-    pending_requests: number;
-    forum_replies: number;
-    unread_notifications: number;
-}
-
-const countsFetcher = (url: string) => axios.get(url).then((r) => r.data as NotificationCounts);
-
 /**
- * A count badge. Small, solid, seated on the line of the text — it reads as a
- * quantity attached to the label, not a sticker floating over it.
+ * A count riding with its label. Hairline ring, no fill worth noticing —
+ * it should read as a footnote to the word, never compete with it.
  */
-function Badge({ value, muted }: { value: number; muted?: boolean }) {
-    if (!value) return null;
-
+function Count({ value, active }: { value: number; active: boolean }) {
     return (
         <span
-            className={`tp-badge-in inline-flex items-center justify-center min-w-[19px] h-[18px] px-1.5 rounded-[5px] font-display text-[10px] font-bold tabular-nums leading-none transition-colors duration-300 ${
-                muted
-                    ? "bg-white/[0.09] text-white/55 group-hover/tab:bg-white/15 group-hover/tab:text-white/80"
-                    : "bg-[var(--accent)] text-white"
+            className={`tp-badge-in inline-flex items-center justify-center min-w-[20px] h-[17px] px-1.5 rounded-full font-display text-[9.5px] font-bold tabular-nums leading-none border transition-colors duration-300 ${
+                active
+                    ? "border-[color-mix(in_srgb,var(--accent)_55%,transparent)] bg-[color-mix(in_srgb,var(--accent)_22%,transparent)] text-[var(--accent-bright)]"
+                    : "border-white/[0.09] bg-white/[0.05] text-white/40 group-hover/tab:border-white/20 group-hover/tab:text-white/65"
             }`}
         >
             {value > 99 ? "99+" : value.toLocaleString("en-US")}
@@ -36,82 +21,18 @@ function Badge({ value, muted }: { value: number; muted?: boolean }) {
     );
 }
 
-/** The nagging bell — shakes for as long as something is unread. */
-function AlertBell({ counts }: { counts: NotificationCounts }) {
-    const [open, setOpen] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
-
-    const total =
-        (counts.unread_messages ?? 0) + (counts.pending_requests ?? 0) + (counts.forum_replies ?? 0);
-
-    useEffect(() => {
-        if (!open) return;
-        const close = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-        };
-        document.addEventListener("mousedown", close);
-        return () => document.removeEventListener("mousedown", close);
-    }, [open]);
-
-    const rows = [
-        { key: "msg", label: "Unread messages", value: counts.unread_messages, href: "/messages", icon: MessageSquare },
-        { key: "req", label: "Friend requests", value: counts.pending_requests, href: "/friends", icon: UserPlus },
-        { key: "forum", label: "Forum replies", value: counts.forum_replies, href: "/forum", icon: MessagesSquare },
-    ];
-
-    return (
-        <div ref={ref} className="relative shrink-0">
-            <button
-                onClick={() => setOpen((v) => !v)}
-                aria-label={total > 0 ? `${total} things need your attention` : "Nothing new"}
-                aria-expanded={open}
-                className="relative inline-flex items-center justify-center w-9 h-9 text-white/55 hover:text-white transition-colors duration-300"
-            >
-                <Bell className={`w-[17px] h-[17px] ${total > 0 ? "tp-bell-ring text-white/90" : ""}`} />
-                {total > 0 && (
-                    <span
-                        aria-hidden
-                        className="absolute top-1.5 right-1.5 w-[7px] h-[7px] rounded-full bg-[var(--accent-bright)]"
-                        style={{ boxShadow: "0 0 8px var(--accent-bright)" }}
-                    />
-                )}
-            </button>
-
-            {open && (
-                <div className="absolute right-0 top-full mt-2 z-50 w-[248px] p-1.5 rounded-[var(--radius-card)] border border-[var(--line-strong)] bg-[var(--surface-1)] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.85)]">
-                    {total === 0 ? (
-                        <p className="px-2.5 py-3 text-[12px] text-[var(--ink-faint)]">You&apos;re all caught up.</p>
-                    ) : (
-                        rows
-                            .filter((r) => (r.value ?? 0) > 0)
-                            .map((r) => (
-                                <Link
-                                    key={r.key}
-                                    href={r.href}
-                                    onClick={() => setOpen(false)}
-                                    className="w-full flex items-center gap-2.5 px-2.5 h-10 rounded-[var(--radius-inner)] text-[12px] font-semibold text-[var(--ink-low)] hover:text-[var(--ink-hi)] hover:bg-[var(--fill-2)] transition-colors duration-150"
-                                >
-                                    <r.icon className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                    <span className="flex-1 truncate">{r.label}</span>
-                                    <span className="font-display text-[11px] font-bold tabular-nums text-[var(--accent)]">
-                                        {r.value}
-                                    </span>
-                                </Link>
-                            ))
-                    )}
-                </div>
-            )}
-        </div>
-    );
-}
-
 /**
- * The profile's section rail — an ember band rather than a painted one.
+ * The profile's section rail — an ember band with a machined face.
  *
- * The accent is folded into near-black instead of used raw: at this width raw
+ * The accent is folded into near-black rather than used raw: at this width raw
  * accent stops being a highlight and becomes a surface, and nothing on it can
- * out-shout it. Here the bar is dark enough that the active tab can be the
- * brightest thing on the page again — which is the whole job of the colour.
+ * mark position. Kept dark, the rail leaves headroom for the active tab to be
+ * the brightest thing on it.
+ *
+ * The rail is typography-led. Labels carry wide tracking and own the weight;
+ * glyphs are drawn thin and sit back at low opacity, so they identify a
+ * section without competing with its name. Hairlines between items give the
+ * row a rhythm instead of an even smear of words.
  *
  * PROFILE_TABS is the single source of truth, shared by your own profile and
  * everyone else's.
@@ -129,13 +50,6 @@ export default function ProfileTabStrip({
 }) {
     const tabs = PROFILE_TABS.filter((t) => !t.ownOnly || isOwnProfile);
     const base = `/profile/${username}`;
-
-    // Only your own rail nags you — a visitor's notifications aren't your business.
-    const { data: alerts } = useSWR(isOwnProfile ? "/user/notifications/counts" : null, countsFetcher, {
-        refreshInterval: 60_000,
-        revalidateOnFocus: true,
-        shouldRetryOnError: false,
-    });
 
     return (
         <nav
@@ -165,80 +79,94 @@ export default function ProfileTabStrip({
                 }}
             />
 
-            <div className="relative flex items-center gap-2 px-3 md:px-5">
-                <div className="flex-1 flex items-center justify-start lg:justify-center gap-0.5 overflow-x-auto scrollbar-none">
-                    {tabs.map(({ id, label, icon: Icon }) => {
-                        const active = id === activeTab;
-                        const count = counts?.[id] ?? 0;
+            <div className="relative flex items-center justify-start lg:justify-center overflow-x-auto scrollbar-none px-2 md:px-4">
+                {tabs.map(({ id, label, icon: Icon }, i) => {
+                    const active = id === activeTab;
+                    const count = counts?.[id] ?? 0;
 
-                        const inner = (
-                            <>
-                                <Icon
-                                    className={`relative w-4 h-4 shrink-0 transition-colors duration-300 ${
-                                        active ? "text-[var(--accent-bright)]" : "text-white/40 group-hover/tab:text-white/75"
-                                    }`}
-                                />
-                                <span className="relative font-display text-[12px] font-bold uppercase tracking-[0.09em] whitespace-nowrap">
-                                    {label}
-                                </span>
-                                {count > 0 && (
-                                    <span className="relative">
-                                        <Badge value={count} muted={!active} />
-                                    </span>
-                                )}
-                            </>
-                        );
-
-                        if (active) {
-                            return (
-                                <span
-                                    key={id}
-                                    aria-current="page"
-                                    className="relative shrink-0 flex items-center gap-2 h-[52px] px-4 text-white"
-                                >
-                                    {/* the tab burns from below rather than sitting in a chip */}
-                                    <span
-                                        aria-hidden
-                                        className="absolute inset-x-1 bottom-0 h-9 pointer-events-none"
-                                        style={{
-                                            background:
-                                                "radial-gradient(80% 100% at 50% 120%, color-mix(in srgb, var(--accent) 55%, transparent) 0%, transparent 72%)",
-                                        }}
-                                    />
-                                    {inner}
-                                    <span
-                                        aria-hidden
-                                        className="absolute bottom-0 left-2.5 right-2.5 h-[2px] rounded-t-full bg-[var(--accent-bright)]"
-                                        style={{ boxShadow: "0 0 12px color-mix(in srgb, var(--accent) 90%, transparent)" }}
-                                    />
-                                </span>
-                            );
-                        }
-
-                        return (
-                            <Link
-                                key={id}
-                                href={id === "overview" ? base : `${base}?tab=${id}`}
-                                scroll={false}
-                                className="group/tab relative shrink-0 flex items-center gap-2 h-[52px] px-4 text-white/55 hover:text-white transition-colors duration-300"
-                            >
-                                {inner}
-                                {/* the underline grows in from the middle on hover */}
+                    const inner = (
+                        <>
+                            {/* hairline between sections — rhythm, not decoration */}
+                            {i > 0 && (
                                 <span
                                     aria-hidden
-                                    className="absolute bottom-0 left-2.5 right-2.5 h-[2px] rounded-t-full bg-white/35 scale-x-0 group-hover/tab:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]"
+                                    className="absolute left-0 top-1/2 -translate-y-1/2 w-px h-[18px] bg-white/[0.07]"
                                 />
-                            </Link>
-                        );
-                    })}
-                </div>
+                            )}
 
-                {isOwnProfile && alerts && (
-                    <>
-                        <span aria-hidden className="hidden md:block w-px h-5 bg-white/10" />
-                        <AlertBell counts={alerts} />
-                    </>
-                )}
+                            <Icon
+                                strokeWidth={1.6}
+                                className={`relative w-[15px] h-[15px] shrink-0 transition-colors duration-300 ${
+                                    active ? "text-[var(--accent-bright)]" : "text-white/30 group-hover/tab:text-white/60"
+                                }`}
+                            />
+                            <span
+                                className={`relative font-display text-[11px] font-bold uppercase whitespace-nowrap transition-colors duration-300 ${
+                                    active ? "text-white" : "text-white/50 group-hover/tab:text-white/85"
+                                }`}
+                                style={{ letterSpacing: "0.15em" }}
+                            >
+                                {label}
+                            </span>
+                            {count > 0 && (
+                                <span className="relative">
+                                    <Count value={count} active={active} />
+                                </span>
+                            )}
+                        </>
+                    );
+
+                    if (active) {
+                        return (
+                            <span
+                                key={id}
+                                aria-current="page"
+                                className="group/tab relative shrink-0 flex items-center gap-2.5 h-[54px] pl-5 pr-5"
+                            >
+                                {/* the section burns up from the floor */}
+                                <span
+                                    aria-hidden
+                                    className="absolute inset-x-2 bottom-0 h-9 pointer-events-none"
+                                    style={{
+                                        background:
+                                            "radial-gradient(75% 100% at 50% 125%, color-mix(in srgb, var(--accent) 52%, transparent) 0%, transparent 72%)",
+                                    }}
+                                />
+                                {inner}
+                                {/* tapered filament under the live section */}
+                                <span
+                                    aria-hidden
+                                    className="absolute bottom-0 left-3 right-3 h-[2px]"
+                                    style={{
+                                        background:
+                                            "linear-gradient(90deg, transparent 0%, var(--accent-bright) 26%, var(--accent-bright) 74%, transparent 100%)",
+                                        filter: "drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 90%, transparent))",
+                                    }}
+                                />
+                            </span>
+                        );
+                    }
+
+                    return (
+                        <Link
+                            key={id}
+                            href={id === "overview" ? base : `${base}?tab=${id}`}
+                            scroll={false}
+                            className="group/tab relative shrink-0 flex items-center gap-2.5 h-[54px] pl-5 pr-5"
+                        >
+                            {inner}
+                            {/* same filament, unlit — it fades up on approach */}
+                            <span
+                                aria-hidden
+                                className="absolute bottom-0 left-3 right-3 h-[2px] opacity-0 group-hover/tab:opacity-100 transition-opacity duration-300"
+                                style={{
+                                    background:
+                                        "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.42) 26%, rgba(255,255,255,0.42) 74%, transparent 100%)",
+                                }}
+                            />
+                        </Link>
+                    );
+                })}
             </div>
         </nav>
     );
