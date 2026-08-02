@@ -1,25 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { PROFILE_TABS, type ProfileTab } from "@/lib/profileTabs";
-
-/**
- * A count riding with its label. Hairline ring, no fill worth noticing —
- * it should read as a footnote to the word, never compete with it.
- */
-function Count({ value, active }: { value: number; active: boolean }) {
-    return (
-        <span
-            className={`tp-badge-in inline-flex items-center justify-center min-w-[20px] h-[17px] px-1.5 rounded-full font-display text-[9.5px] font-bold tabular-nums leading-none border transition-colors duration-300 ${
-                active
-                    ? "border-[color-mix(in_srgb,var(--accent)_55%,transparent)] bg-[color-mix(in_srgb,var(--accent)_22%,transparent)] text-[var(--accent-bright)]"
-                    : "border-white/[0.09] bg-white/[0.05] text-white/40 group-hover/tab:border-white/20 group-hover/tab:text-white/65"
-            }`}
-        >
-            {value > 99 ? "99+" : value.toLocaleString("en-US")}
-        </span>
-    );
-}
+import { PROFILE_TABS } from "@/lib/profileTabs";
 
 /**
  * The profile's section rail — an ember band with a machined face.
@@ -34,6 +16,11 @@ function Count({ value, active }: { value: number; active: boolean }) {
  * section without competing with its name. Hairlines between items give the
  * row a rhythm instead of an even smear of words.
  *
+ * Deliberately no counts here. A number beside a section is a static
+ * inventory figure, not a notification — parking it where a notification goes
+ * trains people to check something that never changes, and the hero's stat
+ * deck already carries the same figures a few pixels above.
+ *
  * PROFILE_TABS is the single source of truth, shared by your own profile and
  * everyone else's.
  */
@@ -41,12 +28,10 @@ export default function ProfileTabStrip({
     username,
     activeTab = "overview",
     isOwnProfile = true,
-    counts,
 }: {
     username: string;
     activeTab?: string;
     isOwnProfile?: boolean;
-    counts?: Partial<Record<ProfileTab, number>>;
 }) {
     const tabs = PROFILE_TABS.filter((t) => !t.ownOnly || isOwnProfile);
     const base = `/profile/${username}`;
@@ -82,7 +67,6 @@ export default function ProfileTabStrip({
             <div className="relative flex items-center justify-start lg:justify-center overflow-x-auto scrollbar-none px-2 md:px-4">
                 {tabs.map(({ id, label, icon: Icon }, i) => {
                     const active = id === activeTab;
-                    const count = counts?.[id] ?? 0;
 
                     const inner = (
                         <>
@@ -108,11 +92,6 @@ export default function ProfileTabStrip({
                             >
                                 {label}
                             </span>
-                            {count > 0 && (
-                                <span className="relative">
-                                    <Count value={count} active={active} />
-                                </span>
-                            )}
                         </>
                     );
 

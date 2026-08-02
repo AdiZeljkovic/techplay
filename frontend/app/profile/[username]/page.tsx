@@ -180,11 +180,6 @@ function ProfilePageInner() {
                             hero={hero}
                             activeTab={effectiveTab}
                             isOwnProfile={isOwnProfile}
-                            counts={{
-                                collection: stats?.games_count ?? 0,
-                                lists: profile.lists?.length ?? 0,
-                                achievements: stats?.achievements_count ?? 0,
-                            }}
                             friendStatus={friendStatus}
                             friendActionBusy={loadingAction}
                             onAddFriend={handleSendRequest}

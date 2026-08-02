@@ -50,7 +50,7 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
             <div className="container-page py-8 space-y-6">
                 {/* Identity — the whole page hangs off this (tabs live inside it) */}
                 <div className="tp-fade-up tp-d1">
-                    <ProfileHero hero={heroFromDashboard(data)} counts={{ collection: data.stats.games_count, achievements: data.stats.achievements_count }} />
+                    <ProfileHero hero={heroFromDashboard(data)} />
                 </div>
 
                 <div className="tp-fade-up tp-d2">

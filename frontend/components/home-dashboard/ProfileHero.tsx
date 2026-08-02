@@ -187,7 +187,6 @@ interface Props {
     activeTab?: string;
     /** Owner sees Customize / Continue Playing; visitors see friend actions. */
     isOwnProfile?: boolean;
-    counts?: Partial<Record<ProfileTab, number>>;
     friendStatus?: FriendStatus;
     friendActionBusy?: boolean;
     onAddFriend?: () => void;
@@ -208,7 +207,6 @@ export default function ProfileHero({
     hero,
     activeTab,
     isOwnProfile = true,
-    counts,
     friendStatus = "none",
     friendActionBusy = false,
     onAddFriend,
@@ -524,12 +522,7 @@ export default function ProfileHero({
                 </div>
             </div>
 
-            <ProfileTabStrip
-                username={hero.username}
-                activeTab={activeTab}
-                isOwnProfile={isOwnProfile}
-                counts={counts}
-            />
+            <ProfileTabStrip username={hero.username} activeTab={activeTab} isOwnProfile={isOwnProfile} />
         </section>
     );
 }

@@ -526,16 +526,8 @@ body {
 }
 .tp-pulse-ring { animation: tp-pulse-ring 2.6s var(--ease-hud) infinite; }
 
-/* A count badge settles in rather than blinking on. */
-@keyframes tp-badge-in {
-  0%   { transform: scale(0.7); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-.tp-badge-in { animation: tp-badge-in 0.32s var(--ease-hud) both; }
-
 @media (prefers-reduced-motion: reduce) {
-  .tp-drift, .tp-sweep, .tp-pulse-ring, .tp-xp-shimmer,
-  .tp-badge-in { animation: none; }
+  .tp-drift, .tp-sweep, .tp-pulse-ring, .tp-xp-shimmer { animation: none; }
 }
 
 /* Hide scrollbars on horizontal rails (dashboard "Continue Playing" etc.) */
