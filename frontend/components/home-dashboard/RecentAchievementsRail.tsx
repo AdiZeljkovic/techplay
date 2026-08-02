@@ -4,6 +4,7 @@ import { Trophy, Medal } from "lucide-react";
 import type { DashboardAchievement } from "@/lib/types/dashboard";
 import { getStorageUrl } from "@/lib/imageUrl";
 import Panel from "@/components/ui/Panel";
+import { timeAgo } from "@/lib/timeAgo";
 import EmptyState from "@/components/ui/EmptyState";
 
 const HEX = "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)";
@@ -22,16 +23,6 @@ const TIERS = [
 ];
 
 const tierFor = (points: number) => TIERS.find((t) => points >= t.min) ?? TIERS[TIERS.length - 1];
-
-function timeAgo(iso: string | null): string {
-    if (!iso) return "";
-    const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
-    if (days <= 0) return "Today";
-    if (days === 1) return "Yesterday";
-    if (days < 7) return `${days}d ago`;
-    if (days < 30) return `${Math.floor(days / 7)}w ago`;
-    return `${Math.floor(days / 30)}mo ago`;
-}
 
 /**
  * The artwork already ships as a finished badge with its own framing, so
@@ -123,7 +114,7 @@ export default function RecentAchievementsRail({
                                 <div
                                     key={a.id}
                                     title={a.description ?? a.name}
-                                    className={`group relative flex flex-col items-center text-center gap-2.5 p-3.5 rounded-[var(--radius-card)] bg-[var(--fill-1)] border border-[var(--line)] overflow-hidden transition-colors duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}
+                                    className={`group relative flex flex-col items-center text-center gap-2.5 p-3.5 rounded-[var(--radius-card)] bg-white/[0.02] border border-white/[0.07] overflow-hidden transition-colors duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}
                                     style={{ ["--tier" as string]: tier.color }}
                                 >
                                     {/* the tier's own light blooms in on hover */}

@@ -11,7 +11,7 @@ import EmptyState from "@/components/ui/EmptyState";
 export default function FriendsOnlineWidget({ friends }: { friends: FriendOnline[] }) {
     return (
         <Panel
-            title={friends.length > 0 ? `Friends Online — ${friends.length}` : "Friends Online"}
+            title={friends.length > 0 ? `Squad Online — ${friends.length}` : "Squad Online"}
             icon={<Users className="w-3.5 h-3.5 text-[var(--accent)]" />}
             action={{ label: "All friends", href: "/friends" }}
             bodyClassName="p-3"
@@ -39,12 +39,15 @@ export default function FriendsOnlineWidget({ friends }: { friends: FriendOnline
                                 />
                             </span>
                             <span className="min-w-0 flex-1">
-                                <span className="block text-[12px] font-semibold text-[var(--ink-hi)] truncate group-hover:text-[var(--accent)] transition-colors duration-150">
+                                <span className="block text-[12px] font-semibold text-white truncate group-hover:text-[var(--accent)] transition-colors duration-150">
                                     {f.display_name ?? f.username}
                                 </span>
                                 {f.game_name && (
-                                    <span className="block text-[10px] text-[var(--ink-faint)] truncate">
-                                        Playing <span className="text-[var(--ink-low)]">{f.game_name}</span>
+                                    <span className="mt-0.5 flex items-center gap-1.5 min-w-0">
+                                        <span className="inline-flex items-center h-[14px] px-1 rounded-[3px] bg-emerald-500/15 border border-emerald-500/30 font-display text-[7.5px] font-black uppercase tracking-[0.12em] text-emerald-400 shrink-0">
+                                            Live
+                                        </span>
+                                        <span className="text-[10px] text-white/45 truncate">{f.game_name}</span>
                                     </span>
                                 )}
                             </span>

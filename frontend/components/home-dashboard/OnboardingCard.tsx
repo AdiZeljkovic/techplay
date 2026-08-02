@@ -54,7 +54,7 @@ export default function OnboardingCard({ stats }: { stats: DashboardStats }) {
                         }}
                     />
                 </div>
-                <span className="font-display text-[11px] font-bold tabular-nums text-[var(--ink-low)] shrink-0">
+                <span className="font-display text-[11px] font-black tabular-nums text-[var(--ink-low)] shrink-0">
                     {completed} / {STEPS.length}
                 </span>
             </div>
@@ -69,7 +69,7 @@ export default function OnboardingCard({ stats }: { stats: DashboardStats }) {
                             className={`group flex items-center gap-3.5 p-3 rounded-[var(--radius-card)] border transition-colors duration-300 tp-fade-up tp-d${i + 1} ${
                                 done
                                     ? "border-[color-mix(in_srgb,var(--accent)_25%,transparent)] bg-[color-mix(in_srgb,var(--accent)_5%,transparent)]"
-                                    : "border-[var(--line)] bg-[var(--fill-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:bg-[var(--fill-2)]"
+                                    : "border-[var(--line)] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:bg-[var(--fill-2)]"
                             }`}
                         >
                             {/* step numeral / completion mark */}
@@ -77,7 +77,7 @@ export default function OnboardingCard({ stats }: { stats: DashboardStats }) {
                                 className={`w-10 h-10 shrink-0 rounded-[var(--radius-inner)] flex items-center justify-center transition-colors duration-300 ${
                                     done
                                         ? "bg-[var(--accent)] text-white"
-                                        : "bg-[var(--fill-2)] border border-[var(--line)] text-[var(--accent)] group-hover:bg-[var(--accent)] group-hover:text-white group-hover:border-transparent"
+                                        : "bg-[var(--fill-2)] border border-white/[0.07] text-[var(--accent)] group-hover:bg-[var(--accent)] group-hover:text-white group-hover:border-transparent"
                                 }`}
                             >
                                 {done ? <Check className="w-5 h-5" strokeWidth={3} /> : <s.icon className="w-[18px] h-[18px]" />}
@@ -90,7 +90,7 @@ export default function OnboardingCard({ stats }: { stats: DashboardStats }) {
                                     </span>
                                     <span
                                         className={`font-display text-[13px] font-bold transition-colors duration-300 ${
-                                            done ? "text-[var(--ink-low)] line-through" : "text-[var(--ink-hi)] group-hover:text-[var(--accent)]"
+                                            done ? "text-[var(--ink-low)] line-through" : "text-white group-hover:text-[var(--accent)]"
                                         }`}
                                     >
                                         {s.title}

@@ -4,18 +4,9 @@ import Link from "next/link";
 import { PenLine, Gamepad2 } from "lucide-react";
 import type { DashboardReview } from "@/lib/types/dashboard";
 import Panel from "@/components/ui/Panel";
+import { timeAgo } from "@/lib/timeAgo";
 import EmptyState from "@/components/ui/EmptyState";
 import ScoreBadge from "@/components/ui/ScoreBadge";
-
-function timeAgo(iso: string | null): string {
-    if (!iso) return "";
-    const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
-    if (days <= 0) return "Today";
-    if (days === 1) return "Yesterday";
-    if (days < 7) return `${days}d ago`;
-    if (days < 30) return `${Math.floor(days / 7)}w ago`;
-    return `${Math.floor(days / 30)}mo ago`;
-}
 
 /** The user's published verdicts, with their words — not just numbers. */
 export default function RecentReviews({ reviews }: { reviews: DashboardReview[] }) {
@@ -38,7 +29,7 @@ export default function RecentReviews({ reviews }: { reviews: DashboardReview[] 
                     action={{ label: "Rate a game", href: "/profile/me?tab=collection" }}
                 />
             ) : (
-                <div className="flex flex-col divide-y divide-[var(--line)]">
+                <div className="flex flex-col divide-y divide-white/[0.07]">
                     {reviews.map((r) => (
                         <Link
                             key={r.id}
@@ -64,7 +55,7 @@ export default function RecentReviews({ reviews }: { reviews: DashboardReview[] 
 
                             <span className="min-w-0 flex-1">
                                 <span className="flex items-center justify-between gap-3">
-                                    <span className="font-display text-[13px] font-bold text-[var(--ink-hi)] truncate group-hover:text-[var(--accent)] transition-colors duration-300">
+                                    <span className="font-display text-[13px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors duration-300">
                                         {r.game.name}
                                     </span>
                                     <ScoreBadge score={r.rating * 2} className="shrink-0 scale-90 origin-right" />

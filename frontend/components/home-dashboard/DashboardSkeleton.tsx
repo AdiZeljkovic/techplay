@@ -30,10 +30,17 @@ export default function DashboardSkeleton() {
                         <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[220px]" />
                         {/* achievements */}
                         <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[190px]" />
-                        {/* upcoming */}
-                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[260px]" />
+                        {/* upcoming (panel-wrapped now) */}
+                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[300px]" />
+                        {/* recommended + campaign pair */}
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                            <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[300px]" />
+                            <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[300px] hidden xl:block" />
+                        </div>
                         {/* reviews */}
                         <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[240px]" />
+                        {/* your activity (one panel now) */}
+                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[440px]" />
                         {/* feeds */}
                         <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[280px]" />
                     </div>

@@ -4,7 +4,9 @@ import useSWR from "swr";
 import Link from "next/link";
 import axios from "@/lib/axios";
 import { Gamepad2, Trophy, BookmarkPlus, CheckCircle2, Heart, Loader2 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import Avatar from "@/components/ui/Avatar";
+import EmptyState from "@/components/ui/EmptyState";
+import { timeAgo } from "@/lib/timeAgo";
 
 interface ActivityUser {
     id: number;
@@ -70,20 +72,6 @@ function activityLabel(a: FriendActivity): { icon: React.ReactNode; text: string
     }
 }
 
-function Avatar({ user }: { user: ActivityUser }) {
-    return user.avatar_url ? (
-        <img
-            src={user.avatar_url}
-            alt={user.username}
-            className="w-8 h-8 rounded-full object-cover border border-white/10 shrink-0"
-        />
-    ) : (
-        <div className="w-8 h-8 rounded-full bg-[var(--accent)]/20 border border-[var(--accent)]/30 flex items-center justify-center text-[var(--accent)] font-bold text-[11px] shrink-0">
-            {(user.display_name || user.username)[0].toUpperCase()}
-        </div>
-    );
-}
-
 export default function FriendActivityFeed() {
     const { data, isLoading } = useSWR<FriendActivity[]>("/friends/activity", fetcher, {
         revalidateOnFocus: false,
@@ -100,11 +88,12 @@ export default function FriendActivityFeed() {
 
     if (!data || data.length === 0) {
         return (
-            <div className="py-12 text-center">
-                <Gamepad2 className="w-10 h-10 text-white/10 mx-auto mb-3" />
-                <p className="text-[13px] text-white/30">No friend activity yet.</p>
-                <p className="text-[11px] text-white/20 mt-1">Add friends to see what they&apos;re playing.</p>
-            </div>
+            <EmptyState
+                variant="compact"
+                title="No squad activity yet"
+                body="Add friends to see what they're playing, live."
+                action={{ label: "Find friends", href: "/friends" }}
+            />
         );
     }
 
@@ -116,9 +105,9 @@ export default function FriendActivityFeed() {
                 const isLive = activity.type === "playing";
 
                 const content = (
-                    <div className={`flex items-start gap-3 px-4 py-3 rounded-xl transition-colors ${isLive ? "bg-green-500/5 border border-green-500/10" : "hover:bg-white/[0.03]"}`}>
+                    <div className={`flex items-start gap-3 px-3.5 py-3 rounded-[var(--radius-card)] border transition-colors duration-300 ${isLive ? "bg-emerald-500/[0.05] border-emerald-500/15" : "border-transparent hover:border-[color-mix(in_srgb,var(--accent)_30%,transparent)] hover:bg-[var(--fill-1)]"}`}>
                         <Link href={`/profile/${activity.user.username}`} onClick={(e) => e.stopPropagation()}>
-                            <Avatar user={activity.user} />
+                            <Avatar src={activity.user.avatar_url} alt={activity.user.display_name || activity.user.username} size="sm" />
                         </Link>
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap">
@@ -126,17 +115,15 @@ export default function FriendActivityFeed() {
                                     {name}
                                 </Link>
                                 {icon}
-                                <span className="text-[12px] text-white/50 truncate">{text}</span>
+                                <span className="text-[12px] text-white/45 truncate">{text}</span>
                                 {isLive && (
-                                    <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-green-500/20 text-green-400">
-                                        LIVE
+                                    <span className="ml-1 inline-flex items-center h-[15px] px-1.5 rounded-[3px] bg-emerald-500/15 border border-emerald-500/30 font-display text-[8px] font-black uppercase tracking-[0.14em] text-emerald-400">
+                                        Live
                                     </span>
                                 )}
                             </div>
-                            <div className="text-[10px] text-white/25 mt-0.5">
-                                {activity.created_at
-                                    ? formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })
-                                    : ""}
+                            <div className="font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/25 mt-1">
+                                {timeAgo(activity.created_at)}
                             </div>
                         </div>
                     </div>

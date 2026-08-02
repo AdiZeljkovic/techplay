@@ -69,22 +69,22 @@ function SignalCard({
 
             {/* body */}
             <span className="relative min-w-0 flex-1">
-                <span className="block font-display text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--ink-faint)]">
+                <span className="block font-display text-[10px] font-bold uppercase tracking-[0.16em] text-white/40">
                     {kicker}
                 </span>
                 {live ? (
                     <span className="flex items-baseline gap-2 mt-1">
-                        <span className="font-display text-[26px] font-bold tabular-nums text-[var(--ink-hi)] leading-none">
+                        <span className="font-display text-[26px] font-black tabular-nums text-white leading-none">
                             {animated}
                         </span>
-                        <span className="text-[12px] text-[var(--ink-low)]">{unit}</span>
+                        <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">{unit}</span>
                     </span>
                 ) : (
                     <>
-                        <span className="block mt-1 font-display text-[14px] font-bold text-[var(--ink-mid)] group-hover:text-[var(--ink-hi)] transition-colors duration-300">
+                        <span className="block mt-1 font-display text-[14px] font-bold text-white group-hover:text-[var(--accent)] transition-colors duration-300">
                             {emptyTitle}
                         </span>
-                        <span className="block mt-0.5 text-[11px] text-[var(--ink-faint)]">{emptyBody}</span>
+                        <span className="block mt-0.5 text-[11px] text-white/35">{emptyBody}</span>
                     </>
                 )}
             </span>

@@ -106,7 +106,7 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
 
                         <div className="tp-fade-up tp-d6">
                             <Panel
-                                title="Community Feed"
+                                title="Squad Feed"
                                 icon={<Users className="w-3.5 h-3.5 text-[var(--accent)]" />}
                                 action={{ label: "Friends", href: "/friends" }}
                                 bodyClassName="p-3"

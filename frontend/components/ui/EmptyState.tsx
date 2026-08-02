@@ -21,7 +21,7 @@ interface EmptyStateProps {
 export default function EmptyState({ variant = "full", icon, title, body, action, className }: EmptyStateProps) {
     if (variant === "hint") {
         return (
-            <p className={cn("flex-1 flex items-center justify-center text-center text-[13px] text-[var(--ink-faint)] py-4 px-2", className)}>
+            <p className={cn("flex-1 flex items-center justify-center text-center text-[12px] text-white/35 py-4 px-2", className)}>
                 {title}
             </p>
         );
@@ -40,8 +40,8 @@ export default function EmptyState({ variant = "full", icon, title, body, action
                     {icon}
                 </span>
             )}
-            <p className={cn("font-semibold text-[var(--ink-mid)]", variant === "full" ? "text-[13px]" : "text-[12px]")}>{title}</p>
-            {body && <p className="text-[11px] text-[var(--ink-faint)] max-w-[260px] -mt-1">{body}</p>}
+            <p className={cn("font-display font-bold text-white", variant === "full" ? "text-[13px]" : "text-[12px]")}>{title}</p>
+            {body && <p className="text-[11px] text-white/35 max-w-[260px] -mt-1">{body}</p>}
             {action && (
                 <Link
                     href={action.href}

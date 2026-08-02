@@ -147,6 +147,7 @@ Jedna komponenta servira svaki profil. Nema više odvojenog "dashboarda" i "prof
 - **`lib/profileTabs.ts`** je jedini izvor tab seta (`PROFILE_TABS`).
 - **`LockedProfile`** je ono što stranac vidi na `friends`-only profilu: avatar, ime, level, rank, "member since" i Add Friend. Nikad 404.
 - **`lib/level.ts` mora ostati identičan `backend/app/Services/LevelService.php`** — ako se mijenja kriva, mijenjaju se oba, inače header i profil pokazuju različit level.
+- **Jedan panel jezik (08/2026):** sve sekcije naslovnice idu kroz `components/ui/Panel` (header: tick + 12px font-black naslov; hairline `border-white/[0.07]`; inset sub-kartice `bg-white/[0.02]`). `variant="console"` = topli gradijent + accent ivica + corner bracket — **najviše jedan po koloni** (Campaign Progress u glavnoj, Daily Missions u sidebaru). Ljubičasta `--xp` isključivo za progresiju (XP nagrade, match ringovi); narandžasta za akcije; emerald za LIVE; amber za bounty. `lib/timeAgo.ts` je jedini relative-time helper.
 
 Obrisano: `ProfileHeader.tsx`, `ProfileTabs.tsx`, `OwnProfileShell.tsx`.
 

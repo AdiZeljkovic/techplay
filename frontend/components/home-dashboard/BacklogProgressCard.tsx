@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Gamepad2, Wand2, ListPlus, ArrowRight } from "lucide-react";
+import { Gamepad2, Wand2, ListPlus, ArrowRight, Swords } from "lucide-react";
+import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import RingMeter from "@/components/ui/RingMeter";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -27,52 +28,60 @@ export default function BacklogProgressCard({
     // so show the way in instead of a row of zeros.
     if (isEmpty) {
         return (
-            <div className="rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] p-5 h-full flex flex-col">
-                <h3 className="font-display text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)] mb-3">Backlog Progress</h3>
+            <Panel
+                title="Campaign Progress"
+                icon={<Swords className="w-4 h-4 text-[var(--accent)]" />}
+                className="h-full flex flex-col"
+                bodyClassName="p-5 flex-1 flex flex-col"
+            >
                 <EmptyState
                     icon={<ListPlus className="w-[18px] h-[18px]" />}
                     title="Your backlog is empty"
                     body="Add games you plan to play and this turns into a progress tracker — plus AI picks for what to start next."
                     action={{ label: "Build your backlog", href: "/games", icon: <ListPlus className="w-3.5 h-3.5" /> }}
                 />
-            </div>
+            </Panel>
         );
     }
 
     return (
-        <div className="rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] p-5 h-full flex flex-col">
-            <h3 className="font-display text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)] mb-3">Backlog Progress</h3>
-
+        <Panel
+            title="Campaign Progress"
+            icon={<Swords className="w-4 h-4 text-[var(--accent)]" />}
+            variant="console"
+            className="h-full flex flex-col"
+            bodyClassName="p-5 flex-1 flex flex-col"
+        >
             {/* Counters + completion ring */}
-            <div className="flex items-center gap-4 rounded-[var(--radius-card)] bg-[var(--fill-1)] border border-[var(--line)] p-4">
+            <div className="flex items-center gap-4 rounded-[16px] border border-white/[0.07] bg-white/[0.02] p-4">
                 <div className="flex-1 grid grid-cols-2 gap-4">
                     <div>
-                        <p className="font-display text-[28px] font-bold text-[var(--ink-hi)] leading-none tabular-nums">{backlogCount}</p>
-                        <p className="mt-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-faint)]">Total in Backlog</p>
+                        <p className="font-display text-[28px] font-black text-white leading-none tabular-nums">{backlogCount}</p>
+                        <p className="mt-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/40">In Backlog</p>
                     </div>
                     <div>
-                        <p className="font-display text-[28px] font-bold text-[var(--accent)] leading-none tabular-nums">{monthCount}</p>
-                        <p className="mt-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-faint)]">Done this month</p>
+                        <p className="font-display text-[28px] font-black text-[var(--accent)] leading-none tabular-nums">{monthCount}</p>
+                        <p className="mt-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/40">Done this month</p>
                     </div>
                 </div>
 
                 <RingMeter value={ringValue} size={100} strokeWidth={8} glow>
-                    <span className="font-display text-[20px] font-bold text-[var(--accent)] tabular-nums leading-none">{ringValue}%</span>
-                    <span className="mt-1 text-[8px] font-bold uppercase tracking-[0.14em] text-[var(--ink-faint)]">Cleared</span>
+                    <span className="font-display text-[20px] font-black text-[var(--accent)] tabular-nums leading-none">{ringValue}%</span>
+                    <span className="mt-1 font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/40">Cleared</span>
                 </RingMeter>
             </div>
 
             {/* Suggested next from the backlog */}
             {suggestion && (
                 <div className="mt-4">
-                    <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--ink-faint)] mb-2">
+                    <p className="flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.16em] text-white/40 mb-2">
                         <span aria-hidden className="w-1 h-3 rounded-full bg-[var(--accent)]" />
                         Suggested Next
                     </p>
                     <Link
                         href={`/games/${suggestion.slug}`}
                         prefetch={false}
-                        className="group relative flex items-center gap-3.5 rounded-[var(--radius-card)] border border-[var(--line)] p-3 overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
+                        className="group relative flex items-center gap-3.5 rounded-[16px] border border-white/[0.07] p-3 overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
                     >
                         {/* the pick's own art, faint, as the row's backdrop */}
                         {suggestion.background_image && (
@@ -84,10 +93,11 @@ export default function BacklogProgressCard({
                                     aria-hidden
                                     className="absolute inset-0 w-full h-full object-cover opacity-[0.14] group-hover:opacity-[0.22] transition-opacity duration-500"
                                 />
-                                <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[var(--surface-1)] via-[color-mix(in_srgb,var(--surface-1)_88%,transparent)] to-[color-mix(in_srgb,var(--surface-1)_65%,transparent)]" />
+                                {/* scrim in the console's own face colour, not --surface-1 */}
+                                <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[#0e0c0b] via-[#0e0c0be0] to-[#0e0c0ba6]" />
                             </>
                         )}
-                        {!suggestion.background_image && <span aria-hidden className="absolute inset-0 bg-[var(--fill-1)]" />}
+                        {!suggestion.background_image && <span aria-hidden className="absolute inset-0 bg-white/[0.02]" />}
 
                         <span className="relative w-[96px] h-[58px] rounded-[var(--radius-inner)] overflow-hidden shrink-0 bg-[var(--fill-1)] border border-[var(--line)]">
                             {suggestion.background_image ? (
@@ -104,11 +114,11 @@ export default function BacklogProgressCard({
                         </span>
 
                         <span className="relative min-w-0 flex-1">
-                            <span className="block font-display text-[14px] font-bold text-[var(--ink-hi)] line-clamp-1 group-hover:text-[var(--accent)] transition-colors duration-300">
+                            <span className="block font-display text-[14px] font-bold text-white line-clamp-1 group-hover:text-[var(--accent)] transition-colors duration-300">
                                 {suggestion.name}
                             </span>
                             {suggestion.genres.length > 0 && (
-                                <span className="block mt-0.5 text-[10px] uppercase tracking-wider text-[var(--ink-faint)] line-clamp-1">
+                                <span className="block mt-0.5 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/35 line-clamp-1">
                                     {suggestion.genres.join(" · ")}
                                 </span>
                             )}
@@ -134,6 +144,6 @@ export default function BacklogProgressCard({
                     <Wand2 className="w-4 h-4" /> Open Backlog Advisor
                 </Link>
             </div>
-        </div>
+        </Panel>
     );
 }

@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { BookOpen, Bookmark, Search, PenLine, ChevronRight, Gamepad2 } from "lucide-react";
+import { BookOpen, Bookmark, Search, PenLine, ChevronRight, Gamepad2, Activity } from "lucide-react";
 import axios from "@/lib/axios";
+import Panel from "@/components/ui/Panel";
+import EmptyState from "@/components/ui/EmptyState";
 
 interface ReadingArticle {
     slug: string;
@@ -43,19 +45,19 @@ function Card({
     children: React.ReactNode;
 }) {
     return (
-        <div className="group/card relative rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] p-4 flex flex-col overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors duration-300">
+        <div className="group/card relative rounded-[16px] border border-white/[0.07] bg-white/[0.02] p-4 flex flex-col overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors duration-300">
             {/* accent rail draws across the card on hover */}
             <span
                 aria-hidden
                 className="absolute top-0 left-0 right-0 h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover/card:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]"
             />
             <div className="flex items-center justify-between mb-3">
-                <h3 className="flex items-center gap-2 font-display text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
+                <h3 className="flex items-center gap-2 font-display text-[10.5px] font-bold uppercase tracking-[0.16em] text-white/40">
                     <span className="text-[var(--accent)]">{icon}</span>
                     {title}
                 </h3>
                 {action && (
-                    <Link href={action.href} className="flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors duration-150">
+                    <Link href={action.href} className="flex items-center gap-0.5 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 hover:text-[var(--accent)] transition-colors duration-150">
                         {action.label} <ChevronRight className="w-3 h-3" />
                     </Link>
                 )}
@@ -65,9 +67,7 @@ function Card({
     );
 }
 
-const Hint = ({ children }: { children: React.ReactNode }) => (
-    <p className="flex-1 flex items-center justify-center text-center text-[11px] text-[var(--ink-faint)] py-4 px-2">{children}</p>
-);
+const Hint = ({ children }: { children: string }) => <EmptyState variant="hint" title={children} />;
 
 /**
  * "Pick up where you left off" — reading progress, saved articles, recent
@@ -77,23 +77,18 @@ export default function YourActivity() {
     const { data } = useSWR("/me/reading", fetcher, { dedupingInterval: 120_000, revalidateOnFocus: false });
 
     if (!data) {
-        return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[0, 1, 2, 3].map((i) => <div key={i} className="h-[188px] rounded-[var(--radius-panel)] bg-[var(--fill-2)] animate-pulse" />)}
-            </div>
-        );
+        return <div className="h-[440px] rounded-[var(--radius-panel)] bg-[var(--fill-2)] animate-pulse" />;
     }
 
     const { continue_reading: reading, saved, recent_searches: searches, draft_reviews: drafts } = data;
 
     return (
-        <section>
-            <h2 className="flex items-center gap-2.5 font-display text-[15px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)] mb-5">
-                <span className="w-1 h-4 rounded-full bg-[var(--accent)]" />
-                Your Activity
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Panel
+            title="Your Activity"
+            icon={<Activity className="w-4 h-4 text-[var(--accent)]" />}
+            bodyClassName="p-4"
+        >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Continue reading */}
                 <Card title="Continue Reading" icon={<BookOpen className="w-3.5 h-3.5" />} action={reading ? { label: "View all", href: "/news" } : undefined}>
                     {reading ? (
@@ -105,7 +100,7 @@ export default function YourActivity() {
                                 )}
                             </div>
                             <div className="min-w-0 flex-1 flex flex-col">
-                                <p className="text-[13px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                                <p className="text-[13px] font-bold text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                                     {reading.title}
                                 </p>
                                 {reading.category && <p className="mt-1 text-[10px] text-[var(--ink-faint)]">{reading.category}</p>}
@@ -126,8 +121,8 @@ export default function YourActivity() {
                 <Card title="Saved Articles" icon={<Bookmark className="w-3.5 h-3.5" />} action={saved.total > 0 ? { label: "View all", href: "/profile/me?tab=activity" } : undefined}>
                     {saved.total > 0 ? (
                         <>
-                            <p className="font-display text-[28px] font-bold text-[var(--accent)] leading-none tabular-nums">{saved.total}</p>
-                            <p className="text-[10px] text-[var(--ink-faint)] mt-1">Saved article{saved.total === 1 ? "" : "s"}</p>
+                            <p className="font-display text-[28px] font-black text-white leading-none tabular-nums">{saved.total}</p>
+                            <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/35 mt-1.5">Saved article{saved.total === 1 ? "" : "s"}</p>
                             <div className="mt-auto pt-3 flex gap-1.5">
                                 {saved.items.slice(0, 4).map((a) => (
                                     <Link key={a.slug} href={hrefFor(a)} title={a.title} className="relative flex-1 aspect-square rounded-md overflow-hidden bg-[var(--fill-1)] border border-[var(--line)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors">
@@ -174,8 +169,8 @@ export default function YourActivity() {
                     {drafts.total > 0 ? (
                         <div className="flex gap-3">
                             <div className="shrink-0">
-                                <p className="font-display text-[28px] font-bold text-[var(--accent)] leading-none tabular-nums">{drafts.total}</p>
-                                <p className="text-[10px] text-[var(--ink-faint)] mt-1 max-w-[52px] leading-tight">Draft review{drafts.total === 1 ? "" : "s"}</p>
+                                <p className="font-display text-[28px] font-black text-white leading-none tabular-nums">{drafts.total}</p>
+                                <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/35 mt-1.5 max-w-[52px] leading-tight">Draft review{drafts.total === 1 ? "" : "s"}</p>
                             </div>
                             <div className="flex-1 min-w-0 space-y-1.5">
                                 {drafts.items.slice(0, 2).map((d) => (
@@ -201,6 +196,6 @@ export default function YourActivity() {
                     )}
                 </Card>
             </div>
-        </section>
+        </Panel>
     );
 }

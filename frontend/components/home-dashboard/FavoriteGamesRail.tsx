@@ -51,8 +51,8 @@ function ShelfCard({ game, index }: { game: DashboardGameCover; index: number })
                 </span>
             </span>
 
-            <span className="flex items-center justify-between gap-2 h-[38px] px-2.5 border-t border-[var(--line)] bg-[color-mix(in_srgb,var(--surface-0)_60%,transparent)]">
-                <span className="inline-flex items-center gap-1.5 min-w-0 text-[11px] font-semibold tabular-nums text-[var(--ink-low)]">
+            <span className="flex items-center justify-between gap-2 h-[38px] px-2.5 border-t border-white/[0.07] bg-[color-mix(in_srgb,var(--surface-0)_60%,transparent)]">
+                <span className="inline-flex items-center gap-1.5 min-w-0 font-display text-[11px] font-black tabular-nums text-white/60">
                     <Clock3 className="w-3.5 h-3.5 shrink-0 text-[var(--ink-faint)]" />
                     {tracked ? (
                         hoursLabel(game.hours_played ?? 0)

@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import useSWR, { useSWRConfig } from "swr";
-import { Bell, Check, ChevronRight, Gamepad2, Loader2, CalendarDays } from "lucide-react";
+import { Bell, Check, Gamepad2, Loader2, CalendarDays } from "lucide-react";
 import axios from "@/lib/axios";
 import { getApiUrl } from "@/lib/api";
+import Panel from "@/components/ui/Panel";
 import { useLibraryIndex } from "@/hooks/useLibraryIndex";
 
 import { rawName } from "@/components/home/DiscoverGames";
@@ -90,24 +91,18 @@ export default function UpcomingForYouRow() {
     };
 
     return (
-        <section>
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="flex items-center gap-2.5 font-display text-[15px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
-                    <span className="w-1 h-4 rounded-full bg-[var(--accent)]" />
-                    <CalendarDays className="w-4 h-4 text-[var(--accent)]" />
-                    Upcoming For You
-                </h2>
-                <Link href="/calendar" className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors duration-150">
-                    View all <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
-            </div>
-
+        <Panel
+            title="Upcoming For You"
+            icon={<CalendarDays className="w-4 h-4 text-[var(--accent)]" />}
+            action={{ label: "View all", href: "/calendar" }}
+            bodyClassName="p-4"
+        >
             {/* A grid, not a clipped rail — a card sliced in half by the panel
                 edge reads as broken rather than as "there is more". */}
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {(games ? upcoming : Array.from({ length: 4 }, () => null)).map((g, i) =>
                     g ? (
-                        <div key={g.slug} className={`group/card flex flex-col rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_14px_36px_rgba(0,0,0,0.45)] transition-all duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}>
+                        <div key={g.slug} className={`group/card flex flex-col rounded-[16px] overflow-hidden border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_14px_36px_rgba(0,0,0,0.45)] transition-all duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}>
                             <Link href={`/games/${g.slug}`} prefetch={false} className="group block relative aspect-[16/9]">
                                 {g.background_image ? (
                                     // eslint-disable-next-line @next/next/no-img-element
@@ -128,8 +123,8 @@ export default function UpcomingForYouRow() {
                                                     : "bg-[color-mix(in_srgb,var(--surface-0)_82%,transparent)] border border-[var(--line-strong)] text-[var(--ink-hi)]"
                                             }`}
                                         >
-                                            <span className="font-display text-[16px] font-bold tabular-nums">{c.value}</span>
-                                            <span className="mt-0.5 text-[8px] font-bold uppercase tracking-[0.12em] opacity-80">{c.unit}</span>
+                                            <span className="font-display text-[16px] font-black tabular-nums">{c.value}</span>
+                                            <span className="mt-0.5 font-display text-[8px] font-bold uppercase tracking-[0.14em] opacity-80">{c.unit}</span>
                                         </span>
                                     );
                                 })()}
@@ -139,11 +134,11 @@ export default function UpcomingForYouRow() {
                             {/* Fixed rhythm: two title lines are always reserved, so
                                 every card's date, platforms and button line up. */}
                             <div className="flex-1 flex flex-col p-3">
-                                <Link href={`/games/${g.slug}`} prefetch={false} className="block font-display text-[13px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 min-h-[34px] hover:text-[var(--accent)] transition-colors">
+                                <Link href={`/games/${g.slug}`} prefetch={false} className="block font-display text-[13px] font-bold text-white leading-snug line-clamp-2 min-h-[34px] hover:text-[var(--accent)] transition-colors">
                                     {g.name}
                                 </Link>
-                                <p className="mt-1 text-[11px] tabular-nums text-[var(--ink-low)]">{releaseLabel(g.released!)}</p>
-                                <p className="text-[9px] uppercase tracking-wide text-[var(--ink-faint)] line-clamp-1 min-h-[13px]">{shortPlatforms(g.platforms)}</p>
+                                <p className="mt-1 text-[11px] tabular-nums text-white/45">{releaseLabel(g.released!)}</p>
+                                <p className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/30 line-clamp-1 min-h-[13px]">{shortPlatforms(g.platforms)}</p>
                                 <span className="flex-1" />
                                 {(() => {
                                     const status = library[g.slug];
@@ -173,10 +168,10 @@ export default function UpcomingForYouRow() {
                             </div>
                         </div>
                     ) : (
-                        <div key={i} className="rounded-[var(--radius-card)] bg-[var(--fill-2)] h-[236px] animate-pulse" />
+                        <div key={i} className="rounded-[16px] bg-[var(--fill-2)] h-[236px] animate-pulse" />
                     )
                 )}
             </div>
-        </section>
+        </Panel>
     );
 }

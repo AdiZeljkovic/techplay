@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { Gamepad2, ChevronRight, Sparkles } from "lucide-react";
+import { Gamepad2, Sparkles } from "lucide-react";
 import axios from "@/lib/axios";
 import MatchRing from "./MatchRing";
+import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import type { DashboardGameCover } from "@/lib/types/dashboard";
 
@@ -47,8 +48,8 @@ function Row({
             </div>
 
             <div className="min-w-0 flex-1">
-                <p className="font-display text-[14px] font-bold text-[var(--ink-hi)] line-clamp-1 group-hover:text-[var(--accent)] transition-colors">{name}</p>
-                <p className="mt-1 text-[10px] uppercase tracking-wider text-[var(--ink-faint)] line-clamp-1">
+                <p className="font-display text-[14px] font-bold text-white line-clamp-1 group-hover:text-[var(--accent)] transition-colors">{name}</p>
+                <p className="mt-1 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/35 line-clamp-1">
                     {genres.length ? genres.join(" · ") : "From your backlog"}
                 </p>
             </div>
@@ -56,7 +57,7 @@ function Row({
             {typeof match === "number" && (
                 <div className="flex items-center gap-2 shrink-0">
                     <MatchRing percent={match} />
-                    <span className="text-[11px] text-[var(--ink-low)] hidden sm:inline">Match</span>
+                    <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/35 hidden sm:inline">Match</span>
                 </div>
             )}
         </Link>
@@ -78,20 +79,19 @@ export default function RecommendedNext({ games }: { games: DashboardGameCover[]
     const loading = !recs;
 
     return (
-        <div className="rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] p-5 h-full flex flex-col">
-            <div className="flex items-center justify-between mb-3">
-                <h3 className="font-display text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">Recommended Next For You</h3>
-                <Link href="/games" className="flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors duration-150">
-                    View all <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
-            </div>
-
+        <Panel
+            title="Recommended Next"
+            icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />}
+            action={{ label: "View all", href: "/games" }}
+            className="h-full flex flex-col"
+            bodyClassName="p-5 flex-1 flex flex-col"
+        >
             {loading && !games.length ? (
                 <div className="flex-1 space-y-2">
                     {[0, 1, 2, 3].map((i) => <div key={i} className="h-[78px] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />)}
                 </div>
             ) : hasRecs || games.length ? (
-                <div className="flex-1 divide-y divide-[var(--line)]">
+                <div className="flex-1 divide-y divide-white/[0.07]">
                     {hasRecs
                         ? recs!.slice(0, 4).map((r) => (
                             <Row key={r.slug} slug={r.slug} name={r.name} image={r.background_image} genres={r.matched_genres} match={r.match_percent} />
@@ -109,6 +109,6 @@ export default function RecommendedNext({ games }: { games: DashboardGameCover[]
                     action={{ label: "Explore games", href: "/games", icon: <Gamepad2 className="w-3.5 h-3.5" /> }}
                 />
             )}
-        </div>
+        </Panel>
     );
 }
