@@ -33,6 +33,8 @@ export interface DashboardUser {
     is_staff: boolean;
     /** Gamertag keys with a value — drives the platform icons in the hero. */
     platforms: string[];
+    /** Equipped avatar-frame cosmetic: a CSS colour or gradient, or null. */
+    frame: string | null;
 }
 
 export interface DashboardStats {

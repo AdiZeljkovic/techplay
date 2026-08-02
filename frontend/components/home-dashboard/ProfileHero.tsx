@@ -21,16 +21,100 @@ function compact(n: number): string {
     return n.toLocaleString();
 }
 
-/** Gamertag key → the label PlatformIcon draws a brand mark for. */
-const PLATFORM_LABEL: Record<string, string> = {
-    steam: "STEAM",
-    psn: "PS",
-    xbox: "XBOX",
-    epic: "EPIC",
-    discord: "DISCORD",
-    pc: "PC",
-    switch: "SWITCH",
+/** Gamertag key → the mark PlatformIcon draws, and the brand it lights up in. */
+const PLATFORMS: Record<string, { label: string; name: string; brand: string }> = {
+    steam: { label: "STEAM", name: "Steam", brand: "#c7d5e0" },
+    psn: { label: "PS", name: "PlayStation", brand: "#4c8bf5" },
+    xbox: { label: "XBOX", name: "Xbox", brand: "#4ade80" },
+    epic: { label: "EPIC", name: "Epic Games", brand: "#ffffff" },
+    discord: { label: "DISCORD", name: "Discord", brand: "#7d88f5" },
+    pc: { label: "PC", name: "PC", brand: "#e5e7eb" },
+    switch: { label: "SWITCH", name: "Nintendo Switch", brand: "#f87171" },
 };
+
+/**
+ * The avatar frame. A single solid ring — the paint comes from the equipped
+ * frame cosmetic when there is one, so a bought frame actually shows — with a
+ * dark bezel separating it from the portrait and four reticle ticks sitting
+ * outside it. No gradient by default: a gradient ring reads as decoration,
+ * a machined one reads as equipment.
+ */
+function AvatarFrame({
+    src,
+    alt,
+    frame,
+    online,
+}: {
+    src: string | null;
+    alt: string;
+    frame: string | null;
+    online: boolean;
+}) {
+    const paint = frame || "var(--accent)";
+
+    return (
+        <div className="relative w-[116px] h-[116px] md:w-[136px] md:h-[136px] shrink-0">
+            {/* reticle ticks, parked on the diagonals outside the ring */}
+            {[45, 135, 225, 315].map((deg) => (
+                <span
+                    key={deg}
+                    aria-hidden
+                    className="absolute left-1/2 top-1/2 w-[3px] h-[9px] rounded-full"
+                    style={{
+                        background: "var(--accent)",
+                        opacity: 0.75,
+                        transform: `translate(-50%, -50%) rotate(${deg}deg) translateY(-78px)`,
+                        boxShadow: "0 0 8px color-mix(in srgb, var(--accent) 70%, transparent)",
+                    }}
+                />
+            ))}
+
+            {/* the ring itself */}
+            <span
+                aria-hidden
+                className="absolute inset-0 rounded-full"
+                style={{ background: paint, boxShadow: "0 0 22px -2px color-mix(in srgb, var(--accent) 45%, transparent)" }}
+            />
+            {/* bezel — keeps the portrait from touching the paint */}
+            <span aria-hidden className="absolute inset-[3px] rounded-full bg-[var(--surface-1)]" />
+
+            <span className="absolute inset-[6px] rounded-full overflow-hidden bg-[var(--surface-2)]">
+                {src ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                        src={src}
+                        alt={alt}
+                        className="w-full h-full object-cover transition-transform duration-500 ease-[var(--ease-hud)] group-hover/av:scale-[1.05]"
+                    />
+                ) : (
+                    <span className="w-full h-full flex items-center justify-center">
+                        <UserIcon className="w-10 h-10 text-[var(--ink-faint)]" />
+                    </span>
+                )}
+            </span>
+
+            {/* presence node, punched through the frame */}
+            {online && (
+                <span
+                    className="absolute bottom-[2px] right-[2px] flex items-center justify-center w-[28px] h-[28px] rounded-full bg-[var(--surface-1)]"
+                    title="Online now"
+                >
+                    <span className="relative flex items-center justify-center w-[15px] h-[15px]">
+                        <span aria-hidden className="tp-pulse-ring absolute inset-0 rounded-full bg-emerald-400" />
+                        <span
+                            className="relative block w-full h-full rounded-full"
+                            style={{
+                                background: "radial-gradient(circle at 35% 30%, #6ee7b7 0%, #10b981 55%, #047857 100%)",
+                                boxShadow: "0 0 10px rgba(16,185,129,0.95), inset 0 1px 0 rgba(255,255,255,0.5)",
+                            }}
+                        />
+                    </span>
+                    <span className="sr-only">Online</span>
+                </span>
+            )}
+        </div>
+    );
+}
 
 const BTN_GHOST =
     "inline-flex items-center gap-2 px-4 h-10 rounded-[var(--radius-card)] bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-hi)] font-display text-[11px] font-bold uppercase tracking-wider hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] hover:bg-[var(--fill-3)] transition-colors duration-300";
@@ -66,7 +150,7 @@ function StatCard({
 }) {
     const animated = useCountUp(value, 1100);
     const cls =
-        "group relative flex flex-col justify-center gap-2 min-w-0 px-3.5 py-4 rounded-[var(--radius-card)] border border-[var(--line-strong)] bg-[color-mix(in_srgb,var(--surface-0)_80%,transparent)] backdrop-blur-md overflow-hidden transition-colors duration-300";
+        "group relative flex flex-col items-center justify-center gap-2 min-w-0 px-2 py-5 rounded-[18px] border border-white/[0.07] bg-[color-mix(in_srgb,#0b0a09_72%,transparent)] backdrop-blur-md overflow-hidden transition-colors duration-300";
 
     const body = (
         <>
@@ -76,15 +160,11 @@ function StatCard({
                     className="absolute top-0 left-0 right-0 h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]"
                 />
             )}
-            <span className="flex items-center gap-1.5 min-w-0">
-                <Icon className="w-3.5 h-3.5 shrink-0 text-[var(--ink-faint)] group-hover:text-[var(--accent)] transition-colors duration-300" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--ink-faint)] truncate">
-                    {label}
-                </span>
-            </span>
-            <span className="font-display text-[26px] font-black tabular-nums leading-none text-[var(--ink-hi)] group-hover:text-[var(--accent)] transition-colors duration-300">
+            <Icon className="w-[18px] h-[18px] shrink-0 text-white/85 group-hover:text-[var(--accent)] transition-colors duration-300" />
+            <span className="font-display text-[28px] font-black tabular-nums leading-none text-white">
                 {compact(animated)}
             </span>
+            <span className="text-[11.5px] font-medium text-white/45 leading-none truncate max-w-full">{label}</span>
         </>
     );
 
@@ -245,7 +325,7 @@ export default function ProfileHero({
     ];
 
     const tags = hero.playstyle_tags.slice(0, 3);
-    const platforms = hero.platforms.filter((p) => PLATFORM_LABEL[p]).slice(0, 5);
+    const platforms = hero.platforms.filter((p) => PLATFORMS[p]).slice(0, 5);
 
     return (
         <section className="relative rounded-[var(--radius-panel)] overflow-hidden bg-[var(--surface-1)] border border-[var(--line)]">
@@ -289,31 +369,14 @@ export default function ProfileHero({
                 <div className="flex flex-col xl:flex-row xl:items-center gap-6">
                     {/* ── identity ── */}
                     <div className="flex items-start gap-5 md:gap-6 flex-1 min-w-0">
-                        {/* portrait: a lit ring, an edit affordance, a presence dot */}
                         <div className="relative shrink-0">
                             <Link href={base} className="group/av block">
-                                <span
-                                    className="block w-[112px] h-[112px] md:w-[132px] md:h-[132px] rounded-full p-[3px]"
-                                    style={{
-                                        background: "linear-gradient(150deg, var(--accent-bright) 0%, var(--accent) 55%, var(--accent-hover) 100%)",
-                                        boxShadow: "0 0 26px color-mix(in srgb, var(--accent) 45%, transparent)",
-                                    }}
-                                >
-                                    <span className="block w-full h-full rounded-full overflow-hidden bg-[var(--surface-2)] border-[3px] border-[var(--surface-1)]">
-                                        {hero.avatar_url ? (
-                                            // eslint-disable-next-line @next/next/no-img-element
-                                            <img
-                                                src={hero.avatar_url}
-                                                alt={hero.display_name}
-                                                className="w-full h-full object-cover transition-transform duration-500 ease-[var(--ease-hud)] group-hover/av:scale-[1.05]"
-                                            />
-                                        ) : (
-                                            <span className="w-full h-full flex items-center justify-center">
-                                                <UserIcon className="w-10 h-10 text-[var(--ink-faint)]" />
-                                            </span>
-                                        )}
-                                    </span>
-                                </span>
+                                <AvatarFrame
+                                    src={hero.avatar_url}
+                                    alt={hero.display_name}
+                                    frame={hero.frame_value}
+                                    online={online}
+                                />
                             </Link>
 
                             {isOwnProfile && (
@@ -324,13 +387,6 @@ export default function ProfileHero({
                                 >
                                     <Pencil className="w-3.5 h-3.5" />
                                 </Link>
-                            )}
-
-                            {online && (
-                                <span className="absolute bottom-1.5 right-1.5 w-[18px] h-[18px]" title="Online">
-                                    <span aria-hidden className="tp-pulse-ring absolute inset-0 rounded-full bg-emerald-500" />
-                                    <span className="relative block w-full h-full rounded-full bg-emerald-500 ring-[3px] ring-[var(--surface-1)]" />
-                                </span>
                             )}
                         </div>
 
@@ -366,13 +422,23 @@ export default function ProfileHero({
                                         </span>
                                     )}
 
+                                    {/* the platforms you're actually on — greyed metal that
+                                        lights up in its own brand when you reach for it */}
                                     {platforms.length > 0 && (
-                                        <span className="inline-flex items-center gap-2 h-[24px] px-2.5 rounded-full bg-[var(--fill-2)] border border-[var(--line)]">
-                                            {platforms.map((p) => (
-                                                <span key={p} title={p} className="text-[var(--ink-low)]">
-                                                    <PlatformIcon label={PLATFORM_LABEL[p]} className="w-[15px] h-[15px]" />
-                                                </span>
-                                            ))}
+                                        <span className="inline-flex items-center gap-1.5">
+                                            {platforms.map((p) => {
+                                                const meta = PLATFORMS[p];
+                                                return (
+                                                    <span
+                                                        key={p}
+                                                        title={meta.name}
+                                                        style={{ ["--brand" as string]: meta.brand }}
+                                                        className="group/pf inline-flex items-center justify-center w-[28px] h-[28px] rounded-[9px] border border-[var(--line)] bg-[color-mix(in_srgb,var(--surface-0)_70%,transparent)] text-white/40 hover:text-[var(--brand)] hover:border-[color-mix(in_srgb,var(--brand)_45%,transparent)] transition-colors duration-300"
+                                                    >
+                                                        <PlatformIcon label={meta.label} className="w-[15px] h-[15px]" />
+                                                    </span>
+                                                );
+                                            })}
                                         </span>
                                     )}
 
@@ -387,56 +453,78 @@ export default function ProfileHero({
                                 </div>
                             )}
 
-                            {/* ── progression: crest outside, gauge and rank metal inside ── */}
-                            <div className="mt-4 flex items-center gap-3.5">
-                                <LevelCrest level={hero.level} size={64} />
+                            {/* ── progression: the crest breaks the panel edge, the
+                                gauge runs the full width beneath the rank line ── */}
+                            <div className="mt-5 relative max-w-[560px] pl-[46px]">
+                                <span className="absolute left-0 top-1/2 -translate-y-1/2 z-10">
+                                    <LevelCrest level={hero.level} size={66} />
+                                </span>
 
-                                <div className="flex items-center gap-4 min-w-0 flex-1 max-w-[520px] pl-4 pr-3 py-2.5 rounded-[var(--radius-card)] border border-[var(--line-strong)] bg-[color-mix(in_srgb,var(--surface-0)_72%,transparent)] backdrop-blur-md">
-                                    <div className="min-w-0 flex-1">
-                                        <p className="flex items-baseline gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--ink-faint)]">
-                                            <span>Level</span>
-                                            {nextXp && hero.next_rank ? (
-                                                <>
-                                                    <span aria-hidden>·</span>
-                                                    <span className="tabular-nums text-[var(--ink-mid)] normal-case tracking-[0.06em]">
-                                                        <span className="font-display text-[12px] font-bold text-[var(--ink-hi)]">
-                                                            {(nextXp - hero.xp).toLocaleString()}
-                                                        </span>{" "}
-                                                        XP to{" "}
-                                                        <span
-                                                            className="font-bold"
-                                                            style={{ color: hero.next_rank.color || "var(--ink-hi)" }}
-                                                        >
-                                                            {hero.next_rank.name}
-                                                        </span>
-                                                    </span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <span aria-hidden>·</span>
-                                                    <span className="normal-case tracking-[0.06em] text-[var(--ink-mid)]">Max rank reached</span>
-                                                </>
-                                            )}
-                                        </p>
-
-                                        <XpRail percent={fillPercent} className="mt-2" />
-
-                                        <p className="mt-1.5 text-right text-[10px] font-semibold tabular-nums text-[var(--ink-faint)]">
-                                            <span className="text-[var(--ink-mid)]">{animatedXp.toLocaleString()}</span>
-                                            {nextXp ? ` / ${nextXp.toLocaleString()} XP` : " XP"}
-                                        </p>
-                                    </div>
-
-                                    {hero.rank_name && (
-                                        <span className="shrink-0 hidden sm:block">
-                                            <RankEmblem name={hero.rank_name} color={hero.rank_color} />
-                                        </span>
+                                <div
+                                    className="relative pl-[38px] pr-4 py-3 rounded-[14px] border border-white/[0.08] overflow-hidden"
+                                    style={{
+                                        background: "linear-gradient(180deg, rgba(16,14,12,0.88) 0%, rgba(9,8,7,0.92) 100%)",
+                                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
+                                    }}
+                                >
+                                    {/* the tier's own metal bleeds in from the right */}
+                                    {hero.rank_color && (
+                                        <span
+                                            aria-hidden
+                                            className="absolute inset-y-0 right-0 w-1/2 pointer-events-none"
+                                            style={{
+                                                background: `linear-gradient(90deg, transparent 0%, color-mix(in srgb, ${hero.rank_color} 16%, transparent) 100%)`,
+                                            }}
+                                        />
                                     )}
+
+                                    <div className="relative">
+                                        {/* rank on the left, the goal on the right */}
+                                        <div className="flex items-center justify-between gap-3 mb-2">
+                                            {hero.rank_name ? (
+                                                <RankEmblem name={hero.rank_name} color={hero.rank_color} />
+                                            ) : (
+                                                <span />
+                                            )}
+                                            {nextXp && hero.next_rank ? (
+                                                <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-[var(--ink-faint)] whitespace-nowrap">
+                                                    <span className="text-white">{(nextXp - hero.xp).toLocaleString()}</span> XP to{" "}
+                                                    <span style={{ color: hero.next_rank.color || "var(--ink-hi)" }}>
+                                                        {hero.next_rank.name}
+                                                    </span>
+                                                </span>
+                                            ) : (
+                                                <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--ink-faint)]">
+                                                    Max rank
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <XpRail percent={fillPercent} />
+
+                                        {/* the numbers sit under the channel they describe */}
+                                        <div className="mt-1.5 flex items-center justify-between gap-3 font-display text-[10px] font-bold uppercase tracking-[0.1em] tabular-nums">
+                                            <span className="text-[var(--ink-faint)]">
+                                                <span className="text-[var(--ink-mid)]">{animatedXp.toLocaleString()}</span>
+                                                {nextXp ? ` / ${nextXp.toLocaleString()} XP` : " XP"}
+                                            </span>
+                                            <span className="text-[var(--accent)]">{fillPercent}%</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
 
-                            {/* ── actions ── */}
-                            <div className="mt-4 flex flex-wrap items-center gap-2">
+                    {/* ── the numbers, and the actions that belong beside them ── */}
+                    <div className="shrink-0 xl:w-[620px] space-y-3">
+                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
+                            {tiles.map((t) => (
+                                <StatCard key={t.label} icon={t.icon} value={t.value} label={t.label} href={t.href} />
+                            ))}
+                        </div>
+
+                        <div className="flex flex-wrap items-center xl:justify-end gap-2">
                                 {isOwnProfile ? (
                                     <>
                                         <Link href="/settings" className={BTN_PRIMARY}>
@@ -509,15 +597,7 @@ export default function ProfileHero({
                                         </button>
                                     </>
                                 )}
-                            </div>
                         </div>
-                    </div>
-
-                    {/* ── stat cards, floating on the art ── */}
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5 shrink-0 xl:w-[600px]">
-                        {tiles.map((t) => (
-                            <StatCard key={t.label} icon={t.icon} value={t.value} label={t.label} href={t.href} />
-                        ))}
                     </div>
                 </div>
             </div>

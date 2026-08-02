@@ -96,72 +96,70 @@ export function RankEmblem({ name, color }: { name: string; color: string | null
 }
 
 /**
- * XP bar built like a battle-pass gauge rather than a web progress bar:
- * a recessed track, a lit fill with a gloss crown, notches *engraved*
- * across the whole rail (not gaps between blocks), a bright leading edge,
- * and a highlight that keeps travelling along the filled portion.
+ * The XP gauge, built the way a game builds one: a machined channel milled
+ * into the panel, a charge that fills it with hazard stripes crawling inside,
+ * a hot leading edge where the charge ends, and quarter marks cut across the
+ * whole channel so you can read progress without reading the number.
+ *
+ * Squared rather than pill-shaped — round ends read as a web progress bar,
+ * hard ends read as instrumentation.
  */
-export function XpRail({
-    percent,
-    segments = 10,
-    className = "",
-}: {
-    percent: number;
-    segments?: number;
-    className?: string;
-}) {
+export function XpRail({ percent, className = "" }: { percent: number; className?: string }) {
     const p = Math.max(0, Math.min(100, percent));
-    const notch = 100 / segments;
 
     return (
         <span
-            className={`relative block h-[14px] rounded-full overflow-hidden bg-[var(--surface-0)] border border-[var(--line-strong)] ${className}`}
-            style={{ boxShadow: "inset 0 2px 5px rgba(0,0,0,0.65)" }}
+            className={`relative block h-[13px] rounded-[3px] overflow-hidden ${className}`}
+            style={{
+                background: "linear-gradient(180deg, #070605 0%, #100d0b 100%)",
+                boxShadow: "inset 0 2px 6px rgba(0,0,0,0.85), inset 0 0 0 1px rgba(255,255,255,0.05)",
+            }}
             aria-hidden
         >
-            {/* lit fill */}
             {p > 0 && (
                 <span
-                    className="absolute inset-y-0 left-0 rounded-full overflow-hidden"
+                    className="absolute inset-y-[1px] left-[1px] rounded-[2px] overflow-hidden"
                     style={{
-                        width: `${p}%`,
+                        width: `calc(${p}% - 2px)`,
                         background:
-                            "linear-gradient(180deg, var(--accent-bright) 0%, var(--accent) 52%, var(--accent-hover) 100%)",
-                        boxShadow:
-                            "0 0 16px color-mix(in srgb, var(--accent) 65%, transparent), inset 0 -1px 3px rgba(0,0,0,0.35)",
+                            "linear-gradient(180deg, var(--accent-bright) 0%, var(--accent) 50%, var(--accent-hover) 100%)",
+                        boxShadow: "0 0 14px color-mix(in srgb, var(--accent) 55%, transparent)",
                     }}
                 >
-                    {/* gloss crown along the top half */}
-                    <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/35 to-transparent" />
-                    {/* travelling highlight */}
-                    <span className="tp-xp-shimmer absolute inset-y-0 -left-1/4 w-1/4 bg-gradient-to-r from-transparent via-white/45 to-transparent" />
+                    {/* the charge is moving */}
+                    <span
+                        className="tp-xp-stripes absolute inset-0"
+                        style={{
+                            backgroundImage:
+                                "repeating-linear-gradient(115deg, rgba(255,255,255,0.17) 0px, rgba(255,255,255,0.17) 6px, transparent 6px, transparent 13px)",
+                            backgroundSize: "26px 100%",
+                        }}
+                    />
+                    {/* gloss crown along the top third */}
+                    <span className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/40 to-transparent" />
+                    <span className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/25 to-transparent" />
                 </span>
             )}
 
-            {/* notches engraved across the whole rail */}
+            {/* quarter marks milled across the channel */}
             <span
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                    background: `repeating-linear-gradient(90deg, transparent 0, transparent calc(${notch}% - 2px), rgba(0,0,0,0.5) calc(${notch}% - 2px), rgba(0,0,0,0.5) ${notch}%)`,
+                    background:
+                        "repeating-linear-gradient(90deg, transparent 0, transparent calc(25% - 1px), rgba(0,0,0,0.55) calc(25% - 1px), rgba(0,0,0,0.55) 25%)",
                 }}
             />
 
-            {/* bright leading edge */}
+            {/* the hot edge where the charge ends */}
             {p > 1 && p < 100 && (
                 <span
-                    className="absolute top-[1px] bottom-[1px] w-[2px] rounded-full bg-white"
+                    className="absolute top-0 bottom-0 w-[2px] bg-white"
                     style={{
                         left: `calc(${p}% - 1px)`,
-                        boxShadow: "0 0 8px rgba(255,255,255,0.9), 0 0 16px color-mix(in srgb, var(--accent) 80%, transparent)",
+                        boxShadow: "0 0 8px rgba(255,255,255,0.95), 0 0 18px color-mix(in srgb, var(--accent) 85%, transparent)",
                     }}
                 />
             )}
-
-            {/* inner rim so the rail reads as recessed metal */}
-            <span
-                className="absolute inset-0 rounded-full pointer-events-none"
-                style={{ boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.06)" }}
-            />
         </span>
     );
 }

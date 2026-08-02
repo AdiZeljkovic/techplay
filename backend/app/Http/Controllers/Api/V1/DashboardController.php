@@ -9,6 +9,7 @@ use App\Models\Friendship;
 use App\Models\Game;
 use App\Models\GameRating;
 use App\Models\Presence;
+use App\Models\UserCustomization;
 use App\Models\UserGame;
 use App\Services\LevelService;
 use App\Services\ProfileService;
@@ -104,6 +105,12 @@ class DashboardController extends Controller
                 'is_staff' => $user->hasRole(['admin', 'Admin', 'Super Admin', 'editor', 'Editor', 'Editor-in-Chief', 'moderator', 'Moderator', 'Journalist'])
                     || in_array(strtolower($user->role ?? ''), ['admin', 'editor', 'moderator', 'journalist', 'super_admin']),
                 'platforms' => array_values(array_keys(array_filter((array) ($user->gamertags ?? [])))),
+                // a bought avatar frame has to actually show up on the avatar
+                'frame' => UserCustomization::where('user_customizations.user_id', $user->id)
+                    ->where('user_customizations.is_equipped', true)
+                    ->join('customizations', 'customizations.id', '=', 'user_customizations.customization_id')
+                    ->where('customizations.type', 'frame')
+                    ->value('customizations.value'),
             ],
             'stats' => [
                 'games_count' => $counts['games_count'],

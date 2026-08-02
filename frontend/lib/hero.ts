@@ -26,6 +26,8 @@ export interface HeroModel {
     verified: boolean;
     /** Gamertag keys — steam / psn / xbox / epic / discord. */
     platforms: string[];
+    /** Paint for the avatar ring, from the equipped frame cosmetic. */
+    frame_value: string | null;
     stats: { games: number; reviews: number; hours: number; achievements: number; friends: number };
     /** Used behind the identity when no cover image is set. */
     backdrop_fallback: string | null;
@@ -55,6 +57,7 @@ export function heroFromDashboard(data: DashboardData): HeroModel {
         is_online: true,
         verified: !!user.is_staff,
         platforms: user.platforms ?? [],
+        frame_value: user.frame ?? null,
         stats: {
             games: stats.games_count,
             reviews: stats.reviews_count,
@@ -92,6 +95,7 @@ export function heroFromProfile(profile: UserProfile): HeroModel {
         platforms: Object.entries(user.gamertags ?? {})
             .filter(([, v]) => !!v)
             .map(([k]) => k),
+        frame_value: profile.customization?.equipped?.frame?.value ?? null,
         stats: {
             games: stats.games_count ?? 0,
             reviews: stats.reviews_count ?? 0,

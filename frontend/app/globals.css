@@ -526,8 +526,16 @@ body {
 }
 .tp-pulse-ring { animation: tp-pulse-ring 2.6s var(--ease-hud) infinite; }
 
+/* Hazard stripes crawling inside the XP fill — the signal a bar is *live*
+   that every progression HUD since Team Fortress has used. */
+@keyframes tp-xp-stripes {
+  from { background-position: 0 0; }
+  to   { background-position: 26px 0; }
+}
+.tp-xp-stripes { animation: tp-xp-stripes 1.1s linear infinite; }
+
 @media (prefers-reduced-motion: reduce) {
-  .tp-drift, .tp-sweep, .tp-pulse-ring, .tp-xp-shimmer { animation: none; }
+  .tp-drift, .tp-sweep, .tp-pulse-ring, .tp-xp-shimmer, .tp-xp-stripes { animation: none; }
 }
 
 /* Hide scrollbars on horizontal rails (dashboard "Continue Playing" etc.) */
