@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
     User as UserIcon, MapPin, Play, Pencil, Share2, Check, BadgeCheck, MoreHorizontal,
     Gamepad2, Star, Clock3, Award, UserPlus, Clock, MessageSquare, Sparkles, ShieldCheck, LinkIcon, GitCompare,
-    ChevronRight, TrendingUp, Flame,
+    TrendingUp, Flame, Gift,
 } from "lucide-react";
 import PlatformIcon from "@/components/games/PlatformIcon";
 import type { HeroModel } from "@/lib/hero";
@@ -13,7 +13,8 @@ import type { ProfileTab } from "@/lib/profileTabs";
 import type { FriendStatus } from "@/lib/types/profile";
 import { useCountUp } from "@/hooks/useCountUp";
 import ProfileTabStrip from "./ProfileTabStrip";
-import { LevelHex, RankMedal, XpRail } from "./RankInsignia";
+import { LevelHex, RankInsigniaMark, XpRail } from "./RankInsignia";
+import { xpForLevel } from "@/lib/level";
 
 /** 12480 → "12.5K" — hours read as a badge, not a spreadsheet. */
 function compact(n: number): string {
@@ -180,14 +181,13 @@ const CUT = "polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 1
 const HUD_BTN =
     "group/cta relative inline-flex items-center justify-center gap-2 h-11 px-4 font-display text-[11px] font-bold uppercase tracking-[0.11em] overflow-hidden transition-colors duration-300 disabled:opacity-60";
 
-const BTN_PRIMARY = `${HUD_BTN} text-white`;
+const BTN_PRIMARY = `${HUD_BTN} text-white hover:brightness-110`;
 const BTN_GHOST = `${HUD_BTN} text-[var(--ink-hi)]`;
 
-/** Solid accent face for the one action that matters most on the panel. */
+/** Flat accent — one colour, no gradient. The shape carries the interest. */
 const primaryStyle: React.CSSProperties = {
     clipPath: CUT,
-    background: "linear-gradient(180deg, var(--accent-bright) 0%, var(--accent) 52%, var(--accent-hover) 100%)",
-    boxShadow: "0 0 22px -6px color-mix(in srgb, var(--accent) 85%, transparent)",
+    background: "var(--accent)",
 };
 
 /** The outer element paints the edge; an inset layer paints the face. */
@@ -396,17 +396,22 @@ export default function ProfileHero({
 
     const nextXp = hero.next_rank?.min_xp ?? null;
 
-    // The gauge measures the *band*, not the whole ladder. Sitting at 1,566 of
-    // a 1,000–2,000 Silver band is 57% of the way to Gold, not 78% — filling by
-    // total XP flatters every rank above the first.
-    const bandFloor = Math.min(hero.rank_min_xp, hero.xp);
-    const bandSize = nextXp ? Math.max(1, nextXp - bandFloor) : 0;
-    const bandDone = nextXp ? Math.max(0, hero.xp - bandFloor) : 0;
-    const xpPercent = nextXp ? Math.min(100, Math.round((bandDone / bandSize) * 100)) : 100;
+    // The gauge measures the *level* band. A level is the thing that ticks over
+    // — it's what the next reward hangs off, and it moves often enough that the
+    // bar visibly travels. Rank is the identity above it, not the clock.
+    const levelFloor = xpForLevel(hero.level);
+    const levelCeil = xpForLevel(hero.level + 1);
+    const levelSize = Math.max(1, levelCeil - levelFloor);
+    const levelDone = Math.max(0, Math.min(levelSize, hero.xp - levelFloor));
+    const levelToGo = Math.max(0, levelCeil - hero.xp);
+    const xpPercent = Math.min(100, Math.round((levelDone / levelSize) * 100));
+
+    // Does the next level also promote you? Then the reward is real and named.
+    const rankUpNext = nextXp !== null && levelCeil >= nextXp;
 
     const fillPercent = useCountUp(xpPercent, 1200);
     const animatedXp = useCountUp(hero.xp, 1200);
-    const bandDoneShown = useCountUp(bandDone, 1200);
+    const levelToGoShown = useCountUp(levelToGo, 1200);
 
     const base = `/profile/${hero.username}`;
     const online = hero.is_online || isOwnProfile;
@@ -640,36 +645,28 @@ export default function ProfileHero({
                     </div>
                 </div>
 
-                {/* ── the progression console: level · rank and gauge · the two
-                    numbers that describe momentum ── */}
+                {/* ── the progression console ──
+                    Rank is the anchor: its insignia is the largest object here
+                    and the artwork slot is ready for the real icons. The gauge
+                    measures the *level* band, because a level is what actually
+                    ticks over and what the next reward hangs off. ── */}
                 <div
                     className="relative mt-6 rounded-[20px] border border-white/[0.07] overflow-hidden"
                     style={{
-                        background: "linear-gradient(180deg, rgba(17,14,12,0.88) 0%, rgba(9,8,7,0.94) 100%)",
+                        background: "linear-gradient(180deg, rgba(17,14,12,0.9) 0%, rgba(9,8,7,0.95) 100%)",
                         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
                     }}
                 >
-                    {/* the tier's own metal bleeds across the panel */}
+                    {/* the tier's own metal bleeds out of the insignia */}
                     {hero.rank_color && (
                         <span
                             aria-hidden
-                            className="absolute inset-y-0 left-1/4 right-0 pointer-events-none"
+                            className="absolute inset-y-0 left-0 w-2/3 pointer-events-none"
                             style={{
-                                background: `linear-gradient(100deg, transparent 0%, color-mix(in srgb, ${hero.rank_color} 13%, transparent) 55%, transparent 100%)`,
+                                background: `linear-gradient(90deg, color-mix(in srgb, ${hero.rank_color} 15%, transparent) 0%, transparent 70%)`,
                             }}
                         />
                     )}
-                    {/* HUD trim: a punched dot field on the left, a bracket on the right */}
-                    <span
-                        aria-hidden
-                        className="absolute left-4 top-3 w-24 h-8 pointer-events-none opacity-40"
-                        style={{
-                            backgroundImage: "radial-gradient(circle, color-mix(in srgb, var(--accent) 55%, transparent) 1px, transparent 1px)",
-                            backgroundSize: "9px 9px",
-                            maskImage: "linear-gradient(120deg, #000 0%, transparent 75%)",
-                            WebkitMaskImage: "linear-gradient(120deg, #000 0%, transparent 75%)",
-                        }}
-                    />
                     <span
                         aria-hidden
                         className="absolute right-4 top-4 w-6 h-6 pointer-events-none border-t border-r rounded-tr-[4px]"
@@ -677,126 +674,137 @@ export default function ProfileHero({
                     />
 
                     <div className="relative flex flex-col lg:flex-row items-stretch">
-                        {/* ── level ── */}
-                        <div className="relative flex items-center lg:flex-col lg:justify-center gap-4 lg:gap-2.5 shrink-0 lg:w-[196px] px-5 py-5">
+                        {/* ── rank: the anchor ── */}
+                        <div className="relative flex items-center lg:flex-col lg:justify-center gap-4 lg:gap-3 shrink-0 lg:w-[212px] px-5 py-5">
                             <span
                                 aria-hidden
-                                className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-11 rounded-r-full bg-[var(--accent)]"
-                                style={{ boxShadow: "0 0 12px color-mix(in srgb, var(--accent) 75%, transparent)" }}
+                                className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-12 rounded-r-full"
+                                style={{
+                                    background: hero.rank_color || "var(--accent)",
+                                    boxShadow: `0 0 12px ${hero.rank_color || "var(--accent)"}`,
+                                }}
                             />
-                            <LevelHex level={hero.level} size={86} />
-                            <div className="lg:text-center">
-                                <p className="font-display text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--accent)]">
-                                    Level
+                            <RankInsigniaMark
+                                icon={hero.rank_icon}
+                                color={hero.rank_color}
+                                name={hero.rank_name}
+                                size={78}
+                            />
+                            <div className="lg:text-center min-w-0">
+                                <p
+                                    className="font-display text-[21px] font-black uppercase tracking-[0.07em] leading-none truncate"
+                                    style={{ color: hero.rank_color || "var(--ink-hi)" }}
+                                >
+                                    {hero.rank_name || "Unranked"}
                                 </p>
-                                {/* one pip per tenth of the band — progress you can read at a glance */}
-                                <div className="mt-2 flex items-center gap-[5px]">
-                                    {Array.from({ length: 10 }).map((_, i) => (
-                                        <span
-                                            key={i}
-                                            className="w-[5px] h-[5px] rounded-full transition-colors duration-500"
-                                            style={{
-                                                background:
-                                                    i < Math.round(fillPercent / 10)
-                                                        ? "var(--accent)"
-                                                        : "rgba(255,255,255,0.13)",
-                                                boxShadow:
-                                                    i < Math.round(fillPercent / 10)
-                                                        ? "0 0 6px color-mix(in srgb, var(--accent) 70%, transparent)"
-                                                        : "none",
-                                            }}
-                                        />
-                                    ))}
-                                </div>
+                                <p className="mt-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.2em] text-[var(--ink-faint)]">
+                                    Current Rank
+                                </p>
                             </div>
                         </div>
 
                         <span aria-hidden className="hidden lg:block w-px my-5 bg-white/[0.07]" />
                         <span aria-hidden className="lg:hidden h-px mx-5 bg-white/[0.07]" />
 
-                        {/* ── rank and the gauge ── */}
+                        {/* ── the climb ── */}
                         <div className="flex-1 min-w-0 px-5 py-5">
-                            <div className="flex items-center gap-3.5">
-                                <RankMedal color={hero.rank_color} size={46} />
-                                <div className="min-w-0">
-                                    <p
-                                        className="font-display text-[19px] font-black uppercase tracking-[0.06em] leading-none truncate"
-                                        style={{ color: hero.rank_color || "var(--ink-hi)" }}
-                                    >
-                                        {hero.rank_name || "Unranked"}
-                                    </p>
-                                    <p className="mt-1 font-display text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--ink-faint)]">
-                                        Current Rank
-                                    </p>
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <LevelHex level={hero.level} size={52} />
+                                    <div className="min-w-0">
+                                        <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.2em] text-[var(--ink-faint)]">
+                                            Level
+                                        </p>
+                                        <p className="mt-0.5 font-display text-[17px] font-black tabular-nums leading-none text-white">
+                                            {hero.level}
+                                        </p>
+                                    </div>
                                 </div>
 
-                                <div className="ml-auto shrink-0">
-                                    {nextXp && hero.next_rank ? (
-                                        <Link
-                                            href={`${base}?tab=stats`}
-                                            className="group/next inline-flex items-center gap-1.5 font-display text-[11px] font-bold uppercase tracking-[0.1em] tabular-nums text-[var(--ink-faint)] hover:text-[var(--ink-mid)] transition-colors duration-300"
-                                        >
-                                            <span className="text-white">{(nextXp - hero.xp).toLocaleString()}</span>
-                                            <span>XP to</span>
-                                            <span style={{ color: hero.next_rank.color || "var(--ink-hi)" }}>
-                                                {hero.next_rank.name}
-                                            </span>
-                                            <ChevronRight className="w-3.5 h-3.5 group-hover/next:translate-x-0.5 transition-transform duration-300" />
-                                        </Link>
-                                    ) : (
-                                        <span className="font-display text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--ink-faint)]">
-                                            Top of the ladder
-                                        </span>
-                                    )}
+                                <div className="text-right shrink-0">
+                                    <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.2em] text-[var(--ink-faint)]">
+                                        Next
+                                    </p>
+                                    <p className="mt-0.5 font-display text-[17px] font-black tabular-nums leading-none text-[var(--accent)]">
+                                        {hero.level + 1}
+                                    </p>
                                 </div>
                             </div>
 
-                            <XpRail percent={fillPercent} className="mt-4" />
+                            <XpRail percent={fillPercent} className="mt-3.5" />
 
                             <div className="mt-2 flex items-center justify-between gap-3 font-display text-[12px] font-bold tabular-nums">
                                 <span className="text-[var(--ink-faint)]">
-                                    <span className="text-white">{bandDoneShown.toLocaleString()}</span>
-                                    {nextXp ? ` / ${bandSize.toLocaleString()} XP` : " XP"}
+                                    <span className="text-white">{levelToGoShown.toLocaleString()}</span> XP TO GO
                                 </span>
                                 <span className="text-[var(--accent)]">{fillPercent}%</span>
+                            </div>
+
+                            {/* the two figures that describe momentum, kept small */}
+                            <div className="mt-3 flex items-center gap-4 font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-[var(--ink-faint)]">
+                                <span className="inline-flex items-center gap-1.5">
+                                    <TrendingUp className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                    Total XP
+                                    <span className="text-white tabular-nums tracking-normal text-[11px]">
+                                        {animatedXp.toLocaleString()}
+                                    </span>
+                                </span>
+                                <span aria-hidden className="w-px h-3 bg-white/10" />
+                                <span className="inline-flex items-center gap-1.5">
+                                    <Flame className={`w-3.5 h-3.5 ${hero.streak_days > 0 ? "text-orange-400" : "text-[var(--ink-faint)]"}`} />
+                                    Streak
+                                    <span className="text-white tabular-nums tracking-normal text-[11px]">
+                                        {hero.streak_days}d
+                                    </span>
+                                </span>
                             </div>
                         </div>
 
                         <span aria-hidden className="hidden lg:block w-px my-5 bg-white/[0.07]" />
                         <span aria-hidden className="lg:hidden h-px mx-5 bg-white/[0.07]" />
 
-                        {/* ── momentum ── */}
-                        <div className="shrink-0 lg:w-[210px] px-5 py-5 flex lg:flex-col gap-5 lg:gap-0">
-                            <div className="flex items-center gap-3 lg:flex-1">
-                                <TrendingUp className="w-[18px] h-[18px] shrink-0 text-[var(--accent)]" />
-                                <div className="min-w-0">
-                                    <p className="font-display text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--ink-faint)]">
-                                        Total XP
-                                    </p>
-                                    <p className="mt-0.5 font-display text-[20px] font-black tabular-nums leading-none text-white">
-                                        {animatedXp.toLocaleString()}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <span aria-hidden className="hidden lg:block h-px my-3 bg-white/[0.07]" />
-                            <span aria-hidden className="lg:hidden w-px bg-white/[0.07]" />
-
-                            <div className="flex items-center gap-3 lg:flex-1">
-                                <Flame
-                                    className={`w-[18px] h-[18px] shrink-0 ${hero.streak_days > 0 ? "text-orange-400" : "text-[var(--ink-faint)]"}`}
+                        {/* ── what is waiting at the top of the bar ── */}
+                        <div className="shrink-0 lg:w-[224px] px-5 py-5 flex items-center gap-4">
+                            <span
+                                className="relative flex items-center justify-center w-[58px] h-[58px] shrink-0 rounded-[14px] border"
+                                style={{
+                                    borderColor: rankUpNext
+                                        ? `color-mix(in srgb, ${hero.next_rank?.color || "var(--accent)"} 45%, transparent)`
+                                        : "rgba(255,255,255,0.09)",
+                                    background: rankUpNext
+                                        ? `color-mix(in srgb, ${hero.next_rank?.color || "var(--accent)"} 14%, #0d0b0a)`
+                                        : "#0d0b0a",
+                                }}
+                            >
+                                <Gift
+                                    className="relative w-7 h-7"
+                                    style={{ color: rankUpNext ? hero.next_rank?.color || "var(--accent)" : "var(--ink-faint)" }}
                                 />
-                                <div className="min-w-0">
-                                    <p className="font-display text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--ink-faint)]">
-                                        Streak
-                                    </p>
-                                    <p className="mt-0.5 font-display text-[20px] font-black tabular-nums leading-none text-white">
-                                        {hero.streak_days}
-                                        <span className="ml-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--ink-faint)]">
-                                            {hero.streak_days === 1 ? "Day" : "Days"}
-                                        </span>
-                                    </p>
-                                </div>
+                            </span>
+
+                            <div className="min-w-0">
+                                <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.2em] text-[var(--ink-faint)]">
+                                    Reward at level {hero.level + 1}
+                                </p>
+                                {rankUpNext ? (
+                                    <>
+                                        <p
+                                            className="mt-1 font-display text-[15px] font-black uppercase tracking-[0.06em] leading-none truncate"
+                                            style={{ color: hero.next_rank?.color || "var(--ink-hi)" }}
+                                        >
+                                            {hero.next_rank?.name}
+                                        </p>
+                                        <p className="mt-1 text-[11px] text-[var(--ink-low)]">Rank promotion</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="mt-1 font-display text-[15px] font-black uppercase tracking-[0.06em] leading-none text-[var(--ink-mid)]">
+                                            Level cache
+                                        </p>
+                                        {/* honest until the reward table exists */}
+                                        <p className="mt-1 text-[11px] text-[var(--ink-faint)]">Contents to be revealed</p>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>

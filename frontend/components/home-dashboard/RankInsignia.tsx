@@ -98,6 +98,43 @@ export function LevelHex({ level, size = 92 }: { level: number; size?: number })
 }
 
 /**
+ * The rank insignia. Ranks carry an `icon` column that is still unseeded, so
+ * this falls back to a struck medal until the artwork lands — swap the images
+ * in and every profile picks them up with no code change.
+ */
+export function RankInsigniaMark({
+    icon,
+    color,
+    name,
+    size = 76,
+}: {
+    icon: string | null;
+    color: string | null;
+    name: string | null;
+    size?: number;
+}) {
+    if (icon) {
+        return (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+                src={icon}
+                alt={name ? `${name} rank` : "Rank"}
+                width={size}
+                height={size}
+                className="shrink-0 object-contain"
+                style={{
+                    width: size,
+                    height: size,
+                    filter: `drop-shadow(0 0 14px color-mix(in srgb, ${color || "#9ca3af"} 45%, transparent))`,
+                }}
+            />
+        );
+    }
+
+    return <RankMedal color={color} size={size} />;
+}
+
+/**
  * The rank's medal, struck in that tier's own metal. A hex plate with a
  * bevelled face and a cold highlight — the object the name refers to.
  */

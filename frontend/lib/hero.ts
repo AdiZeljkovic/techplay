@@ -1,3 +1,4 @@
+import { getStorageUrl } from "@/lib/imageUrl";
 import type { DashboardData } from "@/lib/types/dashboard";
 import type { UserProfile } from "@/lib/types/profile";
 
@@ -20,6 +21,8 @@ export interface HeroModel {
     xp: number;
     rank_name: string | null;
     rank_color: string | null;
+    /** Rank artwork. Null until the icons are seeded — the UI falls back. */
+    rank_icon: string | null;
     next_rank: { name: string; min_xp: number; color: string | null } | null;
     is_online: boolean;
     /** Staff tick next to the name. */
@@ -55,6 +58,7 @@ export function heroFromDashboard(data: DashboardData): HeroModel {
         xp: user.xp,
         rank_name: user.rank_name,
         rank_color: user.rank_color,
+        rank_icon: user.rank_icon ? getStorageUrl(user.rank_icon) : null,
         next_rank: user.next_rank,
         // You are looking at your own page, so you are online by definition.
         is_online: true,
@@ -92,6 +96,7 @@ export function heroFromProfile(profile: UserProfile): HeroModel {
         xp: stats.xp ?? user.xp ?? 0,
         rank_name: user.rank?.name ?? null,
         rank_color: user.rank?.color ?? null,
+        rank_icon: user.rank?.icon ? getStorageUrl(user.rank.icon) : null,
         next_rank: profile.next_rank
             ? { name: profile.next_rank.name, min_xp: profile.next_rank.min_xp, color: profile.next_rank.color ?? null }
             : null,
