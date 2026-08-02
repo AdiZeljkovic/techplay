@@ -122,11 +122,10 @@ export function RankInsigniaMark({
                 width={size}
                 height={size}
                 className="shrink-0 object-contain"
-                style={{
-                    width: size,
-                    height: size,
-                    filter: `drop-shadow(0 0 14px color-mix(in srgb, ${color || "#9ca3af"} 45%, transparent))`,
-                }}
+                // The insignia set is struck in one metal with an accent glow of
+                // its own, so a tier-coloured halo behind it only muddies the
+                // art. Tier colour stays on the name and the rail beside it.
+                style={{ width: size, height: size, filter: "drop-shadow(0 4px 14px rgba(0,0,0,0.7))" }}
             />
         );
     }

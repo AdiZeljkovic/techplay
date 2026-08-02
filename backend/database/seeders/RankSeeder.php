@@ -44,7 +44,10 @@ class RankSeeder extends Seeder
             ['name' => 'Eternal', 'min_xp' => 500000, 'color' => '#651fff'], // Ultimate Rank
         ];
 
+        // Insignia artwork lives in storage/app/public/ranks and is named after
+        // the rank, so the ladder and its images can never drift apart.
         foreach ($ranks as $rank) {
+            $rank['icon'] = 'ranks/'.strtolower($rank['name']).'.png';
             Rank::updateOrCreate(['name' => $rank['name']], $rank);
         }
     }
