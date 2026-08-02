@@ -412,6 +412,7 @@ export default function ProfileHero({
     const fillPercent = useCountUp(xpPercent, 1200);
     const animatedXp = useCountUp(hero.xp, 1200);
     const levelToGoShown = useCountUp(levelToGo, 1200);
+    const levelDoneShown = useCountUp(levelDone, 1200);
 
     const base = `/profile/${hero.username}`;
     const online = hero.is_online || isOwnProfile;
@@ -704,42 +705,60 @@ export default function ProfileHero({
                     <span aria-hidden className="lg:hidden h-px mx-5 bg-white/[0.09]" />
 
                     {/* the climb */}
-                    <div className="flex-1 min-w-0 px-5 py-4 flex flex-col justify-center">
-                        <div className="flex items-end justify-between gap-3">
-                            <span className="flex items-center gap-2.5 min-w-0">
-                                <LevelHex level={hero.level} size={44} />
-                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.2em] text-white/35">
-                                    Level
-                                </span>
+                    {/* The rung you're on and the one you're climbing to bookend
+                        the track, so the gauge reads as travel between two
+                        levels rather than a bar with a number beside it. The
+                        next hex sits in unlit metal until you reach it. */}
+                    <div className="flex-1 min-w-0 px-5 py-4 flex items-center gap-3.5">
+                        <span className="flex flex-col items-center gap-1.5 shrink-0">
+                            <LevelHex level={hero.level} size={46} />
+                            <span className="font-display text-[8px] font-bold uppercase tracking-[0.2em] text-white/35">
+                                Level
                             </span>
+                        </span>
 
-                            <span className="flex items-baseline gap-3 shrink-0 font-display text-[11px] font-bold uppercase tracking-[0.1em] tabular-nums">
-                                <span className="text-white/40">
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-baseline justify-between gap-3 mb-2">
+                                <span className="flex items-center gap-3 font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/35">
+                                    <span className="inline-flex items-center gap-1.5">
+                                        <TrendingUp className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                        Total XP
+                                        <span className="text-white tabular-nums tracking-normal text-[11px]">
+                                            {animatedXp.toLocaleString()}
+                                        </span>
+                                    </span>
+                                    <span aria-hidden className="w-px h-3 bg-white/15" />
+                                    <span className="inline-flex items-center gap-1.5">
+                                        <Flame className={`w-3.5 h-3.5 ${hero.streak_days > 0 ? "text-orange-400" : "text-white/35"}`} />
+                                        Streak
+                                        <span className="text-white tabular-nums tracking-normal text-[11px]">
+                                            {hero.streak_days}d
+                                        </span>
+                                    </span>
+                                </span>
+
+                                <span className="shrink-0 font-display text-[11px] font-bold uppercase tracking-[0.1em] tabular-nums text-white/40">
                                     <span className="text-white">{levelToGoShown.toLocaleString()}</span> XP to go
                                 </span>
+                            </div>
+
+                            <XpRail percent={fillPercent} />
+
+                            <div className="mt-1.5 flex items-baseline justify-between gap-3 font-display text-[10px] font-bold uppercase tracking-[0.1em] tabular-nums">
+                                <span className="text-white/30">
+                                    <span className="text-white/60">{levelDoneShown.toLocaleString()}</span>
+                                    {` / ${levelSize.toLocaleString()} XP`}
+                                </span>
                                 <span className="text-[var(--accent-bright)]">{fillPercent}%</span>
-                            </span>
+                            </div>
                         </div>
 
-                        <XpRail percent={fillPercent} className="mt-2.5" />
-
-                        <div className="mt-2.5 flex items-center gap-4 font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/35">
-                            <span className="inline-flex items-center gap-1.5">
-                                <TrendingUp className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                Total XP
-                                <span className="text-white tabular-nums tracking-normal text-[11px]">
-                                    {animatedXp.toLocaleString()}
-                                </span>
+                        <span className="flex flex-col items-center gap-1.5 shrink-0">
+                            <LevelHex level={hero.level + 1} size={40} dim />
+                            <span className="font-display text-[8px] font-bold uppercase tracking-[0.2em] text-white/25">
+                                Next
                             </span>
-                            <span aria-hidden className="w-px h-3 bg-white/15" />
-                            <span className="inline-flex items-center gap-1.5">
-                                <Flame className={`w-3.5 h-3.5 ${hero.streak_days > 0 ? "text-orange-400" : "text-white/35"}`} />
-                                Streak
-                                <span className="text-white tabular-nums tracking-normal text-[11px]">
-                                    {hero.streak_days}d
-                                </span>
-                            </span>
-                        </div>
+                        </span>
                     </div>
 
                     <span aria-hidden className="hidden lg:block w-px my-4 bg-white/[0.09]" />

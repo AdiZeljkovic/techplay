@@ -62,19 +62,31 @@ export function LevelCrest({ level, size = 62 }: { level: number; size?: number 
  * as a rating shield; filled reads as a button. Paired with its own caption so
  * the numeral never has to explain itself.
  */
-export function LevelHex({ level, size = 92 }: { level: number; size?: number }) {
+export function LevelHex({
+    level,
+    size = 92,
+    dim = false,
+}: {
+    level: number;
+    size?: number;
+    /** The rung you haven't reached — unlit metal, waiting. */
+    dim?: boolean;
+}) {
     const shown = useCountUp(level, 900);
 
     return (
-        <span className="relative block shrink-0" style={{ width: size, height: size }} title={`Level ${level}`}>
-            {/* accent edge */}
+        <span
+            className="relative block shrink-0"
+            style={{ width: size, height: size }}
+            title={dim ? `Next: level ${level}` : `Level ${level}`}
+        >
             <span
                 aria-hidden
                 className="absolute inset-0"
                 style={{
                     clipPath: HEX,
-                    background: "var(--accent)",
-                    filter: "drop-shadow(0 0 14px color-mix(in srgb, var(--accent) 45%, transparent))",
+                    background: dim ? "rgba(255,255,255,0.16)" : "var(--accent)",
+                    filter: dim ? "none" : "drop-shadow(0 0 14px color-mix(in srgb, var(--accent) 45%, transparent))",
                 }}
             />
             {/* hollow it out */}
@@ -88,10 +100,12 @@ export function LevelHex({ level, size = 92 }: { level: number; size?: number })
                 }}
             />
             <span
-                className="absolute inset-0 flex items-center justify-center font-display font-black tabular-nums text-white leading-none"
+                className={`absolute inset-0 flex items-center justify-center font-display font-black tabular-nums leading-none ${
+                    dim ? "text-white/35" : "text-white"
+                }`}
                 style={{ fontSize: size * 0.42 }}
             >
-                {shown}
+                {dim ? level : shown}
             </span>
         </span>
     );
@@ -219,26 +233,35 @@ export function RankEmblem({ name, color }: { name: string; color: string | null
  * Squared rather than pill-shaped — round ends read as a web progress bar,
  * hard ends read as instrumentation.
  */
-export function XpRail({ percent, className = "" }: { percent: number; className?: string }) {
+export function XpRail({
+    percent,
+    className = "",
+    segments = 10,
+}: {
+    percent: number;
+    className?: string;
+    segments?: number;
+}) {
     const p = Math.max(0, Math.min(100, percent));
+    const step = 100 / segments;
 
     return (
         <span
-            className={`relative block h-[13px] rounded-[3px] overflow-hidden ${className}`}
+            className={`relative block h-[16px] rounded-[4px] overflow-hidden ${className}`}
             style={{
-                background: "linear-gradient(180deg, #070605 0%, #100d0b 100%)",
-                boxShadow: "inset 0 2px 6px rgba(0,0,0,0.85), inset 0 0 0 1px rgba(255,255,255,0.05)",
+                background: "linear-gradient(180deg, #070605 0%, #131010 100%)",
+                boxShadow: "inset 0 2px 7px rgba(0,0,0,0.9), inset 0 0 0 1px rgba(255,255,255,0.06)",
             }}
             aria-hidden
         >
             {p > 0 && (
                 <span
-                    className="absolute inset-y-[1px] left-[1px] rounded-[2px] overflow-hidden"
+                    className="absolute inset-y-[2px] left-[2px] rounded-[2px] overflow-hidden"
                     style={{
-                        width: `calc(${p}% - 2px)`,
+                        width: `calc(${p}% - 4px)`,
                         background:
                             "linear-gradient(180deg, var(--accent-bright) 0%, var(--accent) 50%, var(--accent-hover) 100%)",
-                        boxShadow: "0 0 14px color-mix(in srgb, var(--accent) 55%, transparent)",
+                        boxShadow: "0 0 18px color-mix(in srgb, var(--accent) 60%, transparent)",
                     }}
                 >
                     {/* the charge is moving */}
@@ -246,22 +269,32 @@ export function XpRail({ percent, className = "" }: { percent: number; className
                         className="tp-xp-stripes absolute inset-0"
                         style={{
                             backgroundImage:
-                                "repeating-linear-gradient(115deg, rgba(255,255,255,0.17) 0px, rgba(255,255,255,0.17) 6px, transparent 6px, transparent 13px)",
+                                "repeating-linear-gradient(115deg, rgba(255,255,255,0.14) 0px, rgba(255,255,255,0.14) 6px, transparent 6px, transparent 13px)",
                             backgroundSize: "26px 100%",
                         }}
                     />
-                    {/* gloss crown along the top third */}
+                    {/* gloss crown along the top third, shadow along the bottom */}
                     <span className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/40 to-transparent" />
                     <span className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/25 to-transparent" />
                 </span>
             )}
 
-            {/* quarter marks milled across the channel */}
+            {/*
+             * Segment marks, engraved rather than drawn: a dark groove with a
+             * light lip beside it. One layer then reads on both surfaces — the
+             * groove shows against the lit charge, the lip against the empty
+             * channel — which a single-colour divider can never do.
+             */}
             <span
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                    background:
-                        "repeating-linear-gradient(90deg, transparent 0, transparent calc(25% - 1px), rgba(0,0,0,0.55) calc(25% - 1px), rgba(0,0,0,0.55) 25%)",
+                    background: `repeating-linear-gradient(90deg,
+                        transparent 0,
+                        transparent calc(${step}% - 2px),
+                        rgba(0,0,0,0.55) calc(${step}% - 2px),
+                        rgba(0,0,0,0.55) calc(${step}% - 1px),
+                        rgba(255,255,255,0.10) calc(${step}% - 1px),
+                        rgba(255,255,255,0.10) ${step}%)`,
                 }}
             />
 
@@ -271,7 +304,7 @@ export function XpRail({ percent, className = "" }: { percent: number; className
                     className="absolute top-0 bottom-0 w-[2px] bg-white"
                     style={{
                         left: `calc(${p}% - 1px)`,
-                        boxShadow: "0 0 8px rgba(255,255,255,0.95), 0 0 18px color-mix(in srgb, var(--accent) 85%, transparent)",
+                        boxShadow: "0 0 9px rgba(255,255,255,0.95), 0 0 20px color-mix(in srgb, var(--accent) 85%, transparent)",
                     }}
                 />
             )}
