@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
     User as UserIcon, MapPin, Play, Pencil, Share2, Check, BadgeCheck, MoreHorizontal,
-    Gamepad2, Star, Clock3, Award, Users, UserPlus, Clock, MessageSquare, Sparkles, ShieldCheck, LinkIcon, GitCompare,
+    Gamepad2, Star, Clock3, Award, UserPlus, Clock, MessageSquare, Sparkles, ShieldCheck, LinkIcon, GitCompare,
     ChevronRight, TrendingUp, Flame,
 } from "lucide-react";
 import PlatformIcon from "@/components/games/PlatformIcon";
@@ -170,11 +170,41 @@ function AvatarFrame({
     );
 }
 
-const BTN_GHOST =
-    "inline-flex items-center gap-2 px-4 h-10 rounded-[var(--radius-card)] bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-hi)] font-display text-[11px] font-bold uppercase tracking-wider hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] hover:bg-[var(--fill-3)] transition-colors duration-300";
+/**
+ * Chamfered corners — top-left and bottom-right cut away. Every HUD in the
+ * genre uses the same trick to say "this is hardware, not a web form", and it
+ * costs one clip-path.
+ */
+const CUT = "polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px)";
 
-const BTN_PRIMARY =
-    "group/cta relative inline-flex items-center gap-2 px-5 h-10 rounded-[var(--radius-card)] bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider overflow-hidden hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)]";
+const HUD_BTN =
+    "group/cta relative inline-flex items-center justify-center gap-2 h-11 px-4 font-display text-[11px] font-bold uppercase tracking-[0.11em] overflow-hidden transition-colors duration-300 disabled:opacity-60";
+
+const BTN_PRIMARY = `${HUD_BTN} text-white`;
+const BTN_GHOST = `${HUD_BTN} text-[var(--ink-hi)]`;
+
+/** Solid accent face for the one action that matters most on the panel. */
+const primaryStyle: React.CSSProperties = {
+    clipPath: CUT,
+    background: "linear-gradient(180deg, var(--accent-bright) 0%, var(--accent) 52%, var(--accent-hover) 100%)",
+    boxShadow: "0 0 22px -6px color-mix(in srgb, var(--accent) 85%, transparent)",
+};
+
+/** The outer element paints the edge; an inset layer paints the face. */
+const ghostStyle: React.CSSProperties = {
+    clipPath: CUT,
+    background: "rgba(255,255,255,0.13)",
+};
+
+function GhostFace() {
+    return (
+        <span
+            aria-hidden
+            className="absolute inset-[1px] bg-[#141210] group-hover/cta:bg-[#1c1815] transition-colors duration-300"
+            style={{ clipPath: CUT }}
+        />
+    );
+}
 
 /** The diagonal light that wipes across a primary button on hover. */
 function Sheen() {
@@ -203,37 +233,43 @@ function StatCard({
     href?: string;
 }) {
     const animated = useCountUp(value, 1100);
-    const cls =
-        "group relative flex flex-col items-center justify-center gap-2 min-w-0 px-2 py-5 rounded-[18px] border border-white/[0.07] bg-[color-mix(in_srgb,#0b0a09_72%,transparent)] backdrop-blur-md overflow-hidden transition-colors duration-300";
+    // Same chamfer as the buttons beneath: outer paints the edge, the inset
+    // layer paints the face, since clip-path would eat a real border.
+    const cls = "group relative flex flex-col items-center justify-center gap-2 min-w-0 px-2 py-5 overflow-hidden";
 
     const body = (
         <>
+            <span
+                aria-hidden
+                className="absolute inset-[1px] bg-[#0d0b0a] group-hover:bg-[#151210] transition-colors duration-300"
+                style={{ clipPath: CUT }}
+            />
             {href && (
                 <span
                     aria-hidden
-                    className="absolute top-0 left-0 right-0 h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]"
+                    className="absolute top-0 left-3 right-0 h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]"
                 />
             )}
-            <Icon className="w-[18px] h-[18px] shrink-0 text-white/85 group-hover:text-[var(--accent)] transition-colors duration-300" />
-            <span className="font-display text-[28px] font-black tabular-nums leading-none text-white">
+            <Icon className="relative w-[18px] h-[18px] shrink-0 text-white/85 group-hover:text-[var(--accent)] transition-colors duration-300" />
+            <span className="relative font-display text-[28px] font-black tabular-nums leading-none text-white">
                 {compact(animated)}
             </span>
-            <span className="text-[11.5px] font-medium text-white/45 leading-none truncate max-w-full">{label}</span>
+            <span className="relative text-[11.5px] font-medium text-white/45 leading-none truncate max-w-full">
+                {label}
+            </span>
         </>
     );
 
-    // Not every tile leads somewhere on someone else's profile (Friends
-    // doesn't) — those render as plain cards rather than dead links.
+    const edge: React.CSSProperties = { clipPath: CUT, background: "rgba(255,255,255,0.08)" };
+
+    // Not every tile leads somewhere on someone else's profile — those render
+    // as plain cards rather than dead links.
     return href ? (
-        <Link
-            href={href}
-            title={label}
-            className={`${cls} hover:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] hover:bg-[color-mix(in_srgb,var(--surface-0)_90%,transparent)]`}
-        >
+        <Link href={href} title={label} className={cls} style={edge}>
             {body}
         </Link>
     ) : (
-        <div title={label} className={cls}>
+        <div title={label} className={cls} style={edge}>
             {body}
         </div>
     );
@@ -243,32 +279,36 @@ function StatCard({
 function FriendAction({ status, busy, onAdd }: { status: FriendStatus; busy: boolean; onAdd: () => void }) {
     if (status === "accepted") {
         return (
-            <span className={`${BTN_GHOST} cursor-default`}>
-                <Check className="w-3.5 h-3.5 text-emerald-400" /> Friends
+            <span className={`${BTN_GHOST} col-span-2 cursor-default`} style={ghostStyle}>
+                <GhostFace />
+                <Check className="relative w-3.5 h-3.5 text-emerald-400" />
+                <span className="relative">Friends</span>
             </span>
         );
     }
 
     if (status === "pending") {
         return (
-            <span className={`${BTN_GHOST} cursor-default opacity-70`}>
-                <Clock className="w-3.5 h-3.5" /> Request Sent
+            <span className={`${BTN_GHOST} col-span-2 cursor-default opacity-70`} style={ghostStyle}>
+                <GhostFace />
+                <Clock className="relative w-3.5 h-3.5" />
+                <span className="relative">Request Sent</span>
             </span>
         );
     }
 
     if (status === "incoming") {
         return (
-            <Link href="/friends" className={BTN_PRIMARY}>
+            <Link href="/friends" className={`${BTN_PRIMARY} col-span-2`} style={primaryStyle}>
                 <Sheen />
                 <UserPlus className="relative w-3.5 h-3.5" />
-                <span className="relative">Respond to Request</span>
+                <span className="relative">Respond</span>
             </Link>
         );
     }
 
     return (
-        <button onClick={onAdd} disabled={busy} className={`${BTN_PRIMARY} disabled:opacity-60`}>
+        <button onClick={onAdd} disabled={busy} className={`${BTN_PRIMARY} col-span-2`} style={primaryStyle}>
             <Sheen />
             <UserPlus className="relative w-3.5 h-3.5" />
             <span className="relative">{busy ? "Sending…" : "Add Friend"}</span>
@@ -296,15 +336,17 @@ function MoreMenu({ children }: { children: React.ReactNode }) {
                 onClick={() => setOpen((v) => !v)}
                 aria-label="More profile actions"
                 aria-expanded={open}
-                className="inline-flex items-center justify-center w-10 h-10 rounded-[var(--radius-card)] bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-low)] hover:text-[var(--ink-hi)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
+                className={`${BTN_GHOST} w-full text-[var(--ink-low)] hover:text-[var(--ink-hi)]`}
+                style={ghostStyle}
             >
-                <MoreHorizontal className="w-4 h-4" />
+                <GhostFace />
+                <MoreHorizontal className="relative w-4 h-4" />
             </button>
 
             {open && (
                 <div
                     onClick={() => setOpen(false)}
-                    className="absolute left-0 top-full mt-2 z-50 min-w-[210px] p-1.5 rounded-[var(--radius-card)] border border-[var(--line-strong)] bg-[var(--surface-1)] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.8)]"
+                    className="absolute right-0 top-full mt-2 z-50 min-w-[230px] p-1.5 rounded-[var(--radius-card)] border border-[var(--line-strong)] bg-[var(--surface-1)] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.8)]"
                 >
                     {children}
                 </div>
@@ -382,8 +424,6 @@ export default function ProfileHero({
         { label: "Reviews", value: hero.stats.reviews, icon: Star, href: `${base}?tab=activity` },
         { label: "Hours", value: hero.stats.hours, icon: Clock3, href: `${base}?tab=collection` },
         { label: "Achievements", value: hero.stats.achievements, icon: Award, href: `${base}?tab=achievements` },
-        // your friend list is yours; a visitor just sees the number
-        { label: "Friends", value: hero.stats.friends, icon: Users, href: isOwnProfile ? "/friends" : undefined },
     ];
 
     const tags = hero.playstyle_tags.slice(0, 3);
@@ -505,30 +545,35 @@ export default function ProfileHero({
                         </div>
                     </div>
 
-                    {/* ── the numbers, and the actions that belong beside them ── */}
-                    <div className="shrink-0 xl:w-[620px] space-y-3">
-                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
+                    {/* ── the numbers, and the actions that belong beside them ──
+                        Both rows run the same four-column grid, so every button
+                        edge lands on a card edge. ── */}
+                    <div className="shrink-0 xl:w-[560px] space-y-2.5">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                             {tiles.map((t) => (
                                 <StatCard key={t.label} icon={t.icon} value={t.value} label={t.label} href={t.href} />
                             ))}
                         </div>
 
-                        <div className="flex flex-wrap items-center xl:justify-end gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                                 {isOwnProfile ? (
                                     <>
-                                        <Link href="/settings" className={BTN_PRIMARY}>
+                                        <Link href="/settings" className={`${BTN_PRIMARY} col-span-2`} style={primaryStyle}>
                                             <Sheen />
                                             <Pencil className="relative w-3.5 h-3.5" />
-                                            <span className="relative">Customize Profile</span>
+                                            <span className="relative">Customize</span>
                                         </Link>
-                                        <button onClick={share} className={BTN_GHOST}>
+                                        <button onClick={share} className={BTN_GHOST} style={ghostStyle}>
+                                            <GhostFace />
                                             {copied ? (
                                                 <>
-                                                    <Check className="w-3.5 h-3.5 text-emerald-400" /> Copied
+                                                    <Check className="relative w-3.5 h-3.5 text-emerald-400" />
+                                                    <span className="relative">Copied</span>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Share2 className="w-3.5 h-3.5" /> Share Profile
+                                                    <Share2 className="relative w-3.5 h-3.5" />
+                                                    <span className="relative">Share</span>
                                                 </>
                                             )}
                                         </button>
@@ -552,8 +597,10 @@ export default function ProfileHero({
                                 ) : viewerSignedIn ? (
                                     <>
                                         <FriendAction status={friendStatus} busy={friendActionBusy} onAdd={() => onAddFriend?.()} />
-                                        <button onClick={() => onMessage?.()} className={BTN_GHOST}>
-                                            <MessageSquare className="w-3.5 h-3.5" /> Message
+                                        <button onClick={() => onMessage?.()} className={BTN_GHOST} style={ghostStyle}>
+                                            <GhostFace />
+                                            <MessageSquare className="relative w-3.5 h-3.5" />
+                                            <span className="relative">Message</span>
                                         </button>
                                         <MoreMenu>
                                             <button onClick={share} className={MENU_ITEM}>
@@ -568,19 +615,22 @@ export default function ProfileHero({
                                     </>
                                 ) : (
                                     <>
-                                        <Link href="/login" className={BTN_PRIMARY}>
+                                        <Link href="/login" className={`${BTN_PRIMARY} col-span-2`} style={primaryStyle}>
                                             <Sheen />
                                             <UserPlus className="relative w-3.5 h-3.5" />
-                                            <span className="relative">Sign In To Connect</span>
+                                            <span className="relative">Sign In</span>
                                         </Link>
-                                        <button onClick={share} className={BTN_GHOST}>
+                                        <button onClick={share} className={`${BTN_GHOST} col-span-2`} style={ghostStyle}>
+                                            <GhostFace />
                                             {copied ? (
                                                 <>
-                                                    <Check className="w-3.5 h-3.5 text-emerald-400" /> Copied
+                                                    <Check className="relative w-3.5 h-3.5 text-emerald-400" />
+                                                    <span className="relative">Copied</span>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Share2 className="w-3.5 h-3.5" /> Share Profile
+                                                    <Share2 className="relative w-3.5 h-3.5" />
+                                                    <span className="relative">Share</span>
                                                 </>
                                             )}
                                         </button>
