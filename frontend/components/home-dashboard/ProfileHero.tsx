@@ -13,7 +13,7 @@ import type { FriendStatus } from "@/lib/types/profile";
 import { rankTier } from "@/lib/ranks";
 import { useCountUp } from "@/hooks/useCountUp";
 import ProfileTabStrip from "./ProfileTabStrip";
-import { LevelHex, RankInsigniaMark, XpRail } from "./RankInsignia";
+import { RankInsigniaMark, XpRail } from "./RankInsignia";
 import { xpForLevel } from "@/lib/level";
 
 /** 12480 → "12.5K" — hours read as a badge, not a spreadsheet. */
@@ -498,58 +498,49 @@ export default function ProfileHero({
                 <div className="relative flex flex-col xl:flex-row items-stretch gap-5 p-5 md:p-6">
                     {/* rank · level · gauge */}
                     <div className="flex-1 min-w-0 flex flex-col sm:flex-row items-center sm:items-stretch gap-5 md:gap-7">
-                        <div className="flex items-center gap-4 shrink-0">
+                        {/* the insignia states the rank; the name is its caption */}
+                        <div className="flex flex-col items-center gap-2.5 shrink-0 sm:w-[150px]">
                             <RankInsigniaMark icon={hero.rank_icon} color={hero.rank_color} name={hero.rank_name} size={104} />
-                            <div className="min-w-0">
-                                <p className="font-display text-[10.5px] font-bold uppercase tracking-[0.16em] text-[var(--accent)]">
-                                    Current rank
-                                </p>
-                                <p className="mt-1.5 font-display text-[26px] font-black uppercase tracking-[0.02em] leading-none text-white truncate">
-                                    {hero.rank_name || "Unranked"}
-                                </p>
-                                {tier && (
-                                    <span className="mt-2.5 inline-flex items-center h-[22px] px-2.5 rounded-[6px] bg-white/[0.07] border border-white/[0.09] font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/55">
-                                        {tier}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0 flex-col justify-center">
-                            <LevelHex level={hero.level} size={78} />
-                            <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.2em] text-white/40">
-                                Level
-                            </span>
+                            <p
+                                className="font-display text-[15px] font-black uppercase tracking-[0.18em] leading-none text-white truncate max-w-full"
+                                title={tier ? `${hero.rank_name} · ${tier}` : undefined}
+                            >
+                                {hero.rank_name || "Unranked"}
+                            </p>
                         </div>
 
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
-                            <p className="flex items-center gap-2 font-display text-[10.5px] font-bold uppercase tracking-[0.16em] text-white/45">
-                                <span
-                                    aria-hidden
-                                    className="inline-block w-3.5 h-3.5 shrink-0"
-                                    style={{
-                                        clipPath: "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)",
-                                        background: "var(--xp)",
-                                    }}
-                                />
-                                <span className="text-[var(--xp-bright)]">XP</span> progress
-                            </p>
+                            {/* where you stand and what closes the gap, on one line
+                                above the track they describe */}
+                            <div className="flex items-baseline justify-between gap-4">
+                                <p className="flex items-center gap-2 font-display text-[11px] font-bold uppercase tracking-[0.16em] text-white/45">
+                                    <span
+                                        aria-hidden
+                                        className="inline-block w-3.5 h-3.5 shrink-0"
+                                        style={{
+                                            clipPath: "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)",
+                                            background: "var(--xp)",
+                                        }}
+                                    />
+                                    Level <span className="text-white text-[13px]">{hero.level}</span>
+                                </p>
 
-                            <XpRail percent={fillPercent} className="mt-2.5" />
+                                <p className="shrink-0 font-display text-[11px] font-bold uppercase tracking-[0.14em] tabular-nums text-white/40">
+                                    <span className="text-[var(--xp-bright)] text-[15px] font-black">
+                                        {levelToGo.toLocaleString()} XP
+                                    </span>{" "}
+                                    to level {hero.level + 1}
+                                </p>
+                            </div>
 
-                            <div className="mt-3 flex items-end justify-between gap-4">
-                                <p className="font-display text-[15px] font-black tabular-nums leading-none text-white/35">
+                            <XpRail percent={fillPercent} className="mt-3" />
+
+                            <div className="mt-2.5 flex items-baseline justify-between gap-4 font-display text-[13px] font-black tabular-nums leading-none">
+                                <p className="text-white/35">
                                     <span className="text-[var(--xp-bright)]">{levelDoneShown.toLocaleString()}</span>
                                     {` / ${levelSize.toLocaleString()} XP`}
                                 </p>
-                                <p className="text-right">
-                                    <span className="font-display text-[15px] font-black tabular-nums leading-none text-[var(--xp-bright)]">
-                                        {levelToGo.toLocaleString()} XP
-                                    </span>
-                                    <span className="block mt-1 font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/35">
-                                        To level {hero.level + 1}
-                                    </span>
-                                </p>
+                                <p className="text-[var(--xp-bright)]">{fillPercent}%</p>
                             </div>
                         </div>
                     </div>
