@@ -42,12 +42,16 @@ class GameCollectionController extends Controller
         $favorite = $request->boolean('favorite');
         $pageSize = min(60, max(10, (int) $request->query('page_size', 24)));
 
+        // 'added' powers the Recently Added rail; the shelf itself still leads
+        // with whatever you touched last.
+        $sort = $request->query('sort') === 'added' ? 'created_at' : 'updated_at';
+
         $q = UserGame::query()
             ->where('user_id', $user->id)
             ->when($status && in_array($status, UserGame::STATUSES), fn ($q) => $q->where('status', $status))
             ->when($favorite, fn ($q) => $q->where('is_favorite', true))
             ->with(['game:id,slug,name,released,rating,background_image,platform_names,genre_names'])
-            ->orderByDesc('updated_at');
+            ->orderByDesc($sort);
 
         $items = $q->paginate($pageSize);
 
@@ -395,6 +399,9 @@ class GameCollectionController extends Controller
             'platform' => $ug->platform,
             'started_at' => $ug->started_at,
             'completed_at' => $ug->completed_at,
+            // when it entered the shelf, distinct from the last edit — the
+            // "Recently added" rail needs the former
+            'added_at' => $ug->created_at,
             'updated_at' => $ug->updated_at,
             'game' => $game ? [
                 'id' => $game->id,

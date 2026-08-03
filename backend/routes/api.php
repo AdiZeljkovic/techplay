@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\V1\DiscordSubscriptionController;
 use App\Http\Controllers\Api\V1\DiscordXpController;
 use App\Http\Controllers\Api\V1\FeedController;
 use App\Http\Controllers\Api\V1\ForumController;
+use App\Http\Controllers\Api\V1\CollectionGoalController;
 use App\Http\Controllers\Api\V1\FriendActivityController;
 use App\Http\Controllers\Api\V1\FriendController;
 use App\Http\Controllers\Api\V1\GameCollectionController;
@@ -210,6 +211,9 @@ Route::prefix('v1')->group(function () {
 
         // Upcoming releases from user's wishlist/backlog
         Route::get('/collection/upcoming', [GameCollectionController::class, 'upcoming']);
+
+        // Collection goals (targets are yours to set; progress is read live)
+        Route::put('/me/collection-goals', [CollectionGoalController::class, 'update']);
 
         // Personalized feed
         Route::get('/feed/personalized', [FeedController::class, 'personalized']);
@@ -409,6 +413,7 @@ Route::prefix('v1')->group(function () {
         // Public Profile
         Route::get('/users/{username}/wrapped/{year}', [WrappedController::class, 'show']);
         Route::get('/users/{username}/collection', [GameCollectionController::class, 'index']);
+        Route::get('/users/{username}/collection-goals', [CollectionGoalController::class, 'index']);
         Route::get('/users/{username}/lists', [GameListController::class, 'index']);
         Route::get('/users/{username}/lists/{slug}', [GameListController::class, 'showBySlug']);
         Route::get('/users/{username}/activity', [ActivityController::class, 'index']);

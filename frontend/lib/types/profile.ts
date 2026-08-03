@@ -68,7 +68,21 @@ export interface ProfileStats {
     completed_count?: number;
     wishlist_count?: number;
     favorites_count?: number;
+    dropped_count?: number;
+    games_added_this_month?: number;
     bounty_balance?: number;
+}
+
+/** A self-set target, measured live against the collection. */
+export interface CollectionGoal {
+    type: "complete_games" | "unlock_achievements" | "shrink_backlog";
+    label: string;
+    target: number;
+    current: number;
+    percent: number;
+    done: boolean;
+    /** True while the user hasn't set this one — it's showing our suggestion. */
+    is_default: boolean;
 }
 
 export interface RewardItem {
@@ -147,6 +161,8 @@ export interface CollectionEntry {
     platform: string | null;
     started_at: string | null;
     completed_at: string | null;
+    /** When it entered the shelf — distinct from the last edit. */
+    added_at?: string | null;
     updated_at: string;
     game: {
         id: number;

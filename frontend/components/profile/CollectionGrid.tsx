@@ -9,11 +9,18 @@ import toast from "react-hot-toast";
 import { differenceInDays, parseISO } from "date-fns";
 import {
     Library, Trash2, Plus, Search, X, Loader2, Heart, CalendarClock, Pin, Upload, Clock3, Gamepad2, ChevronDown,
+    Trophy, Layers, Bookmark, ChevronDown as ChevronMore,
 } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
+import RingMeter from "@/components/ui/RingMeter";
+import { useCountUp } from "@/hooks/useCountUp";
+import { RecentlyAdded, CollectionGoals, PlatformBreakdown } from "./CollectionSidebar";
 import type { CollectionEntry, CollectionStatus, UserProfile } from "@/lib/types/profile";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
+
+/** One page of the shelf; Load more widens the request rather than paging. */
+const PAGE_SIZE = 24;
 
 /**
  * Each status owns a colour and keeps it everywhere — the chip on the card,
@@ -292,23 +299,210 @@ function GameCard({
     );
 }
 
+
+/* ── the ledger across the top ────────────────────────────────────────── */
+
+function StatCell({
+    icon,
+    label,
+    value,
+    sub,
+    tint,
+}: {
+    icon: React.ReactNode;
+    label: string;
+    value: number;
+    sub?: React.ReactNode;
+    tint: string;
+}) {
+    const shown = useCountUp(value, 900);
+
+    return (
+        <span className="flex items-center gap-3 min-w-0">
+            <span
+                className="shrink-0 w-9 h-9 rounded-[9px] flex items-center justify-center"
+                style={{ background: `${tint}1f`, color: tint }}
+            >
+                {icon}
+            </span>
+            <span className="min-w-0">
+                <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">
+                    {label}
+                </span>
+                <span className="mt-1 flex items-baseline gap-1.5">
+                    <span className="font-display text-[20px] font-black tabular-nums leading-none text-white">{shown}</span>
+                    {sub}
+                </span>
+            </span>
+        </span>
+    );
+}
+
+/** The shelf's headline figures, plus how much of it you've actually finished. */
+function CollectionLedger({ stats }: { stats?: UserProfile["stats"] }) {
+    const total = stats?.games_count ?? 0;
+    const completed = stats?.completed_count ?? 0;
+    const backlog = stats?.backlog_count ?? 0;
+    const wishlist = stats?.wishlist_count ?? 0;
+    const added = stats?.games_added_this_month ?? 0;
+
+    const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const ring = useCountUp(rate, 1100);
+
+    const share = (n: number) => (total > 0 ? `${Math.round((n / total) * 100)}%` : null);
+    const pct = (v: string | null) =>
+        v ? <span className="font-display text-[11px] font-bold tabular-nums text-white/30">{v}</span> : null;
+
+    return (
+        <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[#100e0d] px-5 py-4 mb-4 overflow-x-auto scrollbar-none">
+            <div className="flex items-center gap-6 md:gap-0 md:justify-between min-w-max md:min-w-0">
+                <StatCell
+                    icon={<Library className="w-4 h-4" />}
+                    label="Total games"
+                    value={total}
+                    tint="var(--accent)"
+                    sub={added > 0 ? <span className="font-display text-[11px] font-bold tabular-nums text-emerald-400">+{added} this month</span> : null}
+                />
+                <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08]" />
+                <StatCell icon={<Trophy className="w-4 h-4" />} label="Completed" value={completed} tint={STATUS.completed.color} sub={pct(share(completed))} />
+                <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08]" />
+                <StatCell icon={<Layers className="w-4 h-4" />} label="Backlog" value={backlog} tint={STATUS.backlog.color} sub={pct(share(backlog))} />
+                <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08]" />
+                <StatCell icon={<Bookmark className="w-4 h-4" />} label="Wishlist" value={wishlist} tint={STATUS.wishlist.color} sub={pct(share(wishlist))} />
+                <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08]" />
+
+                {/* the one figure that is a verdict, not a count */}
+                <span className="flex items-center gap-3.5 shrink-0">
+                    <RingMeter value={ring} size={54} strokeWidth={5}>
+                        <span className="font-display text-[12px] font-black tabular-nums text-[var(--accent)]">{ring}%</span>
+                    </RingMeter>
+                    <span>
+                        <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">
+                            Completion rate
+                        </span>
+                        <span className="block mt-1 text-[12px] font-semibold text-white">
+                            {total === 0 ? "Add your first game" : rate >= 50 ? "Great progress" : rate >= 20 ? "Chipping away" : "Plenty left to play"}
+                        </span>
+                    </span>
+                </span>
+            </div>
+        </div>
+    );
+}
+
+/* ── the featured slot ────────────────────────────────────────────────── */
+
+/**
+ * The pinned game, given the room it deserves. Pinning already existed and
+ * did nothing visible; this is its reward. With nothing pinned it falls back
+ * to what you're playing, so the slot is never empty on an active shelf.
+ */
+function FeaturedCard({ entry }: { entry: CollectionEntry }) {
+    const meta = STATUS[entry.status] ?? STATUS.backlog;
+    const pinned = entry.showcase_order != null;
+    const genres = (entry.game?.genre_names ?? []).slice(0, 2).join(" · ");
+    const progress = entry.progress ?? 0;
+
+    return (
+        <Link
+            href={entry.game ? `/games/${entry.game.slug}` : "#"}
+            className="group relative flex flex-col justify-end h-full min-h-[320px] rounded-[12px] overflow-hidden border border-white/[0.07] bg-[#0d0b0a] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
+        >
+            {entry.game?.background_image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                    src={entry.game.background_image}
+                    alt={entry.game.name}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]"
+                />
+            ) : (
+                <span className="absolute inset-0 flex items-center justify-center text-white/10 bg-white/[0.03]">
+                    <Gamepad2 className="w-12 h-12" />
+                </span>
+            )}
+            <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+
+            <span
+                className="absolute top-3 left-3 inline-flex items-center gap-1.5 h-[22px] pl-2 pr-2.5 rounded-[5px] backdrop-blur-md font-display text-[8.5px] font-black uppercase tracking-[0.14em] text-white"
+                style={{ backgroundColor: pinned ? "var(--accent)" : `${meta.color}33`, boxShadow: pinned ? undefined : `inset 0 0 0 1px ${meta.color}66` }}
+            >
+                {pinned ? <><Pin className="w-3 h-3 fill-current" /> Featured</> : <><span className="w-1.5 h-1.5 rounded-full" style={{ background: meta.color }} />{meta.label}</>}
+            </span>
+
+            {entry.is_favorite && (
+                <span className="absolute top-3 right-3 w-[26px] h-[26px] rounded-full bg-black/55 backdrop-blur-md flex items-center justify-center">
+                    <Heart className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                </span>
+            )}
+
+            <span className="relative p-4">
+                <span className="flex items-center gap-2.5 min-w-0">
+                    <span className="font-display text-[20px] font-black text-white leading-none truncate">{entry.game?.name}</span>
+                    {entry.platform && (
+                        <span className="shrink-0 inline-flex items-center h-[20px] px-2 rounded-[5px] bg-white/[0.12] font-display text-[9px] font-black uppercase tracking-[0.1em] text-white/80">
+                            {entry.platform}
+                        </span>
+                    )}
+                </span>
+
+                {genres && <span className="block mt-1.5 text-[12px] text-white/50 truncate">{genres}</span>}
+
+                {(progress > 0 || (entry.hours_played ?? 0) > 0) && (
+                    <>
+                        <span className="mt-3 flex items-baseline gap-2.5">
+                            {progress > 0 && (
+                                <span className="font-display text-[17px] font-black tabular-nums" style={{ color: meta.color }}>{progress}%</span>
+                            )}
+                            {(entry.hours_played ?? 0) > 0 && (
+                                <span className="font-display text-[11px] font-bold tabular-nums text-white/45">{entry.hours_played}h played</span>
+                            )}
+                        </span>
+                        {progress > 0 && (
+                            <span className="mt-2 block h-[4px] rounded-full bg-white/15 overflow-hidden">
+                                <span className="block h-full rounded-full" style={{ width: `${progress}%`, background: meta.color }} />
+                            </span>
+                        )}
+                    </>
+                )}
+            </span>
+        </Link>
+    );
+}
+
 /* ── the shelf ────────────────────────────────────────────────────────── */
 
 export default function CollectionGrid({ username, isOwnProfile }: Props) {
     const [filter, setFilter] = useState("all");
+    const [pages, setPages] = useState(1);
     const [addOpen, setAddOpen] = useState(false);
     const [importing, setImporting] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
 
-    const query = filter === "all" || filter === "upcoming" ? "" : filter === "favorites" ? "?favorite=1" : `?status=${filter}`;
-    const key = filter === "upcoming" ? null : `/users/${username}/collection${query}`;
-    const { data, isLoading, mutate } = useSWR<{ data: CollectionEntry[] }>(key, fetcher);
+    const query = filter === "all" || filter === "upcoming" ? "" : filter === "favorites" ? "?favorite=1" : `&status=${filter}`;
+    const key = filter === "upcoming"
+        ? null
+        : `/users/${username}/collection?page_size=${pages * PAGE_SIZE}${filter === "favorites" ? "&favorite=1" : query.replace("?favorite=1", "")}`;
+    const { data, isLoading, mutate } = useSWR<{ data: CollectionEntry[]; pagination?: { total: number } }>(key, fetcher);
 
     // Same SWR key the profile page already loaded — the counts come free.
     const { data: profile } = useSWR<UserProfile>(`/users/${username}`, fetcher);
     const stats = profile?.stats;
 
     const entries = data?.data ?? [];
+    const total = data?.pagination?.total ?? entries.length;
+    const hasMore = entries.length < total;
+
+    const pick = (next: string) => {
+        setFilter(next);
+        setPages(1);
+    };
+
+    // The pinned game leads the shelf; with nothing pinned, whatever you're
+    // playing does. It's lifted out of the grid so it can't appear twice.
+    const featured = filter === "all"
+        ? entries.find((e) => e.showcase_order != null) ?? entries.find((e) => e.status === "playing")
+        : undefined;
+    const rest = featured ? entries.filter((e) => e.id !== featured.id) : entries;
 
     const updateEntry = async (slug: string, payload: Record<string, unknown>) => {
         try {
@@ -374,6 +568,11 @@ export default function CollectionGrid({ username, isOwnProfile }: Props) {
 
     return (
         <div>
+            <CollectionLedger stats={stats} />
+
+            {/* shelf on the left, the reading of it on the right */}
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+            <div className="xl:col-span-9 min-w-0">
             {/* ── toolbar ── */}
             <div className="flex items-center justify-between gap-3 flex-wrap mb-5">
                 <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
@@ -385,7 +584,7 @@ export default function CollectionGrid({ username, isOwnProfile }: Props) {
                         return (
                             <button
                                 key={f.id}
-                                onClick={() => setFilter(f.id)}
+                                onClick={() => pick(f.id)}
                                 aria-pressed={on}
                                 className={`group/chip shrink-0 inline-flex items-center gap-2 h-9 px-3.5 rounded-full font-display text-[10.5px] font-bold uppercase tracking-[0.12em] border transition-colors duration-300 ${
                                     on
@@ -480,20 +679,54 @@ export default function CollectionGrid({ username, isOwnProfile }: Props) {
                     />
                 )
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                    {entries.map((e, i) => (
-                        <div key={e.id} className={`tp-fade-up tp-d${Math.min(6, Math.floor(i / 3) + 1)}`}>
-                            <GameCard
-                                entry={e}
-                                isOwnProfile={isOwnProfile}
-                                onUpdate={updateEntry}
-                                onRemove={removeEntry}
-                                onShowcase={toggleShowcase}
-                            />
+                <>
+                    {/* the pinned game takes a two-by-two slot beside the grid */}
+                    <div className={featured ? "grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch" : ""}>
+                        {featured && (
+                            <div className="lg:col-span-4 xl:col-span-3 min-w-0">
+                                <FeaturedCard entry={featured} />
+                            </div>
+                        )}
+                        <div className={featured ? "lg:col-span-8 xl:col-span-9 min-w-0" : ""}>
+                            <div className={`grid grid-cols-2 sm:grid-cols-3 gap-3 ${featured ? "lg:grid-cols-4 xl:grid-cols-5" : "lg:grid-cols-5 xl:grid-cols-6"}`}>
+                                {rest.map((e, i) => (
+                                    <div key={e.id} className={`tp-fade-up tp-d${Math.min(6, Math.floor(i / 3) + 1)}`}>
+                                        <GameCard
+                                            entry={e}
+                                            isOwnProfile={isOwnProfile}
+                                            onUpdate={updateEntry}
+                                            onRemove={removeEntry}
+                                            onShowcase={toggleShowcase}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    ))}
-                </div>
+                    </div>
+
+                    {hasMore && (
+                        <div className="mt-5 flex justify-center">
+                            <button
+                                onClick={() => setPages((p) => p + 1)}
+                                className="inline-flex items-center gap-2 h-10 px-5 rounded-[8px] bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.12] text-white font-display text-[10.5px] font-bold uppercase tracking-[0.1em] transition-colors"
+                            >
+                                Load more games
+                                <ChevronMore className="w-4 h-4" />
+                                <span className="font-black tabular-nums text-white/35">{entries.length}/{total}</span>
+                            </button>
+                        </div>
+                    )}
+                </>
             )}
+
+            </div>
+
+                <aside className="xl:col-span-3 min-w-0 space-y-5">
+                    <RecentlyAdded username={username} />
+                    <CollectionGoals username={username} isOwnProfile={isOwnProfile} />
+                    <PlatformBreakdown data={profile?.platforms_genres} />
+                </aside>
+            </div>
 
             {addOpen && <AddGameModal onClose={() => setAddOpen(false)} onAdded={() => { mutate(); globalMutate(`/users/${username}`); }} />}
         </div>

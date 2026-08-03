@@ -13,6 +13,7 @@ use App\Models\GameRating;
 use App\Models\Order;
 use App\Models\Presence;
 use App\Models\User;
+use App\Models\UserGame;
 use App\Services\AchievementService;
 use App\Services\LevelService;
 use App\Services\PremiumService;
@@ -346,6 +347,11 @@ class AuthController extends Controller
             'completed_count' => $collectionCounts['completed_count'],
             'wishlist_count' => $collectionCounts['wishlist_count'],
             'favorites_count' => $collectionCounts['favorites_count'],
+            'dropped_count' => $collectionCounts['dropped_count'],
+            // the shelf's "+N this month" — growth, not a total
+            'games_added_this_month' => UserGame::where('user_id', $user->id)
+                ->where('created_at', '>=', now()->startOfMonth())
+                ->count(),
             'bounty_balance' => (int) ($user->bounty_balance ?? 0),
             // Hero deck — same five numbers the owner sees on their own page
             'hours_played' => $profileService->hoursPlayed($user),
