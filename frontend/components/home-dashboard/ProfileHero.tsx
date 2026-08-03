@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
     User as UserIcon, MapPin, CalendarDays, Pencil, ExternalLink, Check, BadgeCheck, MoreHorizontal,
     Flame, Play, Sparkles, ShieldCheck, LinkIcon, GitCompare, UserPlus, Clock, MessageSquare,
+    Gamepad2, Trophy, Star, Medal,
 } from "lucide-react";
 import type { HeroModel } from "@/lib/hero";
 import type { FriendStatus } from "@/lib/types/profile";
@@ -225,8 +226,8 @@ export default function ProfileHero({
     const online = hero.is_online || isOwnProfile;
     const tier = rankTier(hero.rank_name);
 
-    const levelCeil = xpForLevel(hero.level + 1);
-    const animatedXp = useCountUp(hero.xp, 1200);
+    const levelToGo = Math.max(0, xpForLevel(hero.level + 1) - hero.xp);
+    const levelToGoShown = useCountUp(levelToGo, 1200);
 
     const share = () => {
         const url = `${window.location.origin}${base}`;
@@ -236,31 +237,29 @@ export default function ProfileHero({
         });
     };
 
+    // Level, XP and rank already live in the hero above (chip, rank block) —
+    // repeating them here would be the same numbers twice in one screen. The
+    // strip carries the library record, and ends on the hook: how far to the
+    // next level's loot crate.
     const cells: StripCell[] = [
-        { label: "Level", value: hero.level },
         {
-            label: "XP",
-            value: (
-                <>
-                    {animatedXp.toLocaleString()}{" "}
-                    <span className="text-[13px] text-white/35">/ {levelCeil.toLocaleString()}</span>
-                </>
-            ),
-            href: `${base}?tab=stats`,
+            label: "Games",
+            value: hero.stats.games,
+            icon: <Gamepad2 className="w-[20px] h-[20px] shrink-0 text-[var(--accent)]" />,
+            href: `${base}?tab=collection`,
         },
         {
-            label: "Rank",
-            value: (
-                <span className="text-[15px] uppercase tracking-[0.04em]" style={{ color: hero.rank_color || "#fff" }}>
-                    {hero.rank_name || "Unranked"}
-                </span>
-            ),
-            icon: <RankInsigniaMark icon={hero.rank_icon} color={hero.rank_color} name={hero.rank_name} size={34} />,
-            href: `${base}?tab=stats`,
+            label: "Completed",
+            value: hero.stats.completed,
+            icon: <Trophy className="w-[20px] h-[20px] shrink-0 text-[var(--accent)]" />,
+            href: `${base}?tab=collection`,
         },
-        { label: "Games", value: hero.stats.games, href: `${base}?tab=collection` },
-        { label: "Completed", value: hero.stats.completed, href: `${base}?tab=collection` },
-        { label: "Reviews", value: hero.stats.reviews, href: `${base}?tab=activity` },
+        {
+            label: "Reviews",
+            value: hero.stats.reviews,
+            icon: <Star className="w-[20px] h-[20px] shrink-0 text-[var(--accent)]" />,
+            href: `${base}?tab=activity`,
+        },
         {
             label: "Achievements",
             value: (
@@ -271,16 +270,43 @@ export default function ProfileHero({
                     )}
                 </>
             ),
+            icon: <Medal className="w-[20px] h-[20px] shrink-0 text-[var(--accent)]" />,
             href: `${base}?tab=achievements`,
         },
         {
             label: "Streak",
-            value: hero.streak_days,
+            value: (
+                <>
+                    {hero.streak_days}
+                    <span className="text-[13px] text-white/35"> {hero.streak_days === 1 ? "day" : "days"}</span>
+                </>
+            ),
             icon: (
                 <Flame
-                    className={`w-[22px] h-[22px] shrink-0 ${hero.streak_days > 0 ? "text-orange-400" : "text-white/25"}`}
+                    className={`w-[20px] h-[20px] shrink-0 ${hero.streak_days > 0 ? "text-orange-400" : "text-white/25"}`}
                 />
             ),
+        },
+        {
+            label: `Level ${hero.level + 1} loot`,
+            value: (
+                <span className="text-[var(--xp-bright)]">
+                    {levelToGoShown.toLocaleString()} <span className="text-[13px] text-white/35">XP to go</span>
+                </span>
+            ),
+            icon: (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                    src="/rewards/level-cache.png"
+                    alt=""
+                    aria-hidden
+                    width={44}
+                    height={44}
+                    className="w-[44px] h-[44px] shrink-0 object-contain"
+                    style={{ filter: "drop-shadow(0 3px 8px rgba(0,0,0,0.6))" }}
+                />
+            ),
+            href: `${base}?tab=stats`,
         },
     ];
 
