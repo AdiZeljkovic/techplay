@@ -9,6 +9,7 @@ use App\Models\ClanMember;
 use App\Models\ClanProject;
 use App\Services\ClanBaseService;
 use App\Services\ClanLevelService;
+use App\Services\ClanMissionService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ class ClanBaseController extends Controller
     /**
      * GET /clans/{slug}/base
      */
-    public function show(string $slug, Request $request, ClanBaseService $base, ClanLevelService $levels): JsonResponse
+    public function show(string $slug, Request $request, ClanBaseService $base, ClanLevelService $levels, ClanMissionService $missions): JsonResponse
     {
         $clan = Clan::where('slug', $slug)->firstOrFail();
         $membership = $this->membership($clan, $request);
@@ -88,6 +89,7 @@ class ClanBaseController extends Controller
                     + (int) ($base->levels($clan)['vault'] ?? 0) * (int) config('clan.vault_capacity_per_level', 10000),
             ],
             'base' => $overview,
+            'missions' => $missions->activeFor($clan),
             'contributions' => $contributions,
             'recent_activity' => $clan->activities()->with('user:id,username,avatar_url')->latest()->limit(10)->get(),
             'viewer_role' => $membership->role,

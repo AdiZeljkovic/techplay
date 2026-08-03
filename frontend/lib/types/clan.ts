@@ -127,6 +127,25 @@ export interface ClanContributionRow {
     total: number;
 }
 
+export interface ClanMissionRow {
+    id: number;
+    name: string;
+    description: string | null;
+    type: "individual" | "squad" | "operation";
+    criteria_type: string;
+    target: number;
+    progress: number;
+    percent: number;
+    per_member_target: number | null;
+    qualified_members: number | null;
+    stage: number;
+    stages: { target: number; intel?: number; materials?: number; prestige?: number }[] | null;
+    status: "active" | "completed" | "expired";
+    ends_at: string | null;
+    rewards: { intel: number; materials: number; prestige: number };
+    top_contributors: { username: string; amount: number }[];
+}
+
 export interface ClanBasePayload {
     clan: {
         name: string;
@@ -153,6 +172,7 @@ export interface ClanBasePayload {
         projects: ClanProjectRow[];
         project_slots: number;
     };
+    missions: ClanMissionRow[];
     contributions: { week: ClanContributionRow[]; month: ClanContributionRow[]; all: ClanContributionRow[] };
     recent_activity: ClanFeedItem[];
     viewer_role: ClanRole;

@@ -45,6 +45,11 @@ class ClanResourceService
             }
 
             $this->credit($clanId, $user, $rule['resource'], (int) $rule['amount'], $reason);
+
+            // The same action pushes every active mission that counts it.
+            // Resolved lazily - the mission service pays rewards through
+            // this one, and constructors must not chase their own tails.
+            app(ClanMissionService::class)->record($clanId, $user, $reason);
         } catch (\Throwable $e) {
             Log::warning("ClanResourceService::award failed: {$e->getMessage()}", [
                 'user_id' => $user->id,

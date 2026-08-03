@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import {
     Shield, ShieldCheck, Castle, Radar, Swords, Vault as VaultIcon, Trophy, Library,
     Hammer, RadioTower, Lock, Plus, ChevronRight, Coins, Clock3, Zap, Loader2,
-    Users, X, ArrowUp, Sparkles, History, Check,
+    Users, X, ArrowUp, Sparkles, History, Check, Flag, Crown,
 } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
@@ -17,7 +17,7 @@ import { useCountdown } from "@/hooks/useCountdown";
 import { timeAgo } from "@/lib/timeAgo";
 import { getStorageUrl } from "@/lib/imageUrl";
 import { TIER_COLORS } from "../../ClansClient";
-import type { ClanBasePayload, ClanBuildingRow, ClanProjectRow } from "@/lib/types/clan";
+import type { ClanBasePayload, ClanBuildingRow, ClanMissionRow, ClanProjectRow } from "@/lib/types/clan";
 import type { LucideIcon } from "lucide-react";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data);
@@ -233,6 +233,119 @@ function ConstructionCard({
     );
 }
 
+/* ── missions ─────────────────────────────────────────────────────────── */
+
+const MISSION_TYPE_META: Record<ClanMissionRow["type"], { label: string; color: string }> = {
+    individual: { label: "Mission", color: "var(--accent)" },
+    squad: { label: "Squad", color: "#60a5fa" },
+    operation: { label: "Operation", color: "#a855f7" },
+};
+
+function MissionTimer({ endsAt }: { endsAt: string | null }) {
+    const left = useCountdown(endsAt);
+
+    if (left.done) return null;
+
+    return (
+        <span className="inline-flex items-center gap-1.5 font-display text-[9.5px] font-bold tabular-nums text-white/35">
+            <Clock3 className="w-3 h-3" />
+            {left.days > 0 ? `${left.days}d ${left.hours}h` : `${left.hours}h ${left.minutes}m`} left
+        </span>
+    );
+}
+
+function MissionCard({ mission }: { mission: ClanMissionRow }) {
+    const meta = MISSION_TYPE_META[mission.type];
+    const done = mission.status === "completed";
+
+    return (
+        <div
+            className="rounded-[12px] border p-4 transition-colors duration-300"
+            style={{
+                borderColor: done ? "rgba(52,211,153,0.35)" : `color-mix(in srgb, ${meta.color} 22%, transparent)`,
+                background: done ? "rgba(52,211,153,0.04)" : "rgba(255,255,255,0.015)",
+            }}
+        >
+            <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                    <p className="flex items-center gap-2 flex-wrap">
+                        <span
+                            className="inline-flex items-center h-[18px] px-2 rounded-[4px] font-display text-[8px] font-black uppercase tracking-[0.12em]"
+                            style={{ color: done ? "#34d399" : meta.color, background: `color-mix(in srgb, ${done ? "#34d399" : meta.color} 13%, transparent)` }}
+                        >
+                            {done ? "Complete" : meta.label}
+                        </span>
+                        <span className="font-display text-[13.5px] font-black text-white">{mission.name}</span>
+                    </p>
+                    {mission.description && (
+                        <p className="mt-1 text-[11.5px] text-white/40 leading-snug">{mission.description}</p>
+                    )}
+                </div>
+                {!done && <MissionTimer endsAt={mission.ends_at} />}
+            </div>
+
+            {/* progress */}
+            <div className="mt-3">
+                <p className="flex items-center justify-between mb-1.5">
+                    <span className="font-display text-[10px] font-bold tabular-nums text-white/45">
+                        {mission.type === "squad" && mission.per_member_target ? (
+                            <>{mission.qualified_members ?? 0} / {mission.target} members done ({mission.per_member_target} each)</>
+                        ) : (
+                            <>{mission.progress.toLocaleString("en-US")} / {mission.target.toLocaleString("en-US")}</>
+                        )}
+                    </span>
+                    <span className="font-display text-[10.5px] font-black tabular-nums" style={{ color: done ? "#34d399" : meta.color }}>
+                        {mission.type === "squad"
+                            ? `${Math.min(100, Math.round(((mission.qualified_members ?? 0) / Math.max(1, mission.target)) * 100))}%`
+                            : `${mission.percent}%`}
+                    </span>
+                </p>
+                <span className="block h-[7px] rounded-full bg-[var(--track)] overflow-hidden">
+                    <span
+                        className="block h-full rounded-full transition-[width] duration-700 ease-[var(--ease-hud)]"
+                        style={{
+                            width: `${mission.type === "squad" ? Math.min(100, Math.round(((mission.qualified_members ?? 0) / Math.max(1, mission.target)) * 100)) : mission.percent}%`,
+                            background: done ? "#34d399" : `linear-gradient(90deg, color-mix(in srgb, ${meta.color} 60%, transparent), ${meta.color})`,
+                        }}
+                    />
+                </span>
+
+                {/* operation stage markers */}
+                {mission.stages && mission.stages.length > 0 && (
+                    <p className="mt-2 flex items-center gap-2 flex-wrap">
+                        {mission.stages.map((stage, i) => (
+                            <span
+                                key={i}
+                                className="inline-flex items-center gap-1 font-display text-[8.5px] font-black uppercase tracking-[0.1em]"
+                                style={{ color: mission.stage > i ? "#34d399" : "rgba(255,255,255,0.3)" }}
+                            >
+                                {mission.stage > i ? <Check className="w-3 h-3" /> : <Flag className="w-3 h-3" />}
+                                Stage {i + 1} · {stage.target}
+                            </span>
+                        ))}
+                    </p>
+                )}
+            </div>
+
+            {/* rewards + top contributors */}
+            <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
+                <span className="flex items-center gap-3 font-display text-[10px] font-bold tabular-nums">
+                    {mission.rewards.intel > 0 && <span style={{ color: RESOURCE_META.intel.color }}>+{mission.rewards.intel.toLocaleString("en-US")} Intel</span>}
+                    {mission.rewards.materials > 0 && <span style={{ color: RESOURCE_META.materials.color }}>+{mission.rewards.materials.toLocaleString("en-US")} Materials</span>}
+                    {mission.rewards.prestige > 0 && <span style={{ color: RESOURCE_META.prestige.color }}>+{mission.rewards.prestige.toLocaleString("en-US")} Prestige</span>}
+                </span>
+
+                {mission.top_contributors.length > 0 && (
+                    <span className="flex items-center gap-1.5 font-display text-[9.5px] font-bold text-white/30">
+                        <Crown className="w-3 h-3 text-[#f0b429]" />
+                        {mission.top_contributors.map((c) => c.username).join(" · ")}
+                    </span>
+                )}
+            </div>
+        </div>
+    );
+}
+
 /* ── the page ─────────────────────────────────────────────────────────── */
 
 export default function BaseClient({ slug }: { slug: string }) {
@@ -421,6 +534,33 @@ export default function BaseClient({ slug }: { slug: string }) {
                                 ))}
                             </div>
                         </div>
+
+                        {/* ── mission board ── */}
+                        <Panel
+                            title="Mission Board"
+                            icon={<Radar className="w-4 h-4 text-[var(--accent)]" />}
+                            meta={data.missions.length > 0 ? (
+                                <span className="font-display text-[10px] font-black tabular-nums text-white/35">
+                                    {data.missions.filter((m) => m.status === "active").length} active
+                                </span>
+                            ) : undefined}
+                        >
+                            {data.missions.length === 0 ? (
+                                <EmptyState
+                                    variant="compact"
+                                    title={(data.base.buildings.find((b) => b.key === "mission_control")?.level ?? 0) > 0
+                                        ? "No missions on the board"
+                                        : "Build Mission Control to receive missions"}
+                                    body={(data.base.buildings.find((b) => b.key === "mission_control")?.level ?? 0) > 0
+                                        ? "New missions are briefed every Monday."
+                                        : "Once it stands, the clan gets a weekly board of collective goals."}
+                                />
+                            ) : (
+                                <div className="space-y-3">
+                                    {data.missions.map((m) => <MissionCard key={m.id} mission={m} />)}
+                                </div>
+                            )}
+                        </Panel>
 
                         {/* ── selected building detail ── */}
                         {selected && (

@@ -106,4 +106,14 @@ return [
 
     /* Training Grounds: +this % clan XP per level on achievement earns. */
     'training_xp_percent_per_level' => 2,
+
+    /*
+     * Missions. Weekly slots follow Mission Control (1, +1 at L5, +1 at
+     * L10); operations open at L3. One member can push a mission at most
+     * this many points per day - Travian's lesson: a collective goal one
+     * player can finish alone isn't collective.
+     */
+    'mission_daily_member_cap' => 10,
+    'mission_scale_exponent' => 0.8,
+    'mission_scale_baseline' => 10,
 ];

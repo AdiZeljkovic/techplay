@@ -44,6 +44,9 @@ Schedule::command('profile:snapshot-reputation')->monthlyOn(1, '00:30');
 // LEADERBOARD: Weekly baseline snapshot every Monday (powers period=week boards)
 Schedule::command('profile:snapshot-reputation --weekly')->weeklyOn(1, '00:10');
 
+// CLANS: weekly mission board for every clan with a Mission Control
+Schedule::command('clans:spawn-missions')->weeklyOn(1, '00:20');
+
 // SEASONS: Conclude finished seasons (awards champion badges) — daily check
 Schedule::command('season:conclude')->dailyAt('00:20');
 
