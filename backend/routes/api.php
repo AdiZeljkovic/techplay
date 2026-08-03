@@ -265,6 +265,7 @@ Route::prefix('v1')->group(function () {
 
         // Bounty + Rewards (Auth)
         Route::get('/bounty', [BountyController::class, 'index']);
+        Route::get('/rewards/catalog', [RewardController::class, 'catalog']);
         Route::get('/rewards/redemptions', [RewardController::class, 'redemptions']);
         Route::post('/rewards/{slug}/redeem', [RewardController::class, 'redeem']);
 

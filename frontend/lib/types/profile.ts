@@ -182,6 +182,73 @@ export interface RewardItem {
     stock: number | null;
 }
 
+export type StoreRarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
+
+/** One entry of the unified store — a cosmetic or a redeemable good, with the
+ *  viewer's standing against it already resolved server-side. */
+export interface StoreItem {
+    key: string;
+    source: "cosmetic" | "reward";
+    id: number;
+    slug: string;
+    name: string;
+    description: string | null;
+    type: string;
+    category: string;
+    cost: number;
+    rarity: StoreRarity;
+    image: string | null;
+    /** The colour or gradient the cosmetic paints with — the card art uses it. */
+    value: string | null;
+    asset: string | null;
+    owned: boolean;
+    equipped: boolean;
+    tier_locked: boolean;
+    required_tier: string | null;
+    stock: number | null;
+    limited: boolean;
+    affordable: boolean;
+    sold_out?: boolean;
+    purchase: { path: string };
+}
+
+export interface StoreCatalog {
+    items: StoreItem[];
+    categories: { id: string; label: string; count: number }[];
+    balance: number;
+    supporter_tier: string | null;
+}
+
+export interface RewardTier {
+    name: string;
+    family: string;
+    numeral: string;
+    color: string;
+    level: number;
+    max_level: number;
+    floor: number;
+    next: { name: string; at: number } | null;
+    progress: number;
+    remaining: number;
+}
+
+export interface BountyWallet {
+    balance: number;
+    transactions: BountyTransaction[];
+    earned_lifetime: number;
+    spent_lifetime: number;
+    tier: RewardTier;
+    ladder: { name: string; family: string; color: string; level: number; at: number }[];
+}
+
+export interface RewardRedemption {
+    id: number;
+    cost: number;
+    status: string;
+    created_at: string;
+    reward_item?: { id: number; name: string; type: string; image: string | null } | null;
+}
+
 export interface BountyTransaction {
     id: number;
     amount: number;

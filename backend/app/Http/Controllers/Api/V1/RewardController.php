@@ -9,6 +9,7 @@ use App\Models\RewardRedemption;
 use App\Models\User;
 use App\Models\UserCustomization;
 use App\Services\BountyService;
+use App\Services\RewardCatalogService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -29,6 +30,16 @@ class RewardController extends Controller
             ->get(['id', 'name', 'slug', 'description', 'cost', 'type', 'image', 'stock']);
 
         return $this->success($items);
+    }
+
+    /**
+     * Auth: the whole store as this user sees it — cosmetics and goods in one
+     * catalog, with owned/affordable/locked state already resolved.
+     * GET /rewards/catalog
+     */
+    public function catalog(Request $request, RewardCatalogService $catalog)
+    {
+        return $this->success($catalog->forUser($request->user()));
     }
 
     /**
@@ -105,16 +116,7 @@ class RewardController extends Controller
             return;
         }
 
-        // Map reward item slug → customization slug
-        $slugMap = [
-            'bronze-profile-frame' => 'bronze-ring',
-            'neon-profile-theme' => 'neon-cyan',
-            'early-supporter-badge' => 'early-adopter',
-            'animated-avatar' => 'animated-avatar',
-            'featured-profile-spotlight' => 'profile-spotlight',
-        ];
-
-        $customizationSlug = $slugMap[$item->slug] ?? $item->slug;
+        $customizationSlug = RewardCatalogService::SHADOWED[$item->slug] ?? $item->slug;
 
         $customization = Customization::where('slug', $customizationSlug)->where('is_active', true)->first();
 
