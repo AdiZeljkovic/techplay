@@ -323,6 +323,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/search/games', [SearchController::class, 'games']);
         Route::get('/search/users', [SearchController::class, 'users']);
 
+        // Latest across the editorial sections, for the dashboard strip
+        Route::get('/feed/latest', [FeedController::class, 'latest']);
+
         // News
         Route::get('/news', [NewsController::class, 'index']);
         Route::get('/news/trending', [NewsController::class, 'trending']);

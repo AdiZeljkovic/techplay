@@ -24,6 +24,9 @@ export default function DashboardSkeleton() {
                     <div className="lg:col-span-3 rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[290px]" />
                 </div>
 
+                {/* editorial strip */}
+                <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[250px]" />
+
                 {/* Highlight strip */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="h-[88px] rounded-[var(--radius-panel)] bg-[var(--fill-2)]" />

@@ -9,6 +9,7 @@ import HighlightStrip from "./HighlightStrip";
 import FavoriteGamesRail from "./FavoriteGamesRail";
 import ContinuePlayingCard from "./ContinuePlayingCard";
 import DailyChallengeCard from "./DailyChallengeCard";
+import LatestArticlesFeed from "./LatestArticlesFeed";
 import RecentAchievementsRail from "./RecentAchievementsRail";
 import RecentReviews from "./RecentReviews";
 import FriendsOnlineWidget from "./FriendsOnlineWidget";
@@ -16,7 +17,6 @@ import UpcomingForYouRow from "./UpcomingForYouRow";
 import YourActivity from "./YourActivity";
 import RecommendedNext from "./RecommendedNext";
 import BacklogProgressCard from "./BacklogProgressCard";
-import FollowedGamesFeed from "./FollowedGamesFeed";
 import OnboardingCard from "./OnboardingCard";
 import DailyMissions from "./DailyMissions";
 import Panel from "@/components/ui/Panel";
@@ -73,6 +73,10 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                 </div>
 
                 <div className="tp-fade-up tp-d2">
+                    <LatestArticlesFeed />
+                </div>
+
+                <div className="tp-fade-up tp-d3">
                     <HighlightStrip highlights={data.highlights} />
                 </div>
 
@@ -109,10 +113,6 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
 
                         <div className="tp-fade-up tp-d5">
                             <YourActivity />
-                        </div>
-
-                        <div className="tp-fade-up tp-d5">
-                            <FollowedGamesFeed />
                         </div>
 
                         <div className="tp-fade-up tp-d6">

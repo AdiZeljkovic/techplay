@@ -8,7 +8,9 @@ use App\Models\Article;
 use App\Models\UserGame;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class FeedController extends Controller
@@ -80,5 +82,42 @@ class FeedController extends Controller
         $sorted = $scored->sortByDesc('_feed_score')->take(20)->values();
 
         return $this->success(ArticleResource::collection($sorted)->resolve());
+    }
+
+    /** Category types the editorial filter offers, mapped to category.type. */
+    private const FEED_TYPES = ['news', 'review', 'tech', 'guide'];
+
+    /**
+     * GET /feed/latest?type=all|news|review|tech|guide&limit=6
+     *
+     * The newest published articles, optionally narrowed to one section. The
+     * per-section controllers each paginate 13 and cache their own way; this
+     * exists so one strip can switch sections without four round trips.
+     */
+    public function latest(Request $request): JsonResponse
+    {
+        $type = $request->query('type', 'all');
+        $limit = min(12, max(1, (int) $request->query('limit', 6)));
+
+        if ($type !== 'all' && ! in_array($type, self::FEED_TYPES, true)) {
+            return $this->error('Unknown feed type', 422);
+        }
+
+        $cacheKey = "feed.latest.v1.{$type}.{$limit}";
+
+        $articles = Cache::remember($cacheKey, 300, function () use ($type, $limit) {
+            return Article::query()
+                ->where('status', 'published')
+                ->where('published_at', '<=', now())
+                ->whereHas('category', function ($q) use ($type) {
+                    $q->whereIn('type', $type === 'all' ? self::FEED_TYPES : [$type]);
+                })
+                ->with(['author:id,username,display_name,avatar_url', 'category'])
+                ->latest('published_at')
+                ->limit($limit)
+                ->get();
+        });
+
+        return $this->success(ArticleResource::collection($articles)->resolve());
     }
 }
