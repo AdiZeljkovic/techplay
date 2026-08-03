@@ -212,20 +212,44 @@ export interface Milestone {
     completed: boolean;
 }
 
+export type ListType = "top10" | "top25" | "top100" | "genre" | "custom";
+
 export interface GameListPreview {
     id: number;
     name: string;
     slug: string;
     description?: string | null;
     is_public?: boolean;
+    list_type?: ListType;
+    /** How many games the type allows, or null when unbounded. */
+    item_limit?: number | null;
+    category?: string | null;
+    tags?: string[];
+    allow_comments?: boolean;
+    has_spoilers?: boolean;
+    is_draft?: boolean;
     items_count: number;
+    likes_count?: number;
+    comments_count?: number;
+    liked_by_me?: boolean;
     covers: string[];
     updated_at?: string;
+    user?: { username: string; display_name?: string; avatar_url?: string };
+}
+
+export interface GameListComment {
+    id: number;
+    body: string;
+    created_at: string;
+    user: { username: string; display_name?: string | null; avatar_url?: string | null };
 }
 
 export interface GameListItemEntry {
     id: number;
     position: number;
+    note?: string | null;
+    /** 1.0–10.0, the ranking's own scale — not the 1–5 game rating. */
+    score?: number | null;
     game: {
         slug: string;
         name: string;

@@ -281,6 +281,10 @@ Route::prefix('v1')->group(function () {
             Route::post('/game-lists/{id}/items', [GameListController::class, 'addItem']);
             Route::delete('/game-lists/{id}/items/{itemId}', [GameListController::class, 'removeItem']);
             Route::put('/game-lists/{id}/reorder', [GameListController::class, 'reorder']);
+            Route::put('/game-lists/{id}/items/{itemId}', [GameListController::class, 'updateItem']);
+            Route::post('/game-lists/{id}/like', [GameListController::class, 'toggleLike']);
+            Route::post('/game-lists/{id}/comments', [GameListController::class, 'addComment']);
+            Route::delete('/game-lists/{id}/comments/{commentId}', [GameListController::class, 'deleteComment']);
         });
 
         // Support Plans
@@ -397,7 +401,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/rewards', [RewardController::class, 'index']);
 
         // Custom Game Lists (Public read)
+        Route::get('/game-lists/discover', [GameListController::class, 'discover']);
         Route::get('/game-lists/{id}', [GameListController::class, 'show'])->whereNumber('id');
+        Route::get('/game-lists/{id}/comments', [GameListController::class, 'comments'])->whereNumber('id');
 
         // Seasons — public
         Route::get('/seasons', [SeasonController::class, 'index']);

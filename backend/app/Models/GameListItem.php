@@ -11,10 +11,13 @@ class GameListItem extends Model
         'game_list_id',
         'game_id',
         'position',
+        'note',
+        'score',
     ];
 
     protected $casts = [
         'position' => 'integer',
+        'score' => 'decimal:1',
     ];
 
     public function gameList(): BelongsTo

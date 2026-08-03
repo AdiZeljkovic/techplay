@@ -2,270 +2,241 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import useSWR, { mutate as globalMutate } from "swr";
+import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { ListChecks, Plus, X, Trash2, Lock, Globe, ArrowLeft, Search, Loader2, Gamepad2, Share2 } from "lucide-react";
-import ListCoverCollage from "./dashboard/ListCoverCollage";
-import type { GameListPreview, GameListDetail } from "@/lib/types/profile";
+import {
+    List as ListIcon, Plus, Heart, MessageSquare, Lock, FileEdit, AlertTriangle, Pencil, Trash2, Loader2, Gamepad2,
+} from "lucide-react";
+import EmptyState from "@/components/ui/EmptyState";
+import ListEditor, { CommunityInspiration } from "./ListEditor";
+import type { GameListPreview, ListType } from "@/lib/types/profile";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
+
+const TYPE_LABEL: Record<ListType, string> = {
+    top10: "Top 10",
+    top25: "Top 25",
+    top100: "Top 100",
+    genre: "Genre",
+    custom: "Ranking",
+};
 
 interface Props {
     username: string;
     isOwnProfile: boolean;
 }
 
-export default function ListsTab({ username, isOwnProfile }: Props) {
-    const [openId, setOpenId] = useState<number | null>(null);
-    const [createOpen, setCreateOpen] = useState(false);
+/* ── one list card ────────────────────────────────────────────────────── */
 
-    const listKey = isOwnProfile ? "/game-lists/mine" : `/users/${username}/lists`;
-    const { data, isLoading, mutate } = useSWR<{ data: GameListPreview[] }>(listKey, fetcher);
-    const lists = data?.data ?? [];
-
-    if (openId !== null) {
-        return <ListDetail id={openId} ownerUsername={username} isOwnProfile={isOwnProfile} onBack={() => { setOpenId(null); mutate(); }} onChanged={() => { mutate(); globalMutate(`/users/${username}`); }} />;
-    }
+function ListCard({
+    list,
+    username,
+    isOwnProfile,
+    onEdit,
+    onDelete,
+}: {
+    list: GameListPreview;
+    username: string;
+    isOwnProfile: boolean;
+    onEdit: () => void;
+    onDelete: () => void;
+}) {
+    const covers = (list.covers ?? []).slice(0, 4);
 
     return (
-        <div>
-            <div className="flex items-center justify-between mb-5">
-                <h3 className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.12em] text-white">
-                    <ListChecks className="w-4 h-4 text-[var(--accent)]" /> {isOwnProfile ? "Your Lists" : "Lists"}
-                </h3>
-                {isOwnProfile && (
-                    <button onClick={() => setCreateOpen(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[11px] font-bold uppercase tracking-wider transition-colors">
-                        <Plus className="w-3.5 h-3.5" /> New List
-                    </button>
-                )}
-            </div>
+        <div className="group relative rounded-[12px] overflow-hidden border border-white/[0.07] bg-[#0d0b0a] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.5)] transition-all duration-300">
+            <Link href={`/lists/${username}/${list.slug}`} className="block">
+                {/* a collage of what's inside, not a placeholder */}
+                <span className="relative flex h-[104px] bg-white/[0.03]">
+                    {covers.length === 0 ? (
+                        <span className="w-full flex items-center justify-center text-white/15">
+                            <Gamepad2 className="w-7 h-7" />
+                        </span>
+                    ) : (
+                        covers.map((c, i) => (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img key={i} src={c} alt="" aria-hidden loading="lazy" className="flex-1 min-w-0 h-full object-cover" />
+                        ))
+                    )}
+                    <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#0d0b0a] via-[#0d0b0a]/30 to-transparent" />
 
-            {isLoading ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {Array.from({ length: 4 }).map((_, i) => <div key={i} className="aspect-[4/3] bg-white/[0.04] rounded-xl animate-pulse" />)}
-                </div>
-            ) : lists.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-white/30 mb-3"><ListChecks className="w-6 h-6" /></div>
-                    <p className="text-[13px] font-semibold text-white/55">{isOwnProfile ? "No lists yet" : "No public lists"}</p>
-                    {isOwnProfile && <button onClick={() => setCreateOpen(true)} className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[11px] font-bold uppercase tracking-wider"><Plus className="w-3.5 h-3.5" /> Create a List</button>}
-                </div>
-            ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {lists.map((l) => (
-                        <button key={l.id} onClick={() => setOpenId(l.id)} className="group text-left rounded-xl overflow-hidden border border-white/[0.06] bg-[#0B0E14] hover:border-[var(--accent)]/40 transition-colors">
-                            <ListCoverCollage covers={l.covers} className="aspect-video w-full" />
-                            <div className="p-3">
-                                <div className="flex items-center gap-1.5">
-                                    <h4 className="text-[13px] font-bold text-white line-clamp-1 group-hover:text-[var(--accent)] transition-colors flex-1">{l.name}</h4>
-                                    {l.is_public === false && <Lock className="w-3 h-3 text-white/30 shrink-0" />}
-                                </div>
-                                <span className="text-[10px] text-white/35">{l.items_count} {l.items_count === 1 ? "game" : "games"}</span>
-                            </div>
-                        </button>
-                    ))}
+                    <span className="absolute top-2.5 left-2.5 flex flex-wrap items-center gap-1.5">
+                        {list.list_type && list.list_type !== "custom" && (
+                            <span className="inline-flex items-center h-[19px] px-2 rounded-[4px] bg-[var(--accent)] font-display text-[8px] font-black uppercase tracking-[0.12em] text-white">
+                                {TYPE_LABEL[list.list_type]}
+                            </span>
+                        )}
+                        {list.is_draft && (
+                            <span className="inline-flex items-center gap-1 h-[19px] px-2 rounded-[4px] bg-white/[0.14] font-display text-[8px] font-black uppercase tracking-[0.12em] text-white/70">
+                                <FileEdit className="w-2.5 h-2.5" /> Draft
+                            </span>
+                        )}
+                        {!list.is_public && (
+                            <span className="inline-flex items-center gap-1 h-[19px] px-2 rounded-[4px] bg-white/[0.14] font-display text-[8px] font-black uppercase tracking-[0.12em] text-white/70">
+                                <Lock className="w-2.5 h-2.5" /> Private
+                            </span>
+                        )}
+                        {list.has_spoilers && (
+                            <span className="inline-flex items-center gap-1 h-[19px] px-2 rounded-[4px] bg-amber-500/20 border border-amber-500/40 font-display text-[8px] font-black uppercase tracking-[0.12em] text-amber-400">
+                                <AlertTriangle className="w-2.5 h-2.5" /> Spoilers
+                            </span>
+                        )}
+                    </span>
+                </span>
+
+                <span className="block p-3.5">
+                    <span className="block font-display text-[14px] font-bold text-white leading-snug line-clamp-1 group-hover:text-[var(--accent)] transition-colors">
+                        {list.name}
+                    </span>
+                    {list.description && (
+                        <span className="block mt-1 text-[11.5px] text-white/40 leading-snug line-clamp-2 min-h-[30px]">
+                            {list.description}
+                        </span>
+                    )}
+
+                    <span className="mt-2.5 flex items-center gap-3 font-display text-[10px] font-bold tabular-nums text-white/30">
+                        <span className="text-white/55">
+                            {list.items_count}
+                            {list.item_limit ? <span className="text-white/25"> / {list.item_limit}</span> : null} games
+                        </span>
+                        <span className="inline-flex items-center gap-1"><Heart className="w-3 h-3" /> {list.likes_count ?? 0}</span>
+                        <span className="inline-flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {list.comments_count ?? 0}</span>
+                    </span>
+
+                    {(list.tags?.length ?? 0) > 0 && (
+                        <span className="mt-2.5 flex flex-wrap gap-1.5">
+                            {list.tags!.slice(0, 3).map((t) => (
+                                <span key={t} className="inline-flex items-center h-[18px] px-2 rounded-full bg-white/[0.05] text-[9.5px] font-bold text-white/40">
+                                    {t}
+                                </span>
+                            ))}
+                        </span>
+                    )}
+                </span>
+            </Link>
+
+            {isOwnProfile && (
+                <div className="absolute top-2.5 right-2.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <button
+                        onClick={onEdit}
+                        title="Edit list"
+                        className="w-7 h-7 rounded-[6px] bg-black/60 backdrop-blur-md flex items-center justify-center text-white/60 hover:text-[var(--accent)] transition-colors"
+                    >
+                        <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                        onClick={onDelete}
+                        title="Delete list"
+                        className="w-7 h-7 rounded-[6px] bg-black/60 backdrop-blur-md flex items-center justify-center text-white/60 hover:text-red-400 transition-colors"
+                    >
+                        <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                 </div>
             )}
-
-            {createOpen && <CreateListModal onClose={() => setCreateOpen(false)} onCreated={(id) => { setCreateOpen(false); mutate(); setOpenId(id); }} />}
         </div>
     );
 }
 
-function CreateListModal({ onClose, onCreated }: { onClose: () => void; onCreated: (id: number) => void }) {
-    const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [isPublic, setIsPublic] = useState(true);
-    const [saving, setSaving] = useState(false);
+/* ── the tab ──────────────────────────────────────────────────────────── */
 
-    const submit = async () => {
-        if (name.trim().length < 2) return toast.error("Name is too short.");
-        setSaving(true);
+export default function ListsTab({ username, isOwnProfile }: Props) {
+    // Own lists include drafts and private ones; a visitor sees the public set.
+    const key = isOwnProfile ? "/game-lists/mine" : `/users/${username}/lists`;
+    const { data, isLoading, mutate } = useSWR<{ data: GameListPreview[] }>(key, fetcher);
+    const lists = data?.data ?? [];
+
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [creating, setCreating] = useState(false);
+
+    const create = async () => {
+        setCreating(true);
         try {
-            const res = await axios.post("/game-lists", { name: name.trim(), description: description.trim() || null, is_public: isPublic });
-            toast.success("List created");
-            onCreated(res.data?.data?.id);
-        } catch {
-            toast.error("Failed to create list.");
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    return (
-        <Modal title="New List" onClose={onClose}>
-            <div className="space-y-3">
-                <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="List name (e.g. Best RPGs)" className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2.5 text-[13px] text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--accent)]/50" />
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description (optional)" rows={3} className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2.5 text-[13px] text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--accent)]/50 resize-none" />
-                <label className="flex items-center gap-2.5 text-[12px] text-white/70 cursor-pointer">
-                    <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} className="accent-[var(--accent)] w-4 h-4" />
-                    {isPublic ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />} Public list
-                </label>
-                <button onClick={submit} disabled={saving} className="w-full py-2.5 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-white text-[12px] font-bold uppercase tracking-wider">
-                    {saving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Create List"}
-                </button>
-            </div>
-        </Modal>
-    );
-}
-
-function ListDetail({ id, ownerUsername, isOwnProfile, onBack, onChanged }: { id: number; ownerUsername: string; isOwnProfile: boolean; onBack: () => void; onChanged: () => void }) {
-    const [addOpen, setAddOpen] = useState(false);
-    const { data, isLoading, mutate } = useSWR<{ data: GameListDetail }>(`/game-lists/${id}`, fetcher);
-    const list = data?.data;
-
-    const shareList = () => {
-        if (!list) return;
-        const url = `${window.location.origin}/lists/${ownerUsername}/${list.slug}`;
-        navigator.clipboard.writeText(url).then(() => toast.success("List link copied!"));
-    };
-
-    const removeItem = async (itemId: number) => {
-        try {
-            await axios.delete(`/game-lists/${id}/items/${itemId}`);
+            // A new list starts as a draft so the editor has something real to
+            // write into — publishing is the deliberate second step.
+            const res = await axios.post("/game-lists", { name: "Untitled list", is_draft: true });
             mutate();
-            onChanged();
+            setEditingId(res.data?.data?.id ?? null);
         } catch {
-            toast.error("Failed to remove.");
+            toast.error("Couldn't start a new list.");
+        } finally {
+            setCreating(false);
         }
     };
 
-    const deleteList = async () => {
-        if (!confirm("Delete this list?")) return;
+    const remove = async (id: number) => {
         try {
             await axios.delete(`/game-lists/${id}`);
             toast.success("List deleted");
-            onBack();
+            mutate();
         } catch {
-            toast.error("Failed to delete list.");
+            toast.error("Couldn't delete that list.");
         }
     };
 
+    if (editingId !== null) {
+        return (
+            <ListEditor
+                listId={editingId}
+                username={username}
+                onClose={() => { setEditingId(null); mutate(); }}
+            />
+        );
+    }
+
     return (
-        <div>
-            <button onClick={onBack} className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-white/45 hover:text-white mb-4">
-                <ArrowLeft className="w-3.5 h-3.5" /> Back to Lists
-            </button>
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+            <div className="xl:col-span-9 min-w-0">
+                <div className="flex items-center justify-between gap-3 mb-5">
+                    <h2 className="flex items-center gap-2.5 font-display text-[12px] font-bold uppercase tracking-[0.15em] text-white/55">
+                        <span className="w-1 h-3.5 rounded-full bg-[var(--accent)]" />
+                        <ListIcon className="w-4 h-4 text-[var(--accent)]" />
+                        {isOwnProfile ? "Your lists" : "Lists"}
+                        {lists.length > 0 && <span className="font-black tabular-nums text-white/25">{lists.length}</span>}
+                    </h2>
 
-            {isLoading || !list ? (
-                <div className="h-40 bg-white/[0.04] rounded-xl animate-pulse" />
-            ) : (
-                <>
-                    <div className="flex items-start justify-between gap-4 mb-5">
-                        <div className="min-w-0">
-                            <h2 className="text-xl font-black text-white flex items-center gap-2">{list.name} {list.is_public === false && <Lock className="w-4 h-4 text-white/30" />}</h2>
-                            {list.description && <p className="text-[13px] text-white/50 mt-1 max-w-2xl">{list.description}</p>}
-                            <span className="text-[11px] text-white/35">{list.items_count} {list.items_count === 1 ? "game" : "games"}</span>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                            {list.is_public !== false && (
-                                <button onClick={shareList} title="Copy shareable link" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 text-white text-[11px] font-bold uppercase tracking-wider transition-colors">
-                                    <Share2 className="w-3.5 h-3.5" /> Share
-                                </button>
-                            )}
-                            {isOwnProfile && (
-                                <>
-                                    <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[11px] font-bold uppercase tracking-wider"><Plus className="w-3.5 h-3.5" /> Add</button>
-                                    <button onClick={deleteList} title="Delete list" className="p-2 rounded-lg bg-white/[0.04] hover:bg-red-500/15 text-red-400"><Trash2 className="w-4 h-4" /></button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-
-                    {list.items.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-14 text-white/30">
-                            <Gamepad2 className="w-7 h-7 mb-2" />
-                            <span className="text-[13px]">No games in this list yet.</span>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                            {list.items.map((it) => it.game && (
-                                <div key={it.id} className="group relative rounded-xl overflow-hidden border border-white/[0.06] bg-[#0B0E14]">
-                                    <Link href={`/games/${it.game.slug}`} prefetch={false} className="block relative aspect-[3/4] overflow-hidden">
-                                        {it.game.background_image ? (
-                                            <img src={it.game.background_image} alt={it.game.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                        ) : <div className="w-full h-full flex items-center justify-center text-white/15"><Gamepad2 className="w-8 h-8" /></div>}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent" />
-                                        <h4 className="absolute bottom-0 left-0 right-0 p-2.5 text-[12px] font-bold text-white line-clamp-2 leading-snug">{it.game.name}</h4>
-                                    </Link>
-                                    {isOwnProfile && (
-                                        <button onClick={() => removeItem(it.id)} title="Remove" className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 hover:bg-red-500/70 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <X className="w-3.5 h-3.5" />
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
+                    {isOwnProfile && (
+                        <button
+                            onClick={create}
+                            disabled={creating}
+                            className="inline-flex items-center gap-2 h-9 px-4 rounded-[8px] bg-[var(--accent)] hover:brightness-110 text-white font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-[filter] disabled:opacity-60"
+                        >
+                            {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                            New list
+                        </button>
                     )}
+                </div>
 
-                    {addOpen && <AddToListModal listId={id} onClose={() => setAddOpen(false)} onAdded={() => { mutate(); onChanged(); }} />}
-                </>
-            )}
-        </div>
-    );
-}
-
-function AddToListModal({ listId, onClose, onAdded }: { listId: number; onClose: () => void; onAdded: () => void }) {
-    const [term, setTerm] = useState("");
-    const [adding, setAdding] = useState<string | null>(null);
-    const { data, isLoading } = useSWR(term.trim().length >= 2 ? `/games?search=${encodeURIComponent(term.trim())}&page_size=12` : null, fetcher);
-    const results = data?.results ?? [];
-
-    const add = async (slug: string) => {
-        setAdding(slug);
-        try {
-            await axios.post(`/game-lists/${listId}/items`, { slug });
-            toast.success("Added to list");
-            onAdded();
-        } catch {
-            toast.error("Failed to add.");
-        } finally {
-            setAdding(null);
-        }
-    };
-
-    return (
-        <Modal title="Add a Game" onClose={onClose}>
-            <div className="relative mb-3">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                <input autoFocus value={term} onChange={(e) => setTerm(e.target.value)} placeholder="Search games…" className="w-full bg-white/[0.04] border border-white/10 rounded-lg pl-9 pr-3 py-2.5 text-[13px] text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--accent)]/50" />
-            </div>
-            <div className="max-h-[45vh] overflow-y-auto -mx-1 px-1">
-                {term.trim().length < 2 ? (
-                    <p className="text-[12px] text-white/30 text-center py-8">Type at least 2 characters to search.</p>
-                ) : isLoading ? (
-                    <div className="flex items-center justify-center py-8 text-white/40"><Loader2 className="w-5 h-5 animate-spin" /></div>
-                ) : results.length === 0 ? (
-                    <p className="text-[12px] text-white/30 text-center py-8">No games found.</p>
+                {isLoading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {[...Array(3)].map((_, i) => <div key={i} className="h-[240px] rounded-[12px] bg-white/[0.04] animate-pulse" />)}
+                    </div>
+                ) : lists.length === 0 ? (
+                    <EmptyState
+                        icon={<ListIcon className="w-[18px] h-[18px]" />}
+                        title={isOwnProfile ? "No lists yet" : "No public lists"}
+                        body={isOwnProfile ? "Rank your favourites, argue for your picks, and share the result." : undefined}
+                    />
                 ) : (
-                    <ul className="space-y-1.5">
-                        {results.map((g: any) => (
-                            <li key={g.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.04]">
-                                <div className="w-12 h-12 rounded-md overflow-hidden bg-white/5 shrink-0">{g.background_image && <img src={g.background_image} alt={g.name} className="w-full h-full object-cover" />}</div>
-                                <div className="flex-1 min-w-0"><p className="text-[13px] font-semibold text-white truncate">{g.name}</p>{g.released && <p className="text-[10px] text-white/35">{new Date(g.released).getFullYear()}</p>}</div>
-                                <button onClick={() => add(g.slug)} disabled={adding === g.slug} className="px-3 py-1.5 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-wider shrink-0">
-                                    {adding === g.slug ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Add"}
-                                </button>
-                            </li>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {lists.map((l, i) => (
+                            <div key={l.id} className={`tp-fade-up tp-d${Math.min(6, i + 1)}`}>
+                                <ListCard
+                                    list={l}
+                                    username={username}
+                                    isOwnProfile={isOwnProfile}
+                                    onEdit={() => setEditingId(l.id)}
+                                    onDelete={() => remove(l.id)}
+                                />
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                 )}
             </div>
-        </Modal>
-    );
-}
 
-function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-    return (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center p-4 pt-[10vh]" onClick={onClose}>
-            <div className="w-full max-w-lg rounded-2xl bg-[var(--bg-card)] border border-white/10 shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
-                    <h3 className="text-[13px] font-bold uppercase tracking-wider text-white">{title}</h3>
-                    <button onClick={onClose} className="p-1.5 rounded hover:bg-white/10 text-white/50"><X className="w-4 h-4" /></button>
-                </div>
-                <div className="p-5">{children}</div>
-            </div>
+            <aside className="xl:col-span-3 min-w-0">
+                <CommunityInspiration />
+            </aside>
         </div>
     );
 }

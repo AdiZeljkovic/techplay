@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\GameList;
+use App\Models\GameListComment;
 use App\Models\GameListItem;
+use App\Models\GameListLike;
 use App\Models\User;
+use App\Services\SanitizationService;
 use App\Traits\ApiResponse;
 use App\Traits\ProfilePrivacy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class GameListController extends Controller
 {
@@ -30,7 +34,8 @@ class GameListController extends Controller
 
         $lists = GameList::where('user_id', $user->id)
             ->where('is_public', true)
-            ->withCount('items')
+            ->where('is_draft', false)
+            ->withCount(['items', 'likes', 'comments'])
             ->with(['items' => fn ($q) => $q->limit(4)->with('game:id,background_image')])
             ->latest()
             ->get();
@@ -45,7 +50,7 @@ class GameListController extends Controller
     public function mine(Request $request)
     {
         $lists = GameList::where('user_id', $request->user()->id)
-            ->withCount('items')
+            ->withCount(['items', 'likes', 'comments'])
             ->with(['items' => fn ($q) => $q->limit(4)->with('game:id,background_image')])
             ->latest()
             ->get();
@@ -60,11 +65,16 @@ class GameListController extends Controller
     public function show(Request $request, int $id)
     {
         $list = GameList::with(['items.game:id,slug,name,released,rating,background_image,platform_names', 'user:id,username,display_name,avatar_url'])
+            ->withCount(['likes', 'comments'])
             ->findOrFail($id);
 
-        if (! $list->is_public && optional($request->user('sanctum'))->id !== $list->user_id) {
-            return $this->forbidden('This list is private.');
+        $viewerId = optional($request->user('sanctum'))->id;
+
+        if (! $list->isPublished() && $viewerId !== $list->user_id) {
+            return $this->forbidden($list->is_draft ? 'This list is still a draft.' : 'This list is private.');
         }
+
+        $this->markLiked($list, $viewerId);
 
         return $this->success($this->presentList($list, true));
     }
@@ -80,10 +90,13 @@ class GameListController extends Controller
         $list = GameList::where('user_id', $user->id)
             ->where('slug', $slug)
             ->with(['items.game:id,slug,name,released,rating,background_image,platform_names', 'user:id,username,display_name,avatar_url'])
+            ->withCount(['likes', 'comments'])
             ->firstOrFail();
 
-        if (! $list->is_public && optional($request->user('sanctum'))->id !== $list->user_id) {
-            return $this->forbidden('This list is private.');
+        $viewerId = optional($request->user('sanctum'))->id;
+
+        if (! $list->isPublished() && $viewerId !== $list->user_id) {
+            return $this->forbidden($list->is_draft ? 'This list is still a draft.' : 'This list is private.');
         }
 
         // A friends-only profile locks its lists too — the profile-level
@@ -91,6 +104,8 @@ class GameListController extends Controller
         if ($this->profileHidden($user)) {
             return $this->error('This profile is private.', 403);
         }
+
+        $this->markLiked($list, $viewerId);
 
         return $this->success($this->presentList($list, true));
     }
@@ -101,11 +116,7 @@ class GameListController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:80'],
-            'description' => ['nullable', 'string', 'max:500'],
-            'is_public' => ['sometimes', 'boolean'],
-        ]);
+        $data = $request->validate($this->listRules(true));
 
         $list = GameList::create([
             'user_id' => $request->user()->id,
@@ -113,6 +124,12 @@ class GameListController extends Controller
             'slug' => $this->uniqueSlug($request->user()->id, $data['name']),
             'description' => $data['description'] ?? null,
             'is_public' => $data['is_public'] ?? true,
+            'list_type' => $data['list_type'] ?? 'custom',
+            'category' => $data['category'] ?? null,
+            'tags' => $data['tags'] ?? null,
+            'allow_comments' => $data['allow_comments'] ?? true,
+            'has_spoilers' => $data['has_spoilers'] ?? false,
+            'is_draft' => $data['is_draft'] ?? false,
         ]);
 
         $list->loadCount('items');
@@ -128,11 +145,7 @@ class GameListController extends Controller
     {
         $list = GameList::where('user_id', $request->user()->id)->findOrFail($id);
 
-        $data = $request->validate([
-            'name' => ['sometimes', 'string', 'max:80'],
-            'description' => ['nullable', 'string', 'max:500'],
-            'is_public' => ['sometimes', 'boolean'],
-        ]);
+        $data = $request->validate($this->listRules(false));
 
         $list->fill($data)->save();
         $list->loadCount('items');
@@ -161,6 +174,12 @@ class GameListController extends Controller
         $data = $request->validate(['slug' => ['required', 'string']]);
 
         $game = Game::where('slug', $data['slug'])->firstOrFail();
+
+        // A Top 10 that holds eleven is not a Top 10.
+        $limit = $list->itemLimit();
+        if ($limit !== null && GameListItem::where('game_list_id', $list->id)->count() >= $limit) {
+            return $this->error("A {$list->list_type} list holds {$limit} games — remove one first.", 422);
+        }
 
         $position = (int) GameListItem::where('game_list_id', $list->id)->max('position') + 1;
 
@@ -202,6 +221,192 @@ class GameListController extends Controller
         return $this->success(null, 'Reordered');
     }
 
+    /**
+     * Auth: the note and score that justify an item's rank.
+     * PUT /game-lists/{id}/items/{itemId}
+     */
+    public function updateItem(Request $request, int $id, int $itemId)
+    {
+        $list = GameList::where('user_id', $request->user()->id)->findOrFail($id);
+        $item = GameListItem::where('game_list_id', $list->id)->findOrFail($itemId);
+
+        $data = $request->validate([
+            'note' => ['nullable', 'string', 'max:300'],
+            // 1.0–10.0 with one decimal — a ranking's own scale, deliberately
+            // not the 1–5 stars used for official game ratings.
+            'score' => ['nullable', 'numeric', 'min:1', 'max:10'],
+        ]);
+
+        $item->fill($data)->save();
+
+        return $this->success(null, 'Item updated');
+    }
+
+    /**
+     * Public: lists worth discovering — most liked first, then newest.
+     * GET /game-lists/discover
+     */
+    public function discover(Request $request)
+    {
+        $limit = min(20, max(1, (int) $request->query('limit', 6)));
+
+        $lists = GameList::query()
+            ->where('is_public', true)
+            ->where('is_draft', false)
+            ->has('items')
+            ->withCount(['items', 'likes', 'comments'])
+            ->with(['user:id,username,display_name,avatar_url', 'items' => fn ($q) => $q->limit(4)->with('game:id,background_image')])
+            ->orderByDesc('likes_count')
+            ->latest()
+            ->limit($limit)
+            ->get();
+
+        return $this->success($lists->map(fn ($l) => $this->presentList($l)));
+    }
+
+    /**
+     * Auth: like or unlike a list — one call, it toggles.
+     * POST /game-lists/{id}/like
+     */
+    public function toggleLike(Request $request, int $id)
+    {
+        $list = GameList::withCount('likes')->findOrFail($id);
+
+        if (! $list->isPublished() && $list->user_id !== $request->user()->id) {
+            return $this->forbidden('This list is not public.');
+        }
+
+        $existing = GameListLike::where('game_list_id', $list->id)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
+
+            return $this->success(['liked' => false, 'likes_count' => max(0, $list->likes_count - 1)]);
+        }
+
+        GameListLike::create(['game_list_id' => $list->id, 'user_id' => $request->user()->id]);
+
+        return $this->success(['liked' => true, 'likes_count' => $list->likes_count + 1]);
+    }
+
+    /**
+     * Public: a list's comments, oldest first — a discussion reads forward.
+     * GET /game-lists/{id}/comments
+     */
+    public function comments(Request $request, int $id)
+    {
+        $list = GameList::findOrFail($id);
+
+        if (! $list->isPublished() && optional($request->user('sanctum'))->id !== $list->user_id) {
+            return $this->forbidden('This list is not public.');
+        }
+
+        $comments = GameListComment::where('game_list_id', $list->id)
+            ->with('user:id,username,display_name,avatar_url')
+            ->oldest()
+            ->limit(100)
+            ->get()
+            ->map(fn (GameListComment $c) => [
+                'id' => $c->id,
+                'body' => $c->body,
+                'created_at' => $c->created_at,
+                'user' => [
+                    'username' => $c->user?->username,
+                    'display_name' => $c->user?->display_name,
+                    'avatar_url' => $c->user?->avatar_url,
+                ],
+            ]);
+
+        return $this->success($comments);
+    }
+
+    /**
+     * Auth: comment on a list. The author's `allow_comments` is the gate.
+     * POST /game-lists/{id}/comments
+     */
+    public function addComment(Request $request, int $id)
+    {
+        $list = GameList::findOrFail($id);
+
+        if (! $list->isPublished()) {
+            return $this->forbidden('This list is not public.');
+        }
+
+        if (! $list->allow_comments) {
+            return $this->forbidden('Comments are turned off for this list.');
+        }
+
+        $data = $request->validate(['body' => ['required', 'string', 'max:1000']]);
+
+        $comment = GameListComment::create([
+            'game_list_id' => $list->id,
+            'user_id' => $request->user()->id,
+            'body' => app(SanitizationService::class)->sanitizePlainText($data['body']),
+        ]);
+
+        $comment->load('user:id,username,display_name,avatar_url');
+
+        return $this->success([
+            'id' => $comment->id,
+            'body' => $comment->body,
+            'created_at' => $comment->created_at,
+            'user' => [
+                'username' => $comment->user?->username,
+                'display_name' => $comment->user?->display_name,
+                'avatar_url' => $comment->user?->avatar_url,
+            ],
+        ], 'Comment posted', 201);
+    }
+
+    /**
+     * Auth: delete your own comment — or any comment on your own list.
+     * DELETE /game-lists/{id}/comments/{commentId}
+     */
+    public function deleteComment(Request $request, int $id, int $commentId)
+    {
+        $list = GameList::findOrFail($id);
+        $comment = GameListComment::where('game_list_id', $list->id)->findOrFail($commentId);
+
+        $userId = $request->user()->id;
+        if ($comment->user_id !== $userId && $list->user_id !== $userId) {
+            return $this->forbidden('Not yours to delete.');
+        }
+
+        $comment->delete();
+
+        return $this->success(null, 'Comment removed');
+    }
+
+    /** Stamps the viewer's own like onto a loaded list, without a second query per list. */
+    private function markLiked(GameList $list, ?int $viewerId): void
+    {
+        $list->liked_by_me = $viewerId !== null && GameListLike::where('game_list_id', $list->id)
+            ->where('user_id', $viewerId)
+            ->exists();
+    }
+
+    /**
+     * Shared validation for create and update. `$creating` decides whether the
+     * name is required — everything else is optional either way.
+     */
+    private function listRules(bool $creating): array
+    {
+        return [
+            'name' => [$creating ? 'required' : 'sometimes', 'string', 'max:80'],
+            'description' => ['nullable', 'string', 'max:500'],
+            'is_public' => ['sometimes', 'boolean'],
+            'list_type' => ['sometimes', Rule::in(GameList::TYPES)],
+            'category' => ['nullable', 'string', 'max:40'],
+            'tags' => ['nullable', 'array', 'max:5'],
+            'tags.*' => ['string', 'max:24'],
+            'allow_comments' => ['sometimes', 'boolean'],
+            'has_spoilers' => ['sometimes', 'boolean'],
+            'is_draft' => ['sometimes', 'boolean'],
+        ];
+    }
+
     private function uniqueSlug(int $userId, string $name): string
     {
         $base = Str::slug($name) ?: 'list';
@@ -226,7 +431,17 @@ class GameListController extends Controller
             'slug' => $list->slug,
             'description' => $list->description,
             'is_public' => $list->is_public,
+            'list_type' => $list->list_type,
+            'item_limit' => $list->itemLimit(),
+            'category' => $list->category,
+            'tags' => $list->tags ?? [],
+            'allow_comments' => $list->allow_comments,
+            'has_spoilers' => $list->has_spoilers,
+            'is_draft' => $list->is_draft,
             'items_count' => $list->items_count ?? ($list->relationLoaded('items') ? $list->items->count() : 0),
+            'likes_count' => $list->likes_count ?? 0,
+            'comments_count' => $list->comments_count ?? 0,
+            'liked_by_me' => (bool) ($list->liked_by_me ?? false),
             'covers' => $covers,
             'updated_at' => $list->updated_at,
         ];
@@ -243,6 +458,8 @@ class GameListController extends Controller
             $data['items'] = $list->items->map(fn ($it) => [
                 'id' => $it->id,
                 'position' => $it->position,
+                'note' => $it->note,
+                'score' => $it->score !== null ? (float) $it->score : null,
                 'game' => $it->game ? [
                     'slug' => $it->game->slug,
                     'name' => $it->game->name,
