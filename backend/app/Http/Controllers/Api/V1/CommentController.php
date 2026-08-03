@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Notifications\ArticleCommentNotification;
 use App\Notifications\CommentReplyNotification;
 use App\Services\AchievementService;
+use App\Services\ClanResourceService;
 use App\Services\SanitizationService;
 use App\Services\XpService;
 use Illuminate\Http\Request;
@@ -163,6 +164,11 @@ class CommentController extends Controller
         // 4. Check comment-count achievements (fire-and-forget)
         try {
             app(AchievementService::class)->check(Auth::user(), ['comments_count']);
+
+            // A comment feeds the clan only when it is live and says something.
+            if ($comment->status === 'approved' && strlen($cleanContent) >= (int) config('clan.comment_min_length', 120)) {
+                app(ClanResourceService::class)->award(Auth::user(), 'comment_approved');
+            }
         } catch (\Throwable) {
         }
 

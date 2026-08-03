@@ -16,6 +16,7 @@ use App\Notifications\MentionNotification;
 use App\Notifications\ThreadWatchNotification;
 use App\Services\AchievementService;
 use App\Services\BountyService;
+use App\Services\ClanResourceService;
 use App\Services\SanitizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -543,6 +544,18 @@ class ForumController extends Controller
             // but never for upvoting your own thread (no self-farming).
             if ($thread->author_id !== $userId) {
                 User::where('id', $thread->author_id)->increment('forum_reputation', $delta);
+
+                // Popularity pays the clan exactly once - on the crossing -
+                // so toggling an upvote off and on cannot farm it.
+                if ($delta === 1) {
+                    $upvotes = DB::table('thread_upvotes')->where('thread_id', $thread->id)->count();
+                    if ($upvotes === (int) config('clan.thread_popular_upvotes', 5)) {
+                        $popularAuthor = User::find($thread->author_id);
+                        if ($popularAuthor) {
+                            app(ClanResourceService::class)->award($popularAuthor, 'thread_popular');
+                        }
+                    }
+                }
             }
 
             return $action;
@@ -753,6 +766,7 @@ class ForumController extends Controller
 
                     try {
                         app(AchievementService::class)->check($solutionAuthor, ['solutions_count']);
+                        app(ClanResourceService::class)->award($solutionAuthor, 'forum_solution');
                     } catch (\Throwable) {
                     }
                 }

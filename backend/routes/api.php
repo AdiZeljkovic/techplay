@@ -247,6 +247,9 @@ Route::prefix('v1')->group(function () {
         Route::delete('/clans/{slug}/leave', [ClanController::class, 'leave']);
         Route::post('/clans/{slug}/invite', [ClanController::class, 'invite']);
         Route::post('/clans/invites/{id}/respond', [ClanController::class, 'respondInvite']);
+        Route::post('/clans/{slug}/apply', [ClanController::class, 'apply']);
+        Route::get('/clans/{slug}/applications', [ClanController::class, 'applications']);
+        Route::post('/clans/applications/{id}/respond', [ClanController::class, 'respondApplication']);
 
         // Recognitions (Auth)
         Route::post('/users/{username}/recognitions', [RecognitionController::class, 'store']);

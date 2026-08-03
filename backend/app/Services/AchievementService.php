@@ -317,6 +317,8 @@ class AchievementService
             // Never let notification failure block the achievement unlock.
         }
 
+        app(ClanResourceService::class)->award($user, 'achievement_unlocked');
+
         return true;
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Services\ClanResourceService;
 use App\Services\StreakService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -34,6 +35,11 @@ class StreakController extends Controller
                 $this->streakService->info($request->user()),
                 'Already claimed today'
             );
+        }
+
+        try {
+            app(ClanResourceService::class)->award($request->user(), 'daily_login');
+        } catch (\Throwable) {
         }
 
         return $this->success($result, "Day {$result['streak']} streak! +{$result['bounty_earned']} bounty");

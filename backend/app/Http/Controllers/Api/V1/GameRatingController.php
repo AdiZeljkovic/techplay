@@ -8,6 +8,7 @@ use App\Models\Game;
 use App\Models\GameRating;
 use App\Services\AchievementService;
 use App\Services\BountyService;
+use App\Services\ClanResourceService;
 use App\Services\XpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -150,6 +151,7 @@ class GameRatingController extends Controller
                 app(XpService::class)->awardXp($request->user(), XpService::XP_GAME_REVIEW, 'game_review');
                 app(BountyService::class)->award($request->user(), 15, "Game review written: {$slug}", 'milestone');
                 app(AchievementService::class)->check($request->user(), ['ratings_count']);
+                app(ClanResourceService::class)->award($request->user(), 'review_published');
             } catch (\Throwable) {
             }
         }

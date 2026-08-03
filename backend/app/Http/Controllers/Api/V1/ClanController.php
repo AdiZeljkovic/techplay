@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Clan;
+use App\Models\ClanActivity;
+use App\Models\ClanApplication;
 use App\Models\ClanInvite;
 use App\Models\ClanMember;
 use App\Models\User;
+use App\Services\ClanLevelService;
+use App\Services\ClanResourceService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -38,6 +42,12 @@ class ClanController extends Controller
             'tag' => 'nullable|string|max:8',
             'is_public' => 'boolean',
             'focus' => 'nullable|string|max:60',
+            'motto' => 'nullable|string|max:120',
+            'region' => 'nullable|string|max:40',
+            'language' => 'nullable|string|max:40',
+            'playstyle' => 'nullable|in:competitive,casual,mixed',
+            'status' => 'nullable|in:recruiting,invite_only,closed',
+            'requirements' => 'nullable|string|max:1000',
         ]);
 
         $user = $request->user();
@@ -60,6 +70,7 @@ class ClanController extends Controller
         ]);
 
         $this->createClanForumCategory($clan);
+        ClanResourceService::forgetClanId($user->id);
 
         return $this->success($clan->load('owner:id,username,avatar'), 'Clan created!', 201);
     }
@@ -97,7 +108,30 @@ class ClanController extends Controller
             ])
             ->firstOrFail();
 
-        return $this->success($clan);
+        $levels = app(ClanLevelService::class);
+
+        // Activity score: everything earned in the last 7 days, off the ledger.
+        $weekEarned = (int) $clan->ledger()
+            ->where('amount', '>', 0)
+            ->where('created_at', '>=', now()->subDays(7))
+            ->sum('amount');
+
+        return $this->success(array_merge($clan->toArray(), [
+            'progress' => $levels->progress((int) $clan->xp),
+            'resources' => [
+                'intel' => (int) $clan->intel,
+                'materials' => (int) $clan->materials,
+                'prestige' => (int) $clan->prestige,
+                'prestige_lifetime' => (int) $clan->prestige_lifetime,
+            ],
+            'active_members' => $clan->activeMemberCount(),
+            'activity_score' => $weekEarned,
+            'feed' => $clan->activities()
+                ->with('user:id,username,avatar_url')
+                ->latest()
+                ->limit(15)
+                ->get(),
+        ]));
     }
 
     /** POST /clans/{slug}/join */
@@ -106,8 +140,10 @@ class ClanController extends Controller
         $clan = Clan::where('slug', $slug)->firstOrFail();
         $user = $request->user();
 
-        if (! $clan->is_public) {
-            return $this->error('This clan is invite-only.', 403);
+        // Open joining is only for clans that are actively recruiting —
+        // invite-only and closed clans go through invites or applications.
+        if (! $clan->is_public || ($clan->status ?? 'recruiting') !== 'recruiting') {
+            return $this->error('This clan is not open for direct joining.', 403);
         }
 
         if ($clan->hasMember($user->id)) {
@@ -118,12 +154,7 @@ class ClanController extends Controller
             return $this->error('This clan is full.', 422);
         }
 
-        ClanMember::create([
-            'clan_id' => $clan->id,
-            'user_id' => $user->id,
-            'role' => 'member',
-            'joined_at' => now(),
-        ]);
+        $this->admit($clan, $user);
 
         return $this->success(null, 'You have joined the clan!');
     }
@@ -139,6 +170,14 @@ class ClanController extends Controller
         }
 
         ClanMember::where('clan_id', $clan->id)->where('user_id', $user->id)->delete();
+        ClanResourceService::forgetClanId($user->id);
+
+        ClanActivity::create([
+            'clan_id' => $clan->id,
+            'user_id' => $user->id,
+            'type' => 'member_left',
+            'title' => "{$user->username} left the clan",
+        ]);
 
         return $this->success(null, 'You have left the clan.');
     }
@@ -193,10 +232,7 @@ class ClanController extends Controller
                 return $this->error('The clan is full.', 422);
             }
 
-            ClanMember::firstOrCreate(
-                ['clan_id' => $clan->id, 'user_id' => $user->id],
-                ['role' => 'member', 'joined_at' => now()]
-            );
+            $this->admit($clan, $user);
 
             $invite->update(['status' => 'accepted']);
 
@@ -219,9 +255,151 @@ class ClanController extends Controller
             return $this->success(null);
         }
 
+        $clan = Clan::find($member->clan_id);
+
         return $this->success([
             'clan' => $member->clan,
             'role' => $member->role,
+            'progress' => app(ClanLevelService::class)->progress((int) ($clan->xp ?? 0)),
+            'resources' => [
+                'intel' => (int) ($clan->intel ?? 0),
+                'materials' => (int) ($clan->materials ?? 0),
+                'prestige' => (int) ($clan->prestige ?? 0),
+            ],
+        ]);
+    }
+
+    /* -- applications ---------------------------------------------------- */
+
+    /**
+     * POST /clans/{slug}/apply - ask to join. Closed clans take nobody;
+     * recruiting and invite-only clans both accept applications.
+     */
+    public function apply(Request $request, string $slug)
+    {
+        $clan = Clan::where('slug', $slug)->firstOrFail();
+        $user = $request->user();
+
+        if (($clan->status ?? 'recruiting') === 'closed') {
+            return $this->error('This clan is not accepting members.', 403);
+        }
+
+        if ($clan->hasMember($user->id)) {
+            return $this->error('You are already a member of this clan.', 422);
+        }
+
+        if (ClanMember::where('user_id', $user->id)->exists()) {
+            return $this->error('Leave your current clan before applying to another.', 422);
+        }
+
+        if ($clan->isFull()) {
+            return $this->error('This clan is full.', 422);
+        }
+
+        $data = $request->validate(['message' => 'nullable|string|max:500']);
+
+        $existing = ClanApplication::where('clan_id', $clan->id)
+            ->where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($existing) {
+            return $this->error('You already have a pending application here.', 422);
+        }
+
+        $application = ClanApplication::create([
+            'clan_id' => $clan->id,
+            'user_id' => $user->id,
+            'message' => $data['message'] ?? null,
+        ]);
+
+        ClanActivity::create([
+            'clan_id' => $clan->id,
+            'user_id' => $user->id,
+            'type' => 'application_received',
+            'title' => "{$user->username} applied to join",
+        ]);
+
+        return $this->success($application->only(['id', 'status', 'created_at']), 'Application sent.');
+    }
+
+    /** GET /clans/{slug}/applications - pending list, officers only. */
+    public function applications(Request $request, string $slug)
+    {
+        $clan = Clan::where('slug', $slug)->firstOrFail();
+        $membership = ClanMember::where('clan_id', $clan->id)->where('user_id', $request->user()->id)->first();
+
+        if (! $membership || ! $membership->isOfficerOrAbove()) {
+            return $this->error('Only officers can review applications.', 403);
+        }
+
+        return $this->success(
+            ClanApplication::where('clan_id', $clan->id)
+                ->where('status', 'pending')
+                ->with('user:id,username,display_name,avatar_url,xp')
+                ->latest()
+                ->get()
+        );
+    }
+
+    /** POST /clans/applications/{id}/respond - accept or decline, officers only. */
+    public function respondApplication(Request $request, int $id)
+    {
+        $application = ClanApplication::with('clan')->findOrFail($id);
+        $clan = $application->clan;
+
+        $membership = ClanMember::where('clan_id', $clan->id)->where('user_id', $request->user()->id)->first();
+
+        if (! $membership || ! $membership->isOfficerOrAbove()) {
+            return $this->error('Only officers can review applications.', 403);
+        }
+
+        if ($application->status !== 'pending') {
+            return $this->error('This application was already handled.', 422);
+        }
+
+        $data = $request->validate(['accept' => 'required|boolean']);
+
+        if (! $data['accept']) {
+            $application->update(['status' => 'declined', 'handled_by' => $request->user()->id]);
+
+            return $this->success(null, 'Application declined.');
+        }
+
+        if ($clan->isFull()) {
+            return $this->error('The clan is full.', 422);
+        }
+
+        $applicant = User::findOrFail($application->user_id);
+
+        // The applicant may have joined somewhere else while waiting.
+        if (ClanMember::where('user_id', $applicant->id)->exists()) {
+            $application->update(['status' => 'declined', 'handled_by' => $request->user()->id]);
+
+            return $this->error('The applicant has already joined another clan.', 422);
+        }
+
+        $this->admit($clan, $applicant);
+        $application->update(['status' => 'accepted', 'handled_by' => $request->user()->id]);
+
+        return $this->success(null, 'Application accepted.');
+    }
+
+    /** One doorway for every way into a clan: member row, cache, feed. */
+    private function admit(Clan $clan, User $user): void
+    {
+        ClanMember::firstOrCreate(
+            ['clan_id' => $clan->id, 'user_id' => $user->id],
+            ['role' => 'member', 'joined_at' => now()]
+        );
+
+        ClanResourceService::forgetClanId($user->id);
+
+        ClanActivity::create([
+            'clan_id' => $clan->id,
+            'user_id' => $user->id,
+            'type' => 'member_joined',
+            'title' => "{$user->username} joined the clan",
         ]);
     }
 }

@@ -19,11 +19,22 @@ class Clan extends Model
         'is_public',
         'member_limit',
         'focus',
+        'motto',
+        'region',
+        'language',
+        'playstyle',
+        'status',
+        'requirements',
     ];
 
     protected $casts = [
         'is_public' => 'boolean',
         'member_limit' => 'integer',
+        'level' => 'integer',
+        'xp' => 'integer',
+        'intel' => 'integer',
+        'materials' => 'integer',
+        'prestige' => 'integer',
     ];
 
     public function owner(): BelongsTo
@@ -39,6 +50,31 @@ class Clan extends Model
     public function invites(): HasMany
     {
         return $this->hasMany(ClanInvite::class);
+    }
+
+    public function ledger(): HasMany
+    {
+        return $this->hasMany(ClanLedger::class);
+    }
+
+    public function activities(): HasMany
+    {
+        return $this->hasMany(ClanActivity::class);
+    }
+
+    public function applications(): HasMany
+    {
+        return $this->hasMany(ClanApplication::class);
+    }
+
+    /** Members who earned anything for the clan inside the active window. */
+    public function activeMemberCount(): int
+    {
+        return $this->ledger()
+            ->where('created_at', '>=', now()->subDays((int) config('clan.active_window_days', 14)))
+            ->whereNotNull('user_id')
+            ->distinct()
+            ->count('user_id');
     }
 
     public function isFull(): bool

@@ -9,6 +9,7 @@ use App\Models\GameListComment;
 use App\Models\GameListItem;
 use App\Models\GameListLike;
 use App\Models\User;
+use App\Services\ClanResourceService;
 use App\Services\SanitizationService;
 use App\Traits\ApiResponse;
 use App\Traits\ProfilePrivacy;
@@ -147,8 +148,17 @@ class GameListController extends Controller
 
         $data = $request->validate($this->listRules(false));
 
+        $wasDraft = (bool) $list->is_draft;
         $list->fill($data)->save();
         $list->loadCount('items');
+
+        // Publishing is the moment a list starts existing for other people.
+        if ($wasDraft && ! $list->is_draft) {
+            try {
+                app(ClanResourceService::class)->award($request->user(), 'list_published');
+            } catch (\Throwable) {
+            }
+        }
 
         return $this->success($this->presentList($list), 'List updated');
     }

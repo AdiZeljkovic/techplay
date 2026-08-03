@@ -101,6 +101,8 @@ class QuestService
             $user->notify(new QuestCompletedNotification($quest));
         } catch (\Throwable) {
         }
+
+        app(ClanResourceService::class)->award($user, 'quest_completed');
     }
 
     private function isInCurrentPeriod(Quest $quest, Carbon $completedAt): bool
