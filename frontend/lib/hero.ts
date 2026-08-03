@@ -34,6 +34,10 @@ export interface HeroModel {
     /** Where the current rank band starts — the gauge fills across the band. */
     rank_min_xp: number;
     streak_days: number;
+    /** "Apr 2021" */
+    joined: string | null;
+    /** Visible achievement catalog size; null when the payload can't say. */
+    achievements_total: number | null;
     stats: { games: number; completed: number; reviews: number; achievements: number; hours: number };
     /** Used behind the identity when no cover image is set. */
     backdrop_fallback: string | null;
@@ -76,6 +80,8 @@ export function heroFromDashboard(data: DashboardData): HeroModel {
         frame_value: user.frame ?? null,
         rank_min_xp: user.rank_min_xp ?? 0,
         streak_days: data.streak?.streak ?? 0,
+        joined: user.member_since ?? null,
+        achievements_total: stats.achievements_total ?? null,
         stats: {
             games: stats.games_count,
             completed: stats.completed_count,
@@ -115,6 +121,9 @@ export function heroFromProfile(profile: UserProfile): HeroModel {
         frame_value: profile.customization?.equipped?.frame?.value ?? null,
         rank_min_xp: user.rank?.min_xp ?? 0,
         streak_days: profile.streak?.days ?? 0,
+        joined: stats.joined_at ?? null,
+        // the profile payload returns the whole visible catalog with unlock flags
+        achievements_total: profile.achievements?.length ?? null,
         stats: {
             games: stats.games_count ?? 0,
             completed: stats.completed_count ?? 0,

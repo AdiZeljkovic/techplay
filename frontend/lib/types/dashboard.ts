@@ -33,6 +33,8 @@ export interface DashboardUser {
     rank_min_xp: number;
     next_rank: { name: string; min_xp: number; color: string | null } | null;
     is_staff: boolean;
+    /** "Apr 2021" — for the Member since line. */
+    member_since: string | null;
     /** Platform handles, keyed by platform — drives the hero's platform chips. */
     gamertags: Record<string, string>;
     /** Equipped avatar-frame cosmetic: a CSS colour or gradient, or null. */
@@ -47,6 +49,8 @@ export interface DashboardStats {
     wishlist_count: number;
     favorites_count: number;
     achievements_count: number;
+    /** Visible catalog size — the strip reads "68 / 120". */
+    achievements_total: number;
     reviews_count: number;
     completed_this_month: number;
     hours_played: number;

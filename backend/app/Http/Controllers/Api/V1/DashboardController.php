@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Achievement;
 use App\Models\Article;
 use App\Models\ConnectedAccount;
 use App\Models\Friendship;
@@ -107,6 +108,7 @@ class DashboardController extends Controller
                 // hero identity line: verified tick + the platforms you play on
                 'is_staff' => $user->hasRole(['admin', 'Admin', 'Super Admin', 'editor', 'Editor', 'Editor-in-Chief', 'moderator', 'Moderator', 'Journalist'])
                     || in_array(strtolower($user->role ?? ''), ['admin', 'editor', 'moderator', 'journalist', 'super_admin']),
+                'member_since' => $user->created_at?->format('M Y'),
                 // the handles themselves, not just which platforms exist — the
                 // hero prints them under each platform mark
                 'gamertags' => array_filter((array) ($user->gamertags ?? [])),
@@ -125,6 +127,13 @@ class DashboardController extends Controller
                 'wishlist_count' => $counts['wishlist_count'],
                 'favorites_count' => $counts['favorites_count'],
                 'achievements_count' => $user->achievements()->count(),
+                // catalog size, so the strip can say "68 / 120" — same cache
+                // key family as AuthController's catalog
+                'achievements_total' => Cache::remember(
+                    'achievements.catalog.count.v1',
+                    3600,
+                    fn () => Achievement::where('is_hidden', false)->count()
+                ),
                 'reviews_count' => $reviewsCount,
                 'completed_this_month' => $completedThisMonth,
                 'hours_played' => (int) UserGame::where('user_id', $user->id)->sum('hours_played'),
