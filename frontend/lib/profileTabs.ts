@@ -1,4 +1,4 @@
-import { User, Gamepad2, Sparkles, Award, List, Gift, BarChart3, type LucideIcon } from "lucide-react";
+import { User, Gamepad2, Sparkles, Award, List, Gift, Dna, type LucideIcon } from "lucide-react";
 
 /**
  * The profile's section set — one source of truth for the tab strip, the
@@ -18,6 +18,6 @@ export const PROFILE_TABS: {
     { id: "lists", label: "Lists", icon: List },
     { id: "achievements", label: "Achievements", icon: Award },
     { id: "activity", label: "Activity", icon: Sparkles },
-    { id: "stats", label: "Stats", icon: BarChart3 },
+    { id: "stats", label: "Gamer DNA", icon: Dna },
     { id: "rewards", label: "Rewards", icon: Gift, ownOnly: true },
 ];

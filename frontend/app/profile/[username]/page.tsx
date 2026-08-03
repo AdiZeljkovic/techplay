@@ -19,7 +19,7 @@ import RewardsStore from "@/components/profile/RewardsStore";
 import ListsTab from "@/components/profile/ListsTab";
 import ForumActivityTab from "@/components/profile/ForumActivityTab";
 import ActivityFeed from "@/components/profile/ActivityFeed";
-import StatsPanel from "@/components/profile/StatsPanel";
+import GamerDnaPanel from "@/components/profile/GamerDnaPanel";
 import WelcomeOnboarding from "@/components/profile/WelcomeOnboarding";
 import SectionCard from "@/components/profile/dashboard/SectionCard";
 import SteamAchievements from "@/components/profile/dashboard/SteamAchievements";
@@ -245,13 +245,7 @@ function ProfilePageInner() {
                     )}
 
                     {effectiveTab === "stats" && (
-                        <StatsPanel
-                            stats={stats}
-                            platformsGenres={profile.platforms_genres}
-                            milestones={profile.milestones}
-                            gamertags={userData.gamertags}
-                            pcSpecs={userData.pc_specs}
-                        />
+                        <GamerDnaPanel username={userData.username} />
                     )}
                 </div>
             </div>

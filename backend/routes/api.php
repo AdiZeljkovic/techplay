@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\V1\GameCollectionController;
 use App\Http\Controllers\Api\V1\GameController;
 use App\Http\Controllers\Api\V1\GameListController;
 use App\Http\Controllers\Api\V1\GameRatingController;
+use App\Http\Controllers\Api\V1\GamerDnaController;
 use App\Http\Controllers\Api\V1\GiveawayController;
 use App\Http\Controllers\Api\V1\Gta6CharactersController;
 use App\Http\Controllers\Api\V1\Gta6Controller;
@@ -422,6 +423,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/users/{username}/collection', [GameCollectionController::class, 'index']);
         Route::get('/users/{username}/collection-goals', [CollectionGoalController::class, 'index']);
         Route::get('/users/{username}/achievements', [AchievementController::class, 'index']);
+        Route::get('/users/{username}/gamer-dna', [GamerDnaController::class, 'show']);
         Route::get('/users/{username}/lists', [GameListController::class, 'index']);
         Route::get('/users/{username}/lists/{slug}', [GameListController::class, 'showBySlug']);
         Route::get('/users/{username}/activity', [ActivityController::class, 'index']);

@@ -8,6 +8,69 @@ export interface Achievement {
     unlocked_at?: string | null;
 }
 
+/* ── Gamer DNA ─────────────────────────────────────────────────────────── */
+
+/** One axis of the playstyle fingerprint. `measured` is false where the value
+ *  is read out of genre vocabulary rather than observed play. */
+export interface DnaAxis {
+    key: string;
+    left: string;
+    right: string;
+    value: number;
+    basis: string;
+    measured: boolean;
+}
+
+export interface DnaEra {
+    key: string;
+    label: string;
+    range: string;
+    color: string;
+    count: number;
+    percent: number;
+}
+
+export interface DnaArchetype {
+    key: string;
+    name: string;
+    icon: string;
+    level: number;
+    max_level: number;
+    value: number;
+    next_at: number | null;
+    percent: number;
+    hint: string;
+}
+
+export interface GamerDnaPayload {
+    identity: { traits: string[]; blurb: string; tier: string };
+    score: {
+        value: number;
+        max: number;
+        component_max: number;
+        breakdown: { key: string; label: string; value: number }[];
+        /** null until enough profiles carry a score for the figure to mean anything. */
+        percentile: number | null;
+    };
+    genres: DistributionStat[];
+    platforms: DistributionStat[];
+    eras: DnaEra[];
+    fingerprint: DnaAxis[];
+    collection: {
+        total: number; playing: number; completed: number; backlog: number;
+        wishlist: number; dropped: number; favorites: number; completion_rate: number;
+    };
+    contribution: { label: string; value: number; target: number; percent: number }[];
+    badges: { items: { id: number; name: string; icon_path?: string; points: number }[]; more: number };
+    setup: {
+        specs: Record<string, string>;
+        tier: { label: string; level: number; note: string } | null;
+        gamertags: Record<string, string>;
+    };
+    archetypes: DnaArchetype[];
+    updated_at: string;
+}
+
 export type AchievementRarity = "common" | "rare" | "epic";
 
 /** One row of the achievements page — the catalog entry plus this viewer's standing against it. */
