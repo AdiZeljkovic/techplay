@@ -76,66 +76,62 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                     <LatestArticlesFeed />
                 </div>
 
+                {/* ── the second triptych: what you've earned, what today asks
+                    of you, who's around ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch tp-fade-up tp-d3">
+                    <div className="lg:col-span-5 min-w-0">
+                        <RecentAchievementsRail
+                            achievements={data.recent_achievements}
+                            total={data.stats.achievements_count}
+                        />
+                    </div>
+                    <div id="daily-missions" className="lg:col-span-4 min-w-0 scroll-mt-24">
+                        <DailyMissions streak={data.streak} />
+                    </div>
+                    <div className="lg:col-span-3 min-w-0">
+                        <FriendsOnlineWidget friends={data.friends_online} />
+                    </div>
+                </div>
+
                 <div className="tp-fade-up tp-d3">
                     <HighlightStrip highlights={data.highlights} />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    {/* ── Main column ── */}
-                    <div className="lg:col-span-8 space-y-6 min-w-0">
-                        {!hasGames && (
-                            <div className="tp-fade-up tp-d2">
-                                <OnboardingCard stats={data.stats} />
-                            </div>
-                        )}
-
-                        <div className="tp-fade-up tp-d3">
-                            <RecentAchievementsRail
-                                achievements={data.recent_achievements}
-                                total={data.stats.achievements_count}
-                            />
-                        </div>
-
-                        <div className="tp-fade-up tp-d3">
-                            <UpcomingForYouRow />
-                        </div>
-
-                        {hasGames && (
-                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch tp-fade-up tp-d4">
-                                <RecommendedNext games={data.backlog_preview} />
-                                <BacklogProgressCard stats={data.stats} suggestion={data.backlog_suggestion} />
-                            </div>
-                        )}
-
+                {/* ── everything below runs full width or in pairs; the old
+                    8/4 sidebar emptied out when its two widgets moved up ── */}
+                <div className="space-y-6">
+                    {!hasGames && (
                         <div className="tp-fade-up tp-d4">
-                            <RecentReviews reviews={data.recent_reviews} />
+                            <OnboardingCard stats={data.stats} />
                         </div>
+                    )}
 
-                        <div className="tp-fade-up tp-d5">
-                            <YourActivity />
-                        </div>
-
-                        <div className="tp-fade-up tp-d6">
-                            <Panel
-                                title="Squad Feed"
-                                icon={<Users className="w-3.5 h-3.5 text-[var(--accent)]" />}
-                                action={{ label: "Friends", href: "/friends" }}
-                                bodyClassName="p-3"
-                            >
-                                <FriendActivityFeed />
-                            </Panel>
-                        </div>
+                    <div className="tp-fade-up tp-d4">
+                        <UpcomingForYouRow />
                     </div>
 
-                    {/* ── Sidebar ── */}
-                    <div className="lg:col-span-4 space-y-6 min-w-0">
-                        <div id="daily-missions" className="scroll-mt-24 tp-fade-up tp-d3">
-                            <DailyMissions streak={data.streak} />
+                    {hasGames && (
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch tp-fade-up tp-d5">
+                            <RecommendedNext games={data.backlog_preview} />
+                            <BacklogProgressCard stats={data.stats} suggestion={data.backlog_suggestion} />
                         </div>
+                    )}
 
-                        <div className="tp-fade-up tp-d5">
-                            <FriendsOnlineWidget friends={data.friends_online} />
-                        </div>
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch tp-fade-up tp-d5">
+                        <RecentReviews reviews={data.recent_reviews} />
+                        <Panel
+                            title="Friends Feed"
+                            icon={<Users className="w-3.5 h-3.5 text-[var(--accent)]" />}
+                            action={{ label: "Friends", href: "/friends" }}
+                            className="h-full flex flex-col"
+                            bodyClassName="p-3 flex-1"
+                        >
+                            <FriendActivityFeed />
+                        </Panel>
+                    </div>
+
+                    <div className="tp-fade-up tp-d6">
+                        <YourActivity />
                     </div>
                 </div>
             </div>

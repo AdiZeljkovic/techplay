@@ -96,7 +96,8 @@ export default function RecentAchievementsRail({
             title="Recent Achievements"
             icon={<Medal className="w-3.5 h-3.5 text-[var(--accent)]" />}
             action={{ label: "All achievements", href: "/profile/me?tab=achievements" }}
-            bodyClassName="p-4"
+            className="h-full flex flex-col"
+            bodyClassName="p-4 flex-1 flex flex-col"
         >
             {achievements.length === 0 ? (
                 <EmptyState
@@ -107,7 +108,7 @@ export default function RecentAchievementsRail({
                 />
             ) : (
                 <>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                    <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 content-center">
                         {achievements.slice(0, 5).map((a, i) => {
                             const tier = tierFor(a.points);
                             return (

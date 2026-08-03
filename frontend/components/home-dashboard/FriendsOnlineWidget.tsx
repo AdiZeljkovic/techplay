@@ -11,10 +11,11 @@ import EmptyState from "@/components/ui/EmptyState";
 export default function FriendsOnlineWidget({ friends }: { friends: FriendOnline[] }) {
     return (
         <Panel
-            title={friends.length > 0 ? `Squad Online — ${friends.length}` : "Squad Online"}
+            title={friends.length > 0 ? `Friends Online — ${friends.length}` : "Friends Online"}
             icon={<Users className="w-3.5 h-3.5 text-[var(--accent)]" />}
             action={{ label: "All friends", href: "/friends" }}
-            bodyClassName="p-3"
+            className="h-full flex flex-col"
+            bodyClassName="p-3 flex-1"
         >
             {friends.length === 0 ? (
                 <EmptyState

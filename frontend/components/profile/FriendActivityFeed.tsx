@@ -90,7 +90,7 @@ export default function FriendActivityFeed() {
         return (
             <EmptyState
                 variant="compact"
-                title="No squad activity yet"
+                title="No friend activity yet"
                 body="Add friends to see what they're playing, live."
                 action={{ label: "Find friends", href: "/friends" }}
             />

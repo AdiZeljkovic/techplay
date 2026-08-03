@@ -46,7 +46,7 @@ export default function DailyMissions({ streak }: { streak: DashboardData["strea
         revalidateOnFocus: false,
     });
 
-    const active = (quests ?? []).filter((q) => !q.completed).slice(0, 4);
+    const active = (quests ?? []).filter((q) => !q.completed).slice(0, 3);
     const doneToday = streak.claimed_today;
 
     // Monday-indexed, so the lit run ends on the right weekday
@@ -75,7 +75,8 @@ export default function DailyMissions({ streak }: { streak: DashboardData["strea
             icon={<Target className="w-3.5 h-3.5 text-[var(--accent)]" />}
             crown
             variant="console"
-            bodyClassName="p-4"
+            className="h-full flex flex-col"
+            bodyClassName="p-4 flex-1 flex flex-col"
         >
             {/* ── the streak: today's one guaranteed reward ── */}
             <div
@@ -259,10 +260,8 @@ export default function DailyMissions({ streak }: { streak: DashboardData["strea
 
             {/* how the loop pays out — stated once, at the bottom */}
             <p className="mt-4 pt-3 border-t border-white/[0.07] text-[10px] leading-relaxed text-white/35">
-                Quests complete themselves as you play — no claiming needed.{" "}
-                <span className="text-amber-400 font-semibold">Bounty (B)</span> is spent in the rewards store;{" "}
-                <span className="text-[var(--xp-bright)] font-semibold">XP</span> raises your level and rank. The daily
-                bounty grows +5 for each consecutive day, up to +50.
+                Quests complete as you play. <span className="text-amber-400 font-semibold">Bounty</span> buys
+                rewards; <span className="text-[var(--xp-bright)] font-semibold">XP</span> raises your level.
             </p>
         </Panel>
     );
