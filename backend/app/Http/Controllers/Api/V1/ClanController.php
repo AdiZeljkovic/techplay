@@ -8,27 +8,89 @@ use App\Models\Clan;
 use App\Models\ClanActivity;
 use App\Models\ClanApplication;
 use App\Models\ClanInvite;
+use App\Models\ClanLedger;
 use App\Models\ClanMember;
 use App\Models\User;
 use App\Services\ClanLevelService;
 use App\Services\ClanResourceService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
 
 class ClanController extends Controller
 {
     use ApiResponse;
 
-    /** GET /clans — list public clans */
+    /**
+     * GET /clans — the directory. Filters, sorts, and per-clan economy
+     * figures batched off the ledger so the whole page is a fixed number of
+     * queries no matter how many clans are listed.
+     */
     public function index(Request $request)
     {
+        $sort = (string) $request->query('sort', 'activity');
+
         $clans = Clan::where('is_public', true)
             ->withCount('members')
-            ->with('owner:id,username,avatar')
-            ->when($request->query('search'), fn ($q, $s) => $q->where('name', 'ilike', "%{$s}%"))
-            ->orderByDesc('members_count')
-            ->paginate(20);
+            ->when($request->query('search'), function ($q, $term) {
+                $driver = $q->getConnection()->getDriverName();
+                $like = $driver === 'pgsql' ? 'ilike' : 'like';
+                $q->where(fn ($w) => $w->where('name', $like, "%{$term}%")->orWhere('tag', $like, "%{$term}%"));
+            })
+            ->when($request->query('region'), fn ($q, $r) => $q->where('region', $r))
+            ->when($request->query('playstyle'), fn ($q, $p) => $q->where('playstyle', $p))
+            ->when($request->boolean('recruiting'), fn ($q) => $q->where(fn ($w) => $w->whereNull('status')->orWhere('status', 'recruiting')))
+            ->when($sort === 'prestige', fn ($q) => $q->orderByDesc('prestige_lifetime'))
+            ->when($sort === 'level', fn ($q) => $q->orderByDesc('xp'))
+            ->when($sort === 'members', fn ($q) => $q->orderByDesc('members_count'))
+            ->when($sort === 'newest', fn ($q) => $q->orderByDesc('created_at'))
+            ->paginate(24);
+
+        $ids = $clans->getCollection()->pluck('id');
+        $window = now()->subDays(7);
+        $activeWindow = now()->subDays((int) config('clan.active_window_days', 14));
+
+        // One query each: weekly earn and active-member counts, for every
+        // clan on the page at once.
+        $weekly = ClanLedger::whereIn('clan_id', $ids)
+            ->where('amount', '>', 0)
+            ->where('created_at', '>=', $window)
+            ->selectRaw('clan_id, SUM(amount) as earned')
+            ->groupBy('clan_id')
+            ->pluck('earned', 'clan_id');
+
+        $active = ClanLedger::whereIn('clan_id', $ids)
+            ->whereNotNull('user_id')
+            ->where('created_at', '>=', $activeWindow)
+            ->selectRaw('clan_id, COUNT(DISTINCT user_id) as tally')
+            ->groupBy('clan_id')
+            ->pluck('tally', 'clan_id');
+
+        $levels = app(ClanLevelService::class);
+        $small = (int) config('clan.size_categories.small', 15);
+        $medium = (int) config('clan.size_categories.medium', 50);
+
+        $clans->getCollection()->transform(function (Clan $clan) use ($weekly, $active, $levels, $small, $medium) {
+            $activeCount = (int) ($active[$clan->id] ?? 0);
+
+            return array_merge($clan->toArray(), [
+                'tier_name' => $levels->tierForLevel((int) $clan->level)['name'],
+                'activity_score' => (int) ($weekly[$clan->id] ?? 0),
+                'active_members' => $activeCount,
+                'size_category' => $activeCount <= $small ? 'small' : ($activeCount <= $medium ? 'medium' : 'large'),
+            ]);
+        });
+
+        // Activity is the default order and can't be pushed into SQL cheaply —
+        // sort the page in PHP. Cross-page precision matters less than honesty.
+        if ($sort === 'activity') {
+            $clans->setCollection(
+                $clans->getCollection()->sortByDesc('activity_score')->values()
+            );
+        }
 
         return $this->success($clans);
     }
@@ -116,8 +178,96 @@ class ClanController extends Controller
             ->where('created_at', '>=', now()->subDays(7))
             ->sum('amount');
 
+        $memberIds = $clan->members->pluck('user_id');
+
+        // Batched roster context: lifetime + weekly contribution, who is
+        // online (Redis presence window), who is in game, and each member's
+        // most recently played game. Fixed query count for any roster size.
+        $contributions = ClanLedger::where('clan_id', $clan->id)
+            ->whereNotNull('user_id')->where('amount', '>', 0)
+            ->selectRaw('user_id, SUM(amount) as total')
+            ->groupBy('user_id')->pluck('total', 'user_id');
+
+        $weeklyContrib = ClanLedger::where('clan_id', $clan->id)
+            ->whereNotNull('user_id')->where('amount', '>', 0)
+            ->where('created_at', '>=', now()->subDays(7))
+            ->selectRaw('user_id, SUM(amount) as total')
+            ->groupBy('user_id')->pluck('total', 'user_id');
+
+        $onlineIds = [];
+        try {
+            $onlineIds = array_map('intval', Redis::zrangebyscore(
+                'forum:users:online', now()->subMinutes(5)->timestamp, '+inf'
+            ) ?: []);
+        } catch (\Throwable) {
+            // Redis down → everyone reads as offline, nothing breaks.
+        }
+
+        $inGame = DB::table('presences')
+            ->whereIn('user_id', $memberIds)->where('is_active', true)
+            ->pluck('game_name', 'user_id');
+
+        $mainGames = DB::table('user_games')
+            ->join('games', 'games.id', '=', 'user_games.game_id')
+            ->whereIn('user_games.user_id', $memberIds)
+            ->whereNotNull('user_games.last_played_at')
+            ->orderByDesc('user_games.last_played_at')
+            ->limit(400)
+            ->get(['user_games.user_id', 'games.name'])
+            ->unique('user_id')
+            ->pluck('name', 'user_id');
+
+        $roster = $clan->members->map(fn (ClanMember $m) => [
+            'user' => $m->user ? [
+                'username' => $m->user->username,
+                'avatar' => $m->user->avatar,
+                'xp' => (int) $m->user->xp,
+            ] : null,
+            'role' => $m->role,
+            'joined_at' => $m->joined_at?->toDateString(),
+            'online' => in_array($m->user_id, $onlineIds, true),
+            'in_game' => $inGame[$m->user_id] ?? null,
+            'main_game' => $mainGames[$m->user_id] ?? null,
+            'contribution' => (int) ($contributions[$m->user_id] ?? 0),
+            'contribution_week' => (int) ($weeklyContrib[$m->user_id] ?? 0),
+        ])->filter(fn ($row) => $row['user'] !== null)
+            ->sortBy([['role', 'asc'], ['contribution', 'desc']])
+            ->values();
+
+        // The games this clan actually plays: how many members own each.
+        $memberCount = max(1, $clan->members_count);
+        $clanGames = DB::table('user_games')
+            ->join('games', 'games.id', '=', 'user_games.game_id')
+            ->whereIn('user_games.user_id', $memberIds)
+            ->selectRaw('games.slug, games.name, games.background_image, COUNT(DISTINCT user_games.user_id) as players')
+            ->groupBy('games.slug', 'games.name', 'games.background_image')
+            ->orderByDesc('players')
+            ->limit(4)
+            ->get()
+            ->map(fn ($g) => [
+                'slug' => $g->slug,
+                'name' => $g->name,
+                'background_image' => $g->background_image,
+                'players' => (int) $g->players,
+                'percent' => (int) round($g->players / $memberCount * 100),
+            ]);
+
+        // Viewer standing: their role here, or a pending application.
+        $viewer = Auth::guard('sanctum')->user() ?? Auth::user();
+        $viewerState = null;
+        if ($viewer) {
+            $membership = $clan->members->firstWhere('user_id', $viewer->id);
+            $viewerState = [
+                'role' => $membership?->role,
+                'in_other_clan' => ! $membership && ClanMember::where('user_id', $viewer->id)->exists(),
+                'application_pending' => ! $membership && ClanApplication::where('clan_id', $clan->id)
+                    ->where('user_id', $viewer->id)->where('status', 'pending')->exists(),
+            ];
+        }
+
         return $this->success(array_merge($clan->toArray(), [
             'progress' => $levels->progress((int) $clan->xp),
+            'tier_name' => $levels->tierForLevel((int) $clan->level)['name'],
             'resources' => [
                 'intel' => (int) $clan->intel,
                 'materials' => (int) $clan->materials,
@@ -125,7 +275,15 @@ class ClanController extends Controller
                 'prestige_lifetime' => (int) $clan->prestige_lifetime,
             ],
             'active_members' => $clan->activeMemberCount(),
+            'online_count' => count(array_intersect($memberIds->all(), $onlineIds)),
             'activity_score' => $weekEarned,
+            'roster' => $roster,
+            'top_contributors' => $roster->sortByDesc('contribution_week')
+                ->filter(fn ($r) => $r['contribution_week'] > 0)->take(5)->values(),
+            'clan_games' => $clanGames,
+            'viewer' => $viewerState,
+            'pending_applications' => ClanApplication::where('clan_id', $clan->id)->where('status', 'pending')->count(),
+            'forum_slug' => 'clan-'.$clan->slug,
             'feed' => $clan->activities()
                 ->with('user:id,username,avatar_url')
                 ->latest()

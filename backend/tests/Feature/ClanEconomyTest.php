@@ -282,6 +282,51 @@ class ClanEconomyTest extends TestCase
         $this->assertTrue(ClanActivity::where('type', 'member_left')->where('user_id', $member->id)->exists());
     }
 
+    public function test_the_directory_carries_tier_activity_and_size_and_honors_the_recruiting_filter(): void
+    {
+        $owner = User::factory()->create();
+        $open = $this->clan($owner);
+        app(ClanResourceService::class)->award($owner, 'game_completed');
+
+        $closedOwner = User::factory()->create();
+        $this->clan($closedOwner, ['status' => 'closed', 'name' => 'Closed Crew', 'slug' => 'closed-crew']);
+
+        $all = $this->getJson('/api/v1/clans')->assertOk()->json('data.data');
+        $this->assertCount(2, $all);
+
+        $row = collect($all)->firstWhere('slug', $open->slug);
+        $this->assertSame('Outpost', $row['tier_name']);
+        $this->assertSame(15, $row['activity_score']);
+        $this->assertSame(1, $row['active_members']);
+        $this->assertSame('small', $row['size_category']);
+
+        $recruiting = $this->getJson('/api/v1/clans?recruiting=1')->assertOk()->json('data.data');
+        $this->assertCount(1, $recruiting);
+        $this->assertSame($open->slug, $recruiting[0]['slug']);
+    }
+
+    public function test_the_profile_roster_carries_contributions_and_the_viewer_their_standing(): void
+    {
+        $owner = User::factory()->create();
+        $clan = $this->clan($owner);
+        app(ClanResourceService::class)->award($owner, 'game_completed');
+
+        $data = $this->actingAs($owner, 'sanctum')->getJson("/api/v1/clans/{$clan->slug}")->assertOk()->json('data');
+
+        $this->assertSame('owner', $data['roster'][0]['role']);
+        $this->assertSame(15, $data['roster'][0]['contribution']);
+        $this->assertSame(15, $data['roster'][0]['contribution_week']);
+        $this->assertSame($owner->username, $data['top_contributors'][0]['user']['username']);
+        $this->assertSame('owner', $data['viewer']['role']);
+        $this->assertSame('clan-'.$clan->slug, $data['forum_slug']);
+
+        $stranger = User::factory()->create();
+        $viewer = $this->actingAs($stranger, 'sanctum')->getJson("/api/v1/clans/{$clan->slug}")->assertOk()->json('data.viewer');
+        $this->assertNull($viewer['role']);
+        $this->assertFalse($viewer['in_other_clan']);
+        $this->assertFalse($viewer['application_pending']);
+    }
+
     public function test_the_clan_profile_carries_the_economy_block(): void
     {
         $owner = User::factory()->create();
