@@ -12,7 +12,7 @@ import type { FriendStatus } from "@/lib/types/profile";
 import { rankTier } from "@/lib/ranks";
 import { useCountUp } from "@/hooks/useCountUp";
 import ProfileTabStrip from "./ProfileTabStrip";
-import { RankInsigniaMark } from "./RankInsignia";
+import { RankInsigniaMark, XpRail } from "./RankInsignia";
 import { xpForLevel } from "@/lib/level";
 
 /* ── avatar ───────────────────────────────────────────────────────────── */
@@ -226,8 +226,15 @@ export default function ProfileHero({
     const online = hero.is_online || isOwnProfile;
     const tier = rankTier(hero.rank_name);
 
-    const levelToGo = Math.max(0, xpForLevel(hero.level + 1) - hero.xp);
+    // The gauge measures the level band — it's the same climb the loot cell
+    // at the strip's end is counting down.
+    const levelFloor = xpForLevel(hero.level);
+    const levelCeil = xpForLevel(hero.level + 1);
+    const levelSize = Math.max(1, levelCeil - levelFloor);
+    const levelToGo = Math.max(0, levelCeil - hero.xp);
+    const fillPercent = Math.min(100, Math.round((Math.max(0, hero.xp - levelFloor) / levelSize) * 100));
     const levelToGoShown = useCountUp(levelToGo, 1200);
+    const fillShown = useCountUp(fillPercent, 1200);
 
     const share = () => {
         const url = `${window.location.origin}${base}`;
@@ -481,15 +488,24 @@ export default function ProfileHero({
                 </div>
             </section>
 
-            {/* ── the record strip ── */}
-            <section className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[#100e0d] px-5 md:px-6 py-4 overflow-x-auto scrollbar-none">
-                <div className="flex items-center gap-5 md:gap-0 md:justify-between min-w-max md:min-w-0">
+            {/* ── the record strip: no card of its own — the figures sit on the
+                page, and the live XP gauge runs the strip's full width beneath
+                them, ending exactly under the loot cell it's charging toward ── */}
+            <section className="px-1">
+                <div className="flex items-center gap-5 md:gap-0 md:justify-between min-w-max md:min-w-0 overflow-x-auto scrollbar-none">
                     {cells.map((cell, i) => (
                         <span key={cell.label} className="flex items-center gap-5 md:gap-6 min-w-0">
                             {i > 0 && <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08]" />}
                             <StatCell cell={cell} />
                         </span>
                     ))}
+                </div>
+
+                <div className="mt-4 flex items-center gap-3">
+                    <XpRail percent={fillShown} className="flex-1" />
+                    <span className="shrink-0 font-display text-[12px] font-black tabular-nums text-[var(--xp-bright)]">
+                        {fillShown}%
+                    </span>
                 </div>
             </section>
 
