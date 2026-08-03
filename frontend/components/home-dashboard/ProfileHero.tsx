@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
     User as UserIcon, MapPin, CalendarDays, Pencil, ExternalLink, Check, BadgeCheck, MoreHorizontal,
-    Flame, Play, Sparkles, ShieldCheck, LinkIcon, GitCompare, UserPlus, Clock, MessageSquare, ChevronRight,
+    Flame, Play, Sparkles, ShieldCheck, LinkIcon, GitCompare, UserPlus, Clock, MessageSquare,
 } from "lucide-react";
 import type { HeroModel } from "@/lib/hero";
 import type { FriendStatus } from "@/lib/types/profile";
@@ -309,7 +309,7 @@ export default function ProfileHero({
                     )}
                 </div>
 
-                <div className="relative flex flex-col lg:flex-row lg:items-center gap-6 p-5 md:p-8">
+                <div className="relative flex flex-col lg:flex-row lg:items-end gap-6 p-5 md:p-8">
                     {/* portrait + identity */}
                     <div className="flex items-start gap-5 md:gap-7 flex-1 min-w-0">
                         <Link href={base} className="group/av block shrink-0">
@@ -427,34 +427,31 @@ export default function ProfileHero({
                         </div>
                     </div>
 
-                    {/* rank block, floating on the art's right */}
-                    <div className="shrink-0 lg:w-[300px] flex lg:flex-col items-center lg:items-end gap-4 lg:gap-3">
-                        <div className="flex items-center gap-4">
-                            <RankInsigniaMark icon={hero.rank_icon} color={hero.rank_color} name={hero.rank_name} size={92} />
-                            <div>
-                                <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.18em] text-white/45">
-                                    Current rank
-                                </p>
-                                <p
-                                    className="mt-1 font-display text-[19px] font-black uppercase tracking-[0.03em] leading-none whitespace-nowrap"
-                                    style={{ color: hero.rank_color || "#fff" }}
-                                    title={tier ?? undefined}
-                                >
-                                    {hero.rank_name || "Unranked"}
-                                </p>
-                                <p className="mt-1.5 font-display text-[13px] font-black tabular-nums text-[var(--xp-bright)]">
-                                    {hero.xp.toLocaleString()} XP
-                                </p>
-                            </div>
+                    {/* Rank block on the right, seated level with the action
+                        row — the whole thing is the link into rank progress,
+                        so it doesn't need a button saying so. */}
+                    <Link
+                        href={`${base}?tab=stats`}
+                        title="View rank progress"
+                        className="shrink-0 self-start lg:self-end flex items-center gap-4 hover:opacity-85 transition-opacity duration-200"
+                    >
+                        <RankInsigniaMark icon={hero.rank_icon} color={hero.rank_color} name={hero.rank_name} size={92} />
+                        <div>
+                            <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.18em] text-white/45">
+                                Current rank
+                            </p>
+                            <p
+                                className="mt-1 font-display text-[19px] font-black uppercase tracking-[0.03em] leading-none whitespace-nowrap"
+                                style={{ color: hero.rank_color || "#fff" }}
+                                title={tier ?? undefined}
+                            >
+                                {hero.rank_name || "Unranked"}
+                            </p>
+                            <p className="mt-1.5 font-display text-[13px] font-black tabular-nums text-[var(--xp-bright)]">
+                                {hero.xp.toLocaleString()} XP
+                            </p>
                         </div>
-
-                        <Link
-                            href={`${base}?tab=stats`}
-                            className="hidden lg:inline-flex items-center justify-center gap-1.5 h-10 w-full rounded-[8px] border border-white/[0.14] bg-black/30 backdrop-blur-sm font-display text-[11px] font-bold uppercase tracking-[0.1em] text-white hover:bg-white/[0.09] hover:border-white/30 transition-colors duration-300"
-                        >
-                            View rank progress <ChevronRight className="w-4 h-4" />
-                        </Link>
-                    </div>
+                    </Link>
                 </div>
             </section>
 
