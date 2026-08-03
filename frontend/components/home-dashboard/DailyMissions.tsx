@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import axios from "@/lib/axios";
 import type { DashboardData } from "@/lib/types/dashboard";
 import Panel from "@/components/ui/Panel";
+import { timeLeft } from "@/lib/timeAgo";
 
 interface Quest {
     id: number;
@@ -32,18 +33,6 @@ const TYPE_LABEL: Record<Quest["type"], string> = {
     monthly: "Monthly",
     permanent: "Ongoing",
 };
-
-/** "Resets in 6d" / "4h left" — deadlines are what make a quest a quest. */
-function timeLeft(iso: string | null): string | null {
-    if (!iso) return null;
-    const ms = new Date(iso).getTime() - Date.now();
-    if (Number.isNaN(ms) || ms <= 0) return null;
-
-    const hours = Math.floor(ms / 3_600_000);
-    if (hours < 1) return `${Math.max(1, Math.floor(ms / 60_000))}m left`;
-    if (hours < 24) return `${hours}h left`;
-    return `${Math.floor(hours / 24)}d left`;
-}
 
 /**
  * The streak and the quest board are one loop — show up, claim, make

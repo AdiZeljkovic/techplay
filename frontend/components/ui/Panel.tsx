@@ -9,6 +9,9 @@ interface PanelProps {
     title?: string;
     icon?: ReactNode;
     action?: { label: string; href?: string; onClick?: () => void };
+    /** Right-side header content that is information, not a link — e.g. a
+     *  countdown. Ignored when `action` is present. */
+    meta?: ReactNode;
     /** Accent hairline crown (signature S2) — hero-tier surfaces only. */
     crown?: boolean;
     /**
@@ -42,6 +45,7 @@ export default function Panel({
     title,
     icon,
     action,
+    meta,
     crown = false,
     variant = "default",
     padding = "md",
@@ -75,6 +79,7 @@ export default function Panel({
                         {icon}
                         {title}
                     </h3>
+                    {!action && meta}
                     {action && (
                         action.href ? (
                             <Link href={action.href} className="flex items-center gap-1 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--accent)] hover:brightness-125 transition-[filter] duration-150">

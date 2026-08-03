@@ -17,6 +17,13 @@ export default function DashboardSkeleton() {
                     <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[58px]" />
                 </div>
 
+                {/* three pillars */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-5 rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[290px]" />
+                    <div className="lg:col-span-4 rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[290px]" />
+                    <div className="lg:col-span-3 rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[290px]" />
+                </div>
+
                 {/* Highlight strip */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="h-[88px] rounded-[var(--radius-panel)] bg-[var(--fill-2)]" />
@@ -26,8 +33,6 @@ export default function DashboardSkeleton() {
                 {/* Main + aside grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     <div className="lg:col-span-8 space-y-6">
-                        {/* favorites rail */}
-                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[220px]" />
                         {/* achievements */}
                         <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[190px]" />
                         {/* upcoming (panel-wrapped now) */}
@@ -45,8 +50,6 @@ export default function DashboardSkeleton() {
                         <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[280px]" />
                     </div>
                     <div className="lg:col-span-4 space-y-6">
-                        {/* currently playing */}
-                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[300px]" />
                         {/* daily missions: streak + quest board */}
                         <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[430px]" />
                         {/* friends online */}

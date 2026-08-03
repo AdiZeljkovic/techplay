@@ -7,9 +7,10 @@ import DashboardSkeleton from "./DashboardSkeleton";
 import ProfileHero from "./ProfileHero";
 import HighlightStrip from "./HighlightStrip";
 import FavoriteGamesRail from "./FavoriteGamesRail";
+import ContinuePlayingCard from "./ContinuePlayingCard";
+import DailyChallengeCard from "./DailyChallengeCard";
 import RecentAchievementsRail from "./RecentAchievementsRail";
 import RecentReviews from "./RecentReviews";
-import CurrentlyPlayingSidebar from "./CurrentlyPlayingSidebar";
 import FriendsOnlineWidget from "./FriendsOnlineWidget";
 import UpcomingForYouRow from "./UpcomingForYouRow";
 import YourActivity from "./YourActivity";
@@ -53,6 +54,24 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                     <ProfileHero hero={heroFromDashboard(data)} />
                 </div>
 
+                {/* ── the three pillars: what you're playing, what you love,
+                    what today pays ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch tp-fade-up tp-d2">
+                    <div className="lg:col-span-5 min-w-0">
+                        <ContinuePlayingCard games={data.playing_now} />
+                    </div>
+                    <div className="lg:col-span-4 min-w-0">
+                        <FavoriteGamesRail
+                            favorites={data.favorites}
+                            username={data.user.username}
+                            total={data.stats.favorites_count}
+                        />
+                    </div>
+                    <div className="lg:col-span-3 min-w-0">
+                        <DailyChallengeCard />
+                    </div>
+                </div>
+
                 <div className="tp-fade-up tp-d2">
                     <HighlightStrip highlights={data.highlights} />
                 </div>
@@ -65,14 +84,6 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                                 <OnboardingCard stats={data.stats} />
                             </div>
                         )}
-
-                        <div className="tp-fade-up tp-d2">
-                            <FavoriteGamesRail
-                                favorites={data.favorites}
-                                username={data.user.username}
-                                total={data.stats.favorites_count}
-                            />
-                        </div>
 
                         <div className="tp-fade-up tp-d3">
                             <RecentAchievementsRail
@@ -118,11 +129,7 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
 
                     {/* ── Sidebar ── */}
                     <div className="lg:col-span-4 space-y-6 min-w-0">
-                        <div className="tp-fade-up tp-d2">
-                            <CurrentlyPlayingSidebar games={data.playing_now} />
-                        </div>
-
-                        <div className="tp-fade-up tp-d3">
+                        <div id="daily-missions" className="scroll-mt-24 tp-fade-up tp-d3">
                             <DailyMissions streak={data.streak} />
                         </div>
 
