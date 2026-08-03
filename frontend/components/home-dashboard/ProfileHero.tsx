@@ -43,7 +43,7 @@ function AvatarRing({
                 }}
             />
             {/* the gap that keeps the ring reading as a ring, not a border */}
-            <span aria-hidden className="absolute inset-[2.5px] rounded-full bg-[#0c0a09]" />
+            <span aria-hidden className="absolute inset-[2.5px] rounded-full bg-[var(--surface-0)]" />
 
             <span className="absolute inset-[7px] rounded-full overflow-hidden bg-[var(--surface-2)]">
                 {src ? (
@@ -64,7 +64,7 @@ function AvatarRing({
                 <span className="absolute bottom-[6%] left-[13%] w-[18px] h-[18px]" title="Online now">
                     <span aria-hidden className="tp-pulse-ring absolute inset-0 rounded-full bg-emerald-400" />
                     <span
-                        className="relative block w-full h-full rounded-full ring-[3px] ring-[#0c0a09]"
+                        className="relative block w-full h-full rounded-full ring-[3px] ring-[var(--surface-0)]"
                         style={{ background: "radial-gradient(circle at 35% 30%, #a7f3d0 0%, #10b981 55%, #047857 100%)" }}
                     />
                     <span className="sr-only">Online</span>
@@ -286,16 +286,20 @@ export default function ProfileHero({
 
     return (
         <div className="space-y-4">
-            {/* ── identity: the banner is the card ── */}
-            <section className="relative rounded-[var(--radius-panel)] overflow-hidden border border-white/[0.07] bg-[#0c0a09]">
+            {/* ── identity: no card at all — the banner dissolves into the
+                page, feathered on every edge so no border is ever visible ── */}
+            <section className="relative overflow-hidden">
                 <div aria-hidden className="absolute inset-0">
                     {backdrop ? (
                         <>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={backdrop} alt="" className="tp-drift w-full h-full object-cover" />
-                            {/* legible on the left, art on the right, seated at the bottom */}
-                            <span className="absolute inset-0 bg-gradient-to-r from-[#0c0a09]/95 from-[8%] via-[#0c0a09]/55 via-[45%] to-[#0c0a09]/25" />
-                            <span className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#0c0a09]/95 to-transparent" />
+                            {/* legible on the left, art on the right */}
+                            <span className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)] from-[4%] via-[color-mix(in_srgb,var(--surface-0)_55%,transparent)] via-[45%] to-[color-mix(in_srgb,var(--surface-0)_20%,transparent)]" />
+                            {/* feathered seams into the page above and below */}
+                            <span className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[var(--surface-0)] to-transparent" />
+                            <span className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
+                            <span className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[var(--surface-0)] to-transparent" />
                         </>
                     ) : (
                         <span
