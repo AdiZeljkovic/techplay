@@ -40,6 +40,7 @@ use App\Http\Controllers\Api\V1\Gta6VehiclesController;
 use App\Http\Controllers\Api\V1\Gta6WeaponsController;
 use App\Http\Controllers\Api\V1\GuideController;
 use App\Http\Controllers\Api\V1\HomeController;
+use App\Http\Controllers\Api\V1\JournalController;
 use App\Http\Controllers\Api\V1\LeaderboardController;
 use App\Http\Controllers\Api\V1\MediaKitController;
 use App\Http\Controllers\Api\V1\MessageController;
@@ -264,6 +265,11 @@ Route::prefix('v1')->group(function () {
         });
 
         // Bounty + Rewards (Auth)
+        Route::post('/journal/sessions', [JournalController::class, 'store']);
+        Route::put('/journal/sessions/{session}', [JournalController::class, 'update']);
+        Route::delete('/journal/sessions/{session}', [JournalController::class, 'destroy']);
+        Route::post('/journal/sessions/{session}/moments', [JournalController::class, 'addMoment']);
+        Route::delete('/journal/moments/{moment}', [JournalController::class, 'deleteMoment']);
         Route::get('/bounty', [BountyController::class, 'index']);
         Route::get('/rewards/catalog', [RewardController::class, 'catalog']);
         Route::get('/rewards/redemptions', [RewardController::class, 'redemptions']);
@@ -425,6 +431,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/users/{username}/collection-goals', [CollectionGoalController::class, 'index']);
         Route::get('/users/{username}/achievements', [AchievementController::class, 'index']);
         Route::get('/users/{username}/gamer-dna', [GamerDnaController::class, 'show']);
+        Route::get('/users/{username}/journal', [JournalController::class, 'index']);
         Route::get('/users/{username}/lists', [GameListController::class, 'index']);
         Route::get('/users/{username}/lists/{slug}', [GameListController::class, 'showBySlug']);
         Route::get('/users/{username}/activity', [ActivityController::class, 'index']);
