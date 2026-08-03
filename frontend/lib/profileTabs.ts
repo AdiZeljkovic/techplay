@@ -1,10 +1,10 @@
-import { User, Gamepad2, Award, List, Gift, Dna, type LucideIcon } from "lucide-react";
+import { User, Gamepad2, Award, List, Gift, Dna, BookOpen, type LucideIcon } from "lucide-react";
 
 /**
  * The profile's section set — one source of truth for the tab strip, the
  * page's tab router and any deep link that wants to name a section.
  */
-export type ProfileTab = "overview" | "collection" | "lists" | "achievements" | "rewards" | "stats";
+export type ProfileTab = "overview" | "collection" | "journal" | "lists" | "achievements" | "rewards" | "stats";
 
 export const PROFILE_TABS: {
     id: ProfileTab;
@@ -15,6 +15,7 @@ export const PROFILE_TABS: {
 }[] = [
     { id: "overview", label: "Overview", icon: User },
     { id: "collection", label: "Collection", icon: Gamepad2 },
+    { id: "journal", label: "Journal", icon: BookOpen },
     { id: "lists", label: "Lists", icon: List },
     { id: "achievements", label: "Achievements", icon: Award },
     { id: "stats", label: "Gamer DNA", icon: Dna },

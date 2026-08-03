@@ -16,6 +16,7 @@ import ProfileOverviewDashboard from "@/components/profile/ProfileOverviewDashbo
 import DashboardHome from "@/components/home-dashboard/DashboardHome";
 import CollectionGrid from "@/components/profile/CollectionGrid";
 import RewardsStore from "@/components/profile/RewardsStore";
+import JournalTab from "@/components/profile/JournalTab";
 import ListsTab from "@/components/profile/ListsTab";
 import GamerDnaPanel from "@/components/profile/GamerDnaPanel";
 import WelcomeOnboarding from "@/components/profile/WelcomeOnboarding";
@@ -224,6 +225,10 @@ function ProfilePageInner() {
                                 <SteamAchievements username={userData.username} />
                             </SectionCard>
                         </div>
+                    )}
+
+                    {effectiveTab === "journal" && (
+                        <JournalTab username={userData.username} />
                     )}
 
                     {effectiveTab === "lists" && (

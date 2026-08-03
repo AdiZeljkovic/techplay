@@ -8,6 +8,68 @@ export interface Achievement {
     unlocked_at?: string | null;
 }
 
+/* ── Gaming Journal ────────────────────────────────────────────────────── */
+
+export interface JournalGameRef {
+    slug: string;
+    name: string;
+    background_image: string | null;
+}
+
+export interface GamingMoment {
+    id: number;
+    type: "screenshot" | "clip";
+    url: string | null;
+    provider: string | null;
+    thumbnail_url: string | null;
+    path: string | null;
+    caption: string | null;
+    has_spoilers: boolean;
+}
+
+export interface PlaySession {
+    id: number;
+    played_on: string;
+    minutes: number;
+    platform: string | null;
+    progress_label: string | null;
+    progress_percent: number | null;
+    note: string | null;
+    mood: string | null;
+    companions: string[];
+    has_spoilers: boolean;
+    is_private: boolean;
+    can_edit: boolean;
+    game: JournalGameRef | null;
+    moments: GamingMoment[];
+}
+
+export interface JournalPayload {
+    sessions: PlaySession[];
+    total_sessions: number;
+    summary: {
+        sessions: number;
+        minutes: number;
+        hours: number;
+        games: number;
+        days: number;
+        busiest_month: { month: string; label: string; minutes: number } | null;
+        current_streak: number;
+    };
+    calendar: { date: string; minutes: number; sessions: number; games: string[] }[];
+    per_game: { game: JournalGameRef; minutes: number; sessions: number; percent: number; last_played: string | null }[];
+    completed_timeline: {
+        slug: string; name: string; background_image: string | null;
+        completed_at: string | null; hours: number; from_backlog: boolean;
+    }[];
+    reviews: {
+        id: number; rating: number; review: string | null;
+        created_at: string | null; game: JournalGameRef;
+    }[];
+    moods: string[];
+    is_owner: boolean;
+}
+
 /* ── Gamer DNA ─────────────────────────────────────────────────────────── */
 
 /** One axis of the playstyle fingerprint. `measured` is false where the value
