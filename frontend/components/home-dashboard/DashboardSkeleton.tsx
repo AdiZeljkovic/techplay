@@ -34,12 +34,6 @@ export default function DashboardSkeleton() {
                     <div className="lg:col-span-3 rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[340px]" />
                 </div>
 
-                {/* Highlight strip */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="h-[88px] rounded-[var(--radius-panel)] bg-[var(--fill-2)]" />
-                    <div className="h-[88px] rounded-[var(--radius-panel)] bg-[var(--fill-2)]" />
-                </div>
-
                 {/* the tail: full width and pairs */}
                 <div className="space-y-6">
                         {/* upcoming (panel-wrapped now) */}
@@ -49,13 +43,6 @@ export default function DashboardSkeleton() {
                             <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[300px]" />
                             <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[300px] hidden xl:block" />
                         </div>
-                        {/* reviews + friends feed pair */}
-                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                            <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[280px]" />
-                            <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[280px] hidden xl:block" />
-                        </div>
-                        {/* your activity (one panel now) */}
-                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[440px]" />
                 </div>
             </div>
         </main>

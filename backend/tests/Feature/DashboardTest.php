@@ -46,9 +46,7 @@ class DashboardTest extends TestCase
                     'favorites',
                     'backlog_preview',
                     'streak' => ['streak', 'claimed_today', 'next_bounty'],
-                    'highlights' => ['updates_from_followed', 'releases_this_week'],
                     'recent_achievements',
-                    'recent_reviews',
                     'friends_online',
                     'profile_completion' => ['percent', 'missing'],
                 ],
@@ -73,10 +71,7 @@ class DashboardTest extends TestCase
         $this->assertSame([], $response->json('data.backlog_preview'));
         $this->assertSame(0, $response->json('data.streak.streak'));
         $this->assertFalse($response->json('data.streak.claimed_today'));
-        $this->assertSame(0, $response->json('data.highlights.updates_from_followed'));
-        $this->assertSame(0, $response->json('data.highlights.releases_this_week'));
         $this->assertSame([], $response->json('data.recent_achievements'));
-        $this->assertSame([], $response->json('data.recent_reviews'));
         $this->assertSame([], $response->json('data.friends_online'));
         $this->assertSame(0, $response->json('data.stats.hours_played'));
         $this->assertSame(0, $response->json('data.stats.friends_count'));
@@ -99,37 +94,6 @@ class DashboardTest extends TestCase
             ->assertJsonPath('data.stats.hours_played', 15);
     }
 
-    public function test_recent_reviews_exclude_drafts_and_limit_three(): void
-    {
-        $user = User::factory()->create(['username' => 'reviewer']);
-        Sanctum::actingAs($user);
-
-        $games = collect(range(1, 5))->map(fn ($i) => Game::create([
-            'slug' => "reviewed-{$i}", 'name' => "Reviewed {$i}", 'rating' => 4,
-        ]));
-
-        // 4 published (staggered timestamps — created_at is not fillable, set after) + 1 draft
-        foreach ($games->take(4) as $i => $game) {
-            $rating = GameRating::create([
-                'user_id' => $user->id, 'game_id' => $game->id, 'game_slug' => $game->slug,
-                'rating' => 4, 'review' => "Solid pick number {$i}, would play again.",
-                'is_draft' => false,
-            ]);
-            $rating->forceFill(['created_at' => now()->subDays(4 - $i)])->save();
-        }
-        GameRating::create([
-            'user_id' => $user->id, 'game_id' => $games[4]->id, 'game_slug' => $games[4]->slug,
-            'rating' => 2, 'review' => 'Unfinished thoughts, still a draft.', 'is_draft' => true,
-        ]);
-
-        $response = $this->getJson('/api/v1/me/dashboard')->assertStatus(200);
-        $reviews = $response->json('data.recent_reviews');
-
-        $this->assertCount(3, $reviews);
-        $this->assertNotContains('reviewed-5', array_column(array_column($reviews, 'game'), 'slug'));
-        $this->assertSame('reviewed-4', $reviews[0]['game']['slug']); // newest first
-        $this->assertArrayHasKey('excerpt', $reviews[0]);
-    }
 
     /**
      * The widget lists every accepted friend, online first — an account with

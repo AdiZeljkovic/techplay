@@ -47,23 +47,6 @@ class DashboardController extends Controller
         $nextRank = $user->nextRank();
         $libraryGameIds = UserGame::where('user_id', $user->id)->pluck('game_id');
 
-        // Fresh coverage of games the user tracks (the "new updates" chip)
-        $updatesFromFollowed = $libraryGameIds->isEmpty() ? 0 : Article::query()
-            ->whereIn('game_id', $libraryGameIds)
-            ->where('status', 'published')
-            ->where('published_at', '>=', now()->subDays(7))
-            ->where('published_at', '<=', now())
-            ->count();
-
-        // Tracked games landing within the week
-        $releasesThisWeek = UserGame::where('user_id', $user->id)
-            ->whereIn('status', ['wishlist', 'backlog'])
-            ->whereHas('game', fn ($q) => $q
-                ->whereNotNull('released')
-                ->whereDate('released', '>=', now())
-                ->whereDate('released', '<=', now()->addDays(7)))
-            ->count();
-
         $completedThisMonth = UserGame::where('user_id', $user->id)
             ->where('status', 'completed')
             ->whereNotNull('completed_at')
@@ -146,12 +129,7 @@ class DashboardController extends Controller
             'backlog_preview' => $this->gameCovers($user, ['status' => 'backlog'], 4),
             'backlog_suggestion' => $this->backlogSuggestion($user, $libraryGameIds->all()),
             'streak' => $this->streakService->info($user),
-            'highlights' => [
-                'updates_from_followed' => $updatesFromFollowed,
-                'releases_this_week' => $releasesThisWeek,
-            ],
             'recent_achievements' => $this->recentAchievements($user),
-            'recent_reviews' => $this->recentReviews($user),
             'friends_online' => $this->friendsOnline($friendIds->all()),
             'profile_completion' => $this->profileCompletion($user, $counts, $reviewsCount),
         ]);
@@ -174,31 +152,6 @@ class DashboardController extends Controller
             ])->all();
     }
 
-    /** Latest published reviews with text, joined to their games. */
-    private function recentReviews($user): array
-    {
-        return GameRating::where('user_id', $user->id)
-            ->where('is_draft', false)
-            ->whereNotNull('review')
-            ->with('game:id,slug,name,background_image')
-            ->orderByDesc('created_at')
-            ->limit(3)
-            ->get()
-            ->map(fn (GameRating $r) => [
-                'id' => $r->id,
-                'rating' => (int) $r->rating,
-                'excerpt' => Str::limit(strip_tags((string) $r->review), 180),
-                'created_at' => $r->created_at?->toISOString(),
-                'game' => [
-                    'slug' => $r->game?->slug,
-                    'name' => $r->game?->name,
-                    'background_image' => $r->game?->background_image,
-                ],
-            ])
-            ->filter(fn ($r) => $r['game']['slug'] !== null)
-            ->values()
-            ->all();
-    }
 
     /**
      * Friends with an active presence right now. Privacy: only is_active rows

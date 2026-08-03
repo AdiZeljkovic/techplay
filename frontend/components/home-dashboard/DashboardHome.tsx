@@ -1,26 +1,20 @@
 "use client";
 
 import useSWR from "swr";
-import { Users } from "lucide-react";
 import axios from "@/lib/axios";
 import DashboardSkeleton from "./DashboardSkeleton";
 import ProfileHero from "./ProfileHero";
-import HighlightStrip from "./HighlightStrip";
 import FavoriteGamesRail from "./FavoriteGamesRail";
 import ContinuePlayingCard from "./ContinuePlayingCard";
 import DailyChallengeCard from "./DailyChallengeCard";
 import LatestArticlesFeed from "./LatestArticlesFeed";
 import RecentAchievementsRail from "./RecentAchievementsRail";
-import RecentReviews from "./RecentReviews";
 import FriendsOnlineWidget from "./FriendsOnlineWidget";
 import UpcomingForYouRow from "./UpcomingForYouRow";
-import YourActivity from "./YourActivity";
 import RecommendedNext from "./RecommendedNext";
 import BacklogProgressCard from "./BacklogProgressCard";
 import OnboardingCard from "./OnboardingCard";
 import DailyMissions from "./DailyMissions";
-import Panel from "@/components/ui/Panel";
-import FriendActivityFeed from "@/components/profile/FriendActivityFeed";
 import { heroFromDashboard } from "@/lib/hero";
 import type { DashboardData } from "@/lib/types/dashboard";
 
@@ -93,10 +87,6 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                     </div>
                 </div>
 
-                <div className="tp-fade-up tp-d3">
-                    <HighlightStrip highlights={data.highlights} />
-                </div>
-
                 {/* ── everything below runs full width or in pairs; the old
                     8/4 sidebar emptied out when its two widgets moved up ── */}
                 <div className="space-y-6">
@@ -117,22 +107,6 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch tp-fade-up tp-d5">
-                        <RecentReviews reviews={data.recent_reviews} />
-                        <Panel
-                            title="Friends Feed"
-                            icon={<Users className="w-3.5 h-3.5 text-[var(--accent)]" />}
-                            action={{ label: "Friends", href: "/friends" }}
-                            className="h-full flex flex-col"
-                            bodyClassName="p-3 flex-1"
-                        >
-                            <FriendActivityFeed />
-                        </Panel>
-                    </div>
-
-                    <div className="tp-fade-up tp-d6">
-                        <YourActivity />
-                    </div>
                 </div>
             </div>
         </main>

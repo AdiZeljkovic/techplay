@@ -66,15 +66,6 @@ export interface DashboardAchievement {
     unlocked_at: string | null;
 }
 
-export interface DashboardReview {
-    id: number;
-    /** 1–5 scale — multiply by 2 for the 10-point ScoreBadge */
-    rating: number;
-    excerpt: string;
-    created_at: string | null;
-    game: DashboardGameCover;
-}
-
 export interface FriendOnline {
     username: string;
     display_name: string | null;
@@ -108,9 +99,7 @@ export interface DashboardData {
     backlog_suggestion: BacklogSuggestion | null;
     /** Shape mirrors StreakService::info */
     streak: { streak: number; claimed_today: boolean; last_claim: string | null; next_bounty: number };
-    highlights: { updates_from_followed: number; releases_this_week: number };
     recent_achievements: DashboardAchievement[];
-    recent_reviews: DashboardReview[];
     friends_online: FriendOnline[];
     profile_completion: ProfileCompletion;
 }
