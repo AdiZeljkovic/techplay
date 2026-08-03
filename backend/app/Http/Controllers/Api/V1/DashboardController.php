@@ -10,6 +10,7 @@ use App\Models\Friendship;
 use App\Models\Game;
 use App\Models\GameRating;
 use App\Models\Presence;
+use App\Models\User;
 use App\Models\UserCustomization;
 use App\Models\UserGame;
 use App\Services\LevelService;
@@ -209,20 +210,33 @@ class DashboardController extends Controller
             return [];
         }
 
-        return Presence::whereIn('user_id', $friendIds)
+        // Live presences, keyed for the join below. Privacy: only is_active
+        // leaves the server — never last_seen_at or a stale session.
+        $presences = Presence::whereIn('user_id', $friendIds)
             ->where('is_active', true)
-            ->with('user:id,username,display_name,avatar_url')
-            ->orderByDesc('started_at')
-            ->limit(8)
-            ->get()
-            ->map(fn (Presence $p) => [
-                'username' => $p->user?->username,
-                'display_name' => $p->user?->display_name,
-                'avatar_url' => $p->user?->avatar_url,
-                'game_name' => $p->game_name,
-                'game_slug' => $p->game_slug,
-            ])
-            ->filter(fn ($f) => $f['username'] !== null)
+            ->get(['user_id', 'game_name', 'game_slug'])
+            ->keyBy('user_id');
+
+        // The whole friends list, not just whoever happens to be in a game —
+        // an empty widget on an account with friends reads as broken.
+        return User::whereIn('id', $friendIds)
+            ->orderBy('username')
+            ->limit(12)
+            ->get(['id', 'username', 'display_name', 'avatar_url'])
+            ->map(function (User $u) use ($presences) {
+                $presence = $presences->get($u->id);
+
+                return [
+                    'username' => $u->username,
+                    'display_name' => $u->display_name,
+                    'avatar_url' => $u->avatar_url,
+                    'is_online' => $presence !== null,
+                    'game_name' => $presence?->game_name,
+                    'game_slug' => $presence?->game_slug,
+                ];
+            })
+            // in a game first, then everyone else alphabetically
+            ->sortByDesc('is_online')
             ->values()
             ->all();
     }

@@ -131,7 +131,13 @@ class DashboardTest extends TestCase
         $this->assertArrayHasKey('excerpt', $reviews[0]);
     }
 
-    public function test_friends_online_only_active_presences_of_accepted_friends(): void
+    /**
+     * The widget lists every accepted friend, online first — an account with
+     * friends must never render empty just because nobody is playing. Only
+     * accepted friendships appear, and only an *active* presence marks a
+     * friend online.
+     */
+    public function test_friends_lists_accepted_friends_with_live_status(): void
     {
         $user = User::factory()->create(['username' => 'social']);
         Sanctum::actingAs($user);
@@ -152,10 +158,23 @@ class DashboardTest extends TestCase
 
         $response = $this->getJson('/api/v1/me/dashboard')->assertStatus(200);
 
-        $online = $response->json('data.friends_online');
-        $this->assertCount(1, $online);
-        $this->assertSame('friend-live', $online[0]['username']);
-        $this->assertSame('Elden Ring', $online[0]['game_name']);
+        $friends = $response->json('data.friends_online');
+
+        // both accepted friends, neither the pending user nor the stranger
+        $this->assertCount(2, $friends);
+        $this->assertEqualsCanonicalizing(
+            ['friend-live', 'friend-idle'],
+            array_column($friends, 'username')
+        );
+
+        // the one in a game leads, with its title; the stale session is offline
+        $this->assertSame('friend-live', $friends[0]['username']);
+        $this->assertTrue($friends[0]['is_online']);
+        $this->assertSame('Elden Ring', $friends[0]['game_name']);
+
+        $this->assertFalse($friends[1]['is_online']);
+        $this->assertNull($friends[1]['game_name']);
+
         $this->assertSame(2, $response->json('data.stats.friends_count')); // accepted only
     }
 

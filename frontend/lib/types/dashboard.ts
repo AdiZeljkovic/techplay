@@ -79,6 +79,8 @@ export interface FriendOnline {
     username: string;
     display_name: string | null;
     avatar_url: string | null;
+    /** Live presence right now — game_name is only set when true. */
+    is_online: boolean;
     game_name: string | null;
     game_slug: string | null;
 }
