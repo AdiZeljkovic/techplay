@@ -17,6 +17,7 @@ import LoyaltyCustomization from "./dashboard/LoyaltyCustomization";
 import HexBadge from "./dashboard/HexBadge";
 import ActivityFeed from "./ActivityFeed";
 import FriendActivityFeed from "./FriendActivityFeed";
+import ForumActivityTab from "./ForumActivityTab";
 import UpcomingReleasesWidget from "./dashboard/UpcomingReleasesWidget";
 import ShowcaseStrip from "./dashboard/ShowcaseStrip";
 import CommunityStanding from "./dashboard/CommunityStanding";
@@ -124,9 +125,13 @@ export default function ProfileOverviewDashboard({
                 )}
 
                 {/* Recent Activity */}
-                <SectionCard title="Recent Activity" icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View All", href: "?tab=activity" }}>
+                <SectionCard title="Recent Activity" icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />}>
                     <ActivityFeed username={userData.username} compact />
                 </SectionCard>
+
+                {/* Watched and bookmarked threads lost their host when the
+                    Activity tab was removed — they live here now. */}
+                {isOwnProfile && <ForumActivityTab isOwnProfile={isOwnProfile} />}
 
                 {/* Achievement Spotlight — only with unlocks */}
                 {recentUnlocked.length > 0 && (

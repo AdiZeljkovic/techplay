@@ -265,7 +265,9 @@ export default function ProfileHero({
             label: "Reviews",
             value: hero.stats.reviews,
             icon: <Star className="w-[20px] h-[20px] shrink-0 text-[var(--accent)]" />,
-            href: `${base}?tab=activity`,
+            // Reviews surface in the overview's activity feed — there is no
+            // longer a tab of their own to point at.
+            href: base,
         },
         {
             label: "Achievements",

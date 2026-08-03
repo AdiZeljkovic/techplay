@@ -6,7 +6,7 @@ import axios from "@/lib/axios";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { User, Activity as ActivityIcon } from "lucide-react";
+import { User } from "lucide-react";
 import toast from "react-hot-toast";
 import AchievementsTab from "@/components/profile/AchievementsTab";
 import { SendMessageModal } from "@/components/messaging/SendMessageModal";
@@ -17,8 +17,6 @@ import DashboardHome from "@/components/home-dashboard/DashboardHome";
 import CollectionGrid from "@/components/profile/CollectionGrid";
 import RewardsStore from "@/components/profile/RewardsStore";
 import ListsTab from "@/components/profile/ListsTab";
-import ForumActivityTab from "@/components/profile/ForumActivityTab";
-import ActivityFeed from "@/components/profile/ActivityFeed";
 import GamerDnaPanel from "@/components/profile/GamerDnaPanel";
 import WelcomeOnboarding from "@/components/profile/WelcomeOnboarding";
 import SectionCard from "@/components/profile/dashboard/SectionCard";
@@ -42,9 +40,10 @@ function ProfilePageInner() {
     const username = rawUsername === "me" && currentUser ? currentUser.username : rawUsername;
     const shouldFetch = username && username !== "me";
 
-    // Legacy ?tab=forum now lives inside the Activity tab
+    // The Activity tab is gone — its feed lives on the overview, and the
+    // long-dead ?tab=forum link lands there too rather than 404-ing a tab.
     const rawTabParam = searchParams.get("tab");
-    const tabParam = (rawTabParam === "forum" ? "activity" : rawTabParam) as ProfileTab | null;
+    const tabParam = (rawTabParam === "forum" || rawTabParam === "activity" ? null : rawTabParam) as ProfileTab | null;
     const activeTab: ProfileTab = tabParam && VALID_TABS.includes(tabParam) ? tabParam : "overview";
 
     // Optimistic override — the payload's friend_status is the source of truth
@@ -216,15 +215,6 @@ function ProfilePageInner() {
 
                     {effectiveTab === "collection" && (
                         <CollectionGrid username={userData.username} isOwnProfile={isOwnProfile} />
-                    )}
-
-                    {effectiveTab === "activity" && (
-                        <div className="space-y-6">
-                            <SectionCard title="Activity" icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />}>
-                                <ActivityFeed username={userData.username} />
-                            </SectionCard>
-                            {isOwnProfile && <ForumActivityTab isOwnProfile={isOwnProfile} />}
-                        </div>
                     )}
 
                     {effectiveTab === "achievements" && (
