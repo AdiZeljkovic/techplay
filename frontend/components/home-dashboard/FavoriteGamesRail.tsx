@@ -44,17 +44,17 @@ export default function FavoriteGamesRail({
             ) : pickerOpen ? (
                 <AddFavoriteInline username={username} defaultOpen onDismiss={() => setPickerOpen(false)} />
             ) : (
-                /* Covers are height-driven: they fill the card's whole body,
-                   the way a shelf fills its shelf — never a corner of tiles
-                   with dead space beneath. */
-                <div className="flex-1 min-h-[200px] flex justify-center gap-2.5">
+                /* Five equal slots across the card's width, centred in its
+                   body — the shelf is as wide as the card and as tall as the
+                   covers need, never a corner of stamps over empty panel. */
+                <div className="flex-1 grid grid-cols-5 gap-2 content-center">
                     {shown.map((g, i) => (
                         <Link
                             key={g.slug}
                             href={`/games/${g.slug}`}
                             prefetch={false}
                             title={g.name}
-                            className={`group relative h-full aspect-[3/4] rounded-[10px] overflow-hidden border border-white/[0.07] bg-[var(--fill-1)] hover:border-[color-mix(in_srgb,var(--accent)_55%,transparent)] hover:shadow-[0_10px_26px_rgba(0,0,0,0.5)] transition-all duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}
+                            className={`group relative aspect-[3/4] rounded-[10px] overflow-hidden border border-white/[0.07] bg-[var(--fill-1)] hover:border-[color-mix(in_srgb,var(--accent)_55%,transparent)] hover:shadow-[0_10px_26px_rgba(0,0,0,0.5)] transition-all duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}
                         >
                             {g.background_image && (
                                 // eslint-disable-next-line @next/next/no-img-element
@@ -76,7 +76,7 @@ export default function FavoriteGamesRail({
                     {overflow > 0 ? (
                         <Link
                             href={`/profile/${username}?tab=collection`}
-                            className="relative h-full aspect-[3/4] rounded-[10px] overflow-hidden border border-white/[0.07] bg-[var(--fill-1)] flex items-center justify-center hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
+                            className="relative aspect-[3/4] rounded-[10px] overflow-hidden border border-white/[0.07] bg-[var(--fill-1)] flex items-center justify-center hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
                         >
                             {favorites[SHOWN]?.background_image && (
                                 // eslint-disable-next-line @next/next/no-img-element
@@ -93,7 +93,7 @@ export default function FavoriteGamesRail({
                         <button
                             onClick={() => setPickerOpen(true)}
                             title="Add a favorite"
-                            className="h-full aspect-[3/4] rounded-[10px] border border-dashed border-white/[0.14] bg-white/[0.02] flex flex-col items-center justify-center gap-1.5 text-white/30 hover:text-[var(--accent)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
+                            className="aspect-[3/4] rounded-[10px] border border-dashed border-white/[0.14] bg-white/[0.02] flex flex-col items-center justify-center gap-1.5 text-white/30 hover:text-[var(--accent)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
                         >
                             <Plus className="w-6 h-6" />
                             <span className="font-display text-[9px] font-bold uppercase tracking-[0.1em]">Add</span>

@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { Clock3, Sparkles, ChevronRight } from "lucide-react";
 import axios from "@/lib/axios";
 import Panel from "@/components/ui/Panel";
+import { useCountUp } from "@/hooks/useCountUp";
 import { timeLeft } from "@/lib/timeAgo";
 
 interface Quest {
@@ -25,12 +26,52 @@ const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data as Ques
 const HEX = "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)";
 
 /**
+ * The reward, struck as a hex medal. Violet when the quest pays XP
+ * (progression), amber when it pays only bounty (currency) — the same colour
+ * law as everywhere else. It breathes while the quest is still open.
+ */
+function RewardHex({ amount, paysXp }: { amount: number; paysXp: boolean }) {
+    const shown = useCountUp(amount, 1100);
+    const tint = paysXp ? "var(--xp)" : "#f59e0b";
+    const bright = paysXp ? "var(--xp-bright)" : "#fbbf24";
+
+    return (
+        <span className="shrink-0 flex flex-col items-center gap-2">
+            <span className="relative block w-[62px] h-[62px]">
+                {/* a slow halo, so the pay reads as live loot */}
+                <span
+                    aria-hidden
+                    className="tp-pulse-ring absolute inset-0"
+                    style={{ clipPath: HEX, background: tint }}
+                />
+                <span
+                    aria-hidden
+                    className="absolute inset-0"
+                    style={{
+                        clipPath: HEX,
+                        background: `linear-gradient(160deg, ${bright} 0%, ${tint} 55%, ${paysXp ? "var(--xp-deep)" : "#b45309"} 100%)`,
+                        filter: `drop-shadow(0 0 14px color-mix(in srgb, ${tint} 55%, transparent))`,
+                    }}
+                />
+                <span aria-hidden className="absolute inset-[3px]" style={{ clipPath: HEX, background: "#0d0b0a" }} />
+                <span
+                    className="absolute inset-0 flex items-center justify-center font-display text-[14px] font-black"
+                    style={{ color: bright }}
+                >
+                    {paysXp ? "XP" : "B"}
+                </span>
+            </span>
+            <span className="font-display text-[17px] font-black tabular-nums leading-none" style={{ color: bright }}>
+                {shown}
+            </span>
+        </span>
+    );
+}
+
+/**
  * One featured challenge, not a board — the deadline in the header, the task,
- * the bar, and what it pays. The full quest board stays in Daily Missions;
+ * a live bar, and what it pays. The full quest board stays in Daily Missions;
  * the footer link scrolls there.
- *
- * The reward hex wears violet when it pays XP (progression), amber when it
- * pays only bounty (currency) — same colour law as everywhere else.
  */
 export default function DailyChallengeCard() {
     const { data: quests } = useSWR("/user/quests", fetcher, {
@@ -49,10 +90,12 @@ export default function DailyChallengeCard() {
         })[0];
 
     const remaining = featured ? timeLeft(featured.expires_at) : null;
-    const percent = featured
-        ? Math.min(100, Math.round((featured.progress / Math.max(1, featured.criteria_value)) * 100))
-        : 0;
+    const target = Math.max(1, featured?.criteria_value ?? 1);
+    const percent = featured ? Math.min(100, Math.round((featured.progress / target) * 100)) : 0;
     const paysXp = !!featured && featured.xp_reward > 0;
+
+    const fill = useCountUp(percent, 1100);
+    const done = useCountUp(featured?.progress ?? 0, 1100);
 
     return (
         <Panel
@@ -68,60 +111,43 @@ export default function DailyChallengeCard() {
             bodyClassName="p-4 flex-1 flex flex-col"
         >
             {!quests ? (
-                <div className="flex-1 rounded-[12px] bg-white/[0.04] animate-pulse min-h-[120px]" />
+                <div className="flex-1 rounded-[12px] bg-white/[0.04] animate-pulse min-h-[110px]" />
             ) : !featured ? (
                 <p className="flex-1 flex items-center justify-center gap-2 text-[12px] text-white/45 text-center">
                     <Sparkles className="w-4 h-4 text-[var(--accent)]" />
                     All challenges cleared — new ones arrive tomorrow.
                 </p>
             ) : (
-                /* the card breathes with the row — the task sits centred in
-                   the space, the button stays seated on the floor */
                 <div className="flex-1 flex items-center gap-4">
                     <div className="min-w-0 flex-1">
-                        <p className="text-[13.5px] font-semibold text-white leading-snug">
+                        <p className="text-[13.5px] font-semibold text-white leading-snug line-clamp-2">
                             {featured.description || featured.name}
                         </p>
 
-                        <div className="mt-3.5 h-[7px] rounded-full bg-[var(--track)] overflow-hidden">
+                        {/* the bar charges, and keeps a highlight moving while
+                            there's still ground to cover */}
+                        <span className="relative mt-3.5 block h-[8px] rounded-full bg-[var(--track)] overflow-hidden">
                             <span
-                                className="block h-full rounded-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-bright)] transition-[width] duration-700 ease-[var(--ease-hud)]"
-                                style={{ width: `${percent}%` }}
-                            />
-                        </div>
-                        <p className="mt-2 font-display text-[12px] font-black tabular-nums text-white/60">
-                            {featured.progress} <span className="text-white/30 font-bold">/ {featured.criteria_value}</span>
+                                className="absolute inset-y-0 left-0 rounded-full overflow-hidden transition-[width] duration-700 ease-[var(--ease-hud)]"
+                                style={{
+                                    width: `${fill}%`,
+                                    background: "linear-gradient(90deg, var(--accent) 0%, var(--accent-bright) 100%)",
+                                    boxShadow: "0 0 12px color-mix(in srgb, var(--accent) 55%, transparent)",
+                                }}
+                            >
+                                {fill > 6 && fill < 100 && (
+                                    <span className="tp-xp-shimmer absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/45 to-transparent" />
+                                )}
+                            </span>
+                        </span>
+
+                        <p className="mt-2 font-display text-[13px] font-black tabular-nums text-white">
+                            {done}
+                            <span className="text-white/30"> / {featured.criteria_value}</span>
                         </p>
                     </div>
 
-                    {/* the pay, struck as a hex */}
-                    <div className="shrink-0 flex flex-col items-center gap-1.5">
-                        <span className="relative block w-[58px] h-[58px]">
-                            <span
-                                aria-hidden
-                                className="absolute inset-0"
-                                style={{
-                                    clipPath: HEX,
-                                    background: paysXp
-                                        ? "linear-gradient(160deg, var(--xp-bright) 0%, var(--xp) 55%, var(--xp-deep) 100%)"
-                                        : "linear-gradient(160deg, #fcd34d 0%, #f59e0b 55%, #b45309 100%)",
-                                    filter: paysXp
-                                        ? "drop-shadow(0 0 12px color-mix(in srgb, var(--xp) 55%, transparent))"
-                                        : "drop-shadow(0 0 12px rgba(245,158,11,0.45))",
-                                }}
-                            />
-                            <span aria-hidden className="absolute inset-[3px]" style={{ clipPath: HEX, background: "#0d0b0a" }} />
-                            <span className="absolute inset-0 flex items-center justify-center font-display text-[13px] font-black text-white">
-                                {paysXp ? "XP" : "B"}
-                            </span>
-                        </span>
-                        <span
-                            className="font-display text-[14px] font-black tabular-nums leading-none"
-                            style={{ color: paysXp ? "var(--xp-bright)" : "#fbbf24" }}
-                        >
-                            {paysXp ? featured.xp_reward : featured.bounty_reward}
-                        </span>
-                    </div>
+                    <RewardHex amount={paysXp ? featured.xp_reward : featured.bounty_reward} paysXp={paysXp} />
                 </div>
             )}
 

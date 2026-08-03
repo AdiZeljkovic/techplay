@@ -57,10 +57,10 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                 {/* ── the three pillars: what you're playing, what you love,
                     what today pays ── */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch tp-fade-up tp-d2">
-                    <div className="lg:col-span-5 min-w-0">
+                    <div className="lg:col-span-4 min-w-0">
                         <ContinuePlayingCard games={data.playing_now} />
                     </div>
-                    <div className="lg:col-span-4 min-w-0">
+                    <div className="lg:col-span-5 min-w-0">
                         <FavoriteGamesRail
                             favorites={data.favorites}
                             username={data.user.username}
