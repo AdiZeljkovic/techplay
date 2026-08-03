@@ -67,4 +67,43 @@ return [
         'medium' => 50,  // 16–50 active
         // above = large
     ],
+
+    /*
+     * The base. Eight buildings, each 0-10. `requires_cc` gates construction
+     * behind the Command Center level; costs follow base x level^1.6.
+     * Effects that have no system yet (missions, cosmetics, polls) unlock in
+     * later phases - the building can be raised now, and says so honestly.
+     */
+    'buildings' => [
+        'command_center' => ['name' => 'Command Center', 'requires_cc' => 0, 'base_cost' => ['intel' => 150, 'materials' => 250]],
+        'mission_control' => ['name' => 'Mission Control', 'requires_cc' => 1, 'base_cost' => ['intel' => 120, 'materials' => 180]],
+        'training_grounds' => ['name' => 'Training Grounds', 'requires_cc' => 1, 'base_cost' => ['intel' => 80, 'materials' => 220]],
+        'vault' => ['name' => 'Vault', 'requires_cc' => 1, 'base_cost' => ['intel' => 100, 'materials' => 200]],
+        'trophy_hall' => ['name' => 'Trophy Hall', 'requires_cc' => 2, 'base_cost' => ['intel' => 140, 'materials' => 160]],
+        'archive' => ['name' => 'Archive', 'requires_cc' => 3, 'base_cost' => ['intel' => 250, 'materials' => 100]],
+        'workshop' => ['name' => 'Workshop', 'requires_cc' => 4, 'base_cost' => ['intel' => 150, 'materials' => 250]],
+        'communications_hub' => ['name' => 'Communications Hub', 'requires_cc' => 5, 'base_cost' => ['intel' => 220, 'materials' => 180]],
+    ],
+
+    'building_max_level' => 10,
+
+    /* cost(target) = base x target^this, rounded to tens. */
+    'cost_exponent' => 1.6,
+
+    /* Construction runs target_level x this many hours once funded. */
+    'build_hours_per_level' => 6,
+
+    /* Speed-up: Prestige per remaining hour, with a floor. */
+    'speedup_prestige_per_hour' => 30,
+    'speedup_prestige_min' => 100,
+
+    /* Command Center: +this many roster slots per level. */
+    'member_slots_per_cc_level' => 10,
+
+    /* Vault: each resource is capped at base + per_level x level. */
+    'vault_capacity_base' => 10000,
+    'vault_capacity_per_level' => 10000,
+
+    /* Training Grounds: +this % clan XP per level on achievement earns. */
+    'training_xp_percent_per_level' => 2,
 ];

@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import {
     Shield, Users, Crown, ShieldCheck, MessageSquare, LogOut, UserPlus, Check, X,
     Loader2, Flame, Gamepad2, Clock3, CalendarDays, Globe2, Sparkles, ChevronRight,
-    Coins, Hourglass, Send,
+    Coins, Hourglass, Send, Castle,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
@@ -288,8 +288,14 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
                             {isMember ? (
                                 <>
                                     <Link
-                                        href={`/forum?category=${clan.forum_slug}`}
+                                        href={`/clans/${clan.slug}/base`}
                                         className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-[8px] bg-[var(--accent)] hover:brightness-110 text-white font-display text-[10.5px] font-bold uppercase tracking-[0.1em] transition-[filter]"
+                                    >
+                                        <Castle className="w-4 h-4" /> Clan Base
+                                    </Link>
+                                    <Link
+                                        href={`/forum?category=${clan.forum_slug}`}
+                                        className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-[8px] bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-white font-display text-[10.5px] font-bold uppercase tracking-[0.1em] transition-colors"
                                     >
                                         <MessageSquare className="w-4 h-4" /> Clan Chat
                                     </Link>

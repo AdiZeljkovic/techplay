@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\BacklogAdvisorController;
 use App\Http\Controllers\Api\V1\BattleNetAuthController;
 use App\Http\Controllers\Api\V1\BountyController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\ClanBaseController;
 use App\Http\Controllers\Api\V1\ClanController;
 use App\Http\Controllers\Api\V1\CollectionGoalController;
 use App\Http\Controllers\Api\V1\CommentController;
@@ -250,6 +251,11 @@ Route::prefix('v1')->group(function () {
         Route::post('/clans/{slug}/apply', [ClanController::class, 'apply']);
         Route::get('/clans/{slug}/applications', [ClanController::class, 'applications']);
         Route::post('/clans/applications/{id}/respond', [ClanController::class, 'respondApplication']);
+        Route::get('/clans/{slug}/base', [ClanBaseController::class, 'show']);
+        Route::post('/clans/{slug}/base/projects', [ClanBaseController::class, 'startProject']);
+        Route::post('/clans/{slug}/base/projects/{project}/fund', [ClanBaseController::class, 'fund']);
+        Route::post('/clans/{slug}/base/projects/{project}/speed-up', [ClanBaseController::class, 'speedUp']);
+        Route::delete('/clans/{slug}/base/projects/{project}', [ClanBaseController::class, 'cancel']);
 
         // Recognitions (Auth)
         Route::post('/users/{username}/recognitions', [RecognitionController::class, 'store']);

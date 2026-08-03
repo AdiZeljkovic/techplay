@@ -90,6 +90,75 @@ export interface ClanViewerState {
     application_pending: boolean;
 }
 
+/* ── the base (F3) ─────────────────────────────────────────────────────── */
+
+export interface ClanBuildingRow {
+    key: string;
+    name: string;
+    level: number;
+    max_level: number;
+    locked: boolean;
+    requires_cc: number;
+    next_cost: { intel: number; materials: number } | null;
+    build_hours: number;
+    effects: string[];
+    next_effects: string[];
+    project_id: number | null;
+}
+
+export interface ClanProjectRow {
+    id: number;
+    building_key: string;
+    building_name: string;
+    target_level: number;
+    status: "funding" | "building" | "done" | "cancelled";
+    cost_intel: number;
+    cost_materials: number;
+    funded_intel: number;
+    funded_materials: number;
+    funded_percent: number;
+    finishes_at: string | null;
+    started_by: string | null;
+}
+
+export interface ClanContributionRow {
+    username: string;
+    avatar_url: string | null;
+    total: number;
+}
+
+export interface ClanBasePayload {
+    clan: {
+        name: string;
+        slug: string;
+        tag: string | null;
+        motto: string | null;
+        logo: string | null;
+        region: string | null;
+        level: number;
+        progress: ClanProgress;
+        member_limit: number;
+        members_count: number;
+    };
+    resources: {
+        intel: number;
+        materials: number;
+        prestige: number;
+        prestige_lifetime: number;
+        rates: Partial<Record<"intel" | "materials" | "prestige", number>>;
+        capacity: number;
+    };
+    base: {
+        buildings: ClanBuildingRow[];
+        projects: ClanProjectRow[];
+        project_slots: number;
+    };
+    contributions: { week: ClanContributionRow[]; month: ClanContributionRow[]; all: ClanContributionRow[] };
+    recent_activity: ClanFeedItem[];
+    viewer_role: ClanRole;
+    can_manage: boolean;
+}
+
 export interface ClanProfile extends ClanSummary {
     requirements: string | null;
     language: string | null;

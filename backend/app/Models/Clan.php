@@ -77,9 +77,20 @@ class Clan extends Model
             ->count('user_id');
     }
 
+    /**
+     * The roster ceiling: the founding limit plus what the Command Center
+     * has added since.
+     */
+    public function effectiveMemberLimit(): int
+    {
+        $cc = (int) (ClanBuilding::levelsFor($this->id)['command_center'] ?? 0);
+
+        return (int) $this->member_limit + $cc * (int) config('clan.member_slots_per_cc_level', 10);
+    }
+
     public function isFull(): bool
     {
-        return $this->members()->count() >= $this->member_limit;
+        return $this->members()->count() >= $this->effectiveMemberLimit();
     }
 
     public function hasMember(int $userId): bool

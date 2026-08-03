@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Clan;
 use App\Models\ClanActivity;
+use App\Models\ClanBuilding;
 use App\Models\ClanLedger;
 use App\Models\ClanMember;
 use App\Models\User;
@@ -68,6 +69,39 @@ class ClanResourceService
         }
     }
 
+    /**
+     * Debit the treasury — project funding and speed-ups. Throws when the
+     * balance is short; never touches XP, and the ledger row carries the
+     * user who authorised it.
+     */
+    public function spend(Clan $clan, string $resource, int $amount, string $reason, ?User $user = null): void
+    {
+        if ($amount <= 0) {
+            return;
+        }
+
+        DB::transaction(function () use ($clan, $resource, $amount, $reason, $user) {
+            $fresh = Clan::whereKey($clan->id)->lockForUpdate()->first();
+
+            if ((int) $fresh->{$resource} < $amount) {
+                throw new \RuntimeException('The treasury is short on '.$resource.'.');
+            }
+
+            $balance = (int) $fresh->{$resource} - $amount;
+            $fresh->forceFill([$resource => $balance])->save();
+            $clan->{$resource} = $balance;
+
+            ClanLedger::create([
+                'clan_id' => $clan->id,
+                'user_id' => $user?->id,
+                'resource' => $resource,
+                'amount' => -$amount,
+                'reason' => $reason,
+                'balance_after' => $balance,
+            ]);
+        });
+    }
+
     /* ── internals ────────────────────────────────────────────────────── */
 
     private function credit(int $clanId, ?User $user, string $resource, int $amount, string $reason, bool $capped = true): void
@@ -100,9 +134,27 @@ class ClanResourceService
                 return;
             }
 
+            $buildings = ClanBuilding::levelsFor($clanId);
+
+            // The Vault caps how much of each resource the clan can hold —
+            // a full treasury is the signal to spend, not to hoard.
+            $capacity = (int) config('clan.vault_capacity_base', 10000)
+                + (int) ($buildings['vault'] ?? 0) * (int) config('clan.vault_capacity_per_level', 10000);
+            $amount = min($amount, max(0, $capacity - (int) $clan->{$resource}));
+
+            if ($amount <= 0) {
+                return;
+            }
+
             $balance = (int) $clan->{$resource} + $amount;
             $xpBefore = (int) $clan->xp;
             $xpGain = $amount * (int) config("clan.xp_weights.{$resource}", 1);
+
+            // Training Grounds: achievements train the clan a little harder.
+            if ($reason === 'achievement_unlocked' && ($buildings['training_grounds'] ?? 0) > 0) {
+                $bonus = ($buildings['training_grounds'] ?? 0) * (int) config('clan.training_xp_percent_per_level', 2);
+                $xpGain = (int) round($xpGain * (1 + $bonus / 100));
+            }
 
             $clan->forceFill([
                 $resource => $balance,
