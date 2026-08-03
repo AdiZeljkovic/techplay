@@ -16,6 +16,17 @@ trait ProfilePrivacy
 {
     protected function profileHidden(User $user): bool
     {
-        return ! app(ProfileService::class)->canViewProfile($user, Auth::user());
+        return ! app(ProfileService::class)->canViewProfile($user, $this->viewer());
+    }
+
+    /**
+     * These endpoints are public routes, so the default (web) guard sees
+     * nobody — a bearer token only resolves through the sanctum guard. Reading
+     * Auth::user() here would have made every visitor anonymous, locking a
+     * friend, and the owner, out of a friends-only profile.
+     */
+    protected function viewer(): ?User
+    {
+        return Auth::guard('sanctum')->user() ?? Auth::user();
     }
 }

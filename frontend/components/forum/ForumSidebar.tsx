@@ -45,7 +45,7 @@ export default function ForumSidebar() {
     const { user } = useAuth();
 
     const { data: leaderboardResponse } = useSWR("/leaderboard?type=reputation", fetcher);
-    const topContributors: LeaderboardEntry[] = leaderboardResponse?.data?.slice(0, 5) ?? [];
+    const topContributors: LeaderboardEntry[] = leaderboardResponse?.data?.entries?.slice(0, 5) ?? [];
 
     const { data: activeThreads } = useSWR<ActiveThread[]>("/forum/active", fetcher);
 

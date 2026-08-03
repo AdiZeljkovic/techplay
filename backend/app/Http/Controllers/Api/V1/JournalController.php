@@ -13,7 +13,6 @@ use App\Traits\ApiResponse;
 use App\Traits\ProfilePrivacy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class JournalController extends Controller
@@ -45,7 +44,7 @@ class JournalController extends Controller
             return $this->error('This profile is private.', 403);
         }
 
-        $isOwner = Auth::id() === $user->id;
+        $isOwner = $this->viewer()?->id === $user->id;
 
         $sessions = PlaySession::where('user_id', $user->id)
             ->when(! $isOwner, fn ($q) => $q->where('is_private', false))

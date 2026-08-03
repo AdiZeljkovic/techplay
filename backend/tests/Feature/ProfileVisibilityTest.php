@@ -130,7 +130,7 @@ class ProfileVisibilityTest extends TestCase
 
         $response = $this->getJson('/api/v1/leaderboard?type=xp')->assertStatus(200);
 
-        $usernames = array_column($response->json('data'), 'username');
+        $usernames = array_column($response->json('data.entries'), 'username');
         $this->assertContains('loud', $usernames);
         $this->assertNotContains('quiet', $usernames);
     }

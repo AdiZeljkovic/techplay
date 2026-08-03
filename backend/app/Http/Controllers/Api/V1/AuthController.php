@@ -176,7 +176,8 @@ class AuthController extends Controller
 
     public function show(string $username)
     {
-        $viewer = Auth::user();
+        // Public route — only the sanctum guard sees a bearer token.
+        $viewer = Auth::guard('sanctum')->user() ?? Auth::user();
         $profileService = new ProfileService;
 
         $target = User::where('username', $username)->with('rank')->firstOrFail();
