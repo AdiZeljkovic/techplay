@@ -75,7 +75,9 @@ export default function DailyChallengeCard() {
                     All challenges cleared — new ones arrive tomorrow.
                 </p>
             ) : (
-                <div className="flex-1 flex items-start gap-4">
+                /* the card breathes with the row — the task sits centred in
+                   the space, the button stays seated on the floor */
+                <div className="flex-1 flex items-center gap-4">
                     <div className="min-w-0 flex-1">
                         <p className="text-[13.5px] font-semibold text-white leading-snug">
                             {featured.description || featured.name}

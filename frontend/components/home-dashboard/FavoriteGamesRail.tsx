@@ -44,14 +44,17 @@ export default function FavoriteGamesRail({
             ) : pickerOpen ? (
                 <AddFavoriteInline username={username} defaultOpen onDismiss={() => setPickerOpen(false)} />
             ) : (
-                <div className="flex-1 grid grid-cols-5 gap-2 content-start">
+                /* Covers are height-driven: they fill the card's whole body,
+                   the way a shelf fills its shelf — never a corner of tiles
+                   with dead space beneath. */
+                <div className="flex-1 min-h-[200px] flex justify-center gap-2.5">
                     {shown.map((g, i) => (
                         <Link
                             key={g.slug}
                             href={`/games/${g.slug}`}
                             prefetch={false}
                             title={g.name}
-                            className={`group relative aspect-[3/4] rounded-[8px] overflow-hidden border border-white/[0.07] bg-[var(--fill-1)] hover:border-[color-mix(in_srgb,var(--accent)_55%,transparent)] hover:shadow-[0_10px_26px_rgba(0,0,0,0.5)] transition-all duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}
+                            className={`group relative h-full aspect-[3/4] rounded-[10px] overflow-hidden border border-white/[0.07] bg-[var(--fill-1)] hover:border-[color-mix(in_srgb,var(--accent)_55%,transparent)] hover:shadow-[0_10px_26px_rgba(0,0,0,0.5)] transition-all duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}
                         >
                             {g.background_image && (
                                 // eslint-disable-next-line @next/next/no-img-element
@@ -63,7 +66,7 @@ export default function FavoriteGamesRail({
                                 />
                             )}
                             <span aria-hidden className="absolute inset-0 scrim-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            <span className="absolute inset-x-0 bottom-0 p-1.5 text-[10px] font-bold text-white leading-tight line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <span className="absolute inset-x-0 bottom-0 p-2 text-[11px] font-bold text-white leading-tight line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                 {g.name}
                             </span>
                         </Link>
@@ -73,7 +76,7 @@ export default function FavoriteGamesRail({
                     {overflow > 0 ? (
                         <Link
                             href={`/profile/${username}?tab=collection`}
-                            className="relative aspect-[3/4] rounded-[8px] overflow-hidden border border-white/[0.07] bg-[var(--fill-1)] flex items-center justify-center hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
+                            className="relative h-full aspect-[3/4] rounded-[10px] overflow-hidden border border-white/[0.07] bg-[var(--fill-1)] flex items-center justify-center hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
                         >
                             {favorites[SHOWN]?.background_image && (
                                 // eslint-disable-next-line @next/next/no-img-element
@@ -84,16 +87,16 @@ export default function FavoriteGamesRail({
                                     className="absolute inset-0 w-full h-full object-cover opacity-25"
                                 />
                             )}
-                            <span className="relative font-display text-[15px] font-black text-white">+{overflow}</span>
+                            <span className="relative font-display text-[17px] font-black text-white">+{overflow}</span>
                         </Link>
                     ) : (
                         <button
                             onClick={() => setPickerOpen(true)}
                             title="Add a favorite"
-                            className="aspect-[3/4] rounded-[8px] border border-dashed border-white/[0.14] bg-white/[0.02] flex flex-col items-center justify-center gap-1 text-white/30 hover:text-[var(--accent)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
+                            className="h-full aspect-[3/4] rounded-[10px] border border-dashed border-white/[0.14] bg-white/[0.02] flex flex-col items-center justify-center gap-1.5 text-white/30 hover:text-[var(--accent)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
                         >
-                            <Plus className="w-5 h-5" />
-                            <span className="font-display text-[8px] font-bold uppercase tracking-[0.1em]">Add</span>
+                            <Plus className="w-6 h-6" />
+                            <span className="font-display text-[9px] font-bold uppercase tracking-[0.1em]">Add</span>
                         </button>
                     )}
                 </div>
