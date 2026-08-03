@@ -8,7 +8,7 @@ import { useParams, useRouter, useSearchParams, usePathname } from "next/navigat
 import { useAuth } from "@/hooks/useAuth";
 import { User, Activity as ActivityIcon } from "lucide-react";
 import toast from "react-hot-toast";
-import { AchievementGrid } from "@/components/profile/AchievementGrid";
+import AchievementsTab from "@/components/profile/AchievementsTab";
 import { SendMessageModal } from "@/components/messaging/SendMessageModal";
 import ProfileHero from "@/components/home-dashboard/ProfileHero";
 import LockedProfile from "@/components/profile/LockedProfile";
@@ -229,7 +229,7 @@ function ProfilePageInner() {
 
                     {effectiveTab === "achievements" && (
                         <div className="space-y-6">
-                            <AchievementGrid achievements={achievements || []} />
+                            <AchievementsTab username={userData.username} />
                             <SectionCard title="Steam Achievements" icon={<User className="w-4 h-4 text-[var(--accent)]" />}>
                                 <SteamAchievements username={userData.username} />
                             </SectionCard>

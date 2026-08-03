@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AboutController;
+use App\Http\Controllers\Api\V1\AchievementController;
 use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\AdController;
 use App\Http\Controllers\Api\V1\AuthController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Api\V1\BattleNetAuthController;
 use App\Http\Controllers\Api\V1\BountyController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ClanController;
+use App\Http\Controllers\Api\V1\CollectionGoalController;
 use App\Http\Controllers\Api\V1\CommentController;
 use App\Http\Controllers\Api\V1\ConnectedAccountController;
 use App\Http\Controllers\Api\V1\ContactController;
@@ -24,7 +26,6 @@ use App\Http\Controllers\Api\V1\DiscordSubscriptionController;
 use App\Http\Controllers\Api\V1\DiscordXpController;
 use App\Http\Controllers\Api\V1\FeedController;
 use App\Http\Controllers\Api\V1\ForumController;
-use App\Http\Controllers\Api\V1\CollectionGoalController;
 use App\Http\Controllers\Api\V1\FriendActivityController;
 use App\Http\Controllers\Api\V1\FriendController;
 use App\Http\Controllers\Api\V1\GameCollectionController;
@@ -420,6 +421,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/users/{username}/wrapped/{year}', [WrappedController::class, 'show']);
         Route::get('/users/{username}/collection', [GameCollectionController::class, 'index']);
         Route::get('/users/{username}/collection-goals', [CollectionGoalController::class, 'index']);
+        Route::get('/users/{username}/achievements', [AchievementController::class, 'index']);
         Route::get('/users/{username}/lists', [GameListController::class, 'index']);
         Route::get('/users/{username}/lists/{slug}', [GameListController::class, 'showBySlug']);
         Route::get('/users/{username}/activity', [ActivityController::class, 'index']);

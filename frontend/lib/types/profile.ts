@@ -8,6 +8,29 @@ export interface Achievement {
     unlocked_at?: string | null;
 }
 
+export type AchievementRarity = "common" | "rare" | "epic";
+
+/** One row of the achievements page — the catalog entry plus this viewer's standing against it. */
+export interface AchievementEntry extends Achievement {
+    category: string;
+    criteria_type: string;
+    criteria_value: number;
+    /** null on manual-grant achievements, which have nothing to measure. */
+    current: number | null;
+    percent: number | null;
+    /** null while the player base is too small for the figure to mean anything. */
+    rarity_percent: number | null;
+    rarity: AchievementRarity | null;
+}
+
+export interface AchievementsPayload {
+    items: AchievementEntry[];
+    score: number;
+    unlocked_count: number;
+    total: number;
+    rarity_available: boolean;
+}
+
 export interface UserRank {
     name: string;
     icon?: string;

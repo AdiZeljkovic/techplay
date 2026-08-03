@@ -115,6 +115,30 @@ class AchievementService
     // ─── Private helpers ──────────────────────────────────────────────────────
 
     /**
+     * Every criteria type's current value for this user, keyed by type.
+     *
+     * The progress readout on the achievements page needs exactly the numbers
+     * the unlock check already computes — this exposes them rather than
+     * growing a second, drifting implementation.
+     *
+     * @param  string[]  $types  the criteria types actually in play
+     * @return array<string,int>
+     */
+    public function currentValues(User $user, array $types): array
+    {
+        $values = [];
+
+        foreach (array_unique($types) as $type) {
+            $value = $this->resolveValue($user, $type);
+            if ($value !== null) {
+                $values[$type] = $value;
+            }
+        }
+
+        return $values;
+    }
+
+    /**
      * Resolve the user's current value for a given criteria type.
      * Returns null to skip the entire criteria type (e.g. missing table/relation).
      */
