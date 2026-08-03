@@ -36,7 +36,6 @@ function SignalCard({
             className="group relative flex items-center gap-4 rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] p-4 overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.4)] transition-all duration-300"
         >
             {/* HUD field + a bloom that only lights when there's news */}
-            <span aria-hidden className="absolute inset-0 bg-hud-grid opacity-40 pointer-events-none" />
             {live && (
                 <span
                     aria-hidden

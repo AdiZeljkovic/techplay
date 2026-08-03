@@ -7,7 +7,7 @@
  */
 export default function DashboardSkeleton() {
     return (
-        <main className="min-h-screen bg-[var(--surface-0)] bg-hud-grid">
+        <main className="min-h-screen bg-[var(--surface-0)]">
             <div className="container-page py-8 space-y-6 animate-pulse">
                 {/* Profile hero — tab strip is inside it */}
                 {/* identity card, progression panel, section bar */}

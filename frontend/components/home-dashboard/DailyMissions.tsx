@@ -90,7 +90,7 @@ export default function DailyMissions({ streak }: { streak: DashboardData["strea
         >
             {/* ── the streak: today's one guaranteed reward ── */}
             <div
-                className={`relative rounded-[16px] border p-4 overflow-hidden transition-colors duration-300 ${
+                className={`relative rounded-[12px] border p-4 overflow-hidden transition-colors duration-300 ${
                     doneToday
                         ? "border-[color-mix(in_srgb,var(--accent)_25%,transparent)] bg-[color-mix(in_srgb,var(--accent)_5%,transparent)]"
                         : "border-white/[0.07] bg-white/[0.02]"
@@ -190,7 +190,7 @@ export default function DailyMissions({ streak }: { streak: DashboardData["strea
                 {!quests && (
                     <div className="space-y-2">
                         {[0, 1, 2].map((i) => (
-                            <div key={i} className="h-[76px] rounded-[16px] bg-white/[0.04] animate-pulse" />
+                            <div key={i} className="h-[76px] rounded-[12px] bg-white/[0.04] animate-pulse" />
                         ))}
                     </div>
                 )}
@@ -210,7 +210,7 @@ export default function DailyMissions({ streak }: { streak: DashboardData["strea
                         return (
                             <div
                                 key={q.id}
-                                className="group rounded-[16px] border border-white/[0.07] bg-white/[0.02] p-3 hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors duration-300"
+                                className="group rounded-[12px] border border-white/[0.07] bg-white/[0.02] p-3 hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors duration-300"
                             >
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0 flex-1">

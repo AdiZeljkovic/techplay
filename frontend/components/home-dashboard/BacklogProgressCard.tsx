@@ -53,7 +53,7 @@ export default function BacklogProgressCard({
             bodyClassName="p-5 flex-1 flex flex-col"
         >
             {/* Counters + completion ring */}
-            <div className="flex items-center gap-4 rounded-[16px] border border-white/[0.07] bg-white/[0.02] p-4">
+            <div className="flex items-center gap-4 rounded-[12px] border border-white/[0.07] bg-white/[0.02] p-4">
                 <div className="flex-1 grid grid-cols-2 gap-4">
                     <div>
                         <p className="font-display text-[28px] font-black text-white leading-none tabular-nums">{backlogCount}</p>
@@ -81,7 +81,7 @@ export default function BacklogProgressCard({
                     <Link
                         href={`/games/${suggestion.slug}`}
                         prefetch={false}
-                        className="group relative flex items-center gap-3.5 rounded-[16px] border border-white/[0.07] p-3 overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
+                        className="group relative flex items-center gap-3.5 rounded-[12px] border border-white/[0.07] p-3 overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
                     >
                         {/* the pick's own art, faint, as the row's backdrop */}
                         {suggestion.background_image && (
@@ -122,8 +122,9 @@ export default function BacklogProgressCard({
                                     {suggestion.genres.join(" · ")}
                                 </span>
                             )}
+                            {/* taste-match is progression data — it wears violet */}
                             {suggestion.match_percent !== null ? (
-                                <span className="mt-1.5 inline-flex items-center gap-1.5 h-[20px] px-2 rounded-full bg-[color-mix(in_srgb,var(--success)_14%,transparent)] border border-[color-mix(in_srgb,var(--success)_30%,transparent)] text-[10px] font-bold tabular-nums text-[var(--success)]">
+                                <span className="mt-1.5 inline-flex items-center gap-1.5 h-[20px] px-2 rounded-full bg-[color-mix(in_srgb,var(--xp)_14%,transparent)] border border-[color-mix(in_srgb,var(--xp)_32%,transparent)] font-display text-[10px] font-black tabular-nums text-[var(--xp-bright)]">
                                     {suggestion.match_percent}% match
                                 </span>
                             ) : (

@@ -46,7 +46,7 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
     const hasGames = data.stats.games_count > 0;
 
     return (
-        <main className="min-h-screen bg-[var(--surface-0)] bg-hud-grid">
+        <main className="min-h-screen bg-[var(--surface-0)]">
             <div className="container-page py-8 space-y-6">
                 {/* Identity — the whole page hangs off this (tabs live inside it) */}
                 <div className="tp-fade-up tp-d1">

@@ -102,7 +102,7 @@ export default function UpcomingForYouRow() {
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {(games ? upcoming : Array.from({ length: 4 }, () => null)).map((g, i) =>
                     g ? (
-                        <div key={g.slug} className={`group/card flex flex-col rounded-[16px] overflow-hidden border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_14px_36px_rgba(0,0,0,0.45)] transition-all duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}>
+                        <div key={g.slug} className={`group/card flex flex-col rounded-[12px] overflow-hidden border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_14px_36px_rgba(0,0,0,0.45)] transition-all duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}>
                             <Link href={`/games/${g.slug}`} prefetch={false} className="group block relative aspect-[16/9]">
                                 {g.background_image ? (
                                     // eslint-disable-next-line @next/next/no-img-element
@@ -168,7 +168,7 @@ export default function UpcomingForYouRow() {
                             </div>
                         </div>
                     ) : (
-                        <div key={i} className="rounded-[16px] bg-[var(--fill-2)] h-[236px] animate-pulse" />
+                        <div key={i} className="rounded-[12px] bg-[var(--fill-2)] h-[236px] animate-pulse" />
                     )
                 )}
             </div>

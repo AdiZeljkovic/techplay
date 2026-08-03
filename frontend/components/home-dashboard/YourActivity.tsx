@@ -45,7 +45,7 @@ function Card({
     children: React.ReactNode;
 }) {
     return (
-        <div className="group/card relative rounded-[16px] border border-white/[0.07] bg-white/[0.02] p-4 flex flex-col overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors duration-300">
+        <div className="group/card relative rounded-[12px] border border-white/[0.07] bg-white/[0.02] p-4 flex flex-col overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors duration-300">
             {/* accent rail draws across the card on hover */}
             <span
                 aria-hidden

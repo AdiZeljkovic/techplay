@@ -140,9 +140,9 @@ const OFFLINE_LAMP: React.CSSProperties = {
 /* ── small parts ──────────────────────────────────────────────────────── */
 
 const BTN =
-    "group/cta relative inline-flex items-center justify-center gap-2 h-10 px-4 rounded-[10px] border text-[12.5px] font-semibold transition-colors duration-300 disabled:opacity-60";
+    "group/cta relative inline-flex items-center justify-center gap-2 h-10 px-4 rounded-[8px] border font-display text-[11.5px] font-bold uppercase tracking-[0.08em] transition-colors duration-300 disabled:opacity-60";
 
-const BTN_GHOST = `${BTN} border-white/[0.12] bg-white/[0.04] text-[var(--ink-hi)] hover:bg-white/[0.09] hover:border-white/25`;
+const BTN_GHOST = `${BTN} border-white/[0.12] bg-white/[0.04] text-white hover:bg-white/[0.09] hover:border-white/25`;
 
 const BTN_PRIMARY = `${BTN} border-transparent bg-[var(--accent)] text-white hover:brightness-110`;
 
@@ -348,7 +348,6 @@ export default function ProfileHero({
                             style={{ background: "radial-gradient(120% 140% at 15% 0%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 60%)" }}
                         />
                     )}
-                    <span className="absolute inset-0 bg-hud-grid opacity-25" />
                     <span className="tp-sweep absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
                 </div>
 
@@ -357,7 +356,7 @@ export default function ProfileHero({
                     <div className="absolute top-5 right-5 md:top-6 md:right-6 flex items-center gap-2">
                         {isOwnProfile ? (
                             <>
-                                <Link href="/settings" className={BTN_GHOST}>
+                                <Link href="/settings" className={BTN_PRIMARY}>
                                     <Pencil className="w-3.5 h-3.5" /> Edit profile
                                 </Link>
                                 <MoreMenu>
@@ -479,22 +478,8 @@ export default function ProfileHero({
 
             {/* ── progression ── */}
             <section
-                className="relative rounded-[var(--radius-panel)] border overflow-hidden"
-                style={{
-                    borderColor: "color-mix(in srgb, var(--accent) 22%, transparent)",
-                    background: "linear-gradient(180deg, #131110 0%, #0c0a09 100%)",
-                }}
+                className="relative rounded-[var(--radius-panel)] border border-white/[0.07] overflow-hidden bg-[#12100f]"
             >
-                {/* the accent seeps in from the panel's own edges */}
-                <span
-                    aria-hidden
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                        background:
-                            "radial-gradient(70% 130% at 0% 0%, color-mix(in srgb, var(--accent) 13%, transparent) 0%, transparent 60%), radial-gradient(70% 130% at 100% 100%, color-mix(in srgb, var(--accent) 10%, transparent) 0%, transparent 60%)",
-                    }}
-                />
-
                 <div className="relative flex flex-col xl:flex-row items-stretch gap-5 p-5 md:p-6">
                     {/* rank · level · gauge */}
                     <div className="flex-1 min-w-0 flex flex-col sm:flex-row items-center sm:items-stretch gap-5 md:gap-7">
@@ -547,13 +532,8 @@ export default function ProfileHero({
 
                     {/* what's waiting at the top of the bar */}
                     <div
-                        className="relative shrink-0 xl:w-[330px] rounded-[16px] border border-white/[0.07] bg-white/[0.02] px-4 py-4 flex items-center gap-3"
+                        className="relative shrink-0 xl:w-[330px] rounded-[12px] border border-white/[0.07] bg-white/[0.02] px-4 py-4 flex items-center gap-3"
                     >
-                        <span
-                            aria-hidden
-                            className="absolute right-3 top-3 w-5 h-5 border-t border-r rounded-tr-[4px]"
-                            style={{ borderColor: "color-mix(in srgb, var(--accent) 45%, transparent)" }}
-                        />
                         <div className="min-w-0 flex-1">
                             <p className="font-display text-[10.5px] font-bold uppercase tracking-[0.16em] text-[var(--accent)]">
                                 Next reward
