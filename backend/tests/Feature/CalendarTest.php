@@ -209,6 +209,66 @@ class CalendarTest extends TestCase
         $this->getJson('/api/v1/calendar')->assertStatus(503);
     }
 
+    public function test_a_month_that_ships_nothing_is_an_answer_not_an_outage(): void
+    {
+        $this->fakeRawg([]);
+
+        $data = $this->getJson('/api/v1/calendar')->assertOk()->json('data');
+
+        $this->assertSame(0, $data['stats']['releases']);
+        $this->assertSame([], $data['days']);
+    }
+
+    public function test_an_outage_falls_back_to_the_last_good_month_instead_of_failing(): void
+    {
+        // One good visit puts the month on the shelf.
+        $this->fakeRawg([$this->rawgGame(['name' => 'Voidfall'])]);
+        $this->getJson('/api/v1/calendar')->assertOk();
+
+        // RAWG goes down and the fresh copy expires — the shelved one stands in.
+        Cache::forget('calendar.month.'.now()->startOfMonth()->toDateString().'.v3');
+
+        $down = Mockery::mock(RawgService::class);
+        $down->shouldReceive('getReleases')->andReturn(null);
+        $this->app->instance(RawgService::class, $down);
+
+        $data = $this->getJson('/api/v1/calendar')->assertOk()->json('data');
+
+        $this->assertSame('Voidfall', $data['days'][0]['games'][0]['name']);
+    }
+
+    public function test_the_most_followed_rail_never_costs_the_visitor_a_round_trip(): void
+    {
+        // getReleases is only ever allowed to be asked about this month.
+        $mock = Mockery::mock(RawgService::class);
+        $mock->shouldReceive('getReleases')
+            ->with(Mockery::any(), Mockery::any(), 'released', Mockery::any())
+            ->andReturn(['count' => 1, 'results' => [$this->rawgGame()]]);
+        $mock->shouldReceive('getReleases')->with(Mockery::any(), Mockery::any(), '-added', Mockery::any())
+            ->never();
+
+        $this->app->instance(RawgService::class, $mock);
+
+        $this->assertSame([], $this->getJson('/api/v1/calendar')->assertOk()->json('data.most_followed'));
+    }
+
+    public function test_the_warmer_fills_the_cache_so_a_visitor_finds_it_hot(): void
+    {
+        $this->fakeRawg([$this->rawgGame()], [$this->rawgGame(['name' => 'Everyone Waits', 'added' => 90000])]);
+
+        $this->artisan('calendar:warm', ['--months' => 1])->assertSuccessful();
+
+        // Now RAWG can die and the page is still whole.
+        $down = Mockery::mock(RawgService::class);
+        $down->shouldReceive('getReleases')->never();
+        $this->app->instance(RawgService::class, $down);
+
+        $data = $this->getJson('/api/v1/calendar')->assertOk()->json('data');
+
+        $this->assertCount(1, $data['days']);
+        $this->assertSame('Everyone Waits', $data['most_followed'][0]['name']);
+    }
+
     public function test_the_month_can_be_stepped_through(): void
     {
         $this->fakeRawg([]);

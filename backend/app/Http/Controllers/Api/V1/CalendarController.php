@@ -24,8 +24,21 @@ class CalendarController extends Controller
 {
     use ApiResponse;
 
-    /** RAWG pages per month. Six is comfortably more than any month ships. */
-    private const PAGES = 6;
+    /**
+     * RAWG pages per month, 40 games each. Three covers every month that ships
+     * anything worth a calendar; going deeper only buys shovelware, and each
+     * page is a round trip a cold visitor waits on.
+     */
+    private const PAGES = 3;
+
+    /** How long a warm month is served before it is refetched. */
+    private const FRESH_TTL = 21600; // 6h
+
+    /**
+     * How long the last good answer survives as a fallback. A month's releases
+     * barely move, so week-old data beats an error page by a wide margin.
+     */
+    private const STALE_TTL = 604800; // 7d
 
     /** The platform families the filter offers, and what RAWG calls them. */
     private const PLATFORM_FAMILIES = [
@@ -111,7 +124,7 @@ class CalendarController extends Controller
             'platform_breakdown' => $this->platformBreakdown($releases),
             'genres' => $this->genresIn($releases),
             'watchlist' => $this->watchlist(),
-            'most_followed' => $this->mostFollowed($rawg),
+            'most_followed' => $this->mostFollowed(),
         ]);
     }
 
@@ -150,27 +163,45 @@ class CalendarController extends Controller
 
     /* ── RAWG ─────────────────────────────────────────────────────────── */
 
-    /** @return Collection<int,array>|null */
-    private function monthReleases(RawgService $rawg, Carbon $month): ?Collection
+    /**
+     * A month, from cache if it is warm, from RAWG if it is not, and from the
+     * last good answer if RAWG is down. Null only when we have never once
+     * succeeded for this month.
+     *
+     * @return Collection<int,array>|null
+     */
+    public function monthReleases(RawgService $rawg, Carbon $month, bool $force = false): ?Collection
     {
         $from = $month->copy()->startOfMonth()->toDateString();
         $to = $month->copy()->endOfMonth()->toDateString();
 
-        $cached = Cache::remember("calendar.month.{$from}.v2", 21600, function () use ($rawg, $from, $to) {
-            $data = $rawg->getReleases($from, $to, 'released', self::PAGES);
+        $fresh = "calendar.month.{$from}.v3";
+        $stale = "calendar.month.{$from}.stale";
 
-            if ($data === null) {
-                return null; // a failure must not be cached
-            }
+        if (! $force && ($hit = Cache::get($fresh)) !== null) {
+            return collect($hit);
+        }
 
-            return collect($data['results'] ?? [])
-                ->map(fn (array $g) => $this->present($g))
-                ->filter(fn (array $g) => $g['slug'] !== '' && $g['name'] !== '')
-                ->values()
-                ->all();
-        });
+        $data = $rawg->getReleases($from, $to, 'released', self::PAGES);
 
-        return $cached === null ? null : collect($cached);
+        if ($data === null) {
+            // RAWG is unreachable. Last week's answer for this month is still
+            // very nearly right — serve it rather than an error page.
+            $fallback = Cache::get($stale);
+
+            return $fallback === null ? null : collect($fallback);
+        }
+
+        $games = collect($data['results'] ?? [])
+            ->map(fn (array $g) => $this->present($g))
+            ->filter(fn (array $g) => $g['slug'] !== '' && $g['name'] !== '')
+            ->values()
+            ->all();
+
+        Cache::put($fresh, $games, self::FRESH_TTL);
+        Cache::put($stale, $games, self::STALE_TTL);
+
+        return collect($games);
     }
 
     private function present(array $g): array
@@ -270,23 +301,35 @@ class CalendarController extends Controller
     /**
      * The year's biggest arrivals by RAWG's added count — the calendar's
      * "everyone is waiting for this", not just this month's.
+     *
+     * A decorative rail is never worth a second RAWG round trip while someone
+     * is waiting on the page, so the request path reads cache only. The warmer
+     * fills it; until then the rail is simply absent.
      */
-    private function mostFollowed(RawgService $rawg): array
+    private function mostFollowed(): array
     {
-        return Cache::remember('calendar.most_followed.v2', 43200, function () use ($rawg) {
-            $data = $rawg->getReleases(now()->toDateString(), now()->addMonths(18)->toDateString(), '-added', 1);
+        return Cache::get('calendar.most_followed.v3', []);
+    }
 
-            if ($data === null) {
-                return [];
-            }
+    /** Called by the warmer, off the request path. */
+    public function warmMostFollowed(RawgService $rawg): int
+    {
+        $data = $rawg->getReleases(now()->toDateString(), now()->addMonths(18)->toDateString(), '-added', 1);
 
-            return collect($data['results'] ?? [])
-                ->map(fn (array $g) => $this->present($g))
-                ->sortByDesc('added')
-                ->take(5)
-                ->values()
-                ->all();
-        });
+        if ($data === null) {
+            return 0;
+        }
+
+        $games = collect($data['results'] ?? [])
+            ->map(fn (array $g) => $this->present($g))
+            ->sortByDesc('added')
+            ->take(5)
+            ->values()
+            ->all();
+
+        Cache::put('calendar.most_followed.v3', $games, self::STALE_TTL);
+
+        return count($games);
     }
 
     /* ── shaping ──────────────────────────────────────────────────────── */

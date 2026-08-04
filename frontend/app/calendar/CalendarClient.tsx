@@ -191,14 +191,28 @@ export default function CalendarClient() {
                     <CalendarDays className="w-8 h-8 mx-auto mb-3 text-white/20" />
                     <p className="font-display text-[15px] font-bold text-white">The calendar is unavailable</p>
                     <p className="mt-1.5 text-[12.5px] text-white/40 leading-snug">
-                        Release data comes from RAWG, and it isn&apos;t answering right now. Try again in a minute.
+                        Release data comes from RAWG, and it isn&apos;t answering right now. We keep the last good copy
+                        of every month, so this only shows when we have never managed to load this one.
                     </p>
+                    <button
+                        onClick={() => mutate()}
+                        className="mt-4 font-display text-[10px] font-black uppercase tracking-[0.14em] px-4 py-2 rounded-[8px] border border-white/[0.12] text-white/70 hover:text-white hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors"
+                    >
+                        Try again
+                    </button>
                 </div>
             </main>
         );
     }
 
     const m = data?.month;
+
+    // When the visitor steps to a month we know its name before the payload
+    // lands — deriving the heading from the request keeps it from flashing
+    // "undefined undefined" through the whole load.
+    const stepped = month ? new Date(`${month}-01T00:00:00Z`) : null;
+    const label = m?.label ?? stepped?.toLocaleDateString("en-GB", { month: "long", timeZone: "UTC" }) ?? "";
+    const year = m?.year ?? stepped?.getUTCFullYear() ?? "";
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
@@ -219,8 +233,8 @@ export default function CalendarClient() {
                             <CalendarDays className="w-3.5 h-3.5" /> Release calendar
                         </p>
                         <h1 className="mt-3 font-display font-black text-white tracking-tight leading-[0.88] text-[46px] md:text-[64px] uppercase">
-                            {m?.label ?? "—"}
-                            <span className="block text-[var(--accent)]">{m?.year ?? ""}</span>
+                            {label || "—"}
+                            <span className="block text-[var(--accent)]">{year}</span>
                         </h1>
                         <p className="mt-3.5 text-[13px] text-white/45 max-w-[420px] leading-relaxed">
                             Track upcoming game releases, launch dates and platforms, and wishlist the games you care
@@ -381,7 +395,7 @@ export default function CalendarClient() {
                 <div className="xl:col-span-8 min-w-0 space-y-5">
                     {/* ── most anticipated ── */}
                     {(data?.most_anticipated.length ?? 0) > 0 && (
-                        <Panel title={`Most anticipated in ${m?.label}`} icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />}>
+                        <Panel title={`Most anticipated in ${label}`} icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />}>
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                                 {data!.most_anticipated.map((game) => (
                                     <div key={game.slug} className="group">
@@ -415,7 +429,7 @@ export default function CalendarClient() {
 
                     {/* ── the month, day by day ── */}
                     <Panel
-                        title={`${m?.label} ${m?.year} releases`}
+                        title={label ? `${label} ${year} releases` : "Releases"}
                         icon={<CalendarDays className="w-4 h-4 text-[var(--accent)]" />}
                         meta={
                             <span className="font-display text-[10px] font-black tabular-nums text-white/35">

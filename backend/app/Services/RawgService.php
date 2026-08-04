@@ -156,6 +156,9 @@ class RawgService
      * Fetches page 1 first to learn the total count, then fetches remaining
      * pages concurrently via Http::pool(). $maxPages caps how many pages to
      * fetch (pass 1 for widget/sidebar use, a large number for full-month view).
+     *
+     * Returns null only when RAWG could not be reached. A range that genuinely
+     * ships nothing is an answer, not an outage, and comes back empty.
      */
     public function getReleases(string $from, string $to, string $ordering = 'released', int $maxPages = 2): ?array
     {
@@ -163,7 +166,9 @@ class RawgService
 
         try {
             // ── Page 1: discover total count ─────────────────────────────
-            $first = $this->http(15)->get("{$this->baseUrl}/games", [
+            // Short, because a visitor is waiting on this: better a fast
+            // failure we can serve stale data around than a 15s stall.
+            $first = $this->http(8)->get("{$this->baseUrl}/games", [
                 'key' => $this->key(),
                 'dates' => "{$from},{$to}",
                 'ordering' => $ordering,
@@ -178,10 +183,6 @@ class RawgService
             $json = $first->json();
             $total = $json['count'] ?? 0;
             $results = $json['results'] ?? [];
-
-            if (empty($results)) {
-                return null;
-            }
 
             // Clamp to pages actually available and the caller's cap
             $pagesAvailable = (int) ceil($total / $pageSize);
@@ -203,7 +204,7 @@ class RawgService
                     if (! $ssl) {
                         $opts['verify'] = false;
                     }
-                    $requests[] = $pool->timeout(20)
+                    $requests[] = $pool->timeout(12)
                         ->withOptions($opts)
                         ->get("{$baseUrl}/games", [
                             'key' => $key,
