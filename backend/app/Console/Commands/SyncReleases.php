@@ -38,7 +38,20 @@ class SyncReleases extends Command
         $this->info("Steam · {$from->toDateString()} → {$to->toDateString()}");
 
         $started = now();
-        $tally = $steam->run($from, $to, fn (array $row) => $this->line("  + {$row['title']}"));
+        $reasons = [];
+
+        $tally = $steam->run($from, $to, function (array $row, string $verdict, ?string $reason) use (&$reasons) {
+            $title = mb_strimwidth($row['title'], 0, 52, '…');
+
+            if ($verdict === 'created') {
+                $this->line("  <fg=green>+</> {$title}");
+
+                return;
+            }
+
+            $reasons[$reason] = ($reasons[$reason] ?? 0) + 1;
+            $this->line("  <fg=gray>–</> <fg=gray>{$title} — {$reason}</>");
+        });
 
         $this->newLine();
         $this->table(
@@ -52,6 +65,18 @@ class SyncReleases extends Command
                 $started->diffForHumans(now(), true),
             ]]
         );
+
+        // Which rule did the rejecting matters more than the total: it is how
+        // we tell "the gate is working" from "the gate is too tight".
+        if ($reasons !== []) {
+            arsort($reasons);
+            $this->newLine();
+            $this->line('<fg=gray>Rejected by rule:</>');
+
+            foreach ($reasons as $reason => $count) {
+                $this->line(sprintf('  <fg=gray>%-36s %d</>', $reason, $count));
+            }
+        }
 
         return self::SUCCESS;
     }

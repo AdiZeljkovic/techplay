@@ -52,14 +52,15 @@ class SteamSync
                 continue;
             }
 
-            $tally[$this->ingest($row)]++;
+            [$verdict, $reason] = $this->ingest($row);
+            $tally[$verdict]++;
 
             // Only a first encounter costs a request, so this is the only place
             // that needs to be polite about pacing.
             usleep(config('releases.delay_ms') * 1000);
 
             if ($progress) {
-                $progress($row);
+                $progress($row, $verdict, $reason);
             }
         }
 
@@ -106,21 +107,25 @@ class SteamSync
         return 'updated';
     }
 
-    /** A title we have never seen. This is the one time it costs a request. */
-    private function ingest(array $row): string
+    /**
+     * A title we have never seen. This is the one time it costs a request.
+     *
+     * @return array{0:string,1:?string} the verdict, and why it was refused
+     */
+    private function ingest(array $row): array
     {
         $details = $this->catalog->details($row['store_id']);
 
         if ($details === null) {
             $this->remember($row, 'unavailable');
 
-            return 'rejected';
+            return ['rejected', 'unavailable'];
         }
 
         if ($reason = $this->filter->reject($details)) {
             $this->remember($row, $reason);
 
-            return 'rejected';
+            return ['rejected', $reason];
         }
 
         $game = $this->createGame($row, $details);
@@ -134,7 +139,7 @@ class SteamSync
             'last_synced_at' => now(),
         ]);
 
-        return 'created';
+        return ['created', null];
     }
 
     private function createGame(array $row, array $details): Game

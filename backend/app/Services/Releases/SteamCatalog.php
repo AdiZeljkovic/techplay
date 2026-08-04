@@ -2,6 +2,7 @@
 
 namespace App\Services\Releases;
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -48,6 +49,8 @@ class SteamCatalog
      */
     public function listWindow(Carbon $from, Carbon $to): array
     {
+        $this->assertConfigured();
+
         $found = [];
         $adultDropped = 0;
 
@@ -117,7 +120,7 @@ class SteamCatalog
                 ->get(self::DETAILS, ['appids' => $appId, 'l' => 'en']);
 
             $data = $response->json($appId.'.data');
-        } catch (\Throwable $e) {
+        } catch (ConnectionException $e) {
             Log::warning('steam details failed', ['app_id' => $appId, 'error' => $e->getMessage()]);
 
             return null;
@@ -161,13 +164,31 @@ class SteamCatalog
                 ]);
 
             $html = $response->json('results_html') ?? '';
-        } catch (\Throwable $e) {
+        } catch (ConnectionException $e) {
+            // Steam being unreachable is ordinary and survivable; anything else
+            // is a fault of ours and has no business being swallowed.
             Log::warning('steam listing failed', ['start' => $start, 'error' => $e->getMessage()]);
 
             return [];
         }
 
         return $this->parseRows($html);
+    }
+
+    /**
+     * A deployment that forgot to refresh its config cache produced a sync
+     * reporting zero upcoming games — indistinguishable, from the outside, from
+     * Steam having nothing to say. Those are opposite situations and must never
+     * look alike again.
+     */
+    private function assertConfigured(): void
+    {
+        if (config('releases.timeout') === null) {
+            throw new \RuntimeException(
+                'config/releases.php is not loaded. If this is a deployed environment, '.
+                'its config cache predates the file — run `php artisan config:cache`.'
+            );
+        }
     }
 
     /**

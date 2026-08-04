@@ -227,6 +227,20 @@ class SteamReleaseSyncTest extends TestCase
         $this->assertSame($spentOnFirstPass, $this->detailCalls(), 'a delay costs no detail request');
     }
 
+    public function test_a_missing_config_is_loud_rather_than_an_empty_month(): void
+    {
+        // A deploy whose config cache predated config/releases.php produced a
+        // sync reporting zero upcoming games, which looked exactly like Steam
+        // having nothing to say. Opposite situations; never the same output.
+        config(['releases.timeout' => null]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageMatches('/config:cache/');
+
+        $this->fakeSteam([$this->row()]);
+        $this->sync();
+    }
+
     /** How many times we have asked Steam about an individual game. */
     private function detailCalls(): int
     {
