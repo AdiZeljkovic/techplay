@@ -243,6 +243,7 @@ Route::prefix('v1')->group(function () {
 
         // Clans
         Route::get('/user/clan', [ClanController::class, 'myClan']);
+        Route::get('/user/clan-invites', [ClanController::class, 'myInvites']);
         Route::post('/clans', [ClanController::class, 'store']);
         Route::post('/clans/{slug}/join', [ClanController::class, 'join']);
         Route::delete('/clans/{slug}/leave', [ClanController::class, 'leave']);

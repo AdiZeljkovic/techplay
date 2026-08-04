@@ -18,6 +18,7 @@ use App\Services\ClanResourceService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
@@ -105,7 +106,161 @@ class ClanController extends Controller
             );
         }
 
-        return $this->success($clans);
+        return $this->success(array_merge($clans->toArray(), [
+            'spotlight' => Cache::remember('clans.spotlight.v1', 300, fn () => $this->spotlight()),
+            'sidebar' => Cache::remember('clans.sidebar.v1', 300, fn () => $this->sidebar()),
+        ]));
+    }
+
+    /**
+     * The featured hero: whoever is paying for a Recruitment Signal, and the
+     * week's most active clan when nobody is. Null with no clans at all.
+     */
+    private function spotlight(): ?array
+    {
+        $boosted = ClanBoost::where('key', 'recruitment_signal')
+            ->where('ends_at', '>', now())
+            ->orderByDesc('ends_at')
+            ->value('clan_id');
+
+        $clanId = $boosted ?: ClanLedger::where('created_at', '>=', now()->subDays(7))
+            ->where('amount', '>', 0)
+            ->selectRaw('clan_id, SUM(amount) as earned')
+            ->groupBy('clan_id')
+            ->orderByDesc('earned')
+            ->value('clan_id');
+
+        $clan = $clanId
+            ? Clan::withCount('members')->find($clanId)
+            : Clan::withCount('members')->where('is_public', true)->orderByDesc('xp')->first();
+
+        if (! $clan) {
+            return null;
+        }
+
+        $memberIds = $clan->members()->pluck('user_id');
+
+        $games = DB::table('user_games')
+            ->join('games', 'games.id', '=', 'user_games.game_id')
+            ->whereIn('user_games.user_id', $memberIds)
+            ->selectRaw('games.name, COUNT(DISTINCT user_games.user_id) as players')
+            ->groupBy('games.name')
+            ->orderByDesc('players')
+            ->limit(3)
+            ->pluck('games.name');
+
+        $levels = app(ClanLevelService::class);
+
+        return [
+            'name' => $clan->name,
+            'slug' => $clan->slug,
+            'tag' => $clan->tag,
+            'logo' => $clan->logo,
+            'banner' => $clan->banner,
+            'description' => $clan->description,
+            'motto' => $clan->motto,
+            'region' => $clan->region,
+            'status' => $clan->status ?? 'recruiting',
+            'level' => (int) $clan->level,
+            'tier_name' => $levels->tierForLevel((int) $clan->level)['name'],
+            'members_count' => (int) $clan->members_count,
+            'member_limit' => $clan->effectiveMemberLimit(),
+            'prestige_lifetime' => (int) $clan->prestige_lifetime,
+            'theme_color' => $clan->equipped_theme ? (config('clan.themes.'.$clan->equipped_theme.'.value') ?? null) : null,
+            'boosted' => (bool) $boosted,
+            'top_games' => $games->all(),
+        ];
+    }
+
+    /**
+     * The directory's right rail: this week's top earners, who is active
+     * right now (real presence, not vibes), and the region list the filter
+     * offers.
+     */
+    private function sidebar(): array
+    {
+        $levels = app(ClanLevelService::class);
+
+        $topWeekly = ClanLedger::where('created_at', '>=', now()->subDays(7))
+            ->where('amount', '>', 0)
+            ->selectRaw('clan_id, SUM(amount) as earned')
+            ->groupBy('clan_id')
+            ->orderByDesc('earned')
+            ->limit(5)
+            ->pluck('earned', 'clan_id');
+
+        $topClans = Clan::whereIn('id', $topWeekly->keys())->get()->keyBy('id');
+
+        $top = $topWeekly->map(fn ($earned, $clanId) => [
+            'name' => $topClans[$clanId]->name ?? null,
+            'slug' => $topClans[$clanId]->slug ?? null,
+            'tag' => $topClans[$clanId]->tag ?? null,
+            'logo' => $topClans[$clanId]->logo ?? null,
+            'tier_name' => $levels->tierForLevel((int) ($topClans[$clanId]->level ?? 1))['name'],
+            'score' => (int) $earned,
+        ])->values()->filter(fn ($row) => $row['name'])->values()->all();
+
+        // Recently active: latest ledger movement per clan, with a real
+        // online count read from the presence window.
+        $recent = ClanLedger::selectRaw('clan_id, MAX(created_at) as last_at')
+            ->groupBy('clan_id')
+            ->orderByDesc('last_at')
+            ->limit(3)
+            ->get();
+
+        $recentClans = Clan::whereIn('id', $recent->pluck('clan_id'))->get()->keyBy('id');
+        $memberRows = DB::table('clan_members')
+            ->whereIn('clan_id', $recent->pluck('clan_id'))
+            ->get(['clan_id', 'user_id'])
+            ->groupBy('clan_id');
+
+        $onlineIds = [];
+        try {
+            $onlineIds = array_map('intval', Redis::zrangebyscore(
+                'forum:users:online', now()->subMinutes(5)->timestamp, '+inf'
+            ) ?: []);
+        } catch (\Throwable) {
+            // Redis down -> zeros, nothing breaks.
+        }
+
+        $recentActive = $recent->map(function ($row) use ($recentClans, $memberRows, $onlineIds) {
+            $clan = $recentClans[$row->clan_id] ?? null;
+
+            if (! $clan) {
+                return null;
+            }
+
+            $members = ($memberRows[$row->clan_id] ?? collect())->pluck('user_id')->all();
+
+            return [
+                'name' => $clan->name,
+                'slug' => $clan->slug,
+                'tag' => $clan->tag,
+                'logo' => $clan->logo,
+                'last_active_at' => $row->last_at,
+                'online' => count(array_intersect($members, $onlineIds)),
+            ];
+        })->filter()->values()->all();
+
+        return [
+            'top_weekly' => $top,
+            'recent_active' => $recentActive,
+            'regions' => Clan::whereNotNull('region')->where('region', '!=', '')
+                ->distinct()->orderBy('region')->pluck('region')->all(),
+        ];
+    }
+
+    /** GET /user/clan-invites — the viewer's pending invites. */
+    public function myInvites(Request $request)
+    {
+        return $this->success(
+            ClanInvite::where('invitee_id', $request->user()->id)
+                ->where('status', 'pending')
+                ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                ->with('clan:id,name,slug,tag,logo')
+                ->latest()
+                ->get(['id', 'clan_id', 'inviter_id', 'created_at'])
+        );
     }
 
     /** POST /clans — create a new clan */

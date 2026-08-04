@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Achievement;
 use App\Models\Clan;
 use App\Models\ClanActivity;
+use App\Models\ClanInvite;
 use App\Models\ClanLedger;
 use App\Models\ClanMember;
 use App\Models\Game;
@@ -303,6 +304,36 @@ class ClanEconomyTest extends TestCase
         $recruiting = $this->getJson('/api/v1/clans?recruiting=1')->assertOk()->json('data.data');
         $this->assertCount(1, $recruiting);
         $this->assertSame($open->slug, $recruiting[0]['slug']);
+    }
+
+    public function test_the_directory_carries_the_spotlight_the_rail_and_pending_invites_list(): void
+    {
+        $owner = User::factory()->create();
+        $clan = $this->clan($owner, ['description' => 'Elite competitive clan.', 'region' => 'Europe']);
+        app(ClanResourceService::class)->award($owner, 'game_completed');
+
+        $data = $this->getJson('/api/v1/clans')->assertOk()->json('data');
+
+        // Nobody is boosted → the week's top earner takes the spotlight.
+        $this->assertSame($clan->slug, $data['spotlight']['slug']);
+        $this->assertFalse($data['spotlight']['boosted']);
+        $this->assertSame('Outpost', $data['spotlight']['tier_name']);
+
+        $this->assertSame($clan->slug, $data['sidebar']['top_weekly'][0]['slug']);
+        $this->assertSame(15, $data['sidebar']['top_weekly'][0]['score']);
+        $this->assertSame($clan->slug, $data['sidebar']['recent_active'][0]['slug']);
+        $this->assertContains('Europe', $data['sidebar']['regions']);
+
+        // Pending invites finally have a listing endpoint.
+        $invitee = User::factory()->create();
+        ClanInvite::create([
+            'clan_id' => $clan->id, 'inviter_id' => $owner->id, 'invitee_id' => $invitee->id,
+            'status' => 'pending', 'expires_at' => now()->addDays(7),
+        ]);
+
+        $invites = $this->actingAs($invitee)->getJson('/api/v1/user/clan-invites')->assertOk()->json('data');
+        $this->assertCount(1, $invites);
+        $this->assertSame($clan->name, $invites[0]['clan']['name']);
     }
 
     public function test_the_profile_roster_carries_contributions_and_the_viewer_their_standing(): void
