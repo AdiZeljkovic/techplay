@@ -124,13 +124,17 @@ return [
     | Politeness
     |--------------------------------------------------------------------------
     |
-    | These are other people's servers and we are a guest on them. One request a
-    | second finishes a month's enrichment in under half an hour, which is fine
-    | for a job nobody is waiting on.
+    | These are other people's servers and we are a guest on them.
+    |
+    | Steam's detail endpoint throttles at roughly 200 requests per five
+    | minutes. A one-second gap sat just over that line and cost 115 titles to
+    | throttling in the first production run, so this now leaves headroom
+    | rather than racing the limit. A month still finishes inside forty
+    | minutes, which is fine for a job nobody is waiting on.
     |
     */
 
-    'delay_ms' => 1000,
+    'delay_ms' => 1500,
     'timeout' => 20,
 
 ];

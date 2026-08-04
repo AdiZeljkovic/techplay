@@ -122,8 +122,12 @@ class SteamCatalog
     /**
      * The full record for one title, shaped the way the quality gate expects.
      *
-     * Returns null when Steam has nothing to say, which for an upcoming title
-     * usually means it was pulled from the store between the listing and now.
+     * Returns null only when Steam positively says there is no such product —
+     * a title pulled from the store between the listing and now. Anything else
+     * that goes wrong throws, because a failed request is not a verdict and
+     * must not be recorded as one.
+     *
+     * @throws TransientFailure
      */
     public function details(string $appId): ?array
     {
@@ -131,13 +135,30 @@ class SteamCatalog
             $response = Http::timeout(config('releases.timeout'))
                 ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
                 ->get(self::DETAILS, ['appids' => $appId, 'l' => 'en']);
-
-            $data = $response->json($appId.'.data');
         } catch (ConnectionException $e) {
-            Log::warning('steam details failed', ['app_id' => $appId, 'error' => $e->getMessage()]);
+            throw new TransientFailure("steam unreachable for {$appId}: ".$e->getMessage());
+        }
 
+        // Steam throttles hard on this endpoint and answers 429 — or, under
+        // load, 200 with an empty body. Both used to be filed away as "this
+        // game does not exist", which quietly lost real games forever.
+        if (! $response->successful()) {
+            throw new TransientFailure("steam answered {$response->status()} for {$appId}");
+        }
+
+        $body = $response->json();
+
+        if (! is_array($body) || $body === []) {
+            throw new TransientFailure("steam returned an empty body for {$appId}");
+        }
+
+        // An explicit refusal, on the other hand, is an answer: the product is
+        // gone, and asking again next month will not bring it back.
+        if (($body[$appId]['success'] ?? false) === false) {
             return null;
         }
+
+        $data = $body[$appId]['data'] ?? null;
 
         if (! is_array($data)) {
             return null;

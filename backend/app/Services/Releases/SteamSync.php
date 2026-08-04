@@ -5,6 +5,7 @@ namespace App\Services\Releases;
 use App\Models\Game;
 use App\Models\GameStoreLink;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -23,6 +24,13 @@ use Illuminate\Support\Str;
 class SteamSync
 {
     public const STORE = 'steam';
+
+    /**
+     * The marker for "the store could not answer about this one". Deliberately
+     * the same string the first release wrote, so the 115 titles it lost to
+     * throttling are picked back up on the next run rather than staying lost.
+     */
+    public const UNREACHABLE = 'unavailable';
 
     public function __construct(
         private SteamCatalog $catalog,
@@ -50,16 +58,22 @@ class SteamSync
             $onDiscovered(count($rows));
         }
 
-        $tally = ['seen' => count($rows), 'created' => 0, 'updated' => 0, 'rejected' => 0, 'unchanged' => 0];
+        $tally = ['seen' => count($rows), 'created' => 0, 'updated' => 0, 'rejected' => 0, 'unchanged' => 0, 'skipped' => 0];
 
         foreach ($rows as $row) {
             $link = GameStoreLink::where('store', self::STORE)
                 ->where('store_id', $row['store_id'])
                 ->first();
 
+            // A store that could not answer last time gets another chance.
+            // Only verdicts about the game itself are final.
+            if ($link && $link->game_id === null && $link->rejected_reason === self::UNREACHABLE) {
+                $link->delete();
+                $link = null;
+            }
+
             if ($link) {
-                $verdict = $this->refresh($link, $row);
-                $reason = null;
+                [$verdict, $reason] = $this->refresh($link, $row);
             } else {
                 [$verdict, $reason] = $this->ingest($row);
 
@@ -85,20 +99,20 @@ class SteamSync
      * A title we already know. No detail request — the listing already told us
      * everything that can change.
      */
-    private function refresh(GameStoreLink $link, array $row): string
+    private function refresh(GameStoreLink $link, array $row): array
     {
         $link->forceFill(['last_synced_at' => now()])->save();
 
-        // A listing we rejected once stays rejected. Re-deciding would mean
-        // fetching it again to reach the same answer.
+        // A listing we rejected on its merits stays rejected. Re-deciding would
+        // mean fetching it again to reach the same answer.
         if ($link->game_id === null) {
-            return 'unchanged';
+            return ['unchanged', null];
         }
 
         $game = $link->game;
 
         if (! $game) {
-            return 'unchanged';
+            return ['unchanged', null];
         }
 
         $date = $row['anchor']?->toDateString();
@@ -106,7 +120,7 @@ class SteamSync
 
         // An editor who fixed this date outranks the store that got it wrong.
         if (in_array('released', $locked, true)) {
-            return 'unchanged';
+            return ['unchanged', null];
         }
 
         // released is cast to a date, so it stringifies with a time component.
@@ -115,7 +129,7 @@ class SteamSync
         $current = $game->released?->toDateString();
 
         if ($date === null || ($current === $date && $game->release_precision === $row['precision'])) {
-            return 'unchanged';
+            return ['unchanged', null];
         }
 
         $game->forceFill([
@@ -123,7 +137,7 @@ class SteamSync
             'release_precision' => $row['precision'],
         ])->save();
 
-        return 'updated';
+        return ['updated', null];
     }
 
     /**
@@ -133,12 +147,20 @@ class SteamSync
      */
     private function ingest(array $row): array
     {
-        $details = $this->catalog->details($row['store_id']);
+        try {
+            $details = $this->catalog->details($row['store_id']);
+        } catch (TransientFailure $e) {
+            // Recording this would blacklist a game we simply failed to reach.
+            // Leaving no trace means the next run tries it again.
+            Log::info('steam title deferred', ['store_id' => $row['store_id'], 'why' => $e->getMessage()]);
+
+            return ['skipped', 'store unreachable'];
+        }
 
         if ($details === null) {
-            $this->remember($row, 'unavailable');
+            $this->remember($row, self::UNREACHABLE);
 
-            return ['rejected', 'unavailable'];
+            return ['rejected', self::UNREACHABLE];
         }
 
         if ($reason = $this->filter->reject($details)) {

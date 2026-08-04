@@ -23,6 +23,12 @@ class SteamReleaseSyncTest extends TestCase
 
     private int $cursor = 0;
 
+    /** @var array<int,string> appids Steam will answer 429 for */
+    private array $throttled = [];
+
+    /** @var array<int,string> appids Steam positively says no longer exist */
+    private array $delisted = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -43,6 +49,14 @@ class SteamReleaseSyncTest extends TestCase
             'store.steampowered.com/api/appdetails*' => function ($request) {
                 parse_str(parse_url($request->url(), PHP_URL_QUERY) ?: '', $query);
                 $id = $query['appids'] ?? '';
+
+                if (in_array($id, $this->throttled, true)) {
+                    return Http::response('', 429);
+                }
+
+                if (in_array($id, $this->delisted, true)) {
+                    return Http::response([$id => ['success' => false]]);
+                }
 
                 return Http::response([$id => ['success' => true, 'data' => $this->detailMap[$id] ?? $this->details()]]);
             },
@@ -225,6 +239,54 @@ class SteamReleaseSyncTest extends TestCase
 
         // The whole point of the two-layer design: a date change is free.
         $this->assertSame($spentOnFirstPass, $this->detailCalls(), 'a delay costs no detail request');
+    }
+
+    public function test_being_throttled_is_not_a_verdict_about_the_game(): void
+    {
+        // The first production run filed 115 titles away as "unavailable" when
+        // Steam was simply refusing to talk to us that fast. Each one was then
+        // permanently blacklisted, because a rejection is never re-fetched.
+        $this->throttled = ['111'];
+        $this->fakeSteam([$this->row(['appid' => '111'])]);
+
+        $tally = $this->sync();
+
+        $this->assertSame(1, $tally['skipped']);
+        $this->assertSame(0, GameStoreLink::count(), 'a failed request leaves no trace');
+
+        // Steam recovers, and the title is picked up as if nothing happened.
+        $this->throttled = [];
+        $this->fakeSteam([$this->row(['appid' => '111'])]);
+
+        $this->assertSame(1, $this->sync()['created']);
+    }
+
+    public function test_a_title_steam_says_is_gone_is_remembered_as_gone(): void
+    {
+        // An explicit refusal is an answer, unlike a failed request, and asking
+        // again next month will not bring the product back.
+        $this->delisted = ['111'];
+        $this->fakeSteam([$this->row(['appid' => '111'])]);
+
+        $this->assertSame(1, $this->sync()['rejected']);
+        $this->assertSame('unavailable', GameStoreLink::first()->rejected_reason);
+    }
+
+    public function test_titles_lost_to_the_old_bug_are_picked_back_up(): void
+    {
+        // Exactly the rows the first production run left behind.
+        GameStoreLink::create([
+            'game_id' => null,
+            'store' => 'steam',
+            'store_id' => '111',
+            'rejected_reason' => 'unavailable',
+        ]);
+
+        $this->fakeSteam([$this->row(['appid' => '111'])]);
+
+        $this->assertSame(1, $this->sync()['created']);
+        $this->assertSame(1, GameStoreLink::count(), 'the stale row is replaced, not duplicated');
+        $this->assertNotNull(GameStoreLink::first()->game_id);
     }
 
     public function test_every_title_is_reported_even_the_ones_already_known(): void
