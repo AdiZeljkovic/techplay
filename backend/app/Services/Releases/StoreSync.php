@@ -29,10 +29,26 @@ abstract class StoreSync
      */
     public const UNREACHABLE = 'unavailable';
 
+    /**
+     * Somewhere to say what is happening before the per-title work starts.
+     *
+     * Discovery is instant for Steam and Nintendo but is the entire job for
+     * Xbox, where a first pass spends minutes before it has a single title to
+     * report. Silence there reads as a hang.
+     */
+    protected ?\Closure $onProgress = null;
+
     public function __construct(
         protected QualityFilter $filter,
         protected TitleNormalizer $normalizer,
     ) {}
+
+    public function reportUsing(\Closure $callback): static
+    {
+        $this->onProgress = $callback;
+
+        return $this;
+    }
 
     /** 'steam', 'nintendo', … */
     abstract public function store(): string;

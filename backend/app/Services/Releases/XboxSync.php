@@ -66,8 +66,11 @@ class XboxSync extends StoreSync
 
         $unknown = array_values(array_filter($ids, fn (string $id) => ! $known->has($id)));
 
+        $this->report('sitemap lists '.count($ids).' products, '.count($unknown).' of them new');
+
         $this->loaded = $this->fetch($unknown);
         $rows = [];
+        $parked = [];
 
         // Newly asked-about products: keep the ones in range, and file the rest
         // away with their date so this pass never repeats for them.
@@ -78,8 +81,10 @@ class XboxSync extends StoreSync
                 continue;
             }
 
-            $this->park($row);
+            $parked[] = $row;
         }
+
+        $this->park($parked);
 
         // Products we already hold: the window may have moved onto them, and
         // answering that costs nothing but a date comparison.
@@ -129,11 +134,18 @@ class XboxSync extends StoreSync
     private function fetch(array $ids): array
     {
         $batch = (int) config('releases.xbox.batch');
+        $chunks = array_chunk($ids, $batch);
         $out = [];
 
-        foreach (array_chunk($ids, $batch) as $chunk) {
+        foreach ($chunks as $i => $chunk) {
             foreach ($this->catalog->details($chunk) as $id => $row) {
                 $out[$id] = $row;
+            }
+
+            // Discovery is the entire job for this store, so it has to say so
+            // while it happens rather than after.
+            if ($i % 10 === 9 || $i === count($chunks) - 1) {
+                $this->report(sprintf('asked about %d of %d products', min(($i + 1) * $batch, count($ids)), count($ids)));
             }
         }
 
@@ -141,23 +153,51 @@ class XboxSync extends StoreSync
     }
 
     /**
-     * Remember a product that exists but is not due in this window, so the next
-     * pass can rule on it without asking Microsoft again.
+     * Remember products that exist but are not due in this window, so the next
+     * pass can rule on them without asking Microsoft again.
+     *
+     * Written in bulk. A first pass parks tens of thousands of rows, and doing
+     * that one statement at a time took longer than fetching them had.
+     *
+     * @param  array<int,array>  $rows
      */
-    private function park(array $row): void
+    private function park(array $rows): void
     {
-        GameStoreLink::updateOrCreate(
-            ['store' => self::STORE, 'store_id' => $row['store_id']],
-            [
-                'game_id' => null,
-                'url' => $row['url'],
-                'rejected_reason' => self::OUT_OF_WINDOW,
-                'payload' => [
-                    'title' => $row['title'],
-                    'released' => $row['anchor']->toDateString(),
-                ],
-                'last_synced_at' => now(),
-            ],
-        );
+        if ($rows === []) {
+            return;
+        }
+
+        $now = now();
+
+        foreach (array_chunk($rows, 500) as $chunk) {
+            GameStoreLink::upsert(
+                array_map(fn (array $row) => [
+                    'store' => self::STORE,
+                    'store_id' => $row['store_id'],
+                    'game_id' => null,
+                    'url' => $row['url'],
+                    'rejected_reason' => self::OUT_OF_WINDOW,
+                    'payload' => json_encode([
+                        'title' => $row['title'],
+                        'released' => $row['anchor']->toDateString(),
+                    ]),
+                    'last_synced_at' => $now,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ], $chunk),
+                ['store', 'store_id'],
+                ['payload', 'rejected_reason', 'url', 'last_synced_at', 'updated_at'],
+            );
+        }
+
+        $this->report('parked '.count($rows).' products outside the window');
+    }
+
+    /** Progress from inside discovery, which is where this store spends its time. */
+    private function report(string $message): void
+    {
+        if ($this->onProgress) {
+            ($this->onProgress)($message);
+        }
     }
 }

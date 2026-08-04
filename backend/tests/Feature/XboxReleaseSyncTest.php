@@ -7,6 +7,7 @@ use App\Models\GameStoreLink;
 use App\Services\Releases\XboxSync;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -226,6 +227,50 @@ class XboxReleaseSyncTest extends TestCase
 
         $this->assertSame(1, $this->sync()['seen']);
         $this->assertSame('The Real One', Game::first()->name);
+    }
+
+    public function test_discovery_says_what_it_is_doing_while_it_does_it(): void
+    {
+        // A first pass spends minutes here before it has a single title to
+        // report, and silence through that reads as a hang.
+        $this->listing([
+            $this->summary('9MV3MNP9K5VD'),
+            $this->summary('BT5P2X999VH2', ['MarketProperties' => [['OriginalReleaseDate' => '2027-03-01T00:00:00.0000000Z']]]),
+        ]);
+
+        $notes = [];
+        app(XboxSync::class)
+            ->reportUsing(function (string $note) use (&$notes) {
+                $notes[] = $note;
+            })
+            ->run(Carbon::parse('2026-08-01'), Carbon::parse('2026-10-31'));
+
+        $this->assertNotEmpty($notes);
+        $this->assertStringContainsString('2 products', $notes[0]);
+        $this->assertStringContainsString('parked 1', implode(' ', $notes));
+    }
+
+    public function test_products_outside_the_window_are_parked_in_one_statement(): void
+    {
+        // A first pass parks tens of thousands of rows. One statement each
+        // took longer than fetching them had.
+        $this->listing(collect(range(1, 30))
+            ->map(fn (int $n) => $this->summary(sprintf('%012d', $n), [
+                'MarketProperties' => [['OriginalReleaseDate' => '2027-03-01T00:00:00.0000000Z']],
+            ]))
+            ->all());
+
+        $queries = 0;
+        DB::listen(function ($query) use (&$queries) {
+            if (str_contains($query->sql, 'insert into "game_store_links"')) {
+                $queries++;
+            }
+        });
+
+        $this->sync();
+
+        $this->assertSame(30, GameStoreLink::count());
+        $this->assertSame(1, $queries, 'thirty rows, one insert');
     }
 
     private function productCalls(): int

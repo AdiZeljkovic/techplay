@@ -65,6 +65,9 @@ class SyncReleases extends Command
         $this->info(ucfirst($name)." · {$from->toDateString()} → {$to->toDateString()}");
         $this->line('<fg=gray>Reading the listing…</>');
 
+        // Xbox spends its whole run in discovery, so it narrates from there.
+        $sync->reportUsing(fn (string $note) => $this->line("<fg=gray>  {$note}</>"));
+
         $started = now();
         $reasons = [];
         $bar = null;
