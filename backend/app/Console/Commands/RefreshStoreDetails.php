@@ -47,7 +47,12 @@ class RefreshStoreDetails extends Command
         $links = GameStoreLink::where('store', $store)
             ->whereNotNull('game_id')
             ->with('game')
-            ->when($this->option('missing-trailers'), fn ($q) => $q->whereHas('game', fn ($g) => $g->whereRaw('coalesce(jsonb_array_length(movies_data), 0) = 0')))
+            // whereJsonLength rather than hand-written SQL: movies_data is a
+            // json column, not jsonb, and the two have different functions.
+            ->when(
+                $this->option('missing-trailers'),
+                fn ($q) => $q->whereHas('game', fn ($g) => $g->whereJsonLength('movies_data', 0)->orWhereNull('movies_data'))
+            )
             ->get();
 
         if ($links->isEmpty()) {
