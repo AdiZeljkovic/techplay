@@ -257,6 +257,9 @@ Route::prefix('v1')->group(function () {
         Route::post('/clans/{slug}/base/projects/{project}/speed-up', [ClanBaseController::class, 'speedUp']);
         Route::delete('/clans/{slug}/base/projects/{project}', [ClanBaseController::class, 'cancel']);
         Route::post('/clans/{slug}/base/boosts', [ClanBaseController::class, 'activateBoost']);
+        Route::post('/clans/{slug}/base/theme', [ClanBaseController::class, 'equipTheme']);
+        Route::post('/clans/{slug}/base/polls', [ClanBaseController::class, 'createPoll']);
+        Route::post('/clans/polls/{poll}/vote', [ClanBaseController::class, 'vote']);
 
         // Recognitions (Auth)
         Route::post('/users/{username}/recognitions', [RecognitionController::class, 'store']);

@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import {
     Shield, ShieldCheck, Castle, Radar, Swords, Vault as VaultIcon, Trophy, Library,
     Hammer, RadioTower, Lock, Plus, ChevronRight, Coins, Clock3, Zap, Loader2,
-    Users, X, ArrowUp, Sparkles, History, Check, Flag, Crown, Rocket,
+    Users, X, ArrowUp, Sparkles, History, Check, Flag, Crown, Rocket, Dna, Palette, Vote,
 } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
@@ -17,7 +17,7 @@ import { useCountdown } from "@/hooks/useCountdown";
 import { timeAgo } from "@/lib/timeAgo";
 import { getStorageUrl } from "@/lib/imageUrl";
 import { TIER_COLORS } from "../../ClansClient";
-import type { ClanBasePayload, ClanBoostRow, ClanBuildingRow, ClanMissionRow, ClanProjectRow } from "@/lib/types/clan";
+import type { ClanBasePayload, ClanBoostRow, ClanBuildingRow, ClanMissionRow, ClanPollRow, ClanProjectRow } from "@/lib/types/clan";
 import type { LucideIcon } from "lucide-react";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data);
@@ -422,6 +422,69 @@ function BoosterRow({
     );
 }
 
+/* ── polls ────────────────────────────────────────────────────────────── */
+
+function PollCard({ poll, onVoted }: { poll: ClanPollRow; onVoted: () => void }) {
+    const [busy, setBusy] = useState(false);
+    const showResults = poll.closed || poll.my_vote !== null;
+
+    const vote = async (option: number) => {
+        setBusy(true);
+        try {
+            await axios.post(`/clans/polls/${poll.id}/vote`, { option });
+            onVoted();
+        } catch (e: unknown) {
+            const message = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(message ?? "Couldn't vote.");
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    return (
+        <div className="rounded-[10px] border border-white/[0.07] bg-white/[0.015] p-3.5">
+            <p className="text-[12.5px] font-bold text-white leading-snug">{poll.question}</p>
+            <p className="mt-0.5 font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/25">
+                {poll.total_votes} vote{poll.total_votes === 1 ? "" : "s"}{poll.closed ? " · closed" : ""}
+            </p>
+
+            <div className="mt-2.5 space-y-1.5">
+                {poll.options.map((option, i) => (
+                    showResults ? (
+                        <div key={i} className="relative h-8 rounded-[7px] overflow-hidden border border-white/[0.06]">
+                            <span
+                                aria-hidden
+                                className="absolute inset-y-0 left-0 transition-[width] duration-500"
+                                style={{
+                                    width: `${option.percent}%`,
+                                    background: poll.my_vote === i
+                                        ? "color-mix(in srgb, var(--accent) 30%, transparent)"
+                                        : "rgba(255,255,255,0.05)",
+                                }}
+                            />
+                            <span className="relative z-10 flex items-center justify-between h-full px-3">
+                                <span className={`text-[11.5px] font-semibold ${poll.my_vote === i ? "text-white" : "text-white/60"}`}>
+                                    {option.label} {poll.my_vote === i && <Check className="inline w-3 h-3 text-[var(--accent)]" />}
+                                </span>
+                                <span className="font-display text-[10px] font-black tabular-nums text-white/45">{option.percent}%</span>
+                            </span>
+                        </div>
+                    ) : (
+                        <button
+                            key={i}
+                            onClick={() => vote(i)}
+                            disabled={busy}
+                            className="w-full h-8 px-3 rounded-[7px] border border-white/[0.08] bg-white/[0.03] hover:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] hover:bg-[color-mix(in_srgb,var(--accent)_8%,transparent)] text-left text-[11.5px] font-semibold text-white/70 hover:text-white transition-colors"
+                        >
+                            {option.label}
+                        </button>
+                    )
+                ))}
+            </div>
+        </div>
+    );
+}
+
 /* ── the page ─────────────────────────────────────────────────────────── */
 
 export default function BaseClient({ slug }: { slug: string }) {
@@ -638,6 +701,65 @@ export default function BaseClient({ slug }: { slug: string }) {
                             )}
                         </Panel>
 
+                        {/* ── clan dna ── */}
+                        {data.dna && (
+                            <Panel
+                                variant="console"
+                                title="Clan DNA"
+                                icon={<Dna className="w-4 h-4 text-[var(--accent)]" />}
+                                meta={data.dna.dominant_archetype ? (
+                                    <span className="inline-flex items-center h-[20px] px-2.5 rounded-[5px] bg-[var(--accent-soft)] font-display text-[9px] font-black uppercase tracking-[0.1em] text-[var(--accent)]">
+                                        {data.dna.dominant_archetype}
+                                    </span>
+                                ) : undefined}
+                            >
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <p className="font-display text-[9px] font-black uppercase tracking-[0.14em] text-white/40 mb-2.5">
+                                            What the clan plays
+                                        </p>
+                                        <div className="space-y-2">
+                                            {data.dna.genres.map((g) => (
+                                                <div key={g.name}>
+                                                    <p className="flex items-center justify-between mb-1">
+                                                        <span className="text-[11.5px] font-semibold text-white/65">{g.name}</span>
+                                                        <span className="font-display text-[10px] font-black tabular-nums text-white/40">{g.percent}%</span>
+                                                    </p>
+                                                    <span className="block h-[5px] rounded-full bg-[var(--track)] overflow-hidden">
+                                                        <span className="block h-full rounded-full" style={{ width: `${g.percent}%`, background: "var(--accent)" }} />
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <p className="font-display text-[9px] font-black uppercase tracking-[0.14em] text-white/40 mb-2.5">
+                                            Which eras it lives in
+                                        </p>
+                                        <div className="flex h-[8px] rounded-full overflow-hidden bg-[var(--track)] mb-2.5">
+                                            {data.dna.eras.map((e) => (
+                                                e.percent > 0 && <span key={e.key} style={{ width: `${e.percent}%`, background: e.color }} title={`${e.label}: ${e.percent}%`} />
+                                            ))}
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            {data.dna.eras.filter((e) => e.percent > 0).map((e) => (
+                                                <p key={e.key} className="flex items-center gap-2 text-[11px] text-white/50">
+                                                    <span className="w-2 h-2 rounded-full" style={{ background: e.color }} />
+                                                    {e.label}
+                                                    <span className="ml-auto font-display text-[10px] font-black tabular-nums text-white/35">{e.percent}%</span>
+                                                </p>
+                                            ))}
+                                        </div>
+                                        <p className="mt-3 pt-3 border-t border-white/[0.07] flex items-center gap-4 font-display text-[10px] font-bold tabular-nums text-white/35">
+                                            <span>{data.dna.games.toLocaleString("en-US")} games on the roster</span>
+                                            <span className="text-emerald-400/80">{data.dna.completion_rate}% completed</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </Panel>
+                        )}
+
                         {/* ── selected building detail ── */}
                         {selected && (
                             <Panel
@@ -845,6 +967,87 @@ export default function BaseClient({ slug }: { slug: string }) {
                                             <Check className="w-3.5 h-3.5 mt-0.5 shrink-0 text-emerald-400/70" />
                                             <span><span className="font-bold text-white/75">{b.building}:</span> {b.effect}</span>
                                         </p>
+                                    ))}
+                                </div>
+                            </Panel>
+                        )}
+
+                        {data.themes.workshop_level > 0 && (
+                            <Panel
+                                title="Workshop Themes"
+                                icon={<Palette className="w-4 h-4 text-[var(--accent)]" />}
+                                meta={<span className="font-display text-[10px] font-black tabular-nums text-white/35">Tier {data.themes.workshop_level}</span>}
+                            >
+                                <div className="grid grid-cols-3 gap-2">
+                                    {data.themes.catalog.map((theme) => {
+                                        const equipped = data.themes.equipped === theme.key;
+                                        return (
+                                            <button
+                                                key={theme.key}
+                                                disabled={!data.can_manage || !theme.unlocked}
+                                                onClick={async () => {
+                                                    try {
+                                                        await axios.post(`/clans/${slug}/base/theme`, { key: equipped ? null : theme.key });
+                                                        toast.success(equipped ? "Theme cleared" : `${theme.name} equipped`);
+                                                        mutate();
+                                                    } catch (e: unknown) {
+                                                        const message = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+                                                        toast.error(message ?? "Couldn't equip that.");
+                                                    }
+                                                }}
+                                                title={theme.unlocked
+                                                    ? theme.name
+                                                    : `${theme.name} — Workshop ${theme.requires_workshop}${theme.requires_prestige > 0 ? ` + ${theme.requires_prestige.toLocaleString("en-US")} Prestige` : ""}`}
+                                                className={`flex flex-col items-center gap-1.5 p-2.5 rounded-[9px] border transition-colors ${
+                                                    equipped
+                                                        ? "border-[var(--accent)]"
+                                                        : theme.unlocked
+                                                            ? "border-white/[0.08] hover:border-white/[0.2]"
+                                                            : "border-white/[0.05] opacity-40"
+                                                }`}
+                                            >
+                                                <span className="w-7 h-7 rounded-full border border-white/20" style={{ background: theme.value }} />
+                                                <span className="font-display text-[8px] font-bold uppercase tracking-[0.06em] text-white/50 text-center leading-tight">
+                                                    {theme.name}
+                                                </span>
+                                                {equipped && <Check className="w-3 h-3 text-[var(--accent)]" />}
+                                                {!theme.unlocked && <Lock className="w-2.5 h-2.5 text-white/30" />}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </Panel>
+                        )}
+
+                        {data.polls.enabled && (
+                            <Panel title="Clan Polls" icon={<Vote className="w-4 h-4 text-[#60a5fa]" />}>
+                                {data.polls.items.length === 0 ? (
+                                    <EmptyState variant="compact" title="No open polls" body={data.can_manage ? "Put a decision to the roster." : undefined} />
+                                ) : (
+                                    <div className="space-y-3">
+                                        {data.polls.items.map((poll) => (
+                                            <PollCard key={poll.id} poll={poll} onVoted={() => mutate()} />
+                                        ))}
+                                    </div>
+                                )}
+                            </Panel>
+                        )}
+
+                        {data.trophies.length > 0 && (
+                            <Panel title="Trophy Hall" icon={<Trophy className="w-4 h-4 text-[#f0b429]" />}>
+                                <div className="space-y-2.5">
+                                    {data.trophies.map((t) => (
+                                        <div key={t.id} className="flex items-center gap-3">
+                                            <span className="w-8 h-8 shrink-0 rounded-[8px] bg-[#f0b429]/12 border border-[#f0b429]/30 flex items-center justify-center">
+                                                <Trophy className="w-3.5 h-3.5 text-[#f0b429]" />
+                                            </span>
+                                            <span className="min-w-0">
+                                                <span className="block text-[12px] font-bold text-white leading-snug">{t.title}</span>
+                                                <span className="block font-display text-[8.5px] font-bold uppercase tracking-[0.1em] text-white/30">
+                                                    {new Date(t.awarded_at).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
+                                                </span>
+                                            </span>
+                                        </div>
                                     ))}
                                 </div>
                             </Panel>

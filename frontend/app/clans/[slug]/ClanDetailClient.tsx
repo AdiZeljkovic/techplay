@@ -210,7 +210,9 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
         );
     }
 
-    const tier = TIER_COLORS[clan.tier_name] ?? TIER_COLORS.Outpost;
+    // A Workshop theme, once equipped, overrides the tier tint — the clan
+    // chose its colours and earned the right to.
+    const tier = clan.theme_color ?? TIER_COLORS[clan.tier_name] ?? TIER_COLORS.Outpost;
     const viewer = clan.viewer;
     const isMember = !!viewer?.role;
     const isOfficer = viewer?.role === "owner" || viewer?.role === "officer";

@@ -4,11 +4,16 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Clan;
+use App\Models\ClanBuilding;
 use App\Models\ClanLedger;
 use App\Models\ClanMember;
+use App\Models\ClanPoll;
+use App\Models\ClanPollVote;
 use App\Models\ClanProject;
+use App\Models\ClanTrophy;
 use App\Services\ClanBaseService;
 use App\Services\ClanBoostService;
+use App\Services\ClanDnaService;
 use App\Services\ClanLevelService;
 use App\Services\ClanMissionService;
 use App\Traits\ApiResponse;
@@ -92,6 +97,13 @@ class ClanBaseController extends Controller
             'base' => $overview,
             'missions' => $missions->activeFor($clan),
             'boosts' => $boosts->panel($clan),
+            'dna' => ($base->levels($clan)['archive'] ?? 0) >= 1
+                ? app(ClanDnaService::class)->build($clan)
+                : null,
+            'themes' => $this->themesPanel($clan, (int) ($base->levels($clan)['workshop'] ?? 0)),
+            'polls' => $this->pollsPanel($clan, $request, (int) ($base->levels($clan)['communications_hub'] ?? 0)),
+            'trophies' => ClanTrophy::where('clan_id', $clan->id)->orderByDesc('awarded_at')->limit(12)
+                ->get(['id', 'key', 'title', 'description', 'awarded_at']),
             'contributions' => $contributions,
             'recent_activity' => $clan->activities()->with('user:id,username,avatar_url')->latest()->limit(10)->get(),
             'viewer_role' => $membership->role,
@@ -214,6 +226,160 @@ class ClanBaseController extends Controller
             'key' => $boost->key,
             'ends_at' => $boost->ends_at->toIso8601String(),
         ], 'Booster activated.');
+    }
+
+    /**
+     * POST /clans/{slug}/base/theme  { key } — equip a Workshop theme.
+     */
+    public function equipTheme(string $slug, Request $request): JsonResponse
+    {
+        $clan = Clan::where('slug', $slug)->firstOrFail();
+        $membership = $this->membership($clan, $request);
+
+        if (! $membership?->isOfficerOrAbove()) {
+            return $this->error('Only officers can change the theme.', 403);
+        }
+
+        $data = $request->validate(['key' => 'nullable|string']);
+        $key = $data['key'] ?? null;
+
+        if ($key !== null) {
+            $def = config("clan.themes.{$key}");
+
+            if (! $def) {
+                return $this->error('Unknown theme.', 422);
+            }
+
+            $workshop = (int) (ClanBuilding::levelsFor($clan->id)['workshop'] ?? 0);
+
+            if ($workshop < (int) $def['requires_workshop'] || (int) $clan->prestige_lifetime < (int) $def['requires_prestige']) {
+                return $this->error('This theme is not unlocked yet.', 422);
+            }
+        }
+
+        $clan->update(['equipped_theme' => $key]);
+
+        return $this->success(['equipped_theme' => $key], $key ? 'Theme equipped.' : 'Theme cleared.');
+    }
+
+    /**
+     * POST /clans/{slug}/base/polls  { question, options[], days }
+     */
+    public function createPoll(string $slug, Request $request): JsonResponse
+    {
+        $clan = Clan::where('slug', $slug)->firstOrFail();
+        $membership = $this->membership($clan, $request);
+
+        if (! $membership?->isOfficerOrAbove()) {
+            return $this->error('Only officers can open a poll.', 403);
+        }
+
+        if ((int) (ClanBuilding::levelsFor($clan->id)['communications_hub'] ?? 0) < 1) {
+            return $this->error('Build the Communications Hub to open polls.', 422);
+        }
+
+        $data = $request->validate([
+            'question' => 'required|string|max:200',
+            'options' => 'required|array|min:2|max:5',
+            'options.*' => 'string|max:80',
+            'days' => 'nullable|integer|min:1|max:14',
+        ]);
+
+        $poll = ClanPoll::create([
+            'clan_id' => $clan->id,
+            'question' => $data['question'],
+            'options' => array_values($data['options']),
+            'ends_at' => now()->addDays((int) ($data['days'] ?? 3)),
+            'created_by' => $request->user()->id,
+        ]);
+
+        return $this->success(['id' => $poll->id], 'Poll opened.');
+    }
+
+    /**
+     * POST /clans/polls/{poll}/vote  { option } — one vote, changeable.
+     */
+    public function vote(ClanPoll $poll, Request $request): JsonResponse
+    {
+        $membership = $this->membership($poll->clan, $request);
+
+        if (! $membership) {
+            return $this->error('Members only.', 403);
+        }
+
+        if ($poll->ends_at->isPast()) {
+            return $this->error('This poll has closed.', 422);
+        }
+
+        $data = $request->validate(['option' => 'required|integer|min:0']);
+
+        if ($data['option'] >= count($poll->options)) {
+            return $this->error('No such option.', 422);
+        }
+
+        ClanPollVote::updateOrCreate(
+            ['clan_poll_id' => $poll->id, 'user_id' => $request->user()->id],
+            ['option' => (int) $data['option']],
+        );
+
+        return $this->success(null, 'Vote counted.');
+    }
+
+    private function themesPanel(Clan $clan, int $workshop): array
+    {
+        return [
+            'equipped' => $clan->equipped_theme,
+            'catalog' => collect(config('clan.themes'))->map(fn (array $def, string $key) => [
+                'key' => $key,
+                'name' => $def['name'],
+                'value' => $def['value'],
+                'requires_workshop' => (int) $def['requires_workshop'],
+                'requires_prestige' => (int) $def['requires_prestige'],
+                'unlocked' => $workshop >= (int) $def['requires_workshop']
+                    && (int) $clan->prestige_lifetime >= (int) $def['requires_prestige'],
+            ])->values()->all(),
+            'workshop_level' => $workshop,
+        ];
+    }
+
+    private function pollsPanel(Clan $clan, Request $request, int $comms): array
+    {
+        $polls = ClanPoll::where('clan_id', $clan->id)
+            ->where('ends_at', '>', now()->subDays(7))
+            ->withCount('votes')
+            ->orderByDesc('ends_at')
+            ->limit(3)
+            ->get();
+
+        $myVotes = ClanPollVote::whereIn('clan_poll_id', $polls->pluck('id'))
+            ->where('user_id', $request->user()->id)
+            ->pluck('option', 'clan_poll_id');
+
+        return [
+            'enabled' => $comms >= 1,
+            'items' => $polls->map(function (ClanPoll $poll) use ($myVotes) {
+                $tally = ClanPollVote::where('clan_poll_id', $poll->id)
+                    ->selectRaw('option, COUNT(*) as votes')
+                    ->groupBy('option')
+                    ->pluck('votes', 'option');
+
+                $total = max(1, (int) $tally->sum());
+
+                return [
+                    'id' => $poll->id,
+                    'question' => $poll->question,
+                    'ends_at' => $poll->ends_at->toIso8601String(),
+                    'closed' => $poll->ends_at->isPast(),
+                    'total_votes' => (int) $tally->sum(),
+                    'my_vote' => $myVotes->has($poll->id) ? (int) $myVotes[$poll->id] : null,
+                    'options' => collect($poll->options)->map(fn (string $label, int $i) => [
+                        'label' => $label,
+                        'votes' => (int) ($tally[$i] ?? 0),
+                        'percent' => (int) round((int) ($tally[$i] ?? 0) / $total * 100),
+                    ])->values()->all(),
+                ];
+            })->values()->all(),
+        ];
     }
 
     private function membership(Clan $clan, Request $request): ?ClanMember

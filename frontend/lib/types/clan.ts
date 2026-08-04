@@ -168,6 +168,34 @@ export interface ClanTrophyRow {
     awarded_at: string;
 }
 
+export interface ClanDnaPayload {
+    genres: { name: string; count: number; percent: number }[];
+    eras: { key: string; label: string; color: string; percent: number }[];
+    games: number;
+    completed: number;
+    completion_rate: number;
+    dominant_archetype: string | null;
+}
+
+export interface ClanThemeRow {
+    key: string;
+    name: string;
+    value: string;
+    requires_workshop: number;
+    requires_prestige: number;
+    unlocked: boolean;
+}
+
+export interface ClanPollRow {
+    id: number;
+    question: string;
+    ends_at: string;
+    closed: boolean;
+    total_votes: number;
+    my_vote: number | null;
+    options: { label: string; votes: number; percent: number }[];
+}
+
 export interface ClanBasePayload {
     clan: {
         name: string;
@@ -196,6 +224,10 @@ export interface ClanBasePayload {
     };
     missions: ClanMissionRow[];
     boosts: { boosters: ClanBoostRow[]; slots: number; active_count: number };
+    dna: ClanDnaPayload | null;
+    themes: { equipped: string | null; catalog: ClanThemeRow[]; workshop_level: number };
+    polls: { enabled: boolean; items: ClanPollRow[] };
+    trophies: ClanTrophyRow[];
     contributions: { week: ClanContributionRow[]; month: ClanContributionRow[]; all: ClanContributionRow[] };
     recent_activity: ClanFeedItem[];
     viewer_role: ClanRole;
@@ -216,5 +248,6 @@ export interface ClanProfile extends ClanSummary {
     pending_applications: number;
     forum_slug: string;
     trophies: ClanTrophyRow[];
+    theme_color: string | null;
     feed: ClanFeedItem[];
 }

@@ -176,4 +176,18 @@ return [
         'overall' => [1000, 600, 300],
         'category' => 400,
     ],
+
+    /*
+     * Workshop themes. Nothing is stored but the choice - "unlocked" is
+     * derived from the Workshop level and lifetime Prestige, so the catalog
+     * can grow in config without a migration. `value` tints the clan page.
+     */
+    'themes' => [
+        'ember' => ['name' => 'Ember Protocol', 'value' => '#f97316', 'requires_workshop' => 1, 'requires_prestige' => 0],
+        'cyan' => ['name' => 'Neon Grid', 'value' => '#22d3ee', 'requires_workshop' => 1, 'requires_prestige' => 500],
+        'emerald' => ['name' => 'Overgrowth', 'value' => '#34d399', 'requires_workshop' => 2, 'requires_prestige' => 1000],
+        'violet' => ['name' => 'Arcane Court', 'value' => '#a855f7', 'requires_workshop' => 3, 'requires_prestige' => 2500],
+        'crimson' => ['name' => 'War Banner', 'value' => '#ef4444', 'requires_workshop' => 4, 'requires_prestige' => 5000],
+        'gold' => ['name' => 'Gilded Age', 'value' => '#f0b429', 'requires_workshop' => 5, 'requires_prestige' => 10000],
+    ],
 ];

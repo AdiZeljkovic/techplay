@@ -297,6 +297,9 @@ class ClanController extends Controller
             'viewer' => $viewerState,
             'pending_applications' => ClanApplication::where('clan_id', $clan->id)->where('status', 'pending')->count(),
             'forum_slug' => 'clan-'.$clan->slug,
+            'theme_color' => $clan->equipped_theme
+                ? (config('clan.themes.'.$clan->equipped_theme.'.value') ?? null)
+                : null,
             'trophies' => ClanTrophy::where('clan_id', $clan->id)
                 ->orderByDesc('awarded_at')
                 ->limit(8)

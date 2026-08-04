@@ -25,6 +25,7 @@ class Clan extends Model
         'playstyle',
         'status',
         'requirements',
+        'equipped_theme',
     ];
 
     protected $casts = [

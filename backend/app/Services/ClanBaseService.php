@@ -297,6 +297,13 @@ class ClanBaseService
         ];
     }
 
+    private function weeklySlotsLabel(int $level): string
+    {
+        $slots = 1 + ($level >= 5 ? 1 : 0) + ($level >= 10 ? 1 : 0);
+
+        return $slots.' weekly mission slot'.($slots > 1 ? 's' : '');
+    }
+
     public function projectSlots(int $ccLevel): int
     {
         return 1 + ($ccLevel >= 5 ? 1 : 0) + ($ccLevel >= 8 ? 1 : 0);
@@ -331,10 +338,19 @@ class ClanBaseService
             'training_grounds' => [
                 '+'.($level * (int) config('clan.training_xp_percent_per_level', 2)).'% Clan XP from achievements',
             ],
-            'mission_control' => ['Clan missions activate in a coming update — higher levels will mean more and bigger missions'],
-            'archive' => ['Clan DNA, shared lists and Game of the Month activate in a coming update'],
-            'workshop' => ['Clan cosmetics activate in a coming update — level decides what can be earned'],
-            'communications_hub' => ['Announcements, polls and event scheduling activate in a coming update'],
+            'mission_control' => array_values(array_filter([
+                $this->weeklySlotsLabel($level),
+                $level >= 3 ? 'Operations unlocked' : 'Operations at level 3',
+            ])),
+            'archive' => array_values(array_filter([
+                'Clan DNA — the aggregate taste of the roster',
+                $level >= 3 ? 'Deep archetype readout' : null,
+            ])),
+            'workshop' => [
+                'Theme catalog tier '.$level.' — '.collect(config('clan.themes'))
+                    ->filter(fn ($t) => (int) $t['requires_workshop'] <= $level)->count().' of '.count(config('clan.themes')).' themes reachable',
+            ],
+            'communications_hub' => ['Clan polls — put decisions to the roster'],
             'trophy_hall' => ['Trophies land here as seasons and operations conclude'],
             default => [],
         };
