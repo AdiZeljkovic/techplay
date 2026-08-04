@@ -92,7 +92,7 @@ export default function FriendActivityFeed() {
                 variant="compact"
                 title="No friend activity yet"
                 body="Add friends to see what they're playing, live."
-                action={{ label: "Find friends", href: "/friends" }}
+                action={{ label: "Find friends", href: "/social" }}
             />
         );
     }

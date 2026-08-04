@@ -1,12 +1,6 @@
-import { Metadata } from "next";
-import MessagesClient from "./MessagesClient";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-    title: "Messages",
-    description: "Your private messages",
-    robots: { index: false, follow: false },
-};
-
+/** Messages folded into the Social Hub, where they sit beside the people. */
 export default function MessagesPage() {
-    return <MessagesClient />;
+    redirect("/social");
 }

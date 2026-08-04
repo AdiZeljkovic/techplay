@@ -1,12 +1,6 @@
-import { Metadata } from "next";
-import FriendsClient from "./FriendsClient";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-    title: "Friends",
-    description: "Your friends list",
-    robots: { index: false, follow: false },
-};
-
+/** Friends became the Social Hub — the old URL keeps working. */
 export default function FriendsPage() {
-    return <FriendsClient />;
+    redirect("/social");
 }

@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\BacklogAdvisorController;
 use App\Http\Controllers\Api\V1\BattleNetAuthController;
 use App\Http\Controllers\Api\V1\BountyController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\ChatController;
 use App\Http\Controllers\Api\V1\ClanBaseController;
 use App\Http\Controllers\Api\V1\ClanController;
 use App\Http\Controllers\Api\V1\CollectionGoalController;
@@ -162,6 +163,18 @@ Route::prefix('v1')->group(function () {
         Route::post('/friends/decline/{id}', [FriendController::class, 'declineRequest']);
 
         // Messages
+        // Social Hub — one chat system for direct, group and clan rooms
+        Route::get('/social', [ChatController::class, 'hub']);
+        Route::get('/conversations', [ChatController::class, 'index']);
+        Route::post('/conversations', [ChatController::class, 'store']);
+        Route::get('/conversations/clan', [ChatController::class, 'clanRoom']);
+        Route::get('/conversations/{conversation}/messages', [ChatController::class, 'messages']);
+        Route::post('/conversations/{conversation}/messages', [ChatController::class, 'send']);
+        Route::post('/conversations/{conversation}/read', [ChatController::class, 'markRead']);
+        Route::post('/conversations/{conversation}/participants', [ChatController::class, 'addParticipants']);
+        Route::delete('/conversations/{conversation}/leave', [ChatController::class, 'leave']);
+        Route::post('/messages/{message}/react', [ChatController::class, 'react']);
+
         Route::get('/messages', [MessageController::class, 'index']);
         Route::post('/messages', [MessageController::class, 'store']);
         Route::patch('/messages/{id}/read', [MessageController::class, 'markRead']);

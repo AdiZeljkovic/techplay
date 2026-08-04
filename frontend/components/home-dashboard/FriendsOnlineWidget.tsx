@@ -19,7 +19,7 @@ export default function FriendsOnlineWidget({ friends }: { friends: FriendOnline
         <Panel
             title="Friends"
             icon={<Users className="w-3.5 h-3.5 text-[var(--accent)]" />}
-            action={{ label: "All friends", href: "/friends" }}
+            action={{ label: "All friends", href: "/social" }}
             className="h-full flex flex-col"
             bodyClassName="p-3 flex-1 flex flex-col"
         >
@@ -28,7 +28,7 @@ export default function FriendsOnlineWidget({ friends }: { friends: FriendOnline
                     variant="compact"
                     title="No friends yet"
                     body="Add friends to see what they're playing, live."
-                    action={{ label: "Find friends", href: "/friends" }}
+                    action={{ label: "Find friends", href: "/social" }}
                 />
             ) : (
                 <>
@@ -80,7 +80,7 @@ export default function FriendsOnlineWidget({ friends }: { friends: FriendOnline
 
                                 {/* messaging exists — reach it from here */}
                                 <Link
-                                    href="/messages"
+                                    href="/social"
                                     title={`Message ${f.display_name ?? f.username}`}
                                     className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-white/25 opacity-0 group-hover:opacity-100 hover:text-[var(--accent)] hover:bg-white/[0.06] transition-all duration-200"
                                 >

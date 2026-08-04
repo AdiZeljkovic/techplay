@@ -630,12 +630,12 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
     ]},
     {
         name: "Community", href: "/forum", hasDropdown: true, viewAllLabel: "Open Forum",
-        activePaths: ["/forum", "/leaderboard", "/clans", "/friends", "/giveaways"],
+        activePaths: ["/forum", "/leaderboard", "/clans", "/social", "/giveaways"],
         children: [
             { name: "Forum",       href: "/forum",       icon: MessageSquare, description: "Discussions, help & clan halls" },
             { name: "Leaderboard", href: "/leaderboard", icon: Trophy,        description: "Top gamers by XP & reputation" },
             { name: "Clans",       href: "/clans",       icon: Shield,        description: "Join or create a clan" },
-            { name: "Friends",     href: "/friends",     icon: Users,         description: "Your gaming crew" },
+            { name: "Social Hub",  href: "/social",     icon: Users,         description: "Chat, friends and squads" },
             { name: "Giveaways",   href: "/giveaways",   icon: Gem,           description: "Win games & gear" },
         ],
     },
@@ -821,7 +821,7 @@ interface HeaderUser {
 const MENU_LINKS = [
     { name: "My Profile", href: "/profile/me", icon: User },
     { name: "My Lists",   href: "/lists",      icon: Bookmark },
-    { name: "Friends",    href: "/friends",    icon: Users },
+    { name: "Social Hub", href: "/social",    icon: Users },
     { name: "Settings",   href: "/settings",   icon: Settings },
 ];
 
@@ -1126,7 +1126,7 @@ export default function Header() {
 
                         {user ? (
                             <div className="hidden xl:flex items-center gap-3">
-                                <Link href="/messages" className="relative p-2 text-[var(--ink-low)] hover:text-[var(--accent)] hover:bg-[var(--fill-2)] rounded-full transition-colors" title="Messages">
+                                <Link href="/social" className="relative p-2 text-[var(--ink-low)] hover:text-[var(--accent)] hover:bg-[var(--fill-2)] rounded-full transition-colors" title="Messages">
                                     <Mail className="w-5 h-5" />
                                     {notifications.unread_messages > 0 && (
                                         <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
@@ -1266,12 +1266,12 @@ export default function Header() {
                                         </div>
                                     </Link>
                                     <div className="flex gap-2">
-                                        <Link href="/messages" onClick={() => setIsMobileMenuOpen(false)}
+                                        <Link href="/social" onClick={() => setIsMobileMenuOpen(false)}
                                             className="relative flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-low)] text-[11px] font-bold uppercase tracking-wide hover:text-white hover:bg-[var(--fill-3)] transition-colors">
                                             <Mail className="w-3.5 h-3.5" /> Messages
                                             {notifications.unread_messages > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center">{notifications.unread_messages}</span>}
                                         </Link>
-                                        <Link href="/friends" onClick={() => setIsMobileMenuOpen(false)}
+                                        <Link href="/social" onClick={() => setIsMobileMenuOpen(false)}
                                             className="relative flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-low)] text-[11px] font-bold uppercase tracking-wide hover:text-white hover:bg-[var(--fill-3)] transition-colors">
                                             <Users className="w-3.5 h-3.5" /> Friends
                                             {notifications.pending_requests > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center">{notifications.pending_requests}</span>}

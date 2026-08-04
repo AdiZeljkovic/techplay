@@ -26,6 +26,10 @@ class UserFactory extends Factory
     {
         return [
             'name' => 'User '.Str::random(5),
+            // A real user always has one, and a null username silently breaks
+            // anything that addresses people by name — messaging, mentions,
+            // profile links. The factory should not be the odd one out.
+            'username' => 'user_'.Str::lower(Str::random(10)),
             'email' => Str::random(10).'@example.com',
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),

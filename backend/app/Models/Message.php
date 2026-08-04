@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Message extends Model
 {
     protected $fillable = [
+        'conversation_id',
         'parent_id',
         'sender_id',
         'receiver_id',
@@ -15,6 +16,8 @@ class Message extends Model
         'is_read',
         'deleted_by_sender',
         'deleted_by_receiver',
+        'attachment_path',
+        'attachment_type',
     ];
 
     protected $casts = [
@@ -34,6 +37,16 @@ class Message extends Model
     public function receiver()
     {
         return $this->belongsTo(User::class, 'receiver_id');
+    }
+
+    public function conversation()
+    {
+        return $this->belongsTo(Conversation::class);
+    }
+
+    public function reactions()
+    {
+        return $this->hasMany(MessageReaction::class);
     }
 
     public function parent()

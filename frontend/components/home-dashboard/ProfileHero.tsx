@@ -102,7 +102,7 @@ function FriendAction({ status, busy, onAdd }: { status: FriendStatus; busy: boo
     }
     if (status === "incoming") {
         return (
-            <Link href="/friends" className={BTN_PRIMARY}>
+            <Link href="/social" className={BTN_PRIMARY}>
                 <UserPlus className="w-4 h-4" /> Respond
             </Link>
         );
