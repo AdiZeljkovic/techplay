@@ -27,12 +27,14 @@ class UserGame extends Model
         // Written by SyncSteamLibrary and PresenceService only.
         'playtime_minutes',
         'playtime_source',
+        'notify_on_release',
     ];
 
     protected $casts = [
         'is_favorite' => 'boolean',
         'from_backlog' => 'boolean',
         'playtime_minutes' => 'integer',
+        'notify_on_release' => 'boolean',
         'showcase_order' => 'integer',
         'progress' => 'integer',
         'hours_played' => 'integer',

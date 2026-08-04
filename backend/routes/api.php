@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\AuthorController;
 use App\Http\Controllers\Api\V1\BacklogAdvisorController;
 use App\Http\Controllers\Api\V1\BattleNetAuthController;
 use App\Http\Controllers\Api\V1\BountyController;
+use App\Http\Controllers\Api\V1\CalendarController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ChatController;
 use App\Http\Controllers\Api\V1\ClanBaseController;
@@ -227,6 +228,7 @@ Route::prefix('v1')->group(function () {
 
         // Upcoming releases from user's wishlist/backlog
         Route::get('/collection/upcoming', [GameCollectionController::class, 'upcoming']);
+        Route::post('/calendar/{slug}/reminder', [CalendarController::class, 'toggleReminder']);
 
         // Collection goals (targets are yours to set; progress is read live)
         Route::put('/me/collection-goals', [CollectionGoalController::class, 'update']);
@@ -514,6 +516,7 @@ Route::prefix('v1')->group(function () {
 
     // Games (Rate limited - 60 per minute to prevent scraping)
     Route::middleware('throttle:60,1')->group(function () {
+        Route::get('/calendar', [CalendarController::class, 'index']);
         Route::get('/games/calendar', [GameController::class, 'calendar']);
         Route::get('/games/hidden-gems', [GameController::class, 'hiddenGems']);
         Route::get('/games/on-this-day', [GameController::class, 'onThisDay']);
