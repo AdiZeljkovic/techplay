@@ -5,71 +5,46 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\UserGame;
-use App\Services\RawgService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
- * The release calendar. RAWG is the only source for what is coming and when —
- * our database contributes nothing but the things RAWG cannot know: who here
- * wishlisted a game, and who asked to be told when it lands.
+ * The release calendar.
+ *
+ * This used to call RAWG on every cache miss, which meant that when RAWG went
+ * down — as it did — the calendar went down with it, and no amount of care on
+ * our side could have prevented it. It now reads only what we already hold:
+ * Steam, Xbox and the eShop are pulled in on a schedule, folded into single
+ * entries, and stored. Nothing here goes over the network.
+ *
+ * The practical consequence is that this endpoint cannot fail for anyone else's
+ * reasons. An empty month is now an empty month rather than an outage.
  */
 class CalendarController extends Controller
 {
     use ApiResponse;
 
-    /**
-     * RAWG pages per month, 40 games each. Three covers every month that ships
-     * anything worth a calendar; going deeper only buys shovelware, and each
-     * page is a round trip a cold visitor waits on.
-     */
-    private const PAGES = 3;
-
-    /** How long a warm month is served before it is refetched. */
-    private const FRESH_TTL = 21600; // 6h
-
-    /**
-     * How long the last good answer survives as a fallback. A month's releases
-     * barely move, so week-old data beats an error page by a wide margin.
-     */
-    private const STALE_TTL = 604800; // 7d
-
-    /** The platform families the filter offers, and what RAWG calls them. */
+    /** The platform families the filter offers, and what our data calls them. */
     private const PLATFORM_FAMILIES = [
-        'pc' => ['pc'],
-        'playstation' => ['playstation5', 'playstation4', 'playstation3', 'ps-vita', 'playstation2'],
-        'xbox' => ['xbox-series-x', 'xbox-one', 'xbox360'],
-        'nintendo' => ['nintendo-switch', 'nintendo-3ds', 'wii-u'],
-    ];
-
-    /** Short labels for the chips, so a card doesn't carry "PlayStation 5". */
-    private const PLATFORM_SHORT = [
-        'pc' => 'PC',
-        'playstation5' => 'PS5',
-        'playstation4' => 'PS4',
-        'xbox-series-x' => 'Xbox',
-        'xbox-one' => 'Xbox',
-        'nintendo-switch' => 'Switch',
-        'ios' => 'iOS',
-        'android' => 'Android',
-        'macos' => 'Mac',
-        'linux' => 'Linux',
+        'pc' => ['PC', 'Windows', 'Mac', 'Linux'],
+        'playstation' => ['PlayStation'],
+        'xbox' => ['Xbox'],
+        'nintendo' => ['Nintendo', 'Switch'],
     ];
 
     /**
      * GET /calendar?month=YYYY-MM&platform=&genre=&sort=
      *
-     * The whole page in one call: the month, its releases grouped by day,
-     * what's most anticipated, the platform split, and — for a signed-in
-     * visitor — their own watchlist.
+     * The whole page in one call: the month, its releases grouped by day, what
+     * is biggest, the platform split, and — for a signed-in visitor — their own
+     * watchlist.
      */
-    public function index(Request $request, RawgService $rawg): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $request->validate([
             'month' => 'nullable|date_format:Y-m',
@@ -82,14 +57,8 @@ class CalendarController extends Controller
             ? Carbon::createFromFormat('Y-m', $request->query('month'))->startOfMonth()
             : now()->startOfMonth();
 
-        $releases = $this->monthReleases($rawg, $month);
+        $releases = $this->monthReleases($month);
 
-        if ($releases === null) {
-            return $this->error('The release calendar is unavailable right now.', 503);
-        }
-
-        // Our own numbers, merged in by slug — RAWG has no idea who here
-        // wants what.
         $slugs = $releases->pluck('slug')->filter()->all();
         $wishlistCounts = $this->wishlistCounts($slugs);
         $mine = $this->myState($slugs);
@@ -124,7 +93,7 @@ class CalendarController extends Controller
             'platform_breakdown' => $this->platformBreakdown($releases),
             'genres' => $this->genresIn($releases),
             'watchlist' => $this->watchlist(),
-            'most_followed' => $this->mostFollowed(),
+            'most_followed' => $this->beyondThisMonth($month),
         ]);
     }
 
@@ -161,72 +130,62 @@ class CalendarController extends Controller
         );
     }
 
-    /* ── RAWG ─────────────────────────────────────────────────────────── */
+    /* ── our own shelves ──────────────────────────────────────────────── */
 
     /**
-     * A month, from cache if it is warm, from RAWG if it is not, and from the
-     * last good answer if RAWG is down. Null only when we have never once
-     * succeeded for this month.
+     * Everything the aggregator holds for a month.
      *
-     * @return Collection<int,array>|null
+     * match_key is what separates a calendar entry from the 200,000 historical
+     * rows the games table also carries: only the aggregator sets it.
+     *
+     * @return Collection<int,array>
      */
-    public function monthReleases(RawgService $rawg, Carbon $month, bool $force = false): ?Collection
+    private function monthReleases(Carbon $month): Collection
     {
-        $from = $month->copy()->startOfMonth()->toDateString();
-        $to = $month->copy()->endOfMonth()->toDateString();
-
-        $fresh = "calendar.month.{$from}.v3";
-        $stale = "calendar.month.{$from}.stale";
-
-        if (! $force && ($hit = Cache::get($fresh)) !== null) {
-            return collect($hit);
-        }
-
-        $data = $rawg->getReleases($from, $to, 'released', self::PAGES);
-
-        if ($data === null) {
-            // RAWG is unreachable. Last week's answer for this month is still
-            // very nearly right — serve it rather than an error page.
-            $fallback = Cache::get($stale);
-
-            return $fallback === null ? null : collect($fallback);
-        }
-
-        $games = collect($data['results'] ?? [])
-            ->map(fn (array $g) => $this->present($g))
-            ->filter(fn (array $g) => $g['slug'] !== '' && $g['name'] !== '')
-            ->values()
-            ->all();
-
-        Cache::put($fresh, $games, self::FRESH_TTL);
-        Cache::put($stale, $games, self::STALE_TTL);
-
-        return collect($games);
+        return Game::query()
+            ->whereNotNull('match_key')
+            ->whereBetween('released', [
+                $month->copy()->startOfMonth()->toDateString(),
+                $month->copy()->endOfMonth()->toDateString(),
+            ])
+            ->orderBy('released')
+            ->get()
+            ->map(fn (Game $game) => $this->present($game));
     }
 
-    private function present(array $g): array
+    /** The month's biggest arrivals still ahead of it. */
+    private function beyondThisMonth(Carbon $month): array
     {
-        $platforms = collect($g['platforms'] ?? [])
-            ->map(fn ($p) => $p['platform']['slug'] ?? null)
-            ->filter()
-            ->values();
+        return Game::query()
+            ->whereNotNull('match_key')
+            ->where('released', '>', $month->copy()->endOfMonth()->toDateString())
+            ->orderByDesc('hype_score')
+            ->limit(5)
+            ->get()
+            ->map(fn (Game $game) => $this->present($game))
+            ->all();
+    }
+
+    private function present(Game $game): array
+    {
+        $platforms = collect($game->platform_names ?? [])->filter()->values();
 
         return [
-            'slug' => $g['slug'] ?? '',
-            'name' => $g['name'] ?? '',
-            'released' => $g['released'] ?? null,
-            'tba' => (bool) ($g['tba'] ?? false),
-            'background_image' => $g['background_image'] ?? null,
-            'metacritic' => $g['metacritic'] ?? null,
-            'rating' => (float) ($g['rating'] ?? 0),
-            // RAWG's "added to a library" figure — the only honest hype number
-            // available before a game exists.
-            'added' => (int) ($g['added'] ?? 0),
-            'genres' => collect($g['genres'] ?? [])->pluck('name')->filter()->take(2)->values()->all(),
-            'platforms' => $platforms->map(fn (string $slug) => self::PLATFORM_SHORT[$slug] ?? null)
-                ->filter()->unique()->take(4)->values()->all(),
+            'slug' => $game->slug,
+            'name' => $game->name,
+            'released' => $game->released?->toDateString(),
+            'tba' => $game->release_precision === 'tba',
+            'precision' => $game->release_precision,
+            'background_image' => $game->background_image,
+            'metacritic' => $game->metacritic,
+            'rating' => (float) ($game->rating ?? 0),
+            // Not a measure of anticipation — no store publishes one. See
+            // Notability for what this actually counts.
+            'added' => (int) $game->hype_score,
+            'genres' => collect($game->genre_names ?? [])->filter()->take(2)->values()->all(),
+            'platforms' => $platforms->take(4)->all(),
             'platform_slugs' => $platforms->all(),
-            'publisher' => collect($g['publishers'] ?? [])->pluck('name')->first(),
+            'publisher' => data_get($game->details_data, 'publisher'),
         ];
     }
 
@@ -292,44 +251,10 @@ class CalendarController extends Controller
                 'slug' => $row->slug,
                 'name' => $row->name,
                 'background_image' => $row->background_image,
-                'released' => $row->released,
+                'released' => Carbon::parse($row->released)->toDateString(),
                 'reminder' => (bool) $row->notify_on_release,
             ])
             ->all();
-    }
-
-    /**
-     * The year's biggest arrivals by RAWG's added count — the calendar's
-     * "everyone is waiting for this", not just this month's.
-     *
-     * A decorative rail is never worth a second RAWG round trip while someone
-     * is waiting on the page, so the request path reads cache only. The warmer
-     * fills it; until then the rail is simply absent.
-     */
-    private function mostFollowed(): array
-    {
-        return Cache::get('calendar.most_followed.v3', []);
-    }
-
-    /** Called by the warmer, off the request path. */
-    public function warmMostFollowed(RawgService $rawg): int
-    {
-        $data = $rawg->getReleases(now()->toDateString(), now()->addMonths(18)->toDateString(), '-added', 1);
-
-        if ($data === null) {
-            return 0;
-        }
-
-        $games = collect($data['results'] ?? [])
-            ->map(fn (array $g) => $this->present($g))
-            ->sortByDesc('added')
-            ->take(5)
-            ->values()
-            ->all();
-
-        Cache::put('calendar.most_followed.v3', $games, self::STALE_TTL);
-
-        return count($games);
     }
 
     /* ── shaping ──────────────────────────────────────────────────────── */
@@ -341,12 +266,30 @@ class CalendarController extends Controller
 
         return $games
             ->when($platform, fn (Collection $c) => $c->filter(
-                fn (array $g) => array_intersect($g['platform_slugs'], self::PLATFORM_FAMILIES[$platform] ?? [])
+                fn (array $g) => $this->inFamily($g['platform_slugs'], $platform)
             ))
             ->when($genre, fn (Collection $c) => $c->filter(
                 fn (array $g) => in_array($genre, $g['genres'], true)
             ))
             ->values();
+    }
+
+    /**
+     * Stores name their hardware differently — "Xbox Series X|S", "Nintendo
+     * Switch 2" — so families are matched on the part that identifies the
+     * maker rather than on an exact string.
+     */
+    private function inFamily(array $platforms, string $family): bool
+    {
+        foreach ($platforms as $platform) {
+            foreach (self::PLATFORM_FAMILIES[$family] ?? [] as $needle) {
+                if (str_contains($platform, $needle)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /** Releases grouped under the day they land on, in calendar order. */
@@ -377,7 +320,7 @@ class CalendarController extends Controller
 
         foreach ($games as $game) {
             foreach (array_keys(self::PLATFORM_FAMILIES) as $family) {
-                if (array_intersect($game['platform_slugs'], self::PLATFORM_FAMILIES[$family])) {
+                if ($this->inFamily($game['platform_slugs'], $family)) {
                     $tally[$family] = ($tally[$family] ?? 0) + 1;
                 }
             }

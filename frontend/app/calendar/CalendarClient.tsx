@@ -81,7 +81,10 @@ function PlatformChips({ platforms }: { platforms: string[] }) {
 function HypeRow({ game }: { game: Release }) {
     return (
         <span className="flex items-center gap-3 font-display text-[10px] font-bold tabular-nums">
-            <span className="inline-flex items-center gap-1 text-[var(--accent)]" title={`${game.added.toLocaleString("en-US")} players tracking it`}>
+            {/* Not a tracker count — no store publishes one. It is how much of
+                a release this is: how many platforms carry it, whether critics
+                scored it, how much the publisher prepared. */}
+            <span className="inline-flex items-center gap-1 text-[var(--accent)]" title="How big a release this is, across every store we read">
                 <Flame className="w-3 h-3" /> {compact(game.added)}
             </span>
             {game.wishlists > 0 && (
@@ -378,7 +381,7 @@ export default function CalendarClient() {
                             sort === "anticipated" ? "bg-[var(--accent)] text-white" : "bg-white/[0.04] text-white/45 hover:text-white"
                         }`}
                     >
-                        <ListFilter className="w-3.5 h-3.5" /> Most anticipated
+                        <ListFilter className="w-3.5 h-3.5" /> Biggest first
                     </button>
                     {!m?.is_current && (
                         <button
@@ -395,7 +398,7 @@ export default function CalendarClient() {
                 <div className="xl:col-span-8 min-w-0 space-y-5">
                     {/* ── most anticipated ── */}
                     {(data?.most_anticipated.length ?? 0) > 0 && (
-                        <Panel title={`Most anticipated in ${label}`} icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />}>
+                        <Panel title={`Biggest in ${label}`} icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />}>
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                                 {data!.most_anticipated.map((game) => (
                                     <div key={game.slug} className="group">
@@ -543,9 +546,9 @@ export default function CalendarClient() {
                         )}
                     </Panel>
 
-                    <Panel title="Most followed releases" icon={<Flame className="w-4 h-4 text-[var(--accent)]" />}>
+                    <Panel title="Biggest still to come" icon={<Flame className="w-4 h-4 text-[var(--accent)]" />}>
                         {(data?.most_followed.length ?? 0) === 0 ? (
-                            <p className="py-1 text-[11.5px] text-white/30">Nothing tracked yet.</p>
+                            <p className="py-1 text-[11.5px] text-white/30">Nothing further out yet.</p>
                         ) : (
                             <div className="space-y-3">
                                 {data!.most_followed.map((game) => (

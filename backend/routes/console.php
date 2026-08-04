@@ -42,8 +42,11 @@ Schedule::command('sitemap:generate')->everySixHours();
 // GAMES: Import new/upcoming releases from RAWG weekly (Moby bulk import is retired)
 Schedule::command('games:sync-new-releases')->weeklyOn(1, '04:00');
 
-// CALENDAR: Keep the RAWG cache warm so no visitor ever waits on a cold month
-Schedule::command('calendar:warm')->hourly()->withoutOverlapping();
+// CALENDAR: read the stores into our own tables, then fold the duplicates.
+// The window is relative to today, so the far month joins it on its own, and a
+// weekly pass is nearly free — a title we already hold costs no request.
+Schedule::command('releases:sync')->weeklyOn(1, '03:00')->withoutOverlapping();
+Schedule::command('releases:merge')->weeklyOn(1, '05:30');
 
 // PROFILE: Snapshot reputation + monthly contribution on the 1st of each month
 Schedule::command('profile:snapshot-reputation')->monthlyOn(1, '00:30');

@@ -4,14 +4,13 @@ namespace Tests\Feature;
 
 use App\Jobs\SendReleaseReminders;
 use App\Models\Game;
+use App\Models\GameStoreLink;
 use App\Models\User;
 use App\Models\UserGame;
 use App\Notifications\GameReleaseNotification;
-use App\Services\RawgService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
-use Mockery;
 use Tests\TestCase;
 
 class CalendarTest extends TestCase
@@ -21,104 +20,117 @@ class CalendarTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Cache::flush();
+
+        // The calendar must not reach for anything. Any request at all is a
+        // regression: this endpoint used to go down whenever RAWG did.
+        Http::preventStrayRequests();
     }
 
-    /** RAWG is the only source, so the tests speak RAWG's shape. */
-    private function rawgGame(array $attrs = []): array
+    /** A calendar entry, as the aggregator would have written it. */
+    private function entry(array $attrs = [], array $stores = ['steam']): Game
     {
         static $n = 0;
         $n++;
 
-        return array_merge([
-            'id' => $n,
-            'slug' => 'rawg-game-'.$n,
-            'name' => 'RAWG Game '.$n,
+        $game = Game::create(array_merge([
+            'slug' => 'game-'.$n,
+            'name' => 'Game '.$n,
+            'match_key' => 'game '.$n,
             'released' => now()->startOfMonth()->addDays(7)->toDateString(),
+            'release_precision' => 'day',
             'background_image' => 'https://example.com/'.$n.'.jpg',
             'rating' => 4.1,
-            'added' => 1000,
-            'genres' => [['name' => 'Action']],
-            'platforms' => [['platform' => ['name' => 'PC', 'slug' => 'pc']]],
-            'publishers' => [['name' => 'Some Publisher']],
-        ], $attrs);
+            'hype_score' => 100,
+            'genre_names' => ['Action'],
+            'platform_names' => ['PC'],
+            'details_data' => ['publisher' => 'Some Publisher'],
+        ], $attrs));
+
+        foreach ($stores as $store) {
+            GameStoreLink::create(['game_id' => $game->id, 'store' => $store, 'store_id' => $store.'-'.$n]);
+        }
+
+        return $game;
     }
 
-    private function fakeRawg(array $games, array $followed = []): void
-    {
-        $mock = Mockery::mock(RawgService::class);
-        $mock->shouldReceive('getReleases')
-            ->andReturnUsing(function ($from, $to, $ordering = 'released') use ($games, $followed) {
-                // The "most followed" call asks for -added over a long window.
-                return ['count' => count($games), 'results' => $ordering === '-added' ? $followed : $games];
-            });
-
-        $this->app->instance(RawgService::class, $mock);
-    }
-
-    public function test_the_month_comes_from_rawg_and_is_grouped_by_day(): void
+    public function test_the_month_comes_from_our_own_tables_and_is_grouped_by_day(): void
     {
         $day = now()->startOfMonth()->addDays(7)->toDateString();
         $other = now()->startOfMonth()->addDays(14)->toDateString();
 
-        $this->fakeRawg([
-            $this->rawgGame(['name' => 'Voidfall', 'released' => $day, 'added' => 2100]),
-            $this->rawgGame(['name' => 'Outcasts Reborn', 'released' => $day, 'added' => 1200]),
-            $this->rawgGame(['name' => 'Echoes of Elysium', 'released' => $other, 'added' => 2800]),
-        ]);
+        $this->entry(['name' => 'Voidfall', 'released' => $day, 'hype_score' => 2100]);
+        $this->entry(['name' => 'Outcasts Reborn', 'released' => $day, 'hype_score' => 1200]);
+        $this->entry(['name' => 'Echoes of Elysium', 'released' => $other, 'hype_score' => 2800]);
 
         $data = $this->getJson('/api/v1/calendar')->assertOk()->json('data');
 
         $this->assertSame(3, $data['stats']['releases']);
         $this->assertCount(2, $data['days']);
         $this->assertSame($day, $data['days'][0]['date']);
-        // Within a day, the most anticipated leads.
+        // Within a day, the biggest leads.
         $this->assertSame('Voidfall', $data['days'][0]['games'][0]['name']);
         $this->assertSame('Echoes of Elysium', $data['most_anticipated'][0]['name']);
         $this->assertSame(now()->format('Y-m'), $data['month']['key']);
     }
 
+    public function test_the_historical_archive_is_not_the_calendar(): void
+    {
+        // 200,000 rows carry no match_key. They are a games database, not a
+        // list of what is coming out.
+        Game::create([
+            'slug' => 'half-life-2',
+            'name' => 'Half-Life 2',
+            'released' => now()->startOfMonth()->addDays(3)->toDateString(),
+        ]);
+
+        $this->entry(['name' => 'Actually Upcoming']);
+
+        $data = $this->getJson('/api/v1/calendar')->assertOk()->json('data');
+
+        $this->assertSame(1, $data['stats']['releases']);
+        $this->assertSame('Actually Upcoming', $data['days'][0]['games'][0]['name']);
+    }
+
     public function test_platform_and_genre_filters_narrow_the_month(): void
     {
-        $this->fakeRawg([
-            $this->rawgGame(['name' => 'PC Only', 'platforms' => [['platform' => ['name' => 'PC', 'slug' => 'pc']]]]),
-            $this->rawgGame([
-                'name' => 'PlayStation Only',
-                'genres' => [['name' => 'RPG']],
-                'platforms' => [['platform' => ['name' => 'PlayStation 5', 'slug' => 'playstation5']]],
-            ]),
-        ]);
+        $this->entry(['name' => 'PC Only', 'platform_names' => ['PC']]);
+        $this->entry(['name' => 'Console Only', 'genre_names' => ['RPG'], 'platform_names' => ['Xbox Series X|S']]);
 
         $pc = $this->getJson('/api/v1/calendar?platform=pc')->assertOk()->json('data');
         $this->assertSame(1, $pc['stats']['showing']);
         $this->assertSame('PC Only', $pc['days'][0]['games'][0]['name']);
 
+        // Hardware is named differently by every store, so families match on
+        // the maker rather than an exact string.
+        $xbox = $this->getJson('/api/v1/calendar?platform=xbox')->assertOk()->json('data');
+        $this->assertSame('Console Only', $xbox['days'][0]['games'][0]['name']);
+
         $rpg = $this->getJson('/api/v1/calendar?genre=RPG')->assertOk()->json('data');
-        $this->assertSame('PlayStation Only', $rpg['days'][0]['games'][0]['name']);
+        $this->assertSame('Console Only', $rpg['days'][0]['games'][0]['name']);
 
         // The unfiltered totals stay honest beside the filtered view.
         $this->assertSame(2, $pc['stats']['releases']);
     }
 
-    public function test_the_platform_breakdown_counts_the_whole_month(): void
+    public function test_a_merged_game_counts_for_every_platform_it_lands_on(): void
     {
-        $this->fakeRawg([
-            $this->rawgGame(['platforms' => [
-                ['platform' => ['name' => 'PC', 'slug' => 'pc']],
-                ['platform' => ['name' => 'PlayStation 5', 'slug' => 'playstation5']],
-            ]]),
-            $this->rawgGame(['platforms' => [['platform' => ['name' => 'PC', 'slug' => 'pc']]]]),
-        ]);
+        // The reason phase four existed: one entry, three platforms, and the
+        // breakdown has to reflect that rather than picking one.
+        $this->entry([
+            'name' => 'Silksong',
+            'platform_names' => ['PC', 'Xbox Series X|S', 'Nintendo Switch'],
+        ], ['steam', 'xbox', 'nintendo']);
 
         $breakdown = collect($this->getJson('/api/v1/calendar')->assertOk()->json('data.platform_breakdown'))->keyBy('key');
 
-        $this->assertSame(2, $breakdown['pc']['count']);
-        $this->assertSame(1, $breakdown['playstation']['count']);
+        $this->assertSame(1, $breakdown['pc']['count']);
+        $this->assertSame(1, $breakdown['xbox']['count']);
+        $this->assertSame(1, $breakdown['nintendo']['count']);
     }
 
-    public function test_our_own_wishlist_numbers_are_merged_onto_rawg_rows(): void
+    public function test_our_own_wishlist_numbers_are_on_every_row(): void
     {
-        $game = Game::create(['slug' => 'shared-slug', 'name' => 'Shared Game']);
+        $game = $this->entry(['name' => 'Shared Game']);
 
         foreach (range(1, 3) as $_) {
             UserGame::create(['user_id' => User::factory()->create()->id, 'game_id' => $game->id, 'status' => 'wishlist']);
@@ -127,18 +139,16 @@ class CalendarTest extends TestCase
         $viewer = User::factory()->create();
         UserGame::create(['user_id' => $viewer->id, 'game_id' => $game->id, 'status' => 'wishlist']);
 
-        $this->fakeRawg([$this->rawgGame(['slug' => 'shared-slug', 'name' => 'Shared Game'])]);
-
         $row = $this->actingAs($viewer, 'sanctum')->getJson('/api/v1/calendar')->assertOk()->json('data.days.0.games.0');
 
-        $this->assertSame(4, $row['wishlists'], 'RAWG cannot know this — we can');
+        $this->assertSame(4, $row['wishlists']);
         $this->assertTrue($row['wishlisted']);
         $this->assertFalse($row['reminder']);
     }
 
     public function test_an_anonymous_visitor_sees_the_month_without_a_watchlist(): void
     {
-        $this->fakeRawg([$this->rawgGame()]);
+        $this->entry();
 
         $data = $this->getJson('/api/v1/calendar')->assertOk()->json('data');
 
@@ -146,10 +156,43 @@ class CalendarTest extends TestCase
         $this->assertFalse($data['days'][0]['games'][0]['wishlisted']);
     }
 
+    public function test_a_month_that_ships_nothing_is_an_answer_not_an_outage(): void
+    {
+        // This used to be a 503, because an empty answer from RAWG and RAWG
+        // being unreachable were the same thing. They are not.
+        $data = $this->getJson('/api/v1/calendar')->assertOk()->json('data');
+
+        $this->assertSame(0, $data['stats']['releases']);
+        $this->assertSame([], $data['days']);
+    }
+
+    public function test_the_month_can_be_stepped_through(): void
+    {
+        $data = $this->getJson('/api/v1/calendar?month=2026-08')->assertOk()->json('data.month');
+
+        $this->assertSame('2026-08', $data['key']);
+        $this->assertSame('August', $data['label']);
+        $this->assertSame(2026, $data['year']);
+        $this->assertSame('2026-07', $data['previous']);
+        $this->assertSame('2026-09', $data['next']);
+    }
+
+    public function test_what_is_coming_after_this_month_is_ranked_by_size(): void
+    {
+        $this->entry(['name' => 'Small Thing Later', 'released' => now()->addMonths(2)->toDateString(), 'hype_score' => 40]);
+        $this->entry(['name' => 'Big Thing Later', 'released' => now()->addMonths(3)->toDateString(), 'hype_score' => 900]);
+
+        $followed = $this->getJson('/api/v1/calendar')->assertOk()->json('data.most_followed');
+
+        $this->assertSame('Big Thing Later', $followed[0]['name']);
+    }
+
+    /* ── reminders ────────────────────────────────────────────────────── */
+
     public function test_the_reminder_toggles_and_wishlists_on_the_way_in(): void
     {
         $user = User::factory()->create();
-        $game = Game::create(['slug' => 'remind-me', 'name' => 'Remind Me', 'released' => now()->addWeek()->toDateString()]);
+        $game = $this->entry(['slug' => 'remind-me', 'released' => now()->addWeek()->toDateString()]);
 
         $this->actingAs($user)->postJson('/api/v1/calendar/remind-me/reminder')
             ->assertOk()
@@ -178,7 +221,7 @@ class CalendarTest extends TestCase
     {
         Notification::fake();
 
-        $game = Game::create(['slug' => 'lands-today', 'name' => 'Lands Today', 'released' => now()->toDateString()]);
+        $game = $this->entry(['slug' => 'lands-today', 'released' => now()->toDateString()]);
 
         $watchers = collect(range(1, 2))->map(function () use ($game) {
             $user = User::factory()->create();
@@ -198,87 +241,5 @@ class CalendarTest extends TestCase
 
         // The flag is the pending state — a rerun sends nothing.
         $this->assertSame(0, UserGame::where('notify_on_release', true)->count());
-    }
-
-    public function test_a_rawg_outage_says_so_instead_of_showing_an_empty_month(): void
-    {
-        $mock = Mockery::mock(RawgService::class);
-        $mock->shouldReceive('getReleases')->andReturn(null);
-        $this->app->instance(RawgService::class, $mock);
-
-        $this->getJson('/api/v1/calendar')->assertStatus(503);
-    }
-
-    public function test_a_month_that_ships_nothing_is_an_answer_not_an_outage(): void
-    {
-        $this->fakeRawg([]);
-
-        $data = $this->getJson('/api/v1/calendar')->assertOk()->json('data');
-
-        $this->assertSame(0, $data['stats']['releases']);
-        $this->assertSame([], $data['days']);
-    }
-
-    public function test_an_outage_falls_back_to_the_last_good_month_instead_of_failing(): void
-    {
-        // One good visit puts the month on the shelf.
-        $this->fakeRawg([$this->rawgGame(['name' => 'Voidfall'])]);
-        $this->getJson('/api/v1/calendar')->assertOk();
-
-        // RAWG goes down and the fresh copy expires — the shelved one stands in.
-        Cache::forget('calendar.month.'.now()->startOfMonth()->toDateString().'.v3');
-
-        $down = Mockery::mock(RawgService::class);
-        $down->shouldReceive('getReleases')->andReturn(null);
-        $this->app->instance(RawgService::class, $down);
-
-        $data = $this->getJson('/api/v1/calendar')->assertOk()->json('data');
-
-        $this->assertSame('Voidfall', $data['days'][0]['games'][0]['name']);
-    }
-
-    public function test_the_most_followed_rail_never_costs_the_visitor_a_round_trip(): void
-    {
-        // getReleases is only ever allowed to be asked about this month.
-        $mock = Mockery::mock(RawgService::class);
-        $mock->shouldReceive('getReleases')
-            ->with(Mockery::any(), Mockery::any(), 'released', Mockery::any())
-            ->andReturn(['count' => 1, 'results' => [$this->rawgGame()]]);
-        $mock->shouldReceive('getReleases')->with(Mockery::any(), Mockery::any(), '-added', Mockery::any())
-            ->never();
-
-        $this->app->instance(RawgService::class, $mock);
-
-        $this->assertSame([], $this->getJson('/api/v1/calendar')->assertOk()->json('data.most_followed'));
-    }
-
-    public function test_the_warmer_fills_the_cache_so_a_visitor_finds_it_hot(): void
-    {
-        $this->fakeRawg([$this->rawgGame()], [$this->rawgGame(['name' => 'Everyone Waits', 'added' => 90000])]);
-
-        $this->artisan('calendar:warm', ['--months' => 1])->assertSuccessful();
-
-        // Now RAWG can die and the page is still whole.
-        $down = Mockery::mock(RawgService::class);
-        $down->shouldReceive('getReleases')->never();
-        $this->app->instance(RawgService::class, $down);
-
-        $data = $this->getJson('/api/v1/calendar')->assertOk()->json('data');
-
-        $this->assertCount(1, $data['days']);
-        $this->assertSame('Everyone Waits', $data['most_followed'][0]['name']);
-    }
-
-    public function test_the_month_can_be_stepped_through(): void
-    {
-        $this->fakeRawg([]);
-
-        $data = $this->getJson('/api/v1/calendar?month=2026-08')->assertOk()->json('data.month');
-
-        $this->assertSame('2026-08', $data['key']);
-        $this->assertSame('August', $data['label']);
-        $this->assertSame(2026, $data['year']);
-        $this->assertSame('2026-07', $data['previous']);
-        $this->assertSame('2026-09', $data['next']);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Game;
 use App\Services\Releases\GameMatcher;
 use App\Services\Releases\GameMerger;
+use App\Services\Releases\Notability;
 use Illuminate\Console\Command;
 
 /**
@@ -19,7 +20,7 @@ class MergeReleases extends Command
 
     protected $description = 'Fold the same game, arriving from several stores, into one calendar entry';
 
-    public function handle(GameMerger $merger, GameMatcher $matcher): int
+    public function handle(GameMerger $merger, GameMatcher $matcher, Notability $notability): int
     {
         if ($this->option('pending')) {
             return $this->listPending($merger, $matcher);
@@ -35,10 +36,15 @@ class MergeReleases extends Command
 
         $after = Game::whereNotNull('match_key')->count();
 
+        // How many stores carry a game is the strongest thing we know about how
+        // big a release it is, and merging is what settles that — so scoring
+        // belongs here rather than in a sync.
+        $rescored = $notability->rescore();
+
         $this->newLine();
         $this->table(
-            ['before', 'after', 'merged', 'needs an editor', 'left alone'],
-            [[$before, $after, $tally['merged'], $tally['review'], $tally['separate']]],
+            ['before', 'after', 'merged', 'needs an editor', 'left alone', 'rescored'],
+            [[$before, $after, $tally['merged'], $tally['review'], $tally['separate'], $rescored]],
         );
 
         if ($tally['review'] > 0) {
