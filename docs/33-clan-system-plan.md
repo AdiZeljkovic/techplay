@@ -1,5 +1,10 @@
 # Clan Base System — kompletan plan
 
+> **STATUS 08/2026: SVIH ŠEST FAZA IMPLEMENTIRANO I LIVE.**
+> F1 ekonomija (99eb0b84) · F2 stranice (df0c7b14) · F3 baza (3693cb9d) ·
+> F4 misije (2b608e8f) · F5 boosteri+sezona (36354b40) · F6 identitet (3b18abb1).
+> Odgođeno svjesno: clan chat, Discord webhook, teme baze (art), Clan War.
+>
 > Master plan za nadogradnju klanova iz "ime + spisak članova" u centralni
 > kolektivni metagame TechPlaya. Pisano 08/2026. Ovo je izvor istine za sve
 > faze — svaka izmjena sistema ide prvo ovdje.
