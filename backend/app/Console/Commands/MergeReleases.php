@@ -36,6 +36,10 @@ class MergeReleases extends Command
 
         $after = Game::whereNotNull('match_key')->count();
 
+        // Entries folded before merging chose between titles kept whichever
+        // name was on the older row, often an edition's.
+        $retitled = $merger->retitle();
+
         // How many stores carry a game is the strongest thing we know about how
         // big a release it is, and merging is what settles that — so scoring
         // belongs here rather than in a sync.
@@ -43,8 +47,8 @@ class MergeReleases extends Command
 
         $this->newLine();
         $this->table(
-            ['before', 'after', 'merged', 'needs an editor', 'left alone', 'rescored'],
-            [[$before, $after, $tally['merged'], $tally['review'], $tally['separate'], $rescored]],
+            ['before', 'after', 'merged', 'needs an editor', 'left alone', 'retitled', 'rescored'],
+            [[$before, $after, $tally['merged'], $tally['review'], $tally['separate'], $retitled, $rescored]],
         );
 
         if ($tally['review'] > 0) {

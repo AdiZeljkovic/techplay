@@ -67,6 +67,44 @@ class GameMerger
     }
 
     /**
+     * Give already-merged entries the game's name back.
+     *
+     * Merging did not always choose between titles, so entries folded before
+     * that rule existed kept whichever name happened to be on the older row —
+     * often an edition's. Every store's own title is kept in its link payload,
+     * so the plainest one can be recovered without asking anyone again.
+     */
+    public function retitle(): int
+    {
+        $fixed = 0;
+
+        Game::query()
+            ->whereNotNull('match_key')
+            ->with('storeLinks')
+            ->chunkById(500, function ($games) use (&$fixed) {
+                foreach ($games as $game) {
+                    if (in_array('name', (array) ($game->locked_fields ?? []), true)) {
+                        continue;
+                    }
+
+                    $plainest = $game->storeLinks
+                        ->pluck('payload.title')
+                        ->push($game->name)
+                        ->filter()
+                        ->sortBy(fn (string $title) => mb_strlen($title))
+                        ->first();
+
+                    if ($plainest && $plainest !== $game->name) {
+                        $game->forceFill(['name' => $plainest])->save();
+                        $fixed++;
+                    }
+                }
+            });
+
+        return $fixed;
+    }
+
+    /**
      * Pairs worth asking about: games the aggregator created that carry the
      * same, or nearly the same, normalised title but come from different
      * stores.
@@ -176,6 +214,7 @@ class GameMerger
             $locked = (array) ($keep->locked_fields ?? []);
 
             $attributes = [
+                'name' => $this->plainestTitle($keep, $drop),
                 // The truth this whole exercise exists to tell.
                 'platform_names' => $this->union($keep->platform_names, $drop->platform_names),
                 'genre_names' => $this->union($keep->genre_names, $drop->genre_names),
@@ -210,6 +249,24 @@ class GameMerger
             'released' => $game->released?->toDateString(),
             'publisher' => data_get($game->details_data, 'publisher'),
         ];
+    }
+
+    /**
+     * The game's name, rather than the name of an edition of it.
+     *
+     * Sony's pre-orders are largely Ultimate and Deluxe editions, so a merge
+     * between a store's plain listing and Sony's would otherwise leave the
+     * calendar announcing "NASCAR 26 Gold Edition" and "Call of Duty: Modern
+     * Warfare 4 - Vault Edition". The shorter title is the game.
+     *
+     * Safe only because titles this far apart never merge automatically: an
+     * exact match on the normalised key means the two differ by an edition
+     * suffix and punctuation, nothing more. Anything looser has already gone
+     * to an editor.
+     */
+    private function plainestTitle(Game $keep, Game $drop): string
+    {
+        return mb_strlen($drop->name) < mb_strlen($keep->name) ? $drop->name : $keep->name;
     }
 
     private function union(?array $a, ?array $b): array

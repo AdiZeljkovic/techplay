@@ -111,6 +111,18 @@ class GameMergerTest extends TestCase
         $this->assertTrue($game->has_description);
     }
 
+    public function test_the_game_keeps_its_own_name_not_an_editions(): void
+    {
+        // Sony's pre-orders are largely Ultimate and Deluxe editions, so
+        // without this the calendar announces "NASCAR 26 Gold Edition".
+        $this->entry('playstation', 'NASCAR 26 Gold Edition');
+        $this->entry('steam', 'NASCAR 26');
+
+        $this->merge();
+
+        $this->assertSame('NASCAR 26', Game::first()->name);
+    }
+
     public function test_art_is_chosen_by_store_not_by_whichever_ran_last(): void
     {
         // hero_priority puts steam first, so the Steam header wins even though
