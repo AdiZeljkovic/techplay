@@ -80,6 +80,20 @@ return [
             'require_publisher' => true,
         ],
 
+        /*
+         * Sony's own copy is generous, and screenshots come with every product
+         * page, so PlayStation is held to the same standard as Steam. Its store
+         * classifies products explicitly — FULL_GAME against add-ons, currency
+         * and season passes — which does most of the filtering before these
+         * thresholds are reached at all.
+         */
+        'playstation' => [
+            'min_description' => 200,
+            'min_screenshots' => 3,
+            'screenshots_without_trailer' => 3,
+            'require_publisher' => true,
+        ],
+
     ],
 
     /*

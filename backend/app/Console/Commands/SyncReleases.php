@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\Releases\NintendoSync;
+use App\Services\Releases\PlaystationSync;
 use App\Services\Releases\SteamSync;
 use App\Services\Releases\StoreSync;
 use App\Services\Releases\TransientFailure;
@@ -20,15 +21,15 @@ use Illuminate\Support\Carbon;
 class SyncReleases extends Command
 {
     protected $signature = 'releases:sync
-        {--store=all : Which store to read — steam, nintendo, xbox, or all}
+        {--store=all : Which store to read — steam, nintendo, xbox, playstation, or all}
         {--from= : First month of the window, YYYY-MM}
         {--to= : Last month of the window, YYYY-MM}';
 
     protected $description = 'Read upcoming releases from the stores into our own tables';
 
-    public function handle(SteamSync $steam, NintendoSync $nintendo, XboxSync $xbox): int
+    public function handle(SteamSync $steam, NintendoSync $nintendo, XboxSync $xbox, PlaystationSync $playstation): int
     {
-        $available = ['steam' => $steam, 'nintendo' => $nintendo, 'xbox' => $xbox];
+        $available = ['steam' => $steam, 'nintendo' => $nintendo, 'xbox' => $xbox, 'playstation' => $playstation];
         $wanted = $this->option('store');
 
         if ($wanted !== 'all' && ! isset($available[$wanted])) {
