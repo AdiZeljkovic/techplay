@@ -641,11 +641,10 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
     },
     {
         name: "Tools", href: "/wow-analyzer", hasDropdown: true, viewAllLabel: "All Tools",
-        activePaths: ["/wow-analyzer", "/backlog-advisor", "/compare", "/wrapped"],
+        activePaths: ["/wow-analyzer", "/backlog-advisor", "/wrapped"],
         children: [
             { name: "WoW Analyzer",    href: "/wow-analyzer",    icon: Sword,  description: "AI character readiness check" },
             { name: "Backlog Advisor", href: "/backlog-advisor", icon: Rocket, description: "What should you play next?" },
-            { name: "Profile Compare", href: "/compare",         icon: Users,  description: "Compare two gamer profiles" },
             { name: "Gaming Wrapped",  href: "/wrapped",         icon: Gem,    description: "Your year in gaming, shareable" },
         ],
     },

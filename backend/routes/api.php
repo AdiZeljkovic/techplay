@@ -54,7 +54,6 @@ use App\Http\Controllers\Api\V1\PayPalController;
 use App\Http\Controllers\Api\V1\PayPalWebhookController;
 use App\Http\Controllers\Api\V1\PresenceController;
 use App\Http\Controllers\Api\V1\PriveeGiveawayController;
-use App\Http\Controllers\Api\V1\ProfileCompareController;
 use App\Http\Controllers\Api\V1\QuestController;
 use App\Http\Controllers\Api\V1\ReadingController;
 use App\Http\Controllers\Api\V1\RecognitionController;
@@ -454,7 +453,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/clans/{slug}', [ClanController::class, 'show']);
 
         // Profile comparison
-        Route::get('/compare/{username}/{other}', [ProfileCompareController::class, 'compare']);
 
         // Public Profile
         Route::get('/users/{username}/wrapped/{year}', [WrappedController::class, 'show']);

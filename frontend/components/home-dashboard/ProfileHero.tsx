@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
     User as UserIcon, MapPin, CalendarDays, Pencil, ExternalLink, Check, BadgeCheck, MoreHorizontal,
-    Flame, Play, Sparkles, ShieldCheck, LinkIcon, GitCompare, UserPlus, Clock, MessageSquare,
+    Flame, Play, Sparkles, ShieldCheck, LinkIcon, UserPlus, Clock, MessageSquare,
     Gamepad2, Trophy, Star, Medal,
 } from "lucide-react";
 import type { HeroModel } from "@/lib/hero";
@@ -440,11 +440,6 @@ export default function ProfileHero({
                                             <button onClick={share} className={MENU_ITEM}>
                                                 <LinkIcon className="w-3.5 h-3.5" /> {copied ? "Link copied" : "Copy profile link"}
                                             </button>
-                                            {viewerUsername && (
-                                                <Link href={`/compare/${viewerUsername}/${hero.username}`} className={MENU_ITEM}>
-                                                    <GitCompare className="w-3.5 h-3.5" /> Compare with me
-                                                </Link>
-                                            )}
                                         </MoreMenu>
                                     </>
                                 ) : (
