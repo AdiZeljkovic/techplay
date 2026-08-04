@@ -19,6 +19,7 @@ class GameStoreLink extends Model
         'store_id',
         'url',
         'payload',
+        'rejected_reason',
         'last_synced_at',
     ];
 

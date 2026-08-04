@@ -37,6 +37,12 @@ class Game extends Model
         'suggested_crawled_at',
         'additions_crawled_at',
         'description', // virtual — stored in details_data
+        // Written by the release aggregator.
+        'match_key',
+        'release_precision',
+        'hype_score',
+        'is_editorial',
+        'locked_fields',
     ];
 
     protected $casts = [
@@ -62,6 +68,9 @@ class Game extends Model
         'rating' => 'float',
         'moby_id' => 'integer',
         'moby_group_id' => 'integer',
+        'hype_score' => 'integer',
+        'is_editorial' => 'boolean',
+        'locked_fields' => 'array',
     ];
 
     public function getDescriptionAttribute(): ?string
