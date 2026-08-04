@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Casts\PostgresArray;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Game extends Model
 {
@@ -72,6 +73,12 @@ class Game extends Model
         'is_editorial' => 'boolean',
         'locked_fields' => 'array',
     ];
+
+    /** Where this game is sold, one row per store that lists it. */
+    public function storeLinks(): HasMany
+    {
+        return $this->hasMany(GameStoreLink::class);
+    }
 
     public function getDescriptionAttribute(): ?string
     {
