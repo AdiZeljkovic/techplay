@@ -15,12 +15,14 @@ use App\Models\ClanTrophy;
 use App\Models\User;
 use App\Services\ClanLevelService;
 use App\Services\ClanResourceService;
+use App\Services\SanitizationService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ClanController extends Controller
@@ -600,6 +602,142 @@ class ClanController extends Controller
                 'prestige' => (int) ($clan->prestige ?? 0),
             ],
         ]);
+    }
+
+    /* -- management ------------------------------------------------------ */
+
+    /**
+     * PUT /clans/{slug} - officers edit how the clan presents itself; the
+     * owner alone may change what it is called.
+     */
+    public function update(Request $request, string $slug)
+    {
+        $clan = Clan::where('slug', $slug)->firstOrFail();
+        $membership = ClanMember::where('clan_id', $clan->id)->where('user_id', $request->user()->id)->first();
+
+        if (! $membership?->isOfficerOrAbove()) {
+            return $this->error('Only officers can manage the clan.', 403);
+        }
+
+        $isOwner = $membership->role === 'owner';
+
+        $data = $request->validate([
+            'name' => 'sometimes|string|min:3|max:40|unique:clans,name,'.$clan->id,
+            'tag' => 'nullable|string|max:8',
+            'motto' => 'nullable|string|max:120',
+            'description' => 'nullable|string|max:500',
+            'region' => 'nullable|string|max:40',
+            'language' => 'nullable|string|max:40',
+            'playstyle' => 'nullable|in:competitive,casual,mixed',
+            'status' => 'nullable|in:recruiting,invite_only,closed',
+            'requirements' => 'nullable|string|max:1000',
+            'is_public' => 'boolean',
+        ]);
+
+        // Identity is the owner's to change - an officer renaming the clan
+        // out from under everyone is not a presentation edit.
+        if (! $isOwner) {
+            unset($data['name'], $data['tag']);
+        }
+
+        $sanitizer = app(SanitizationService::class);
+
+        foreach (['motto', 'description', 'requirements', 'region', 'language'] as $field) {
+            if (isset($data[$field])) {
+                $data[$field] = $sanitizer->sanitizePlainText($data[$field]);
+            }
+        }
+
+        $clan->update($data);
+
+        ClanActivity::create([
+            'clan_id' => $clan->id,
+            'user_id' => $request->user()->id,
+            'type' => 'clan_updated',
+            'title' => $request->user()->username.' updated the clan settings',
+        ]);
+
+        Cache::forget('clans.spotlight.v1');
+        Cache::forget('clans.sidebar.v1');
+
+        return $this->success($clan->fresh(), 'Clan updated.');
+    }
+
+    /**
+     * POST /clans/{slug}/media - emblem and banner upload. Both are small,
+     * bounded, and replace whatever was there (the old file is deleted, so
+     * repeated edits cannot quietly fill the disk).
+     */
+    public function uploadMedia(Request $request, string $slug)
+    {
+        $clan = Clan::where('slug', $slug)->firstOrFail();
+        $membership = ClanMember::where('clan_id', $clan->id)->where('user_id', $request->user()->id)->first();
+
+        if (! $membership?->isOfficerOrAbove()) {
+            return $this->error('Only officers can change the clan artwork.', 403);
+        }
+
+        $request->validate([
+            'logo' => 'nullable|image|max:2048',
+            'banner' => 'nullable|image|max:4096',
+        ]);
+
+        if (! $request->hasFile('logo') && ! $request->hasFile('banner')) {
+            return $this->error('Nothing to upload.', 422);
+        }
+
+        foreach (['logo', 'banner'] as $field) {
+            if (! $request->hasFile($field)) {
+                continue;
+            }
+
+            $previous = $clan->{$field};
+            $clan->{$field} = $request->file($field)->store('clans', 'public');
+
+            // Only delete what we stored ourselves - an absolute URL from an
+            // older import is not ours to remove.
+            if ($previous && ! str_starts_with($previous, 'http')) {
+                Storage::disk('public')->delete($previous);
+            }
+        }
+
+        $clan->save();
+
+        Cache::forget('clans.spotlight.v1');
+        Cache::forget('clans.sidebar.v1');
+
+        return $this->success([
+            'logo' => $clan->logo,
+            'banner' => $clan->banner,
+        ], 'Artwork updated.');
+    }
+
+    /**
+     * DELETE /clans/{slug}/media/{type} - back to the drawn crest.
+     */
+    public function deleteMedia(Request $request, string $slug, string $type)
+    {
+        if (! in_array($type, ['logo', 'banner'], true)) {
+            return $this->error('Unknown artwork.', 422);
+        }
+
+        $clan = Clan::where('slug', $slug)->firstOrFail();
+        $membership = ClanMember::where('clan_id', $clan->id)->where('user_id', $request->user()->id)->first();
+
+        if (! $membership?->isOfficerOrAbove()) {
+            return $this->error('Only officers can change the clan artwork.', 403);
+        }
+
+        if ($clan->{$type} && ! str_starts_with($clan->{$type}, 'http')) {
+            Storage::disk('public')->delete($clan->{$type});
+        }
+
+        $clan->update([$type => null]);
+
+        Cache::forget('clans.spotlight.v1');
+        Cache::forget('clans.sidebar.v1');
+
+        return $this->success(null, 'Artwork removed.');
     }
 
     /* -- applications ---------------------------------------------------- */

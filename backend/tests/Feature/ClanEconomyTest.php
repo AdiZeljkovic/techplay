@@ -14,7 +14,9 @@ use App\Services\AchievementService;
 use App\Services\ClanLevelService;
 use App\Services\ClanResourceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ClanEconomyTest extends TestCase
@@ -334,6 +336,64 @@ class ClanEconomyTest extends TestCase
         $invites = $this->actingAs($invitee)->getJson('/api/v1/user/clan-invites')->assertOk()->json('data');
         $this->assertCount(1, $invites);
         $this->assertSame($clan->name, $invites[0]['clan']['name']);
+    }
+
+    public function test_officers_manage_presentation_but_only_the_owner_renames_the_clan(): void
+    {
+        $owner = User::factory()->create();
+        $clan = $this->clan($owner, ['name' => 'Alpha Legion Prime', 'tag' => 'ALPHA']);
+
+        $officer = User::factory()->create();
+        ClanMember::create(['clan_id' => $clan->id, 'user_id' => $officer->id, 'role' => 'officer', 'joined_at' => now()]);
+
+        // An officer edits how the clan presents itself…
+        $this->actingAs($officer)->putJson("/api/v1/clans/{$clan->slug}", [
+            'motto' => 'One Legion. Unbroken.',
+            'region' => 'Europe',
+            'status' => 'invite_only',
+            'name' => 'Officer Rename Attempt',
+        ])->assertOk();
+
+        $clan->refresh();
+        $this->assertSame('One Legion. Unbroken.', $clan->motto);
+        $this->assertSame('invite_only', $clan->status);
+        $this->assertSame('Alpha Legion Prime', $clan->name, 'an officer cannot rename the clan');
+
+        // …the owner may also change the identity.
+        $this->actingAs($owner)->putJson("/api/v1/clans/{$clan->slug}", ['name' => 'Alpha Legion Reborn'])->assertOk();
+        $this->assertSame('Alpha Legion Reborn', $clan->fresh()->name);
+
+        // A plain member manages nothing.
+        $member = User::factory()->create();
+        ClanMember::create(['clan_id' => $clan->id, 'user_id' => $member->id, 'role' => 'member', 'joined_at' => now()]);
+        $this->actingAs($member)->putJson("/api/v1/clans/{$clan->slug}", ['motto' => 'nope'])->assertStatus(403);
+    }
+
+    public function test_uploading_artwork_replaces_the_old_file_and_removing_it_clears_the_field(): void
+    {
+        Storage::fake('public');
+
+        $owner = User::factory()->create();
+        $clan = $this->clan($owner);
+
+        $first = $this->actingAs($owner)->post("/api/v1/clans/{$clan->slug}/media", [
+            'logo' => UploadedFile::fake()->create('crest.png', 120, 'image/png'),
+        ])->assertOk()->json('data.logo');
+
+        Storage::disk('public')->assertExists($first);
+
+        // A second upload replaces the first rather than piling up.
+        $second = $this->actingAs($owner)->post("/api/v1/clans/{$clan->slug}/media", [
+            'logo' => UploadedFile::fake()->create('crest2.png', 120, 'image/png'),
+        ])->assertOk()->json('data.logo');
+
+        $this->assertNotSame($first, $second);
+        Storage::disk('public')->assertMissing($first);
+
+        $this->actingAs($owner)->deleteJson("/api/v1/clans/{$clan->slug}/media/logo")->assertOk();
+
+        $this->assertNull($clan->fresh()->logo);
+        Storage::disk('public')->assertMissing($second);
     }
 
     public function test_the_profile_roster_carries_contributions_and_the_viewer_their_standing(): void

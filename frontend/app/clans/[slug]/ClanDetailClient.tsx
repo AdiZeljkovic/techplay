@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import {
     Shield, Users, Crown, ShieldCheck, MessageSquare, LogOut, UserPlus, Check, X,
     Loader2, Flame, Gamepad2, Clock3, CalendarDays, Globe2, Sparkles, ChevronRight,
-    Coins, Hourglass, Send, Castle,
+    Coins, Hourglass, Send, Castle, Settings,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
@@ -17,6 +17,7 @@ import Avatar from "@/components/ui/Avatar";
 import { timeAgo } from "@/lib/timeAgo";
 import { getStorageUrl } from "@/lib/imageUrl";
 import { TIER_COLORS } from "../ClansClient";
+import ManageClanModal from "@/components/clans/ManageClanModal";
 import type { ClanApplicationRow, ClanProfile, ClanRosterMember } from "@/lib/types/clan";
 import { Trophy } from "lucide-react";
 
@@ -171,6 +172,7 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
     const { data: clan, isLoading, mutate } = useSWR<ClanProfile>(`/clans/${slug}`, fetcher);
     const [busy, setBusy] = useState(false);
     const [applyOpen, setApplyOpen] = useState(false);
+    const [managing, setManaging] = useState(false);
     const [applyMessage, setApplyMessage] = useState("");
 
     const act = async (fn: () => Promise<unknown>, done: string) => {
@@ -290,6 +292,14 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
                         <div className="flex flex-col gap-2 shrink-0">
                             {isMember ? (
                                 <>
+                                    {isOfficer && (
+                                        <button
+                                            onClick={() => setManaging(true)}
+                                            className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-[8px] bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-white font-display text-[10.5px] font-bold uppercase tracking-[0.1em] transition-colors"
+                                        >
+                                            <Settings className="w-4 h-4" /> Manage clan
+                                        </button>
+                                    )}
                                     <Link
                                         href={`/clans/${clan.slug}/base`}
                                         className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-[8px] bg-[var(--accent)] hover:brightness-110 text-white font-display text-[10.5px] font-bold uppercase tracking-[0.1em] transition-[filter]"
@@ -568,6 +578,15 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
                     </aside>
                 </div>
             </div>
+
+            {managing && (
+                <ManageClanModal
+                    clan={clan}
+                    isOwner={viewer?.role === "owner"}
+                    onClose={() => setManaging(false)}
+                    onSaved={() => mutate()}
+                />
+            )}
 
             {/* ── apply modal ── */}
             {applyOpen && (
