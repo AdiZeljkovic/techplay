@@ -190,6 +190,24 @@ Comment ─── hasMany ───→ Comment (parent_id, nesting)
 
 ---
 
+## Release calendar agregator (08/2026)
+
+| Tabela | Svrha |
+|---|---|
+| `game_store_links` | Jedan red po store listingu koji smo ikad vidjeli. `unique(store, store_id)` je ono što čini ponovne syncove jeftinim — poklapanje se radi jednom, poslije je exact lookup. `game_id` je null za listing koji nikad nije postao unos u kalendaru, a `rejected_reason` kaže zašto. |
+| `game_match_decisions` | Urednička odluka o spornom paru. Čuva se uz **normalizovana imena**, ne uz `game_id`, jer poenta odluke „ovo je ista igra" je da jedna od njih odmah zatim prestaje postojati. |
+
+Nove kolone na `games`: `match_key`, `release_precision`, `hype_score`,
+`is_editorial`, `locked_fields`.
+
+**`match_key` je granica** između kalendara i arhiva. Postavlja ga isključivo
+agregator, pa 200.000 istorijskih redova nikad ne uđe u kalendar niti u spajanje.
+`locked_fields` je kako ručna ispravka preživi — sync i merge to polje ne diraju.
+
+Detaljno: `docs/34-release-calendar-aggregator.md`
+
+---
+
 ## Potencijalni problemi u strukturi baze
 
 1. `Article` model se koristi za news I tech/hardware — razlikovanje samo po kategoriji. Može biti konfuzno.

@@ -95,17 +95,24 @@
 
 ## Release Calendar
 
-**Status:** COMPLETE
+**Status:** COMPLETE — prepisan 08/2026, vlastiti agregator umjesto RAWG-a
 
-**Opis:** Kalendar datuma izlaska igara, filtrirano po datumu iz game baze.
+**Opis:** Mjesečni kalendar izlazaka. Podaci se povlače sa **četiri storea** (Steam,
+Nintendo eShop, Xbox, PlayStation) po rasporedu u našu bazu, duplikati se spajaju u
+jedan unos, a stranica čita **isključivo iz naše baze** — nijedan zahtjev prema
+vanjskim servisima.
 
 **Frontend:** `app/calendar/`
-**Backend:** `GameController::calendar`
-**Admin:** Upravljanje kroz GameResource (release_date polje)
-**Database:** `games` (release_date kolona)
-**API:** `GET /games/calendar`
+**Backend:** `CalendarController` (čita `games` gdje `match_key` nije null)
+**Admin:** Editorial Tools → Release Calendar (urednički red za sporne parove)
+**Database:** `games` + `game_store_links` + `game_match_decisions`
+**API:** `GET /calendar`, `POST /calendar/{slug}/reminder`
+**Komande:** `releases:sync`, `releases:merge`
 **Discord bot:** CheckWishlistReleases provjerava nove release datume
-**Napomene:** Podaci dolaze iz iste `games` tabele. Nije jasno da li postoji poseban UI za mjesečni/tjedni prikaz.
+**Detaljno:** vidi `docs/34-release-calendar-aggregator.md`
+
+**Zašto je prepisan:** RAWG je pao 04.08.2026. i povukao kalendar sa sobom. Sada
+tuđi ispad nije naš ispad — test to i tvrdi (`Http::preventStrayRequests`).
 
 ---
 

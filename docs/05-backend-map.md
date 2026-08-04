@@ -222,7 +222,16 @@ Sve rute su pod prefiksom `/api/v1/`. Organizovane su u grupe:
 | `ProfileService` | Profilni podaci agregacija + `canViewProfile()` / `friendStatus()` / `friendIds()` / `hoursPlayed()` |
 | `QuestService` | Quest dodjela i praćenje |
 | `RaiderIOService` | RaiderIO Mythic+ data |
-| `RawgService` | RAWG game screenshots/movies |
+| `RawgService` | RAWG game screenshots/movies — **kalendar ga više ne koristi** |
+| `Releases\SteamCatalog` / `SteamSync` | Steam coming-soon: lista nosi datum, detalji se plaćaju jednom po igri |
+| `Releases\NintendoCatalog` / `NintendoSync` | eShop: jedan zahtjev vraća cijeli prozor |
+| `Releases\XboxCatalog` / `XboxSync` | Xbox: sitemap (42k id-jeva) + display catalogue u serijama po 200 |
+| `Releases\PlaystationCatalog` / `PlaystationSync` | PlayStation: coming-soon kategorija + `__NEXT_DATA__` po proizvodu |
+| `Releases\BlindCatalogueSync` | Zajedničko za storeove bez datuma u listi (Xbox, PS): pitaj jednom, pamti odgovor |
+| `Releases\QualityFilter` | Kapija — pragovi po storeu, adult filter |
+| `Releases\TitleNormalizer` | Ime igre → uporediv ključ (reže samo s kraja) |
+| `Releases\GameMatcher` / `GameMerger` | Spajanje iste igre s više storeova; `platform_names` postaje unija |
+| `Releases\Notability` | Rangiranje mjeseca iz onoga što stvarno možemo mjeriti |
 | `ReCaptchaService` | Google reCAPTCHA validacija |
 | `RevalidationService` | Next.js ISR revalidacija |
 | `SanitizationService` | XSS zaštita za user content |
