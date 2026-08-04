@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\UserGame;
+use App\Services\Releases\CalendarVisibility;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -142,12 +143,15 @@ class CalendarController extends Controller
      */
     private function monthReleases(Carbon $month): Collection
     {
-        return Game::query()
-            ->whereNotNull('match_key')
-            ->whereBetween('released', [
-                $month->copy()->startOfMonth()->toDateString(),
-                $month->copy()->endOfMonth()->toDateString(),
-            ])
+        return app(CalendarVisibility::class)
+            ->apply(
+                Game::query()
+                    ->whereNotNull('match_key')
+                    ->whereBetween('released', [
+                        $month->copy()->startOfMonth()->toDateString(),
+                        $month->copy()->endOfMonth()->toDateString(),
+                    ])
+            )
             ->orderBy('released')
             ->get()
             ->map(fn (Game $game) => $this->present($game));
@@ -156,9 +160,12 @@ class CalendarController extends Controller
     /** The month's biggest arrivals still ahead of it. */
     private function beyondThisMonth(Carbon $month): array
     {
-        return Game::query()
-            ->whereNotNull('match_key')
-            ->where('released', '>', $month->copy()->endOfMonth()->toDateString())
+        return app(CalendarVisibility::class)
+            ->apply(
+                Game::query()
+                    ->whereNotNull('match_key')
+                    ->where('released', '>', $month->copy()->endOfMonth()->toDateString())
+            )
             ->orderByDesc('hype_score')
             ->limit(5)
             ->get()

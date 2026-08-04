@@ -44,6 +44,9 @@ class CalendarTest extends TestCase
             'genre_names' => ['Action'],
             'platform_names' => ['PC'],
             'details_data' => ['publisher' => 'Some Publisher'],
+            // Enough to clear the calendar's visibility rules by default; the
+            // tests that care about those set their own.
+            'movies_data' => ['https://cdn.example/trailer.mp4'],
         ], $attrs));
 
         foreach ($stores as $store) {
@@ -164,6 +167,56 @@ class CalendarTest extends TestCase
 
         $this->assertSame(0, $data['stats']['releases']);
         $this->assertSame([], $data['days']);
+    }
+
+    public function test_a_month_is_not_everything_the_stores_shipped(): void
+    {
+        // A quarter of all four stores is around 1,300 titles and most of a
+        // month's four hundred are small PC releases nobody came looking for.
+        // Storing them is right; crowding the month with them is not.
+        $this->entry(['name' => 'Has A Trailer']);
+
+        $this->entry([
+            'name' => 'Nobody Meant This',
+            'movies_data' => [],
+            'screenshots_data' => [],
+            'details_data' => ['publisher' => 'Someone', 'description' => 'Short.'],
+        ]);
+
+        $data = $this->getJson('/api/v1/calendar')->assertOk()->json('data');
+
+        $this->assertSame(1, $data['stats']['releases']);
+        $this->assertSame('Has A Trailer', $data['days'][0]['games'][0]['name']);
+
+        // But it is not deleted — it is still there to be found.
+        $this->assertSame(2, Game::whereNotNull('match_key')->count());
+    }
+
+    public function test_any_one_sign_that_somebody_meant_it_is_enough(): void
+    {
+        $bare = [
+            'movies_data' => [],
+            'screenshots_data' => [],
+            'details_data' => ['publisher' => 'Someone', 'description' => 'Short.'],
+        ];
+
+        // Each of these fails every rule but one.
+        $this->entry(array_merge($bare, ['name' => 'Multi Platform']), ['steam', 'xbox']);
+        $this->entry(array_merge($bare, ['name' => 'Reviewed', 'metacritic' => 84]));
+        $this->entry(array_merge($bare, [
+            'name' => 'Substantial',
+            'screenshots_data' => array_fill(0, 9, 'a.jpg'),
+            'details_data' => ['publisher' => 'Someone', 'description' => str_repeat('Real copy. ', 70)],
+        ]));
+
+        $wanted = $this->entry(array_merge($bare, ['name' => 'Wanted Here']));
+        UserGame::create(['user_id' => User::factory()->create()->id, 'game_id' => $wanted->id, 'status' => 'wishlist']);
+
+        $names = collect($this->getJson('/api/v1/calendar')->assertOk()->json('data.days.0.games'))->pluck('name');
+
+        foreach (['Multi Platform', 'Reviewed', 'Substantial', 'Wanted Here'] as $name) {
+            $this->assertContains($name, $names, "{$name} earned its place");
+        }
     }
 
     public function test_the_month_can_be_stepped_through(): void

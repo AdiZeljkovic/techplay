@@ -177,9 +177,37 @@ class SteamCatalog
             'genres' => collect($data['genres'] ?? [])->pluck('description')->filter()->values()->all(),
             'metacritic' => $data['metacritic']['score'] ?? null,
             'screenshot_urls' => collect($data['screenshots'] ?? [])->pluck('path_full')->filter()->values()->all(),
-            'trailer_urls' => collect($data['movies'] ?? [])->pluck('mp4.max')->filter()->values()->all(),
+            'trailer_urls' => $this->trailers($data['movies'] ?? []),
             'url' => "https://store.steampowered.com/app/{$appId}/",
         ];
+    }
+
+    /**
+     * Playable trailer urls.
+     *
+     * Steam used to publish `mp4.max` and `webm.max`; it now publishes
+     * `hls_h264`, `dash_h264` and `dash_av1` and nothing else. Reading the old
+     * key silently produced an empty list for every game in the catalogue —
+     * silently, because the count of movies was still right, so the quality
+     * gate and the ranking both believed a trailer existed while the calendar
+     * held none.
+     *
+     * Preference order is playability: HLS plays in a browser, DASH H.264 is
+     * the wider fallback, AV1 the narrowest.
+     *
+     * @param  array<int,array>  $movies
+     * @return array<int,string>
+     */
+    private function trailers(array $movies): array
+    {
+        return collect($movies)
+            ->map(fn (array $movie) => $movie['hls_h264']
+                ?? $movie['dash_h264']
+                ?? $movie['dash_av1']
+                ?? data_get($movie, 'mp4.max'))
+            ->filter()
+            ->values()
+            ->all();
     }
 
     /** One listing page, parsed into rows. */

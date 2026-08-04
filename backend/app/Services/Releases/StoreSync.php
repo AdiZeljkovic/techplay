@@ -246,6 +246,59 @@ abstract class StoreSync
         return ['created', null];
     }
 
+    /**
+     * Ask the store again about a game we already have, and take only what it
+     * says about how the game looks.
+     *
+     * Deliberately narrow. Dates, identity, store links and merges are left
+     * exactly as they are, so this can be run to repair a field we once read
+     * from the wrong key without any risk of undoing an editor's ruling or
+     * pulling a merged entry back apart.
+     *
+     * @throws TransientFailure
+     */
+    public function refreshPresentation(GameStoreLink $link): bool
+    {
+        $game = $link->game;
+
+        if (! $game) {
+            return false;
+        }
+
+        $details = $this->details([
+            'store_id' => $link->store_id,
+            'title' => $game->name,
+            'anchor' => $game->released,
+            'precision' => $game->release_precision,
+        ]);
+
+        if ($details === null) {
+            return false;
+        }
+
+        $locked = (array) ($game->locked_fields ?? []);
+
+        $fields = array_filter([
+            'background_image' => $details['hero'] ?? null,
+            'screenshots_data' => $details['screenshot_urls'] ?? null,
+            'movies_data' => $details['trailer_urls'] ?? null,
+            'genre_names' => $details['genres'] ?? null,
+        ], fn ($value, $key) => $value !== null && ! in_array($key, $locked, true), ARRAY_FILTER_USE_BOTH);
+
+        // A store that has since gone quiet must not blank what we already show.
+        $fields = array_filter($fields, fn ($value) => ! (is_array($value) && $value === []));
+
+        if ($fields === []) {
+            return false;
+        }
+
+        $game->forceFill($fields)->save();
+
+        $link->forceFill(['payload' => $details, 'last_synced_at' => now()])->save();
+
+        return true;
+    }
+
     protected function createGame(array $row, array $details): Game
     {
         $title = $details['title'] ?: $row['title'];

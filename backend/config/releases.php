@@ -216,6 +216,42 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | What reaches the calendar page
+    |--------------------------------------------------------------------------
+    |
+    | The quality gate above decides what is worth storing. This decides what is
+    | worth showing, and they are different questions: a three-month window of
+    | everything the four stores ship is around 1,300 titles, and most of a
+    | month's four hundred are small PC releases nobody came looking for.
+    |
+    | Nothing is deleted. An entry that fails this is still in the database,
+    | still searchable, still has its own page — it simply does not crowd the
+    | month. Loosening it later is a number here rather than another hour of
+    | reading somebody's store.
+    |
+    | A title passes on any one of these, because each is a different kind of
+    | evidence that somebody meant it:
+    |
+    |   - it ships on more than one platform, so a publisher is behind it
+    |   - somebody cut a trailer, which asset flips do not do
+    |   - critics have scored it
+    |   - our own visitors have wishlisted it
+    |   - it clears both a screenshot count and a description length that,
+    |     together, no shovelware listing bothers with
+    |
+    */
+
+    'calendar' => [
+        'min_stores' => 2,
+        'min_wishlists' => 1,
+        'substantial' => [
+            'screenshots' => 8,
+            'description' => 600,
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Politeness
     |--------------------------------------------------------------------------
     |
