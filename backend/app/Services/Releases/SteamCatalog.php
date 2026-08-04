@@ -4,7 +4,6 @@ namespace App\Services\Releases;
 
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -24,6 +23,8 @@ use Illuminate\Support\Facades\Log;
  */
 class SteamCatalog
 {
+    use TalksToStores;
+
     private const SEARCH = 'https://store.steampowered.com/search/results';
 
     private const DETAILS = 'https://store.steampowered.com/api/appdetails';
@@ -132,9 +133,7 @@ class SteamCatalog
     public function details(string $appId): ?array
     {
         try {
-            $response = Http::timeout(config('releases.timeout'))
-                ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
-                ->get(self::DETAILS, ['appids' => $appId, 'l' => 'en']);
+            $response = $this->http()->get(self::DETAILS, ['appids' => $appId, 'l' => 'en']);
         } catch (ConnectionException $e) {
             throw new TransientFailure("steam unreachable for {$appId}: ".$e->getMessage());
         }
@@ -187,8 +186,7 @@ class SteamCatalog
     private function page(int $start): array
     {
         try {
-            $response = Http::timeout(config('releases.timeout'))
-                ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
+            $response = $this->http()
                 ->get(self::SEARCH, [
                     'filter' => 'comingsoon',
                     'category1' => self::GAMES_ONLY,

@@ -2,7 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Releases\NintendoSync;
 use App\Services\Releases\SteamSync;
+use App\Services\Releases\StoreSync;
+use App\Services\Releases\TransientFailure;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
@@ -16,33 +19,56 @@ use Illuminate\Support\Carbon;
 class SyncReleases extends Command
 {
     protected $signature = 'releases:sync
-        {--store=steam : Which store to read}
+        {--store=all : Which store to read — steam, nintendo, or all}
         {--from= : First month of the window, YYYY-MM}
         {--to= : Last month of the window, YYYY-MM}';
 
     protected $description = 'Read upcoming releases from the stores into our own tables';
 
-    public function handle(SteamSync $steam): int
+    public function handle(SteamSync $steam, NintendoSync $nintendo): int
     {
-        if ($this->option('store') !== 'steam') {
-            $this->error('Only steam is wired up so far.');
+        $available = ['steam' => $steam, 'nintendo' => $nintendo];
+        $wanted = $this->option('store');
+
+        if ($wanted !== 'all' && ! isset($available[$wanted])) {
+            $this->error("Unknown store '{$wanted}'. Available: ".implode(', ', array_keys($available)).', all.');
 
             return self::FAILURE;
         }
 
-        [$from, $to] = $steam->window(
+        $stores = $wanted === 'all' ? $available : [$wanted => $available[$wanted]];
+        $failed = false;
+
+        foreach ($stores as $name => $sync) {
+            // One store being down is not a reason to skip the others.
+            try {
+                $this->syncOne($name, $sync);
+            } catch (TransientFailure $e) {
+                $this->error("  {$name} could not be read: {$e->getMessage()}");
+                $failed = true;
+            }
+
+            $this->newLine();
+        }
+
+        return $failed ? self::FAILURE : self::SUCCESS;
+    }
+
+    private function syncOne(string $name, StoreSync $sync): void
+    {
+        [$from, $to] = $sync->window(
             $this->option('from') ? Carbon::createFromFormat('Y-m', $this->option('from'))->startOfMonth() : null,
             $this->option('to') ? Carbon::createFromFormat('Y-m', $this->option('to'))->endOfMonth() : null,
         );
 
-        $this->info("Steam · {$from->toDateString()} → {$to->toDateString()}");
+        $this->info(ucfirst($name)." · {$from->toDateString()} → {$to->toDateString()}");
         $this->line('<fg=gray>Reading the listing…</>');
 
         $started = now();
         $reasons = [];
         $bar = null;
 
-        $tally = $steam->run(
+        $tally = $sync->run(
             $from,
             $to,
             function (array $row, string $verdict, ?string $reason) use (&$reasons, &$bar) {
@@ -72,13 +98,14 @@ class SyncReleases extends Command
         $bar?->finish();
         $this->newLine(2);
         $this->table(
-            ['in window', 'new', 'delayed', 'rejected', 'unchanged', 'took'],
+            ['in window', 'new', 'delayed', 'rejected', 'unchanged', 'deferred', 'took'],
             [[
                 $tally['seen'],
                 $tally['created'],
                 $tally['updated'],
                 $tally['rejected'],
                 $tally['unchanged'],
+                $tally['skipped'],
                 $started->diffForHumans(now(), true),
             ]]
         );
@@ -94,7 +121,5 @@ class SyncReleases extends Command
                 $this->line(sprintf('  <fg=gray>%-36s %d</>', $reason, $count));
             }
         }
-
-        return self::SUCCESS;
     }
 }

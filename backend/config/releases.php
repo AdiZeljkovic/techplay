@@ -50,12 +50,17 @@ return [
         /*
          * The eShop is curated: Nintendo approves every listing, so there is
          * very little of what these rules exist to catch — 178 upcoming titles
-         * against Steam's 13,000. Its search API also carries no screenshots
-         * and no trailers at all, so Steam's thresholds would not filter
-         * Nintendo's catalogue, they would erase it.
+         * against Steam's 13,000.
+         *
+         * Its search API also carries no screenshots and no trailers at all,
+         * and what it calls a description is a one-line hook of about sixty
+         * characters ("Survive day and night on a small island in the middle
+         * of the ocean."). Steam's thresholds applied here would not filter
+         * Nintendo's catalogue, they would erase it — so the floor is set only
+         * high enough to catch a listing with nothing written about it.
          */
         'nintendo' => [
-            'min_description' => 120,
+            'min_description' => 40,
             'min_screenshots' => 0,
             'screenshots_without_trailer' => 0,
             'require_publisher' => true,
