@@ -23,7 +23,7 @@ export interface HeroModel {
     rank_color: string | null;
     /** Rank artwork. Null until the icons are seeded — the UI falls back. */
     rank_icon: string | null;
-    next_rank: { name: string; min_xp: number; color: string | null } | null;
+    next_rank: { name: string; min_xp: number; color: string | null; icon?: string | null } | null;
     is_online: boolean;
     /** Staff tick next to the name. */
     verified: boolean;

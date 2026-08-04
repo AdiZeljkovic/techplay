@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Achievement;
-use App\Models\Article;
 use App\Models\ConnectedAccount;
 use App\Models\Friendship;
 use App\Models\Game;
@@ -21,7 +20,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class DashboardController extends Controller
 {
@@ -88,6 +86,9 @@ class DashboardController extends Controller
                     'name' => $nextRank->name,
                     'min_xp' => $nextRank->min_xp,
                     'color' => $nextRank->color,
+                    // The hero shows what you are climbing towards, so it needs
+                    // the emblem and not only the name.
+                    'icon' => $nextRank->icon,
                 ] : null,
                 // hero identity line: verified tick + the platforms you play on
                 'is_staff' => $user->hasRole(['admin', 'Admin', 'Super Admin', 'editor', 'Editor', 'Editor-in-Chief', 'moderator', 'Moderator', 'Journalist'])
@@ -151,7 +152,6 @@ class DashboardController extends Controller
                 'unlocked_at' => $a->pivot->unlocked_at,
             ])->all();
     }
-
 
     /**
      * Friends with an active presence right now. Privacy: only is_active rows

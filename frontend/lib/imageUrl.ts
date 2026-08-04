@@ -61,6 +61,13 @@ export function getStorageUrl(path: string | undefined | null): string {
         return path;
     }
 
+    // A leading slash means the asset is served by this app, not by the
+    // backend's storage disk — rank emblems, for one. Prefixing those would
+    // send the browser looking for them on the API host.
+    if (path.startsWith('/')) {
+        return path;
+    }
+
     return `${process.env.NEXT_PUBLIC_STORAGE_URL}/${path}`;
 }
 
