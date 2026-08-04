@@ -237,7 +237,7 @@ export interface ClanBasePayload {
 export interface ClanProfile extends ClanSummary {
     requirements: string | null;
     language: string | null;
-    owner: { id: number; username: string; avatar: string | null };
+    owner: { id: number; username: string; avatar_url: string | null };
     progress: ClanProgress;
     resources: ClanResources;
     online_count: number;

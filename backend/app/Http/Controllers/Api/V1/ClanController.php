@@ -147,7 +147,7 @@ class ClanController extends Controller
         $this->createClanForumCategory($clan);
         ClanResourceService::forgetClanId($user->id);
 
-        return $this->success($clan->load('owner:id,username,avatar'), 'Clan created!', 201);
+        return $this->success($clan->load('owner:id,username,avatar_url'), 'Clan created!', 201);
     }
 
     /**
@@ -178,8 +178,8 @@ class ClanController extends Controller
         $clan = Clan::where('slug', $slug)
             ->withCount('members')
             ->with([
-                'owner:id,username,avatar',
-                'members' => fn ($q) => $q->with('user:id,username,avatar,xp')->orderBy('role'),
+                'owner:id,username,avatar_url',
+                'members' => fn ($q) => $q->with('user:id,username,avatar_url,xp')->orderBy('role'),
             ])
             ->firstOrFail();
 
@@ -233,7 +233,7 @@ class ClanController extends Controller
         $roster = $clan->members->map(fn (ClanMember $m) => [
             'user' => $m->user ? [
                 'username' => $m->user->username,
-                'avatar' => $m->user->avatar,
+                'avatar' => $m->user->avatar_url,
                 'xp' => (int) $m->user->xp,
             ] : null,
             'role' => $m->role,
