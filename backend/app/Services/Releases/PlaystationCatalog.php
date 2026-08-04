@@ -28,11 +28,29 @@ class PlaystationCatalog
 
     private const SITE = 'https://store.playstation.com';
 
-    /** Sony's "Coming Soon" collection. */
-    private const CATEGORY = '44d8bb20-653e-431e-8ad0-c0a365f68d2f';
+    /**
+     * Sony's "Pre-orders" collection — everything announced with a date.
+     *
+     * Found by sweeping the store's own landing pages for category links and
+     * reading each one's title, which is the only reliable way to know what a
+     * collection actually is. Worth doing again if this ever empties: Sony
+     * publishes several collections with near-identical names, and an earlier
+     * guess at this constant turned out to be "All PS4 Games" — the back
+     * catalogue, containing nothing unreleased at all.
+     */
+    private const CATEGORY = '3bf499d7-7acf-4931-97dd-2667494ee2c9';
 
-    /** The listing pages hold 24 each and run to several hundred products. */
-    private const MAX_PAGES = 60;
+    /**
+     * What that collection's page must call itself.
+     *
+     * Checked on every walk, because reading the wrong collection is silent:
+     * it returns products, with dates, that look perfectly reasonable until
+     * someone notices they are all in the past.
+     */
+    private const CATEGORY_TITLE = 'pre-order';
+
+    /** The listing pages hold 24 each; pre-orders run to a few hundred. */
+    private const MAX_PAGES = 30;
 
     /**
      * Every product in the coming-soon collection.
@@ -105,9 +123,38 @@ class PlaystationCatalog
             throw new TransientFailure('playstation answered '.$response->status());
         }
 
+        // The first page is asked to prove it is the collection we meant.
+        if ($page === 1) {
+            $this->assertRightCollection($response->body());
+        }
+
         preg_match_all('#/en-us/product/([A-Za-z0-9_\-]+)#', $response->body(), $m);
 
         return array_values(array_unique($m[1] ?? []));
+    }
+
+    /**
+     * Refuse to walk a collection that is not the one we meant.
+     *
+     * This exists because the alternative already happened: a category id that
+     * looked right returned 1,440 products with perfectly plausible dates, and
+     * an hour went on downloading games that had come out the previous year.
+     * The page had been saying "All PS4 Games" in its title the whole time.
+     */
+    private function assertRightCollection(string $html): void
+    {
+        preg_match('/<title>(.*?)<\/title>/s', $html, $m);
+        $title = mb_strtolower(html_entity_decode($m[1] ?? ''));
+
+        if (! str_contains($title, self::CATEGORY_TITLE)) {
+            throw new \RuntimeException(sprintf(
+                'PlayStation category %s is titled "%s", not a %s collection. '
+                .'Sony has moved it — sweep the store\'s landing pages for category links and read their titles.',
+                self::CATEGORY,
+                trim($m[1] ?? 'nothing'),
+                self::CATEGORY_TITLE,
+            ));
+        }
     }
 
     /**
@@ -173,12 +220,7 @@ class PlaystationCatalog
             'precision' => 'day',
             'url' => self::SITE.'/en-us/product/'.$id,
 
-            // FULL_GAME is the only classification that belongs on a calendar;
-            // the rest are add-ons, currency and season passes.
-            'type' => ($product['storeDisplayClassification'] ?? '') === 'FULL_GAME'
-                && ($product['topCategory'] ?? '') === 'GAME'
-                    ? 'game'
-                    : mb_strtolower((string) ($product['storeDisplayClassification'] ?? 'unknown')),
+            'type' => $this->kind($product),
 
             'description' => $this->description($product),
             'hero' => $this->hero($media),
@@ -232,6 +274,25 @@ class PlaystationCatalog
         $walk($cache);
 
         return collect(array_values($found));
+    }
+
+    /**
+     * Whether Sony is describing a game or something bought alongside one.
+     *
+     * The pre-orders collection is largely Ultimate and Deluxe editions, which
+     * are not FULL_GAME but are still games — the same game with extras, and
+     * the title normaliser strips the edition suffix so they fold into the
+     * plain version from another store. What has to stay out is add-ons,
+     * season passes and currency.
+     */
+    private function kind(array $product): string
+    {
+        $classification = mb_strtoupper((string) ($product['storeDisplayClassification'] ?? 'UNKNOWN'));
+
+        $isGame = ($product['topCategory'] ?? '') === 'GAME'
+            && in_array($classification, config('releases.playstation_kinds', []), true);
+
+        return $isGame ? 'game' : mb_strtolower($classification);
     }
 
     /** Sony files several kinds of copy together; the legal one is not it. */

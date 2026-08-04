@@ -27,6 +27,9 @@ class PlaystationReleaseSyncTest extends TestCase
     /** A page body written by hand, when a test needs an exact shape. */
     private ?string $rawPage = null;
 
+    /** What the collection's page calls itself. */
+    private string $categoryTitle = 'Pre-orders | Official PlayStation Store US';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -48,7 +51,9 @@ class PlaystationReleaseSyncTest extends TestCase
                     ->map(fn (string $id) => "<a href=\"/en-us/product/{$id}\">x</a>")
                     ->implode('');
 
-                return Http::response("<html>{$links}</html>");
+                return Http::response(
+                    "<html><title>{$this->categoryTitle}</title>{$links}</html>"
+                );
             },
 
             'store.playstation.com/en-us/product/*' => function ($request) {
@@ -233,6 +238,20 @@ class PlaystationReleaseSyncTest extends TestCase
 
         $this->assertSame(0, $tally['seen']);
         $this->assertSame(0, Game::count());
+    }
+
+    public function test_the_wrong_collection_is_refused_rather_than_walked(): void
+    {
+        // An id that looked right once returned 1,440 products with perfectly
+        // plausible dates, and an hour went on downloading last year's games.
+        // The page had been saying "All PS4 Games" the whole time.
+        $this->listing(['UP1' => $this->product()]);
+        $this->categoryTitle = 'All PS4 Games | Official PlayStation Store US';
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageMatches('/All PS4 Games/');
+
+        $this->sync();
     }
 
     public function test_the_store_falling_over_is_reported_not_swallowed(): void

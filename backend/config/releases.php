@@ -81,14 +81,19 @@ return [
         ],
 
         /*
-         * Sony's own copy is generous, and screenshots come with every product
-         * page, so PlayStation is held to the same standard as Steam. Its store
-         * classifies products explicitly — FULL_GAME against add-ons, currency
-         * and season passes — which does most of the filtering before these
-         * thresholds are reached at all.
+         * A pre-order page is an announcement, and Sony writes it like one.
+         * Measured across 18 upcoming titles the descriptions are bimodal:
+         * twelve between 16 and 71 characters, six between 1,600 and 2,400.
+         * The short ones are not thin listings, they are games that have not
+         * come out yet — Steam's 200-character floor would have refused
+         * two-thirds of them, exclusives included.
+         *
+         * Screenshots are the signal that survives here: a median of eight,
+         * and only the genuinely empty listings have none. Sony curates the
+         * store anyway, so there is little for a gate to catch.
          */
         'playstation' => [
-            'min_description' => 200,
+            'min_description' => 15,
             'min_screenshots' => 3,
             'screenshots_without_trailer' => 3,
             'require_publisher' => true,
@@ -107,6 +112,32 @@ return [
     */
 
     'allowed_types' => ['game'],
+
+    /*
+    |--------------------------------------------------------------------------
+    | What PlayStation calls a game
+    |--------------------------------------------------------------------------
+    |
+    | Sony classifies every product, which is a gift — but the pre-orders
+    | collection is mostly Ultimate and Deluxe editions, and those are not
+    | FULL_GAME. They are still games: the same game with extras, and the title
+    | normaliser strips the edition suffix so they merge with the plain version
+    | from Steam or Xbox anyway.
+    |
+    | What must stay out is add-ons, season passes and currency, which is what
+    | this list is for. Anything not named here is refused by name, so a
+    | classification we have not seen before is reported rather than assumed.
+    |
+    */
+
+    'playstation_kinds' => [
+        'FULL_GAME',
+        'PREMIUM_EDITION',
+        'GAME_BUNDLE',
+        'DELUXE_EDITION',
+        'STANDARD_EDITION',
+        'CROSS_BUY',
+    ],
 
     /*
     |--------------------------------------------------------------------------
