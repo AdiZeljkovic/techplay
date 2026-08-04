@@ -245,6 +245,7 @@ Route::prefix('v1')->group(function () {
         Route::put('/articles/{slug}/progress', [ReadingController::class, 'updateProgress'])->middleware('throttle:120,1');
 
         // AI Backlog Advisor
+        Route::get('/backlog/recommendations', [BacklogAdvisorController::class, 'recommendations']);
         Route::post('/backlog/suggest', [BacklogAdvisorController::class, 'suggest']);
 
         // Daily streak
