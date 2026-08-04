@@ -219,6 +219,63 @@ class CalendarTest extends TestCase
         }
     }
 
+    /* ── one release's own page ───────────────────────────────────────── */
+
+    public function test_a_release_has_its_own_page_built_from_what_the_stores_said(): void
+    {
+        $game = $this->entry([
+            'slug' => 'silksong',
+            'name' => 'Silksong',
+            'released' => now()->startOfMonth()->addDays(20)->toDateString(),
+            'screenshots_data' => ['a.jpg', 'b.jpg'],
+            'movies_data' => ['t.mp4'],
+            'platform_names' => ['PC', 'Nintendo Switch'],
+            'details_data' => ['publisher' => 'Team Cherry', 'developer' => 'Team Cherry', 'description' => 'A game.'],
+        ], ['steam', 'nintendo']);
+
+        GameStoreLink::where('game_id', $game->id)->update(['url' => 'https://store.example/silksong']);
+
+        $data = $this->getJson('/api/v1/calendar/silksong')->assertOk()->json('data');
+
+        $this->assertSame('Silksong', $data['name']);
+        $this->assertSame('Team Cherry', $data['publisher']);
+        $this->assertCount(2, $data['screenshots']);
+        $this->assertCount(1, $data['trailers']);
+        $this->assertSame(['PC', 'Nintendo Switch'], $data['platforms']);
+        $this->assertSame(
+            (int) now()->startOfDay()->diffInDays(now()->startOfMonth()->addDays(20), false),
+            $data['days_away'],
+            'the countdown is from today, not from the first of the month'
+        );
+
+        // The thing this page has that a games database page does not.
+        $this->assertSame(
+            ['Nintendo eShop', 'Steam'],
+            collect($data['stores'])->pluck('label')->sort()->values()->all(),
+            'where it will actually be sold'
+        );
+    }
+
+    public function test_a_release_page_offers_what_else_lands_that_month(): void
+    {
+        $this->entry(['slug' => 'the-one', 'released' => now()->startOfMonth()->addDays(5)->toDateString()]);
+        $this->entry(['name' => 'Also In August', 'released' => now()->startOfMonth()->addDays(9)->toDateString()]);
+        $this->entry(['name' => 'Next Month', 'released' => now()->addMonth()->startOfMonth()->addDays(3)->toDateString()]);
+
+        $also = $this->getJson('/api/v1/calendar/the-one')->assertOk()->json('data.also_this_month');
+
+        $this->assertCount(1, $also);
+        $this->assertSame('Also In August', $also[0]['name']);
+    }
+
+    public function test_the_archive_does_not_have_a_calendar_page(): void
+    {
+        // A released game belongs to the games database, not here.
+        Game::create(['slug' => 'half-life-2', 'name' => 'Half-Life 2', 'released' => '2004-11-16']);
+
+        $this->getJson('/api/v1/calendar/half-life-2')->assertStatus(404);
+    }
+
     public function test_the_month_can_be_stepped_through(): void
     {
         $data = $this->getJson('/api/v1/calendar?month=2026-08')->assertOk()->json('data.month');

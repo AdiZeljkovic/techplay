@@ -517,6 +517,7 @@ Route::prefix('v1')->group(function () {
     // Games (Rate limited - 60 per minute to prevent scraping)
     Route::middleware('throttle:60,1')->group(function () {
         Route::get('/calendar', [CalendarController::class, 'index']);
+        Route::get('/calendar/{slug}', [CalendarController::class, 'show']);
         Route::get('/games/calendar', [GameController::class, 'calendar']);
         Route::get('/games/hidden-gems', [GameController::class, 'hiddenGems']);
         Route::get('/games/on-this-day', [GameController::class, 'onThisDay']);

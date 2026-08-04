@@ -30,6 +30,14 @@ class CalendarController extends Controller
 {
     use ApiResponse;
 
+    /** How a store is named on a release's page. */
+    private const STORE_LABELS = [
+        'steam' => 'Steam',
+        'playstation' => 'PlayStation Store',
+        'xbox' => 'Xbox',
+        'nintendo' => 'Nintendo eShop',
+    ];
+
     /** The platform families the filter offers, and what our data calls them. */
     private const PLATFORM_FAMILIES = [
         'pc' => ['PC', 'Windows', 'Mac', 'Linux'],
@@ -95,6 +103,69 @@ class CalendarController extends Controller
             'genres' => $this->genresIn($releases),
             'watchlist' => $this->watchlist(),
             'most_followed' => $this->beyondThisMonth($month),
+        ]);
+    }
+
+    /**
+     * GET /calendar/{slug} — one upcoming release, in full.
+     *
+     * Deliberately not the games database's page. That one is about a game
+     * somebody has played: reviews, how long it takes, who else owns it. This
+     * is about a game nobody has played yet, and everything on it comes from
+     * what the stores said while announcing it — the art they chose, the
+     * trailer they cut, where it will be sold and on what.
+     */
+    public function show(Request $request, string $slug): JsonResponse
+    {
+        $game = Game::query()
+            ->whereNotNull('match_key')
+            ->where('slug', $slug)
+            ->with('storeLinks')
+            ->first();
+
+        if (! $game) {
+            return $this->error('That release is not in our calendar.', 404);
+        }
+
+        $mine = $this->myState([$slug]);
+        $released = $game->released;
+
+        return $this->success([
+            'slug' => $game->slug,
+            'name' => $game->name,
+            'released' => $released?->toDateString(),
+            'precision' => $game->release_precision,
+            // Negative once it is out, which the page needs in order to stop
+            // counting down and start saying it has landed.
+            'days_away' => $released ? (int) now()->startOfDay()->diffInDays($released->copy()->startOfDay(), false) : null,
+            'description' => data_get($game->details_data, 'description'),
+            'publisher' => data_get($game->details_data, 'publisher'),
+            'developer' => data_get($game->details_data, 'developer'),
+            'background_image' => $game->background_image,
+            'screenshots' => array_values($game->screenshots_data ?? []),
+            'trailers' => array_values($game->movies_data ?? []),
+            'genres' => array_values($game->genre_names ?? []),
+            'platforms' => array_values($game->platform_names ?? []),
+            'metacritic' => $game->metacritic,
+            'notability' => (int) $game->hype_score,
+
+            // The one thing this page has that no games database page does:
+            // where the thing will actually be sold.
+            'stores' => $game->storeLinks
+                ->filter(fn ($link) => filled($link->url))
+                ->map(fn ($link) => [
+                    'store' => $link->store,
+                    'label' => self::STORE_LABELS[$link->store] ?? ucfirst($link->store),
+                    'url' => $link->url,
+                ])
+                ->values()
+                ->all(),
+
+            'wishlists' => (int) ($this->wishlistCounts([$slug])[$slug] ?? 0),
+            'wishlisted' => in_array($slug, $mine['wishlisted'], true),
+            'reminder' => in_array($slug, $mine['reminders'], true),
+
+            'also_this_month' => $this->alsoThisMonth($game),
         ]);
     }
 
@@ -170,6 +241,39 @@ class CalendarController extends Controller
             ->limit(5)
             ->get()
             ->map(fn (Game $game) => $this->present($game))
+            ->all();
+    }
+
+    /**
+     * What else lands the same month, for somebody who came in from a search
+     * and has no idea what else is coming.
+     */
+    private function alsoThisMonth(Game $game): array
+    {
+        if (! $game->released) {
+            return [];
+        }
+
+        return app(CalendarVisibility::class)
+            ->apply(
+                Game::query()
+                    ->whereNotNull('match_key')
+                    ->whereKeyNot($game->id)
+                    ->whereBetween('released', [
+                        $game->released->copy()->startOfMonth()->toDateString(),
+                        $game->released->copy()->endOfMonth()->toDateString(),
+                    ])
+            )
+            ->orderByDesc('hype_score')
+            ->limit(6)
+            ->get()
+            ->map(fn (Game $other) => [
+                'slug' => $other->slug,
+                'name' => $other->name,
+                'released' => $other->released?->toDateString(),
+                'background_image' => $other->background_image,
+                'platforms' => array_values($other->platform_names ?? []),
+            ])
             ->all();
     }
 
