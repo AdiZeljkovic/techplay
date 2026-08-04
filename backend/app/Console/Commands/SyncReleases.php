@@ -36,24 +36,41 @@ class SyncReleases extends Command
         );
 
         $this->info("Steam · {$from->toDateString()} → {$to->toDateString()}");
+        $this->line('<fg=gray>Reading the listing…</>');
 
         $started = now();
         $reasons = [];
+        $bar = null;
 
-        $tally = $steam->run($from, $to, function (array $row, string $verdict, ?string $reason) use (&$reasons) {
-            $title = mb_strimwidth($row['title'], 0, 52, '…');
+        $tally = $steam->run(
+            $from,
+            $to,
+            function (array $row, string $verdict, ?string $reason) use (&$reasons, &$bar) {
+                if ($reason !== null) {
+                    $reasons[$reason] = ($reasons[$reason] ?? 0) + 1;
+                }
 
-            if ($verdict === 'created') {
-                $this->line("  <fg=green>+</> {$title}");
+                // Newly kept titles are the only ones worth a line of their
+                // own; everything else just moves the bar.
+                if ($verdict === 'created' && $bar) {
+                    $bar->clear();
+                    $this->line('  <fg=green>+</> '.mb_strimwidth($row['title'], 0, 60, '…'));
+                    $bar->display();
+                }
 
-                return;
-            }
+                $bar?->advance();
+            },
+            function (int $total) use (&$bar) {
+                $this->line("<fg=gray>{$total} titles in the window.</>");
+                $this->newLine();
 
-            $reasons[$reason] = ($reasons[$reason] ?? 0) + 1;
-            $this->line("  <fg=gray>–</> <fg=gray>{$title} — {$reason}</>");
-        });
+                $bar = $this->output->createProgressBar($total);
+                $bar->start();
+            },
+        );
 
-        $this->newLine();
+        $bar?->finish();
+        $this->newLine(2);
         $this->table(
             ['in window', 'new', 'delayed', 'rejected', 'unchanged', 'took'],
             [[

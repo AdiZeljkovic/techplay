@@ -227,6 +227,44 @@ class SteamReleaseSyncTest extends TestCase
         $this->assertSame($spentOnFirstPass, $this->detailCalls(), 'a delay costs no detail request');
     }
 
+    public function test_every_title_is_reported_even_the_ones_already_known(): void
+    {
+        // A resumed run is almost entirely titles we already have. Reporting
+        // only new ones made a working sync look like a hung one.
+        $this->fakeSteam([$this->row()]);
+        $this->sync();
+
+        $this->fakeSteam([$this->row()]);
+
+        $seen = [];
+        app(SteamSync::class)->run(
+            Carbon::parse('2026-08-01'),
+            Carbon::parse('2026-10-31'),
+            function (array $row, string $verdict) use (&$seen) {
+                $seen[] = $verdict;
+            },
+        );
+
+        $this->assertSame(['unchanged'], $seen);
+    }
+
+    public function test_the_window_size_is_announced_before_the_work_starts(): void
+    {
+        $this->fakeSteam([$this->row(['appid' => '1']).$this->row(['appid' => '2'])]);
+
+        $announced = null;
+        app(SteamSync::class)->run(
+            Carbon::parse('2026-08-01'),
+            Carbon::parse('2026-10-31'),
+            null,
+            function (int $total) use (&$announced) {
+                $announced = $total;
+            },
+        );
+
+        $this->assertSame(2, $announced);
+    }
+
     public function test_demos_and_dlc_are_excluded_by_the_request_itself(): void
     {
         // About a quarter of Steam's raw "coming soon" listing is demos and

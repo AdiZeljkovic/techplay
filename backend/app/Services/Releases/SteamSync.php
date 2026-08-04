@@ -31,13 +31,24 @@ class SteamSync
     ) {}
 
     /**
+     * @param  ?\Closure  $onDiscovered  called once with the number of titles in
+     *                                   the window, before any of them are handled
+     * @param  ?\Closure  $progress  called for every title, whatever happens to it
      * @return array{seen:int,created:int,updated:int,rejected:int,unchanged:int}
      */
-    public function run(?Carbon $from = null, ?Carbon $to = null, ?\Closure $progress = null): array
-    {
+    public function run(
+        ?Carbon $from = null,
+        ?Carbon $to = null,
+        ?\Closure $progress = null,
+        ?\Closure $onDiscovered = null,
+    ): array {
         [$from, $to] = $this->window($from, $to);
 
         $rows = $this->catalog->listWindow($from, $to);
+
+        if ($onDiscovered) {
+            $onDiscovered(count($rows));
+        }
 
         $tally = ['seen' => count($rows), 'created' => 0, 'updated' => 0, 'rejected' => 0, 'unchanged' => 0];
 
@@ -47,18 +58,21 @@ class SteamSync
                 ->first();
 
             if ($link) {
-                $tally[$this->refresh($link, $row)]++;
+                $verdict = $this->refresh($link, $row);
+                $reason = null;
+            } else {
+                [$verdict, $reason] = $this->ingest($row);
 
-                continue;
+                // Only a first encounter costs a request, so this is the only
+                // place that needs to be polite about pacing.
+                usleep(config('releases.delay_ms') * 1000);
             }
 
-            [$verdict, $reason] = $this->ingest($row);
             $tally[$verdict]++;
 
-            // Only a first encounter costs a request, so this is the only place
-            // that needs to be polite about pacing.
-            usleep(config('releases.delay_ms') * 1000);
-
+            // Reported for every title, including the ones already known. A
+            // resumed run is mostly those, and staying silent through them made
+            // a working sync look like a hung one.
             if ($progress) {
                 $progress($row, $verdict, $reason);
             }
@@ -95,7 +109,12 @@ class SteamSync
             return 'unchanged';
         }
 
-        if ($date === null || ((string) $game->released === $date && $game->release_precision === $row['precision'])) {
+        // released is cast to a date, so it stringifies with a time component.
+        // Comparing that against a plain date never matched, which made every
+        // sync call every game delayed and rewrite it for nothing.
+        $current = $game->released?->toDateString();
+
+        if ($date === null || ($current === $date && $game->release_precision === $row['precision'])) {
             return 'unchanged';
         }
 
