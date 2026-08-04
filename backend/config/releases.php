@@ -66,6 +66,20 @@ return [
             'require_publisher' => true,
         ],
 
+        /*
+         * Microsoft's display catalogue answers with as much as Steam does —
+         * full descriptions and seven to sixteen screenshots — so Xbox is held
+         * to the same standard. It never reports a trailer, though, so the
+         * make-up-for-it threshold is set level with the plain one rather than
+         * gating the whole catalogue on something the source cannot provide.
+         */
+        'xbox' => [
+            'min_description' => 200,
+            'min_screenshots' => 4,
+            'screenshots_without_trailer' => 4,
+            'require_publisher' => true,
+        ],
+
     ],
 
     /*
@@ -102,6 +116,19 @@ return [
         'steam_tag_ids' => [12095, 6650, 9130],
         // 3 = Adult Only Sexual Content, 4 = Frequent Nudity or Sexual Content
         'steam_descriptor_ids' => [3, 4],
+
+        /*
+         * Xbox barely needs one. Microsoft's certification does not admit
+         * Adults Only products at all, so unlike Steam — where anyone may
+         * publish — the storefront is the filter and this is only a backstop.
+         *
+         * It is one code rather than a family of them because a wider match
+         * was measured doing real damage: 'sex' alone caught 29% of a
+         * 200-title sample, and what it caught was "PEGI:SexInn" — sexual
+         * innuendo — on ordinary JRPGs and visual novels. Boards flag a
+         * spectrum; only the top of it means a product does not belong here.
+         */
+        'xbox_descriptors' => ['esrb:ao'],
     ],
 
     /*
@@ -159,5 +186,31 @@ return [
 
     'delay_ms' => 1500,
     'timeout' => 20,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Xbox
+    |--------------------------------------------------------------------------
+    |
+    | Xbox is the one store that will not say which of its titles are still to
+    | come. Steam and Nintendo hand us a date in the listing; Xbox's only
+    | enumerable index is its sitemap, and a sitemap carries ids and nothing
+    | else. So the release date has to be asked for, product by product.
+    |
+    | That sounds worse than it is. Asking happens once per product, ever — the
+    | answer is kept, including for products that fall outside the window, so
+    | the window moving forward is afterwards a question for our own database
+    | rather than for Microsoft. Measured: 42,036 products, 211 batched
+    | requests, about five minutes. Every pass after the first only asks about
+    | ids the sitemap has gained since.
+    |
+    */
+
+    'xbox' => [
+        'batch' => 200,
+        'sitemap_index' => 'https://www.xbox.com/sitemap.xml',
+        // Product detail pages for the market we read.
+        'sitemap_pattern' => '/pdp-en-US-sitemap-',
+    ],
 
 ];

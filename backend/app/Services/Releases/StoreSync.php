@@ -65,6 +65,20 @@ abstract class StoreSync
     }
 
     /**
+     * Rejections worth revisiting.
+     *
+     * A verdict about the game — too little written about it, not a game at
+     * all — is final, and re-fetching it would only reach the same answer. A
+     * note that we could not reach the store is not a verdict at all.
+     *
+     * @return array<int,string>
+     */
+    protected function retryable(): array
+    {
+        return [self::UNREACHABLE];
+    }
+
+    /**
      * @param  ?\Closure  $onDiscovered  called once with the number of titles in
      *                                   the window, before any of them are handled
      * @param  ?\Closure  $progress  called for every title, whatever happens to it
@@ -93,7 +107,7 @@ abstract class StoreSync
 
             // A store that could not answer last time gets another chance.
             // Only verdicts about the game itself are final.
-            if ($link && $link->game_id === null && $link->rejected_reason === self::UNREACHABLE) {
+            if ($link && $link->game_id === null && in_array($link->rejected_reason, $this->retryable(), true)) {
                 $link->delete();
                 $link = null;
             }
