@@ -199,6 +199,26 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(EditorialMessage::class, 'recipient_id');
     }
 
+    /**
+     * The cover image as something a browser can load.
+     *
+     * The column holds a path relative to the public disk for anything
+     * uploaded here, but older rows hold a full url. Three places used to work
+     * this out for themselves and a fourth — the resource the logged-in user is
+     * built from — did not expose the field at all, which is why uploading a
+     * cover appeared to do nothing.
+     */
+    public function coverImageUrl(): ?string
+    {
+        if (blank($this->cover_image)) {
+            return null;
+        }
+
+        return str_starts_with($this->cover_image, 'http')
+            ? $this->cover_image
+            : asset('storage/'.$this->cover_image);
+    }
+
     public function nextRank()
     {
         return Rank::where('min_xp', '>', $this->xp ?? 0)

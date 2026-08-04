@@ -23,6 +23,9 @@ class UserResource extends JsonResource
             'author_social_links' => $this->author_social_links,
             'display_name' => $this->display_name,
             'avatar_url' => $this->avatar_url,
+            // Absent until now, which is why the settings page always showed
+            // "no cover image" and an upload looked like it had failed.
+            'cover_image' => $this->coverImageUrl(),
             'bio' => $this->bio,
             'email' => $this->when($request->user()?->id === $this->id, $this->email),
             // Own setting only — nobody else needs to know how you're configured

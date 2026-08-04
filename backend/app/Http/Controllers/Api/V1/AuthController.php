@@ -222,7 +222,7 @@ class AuthController extends Controller
                 'username' => $user->username,
                 'display_name' => $user->display_name,
                 'avatar_url' => $user->avatar_url,
-                'cover_image' => $user->cover_image ? asset('storage/'.$user->cover_image) : null,
+                'cover_image' => $user->coverImageUrl(),
                 'created_at' => $user->created_at,
                 'xp' => $user->xp ?? 0,
                 'rank' => $user->rank ? [
@@ -508,9 +508,12 @@ class AuthController extends Controller
         } catch (\Throwable) {
         }
 
+        // Answering with the raw model handed the client a path relative to the
+        // public disk, where every read endpoint returns a url. The settings
+        // page could not show what it had just saved.
         return response()->json([
             'message' => 'Profile updated successfully',
-            'user' => $user->fresh()->load('rank'),
+            'user' => new UserResource($user->fresh()->load('rank')),
         ]);
     }
 

@@ -107,12 +107,7 @@ class AuthorController extends Controller
             $techCount = $articlesByType->get('tech', 0);
             $total = $newsCount + $reviewsCount + $techCount + $guidesCount;
 
-            $coverImage = null;
-            if ($user->cover_image) {
-                $coverImage = str_starts_with($user->cover_image, 'http')
-                    ? $user->cover_image
-                    : asset('storage/'.$user->cover_image);
-            }
+            $coverImage = $user->coverImageUrl();
 
             $socialLinks = $user->author_social_links ?? [];
             $socialUrls = array_filter([

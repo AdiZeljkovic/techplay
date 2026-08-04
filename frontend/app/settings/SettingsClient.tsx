@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useAuth as useAuthContext } from "@/context/AuthContext";
 import axios from "@/lib/axios";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -33,6 +34,9 @@ const VISIBILITY_OPTIONS: { id: Visibility; label: string; description: string; 
 
 export default function SettingsClient() {
     const { user, isLoading, logout } = useAuth({ middleware: 'auth' });
+    // The hook handles the redirect; the context is what actually holds the
+    // user everything else renders from, so a save has to update that too.
+    const { updateUser } = useAuthContext();
     const router = useRouter();
 
     const [saving, setSaving] = useState(false);
@@ -142,10 +146,19 @@ export default function SettingsClient() {
                 formData.append('cover_image', coverFile);
             }
 
-            // Using POST to /user/profile with _method: PUT
-            await axios.post('/user/profile', formData, {
+            // POST with _method spoofing, because PUT cannot carry files.
+            const { data } = await axios.post('/user/profile', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
+
+            // Without this the page keeps rendering the user it was given on
+            // mount, so a freshly uploaded cover looks like it never saved.
+            if (data?.user) {
+                updateUser(data.user);
+                setCoverPreview(data.user.cover_image ?? null);
+                setCoverFile(null);
+                setAvatarFile(null);
+            }
 
             // Revalidate SWR cache for profile page if needed
             if (user?.username) {
