@@ -70,6 +70,6 @@ class CheckWishlistReleases extends Command
         }
 
         $label = $daysAway === 0 ? 'today' : "in {$daysAway} days";
-        $this->info("[$label] Notified {$notified} user(s) for " . $games->count() . ' game(s) releasing ' . $label . '.');
+        $this->info("[$label] Notified {$notified} user(s) for ".$games->count().' game(s) releasing '.$label.'.');
     }
 }

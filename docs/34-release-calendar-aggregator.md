@@ -20,7 +20,7 @@ from that endpoint now fails the suite.
 | **Steam** | search listing, 100/page, **carries dates** | `appdetails`, 1/game | none | ~40 min/month | minutes |
 | **Nintendo** | Solr query — **listing is the whole record** | none needed | none | 0.4 s | 0.4 s |
 | **Xbox** | sitemap, 42k ids, **no dates** | display catalogue, 200/request | none | ~5 min | seconds |
-| **PlayStation** | coming-soon category, 24/page, **no dates** | product page `__NEXT_DATA__`, 1/game | none | ~40 min | seconds |
+| **PlayStation** | ✗ **no usable index** — see below | product page `__NEXT_DATA__`, 1/game | none | — | — |
 
 Two shapes fall out of that table, and they are the whole design.
 
@@ -29,8 +29,8 @@ the window for free. A title costs a detail request once in its life; after that
 the listing alone is enough to notice a delay, which is the only thing about an
 unreleased game that actually changes.
 
-**Stores that do not** (Xbox, PlayStation) have to be asked product by product
-just to learn what is coming. `BlindCatalogueSync` handles both: every answer is
+**Stores that do not** (Xbox, and PlayStation if it is ever made to work) have to
+be asked product by product just to learn what is coming. `BlindCatalogueSync` handles both: every answer is
 kept, *including for products outside the window*, which get a row carrying
 their date and nothing else. A window rolling forward into next quarter is then
 a question for our own tables.
@@ -69,7 +69,7 @@ same everywhere:
 - **Xbox** — same as Steam. `ProductKind` separates games from add-ons before any
   of it applies.
 - **PlayStation** — same as Steam. `storeDisplayClassification = FULL_GAME` does
-  most of the work.
+  most of the work. Not currently reached; see below.
 
 **A caution learned the hard way.** The Xbox adult filter originally matched
 `sex` across ratings codes and caught **29% of a 200-title sample** — what it was
@@ -109,11 +109,13 @@ it. The page says "Biggest", not "Most anticipated", because that is what it is.
 ## Running it
 
 ```bash
-php artisan releases:sync                      # all four
+php artisan releases:sync                      # steam, nintendo, xbox
 php artisan releases:sync --store=steam        # one
 php artisan releases:sync --from=2026-08 --to=2026-08
 php artisan releases:merge                     # fold duplicates, rescore
 php artisan releases:merge --pending           # pairs waiting on an editor
+php artisan releases:sync --store=playstation  # opt-in; see the caveat below
+php artisan releases:forget playstation        # undo a sweep that read the wrong thing
 ```
 
 Scheduled weekly (`routes/console.php`): sync at 03:00 Monday, merge at 05:30.
@@ -136,13 +138,37 @@ there is left alone by both sync and merge.
 
 ## What is fragile, and what to do about it
 
-**PlayStation** is the one to watch. Sony has no API of any kind, so we read the
-JSON their own page carries. A visual redesign does not touch that; a change to
-how the page is *assembled* would. Two bugs already came from that shape: the
-page is built from fragments carrying overlapping slices of one cache, most of
-them thin, so merging by replacement erased the release date — they are unioned
-now. And the art hangs off the *concept*, not the product, so images are
-gathered by shape rather than by path.
+**PlayStation does not currently contribute anything**, and the reason is worth
+recording so nobody repeats the afternoon it cost.
+
+Reading a PlayStation *product* works: `PlaystationCatalog::details()` returns a
+title, date, platforms, publisher, hero art, screenshots and a full description,
+all from the JSON Sony's own page carries. What does not work is finding out
+*which* products to read. Sony's only server-rendered listing is the back
+catalogue — the page is titled **"All PS4 Games"** — and unreleased titles do not
+appear in it at all. Sixty pages produced 1,440 products dated between June 2024
+and July 2026 and not one upcoming release. The store's own "Coming soon" control
+is a facet (`conceptReleaseDate=next_thirty_days`) applied in the browser;
+passing it as a query parameter changes nothing.
+
+The mistake that cost the time was mine and was avoidable: the category id came
+from a url early in the session, it returned products with plausible dates, and
+I never opened the page's `<title>` to see what collection it actually was.
+
+PlayStation is therefore excluded from `--store=all` and from the schedule. The
+code stays and still runs on request. The remaining way in is Sony's whitelisted
+GraphQL with the persisted-query hash read out of their own JS at runtime, which
+is worth trying and is the next thing to attempt.
+
+Two bugs were fixed along the way and both are instructive about this source's
+shape: the page is built from fragments carrying overlapping slices of one
+Apollo cache, most of them thin, so merging by replacement erased the release
+date — they are unioned now. And the art hangs off the *concept*, not the
+product, so images are gathered by shape rather than by path.
+
+`releases:forget playstation` clears a mistaken sweep so a source can be asked
+again from scratch. It refuses to drop listings that became calendar entries
+unless told to.
 
 **Epic and Ubisoft** are not sources. Both block automated access outright.
 Their games are covered anyway — Ubisoft returned to Steam in 2022, and most of

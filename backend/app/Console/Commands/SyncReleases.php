@@ -30,6 +30,24 @@ class SyncReleases extends Command
     public function handle(SteamSync $steam, NintendoSync $nintendo, XboxSync $xbox, PlaystationSync $playstation): int
     {
         $available = ['steam' => $steam, 'nintendo' => $nintendo, 'xbox' => $xbox, 'playstation' => $playstation];
+
+        /*
+         * PlayStation is kept out of "all" until it has something to give.
+         *
+         * Sony's only server-rendered product listing is its back catalogue —
+         * the page is titled "All PS4 Games" — and unreleased titles do not
+         * appear in it at all. Sixty pages of it produced 1,440 products dated
+         * between June 2024 and July 2026, and not one upcoming release. The
+         * store's own "Coming soon" control is a facet applied in the browser,
+         * and passing it as a query parameter changes nothing server-side.
+         *
+         * The code stays and still runs on request, because the remaining way
+         * in — Sony's whitelisted GraphQL, with the query hash read out of
+         * their own JS — is worth trying. Until then, running it weekly would
+         * spend an hour re-reading games that came out last year.
+         */
+        $scheduled = ['steam' => $steam, 'nintendo' => $nintendo, 'xbox' => $xbox];
+
         $wanted = $this->option('store');
 
         if ($wanted !== 'all' && ! isset($available[$wanted])) {
@@ -38,7 +56,7 @@ class SyncReleases extends Command
             return self::FAILURE;
         }
 
-        $stores = $wanted === 'all' ? $available : [$wanted => $available[$wanted]];
+        $stores = $wanted === 'all' ? $scheduled : [$wanted => $available[$wanted]];
         $failed = false;
 
         foreach ($stores as $name => $sync) {

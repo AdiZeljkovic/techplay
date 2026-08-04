@@ -20,6 +20,7 @@ class FixNotificationProfileLinks extends Command
 
         if ($rows->isEmpty()) {
             $this->info('No notifications to fix.');
+
             return self::SUCCESS;
         }
 
@@ -32,6 +33,7 @@ class FixNotificationProfileLinks extends Command
 
             if (! $user || ! $user->username) {
                 $this->warn("  Skipping notification {$row->id} — user not found.");
+
                 continue;
             }
 
