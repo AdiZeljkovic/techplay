@@ -38,11 +38,29 @@ return [
     */
 
     'quality' => [
-        'min_description' => 200,
-        'min_screenshots' => 4,
-        // A game with no trailer has to make up for it in screenshots.
-        'screenshots_without_trailer' => 6,
-        'require_publisher' => true,
+
+        'default' => [
+            'min_description' => 200,
+            'min_screenshots' => 4,
+            // A game with no trailer has to make up for it in screenshots.
+            'screenshots_without_trailer' => 6,
+            'require_publisher' => true,
+        ],
+
+        /*
+         * The eShop is curated: Nintendo approves every listing, so there is
+         * very little of what these rules exist to catch — 178 upcoming titles
+         * against Steam's 13,000. Its search API also carries no screenshots
+         * and no trailers at all, so Steam's thresholds would not filter
+         * Nintendo's catalogue, they would erase it.
+         */
+        'nintendo' => [
+            'min_description' => 120,
+            'min_screenshots' => 0,
+            'screenshots_without_trailer' => 0,
+            'require_publisher' => true,
+        ],
+
     ],
 
     /*

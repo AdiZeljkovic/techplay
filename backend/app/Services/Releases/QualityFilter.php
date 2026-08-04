@@ -25,7 +25,7 @@ class QualityFilter
      *
      * @return string|null the reason it was rejected, or null when it passes
      */
-    public function reject(array $candidate): ?string
+    public function reject(array $candidate, string $store = 'default'): ?string
     {
         $config = config('releases');
 
@@ -38,7 +38,7 @@ class QualityFilter
             return "not a game ({$type})";
         }
 
-        $quality = $config['quality'];
+        $quality = $this->rulesFor($store);
 
         if (mb_strlen((string) ($candidate['description'] ?? '')) < $quality['min_description']) {
             return 'description too short';
@@ -64,9 +64,27 @@ class QualityFilter
         return null;
     }
 
-    public function passes(array $candidate): bool
+    public function passes(array $candidate, string $store = 'default'): bool
     {
-        return $this->reject($candidate) === null;
+        return $this->reject($candidate, $store) === null;
+    }
+
+    /**
+     * The thresholds a given store is judged by.
+     *
+     * They cannot be the same everywhere. These rules were written against
+     * Steam, where anyone may publish and much of the upcoming catalogue is
+     * asset flips. The eShop is curated and its search API carries no
+     * screenshots at all, so applying Steam's numbers there would not filter
+     * Nintendo's catalogue — it would erase it.
+     *
+     * @return array<string,mixed>
+     */
+    private function rulesFor(string $store): array
+    {
+        $quality = config('releases.quality');
+
+        return array_merge($quality['default'], $quality[$store] ?? []);
     }
 
     /**

@@ -262,6 +262,7 @@ class SteamCatalog
             $rows[] = [
                 'store_id' => $id[1],
                 'title' => $title,
+                'url' => "https://store.steampowered.com/app/{$id[1]}/",
                 'raw_date' => $raw,
                 'anchor' => $anchor,
                 'precision' => $precision,
