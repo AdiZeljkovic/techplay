@@ -1,48 +1,55 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import WrappedClient from "./WrappedClient";
+import WrappedClient, { type WrappedPayload } from "./WrappedClient";
 import { getApiUrl } from "@/lib/api";
 
 interface Props {
-  params: Promise<{ username: string }>;
-  searchParams: Promise<{ year?: string }>;
+    params: Promise<{ username: string }>;
+    searchParams: Promise<{ year?: string }>;
 }
 
-async function fetchWrapped(username: string, year: number) {
-  try {
-    const res = await fetch(`${getApiUrl()}/users/${username}/wrapped/${year}`, {
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json.data;
-  } catch {
-    return null;
-  }
+async function fetchWrapped(username: string, year: number): Promise<WrappedPayload | null> {
+    try {
+        const res = await fetch(`${getApiUrl()}/users/${username}/wrapped/${year}`, {
+            next: { revalidate: 1800 },
+        });
+        if (!res.ok) return null;
+        const json = await res.json();
+        return json.data ?? null;
+    } catch {
+        return null;
+    }
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { username } = await params;
-  const year = new Date().getFullYear();
-  const data = await fetchWrapped(username, year);
-  if (!data) return { title: "Gaming Wrapped" };
+/** The wrapper is made to be shared, so the year in the URL drives the meta. */
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+    const { username } = await params;
+    const sp = await searchParams;
+    const year = sp.year ? parseInt(sp.year, 10) : new Date().getFullYear();
+    const data = await fetchWrapped(username, year);
 
-  return {
-    title: `${data.display_name}'s ${year} Gaming Wrapped — TechPlay`,
-    description: `${data.games_completed} games completed, ${data.total_hours}h played, ${data.achievements} achievements in ${year}.`,
-    openGraph: {
-      images: [`/og/wrapped?username=${username}&year=${year}`],
-    },
-  };
+    if (!data) return { title: "Gaming Wrapper — TechPlay" };
+
+    const stat = (key: string) => data.stats.find((s) => s.key === key)?.value ?? 0;
+
+    return {
+        title: `${data.display_name}'s ${year} Gaming Wrapper — TechPlay`,
+        description: `${stat("games_completed")} games completed, ${stat("hours")}h played and ${stat("achievements")} achievements in ${year}. ${data.archetype.name}.`,
+        openGraph: {
+            title: `${data.display_name}'s ${year} in gaming`,
+            description: data.archetype.blurb,
+            images: [`/og/wrapped?username=${encodeURIComponent(username)}&year=${year}`],
+        },
+    };
 }
 
 export default async function WrappedPage({ params, searchParams }: Props) {
-  const { username } = await params;
-  const sp = await searchParams;
-  const year = sp.year ? parseInt(sp.year) : new Date().getFullYear();
+    const { username } = await params;
+    const sp = await searchParams;
+    const year = sp.year ? parseInt(sp.year, 10) : new Date().getFullYear();
 
-  const data = await fetchWrapped(username, year);
-  if (!data) notFound();
+    const data = await fetchWrapped(username, year);
+    if (!data) notFound();
 
-  return <WrappedClient data={data} year={year} />;
+    return <WrappedClient data={data} username={username} />;
 }

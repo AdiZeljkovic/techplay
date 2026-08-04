@@ -9,7 +9,17 @@ export async function GET(req: NextRequest) {
   const username = searchParams.get("username") ?? "";
   const year = searchParams.get("year") ?? new Date().getFullYear().toString();
 
-  let data: Record<string, any> = {};
+  // Only the handful of fields the card draws — enough shape to be safe
+  // without restating the whole wrapped payload here.
+  interface CardData {
+    display_name?: string;
+    avatar_url?: string;
+    archetype?: { name?: string };
+    dna?: { genres?: { name: string }[] };
+    stats?: { key: string; value: number }[];
+  }
+
+  let data: CardData = {};
   try {
     const res = await fetch(`${getApiUrl()}/users/${username}/wrapped/${year}`, {
       next: { revalidate: 3600 },
@@ -20,12 +30,16 @@ export async function GET(req: NextRequest) {
     }
   } catch {}
 
+  // The wrapped payload now reports stats as a labelled list with
+  // year-over-year context, so the card reads them by key.
+  const stat = (key: string) => (data.stats ?? []).find((s) => s.key === key)?.value ?? 0;
+
   const displayName = data.display_name ?? username;
-  const gamerType = data.gamer_type ?? "Gamer";
-  const totalHours = data.total_hours ?? 0;
-  const gamesCompleted = data.games_completed ?? 0;
-  const achievements = data.achievements ?? 0;
-  const topGenre = data.top_genre ?? "";
+  const gamerType = data.archetype?.name ?? "Gamer";
+  const totalHours = stat("hours");
+  const gamesCompleted = stat("games_completed");
+  const achievements = stat("achievements");
+  const topGenre = data.dna?.genres?.[0]?.name ?? "";
   const avatarUrl = data.avatar_url;
 
   return new ImageResponse(
