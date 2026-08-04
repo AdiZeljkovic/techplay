@@ -26,6 +26,11 @@ class Season extends Model
         return $this->hasMany(Quest::class);
     }
 
+    public function clanTrophies(): HasMany
+    {
+        return $this->hasMany(ClanTrophy::class);
+    }
+
     public static function active(): ?self
     {
         return static::where('is_active', true)->first();

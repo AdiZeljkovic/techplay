@@ -116,4 +116,64 @@ return [
     'mission_daily_member_cap' => 10,
     'mission_scale_exponent' => 0.8,
     'mission_scale_baseline' => 10,
+
+    /*
+     * Boosters. Officer-activated, time-limited, paid from the treasury.
+     * One running at a time (a Vault at L6 adds a second slot); each key
+     * has its own cooldown measured from when the last run ended.
+     */
+    'boosters' => [
+        'achievement_hunt' => [
+            'name' => 'Achievement Hunt',
+            'description' => 'Double Materials from every achievement unlocked.',
+            'duration_hours' => 24,
+            'cooldown_hours' => 72,
+            'cost' => ['resource' => 'materials', 'amount' => 800],
+            'effect' => ['type' => 'earn_multiplier', 'reasons' => ['achievement_unlocked'], 'multiplier' => 2.0],
+        ],
+        'backlog_weekend' => [
+            'name' => 'Backlog Weekend',
+            'description' => 'Double Materials from every game completed.',
+            'duration_hours' => 48,
+            'cooldown_hours' => 120,
+            'cost' => ['resource' => 'materials', 'amount' => 1200],
+            'effect' => ['type' => 'earn_multiplier', 'reasons' => ['game_completed'], 'multiplier' => 2.0],
+        ],
+        'community_rally' => [
+            'name' => 'Community Rally',
+            'description' => '+50% Intel from comments, reviews and lists.',
+            'duration_hours' => 24,
+            'cooldown_hours' => 72,
+            'cost' => ['resource' => 'intel', 'amount' => 800],
+            'effect' => ['type' => 'earn_multiplier', 'reasons' => ['comment_approved', 'review_published', 'list_published'], 'multiplier' => 1.5],
+        ],
+        'double_contribution' => [
+            'name' => 'Double Contribution Hour',
+            'description' => 'Mission progress counts twice while it runs.',
+            'duration_hours' => 1,
+            'cooldown_hours' => 24,
+            'cost' => ['resource' => 'materials', 'amount' => 500],
+            'effect' => ['type' => 'mission_multiplier', 'multiplier' => 2],
+        ],
+        'recruitment_signal' => [
+            'name' => 'Recruitment Signal',
+            'description' => 'The clan is featured in Discovery for a day.',
+            'duration_hours' => 24,
+            'cooldown_hours' => 96,
+            'cost' => ['resource' => 'prestige', 'amount' => 300],
+            'effect' => ['type' => 'discovery_feature'],
+        ],
+    ],
+
+    /* Vault level at which a second booster can run alongside the first. */
+    'boost_second_slot_vault' => 6,
+
+    /*
+     * Season settlement: Prestige paid to the podium (overall, by season
+     * ledger earn) and to the best clan of each size category.
+     */
+    'season_rewards' => [
+        'overall' => [1000, 600, 300],
+        'category' => 400,
+    ],
 ];

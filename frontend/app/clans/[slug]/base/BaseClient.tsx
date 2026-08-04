@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import {
     Shield, ShieldCheck, Castle, Radar, Swords, Vault as VaultIcon, Trophy, Library,
     Hammer, RadioTower, Lock, Plus, ChevronRight, Coins, Clock3, Zap, Loader2,
-    Users, X, ArrowUp, Sparkles, History, Check, Flag, Crown,
+    Users, X, ArrowUp, Sparkles, History, Check, Flag, Crown, Rocket,
 } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
@@ -17,7 +17,7 @@ import { useCountdown } from "@/hooks/useCountdown";
 import { timeAgo } from "@/lib/timeAgo";
 import { getStorageUrl } from "@/lib/imageUrl";
 import { TIER_COLORS } from "../../ClansClient";
-import type { ClanBasePayload, ClanBuildingRow, ClanMissionRow, ClanProjectRow } from "@/lib/types/clan";
+import type { ClanBasePayload, ClanBoostRow, ClanBuildingRow, ClanMissionRow, ClanProjectRow } from "@/lib/types/clan";
 import type { LucideIcon } from "lucide-react";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data);
@@ -340,6 +340,82 @@ function MissionCard({ mission }: { mission: ClanMissionRow }) {
                         <Crown className="w-3 h-3 text-[#f0b429]" />
                         {mission.top_contributors.map((c) => c.username).join(" · ")}
                     </span>
+                )}
+            </div>
+        </div>
+    );
+}
+
+/* ── boosters ─────────────────────────────────────────────────────────── */
+
+function BoosterRow({
+    boost, slug, canManage, slotsFree, onChanged,
+}: {
+    boost: ClanBoostRow;
+    slug: string;
+    canManage: boolean;
+    slotsFree: boolean;
+    onChanged: () => void;
+}) {
+    const [busy, setBusy] = useState(false);
+    const left = useCountdown(boost.active ? boost.ends_at : boost.cooldown_until);
+
+    const activate = async () => {
+        setBusy(true);
+        try {
+            await axios.post(`/clans/${slug}/base/boosts`, { key: boost.key });
+            toast.success(`${boost.name} activated`);
+            onChanged();
+        } catch (e: unknown) {
+            const message = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(message ?? "Couldn't activate that.");
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const costColor = RESOURCE_META[boost.cost.resource].color;
+
+    return (
+        <div
+            className={`rounded-[10px] border p-3 transition-colors ${
+                boost.active
+                    ? "border-emerald-500/35 bg-emerald-500/[0.05]"
+                    : "border-white/[0.06] bg-white/[0.015]"
+            }`}
+        >
+            <div className="flex items-center justify-between gap-2">
+                <span className="font-display text-[12px] font-bold text-white">{boost.name}</span>
+                {boost.active ? (
+                    <span className="inline-flex items-center gap-1.5 font-display text-[9px] font-black uppercase tracking-[0.1em] text-emerald-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        {left.done ? "Ending…" : `${left.hours + left.days * 24}h ${left.minutes}m`}
+                    </span>
+                ) : boost.on_cooldown ? (
+                    <span className="font-display text-[9px] font-black uppercase tracking-[0.1em] text-white/25">
+                        Cooldown {left.done ? "" : `${left.hours + left.days * 24}h`}
+                    </span>
+                ) : null}
+            </div>
+            <p className="mt-1 text-[11px] text-white/40 leading-snug">{boost.description}</p>
+            <div className="mt-2 flex items-center justify-between gap-2">
+                <span className="font-display text-[10px] font-bold tabular-nums" style={{ color: costColor }}>
+                    {boost.cost.amount.toLocaleString("en-US")} {RESOURCE_META[boost.cost.resource].label} · {boost.duration_hours}h
+                </span>
+                {canManage && !boost.active && !boost.on_cooldown && (
+                    <button
+                        onClick={activate}
+                        disabled={busy || !boost.affordable || !slotsFree}
+                        title={!slotsFree ? "Every booster slot is busy" : !boost.affordable ? "The treasury is short" : undefined}
+                        className={`inline-flex items-center gap-1.5 h-[26px] px-3 rounded-[6px] font-display text-[9px] font-black uppercase tracking-[0.1em] transition-[filter,background] ${
+                            boost.affordable && slotsFree
+                                ? "bg-[var(--accent)] hover:brightness-110 text-white"
+                                : "bg-white/[0.05] text-white/25 cursor-not-allowed"
+                        }`}
+                    >
+                        {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <Rocket className="w-3 h-3" />}
+                        Activate
+                    </button>
                 )}
             </div>
         </div>
@@ -736,6 +812,29 @@ export default function BaseClient({ slug }: { slug: string }) {
                             <p className="mt-3.5 pt-3 border-t border-white/[0.07] text-[10.5px] text-white/30 leading-snug">
                                 The Vault sets the ceiling — a full treasury is the signal to build, not to hoard.
                             </p>
+                        </Panel>
+
+                        <Panel
+                            title="Boosters"
+                            icon={<Rocket className="w-4 h-4 text-[var(--accent)]" />}
+                            meta={
+                                <span className="font-display text-[10px] font-black tabular-nums text-white/35">
+                                    {data.boosts.active_count}/{data.boosts.slots} running
+                                </span>
+                            }
+                        >
+                            <div className="space-y-2.5">
+                                {data.boosts.boosters.map((b) => (
+                                    <BoosterRow
+                                        key={b.key}
+                                        boost={b}
+                                        slug={slug}
+                                        canManage={data.can_manage}
+                                        slotsFree={data.boosts.active_count < data.boosts.slots}
+                                        onChanged={() => mutate()}
+                                    />
+                                ))}
+                            </div>
                         </Panel>
 
                         {activeBonuses.length > 0 && (

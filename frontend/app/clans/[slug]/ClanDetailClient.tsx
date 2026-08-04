@@ -18,6 +18,7 @@ import { timeAgo } from "@/lib/timeAgo";
 import { getStorageUrl } from "@/lib/imageUrl";
 import { TIER_COLORS } from "../ClansClient";
 import type { ClanApplicationRow, ClanProfile, ClanRosterMember } from "@/lib/types/clan";
+import { Trophy } from "lucide-react";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data);
 
@@ -516,6 +517,26 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
                                 </div>
                             )}
                         </Panel>
+
+                        {clan.trophies.length > 0 && (
+                            <Panel title="Clan Trophies" icon={<Trophy className="w-4 h-4 text-[#f0b429]" />}>
+                                <div className="space-y-2.5">
+                                    {clan.trophies.map((t) => (
+                                        <div key={t.id} className="flex items-center gap-3">
+                                            <span className="w-8 h-8 shrink-0 rounded-[8px] bg-[#f0b429]/12 border border-[#f0b429]/30 flex items-center justify-center">
+                                                <Trophy className="w-3.5 h-3.5 text-[#f0b429]" />
+                                            </span>
+                                            <span className="min-w-0">
+                                                <span className="block text-[12.5px] font-bold text-white leading-snug">{t.title}</span>
+                                                <span className="block font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/30">
+                                                    {new Date(t.awarded_at).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
+                                                </span>
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Panel>
+                        )}
 
                         {isOfficer && <ApplicationsPanel slug={clan.slug} onHandled={() => mutate()} />}
 

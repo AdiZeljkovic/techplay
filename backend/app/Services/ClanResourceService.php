@@ -115,6 +115,12 @@ class ClanResourceService
             return;
         }
 
+        // Boosters multiply before the caps trim - a boost helps you fill
+        // the ceiling faster, it never raises the ceiling.
+        if ($capped) {
+            $amount = (int) round($amount * app(ClanBoostService::class)->earnMultiplier($clanId, $reason));
+        }
+
         // The member's daily ceiling: trim the award to whatever room is
         // left today, and drop it silently once the room is gone.
         if ($capped && $user) {

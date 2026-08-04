@@ -47,6 +47,9 @@ Schedule::command('profile:snapshot-reputation --weekly')->weeklyOn(1, '00:10');
 // CLANS: weekly mission board for every clan with a Mission Control
 Schedule::command('clans:spawn-missions')->weeklyOn(1, '00:20');
 
+// CLANS: settle any ended, unsettled season (idempotent)
+Schedule::command('clans:settle-season')->dailyAt('00:40');
+
 // SEASONS: Conclude finished seasons (awards champion badges) — daily check
 Schedule::command('season:conclude')->dailyAt('00:20');
 

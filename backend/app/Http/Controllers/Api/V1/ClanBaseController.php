@@ -8,6 +8,7 @@ use App\Models\ClanLedger;
 use App\Models\ClanMember;
 use App\Models\ClanProject;
 use App\Services\ClanBaseService;
+use App\Services\ClanBoostService;
 use App\Services\ClanLevelService;
 use App\Services\ClanMissionService;
 use App\Traits\ApiResponse;
@@ -25,7 +26,7 @@ class ClanBaseController extends Controller
     /**
      * GET /clans/{slug}/base
      */
-    public function show(string $slug, Request $request, ClanBaseService $base, ClanLevelService $levels, ClanMissionService $missions): JsonResponse
+    public function show(string $slug, Request $request, ClanBaseService $base, ClanLevelService $levels, ClanMissionService $missions, ClanBoostService $boosts): JsonResponse
     {
         $clan = Clan::where('slug', $slug)->firstOrFail();
         $membership = $this->membership($clan, $request);
@@ -90,6 +91,7 @@ class ClanBaseController extends Controller
             ],
             'base' => $overview,
             'missions' => $missions->activeFor($clan),
+            'boosts' => $boosts->panel($clan),
             'contributions' => $contributions,
             'recent_activity' => $clan->activities()->with('user:id,username,avatar_url')->latest()->limit(10)->get(),
             'viewer_role' => $membership->role,
@@ -186,6 +188,32 @@ class ClanBaseController extends Controller
         }
 
         return $this->success(null, 'Project cancelled — funds returned to the treasury.');
+    }
+
+    /**
+     * POST /clans/{slug}/base/boosts  { key }
+     */
+    public function activateBoost(string $slug, Request $request, ClanBoostService $boosts): JsonResponse
+    {
+        $clan = Clan::where('slug', $slug)->firstOrFail();
+        $membership = $this->membership($clan, $request);
+
+        if (! $membership?->isOfficerOrAbove()) {
+            return $this->error('Only officers can activate boosters.', 403);
+        }
+
+        $data = $request->validate(['key' => 'required|string']);
+
+        try {
+            $boost = $boosts->activate($clan, $request->user(), $data['key']);
+        } catch (\RuntimeException $e) {
+            return $this->error($e->getMessage(), 422);
+        }
+
+        return $this->success([
+            'key' => $boost->key,
+            'ends_at' => $boost->ends_at->toIso8601String(),
+        ], 'Booster activated.');
     }
 
     private function membership(Clan $clan, Request $request): ?ClanMember

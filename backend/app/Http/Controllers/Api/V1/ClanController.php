@@ -7,9 +7,11 @@ use App\Models\Category;
 use App\Models\Clan;
 use App\Models\ClanActivity;
 use App\Models\ClanApplication;
+use App\Models\ClanBoost;
 use App\Models\ClanInvite;
 use App\Models\ClanLedger;
 use App\Models\ClanMember;
+use App\Models\ClanTrophy;
 use App\Models\User;
 use App\Services\ClanLevelService;
 use App\Services\ClanResourceService;
@@ -73,7 +75,14 @@ class ClanController extends Controller
         $small = (int) config('clan.size_categories.small', 15);
         $medium = (int) config('clan.size_categories.medium', 50);
 
-        $clans->getCollection()->transform(function (Clan $clan) use ($weekly, $active, $levels, $small, $medium) {
+        // Recruitment Signal: the one booster whose effect is this flag.
+        $featured = ClanBoost::whereIn('clan_id', $ids)
+            ->where('key', 'recruitment_signal')
+            ->where('ends_at', '>', now())
+            ->pluck('clan_id')
+            ->all();
+
+        $clans->getCollection()->transform(function (Clan $clan) use ($weekly, $active, $levels, $small, $medium, $featured) {
             $activeCount = (int) ($active[$clan->id] ?? 0);
 
             return array_merge($clan->toArray(), [
@@ -81,6 +90,7 @@ class ClanController extends Controller
                 'activity_score' => (int) ($weekly[$clan->id] ?? 0),
                 'active_members' => $activeCount,
                 'size_category' => $activeCount <= $small ? 'small' : ($activeCount <= $medium ? 'medium' : 'large'),
+                'featured' => in_array($clan->id, $featured, true),
             ]);
         });
 
@@ -88,7 +98,10 @@ class ClanController extends Controller
         // sort the page in PHP. Cross-page precision matters less than honesty.
         if ($sort === 'activity') {
             $clans->setCollection(
-                $clans->getCollection()->sortByDesc('activity_score')->values()
+                $clans->getCollection()
+                    ->sortByDesc('activity_score')
+                    ->sortByDesc('featured') // stable sort: featured first, then by activity
+                    ->values()
             );
         }
 
@@ -284,6 +297,10 @@ class ClanController extends Controller
             'viewer' => $viewerState,
             'pending_applications' => ClanApplication::where('clan_id', $clan->id)->where('status', 'pending')->count(),
             'forum_slug' => 'clan-'.$clan->slug,
+            'trophies' => ClanTrophy::where('clan_id', $clan->id)
+                ->orderByDesc('awarded_at')
+                ->limit(8)
+                ->get(['id', 'key', 'title', 'description', 'awarded_at']),
             'feed' => $clan->activities()
                 ->with('user:id,username,avatar_url')
                 ->latest()

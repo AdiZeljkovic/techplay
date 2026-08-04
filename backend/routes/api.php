@@ -256,6 +256,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/clans/{slug}/base/projects/{project}/fund', [ClanBaseController::class, 'fund']);
         Route::post('/clans/{slug}/base/projects/{project}/speed-up', [ClanBaseController::class, 'speedUp']);
         Route::delete('/clans/{slug}/base/projects/{project}', [ClanBaseController::class, 'cancel']);
+        Route::post('/clans/{slug}/base/boosts', [ClanBaseController::class, 'activateBoost']);
 
         // Recognitions (Auth)
         Route::post('/users/{username}/recognitions', [RecognitionController::class, 'store']);

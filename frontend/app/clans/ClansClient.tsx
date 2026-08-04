@@ -185,6 +185,12 @@ function ClanCard({ clan }: { clan: ClanSummary }) {
                 >
                     <ShieldCheck className="w-2.5 h-2.5" /> {clan.tier_name} · L{clan.level}
                 </span>
+
+                {clan.featured && (
+                    <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 h-[20px] px-2 rounded-[5px] bg-[var(--accent)] font-display text-[8.5px] font-black uppercase tracking-[0.1em] text-white">
+                        Featured
+                    </span>
+                )}
             </span>
 
             {/* emblem overlaps the banner */}

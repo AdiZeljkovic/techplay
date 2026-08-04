@@ -44,6 +44,7 @@ export interface ClanSummary {
     activity_score: number;
     prestige_lifetime: number;
     size_category: ClanSizeCategory;
+    featured?: boolean;
     created_at: string;
 }
 
@@ -146,6 +147,27 @@ export interface ClanMissionRow {
     top_contributors: { username: string; amount: number }[];
 }
 
+export interface ClanBoostRow {
+    key: string;
+    name: string;
+    description: string;
+    duration_hours: number;
+    cost: { resource: "intel" | "materials" | "prestige"; amount: number };
+    active: boolean;
+    ends_at: string | null;
+    on_cooldown: boolean;
+    cooldown_until: string | null;
+    affordable: boolean;
+}
+
+export interface ClanTrophyRow {
+    id: number;
+    key: string;
+    title: string;
+    description: string | null;
+    awarded_at: string;
+}
+
 export interface ClanBasePayload {
     clan: {
         name: string;
@@ -173,6 +195,7 @@ export interface ClanBasePayload {
         project_slots: number;
     };
     missions: ClanMissionRow[];
+    boosts: { boosters: ClanBoostRow[]; slots: number; active_count: number };
     contributions: { week: ClanContributionRow[]; month: ClanContributionRow[]; all: ClanContributionRow[] };
     recent_activity: ClanFeedItem[];
     viewer_role: ClanRole;
@@ -192,5 +215,6 @@ export interface ClanProfile extends ClanSummary {
     viewer: ClanViewerState | null;
     pending_applications: number;
     forum_slug: string;
+    trophies: ClanTrophyRow[];
     feed: ClanFeedItem[];
 }

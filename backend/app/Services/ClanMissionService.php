@@ -169,10 +169,17 @@ class ClanMissionService
                 return;
             }
 
-            $row->increment('amount');
+            // Double Contribution counts the action twice - but the daily
+            // ceiling is the ceiling, boosted or not.
+            $increment = min(
+                app(ClanBoostService::class)->missionIncrement($mission->clan_id),
+                $cap - $row->amount
+            );
+
+            $row->increment('amount', $increment);
 
             $fresh = ClanMission::whereKey($mission->id)->lockForUpdate()->first();
-            $fresh->progress += 1;
+            $fresh->progress += $increment;
             $fresh->save();
 
             $this->settleStages($fresh);
