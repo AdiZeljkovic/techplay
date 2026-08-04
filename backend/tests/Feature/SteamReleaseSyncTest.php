@@ -227,6 +227,18 @@ class SteamReleaseSyncTest extends TestCase
         $this->assertSame($spentOnFirstPass, $this->detailCalls(), 'a delay costs no detail request');
     }
 
+    public function test_demos_and_dlc_are_excluded_by_the_request_itself(): void
+    {
+        // About a quarter of Steam's raw "coming soon" listing is demos and
+        // DLC, and each one used to cost a detail request to find that out.
+        // Asking Steam for games only settles it before we spend anything.
+        $this->fakeSteam([$this->row()]);
+        $this->sync();
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'search/results')
+            && str_contains($request->url(), 'category1=998'));
+    }
+
     public function test_a_missing_config_is_loud_rather_than_an_empty_month(): void
     {
         // A deploy whose config cache predated config/releases.php produced a

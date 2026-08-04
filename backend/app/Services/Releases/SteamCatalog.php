@@ -31,6 +31,19 @@ class SteamCatalog
     /** Steam's listing pages cap out at 100 rows. */
     private const PAGE_SIZE = 100;
 
+    /**
+     * Steam's own "Games" type filter, which keeps demos, DLC, soundtracks and
+     * software out of the listing entirely.
+     *
+     * Worth having precisely because it acts before we spend anything: about a
+     * quarter of the raw "coming soon" listing is demos and DLC, and each one
+     * used to cost a detail request to discover it was never a calendar entry.
+     *
+     * The type check in the quality gate stays regardless — this narrows what
+     * we ask for, it does not prove what came back.
+     */
+    private const GAMES_ONLY = 998;
+
     /** A guard against walking the whole 13,000-title catalogue by accident. */
     private const MAX_PAGES = 120;
 
@@ -157,6 +170,7 @@ class SteamCatalog
                 ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
                 ->get(self::SEARCH, [
                     'filter' => 'comingsoon',
+                    'category1' => self::GAMES_ONLY,
                     'json' => 1,
                     'count' => self::PAGE_SIZE,
                     'start' => $start,
