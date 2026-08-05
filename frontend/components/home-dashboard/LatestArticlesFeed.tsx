@@ -7,21 +7,23 @@ import { Newspaper } from "lucide-react";
 import axios from "@/lib/axios";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
-import { articleHref } from "@/lib/articleHref";
-import type { Article } from "@/types";
+import type { FeedItem } from "@/types/feed";
 
 /** Filter value → the category.type the API groups on, and where "all" lands. */
 const FILTERS = [
     { id: "all", label: "All", href: "/news" },
     { id: "news", label: "News", href: "/news" },
-    { id: "review", label: "Reviews", href: "/reviews" },
+    { id: "reviews", label: "Reviews", href: "/reviews" },
     { id: "tech", label: "Tech", href: "/hardware" },
-    { id: "guide", label: "Guides", href: "/guides" },
+    { id: "guides", label: "Guides", href: "/guides" },
 ] as const;
 
 type FilterId = (typeof FILTERS)[number]["id"];
 
-const fetcher = (url: string) => axios.get(url).then((r) => (r.data?.data ?? []) as Article[]);
+// The feed answers with { items, meta } so it can be paged; this strip only
+// ever wants the first handful.
+const fetcher = (url: string) =>
+    axios.get(url).then((r) => (r.data?.data?.items ?? []) as FeedItem[]);
 
 function publishedLabel(iso?: string | null): string {
     if (!iso) return "";
@@ -29,10 +31,10 @@ function publishedLabel(iso?: string | null): string {
 }
 
 /** One article: art left, category kicker, headline. */
-function Row({ article, index }: { article: Article; index: number }) {
+function Row({ article, index }: { article: FeedItem; index: number }) {
     return (
         <Link
-            href={articleHref(article)}
+            href={article.url}
             className={`group flex gap-3.5 p-2 rounded-[10px] border border-transparent hover:border-[color-mix(in_srgb,var(--accent)_30%,transparent)] hover:bg-[var(--fill-1)] transition-colors duration-300 tp-fade-up tp-d${Math.min(6, index + 1)}`}
         >
             <span className="relative w-[108px] h-[64px] shrink-0 rounded-[8px] overflow-hidden bg-[var(--fill-1)] border border-white/[0.07]">

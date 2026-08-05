@@ -45,6 +45,8 @@
 
 | Metoda | Ruta | Controller::Metoda | Auth | Opis |
 |--------|------|--------------------|------|------|
+| GET | `/feed/latest` | FeedController::latest | - | Jedan tok preko svega objavljenog (članci + vodiči), `?type=all\|news\|reviews\|tech\|guides&page&limit`. Nepoznat tip → 422. Stari `review`/`guide` se i dalje primaju kao aliasi |
+| GET | `/feed/personalized` | FeedController::personalized | ✓ | Isti tok, poredan po interesima korisnika. Vraća `personalised:false` kad nema signala i tada je to prosto najnovije |
 | GET | `/newsroom/{section}` | NewsroomController::index | - | Okvir sekcijske stranice: tabovi s brojevima, spotlight, ticker, most read, upcoming releases, stats. `section` = news\|reviews\|tech\|guides; nepoznata sekcija → 404 |
 | GET | `/news` | NewsController::index | - | Lista news članaka |
 | GET | `/news/trending` | NewsController::trending | - | Trending news |

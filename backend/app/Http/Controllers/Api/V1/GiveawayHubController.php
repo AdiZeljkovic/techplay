@@ -130,7 +130,7 @@ class GiveawayHubController extends Controller
         return Cache::remember('giveaways.hub.winners.v1', 300, fn () => Giveaway::query()
             ->where('is_public', true)
             ->whereNotNull('winner_id')
-            ->with('winner:id,username,avatar')
+            ->with('winner:id,username,avatar_url')
             ->orderByDesc('winner_announced_at')
             ->limit(6)
             ->get()

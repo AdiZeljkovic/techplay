@@ -16,7 +16,7 @@ import {
     ChevronDown, Facebook, Twitter, Instagram, Youtube,
     Mail, Users, Sword, Tag, Calendar, Gamepad2,
     Newspaper, Trophy, ArrowRight, Star, Cpu, PlayCircle, Monitor, History,
-    MessageSquare, Gem, Rocket, Shield, Bookmark, Settings
+    MessageSquare, Gem, Rocket, Shield, Bookmark, Settings, Layers
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ScoreBadge from "@/components/ui/ScoreBadge";
@@ -580,6 +580,7 @@ function GamesNavItem() {
 }
 
 const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+    Feed:      Layers,
     Discover:  Newspaper,
     Games:     Gamepad2,
     Community: MessageSquare,
@@ -590,6 +591,9 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
 // App-style grouped navigation. DISCOVER's column items are populated with
 // live categories from GET /navigation/tree (news/reviews/tech keys).
 const INITIAL_NAV_ITEMS: NavItemType[] = [
+    // Everything the site publishes, in one stream. Lives at /latest because
+    // /feed is the RSS feed and a page there would take that URL over.
+    { name: "Feed", href: "/latest", activePaths: ["/latest"] },
     {
         name: "Discover", href: "/news", hasDropdown: true,
         activePaths: ["/news", "/reviews", "/hardware", "/videos", "/guides"],

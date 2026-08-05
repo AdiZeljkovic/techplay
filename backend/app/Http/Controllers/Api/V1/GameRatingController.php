@@ -36,7 +36,7 @@ class GameRatingController extends Controller
         $reviews = GameRating::where('game_slug', $slug)
             ->where('is_draft', false)
             ->whereNotNull('review')
-            ->with('user:id,name,username,avatar')
+            ->with('user:id,name,username,avatar_url')
             ->orderByDesc('created_at')
             ->paginate(10);
 

@@ -6,20 +6,17 @@ import Image from "next/image";
 import { Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { getApiUrl } from "@/lib/api";
-import { articleHref } from "@/lib/articleHref";
-import { Article } from "@/types";
+import type { FeedItem, PersonalFeed } from "@/types/feed";
 
 const fetcher = (url: string, token: string) =>
   fetch(url, { headers: { Authorization: `Bearer ${token}` } })
     .then((r) => (r.ok ? r.json() : null))
-    .then((j) => j?.data as Article[] | null);
+    .then((j) => (j?.data ?? null) as PersonalFeed | null);
 
-export function ArticleCard({ article }: { article: Article }) {
-  const href = articleHref(article);
-
+export function ArticleCard({ article }: { article: FeedItem }) {
   return (
     <Link
-      href={href}
+      href={article.url}
       className="group flex gap-4 items-start hover:bg-[var(--fill-1)] p-2 -mx-2 rounded-xl transition-colors"
     >
       <div className="relative w-24 h-16 rounded-lg overflow-hidden shrink-0 bg-[var(--fill-1)]">
@@ -50,13 +47,19 @@ export function ArticleCard({ article }: { article: Article }) {
 export default function PersonalizedFeedSection() {
   const { user, token } = useAuth();
 
-  const { data: articles } = useSWR(
-    user && token ? [`${getApiUrl()}/feed/personalized`, token] : null,
+  const { data: feed } = useSWR(
+    user && token ? [`${getApiUrl()}/feed/personalized?limit=6`, token] : null,
     ([url, tok]) => fetcher(url, tok),
     { dedupingInterval: 300_000, revalidateOnFocus: false }
   );
 
-  if (!user || !articles?.length) return null;
+  const articles = feed?.items ?? [];
+
+  // When the feed had nothing to go on it hands back the newest, labelled as
+  // such. A "For You" block on the homepage showing exactly what the strip
+  // above it shows would be a claim we cannot support, so it stays hidden
+  // until there is something real behind it.
+  if (!user || !feed?.personalised || articles.length === 0) return null;
 
   return (
     <div className="max-w-[1320px] mx-auto px-4 xl:px-0 w-full mb-20">
@@ -67,7 +70,9 @@ export default function PersonalizedFeedSection() {
             For You
           </div>
           <p className="text-xs text-zinc-500">
-            Based on your library
+            {feed.interests.length > 0
+              ? `Around ${feed.interests.slice(0, 2).join(" and ")}`
+              : "Based on what you read"}
           </p>
         </div>
 

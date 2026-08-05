@@ -22,7 +22,7 @@ class GiveawayController extends Controller
     {
         $query = Giveaway::query()
             ->where('is_public', true)
-            ->with(['winner:id,username,avatar'])
+            ->with(['winner:id,username,avatar_url'])
             ->withCount('entries');
 
         // Filter by status
@@ -370,7 +370,7 @@ class GiveawayController extends Controller
 
         $leaders = Cache::remember($cacheKey, $cacheTtl, function () use ($giveaway) {
             return $giveaway->entries()
-                ->with('user:id,username,avatar')
+                ->with('user:id,username,avatar_url')
                 ->orderByDesc('total_points')
                 ->limit(10)
                 ->get()

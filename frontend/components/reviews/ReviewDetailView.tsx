@@ -20,6 +20,7 @@ import { ARTICLE_PROSE } from "@/lib/prose";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import ArticleFooter from "@/components/ui/ArticleFooter";
 import SocialShare from "@/components/share/SocialShare";
+import ReadingTracker from "@/components/news/ReadingTracker";
 import { decodeHtml } from "@/lib/decode";
 
 interface ReviewDetailViewProps {
@@ -234,7 +235,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                             {decodeHtml(review.category?.name) || "Review"}
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-2 flex-wrap">
+                                    <div className="flex items-center gap-3 flex-wrap">
                                         <span className="text-[#71717A] text-[11px] font-bold uppercase tracking-widest">SHARE:</span>
                                         <SocialShare
                                             url={`/reviews/${review.slug}`}
@@ -242,6 +243,11 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                             description={decodeHtml(review.excerpt) || ''}
                                             vertical={false}
                                         />
+                                        {/* Reviews are Article rows like any other, but this had only
+                                            ever been mounted on the news template — so nothing a reader
+                                            got through in a review was recorded, and the feed could not
+                                            learn from it. */}
+                                        <ReadingTracker slug={review.slug} />
                                     </div>
                                 </div>
                             </div>
