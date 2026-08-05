@@ -22,7 +22,7 @@ import RelatedArticles from "@/components/seo/RelatedArticles";
 import { decodeHtml } from "@/lib/decode";
 import { Dialog } from "@/components/ui/Dialog";
 
-interface Guide {
+export interface Guide {
     id: number;
     title: string;
     slug: string;
@@ -32,6 +32,8 @@ interface Guide {
     featured_image_url?: string;
     created_at: string;
     updated_at: string;
+    /** The column exists and the detail page reads it; the type simply never said so. */
+    published_at?: string | null;
     author: {
         username: string;
         author_slug?: string;

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getServerApiUrl } from "@/lib/api";
+import { fetchContent } from "@/lib/fetchContent";
 import AuthorHeader from "@/components/author/AuthorHeader";
 import AuthorArticleGrid from "@/components/author/AuthorArticleGrid";
 import type { AuthorPageData } from "@/types";
@@ -12,16 +13,9 @@ type Props = {
 };
 
 async function getAuthorData(slug: string): Promise<AuthorPageData | null> {
-    try {
-        const res = await fetch(`${getServerApiUrl()}/authors/${slug}`, {
-            next: { revalidate: 3600, tags: [`author-${slug}`] },
-            headers: { Accept: "application/json" },
-        });
-        if (!res.ok) return null;
-        return res.json();
-    } catch {
-        return null;
-    }
+    return fetchContent<AuthorPageData>(`${getServerApiUrl()}/authors/${slug}`, {
+        next: { revalidate: 3600, tags: [`author-${slug}`] },
+    });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

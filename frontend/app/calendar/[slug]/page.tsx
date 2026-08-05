@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getServerApiUrl } from "@/lib/api";
+import { fetchContent } from "@/lib/fetchContent";
 import { ChevronLeft, CalendarDays, Building2, Code2, Star } from "lucide-react";
 import ReleaseClient from "./ReleaseClient";
 
@@ -48,16 +49,11 @@ export interface Release {
 type Props = { params: Promise<{ slug: string }> };
 
 async function getRelease(slug: string): Promise<Release | null> {
-    try {
-        const res = await fetch(`${getServerApiUrl()}/calendar/${slug}`, {
-            next: { revalidate: 3600, tags: [`release-${slug}`] },
-        });
-        if (!res.ok) return null;
-        const json = await res.json();
-        return json?.data ?? null;
-    } catch {
-        return null;
-    }
+    const json = await fetchContent<{ data?: Release }>(`${getServerApiUrl()}/calendar/${slug}`, {
+        next: { revalidate: 3600, tags: [`release-${slug}`] },
+    });
+
+    return json?.data ?? null;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

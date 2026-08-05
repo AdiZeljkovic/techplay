@@ -5,6 +5,7 @@ import SectionHub from "@/components/editorial/SectionHub";
 import ArticleDetailView from "@/components/news/ArticleDetailView";
 import { NEWS_CATEGORIES } from "@/lib/categories";
 import { getServerApiUrl } from "@/lib/api";
+import { fetchContent } from "@/lib/fetchContent";
 
 // On-demand ISR - no automatic revalidation, only manual via /api/revalidate
 // Backend triggers revalidation when content is updated
@@ -29,24 +30,15 @@ async function getInitialCategoryData(categorySlug: string) {
 }
 
 async function getArticle(slug: string): Promise<Article | null> {
-    try {
-        const res = await fetch(`${getServerApiUrl()}/news/${slug}`, {
-            cache: 'force-cache', // Cache until manually revalidated
-            next: {
-                tags: ['news', `news-${slug}`]
-            }
-        });
+    const json = await fetchContent<{ data?: Article } & Article>(`${getServerApiUrl()}/news/${slug}`, {
+        cache: 'force-cache', // Cache until manually revalidated
+        next: { tags: ['news', `news-${slug}`] },
+    });
 
-        if (!res.ok) {
-            return null;
-        }
-
-        const json = await res.json();
-        // API returns { data: {...} } wrapper - extract the actual article
-        return json.data || json;
-    } catch (error) {
-        return null;
-    }
+    // null means the API said this article is gone; anything else the API
+    // could not answer has already thrown, so the reader is not told a live
+    // article does not exist.
+    return json ? (json.data ?? json) : null;
 }
 
 // ... imports

@@ -5,6 +5,7 @@ import SectionHub from "@/components/editorial/SectionHub";
 import ReviewDetailView from "@/components/reviews/ReviewDetailView";
 import { REVIEW_CATEGORIES } from "@/lib/categories";
 import { getServerApiUrl } from "@/lib/api";
+import { fetchContent } from "@/lib/fetchContent";
 
 // ISR enabled with on-demand revalidation
 export const revalidate = false; // 10 minutes (reviews change less frequently than news)
@@ -28,23 +29,11 @@ async function getInitialCategoryData(categorySlug: string) {
 }
 
 async function getReview(slug: string): Promise<Review | null> {
-    try {
-        const res = await fetch(`${getServerApiUrl()}/reviews/${slug}`, {
-            next: {
-                revalidate: 600,
-                tags: ['reviews', `review-${slug}`]
-            }
-        });
+    const json = await fetchContent<{ data: Review }>(`${getServerApiUrl()}/reviews/${slug}`, {
+        next: { revalidate: 600, tags: ['reviews', `review-${slug}`] },
+    });
 
-        if (!res.ok) {
-            return null;
-        }
-
-        const json = await res.json();
-        return json.data;
-    } catch (error) {
-        return null;
-    }
+    return json?.data ?? null;
 }
 
 type Props = {

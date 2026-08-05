@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import WrappedClient, { type WrappedPayload } from "./WrappedClient";
 import { getApiUrl } from "@/lib/api";
+import { fetchContent } from "@/lib/fetchContent";
 
 interface Props {
     params: Promise<{ username: string }>;
@@ -9,16 +10,12 @@ interface Props {
 }
 
 async function fetchWrapped(username: string, year: number): Promise<WrappedPayload | null> {
-    try {
-        const res = await fetch(`${getApiUrl()}/users/${username}/wrapped/${year}`, {
-            next: { revalidate: 1800 },
-        });
-        if (!res.ok) return null;
-        const json = await res.json();
-        return json.data ?? null;
-    } catch {
-        return null;
-    }
+    const json = await fetchContent<{ data?: WrappedPayload }>(
+        `${getApiUrl()}/users/${username}/wrapped/${year}`,
+        { next: { revalidate: 1800 } },
+    );
+
+    return json?.data ?? null;
 }
 
 /** The wrapper is made to be shared, so the year in the URL drives the meta. */

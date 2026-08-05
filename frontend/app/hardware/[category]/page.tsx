@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { HARDWARE_CATEGORIES } from "@/lib/categories";
 import { getServerApiUrl } from "@/lib/api";
+import { fetchContent } from "@/lib/fetchContent";
+import type { Article } from "@/types";
 
 // ISR: revalidate every 10 minutes
 export const revalidate = 600;
@@ -35,17 +37,12 @@ async function getInitialCategoryData(categoryId: string) {
 }
 
 async function getArticle(slug: string) {
-    try {
-        const res = await fetch(`${getServerApiUrl()}/tech/${slug}`, {
-            next: { revalidate: 600, tags: ['tech', `tech-${slug}`] },
-            headers: { 'Accept': 'application/json' },
-        });
-        if (!res.ok) return null;
-        const json = await res.json();
-        return json.data || json;
-    } catch {
-        return null;
-    }
+    const json = await fetchContent<{ data?: Article } & Article>(
+        `${getServerApiUrl()}/tech/${slug}`,
+        { next: { revalidate: 600, tags: ['tech', `tech-${slug}`] } },
+    );
+
+    return json ? (json.data ?? json) : null;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

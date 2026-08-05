@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Gamepad2, ListChecks, Star, AlertTriangle } from "lucide-react";
 import { getApiUrl } from "@/lib/api";
+import { fetchContent } from "@/lib/fetchContent";
 import ListSocialBar from "@/components/profile/ListSocialBar";
 import type { GameListDetail } from "@/lib/types/profile";
 
@@ -17,17 +18,12 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 async function fetchList(username: string, slug: string): Promise<GameListDetail | null> {
-    try {
-        const res = await fetch(
-            `${getApiUrl()}/users/${encodeURIComponent(username)}/lists/${encodeURIComponent(slug)}`,
-            { next: { revalidate: 300 } }
-        );
-        if (!res.ok) return null;
-        const json = await res.json();
-        return json.data ?? null;
-    } catch {
-        return null;
-    }
+    const json = await fetchContent<{ data?: GameListDetail }>(
+        `${getApiUrl()}/users/${encodeURIComponent(username)}/lists/${encodeURIComponent(slug)}`,
+        { next: { revalidate: 300 } },
+    );
+
+    return json?.data ?? null;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

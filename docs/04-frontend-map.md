@@ -95,6 +95,11 @@ na vrhu), a articles resource collection (`meta`). `SectionHub` čita oba oblika
 
 - **Metoda:** Client-side, Bearer token u `localStorage`
 - **`AuthContext`** (`context/AuthContext.tsx`) — stores token + user, restores on mount, verifikuje u pozadini
+- **Dohvat sadržaja na serveru** — `lib/fetchContent.ts`. Razlikuje 404/410 (stvarno
+  ne postoji → `notFound()`) od svega ostalog (API se nije javio → jedan retry pa
+  `ContentUnavailable`, što hvata `app/error.tsx`). Prije ovoga je svaka detaljna
+  stranica radila `if (!res.ok) return null` → `notFound()`, pa je svaki prolazni
+  kvar backenda čitaocu izgledao kao „stranica ne postoji" — otud 404-pa-refresh.
 - **Middleware** — nema ga. `middleware.ts` je postojao samo zbog maintenance modea koji nikad nije radio (nije bilo `/coming-soon` stranice ni prekidača u adminu), a plaćao se blokirajućim `fetch`-om na svaki zahtjev. Auth je ionako client-side; `protectedRoutes` je bio prazan.
 - **Protected stranice** — client-side redirect na `/login` kada token nije prisutan
 - **Login flow:** POST `/api/v1/auth/login` → token → localStorage

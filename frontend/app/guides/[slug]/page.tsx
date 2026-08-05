@@ -1,28 +1,17 @@
 import { notFound } from "next/navigation";
-import GuideDetailView from "@/components/guides/GuideDetailView";
+import GuideDetailView, { type Guide } from "@/components/guides/GuideDetailView";
 import { Metadata } from "next";
 import { getServerApiUrl } from "@/lib/api";
+import { fetchContent } from "@/lib/fetchContent";
 
 // ISR enabled with on-demand revalidation
 export const revalidate = false; // 15 minutes (guides are more evergreen content)
 
 async function getGuide(slug: string) {
-    try {
-        const res = await fetch(`${getServerApiUrl()}/guides/${slug}`, {
-            next: {
-                revalidate: 900,
-                tags: ['guides', `guide-${slug}`]
-            }
-        });
-
-        if (!res.ok) return null;
-
-        // Return object structure: { guide: ..., user_vote: ... } or however backend returns it
-        // The previous GuideDetail interface showed: { guide: {...}, user_vote: ... }
-        return res.json();
-    } catch (error) {
-        return null;
-    }
+    // Shape: { guide: {...}, user_vote: ... }
+    return fetchContent<{ guide: Guide; user_vote: boolean | null }>(`${getServerApiUrl()}/guides/${slug}`, {
+        next: { revalidate: 900, tags: ['guides', `guide-${slug}`] },
+    });
 }
 
 type Props = {

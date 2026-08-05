@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getApiUrl, getServerApiUrl } from "@/lib/api";
+import { fetchContent } from "@/lib/fetchContent";
 import type { Gta6Character } from "@/types";
 import Gta6EntityDetail from "@/components/gta6/Gta6EntityDetail";
 
@@ -26,17 +27,11 @@ export async function generateStaticParams(): Promise<{ slug: string }[]> {
 }
 
 async function fetchCharacter(slug: string): Promise<Gta6Character | null> {
-    try {
-        const res = await fetch(`${getApiUrl()}/gta6/characters/${slug}`, {
-            next: { revalidate: 3600 },
-            headers: { Accept: "application/json" },
-        });
-        if (!res.ok) return null;
-        const json = await res.json();
-        return json.data ?? null;
-    } catch {
-        return null;
-    }
+    const json = await fetchContent<{ data?: Gta6Character }>(`${getApiUrl()}/gta6/characters/${slug}`, {
+        next: { revalidate: 3600 },
+    });
+
+    return json?.data ?? null;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
