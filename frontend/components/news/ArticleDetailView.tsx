@@ -2,7 +2,7 @@
 
 import { Article } from "@/types";
 import Link from "next/link";
-import { ArrowLeft, Clock, Calendar, Play } from "lucide-react";
+import { ArrowLeft, Play } from "lucide-react";
 import Image from "next/image";
 import { format } from "date-fns";
 import { useMemo, useState, useEffect } from "react";
@@ -110,7 +110,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
         <article className="min-h-screen pb-20">
 
             {/* ── MAIN LAYOUT: Left social bar + content + right sidebar ── */}
-            <div className="w-full max-w-[1500px] mx-auto px-4 xl:px-8 pt-4 pb-8 flex gap-8">
+            <div className="w-full container-page pt-4 pb-8 flex gap-8">
 
                 {/* Left Sticky Bar (back) */}
                 <aside className="hidden lg:flex flex-col gap-6 sticky top-[140px] shrink-0 h-[max-content]">

@@ -249,7 +249,6 @@ class UltimateSeo extends Page implements HasForms
         }
 
         // Clear SEO-related caches
-        Cache::forget('site_settings');
         Cache::forget('page_seo.all');
 
         Notification::make()

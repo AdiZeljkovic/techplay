@@ -7,7 +7,7 @@ export const runtime = "edge";
 // server-side fetches), falling back to the public API URL.
 const API = (process.env.NEXT_PRIVATE_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "https://api.techplay.gg/api/v1").replace(/\/$/, "");
 
-const ACCENT = "#FC4100";
+const ACCENT = "#DC143C";
 
 export async function GET(req: NextRequest) {
     const username = req.nextUrl.searchParams.get("username") ?? "player";
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
                     width: 560,
                     height: 560,
                     borderRadius: "50%",
-                    background: "radial-gradient(circle, rgba(252,65,0,0.16) 0%, transparent 70%)",
+                    background: "radial-gradient(circle, rgba(220, 20, 60,0.16) 0%, transparent 70%)",
                     display: "flex",
                 }} />
                 {/* Accent top bar */}
@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
                                 width: 140,
                                 height: 140,
                                 borderRadius: "50%",
-                                background: "rgba(252,65,0,0.15)",
+                                background: "rgba(220, 20, 60,0.15)",
                                 border: `4px solid ${ACCENT}`,
                                 display: "flex",
                                 alignItems: "center",

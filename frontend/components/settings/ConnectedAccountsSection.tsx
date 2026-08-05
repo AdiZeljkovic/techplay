@@ -225,14 +225,14 @@ export default function ConnectedAccountsSection() {
                                     </div>
                                 ) : (
                                     <button onClick={() => setGamertagFor(provider.id)}
-                                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors shadow-[0_0_16px_rgba(252,65,0,0.2)]">
+                                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors shadow-[0_0_16px_rgba(220, 20, 60,0.2)]">
                                         <Link2 className="w-3.5 h-3.5" />
                                         Connect
                                     </button>
                                 )
                             ) : (
                                 <button onClick={() => handleConnect(provider.id)} disabled={connecting === provider.id}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors shadow-[0_0_16px_rgba(252,65,0,0.2)] disabled:opacity-60">
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors shadow-[0_0_16px_rgba(220, 20, 60,0.2)] disabled:opacity-60">
                                     {connecting === provider.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
                                     Connect
                                 </button>

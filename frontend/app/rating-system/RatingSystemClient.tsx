@@ -2,7 +2,7 @@
 
 import PageHero from "@/components/ui/PageHero";
 import { motion } from "framer-motion";
-import { Star, Monitor, Gamepad2, Volume2, History, RotateCcw, AlertTriangle, Trophy, Medal, ThumbsUp, ThumbsDown, Meh, Zap, Crosshair, BarChart3 } from "lucide-react";
+import { Star, Monitor, Gamepad2, Volume2, History, RotateCcw, AlertTriangle, Trophy, Medal, ThumbsUp, ThumbsDown, Meh, Zap } from "lucide-react";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
@@ -56,7 +56,7 @@ export default function RatingSystemPage() {
                 icon={Star}
             />
 
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-16 md:py-24">
+            <div className="container-page py-16 md:py-24">
 
                 {/* Visual Intro */}
                 <motion.div

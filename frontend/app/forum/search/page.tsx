@@ -51,7 +51,7 @@ function ForumSearchResults() {
     return (
         <div className="min-h-screen bg-[#060810]">
             <div className="bg-[#0B0E1A] border-b border-[#1A2030]">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
+                <div className="container-page py-8">
                     <div className="flex items-center gap-4">
                         <div className="w-14 h-14 bg-tp-accent rounded-2xl flex items-center justify-center shadow-lg shadow-tp-accent/30">
                             <Search className="w-7 h-7 text-white" />
@@ -64,7 +64,7 @@ function ForumSearchResults() {
                 </div>
             </div>
 
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
+            <div className="container-page py-8">
                 <Link href="/forum" className="inline-flex items-center gap-2 text-sm text-[#6B7280] hover:text-tp-accent mb-6 transition-colors">
                     <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Back to Forum
                 </Link>
@@ -149,7 +149,7 @@ function ForumSearchResults() {
 export default function ForumSearchPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-[#060810] max-w-[1320px] mx-auto px-4 xl:px-0 py-8 space-y-4">
+            <div className="min-h-screen bg-[#060810] container-page py-8 space-y-4">
                 {[...Array(5)].map((_, i) => (
                     <div key={i} className="h-20 bg-[#0D1117] border border-[#1A2030] rounded-2xl animate-pulse" />
                 ))}

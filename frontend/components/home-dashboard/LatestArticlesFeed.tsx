@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
-import { Newspaper } from "lucide-react";
 import axios from "@/lib/axios";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
@@ -86,7 +85,6 @@ export default function LatestArticlesFeed() {
     return (
         <Panel
             title="From Games You Follow"
-            icon={<Newspaper className="w-3.5 h-3.5 text-[var(--accent)]" />}
             action={{ label: "View all", href: active.href }}
             bodyClassName="p-4"
         >

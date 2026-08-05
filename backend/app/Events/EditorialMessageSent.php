@@ -63,7 +63,7 @@ class EditorialMessageSent implements ShouldBroadcast
             'content' => $this->message->content, // Will be formatted by frontend
             'user_id' => $this->message->user_id,
             'user_name' => $this->message->user->name,
-            'user_avatar_color' => '#FC4100', // Simplify or fetch from helper logic if moved to model
+            'user_avatar_color' => '#DC143C', // Simplify or fetch from helper logic if moved to model
             'created_at' => $this->message->created_at->toIso8601String(),
             'channel' => $this->message->channel,
             'recipient_id' => $this->message->recipient_id,

@@ -5,11 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import {
-    Shield, Users, Search, X, Plus, ChevronDown, Flame, Crown, Loader2, ArrowRight,
-    ShieldCheck, Swords, Coffee, Layers, Globe2, Check, TrendingUp, Sparkles,
-    UserPlus, BarChart3, Send, Activity, Trophy, Clock3,
-} from "lucide-react";
+import { Shield, Users, Search, X, Plus, ChevronDown, Crown, Loader2, ArrowRight, ShieldCheck, Swords, Coffee, Layers, Globe2, Check, Sparkles, UserPlus, BarChart3, Send, Activity, Trophy, Clock3 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import { getStorageUrl } from "@/lib/imageUrl";
@@ -473,7 +469,6 @@ function PendingInvites() {
     return (
         <Panel
             title="Pending Invites"
-            icon={<Send className="w-4 h-4 text-[var(--accent)]" />}
             meta={invites.length > 0 ? (
                 <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full bg-[var(--accent)] font-display text-[10px] font-black text-white tabular-nums">
                     {invites.length}
@@ -600,7 +595,7 @@ export default function ClansClient() {
                     }}
                 />
 
-                <div className="relative z-10 max-w-[1500px] mx-auto px-4 xl:px-6 pt-8 pb-6">
+                <div className="relative z-10 container-page pt-8 pb-6">
                     <div className="flex flex-wrap items-center justify-between gap-5">
                         <div className="flex items-center gap-3.5">
                             <span className="w-11 h-11 rounded-[11px] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] flex items-center justify-center">
@@ -727,7 +722,7 @@ export default function ClansClient() {
                 </div>
             </div>
 
-            <div className="max-w-[1500px] mx-auto px-4 xl:px-6 py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+            <div className="container-page py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
                 {/* ── main column ── */}
                 <div className="xl:col-span-9 min-w-0 space-y-5">
                     {isLoading && !data ? (
@@ -792,7 +787,7 @@ export default function ClansClient() {
 
                 {/* ── sidebar — every panel keeps its place, empty or not ── */}
                 <aside className="xl:col-span-3 min-w-0 space-y-4">
-                    <Panel title="My Clan Status" icon={<Shield className="w-4 h-4 text-[var(--accent)]" />}>
+                    <Panel title="My Clan Status">
                         {mine?.clan ? (
                             <Link href={`/clans/${mine.clan.slug}`} className="group flex items-center gap-3">
                                 <ClanEmblem logo={mine.clan.logo} tint="var(--accent)" size={42} />
@@ -831,7 +826,6 @@ export default function ClansClient() {
 
                     <Panel
                         title="Top Clans This Week"
-                        icon={<TrendingUp className="w-4 h-4 text-emerald-400" />}
                         action={(data?.sidebar.top_weekly.length ?? 0) > 0 ? { label: "View all", onClick: () => applyPreset("top") } : undefined}
                     >
                         {(data?.sidebar.top_weekly.length ?? 0) === 0 ? (
@@ -856,7 +850,7 @@ export default function ClansClient() {
                         )}
                     </Panel>
 
-                    <Panel title="Why Join a Clan?" icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />}>
+                    <Panel title="Why Join a Clan?">
                         <div className="space-y-3.5">
                             {([
                                 [UserPlus, "Team up", "Everything you already do — reviews, completions, achievements — earns your clan resources."],
@@ -876,7 +870,7 @@ export default function ClansClient() {
                         </div>
                     </Panel>
 
-                    <Panel title="Recently Active Clans" icon={<Flame className="w-4 h-4 text-[#f0b429]" />}>
+                    <Panel title="Recently Active Clans">
                         {(data?.sidebar.recent_active.length ?? 0) === 0 ? (
                             <RailEmpty>No clan activity recorded yet. Play, post or log a session and your clan lands here.</RailEmpty>
                         ) : (

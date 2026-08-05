@@ -67,7 +67,7 @@ export default async function GameListPage({ params }: Props) {
                     </>
                 )}
 
-                <div className="relative z-10 max-w-[1320px] mx-auto px-4 xl:px-0 py-14 md:py-20">
+                <div className="relative z-10 container-page py-14 md:py-20">
                     <div className="flex flex-wrap items-center gap-2 mb-3">
                         <p className="inline-flex items-center gap-2 font-display text-[10.5px] font-bold uppercase tracking-[0.16em] text-[var(--accent)]">
                             <ListChecks className="w-4 h-4" /> Game List
@@ -130,7 +130,7 @@ export default async function GameListPage({ params }: Props) {
             </div>
 
             {/* ── the ranking ── */}
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-10">
+            <div className="container-page py-10">
                 {items.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 py-20 text-white/40">
                         <Gamepad2 className="w-10 h-10" />

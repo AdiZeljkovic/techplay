@@ -91,7 +91,7 @@ export default async function Gta6WeaponsPage() {
                     image="/gta6/card-weapons.png"
                 />
 
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-8 py-8">
+                <div className="container-page py-8">
                     <p className="text-[#A1A1AA] text-[15px] leading-relaxed max-w-2xl mb-8">
                         The Leonida criminal underworld doesn&apos;t travel light. Every GTA 6 weapon confirmed via official trailers is catalogued below — from sidearms to heavy weapons.
                     </p>

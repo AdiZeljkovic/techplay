@@ -3,12 +3,7 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import {
-    Dna, Share2, Check, Clock3, BarChart3, Fingerprint, Library, Gamepad2, Trophy,
-    Users, Monitor, Sparkles, BookOpen, Swords, Moon, Compass, Feather, Cpu,
-    MemoryStick, MonitorPlay, MessageSquare, MessagesSquare, Bookmark, Gem, HelpCircle,
-    type LucideIcon,
-} from "lucide-react";
+import { Dna, Share2, Check, Clock3, Fingerprint, Gamepad2, Trophy, Monitor, Sparkles, BookOpen, Swords, Moon, Compass, Feather, Cpu, MemoryStick, MonitorPlay, MessageSquare, MessagesSquare, Bookmark, Gem, HelpCircle, type LucideIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -422,7 +417,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                 </div>
 
                 <div className="xl:col-span-3 min-w-0">
-                    <Panel title="Genre Profile" icon={<BarChart3 className="w-4 h-4 text-[var(--accent)]" />} className="h-full" bodyClassName="flex flex-col justify-center">
+                    <Panel title="Genre Profile" className="h-full" bodyClassName="flex flex-col justify-center">
                         {dna.genres.length === 0 ? (
                             <EmptyState variant="compact" title="No genres yet" body="Add games and the wheel fills in." />
                         ) : (
@@ -447,7 +442,6 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                 <div className="xl:col-span-4 min-w-0">
                     <Panel
                         title="Playstyle Fingerprint"
-                        icon={<Fingerprint className="w-4 h-4 text-[var(--xp-bright)]" />}
                         className="h-full"
                         bodyClassName="flex flex-col justify-center"
                     >
@@ -465,7 +459,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
             {/* ── row 2 — collection, platforms, eras ── */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
                 <div className="xl:col-span-3 min-w-0">
-                    <Panel title="Collection Breakdown" icon={<Library className="w-4 h-4 text-violet-400" />} className="h-full" bodyClassName="flex flex-col justify-center">
+                    <Panel title="Collection Breakdown" className="h-full" bodyClassName="flex flex-col justify-center">
                         {dna.collection.total === 0 ? (
                             <EmptyState variant="compact" title="Nothing on the shelf yet" />
                         ) : (
@@ -497,7 +491,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                 </div>
 
                 <div className="xl:col-span-4 min-w-0">
-                    <Panel title="Platform Affinity" icon={<Monitor className="w-4 h-4 text-blue-400" />} className="h-full" bodyClassName="flex flex-col justify-center">
+                    <Panel title="Platform Affinity" className="h-full" bodyClassName="flex flex-col justify-center">
                         {dna.platforms.length === 0 ? (
                             <EmptyState variant="compact" title="No platforms tagged" body="Tag a platform on your collection entries." />
                         ) : (
@@ -541,7 +535,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                 </div>
 
                 <div className="xl:col-span-5 min-w-0">
-                    <Panel title="Gaming Eras" icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />} className="h-full" bodyClassName="flex flex-col justify-center">
+                    <Panel title="Gaming Eras" className="h-full" bodyClassName="flex flex-col justify-center">
                         {dna.eras.every((e) => e.count === 0) ? (
                             <EmptyState variant="compact" title="No release dates yet" body="Games without a release year can't be placed on the timeline." />
                         ) : (
@@ -590,7 +584,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
             {/* ── row 3 — contribution, setup, archetypes ── */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
                 <div className="xl:col-span-4 min-w-0">
-                    <Panel title="Community Contribution" icon={<Users className="w-4 h-4 text-emerald-400" />} className="h-full">
+                    <Panel title="Community Contribution" className="h-full">
                         <div className="grid grid-cols-2 gap-4">
                             {dna.contribution.map((c, i) => {
                                 const Icon = CONTRIBUTION_ICONS[i] ?? MessageSquare;
@@ -647,7 +641,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                 </div>
 
                 <div className="xl:col-span-4 min-w-0">
-                    <Panel title="Setup Overview" icon={<Cpu className="w-4 h-4 text-cyan-400" />} className="h-full">
+                    <Panel title="Setup Overview" className="h-full">
                         {specEntries.length === 0 ? (
                             <EmptyState
                                 variant="compact"
@@ -714,7 +708,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                 </div>
 
                 <div className="xl:col-span-4 min-w-0">
-                    <Panel title="Player Archetype" icon={<Sparkles className="w-4 h-4 text-violet-400" />} className="h-full">
+                    <Panel title="Player Archetype" className="h-full">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             {dna.archetypes.map((a, i) => (
                                 <ArchetypeCard key={a.key} a={a} tint={ARCHETYPE_TINTS[i % ARCHETYPE_TINTS.length]} />

@@ -81,7 +81,6 @@ export default function RecommendedNext({ games }: { games: DashboardGameCover[]
     return (
         <Panel
             title="Recommended Next"
-            icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />}
             action={{ label: "View all", href: "/games" }}
             className="h-full flex flex-col"
             bodyClassName="p-5 flex-1 flex flex-col"

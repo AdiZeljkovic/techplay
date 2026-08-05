@@ -129,7 +129,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
         if (giveaway?.winner) {
             const duration = 3000;
             const end = Date.now() + duration;
-            const colors = ['#ff6b35', '#f7931e', '#fdc830', '#37ecba', '#8b5cf6'];
+            const colors = ['#FF4D6A', '#f7931e', '#fdc830', '#37ecba', '#8b5cf6'];
             (function frame() {
                 confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
                 confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
@@ -173,7 +173,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
         try {
             const res = await axios.post(`/giveaways/${slug}/tasks/${taskId}/complete`);
             setEntry(res.data.data);
-            confetti({ particleCount: 30, spread: 60, origin: { y: 0.7 }, colors: ['#FC4100', '#f7931e', '#fdc830'] });
+            confetti({ particleCount: 30, spread: 60, origin: { y: 0.7 }, colors: ['#DC143C', '#f7931e', '#fdc830'] });
         } catch (error) {
             console.error("Failed to complete task:", error);
         } finally {
@@ -374,7 +374,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                 {/* Overlay layers */}
                 <div className="absolute inset-0 bg-black/65" />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-[var(--bg-primary)]" />
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_55%,rgba(252,65,0,0.07),transparent)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_55%,rgba(220, 20, 60,0.07),transparent)]" />
 
                 {/* Content */}
                 <div className="relative z-10 w-full max-w-4xl mx-auto px-4 pt-10 pb-14 text-center">
@@ -577,7 +577,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                     animate={{ opacity: 1, y: 0 }}
                                     className="relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 text-center overflow-hidden"
                                 >
-                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(252,65,0,0.05),transparent_60%)]" />
+                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(220, 20, 60,0.05),transparent_60%)]" />
                                     <div className="relative">
                                         <div className="w-16 h-16 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center mx-auto mb-5">
                                             <Gift className="w-8 h-8 text-[var(--accent)]" />
@@ -601,7 +601,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                     animate={{ opacity: 1, y: 0 }}
                                     className="relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 text-center overflow-hidden"
                                 >
-                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(252,65,0,0.05),transparent_60%)]" />
+                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(220, 20, 60,0.05),transparent_60%)]" />
                                     <div className="relative">
                                         <div className="w-16 h-16 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center mx-auto mb-5">
                                             <Zap className="w-8 h-8 text-[var(--accent)]" />

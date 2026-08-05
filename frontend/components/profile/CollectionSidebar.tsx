@@ -5,7 +5,7 @@ import Link from "next/link";
 import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { Clock3, Target, MonitorSmartphone, Check, Loader2, Gamepad2 } from "lucide-react";
+import { Check, Loader2, Gamepad2 } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import PlatformIcon from "@/components/games/PlatformIcon";
 import { timeAgo } from "@/lib/timeAgo";
@@ -29,7 +29,6 @@ export function RecentlyAdded({ username }: { username: string }) {
     return (
         <Panel
             title="Recently Added"
-            icon={<Clock3 className="w-3.5 h-3.5 text-[var(--accent)]" />}
             action={{ label: "View all", href: `/profile/${username}?tab=collection` }}
             bodyClassName="p-3"
         >
@@ -110,7 +109,6 @@ export function CollectionGoals({ username, isOwnProfile }: { username: string; 
     return (
         <Panel
             title="Collection Goals"
-            icon={<Target className="w-3.5 h-3.5 text-[var(--accent)]" />}
             action={
                 isOwnProfile && !isLoading
                     ? { label: editing ? "Cancel" : "Edit goals", onClick: () => setEditing((v) => !v) }
@@ -191,7 +189,6 @@ export function PlatformBreakdown({ data }: { data?: PlatformsGenres }) {
     return (
         <Panel
             title="Platforms"
-            icon={<MonitorSmartphone className="w-3.5 h-3.5 text-[var(--accent)]" />}
             bodyClassName="p-4"
         >
             {platforms.length === 0 ? (

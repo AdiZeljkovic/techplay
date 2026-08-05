@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Star, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import type { DashboardGameCover } from "@/lib/types/dashboard";
 import Panel from "@/components/ui/Panel";
 import AddFavoriteInline from "./AddFavoriteInline";
@@ -34,7 +34,6 @@ export default function FavoriteGamesRail({
     return (
         <Panel
             title="Favorite Games"
-            icon={<Star className="w-3.5 h-3.5 text-[var(--accent)]" />}
             action={favorites.length > 0 ? { label: `View all (${count})`, href: `/profile/${username}?tab=collection` } : undefined}
             className="h-full flex flex-col"
             bodyClassName="p-4 flex-1 flex flex-col"

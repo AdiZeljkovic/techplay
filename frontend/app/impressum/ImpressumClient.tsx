@@ -145,7 +145,7 @@ export default function ImpressumClient({ staff }: { staff: StaffData | null }) 
                 description="Meet the people behind TechPlay and get in touch with our team."
             />
 
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-16">
+            <div className="container-page py-16">
                 <motion.div
                     variants={staggerContainer}
                     initial="hidden"

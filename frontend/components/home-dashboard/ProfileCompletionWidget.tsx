@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { UserCheck, Check, ChevronRight } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
 import axios from "@/lib/axios";
 import type { DashboardData, ProfileCompletion } from "@/lib/types/dashboard";
 import Panel from "@/components/ui/Panel";
@@ -39,7 +39,7 @@ export default function ProfileCompletionWidget({ completion: passed }: { comple
 
     if (!completion) {
         return (
-            <Panel title="Profile Completion" icon={<UserCheck className="w-3.5 h-3.5 text-[var(--accent)]" />} bodyClassName="p-4">
+            <Panel title="Profile Completion" bodyClassName="p-4">
                 <div className="h-[64px] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />
             </Panel>
         );
@@ -50,7 +50,6 @@ export default function ProfileCompletionWidget({ completion: passed }: { comple
     return (
         <Panel
             title="Profile Completion"
-            icon={<UserCheck className="w-3.5 h-3.5 text-[var(--accent)]" />}
             bodyClassName="p-4"
         >
             <div className="flex items-center gap-4">

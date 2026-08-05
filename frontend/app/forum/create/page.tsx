@@ -155,7 +155,7 @@ function CreateThreadForm() {
         <div className="min-h-screen bg-[#060810]">
             {/* Header */}
             <div className="bg-[#0B0E1A] border-b border-[#1A2030]">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
+                <div className="container-page py-8">
                     <Link
                         href="/forum"
                         className="inline-flex items-center gap-2 text-sm text-[#6B7280] hover:text-tp-accent transition-colors mb-6"
@@ -177,7 +177,7 @@ function CreateThreadForm() {
             </div>
 
             {/* Content */}
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
+            <div className="container-page py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Main Form */}
                     <div className="lg:col-span-3">

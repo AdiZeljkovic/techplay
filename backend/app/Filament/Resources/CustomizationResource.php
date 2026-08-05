@@ -48,7 +48,7 @@ class CustomizationResource extends Resource
                 Forms\Components\TextInput::make('required_tier')->maxLength(60)
                     ->helperText('Support tier name required (leave empty for none).'),
                 Forms\Components\TextInput::make('value')->maxLength(255)
-                    ->helperText('Theme: accent hex (#FC4100). Frame/Badge: hex or CSS gradient.'),
+                    ->helperText('Theme: accent hex (#DC143C). Frame/Badge: hex or CSS gradient.'),
                 Forms\Components\TextInput::make('asset')->label('Asset URL')->maxLength(500),
                 Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
                 Forms\Components\Toggle::make('is_active')->default(true),

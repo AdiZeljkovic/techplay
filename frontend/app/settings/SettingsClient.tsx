@@ -257,7 +257,7 @@ export default function SettingsClient() {
 
     return (
         <div className="min-h-screen pt-24 pb-12">
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
+            <div className="container-page">
                 <div className="flex items-center justify-between mb-8">
                     <h1 className="text-3xl font-bold text-[var(--text-primary)]">Profile Settings</h1>
                     {activeTab !== 'security' && activeTab !== 'platforms' && (

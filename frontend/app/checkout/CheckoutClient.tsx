@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
 export default function CheckoutClient() {

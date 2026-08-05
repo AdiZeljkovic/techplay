@@ -62,7 +62,7 @@ export default function PersonalizedFeedSection() {
   if (!user || !feed?.personalised || articles.length === 0) return null;
 
   return (
-    <div className="max-w-[1320px] mx-auto px-4 xl:px-0 w-full mb-20">
+    <div className="container-page w-full mb-20">
       <div className="border-t border-zinc-200 dark:border-white/5 pt-10">
         <div className="flex items-center gap-3 mb-6">
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_20%,transparent)] text-[var(--accent)] text-[11px] font-black tracking-widest uppercase">

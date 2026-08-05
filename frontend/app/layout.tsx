@@ -1,17 +1,22 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Sora, Inter } from "next/font/google";
+import { Archivo, Inter } from "next/font/google";
 
-const sora = Sora({
-  variable: "--font-sora",
+// "Archivo SemiCondensed" is not a separate family — it is the variable
+// Archivo at 87.5% width. The wdth axis is loaded here; globals.css pins
+// `font-stretch: 87.5%` on the display utility, which is what actually
+// selects the SemiCondensed cut. Weight runs the full 100–900, so
+// `font-black` renders a true Black again.
+const archivo = Archivo({
+  variable: "--font-display-src",
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800"], // Sora max weight is 800 (font-black renders as 800)
   display: 'swap',
   preload: true,
+  axes: ["wdth"],
 });
 
 const inter = Inter({
-  variable: "--font-inter",
+  variable: "--font-body-src",
   subsets: ["latin"],
   display: 'swap',
   preload: true,
@@ -106,7 +111,9 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: '#001540',
+  // Matches manifest.json's theme_color. It was a navy that belonged to
+  // neither the brand nor the manifest — the two now agree.
+  themeColor: '#DC143C',
 };
 
 export default async function RootLayout({
@@ -159,7 +166,7 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang="en" className={`${sora.variable} ${inter.variable} dark`} suppressHydrationWarning>
+    <html lang="en" className={`${archivo.variable} ${inter.variable} dark`} suppressHydrationWarning>
       <head>
         {/* Organization + WebSite JSON-LD — server-rendered so SEO crawlers see it in raw HTML */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />

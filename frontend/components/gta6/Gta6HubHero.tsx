@@ -30,7 +30,7 @@ export default function Gta6HubHero() {
             <div className="absolute inset-0 gta6-sunset opacity-50 mix-blend-screen pointer-events-none" />
 
             {/* Content */}
-            <div className="relative max-w-[1320px] mx-auto px-4 xl:px-8 py-12 md:py-16 flex flex-col justify-center min-h-[560px] md:min-h-[660px]">
+            <div className="relative container-page py-12 md:py-16 flex flex-col justify-center min-h-[560px] md:min-h-[660px]">
                 <motion.div
                     initial={{ opacity: 0, y: 22 }}
                     animate={{ opacity: 1, y: 0 }}

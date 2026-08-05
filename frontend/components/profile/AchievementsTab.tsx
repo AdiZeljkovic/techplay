@@ -3,9 +3,7 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import {
-    Trophy, Lock, Search, X, Sparkles, Target, Award, Clock3, ChevronDown, Star,
-} from "lucide-react";
+import { Trophy, Lock, Search, X, Sparkles, Award, ChevronDown, Star } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import RingMeter from "@/components/ui/RingMeter";
 import Panel from "@/components/ui/Panel";
@@ -314,7 +312,7 @@ function AchievementsSidebar({ data }: { data: AchievementsPayload }) {
     return (
         <div className="space-y-4">
             {rarest && (
-                <Panel title="Rarest Owned" icon={<Sparkles className="w-4 h-4" style={{ color: RARITY.epic.color }} />} variant="console">
+                <Panel title="Rarest Owned" variant="console">
                     <div className="flex flex-col items-center text-center py-1">
                         <span
                             className="w-16 h-16 rounded-[13px] flex items-center justify-center mb-3"
@@ -341,14 +339,14 @@ function AchievementsSidebar({ data }: { data: AchievementsPayload }) {
             )}
 
             {next.length > 0 && (
-                <Panel title="Next to Unlock" icon={<Target className="w-4 h-4 text-[var(--xp-bright)]" />}>
+                <Panel title="Next to Unlock">
                     <div className="space-y-3.5">
                         {next.map((a) => <MiniRow key={a.id} a={a} />)}
                     </div>
                 </Panel>
             )}
 
-            <Panel title="By Category" icon={<Award className="w-4 h-4 text-[var(--accent)]" />}>
+            <Panel title="By Category">
                 <div className="space-y-3">
                     {categories.map((c) => (
                         <div key={c.name}>
@@ -375,7 +373,7 @@ function AchievementsSidebar({ data }: { data: AchievementsPayload }) {
             </Panel>
 
             {recent.length > 0 && (
-                <Panel title="Recent Unlocks" icon={<Clock3 className="w-4 h-4 text-emerald-400" />}>
+                <Panel title="Recent Unlocks">
                     <div className="space-y-3.5">
                         {recent.map((a) => <MiniRow key={a.id} a={a} />)}
                     </div>

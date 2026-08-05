@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Clock, Eye, Share2 } from "lucide-react";
+import { Clock, Eye } from "lucide-react";
 import axios from "@/lib/axios";
 import { getClassColor, getFactionTheme } from "@/data/wow-theme";
 import { MidnightTheme, glassCard } from "@/lib/wow-midnight-theme";

@@ -213,7 +213,6 @@ function SessionComposer({
         <Panel
             variant="console"
             title={sessionId ? "Edit session" : "Log a session"}
-            icon={<BookOpen className="w-4 h-4 text-[var(--accent)]" />}
             action={{ label: "Cancel", onClick: onCancel }}
         >
             <div className="space-y-4">
@@ -690,7 +689,6 @@ export default function JournalTab({ username }: { username: string }) {
                     {view === "calendar" && (
                         <Panel
                             title="Gaming Calendar"
-                            icon={<CalendarDays className="w-4 h-4 text-[var(--accent)]" />}
                             meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">Last 12 months</span>}
                         >
                             {journal.calendar.length === 0 ? (
@@ -711,7 +709,7 @@ export default function JournalTab({ username }: { username: string }) {
                     )}
 
                     {view === "completed" && (
-                        <Panel title="Completed Timeline" icon={<Trophy className="w-4 h-4 text-emerald-400" />}>
+                        <Panel title="Completed Timeline">
                             {journal.completed_timeline.length === 0 ? (
                                 <EmptyState variant="compact" title="Nothing finished yet" body="Mark a game completed in your collection and it lands here." />
                             ) : (
@@ -748,7 +746,7 @@ export default function JournalTab({ username }: { username: string }) {
                     )}
 
                     {view === "reviews" && (
-                        <Panel title="Reviews" icon={<Star className="w-4 h-4 text-amber-400" />}>
+                        <Panel title="Reviews">
                             {journal.reviews.length === 0 ? (
                                 <EmptyState variant="compact" title="No reviews yet" body="Rate a game with a few words and it shows up here." />
                             ) : (
@@ -787,7 +785,7 @@ export default function JournalTab({ username }: { username: string }) {
 
                 {/* ── sidebar ── */}
                 <aside className="xl:col-span-4 min-w-0 space-y-4">
-                    <Panel title="Where the hours went" icon={<Clock3 className="w-4 h-4 text-[var(--xp-bright)]" />}>
+                    <Panel title="Where the hours went">
                         {journal.per_game.length === 0 ? (
                             <EmptyState variant="compact" title="No sessions yet" />
                         ) : (
@@ -812,7 +810,7 @@ export default function JournalTab({ username }: { username: string }) {
                         )}
                     </Panel>
 
-                    <Panel title="Gaming Moments" icon={<ImageIcon className="w-4 h-4 text-violet-400" />}>
+                    <Panel title="Gaming Moments">
                         {(() => {
                             const moments = journal.sessions.flatMap((s) => s.moments).slice(0, 9);
                             return moments.length === 0 ? (

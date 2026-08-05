@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { Gamepad2, ListChecks, Award, Users, UserPlus, Check, Trophy } from "lucide-react";
+import { Gamepad2, ListChecks, Award, Users, Check, Trophy } from "lucide-react";
 import axios from "@/lib/axios";
 import RingMeter from "@/components/ui/RingMeter";
 import ProgressBar from "@/components/ui/ProgressBar";
@@ -103,7 +103,7 @@ export default function ProfileCtaBand() {
                             href="/register"
                             className="inline-flex items-center gap-2 px-7 h-12 rounded-[var(--radius-card)] bg-[var(--accent)] text-white font-display text-[13px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)]"
                         >
-                            <UserPlus className="w-4 h-4" /> Create Your Profile
+                            Create Your Profile
                         </Link>
                         <span className="text-[12px] text-[var(--ink-faint)]">
                             Free forever ·{" "}

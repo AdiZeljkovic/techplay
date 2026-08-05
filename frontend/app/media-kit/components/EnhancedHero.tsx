@@ -62,7 +62,7 @@ export default function EnhancedHero({ contactEmail, onDownloadPDF }: EnhancedHe
             <motion.div
                 className="absolute -top-[20%] -right-[10%] w-[800px] h-[800px] rounded-full pointer-events-none"
                 style={{
-                    background: 'radial-gradient(circle, rgba(252, 65, 0, 0.12) 0%, rgba(252, 65, 0, 0.03) 40%, transparent 70%)',
+                    background: 'radial-gradient(circle, rgba(220, 20, 60, 0.12) 0%, rgba(220, 20, 60, 0.03) 40%, transparent 70%)',
                 }}
                 animate={mounted ? {
                     scale: [1, 1.1, 1],

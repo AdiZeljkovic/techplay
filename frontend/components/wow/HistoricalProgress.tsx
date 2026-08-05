@@ -197,9 +197,9 @@ export default function HistoricalProgress({ history, characterName }: Historica
                                 <Line
                                     type="monotone"
                                     dataKey="M+ Score"
-                                    stroke="#FC4100"
+                                    stroke="#DC143C"
                                     strokeWidth={2}
-                                    dot={{ fill: '#FC4100', r: 4 }}
+                                    dot={{ fill: '#DC143C', r: 4 }}
                                     activeDot={{ r: 6 }}
                                 />
                                 <Line

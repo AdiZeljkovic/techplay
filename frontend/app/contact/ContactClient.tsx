@@ -66,7 +66,7 @@ export default function ContactPage() {
                 description="Got a tip? Found a bug? Want to work with us? We're all ears."
             />
 
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-16 md:py-24">
+            <div className="container-page py-16 md:py-24">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
 
                     {/* Left Column: Contact Info & Departments */}

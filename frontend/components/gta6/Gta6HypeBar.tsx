@@ -67,7 +67,7 @@ export default function Gta6HypeBar({ stats }: { stats: HypeStat[] }) {
     }, []);
 
     return (
-        <div className="max-w-[1320px] mx-auto px-4 xl:px-8 mt-5">
+        <div className="container-page mt-5">
             <div ref={ref} className="relative rounded-2xl border border-[#161B22] bg-[#0B0E14] overflow-hidden">
                 <div className="absolute inset-0 gta6-sunset opacity-25 pointer-events-none" />
                 <div className="relative px-5 md:px-8 py-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">

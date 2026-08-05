@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import useSWR, { mutate } from "swr";
-import { Flame, Check, Loader2, Target, Clock3, Sparkles } from "lucide-react";
+import { Flame, Check, Loader2, Clock3, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 import axios from "@/lib/axios";
 import type { DashboardData } from "@/lib/types/dashboard";
@@ -72,7 +72,6 @@ export default function DailyMissions({ streak }: { streak: DashboardData["strea
     return (
         <Panel
             title="Daily Missions"
-            icon={<Target className="w-3.5 h-3.5 text-[var(--accent)]" />}
             crown
             variant="console"
             className="h-full flex flex-col"

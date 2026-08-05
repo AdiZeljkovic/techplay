@@ -7,7 +7,7 @@ import { Gamepad2, ChevronRight } from "lucide-react";
 import axios from "@/lib/axios";
 import { cn } from "@/lib/utils";
 import ScoreBadge from "@/components/ui/ScoreBadge";
-import PlatformIcon from "@/components/games/PlatformIcon";
+import PlatformIcon, { platformBrandColor } from "@/components/games/PlatformIcon";
 
 type Tab = "trending" | "new" | "coming";
 
@@ -186,15 +186,27 @@ export default function DiscoverGames() {
 
                                 <div className="flex items-center justify-between gap-2">
                                     <span className="flex items-center gap-1.5 min-w-0">
-                                        {m.platforms.map((p) => (
-                                            <span
-                                                key={p}
-                                                title={p}
-                                                className="shrink-0 w-7 h-7 rounded-[var(--radius-inner)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)] flex items-center justify-center text-[var(--accent)] transition-colors duration-300 group-hover:bg-[var(--accent)] group-hover:text-white group-hover:border-transparent"
-                                            >
-                                                <PlatformIcon label={p} className="w-4 h-4" />
-                                            </span>
-                                        ))}
+                                        {m.platforms.map((p) => {
+                                            // Bare mark, no plate: a logo in its own
+                                            // colour is already a legible object, and
+                                            // the box around it only competed with the
+                                            // score chip beside it.
+                                            const brand = platformBrandColor(p);
+
+                                            return (
+                                                <span
+                                                    key={p}
+                                                    title={p}
+                                                    className="shrink-0 inline-flex items-center justify-center transition-opacity duration-300 opacity-90 group-hover:opacity-100"
+                                                    style={brand ? { color: brand } : undefined}
+                                                >
+                                                    <PlatformIcon
+                                                        label={p}
+                                                        className={`w-7 h-7${brand ? "" : " text-[var(--ink-low)]"}`}
+                                                    />
+                                                </span>
+                                            );
+                                        })}
                                     </span>
                                     {scoreValue !== null && <ScoreBadge score={scoreValue} className="shrink-0" />}
                                 </div>

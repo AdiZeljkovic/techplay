@@ -11,13 +11,7 @@ import { useCart } from "@/context/CartContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { useMobileMenu } from "@/context/MobileMenuContext";
 import axios from "@/lib/axios";
-import {
-    Menu, X, Search, User, LogOut, ShoppingCart,
-    ChevronDown, Facebook, Twitter, Instagram, Youtube,
-    Mail, Users, Sword, Tag, Calendar, Gamepad2,
-    Newspaper, Trophy, ArrowRight, Star, Cpu, PlayCircle, Monitor, History,
-    MessageSquare, Gem, Rocket, Shield, Bookmark, Settings, Layers
-} from "lucide-react";
+import { Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Facebook, Twitter, Instagram, Youtube, Mail, Users, Sword, Tag, Calendar, Gamepad2, Newspaper, Trophy, ArrowRight, MessageSquare, Gem, Rocket, Shield, Bookmark, Settings, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ScoreBadge from "@/components/ui/ScoreBadge";
 import { levelForXp } from "@/lib/level";
@@ -140,20 +134,13 @@ function MegaPanel({ className, innerClassName, children }: {
  * Column heading. The tick marks a *section*; an icon marks a *category
  * column* — two ranks, so the eye can tell the panel's parts apart.
  */
-function MegaHeading({ title, href, icon: Icon }: {
+function MegaHeading({ title, href }: {
     title: string;
     href: string;
-    icon?: React.ComponentType<{ className?: string }>;
 }) {
     return (
         <Link href={href} className="group/head flex items-center gap-2 mb-3.5">
-            {Icon ? (
-                <span className="w-5 h-5 shrink-0 rounded-[6px] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)] flex items-center justify-center text-[var(--accent)] group-hover/head:bg-[var(--accent)] group-hover/head:text-white group-hover/head:border-transparent transition-colors duration-300">
-                    <Icon className="w-3 h-3" />
-                </span>
-            ) : (
-                <span aria-hidden className="w-1 h-4 rounded-full bg-[var(--accent)]" />
-            )}
+            <span aria-hidden className="w-1 h-4 rounded-full bg-[var(--accent)]" />
             <span className="font-display text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)] group-hover/head:text-[var(--accent)] transition-colors duration-150 whitespace-nowrap">
                 {title}
             </span>
@@ -161,14 +148,6 @@ function MegaHeading({ title, href, icon: Icon }: {
         </Link>
     );
 }
-
-/** Each Discover column gets its own mark — kills four identical text blocks. */
-const COLUMN_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-    "News": Newspaper,
-    "Reviews": Star,
-    "Hardware": Cpu,
-    "Watch & Learn": PlayCircle,
-};
 
 /** Link grammar shared with the footer: an accent tick draws itself in. */
 function MegaLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -529,7 +508,7 @@ function GamesNavItem() {
                             <div className="p-6 grid grid-cols-[1.6fr_1fr] gap-5">
                                 {/* Genres */}
                                 <div className="min-w-0 pr-5 border-r border-[var(--line)]">
-                                    <MegaHeading title="Genres" href="/games" icon={Sword} />
+                                    <MegaHeading title="Genres" href="/games" />
                                     <div className="grid grid-cols-2 gap-x-5">
                                         {DB_GENRES.map((g) => (
                                             <MegaLink key={g.slug} href={`/games/genre/${g.slug}`}>{g.label}</MegaLink>
@@ -540,7 +519,7 @@ function GamesNavItem() {
                                 {/* Platforms + Years */}
                                 <div className="min-w-0 flex flex-col gap-5">
                                     <div>
-                                        <MegaHeading title="Platforms" href="/games" icon={Monitor} />
+                                        <MegaHeading title="Platforms" href="/games" />
                                         <div className="flex flex-col">
                                             {DB_PLATFORMS.map((p) => (
                                                 <MegaLink key={p.slug} href={`/games/platform/${p.slug}`}>{p.label}</MegaLink>
@@ -549,7 +528,7 @@ function GamesNavItem() {
                                     </div>
 
                                     <div>
-                                        <MegaHeading title="Years" href="/games" icon={History} />
+                                        <MegaHeading title="Years" href="/games" />
                                         <div className="grid grid-cols-2 gap-x-3">
                                             {DB_YEARS.map((y) => (
                                                 <MegaLink key={y} href={`/games/year/${y}`}>{y}</MegaLink>
@@ -591,9 +570,6 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
 // App-style grouped navigation. DISCOVER's column items are populated with
 // live categories from GET /navigation/tree (news/reviews/tech keys).
 const INITIAL_NAV_ITEMS: NavItemType[] = [
-    // Everything the site publishes, in one stream. Lives at /latest because
-    // /feed is the RSS feed and a page there would take that URL over.
-    { name: "Feed", href: "/latest", activePaths: ["/latest"] },
     {
         name: "Discover", href: "/news", hasDropdown: true,
         activePaths: ["/news", "/reviews", "/hardware", "/guides"],
@@ -624,6 +600,9 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
             ]},
         ],
     },
+    // Everything the site publishes, in one stream. Lives at /latest because
+    // /feed is the RSS feed and a page there would take that URL over.
+    { name: "Feed", href: "/latest", activePaths: ["/latest"] },
     // Desktop renders the bespoke GamesNavItem; children below feed the mobile accordion.
     { name: "Games", href: "/games", hasDropdown: true, activePaths: ["/games", "/calendar"], children: [
         { name: "All Games",        href: "/games" },
@@ -713,8 +692,8 @@ function NavItem({ item, badge, onHoverChange }: {
                     <span style={{
                         position: 'absolute', bottom: 0, left: '8px', right: '8px',
                         height: '3px', borderRadius: '2px 2px 0 0',
-                        background: 'linear-gradient(90deg, #FC4100, rgba(252,65,0,0.6))',
-                        boxShadow: '0 0 8px rgba(252,65,0,0.6)',
+                        background: 'linear-gradient(90deg, #DC143C, rgba(220, 20, 60,0.6))',
+                        boxShadow: '0 0 8px rgba(220, 20, 60,0.6)',
                     }} />
                 )}
             </Link>
@@ -734,7 +713,7 @@ function NavItem({ item, badge, onHoverChange }: {
                                         key={col.title}
                                         className="min-w-0 px-4 first:pl-0 last:pr-0 border-r border-[var(--line)] last:border-r-0"
                                     >
-                                        <MegaHeading title={col.title} href={col.href} icon={COLUMN_ICONS[col.title]} />
+                                        <MegaHeading title={col.title} href={col.href} />
                                         <div className="flex flex-col">
                                             {col.items.slice(0, 7).map((child, idx) => (
                                                 <MegaLink key={idx} href={child.href}>
@@ -1194,7 +1173,7 @@ export default function Header() {
                         className="xl:hidden bg-[var(--surface-0)]/95 backdrop-blur-md border-b border-[var(--line)] w-full"
                         style={{ boxShadow: "0 12px 40px rgba(0,0,0,0.5)" }}
                     >
-                        <div className="max-w-[1320px] mx-auto px-4 py-3">
+                        <div className="container-page py-3">
                             <SearchDropdown
                                 isMobile
                                 placeholder="Search TechPlay..."

@@ -5,10 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import {
-    CalendarDays, Flame, Heart, Bell, BellRing, ChevronLeft, ChevronRight,
-    Gamepad2, Loader2, Check, Sparkles, ListFilter, PieChart, Eye,
-} from "lucide-react";
+import { CalendarDays, Flame, Heart, Bell, BellRing, ChevronLeft, ChevronRight, Gamepad2, Loader2, Check, ListFilter } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 
@@ -230,7 +227,7 @@ export default function CalendarClient() {
                     </>
                 )}
 
-                <div className="relative z-10 max-w-[1500px] mx-auto px-4 xl:px-6 py-10 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
+                <div className="relative z-10 container-page py-10 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
                     <div>
                         <p className="inline-flex items-center gap-2 font-display text-[9.5px] font-black uppercase tracking-[0.18em] text-[var(--accent)]">
                             <CalendarDays className="w-3.5 h-3.5" /> Release calendar
@@ -274,7 +271,6 @@ export default function CalendarClient() {
                     {/* ── this month rail ── */}
                     <Panel
                         title="This month"
-                        icon={<CalendarDays className="w-4 h-4 text-[var(--accent)]" />}
                         meta={
                             <span className="flex items-center gap-1">
                                 <button
@@ -346,7 +342,7 @@ export default function CalendarClient() {
 
             {/* ── filter bar ── */}
             <div className="sticky top-0 z-20 border-b border-white/[0.07] bg-[var(--surface-0)]/92 backdrop-blur-md">
-                <div className="max-w-[1500px] mx-auto px-4 xl:px-6 py-3 flex flex-wrap items-center gap-2">
+                <div className="container-page py-3 flex flex-wrap items-center gap-2">
                     {PLATFORM_FILTERS.map((p) => (
                         <button
                             key={p.id}
@@ -394,11 +390,11 @@ export default function CalendarClient() {
                 </div>
             </div>
 
-            <div className="max-w-[1500px] mx-auto px-4 xl:px-6 py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+            <div className="container-page py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
                 <div className="xl:col-span-8 min-w-0 space-y-5">
                     {/* ── most anticipated ── */}
                     {(data?.most_anticipated.length ?? 0) > 0 && (
-                        <Panel title={`Biggest in ${label}`} icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />}>
+                        <Panel title={`Biggest in ${label}`}>
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                                 {data!.most_anticipated.map((game) => (
                                     <div key={game.slug} className="group">
@@ -433,7 +429,6 @@ export default function CalendarClient() {
                     {/* ── the month, day by day ── */}
                     <Panel
                         title={label ? `${label} ${year} releases` : "Releases"}
-                        icon={<CalendarDays className="w-4 h-4 text-[var(--accent)]" />}
                         meta={
                             <span className="font-display text-[10px] font-black tabular-nums text-white/35">
                                 {data?.stats.showing ?? 0}
@@ -509,7 +504,7 @@ export default function CalendarClient() {
 
                 {/* ── right rail ── */}
                 <aside className="xl:col-span-4 min-w-0 space-y-4">
-                    <Panel title="Your watchlist releases" icon={<Eye className="w-4 h-4 text-[var(--accent)]" />}>
+                    <Panel title="Your watchlist releases">
                         {!user ? (
                             <p className="py-1 text-[11.5px] text-white/30 leading-snug">
                                 <Link href="/login" className="text-[var(--accent)] font-semibold">Sign in</Link> to wishlist
@@ -546,7 +541,7 @@ export default function CalendarClient() {
                         )}
                     </Panel>
 
-                    <Panel title="Biggest still to come" icon={<Flame className="w-4 h-4 text-[var(--accent)]" />}>
+                    <Panel title="Biggest still to come">
                         {(data?.most_followed.length ?? 0) === 0 ? (
                             <p className="py-1 text-[11.5px] text-white/30">Nothing further out yet.</p>
                         ) : (
@@ -576,7 +571,7 @@ export default function CalendarClient() {
                         )}
                     </Panel>
 
-                    <Panel title="Platform breakdown" icon={<PieChart className="w-4 h-4 text-[#60a5fa]" />}>
+                    <Panel title="Platform breakdown">
                         {(data?.platform_breakdown.length ?? 0) === 0 ? (
                             <p className="py-1 text-[11.5px] text-white/30">No platform data this month.</p>
                         ) : (

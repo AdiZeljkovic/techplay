@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import useSWR, { useSWRConfig } from "swr";
-import { Bell, Check, Gamepad2, Loader2, CalendarDays } from "lucide-react";
+import { Bell, Check, Gamepad2, Loader2 } from "lucide-react";
 import axios from "@/lib/axios";
 import { getApiUrl } from "@/lib/api";
 import Panel from "@/components/ui/Panel";
@@ -93,7 +93,6 @@ export default function UpcomingForYouRow() {
     return (
         <Panel
             title="Upcoming For You"
-            icon={<CalendarDays className="w-4 h-4 text-[var(--accent)]" />}
             action={{ label: "View all", href: "/calendar" }}
             bodyClassName="p-4"
         >

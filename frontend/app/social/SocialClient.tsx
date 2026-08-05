@@ -5,11 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import {
-    MessageCircle, Users, Mail, UsersRound, Search, X, Send, Loader2, Check,
-    UserPlus, Ban, Plus, ImageIcon, Shield, Gamepad2, Circle, ArrowLeft, Hash,
-    LogOut, ChevronRight, Sparkles, Inbox,
-} from "lucide-react";
+import { MessageCircle, Users, Mail, UsersRound, Search, X, Send, Loader2, Check, UserPlus, Ban, Plus, ImageIcon, Shield, Gamepad2, ArrowLeft, Hash, LogOut, ChevronRight, Sparkles, Inbox } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import Avatar from "@/components/ui/Avatar";
@@ -408,7 +404,7 @@ export default function SocialClient() {
                     className="absolute inset-0"
                     style={{ background: "radial-gradient(70% 150% at 82% -10%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 58%)" }}
                 />
-                <div className="relative z-10 max-w-[1600px] mx-auto px-4 xl:px-6 py-7 flex flex-wrap items-center justify-between gap-6">
+                <div className="relative z-10 container-page py-7 flex flex-wrap items-center justify-between gap-6">
                     <div className="flex items-center gap-3.5">
                         <span className="w-12 h-12 rounded-[12px] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] flex items-center justify-center">
                             <MessageCircle className="w-6 h-6 text-[var(--accent)]" />
@@ -439,7 +435,7 @@ export default function SocialClient() {
                 </div>
             </div>
 
-            <div className="max-w-[1600px] mx-auto px-4 xl:px-6 py-5 grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+            <div className="container-page py-5 grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
                 {/* ── left rail ── */}
                 <aside className="xl:col-span-3 min-w-0 space-y-4">
                     <Panel padding="none">
@@ -478,7 +474,7 @@ export default function SocialClient() {
                     </Panel>
 
                     {section === "requests" ? (
-                        <Panel title="Friend Requests" icon={<UserPlus className="w-4 h-4 text-[var(--accent)]" />}>
+                        <Panel title="Friend Requests">
                             {(hub?.requests.length ?? 0) === 0 ? (
                                 <p className="py-1 text-[11.5px] text-white/30">No requests waiting.</p>
                             ) : (
@@ -508,7 +504,7 @@ export default function SocialClient() {
                             )}
                         </Panel>
                     ) : section === "blocked" ? (
-                        <Panel title="Blocked Players" icon={<Ban className="w-4 h-4 text-red-400/70" />}>
+                        <Panel title="Blocked Players">
                             {(hub?.blocked.length ?? 0) === 0 ? (
                                 <p className="py-1 text-[11.5px] text-white/30">Nobody blocked.</p>
                             ) : (
@@ -525,7 +521,6 @@ export default function SocialClient() {
                     ) : (
                         <Panel
                             title="Online Now"
-                            icon={<Circle className="w-4 h-4 text-emerald-400 fill-emerald-400" />}
                             meta={<span className="font-display text-[11px] font-black tabular-nums text-emerald-400">{stats?.online ?? 0}</span>}
                         >
                             {(hub?.friends.length ?? 0) === 0 ? (
@@ -784,7 +779,6 @@ export default function SocialClient() {
                 <aside className="xl:col-span-3 min-w-0 space-y-4">
                     <Panel
                         title="Squad Online"
-                        icon={<Gamepad2 className="w-4 h-4 text-emerald-400" />}
                         meta={<span className="font-display text-[10px] font-black tabular-nums text-white/35">{stats?.online ?? 0}/{stats?.friends ?? 0}</span>}
                     >
                         {(hub?.friends.filter((f) => f.online).length ?? 0) === 0 ? (
@@ -806,7 +800,6 @@ export default function SocialClient() {
 
                     <Panel
                         title="Clan Chat Activity"
-                        icon={<Shield className="w-4 h-4 text-[var(--accent)]" />}
                         action={{ label: "Open", onClick: openClanRoom }}
                     >
                         {(hub?.clan_activity.length ?? 0) === 0 ? (
@@ -831,7 +824,7 @@ export default function SocialClient() {
                         )}
                     </Panel>
 
-                    <Panel title="People You May Know" icon={<UserPlus className="w-4 h-4 text-[var(--accent)]" />}>
+                    <Panel title="People You May Know">
                         {(hub?.suggestions.length ?? 0) === 0 ? (
                             <p className="py-1 text-[11.5px] text-white/30 leading-snug">
                                 Suggestions appear once your friends have friends you don&apos;t.
@@ -861,7 +854,7 @@ export default function SocialClient() {
                         )}
                     </Panel>
 
-                    <Panel title="Quick Actions" icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />}>
+                    <Panel title="Quick Actions">
                         <div className="grid grid-cols-2 gap-2">
                             {([
                                 [UsersRound, "New group", () => setGrouping(true)],

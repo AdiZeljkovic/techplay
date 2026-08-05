@@ -96,7 +96,7 @@ function ProfilePageInner() {
         return (
             <div className="min-h-screen">
                 <div className="-mt-[86px] md:-mt-[82px] h-[460px] bg-gradient-to-b from-[var(--bg-secondary)] to-[var(--bg-primary)] animate-pulse" />
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 -mt-24 space-y-4">
+                <div className="container-page -mt-24 space-y-4">
                     <div className="flex items-end gap-6">
                         <div className="w-32 h-32 rounded-full bg-white/5" />
                         <div className="flex-1 space-y-3 pb-2">
@@ -221,7 +221,7 @@ function ProfilePageInner() {
                     {effectiveTab === "achievements" && (
                         <div className="space-y-6">
                             <AchievementsTab username={userData.username} />
-                            <SectionCard title="Steam Achievements" icon={<User className="w-4 h-4 text-[var(--accent)]" />}>
+                            <SectionCard title="Steam Achievements">
                                 <SteamAchievements username={userData.username} />
                             </SectionCard>
                         </div>

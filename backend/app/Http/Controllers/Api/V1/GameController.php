@@ -64,6 +64,7 @@ class GameController extends Controller
         $search = $request->input('search', '');
         $genre = $request->input('genres', '');       // text name e.g. "Action"
         $platform = $request->input('platforms', '');    // text name e.g. "PC"
+        $tag = $request->input('tags', '');           // text name e.g. "Open World"
         $ordering = $request->input('ordering', '-rating');
         $yearFrom = (int) $request->input('year_from', 0);
         $yearTo = (int) $request->input('year_to', 0);
@@ -79,15 +80,16 @@ class GameController extends Controller
         }
 
         $cacheKey = 'games.index.v1.'.md5(json_encode([
-            $search, $genre, $platform, $ordering, $yearFrom, $yearTo, $minRating, $status, $page, $pageSize,
+            $search, $genre, $platform, $tag, $ordering, $yearFrom, $yearTo, $minRating, $status, $page, $pageSize,
         ]));
 
-        $payload = Cache::remember($cacheKey, 300, function () use ($search, $genre, $platform, $ordering, $yearFrom, $yearTo, $minRating, $status, $page, $pageSize, $request) {
+        $payload = Cache::remember($cacheKey, 300, function () use ($search, $genre, $platform, $tag, $ordering, $yearFrom, $yearTo, $minRating, $status, $page, $pageSize, $request) {
             $today = now()->toDateString();
             $q = Game::query()
                 ->when($search, fn ($q) => $q->where('name', 'ilike', "%{$search}%"))
                 ->when($genre, fn ($q) => $q->whereRaw('genre_names @> ARRAY[?]::text[]', [$genre]))
                 ->when($platform, fn ($q) => $q->whereRaw('platform_names @> ARRAY[?]::text[]', [$platform]))
+                ->when($tag, fn ($q) => $q->whereRaw('tag_names @> ARRAY[?]::text[]', [$tag]))
                 ->when($yearFrom > 0, fn ($q) => $q->where('released', '>=', "{$yearFrom}-01-01"))
                 ->when($yearTo > 0, fn ($q) => $q->where('released', '<=', "{$yearTo}-12-31"))
                 ->when($minRating > 0, fn ($q) => $q->where('rating', '>=', $minRating))

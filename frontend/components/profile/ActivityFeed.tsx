@@ -11,7 +11,7 @@ import type { ActivityItem } from "@/lib/types/profile";
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
 const TYPE_META: Record<string, { icon: any; color: string }> = {
-    thread: { icon: MessageSquare, color: "#FC4100" },
+    thread: { icon: MessageSquare, color: "#DC143C" },
     comment: { icon: MessageCircle, color: "#60a5fa" },
     achievement: { icon: Trophy, color: "#facc15" },
     game: { icon: Gamepad2, color: "#34d399" },

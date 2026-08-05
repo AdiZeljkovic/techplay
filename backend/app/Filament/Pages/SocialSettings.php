@@ -10,7 +10,6 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Facades\Cache;
 
 class SocialSettings extends Page implements HasForms
 {
@@ -49,6 +48,7 @@ class SocialSettings extends Page implements HasForms
             'youtube_url' => SiteSetting::get('youtube_url'),
             'discord_url' => SiteSetting::get('discord_url'),
             'tiktok_url' => SiteSetting::get('tiktok_url'),
+            'bluesky_url' => SiteSetting::get('bluesky_url'),
         ]);
     }
 
@@ -61,9 +61,9 @@ class SocialSettings extends Page implements HasForms
                     ->icon('heroicon-o-link')
                     ->schema([
                         TextInput::make('twitter_url')
-                            ->label('Twitter / X')
+                            ->label('X (Twitter)')
                             ->url()
-                            ->placeholder('https://twitter.com/TechPlayGG')
+                            ->placeholder('https://x.com/TechPlayGG')
                             ->prefixIcon('heroicon-o-at-symbol'),
 
                         TextInput::make('facebook_url')
@@ -95,6 +95,12 @@ class SocialSettings extends Page implements HasForms
                             ->url()
                             ->placeholder('https://tiktok.com/@techplaygg')
                             ->prefixIcon('heroicon-o-at-symbol'),
+
+                        TextInput::make('bluesky_url')
+                            ->label('Bluesky')
+                            ->url()
+                            ->placeholder('https://bsky.app/profile/techplay.gg')
+                            ->prefixIcon('heroicon-o-at-symbol'),
                     ])
                     ->columns(2),
             ])
@@ -108,8 +114,6 @@ class SocialSettings extends Page implements HasForms
         foreach ($data as $key => $value) {
             SiteSetting::set($key, $value ?? '', 'text', 'socials');
         }
-
-        Cache::forget('site_settings');
 
         Notification::make()
             ->title('Social links saved!')

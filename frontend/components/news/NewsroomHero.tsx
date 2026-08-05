@@ -90,7 +90,7 @@ export default function NewsroomHero({
                 <div
                     className="absolute inset-0 opacity-[0.025]"
                     style={{
-                        backgroundImage: 'linear-gradient(rgba(252,65,0,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(252,65,0,0.4) 1px, transparent 1px)',
+                        backgroundImage: 'linear-gradient(rgba(220, 20, 60,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(220, 20, 60,0.4) 1px, transparent 1px)',
                         backgroundSize: '80px 80px',
                     }}
                 />
@@ -103,7 +103,7 @@ export default function NewsroomHero({
             <div className="absolute bottom-0 left-4 w-5 h-5 border-l border-b border-white/5" />
             <div className="absolute bottom-0 right-4 w-5 h-5 border-r border-b border-white/5" />
 
-            <div className="relative z-10 max-w-[1320px] mx-auto px-4 xl:px-0 pt-12 pb-0">
+            <div className="relative z-10 container-page pt-12 pb-0">
                 <div className="flex flex-col xl:flex-row gap-8 xl:gap-10 items-stretch">
 
                     {/* ══ LEFT ══ */}
@@ -116,7 +116,7 @@ export default function NewsroomHero({
                         <div>
                             {/* Top meta row */}
                             <div className="flex items-center mb-8">
-                                <span className="w-2 h-2 rounded-full bg-tp-accent shadow-[0_0_8px_rgba(252,65,0,0.8)]" />
+                                <span className="w-2 h-2 rounded-full bg-tp-accent shadow-[0_0_8px_rgba(220, 20, 60,0.8)]" />
                                 <span className="ml-2.5 text-[10px] font-black uppercase tracking-[0.22em] text-[#3F3F46]">
                                     {sectionLabel}
                                 </span>
@@ -140,7 +140,7 @@ export default function NewsroomHero({
                                             className="block text-tp-accent"
                                             style={{
                                                 fontSize: 'clamp(56px, 8.5vw, 110px)',
-                                                textShadow: '0 0 80px rgba(252,65,0,0.4)',
+                                                textShadow: '0 0 80px rgba(220, 20, 60,0.4)',
                                             }}
                                         >
                                             {headlineAccent.trim()}
@@ -233,7 +233,7 @@ export default function NewsroomHero({
                         >
                             <Link
                                 href={featuredHref}
-                                className="group relative flex flex-col w-full xl:max-w-[420px] h-full min-h-[420px] rounded-[20px] overflow-hidden border border-[#161B22] hover:border-tp-accent/40 hover:-translate-x-1 hover:shadow-[0_8px_40px_rgba(252,65,0,0.18)] transition-all duration-300"
+                                className="group relative flex flex-col w-full xl:max-w-[420px] h-full min-h-[420px] rounded-[20px] overflow-hidden border border-[#161B22] hover:border-tp-accent/40 hover:-translate-x-1 hover:shadow-[0_8px_40px_rgba(220, 20, 60,0.18)] transition-all duration-300"
                             >
                                 {/* Orange accent bar */}
                                 <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-tp-accent scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300 z-20" />

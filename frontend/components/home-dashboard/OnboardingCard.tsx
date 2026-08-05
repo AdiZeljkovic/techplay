@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Gamepad2, Heart, Star, Check, ChevronRight, Rocket } from "lucide-react";
+import { Gamepad2, Heart, Star, Check, ChevronRight } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import type { DashboardStats } from "@/lib/types/dashboard";
 
@@ -39,7 +39,6 @@ export default function OnboardingCard({ stats }: { stats: DashboardStats }) {
     return (
         <Panel
             title="Get Started"
-            icon={<Rocket className="w-3.5 h-3.5 text-[var(--accent)]" />}
             crown
             bodyClassName="p-4"
         >

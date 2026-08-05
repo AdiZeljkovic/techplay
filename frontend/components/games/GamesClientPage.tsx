@@ -6,12 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-    Search, Gamepad2, ChevronLeft, ChevronRight,
-    Star, SlidersHorizontal, X, Swords, MonitorSmartphone,
-    History, ArrowUpDown, Shuffle, ArrowRight, CalendarDays,
-    Box, ChevronDown, RotateCcw, Loader2, type LucideIcon,
-} from "lucide-react";
+import { Search, Gamepad2, ChevronLeft, ChevronRight, Star, SlidersHorizontal, X, Swords, MonitorSmartphone, History, ArrowUpDown, Shuffle, ArrowRight, CalendarDays, Box, ChevronDown, RotateCcw, Loader2, type LucideIcon } from "lucide-react";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
 import TrackGameButton from "@/components/games/TrackGameButton";
 
@@ -114,7 +109,7 @@ function FacetGroup({ label, icon: Icon, isActive, children }: {
                     {label}
                 </span>
                 {isActive && (
-                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-tp-accent shadow-[0_0_8px_rgba(252,65,0,0.9)]" />
+                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-tp-accent shadow-[0_0_8px_rgba(220, 20, 60,0.9)]" />
                 )}
             </span>
             {children}
@@ -128,7 +123,7 @@ function FacetPill({ active, onClick, children }: { active: boolean; onClick: ()
             onClick={onClick}
             className={`px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-150 border ${
                 active
-                    ? "bg-gradient-to-b from-tp-accent to-[#D93A02] border-tp-accent text-white shadow-[0_2px_14px_rgba(252,65,0,0.35)]"
+                    ? "bg-gradient-to-b from-tp-accent to-[#D93A02] border-tp-accent text-white shadow-[0_2px_14px_rgba(220, 20, 60,0.35)]"
                     : "bg-zinc-50 dark:bg-white/[0.03] border-zinc-200 dark:border-white/[0.07] text-zinc-600 dark:text-[#A1A1AA] hover:text-zinc-900 dark:hover:text-white hover:border-tp-accent/50 hover:bg-tp-accent/[0.07]"
             }`}
         >
@@ -182,7 +177,7 @@ function PromoCard({ icon: Icon, title, desc, href, onClick }: {
     const inner = (
         <>
             <span className="absolute -top-10 -right-10 w-32 h-32 bg-tp-accent/[0.07] blur-[50px] rounded-full pointer-events-none" />
-            <span className="w-11 h-11 rounded-xl bg-tp-accent/10 border border-tp-accent/25 flex items-center justify-center mb-4 group-hover:bg-tp-accent/20 group-hover:shadow-[0_0_20px_rgba(252,65,0,0.25)] transition-all">
+            <span className="w-11 h-11 rounded-xl bg-tp-accent/10 border border-tp-accent/25 flex items-center justify-center mb-4 group-hover:bg-tp-accent/20 group-hover:shadow-[0_0_20px_rgba(220, 20, 60,0.25)] transition-all">
                 <Icon className="w-5 h-5 text-tp-accent" strokeWidth={2} />
             </span>
             <h3 className="font-display text-[13px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.06em] mb-1.5">{title}</h3>
@@ -292,7 +287,7 @@ export default function GamesClientPage() {
     const quickChipCls = (active: boolean) =>
         `flex items-center gap-2 px-4 py-2 rounded-full border text-[12px] font-bold transition-all ${
             active
-                ? "bg-tp-accent border-tp-accent text-white shadow-[0_2px_14px_rgba(252,65,0,0.35)]"
+                ? "bg-tp-accent border-tp-accent text-white shadow-[0_2px_14px_rgba(220, 20, 60,0.35)]"
                 : "bg-white dark:bg-white/[0.04] border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-[#C9D1D9] hover:border-tp-accent/50 hover:text-tp-accent"
         }`;
 
@@ -346,7 +341,7 @@ export default function GamesClientPage() {
                         step={1}
                         value={score === "" ? 0 : Number(score)}
                         onChange={(e) => { const v = Number(e.target.value); setScore(v === 0 ? "" : String(v)); }}
-                        className="w-full h-1.5 cursor-pointer accent-[#FC4100]"
+                        className="w-full h-1.5 cursor-pointer accent-[#DC143C]"
                         aria-label="Minimum MobyScore"
                     />
                     <div className="flex justify-between mt-2">
@@ -393,7 +388,7 @@ export default function GamesClientPage() {
                     <div className="absolute top-0 left-[25%] w-[50%] h-[1px] bg-gradient-to-r from-transparent via-tp-accent/30 dark:via-tp-accent/40 to-transparent" />
                 </div>
 
-                <div className="relative z-10 max-w-[1320px] mx-auto px-4 xl:px-0 pt-14 pb-12 flex flex-col items-center text-center">
+                <div className="relative z-10 container-page pt-14 pb-12 flex flex-col items-center text-center">
                     <h1 className="font-display text-[36px] md:text-[52px] font-black text-zinc-900 dark:text-white uppercase leading-[0.95] tracking-tight mb-4 drop-shadow-xl">
                         GAME <span className="text-tp-accent">DATABASE</span>
                     </h1>
@@ -442,7 +437,7 @@ export default function GamesClientPage() {
                         <button
                             onClick={randomGame}
                             disabled={randomLoading}
-                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-tp-accent/60 bg-tp-accent/10 text-[12px] font-bold text-tp-accent hover:bg-tp-accent hover:text-white transition-all disabled:opacity-60 shadow-[0_0_18px_rgba(252,65,0,0.15)]"
+                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-tp-accent/60 bg-tp-accent/10 text-[12px] font-bold text-tp-accent hover:bg-tp-accent hover:text-white transition-all disabled:opacity-60 shadow-[0_0_18px_rgba(220, 20, 60,0.15)]"
                         >
                             {randomLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shuffle className="w-3.5 h-3.5" />}
                             Random Game
@@ -452,7 +447,7 @@ export default function GamesClientPage() {
             </div>
 
             {/* ── Promo shortcut cards ── */}
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 mb-10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="container-page mb-10 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                 <PromoCard icon={Star} title="Top Rated Games" desc="See the highest rated games verified by our community."
                     onClick={() => { clearAll(); setOrdering("-rating"); scrollToGrid(); }} />
                 <PromoCard icon={Box} title="Recently Added" desc="Explore the latest games added to our database."
@@ -463,7 +458,7 @@ export default function GamesClientPage() {
                     href="/games/platform/pc" />
             </div>
 
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 pb-20">
+            <div className="container-page pb-20">
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
 
                     {/* ── FACET SIDEBAR (desktop) ── */}
@@ -670,7 +665,7 @@ function GameCard({ game }: { game: Game }) {
                         ))}
                     </div>
                     {rating > 0 && (
-                        <span className="shrink-0 bg-tp-accent text-white text-[11px] font-black px-1.5 py-0.5 rounded-md shadow-[0_2px_10px_rgba(252,65,0,0.4)] leading-none">
+                        <span className="shrink-0 bg-tp-accent text-white text-[11px] font-black px-1.5 py-0.5 rounded-md shadow-[0_2px_10px_rgba(220, 20, 60,0.4)] leading-none">
                             {rating.toFixed(1)}
                         </span>
                     )}
@@ -726,7 +721,7 @@ function Pagination({ page, totalPages, onChange }: {
                     key={n}
                     onClick={() => go(n)}
                     className={`${btnBase} ${n === page
-                        ? "bg-tp-accent border-tp-accent text-white shadow-[0_0_15px_rgba(252,65,0,0.3)]"
+                        ? "bg-tp-accent border-tp-accent text-white shadow-[0_0_15px_rgba(220, 20, 60,0.3)]"
                         : btnIdle
                     }`}
                 >

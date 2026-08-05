@@ -5,11 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import {
-    Shield, ShieldCheck, Castle, Radar, Swords, Vault as VaultIcon, Trophy, Library,
-    Hammer, RadioTower, Lock, Plus, ChevronRight, Coins, Clock3, Zap, Loader2,
-    Users, X, ArrowUp, Sparkles, History, Check, Flag, Crown, Rocket, Dna, Palette, Vote,
-} from "lucide-react";
+import { Shield, ShieldCheck, Castle, Radar, Swords, Vault as VaultIcon, Trophy, Library, Hammer, RadioTower, Lock, Plus, ChevronRight, Coins, Clock3, Zap, Loader2, X, ArrowUp, Check, Flag, Crown, Rocket } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import Avatar from "@/components/ui/Avatar";
@@ -174,7 +170,6 @@ function ConstructionCard({
         <Panel
             variant="console"
             title="Current Construction"
-            icon={<Hammer className="w-4 h-4 text-[var(--accent)]" />}
             meta={<span className="font-display text-[10px] font-black tabular-nums text-white/40">{project.funded_percent}%</span>}
         >
             <p className="font-display text-[14px] font-black text-white">
@@ -515,7 +510,7 @@ export default function BaseClient({ slug }: { slug: string }) {
     if (isLoading) {
         return (
             <main className="min-h-screen bg-[var(--surface-0)]">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-6 space-y-4">
+                <div className="container-page py-6 space-y-4">
                     <div className="h-[120px] rounded-[var(--radius-panel)] bg-white/[0.04] animate-pulse" />
                     <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
                         <div className="xl:col-span-8 h-[460px] rounded-[var(--radius-panel)] bg-white/[0.04] animate-pulse" />
@@ -548,7 +543,7 @@ export default function BaseClient({ slug }: { slug: string }) {
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-6 space-y-4">
+            <div className="container-page py-6 space-y-4">
                 {/* ── header ── */}
                 <p className="flex items-center gap-2 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/30">
                     <Link href="/clans" className="hover:text-white transition-colors">Clans</Link>
@@ -677,7 +672,6 @@ export default function BaseClient({ slug }: { slug: string }) {
                         {/* ── mission board ── */}
                         <Panel
                             title="Mission Board"
-                            icon={<Radar className="w-4 h-4 text-[var(--accent)]" />}
                             meta={data.missions.length > 0 ? (
                                 <span className="font-display text-[10px] font-black tabular-nums text-white/35">
                                     {data.missions.filter((m) => m.status === "active").length} active
@@ -706,7 +700,6 @@ export default function BaseClient({ slug }: { slug: string }) {
                             <Panel
                                 variant="console"
                                 title="Clan DNA"
-                                icon={<Dna className="w-4 h-4 text-[var(--accent)]" />}
                                 meta={data.dna.dominant_archetype ? (
                                     <span className="inline-flex items-center h-[20px] px-2.5 rounded-[5px] bg-[var(--accent-soft)] font-display text-[9px] font-black uppercase tracking-[0.1em] text-[var(--accent)]">
                                         {data.dna.dominant_archetype}
@@ -764,10 +757,6 @@ export default function BaseClient({ slug }: { slug: string }) {
                         {selected && (
                             <Panel
                                 title={selected.name}
-                                icon={(() => {
-                                    const Icon = BUILDING_ICONS[selected.key] ?? Shield;
-                                    return <Icon className="w-4 h-4 text-[var(--accent)]" />;
-                                })()}
                                 meta={
                                     <span className="font-display text-[10px] font-black uppercase tracking-[0.1em] text-white/35 tabular-nums">
                                         Level {selected.level} / {selected.max_level}
@@ -834,7 +823,6 @@ export default function BaseClient({ slug }: { slug: string }) {
                         {/* ── contributions ── */}
                         <Panel
                             title="Member Contributions"
-                            icon={<Users className="w-4 h-4 text-[var(--accent)]" />}
                             meta={
                                 <span className="flex items-center gap-1">
                                     {(["week", "month", "all"] as const).map((t) => (
@@ -895,7 +883,7 @@ export default function BaseClient({ slug }: { slug: string }) {
                                 />
                             ))
                         ) : (
-                            <Panel variant="console" title="Current Construction" icon={<Hammer className="w-4 h-4 text-[var(--accent)]" />}>
+                            <Panel variant="console" title="Current Construction">
                                 <EmptyState
                                     variant="compact"
                                     title="Nothing under construction"
@@ -909,7 +897,7 @@ export default function BaseClient({ slug }: { slug: string }) {
                             </Panel>
                         )}
 
-                        <Panel title="Resource Breakdown" icon={<Coins className="w-4 h-4 text-[#f0b429]" />}>
+                        <Panel title="Resource Breakdown">
                             <div className="space-y-3">
                                 {(Object.keys(RESOURCE_META) as (keyof typeof RESOURCE_META)[]).map((key) => {
                                     const meta = RESOURCE_META[key];
@@ -938,7 +926,6 @@ export default function BaseClient({ slug }: { slug: string }) {
 
                         <Panel
                             title="Boosters"
-                            icon={<Rocket className="w-4 h-4 text-[var(--accent)]" />}
                             meta={
                                 <span className="font-display text-[10px] font-black tabular-nums text-white/35">
                                     {data.boosts.active_count}/{data.boosts.slots} running
@@ -960,7 +947,7 @@ export default function BaseClient({ slug }: { slug: string }) {
                         </Panel>
 
                         {activeBonuses.length > 0 && (
-                            <Panel title="Active Bonuses" icon={<Sparkles className="w-4 h-4 text-emerald-400" />}>
+                            <Panel title="Active Bonuses">
                                 <div className="space-y-2">
                                     {activeBonuses.map((b, i) => (
                                         <p key={i} className="flex items-start gap-2 text-[12px] text-white/55 leading-snug">
@@ -975,7 +962,6 @@ export default function BaseClient({ slug }: { slug: string }) {
                         {data.themes.workshop_level > 0 && (
                             <Panel
                                 title="Workshop Themes"
-                                icon={<Palette className="w-4 h-4 text-[var(--accent)]" />}
                                 meta={<span className="font-display text-[10px] font-black tabular-nums text-white/35">Tier {data.themes.workshop_level}</span>}
                             >
                                 <div className="grid grid-cols-3 gap-2">
@@ -1020,7 +1006,7 @@ export default function BaseClient({ slug }: { slug: string }) {
                         )}
 
                         {data.polls.enabled && (
-                            <Panel title="Clan Polls" icon={<Vote className="w-4 h-4 text-[#60a5fa]" />}>
+                            <Panel title="Clan Polls">
                                 {data.polls.items.length === 0 ? (
                                     <EmptyState variant="compact" title="No open polls" body={data.can_manage ? "Put a decision to the roster." : undefined} />
                                 ) : (
@@ -1034,7 +1020,7 @@ export default function BaseClient({ slug }: { slug: string }) {
                         )}
 
                         {data.trophies.length > 0 && (
-                            <Panel title="Trophy Hall" icon={<Trophy className="w-4 h-4 text-[#f0b429]" />}>
+                            <Panel title="Trophy Hall">
                                 <div className="space-y-2.5">
                                     {data.trophies.map((t) => (
                                         <div key={t.id} className="flex items-center gap-3">
@@ -1053,7 +1039,7 @@ export default function BaseClient({ slug }: { slug: string }) {
                             </Panel>
                         )}
 
-                        <Panel title="Recent Activity" icon={<History className="w-4 h-4 text-white/40" />}>
+                        <Panel title="Recent Activity">
                             {data.recent_activity.length === 0 ? (
                                 <EmptyState variant="compact" title="Quiet so far" />
                             ) : (

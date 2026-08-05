@@ -13,7 +13,7 @@ export default function TermsPage() {
                 icon={FileText}
             />
 
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-16">
+            <div className="container-page py-16">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

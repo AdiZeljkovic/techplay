@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useMemo, Suspense } from "react";
 import { SupportTier } from "@/types/support";
 import { PayPalScriptProvider, PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
-import { Loader2, CheckCircle2, Shield, Calendar, AlertCircle, ChevronRight, ArrowLeft, Star, Coins, CreditCard } from "lucide-react";
+import { Loader2, CheckCircle2, Shield, AlertCircle, ChevronRight, ArrowLeft, Star, Coins, CreditCard } from "lucide-react";
 
 function SupportCheckoutContent() {
     const searchParams = useSearchParams();

@@ -18,6 +18,17 @@ export type SectionKey = "news" | "reviews" | "tech" | "guides";
 export interface SectionConfig {
     /** What the hub endpoint and the list endpoint are keyed on. */
     key: SectionKey;
+    /**
+     * The page's own heading, and the line under it.
+     *
+     * Static, and deliberately here rather than read from the hub endpoint:
+     * the endpoint is fetched on the client, so an h1 that waited for it was
+     * empty in the server HTML — which is the one place a crawler is certain
+     * to look. It also says what the page is about rather than what we call
+     * the desk internally; "Newsroom" is not what anyone searches for.
+     */
+    title: string;
+    line: string;
     /** URL prefix for the section and its articles. */
     path: string;
     /** Query parameter the list endpoint filters the tab row with. */
@@ -56,12 +67,16 @@ const routesFrom = (
 export const SECTIONS: Record<SectionKey, SectionConfig> = {
     news: {
         key: "news",
+        title: "Gaming News",
+        line: "Breaking stories, analysis and interviews from across gaming.",
         path: "/news",
         filterParam: "category",
         categoryRoutes: routesFrom(NEWS_CATEGORIES, "/news"),
     },
     reviews: {
         key: "reviews",
+        title: "Game Reviews",
+        line: "Played to the end, then written about honestly.",
         path: "/reviews",
         filterParam: "category",
         showScore: true,
@@ -69,12 +84,16 @@ export const SECTIONS: Record<SectionKey, SectionConfig> = {
     },
     tech: {
         key: "tech",
+        title: "Hardware & Tech",
+        line: "Hardware, handhelds and the machines the games run on.",
         path: "/hardware",
         filterParam: "category",
         categoryRoutes: routesFrom(HARDWARE_CATEGORIES, "/hardware"),
     },
     guides: {
         key: "guides",
+        title: "Gaming Guides",
+        line: "Walkthroughs, builds and the bits the game never explains.",
         path: "/guides",
         filterParam: "difficulty",
         categoryRoutes: {},

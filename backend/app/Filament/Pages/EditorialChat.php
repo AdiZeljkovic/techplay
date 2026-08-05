@@ -1075,7 +1075,7 @@ class EditorialChat extends Page
         // Blockquotes (> text) - must be before other processing
         $content = preg_replace(
             '/^&gt;\s?(.+)$/m',
-            '<div style="border-left: 3px solid #FC4100; padding: 4px 12px; margin: 4px 0; background: rgba(252,65,0,0.05); color: rgba(255,255,255,0.7); font-size: 0.8rem;">$1</div>',
+            '<div style="border-left: 3px solid #DC143C; padding: 4px 12px; margin: 4px 0; background: rgba(220, 20, 60,0.05); color: rgba(255,255,255,0.7); font-size: 0.8rem;">$1</div>',
             $content
         );
 
@@ -1117,7 +1117,7 @@ class EditorialChat extends Page
         // Highlight @channel and @here as broadcast mentions
         $content = preg_replace(
             '/@(channel|here)\b/',
-            '<span style="background: rgba(252,65,0,0.15); color: #FC4100; padding: 1px 4px; border-radius: 3px; font-weight: 600;">@$1</span>',
+            '<span style="background: rgba(220, 20, 60,0.15); color: #DC143C; padding: 1px 4px; border-radius: 3px; font-weight: 600;">@$1</span>',
             $content
         );
 

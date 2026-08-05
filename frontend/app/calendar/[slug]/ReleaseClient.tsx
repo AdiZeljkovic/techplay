@@ -3,9 +3,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "@/lib/axios";
-import {
-    Heart, Bell, BellRing, Check, Loader2, ExternalLink, Play, X, Store,
-} from "lucide-react";
+import { Heart, Bell, BellRing, Check, Loader2, ExternalLink, X, Store } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import type { Release } from "./page";
@@ -56,11 +54,11 @@ export default function ReleaseClient({ release }: { release: Release }) {
 
     return (
         <>
-            <div className="max-w-[1500px] mx-auto px-4 xl:px-6 py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+            <div className="container-page py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
                 <div className="xl:col-span-8 min-w-0 space-y-5">
                     {/* ── trailer, if a studio cut one ── */}
                     {release.trailers.length > 0 && (
-                        <Panel title="Trailer" icon={<Play className="w-4 h-4 text-[var(--accent)]" />} padding="none">
+                        <Panel title="Trailer" padding="none">
                             <video
                                 controls
                                 preload="metadata"
@@ -143,7 +141,7 @@ export default function ReleaseClient({ release }: { release: Release }) {
                     {/* The one thing this page has that a games database page
                         does not: where the thing will actually be sold. */}
                     {release.stores.length > 0 && (
-                        <Panel title="Where to get it" icon={<Store className="w-4 h-4 text-[var(--accent)]" />}>
+                        <Panel title="Where to get it">
                             <div className="space-y-2">
                                 {release.stores.map((store) => (
                                     <a

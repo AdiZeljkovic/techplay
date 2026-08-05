@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { CakeSlice, Gamepad2 } from "lucide-react";
+import { Gamepad2 } from "lucide-react";
 import axios from "@/lib/axios";
 import Panel from "@/components/ui/Panel";
 
@@ -35,7 +35,6 @@ export default function OnThisDay() {
     return (
         <Panel
             title="On This Day"
-            icon={<CakeSlice className="w-3.5 h-3.5 text-[var(--accent)]" />}
             action={{ label: "Release calendar", href: "/calendar" }}
             className="h-full"
             bodyClassName="p-4"

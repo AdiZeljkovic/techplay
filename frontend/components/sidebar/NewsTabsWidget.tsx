@@ -42,12 +42,12 @@ export default function NewsTabsWidget({ latestNews, popularNews }: NewsTabsWidg
             border: '1px solid #0d2444',
         }}>
             {/* Top accent corner */}
-            <div style={{ position: 'absolute', top: 0, right: 0, width: '28px', height: '2px', background: '#FC4100' }} />
+            <div style={{ position: 'absolute', top: 0, right: 0, width: '28px', height: '2px', background: '#DC143C' }} />
 
             {/* Header */}
             <div className="flex items-center justify-between px-4 pt-4 pb-3">
                 <div className="flex items-center gap-2">
-                    <div className="w-[3px] h-4 rounded-full" style={{ background: '#FC4100' }} />
+                    <div className="w-[3px] h-4 rounded-full" style={{ background: '#DC143C' }} />
                     <span className="text-white font-black uppercase tracking-[0.14em]" style={{ fontSize: '11px' }}>
                         Latest &amp; Popular
                     </span>
@@ -74,9 +74,9 @@ export default function NewsTabsWidget({ latestNews, popularNews }: NewsTabsWidg
                             fontWeight: 700,
                             textTransform: 'uppercase',
                             letterSpacing: '0.08em',
-                            background: activeTab === tab ? 'rgba(252,65,0,0.15)' : 'transparent',
-                            color: activeTab === tab ? '#FC4100' : 'rgba(255,255,255,0.38)',
-                            border: activeTab === tab ? '1px solid rgba(252,65,0,0.3)' : '1px solid transparent',
+                            background: activeTab === tab ? 'rgba(220, 20, 60,0.15)' : 'transparent',
+                            color: activeTab === tab ? '#DC143C' : 'rgba(255,255,255,0.38)',
+                            border: activeTab === tab ? '1px solid rgba(220, 20, 60,0.3)' : '1px solid transparent',
                         }}
                     >
                         {tab === 'latest' ? <Clock style={{ width: 10, height: 10 }} /> : <TrendingUp style={{ width: 10, height: 10 }} />}
@@ -113,7 +113,7 @@ export default function NewsTabsWidget({ latestNews, popularNews }: NewsTabsWidg
                             }}
                             onMouseEnter={e => {
                                 e.currentTarget.style.background = '#051830';
-                                e.currentTarget.style.borderLeftColor = 'rgba(252,65,0,0.5)';
+                                e.currentTarget.style.borderLeftColor = 'rgba(220, 20, 60,0.5)';
                             }}
                             onMouseLeave={e => {
                                 e.currentTarget.style.background = 'transparent';

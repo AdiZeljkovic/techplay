@@ -1,7 +1,7 @@
 export default function Loading() {
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
-            <div className="max-w-[1500px] mx-auto px-4 xl:px-6 py-8">
+            <div className="container-page py-8">
                 <div className="pl-4 space-y-3">
                     <div className="h-[50px] w-[320px] rounded bg-white/[0.05] animate-pulse" />
                     <div className="h-4 w-[420px] max-w-full rounded bg-white/[0.03] animate-pulse" />

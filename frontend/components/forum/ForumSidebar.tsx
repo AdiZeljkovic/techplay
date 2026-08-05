@@ -62,7 +62,7 @@ export default function ForumSidebar() {
                 <div className={`${panelClass} p-5`}>
                     <div className="flex items-center gap-3 mb-4">
                         <div className="relative w-14 h-14 flex-shrink-0">
-                            <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-[#FC4100]/40">
+                            <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-[#DC143C]/40">
                                 {avatarSrc ? (
                                     <Image
                                         src={avatarSrc}
@@ -72,12 +72,12 @@ export default function ForumSidebar() {
                                         className="object-cover w-full h-full"
                                     />
                                 ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-[#FC4100] to-[#FF6B35] flex items-center justify-center text-white text-[18px] font-black">
+                                    <div className="w-full h-full bg-gradient-to-br from-[#DC143C] to-[#FF4D6A] flex items-center justify-center text-white text-[18px] font-black">
                                         {user.username?.charAt(0)?.toUpperCase() || "?"}
                                     </div>
                                 )}
                             </div>
-                            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#FC4100] border-2 border-[#0D1117] flex items-center justify-center text-[10px] font-black text-white">
+                            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#DC143C] border-2 border-[#0D1117] flex items-center justify-center text-[10px] font-black text-white">
                                 {level}
                             </div>
                         </div>
@@ -86,7 +86,7 @@ export default function ForumSidebar() {
                             {user.rank?.name && (
                                 <p
                                     className="text-[11px] font-bold uppercase tracking-wide truncate"
-                                    style={{ color: user.rank.color || "#FC4100" }}
+                                    style={{ color: user.rank.color || "#DC143C" }}
                                 >
                                     {user.rank.name}
                                 </p>
@@ -104,7 +104,7 @@ export default function ForumSidebar() {
                     </div>
                     <div className="h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden mb-4">
                         <div
-                            className="h-full rounded-full bg-gradient-to-r from-[#FC4100] to-[#FF6B35]"
+                            className="h-full rounded-full bg-gradient-to-r from-[#DC143C] to-[#FF4D6A]"
                             style={{ width: `${xpProgress}%` }}
                         />
                     </div>
@@ -130,7 +130,7 @@ export default function ForumSidebar() {
 
                     <Link
                         href={`/profile/${user.username}`}
-                        className="flex items-center justify-center w-full h-9 rounded-xl bg-[#FC4100] hover:bg-[#FC4100]/90 text-white text-[10px] font-bold uppercase tracking-[0.1em] transition-colors"
+                        className="flex items-center justify-center w-full h-9 rounded-xl bg-[#DC143C] hover:bg-[#DC143C]/90 text-white text-[10px] font-bold uppercase tracking-[0.1em] transition-colors"
                     >
                         View Profile
                     </Link>
@@ -144,13 +144,13 @@ export default function ForumSidebar() {
                     <div className="flex gap-2">
                         <Link
                             href="/login"
-                            className="flex-1 h-9 rounded-xl bg-[#FC4100] hover:bg-[#FC4100]/90 text-white text-[11px] font-bold uppercase tracking-widest flex items-center justify-center transition-colors"
+                            className="flex-1 h-9 rounded-xl bg-[#DC143C] hover:bg-[#DC143C]/90 text-white text-[11px] font-bold uppercase tracking-widest flex items-center justify-center transition-colors"
                         >
                             Log In
                         </Link>
                         <Link
                             href="/register"
-                            className="flex-1 h-9 rounded-xl border border-[#2A3040] hover:border-[#FC4100]/40 text-[#9CA3AF] text-[11px] font-bold uppercase tracking-widest flex items-center justify-center transition-colors"
+                            className="flex-1 h-9 rounded-xl border border-[#2A3040] hover:border-[#DC143C]/40 text-[#9CA3AF] text-[11px] font-bold uppercase tracking-widest flex items-center justify-center transition-colors"
                         >
                             Register
                         </Link>
@@ -175,7 +175,7 @@ export default function ForumSidebar() {
                             return (
                                 <Link key={entry.username} href={`/profile/${entry.username}`}>
                                     <div className="flex items-center gap-3 py-3 hover:opacity-80 transition-opacity">
-                                        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-[#FC4100]/10">
+                                        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-[#DC143C]/10">
                                             {avatarSrc ? (
                                                 <Image
                                                     src={avatarSrc}
@@ -185,7 +185,7 @@ export default function ForumSidebar() {
                                                     className="object-cover w-full h-full"
                                                 />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-[14px] font-black text-white bg-gradient-to-br from-[#FC4100] to-[#FF6B35]">
+                                                <div className="w-full h-full flex items-center justify-center text-[14px] font-black text-white bg-gradient-to-br from-[#DC143C] to-[#FF4D6A]">
                                                     {entry.username.charAt(0).toUpperCase()}
                                                 </div>
                                             )}
@@ -207,7 +207,7 @@ export default function ForumSidebar() {
 
                 <Link
                     href="/leaderboard"
-                    className="mt-4 flex items-center justify-center gap-2 w-full h-9 rounded-xl border border-[#2A3040] hover:border-[#FC4100]/40 hover:bg-[#FC4100]/5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#9CA3AF] hover:text-[#FC4100] transition-colors"
+                    className="mt-4 flex items-center justify-center gap-2 w-full h-9 rounded-xl border border-[#2A3040] hover:border-[#DC143C]/40 hover:bg-[#DC143C]/5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#9CA3AF] hover:text-[#DC143C] transition-colors"
                 >
                     <Trophy className="w-3.5 h-3.5" />
                     View Leaderboard
@@ -269,7 +269,7 @@ export default function ForumSidebar() {
 
                 <Link
                     href="/forum"
-                    className="mt-4 flex items-center justify-center w-full h-9 rounded-xl border border-[#2A3040] hover:border-[#FC4100]/40 hover:bg-[#FC4100]/5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#9CA3AF] hover:text-[#FC4100] transition-colors"
+                    className="mt-4 flex items-center justify-center w-full h-9 rounded-xl border border-[#2A3040] hover:border-[#DC143C]/40 hover:bg-[#DC143C]/5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#9CA3AF] hover:text-[#DC143C] transition-colors"
                 >
                     View All Latest Posts &rsaquo;
                 </Link>

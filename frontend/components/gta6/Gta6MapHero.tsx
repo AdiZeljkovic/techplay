@@ -24,7 +24,7 @@ export default function Gta6MapHero({ totalLocations }: Gta6MapHeroProps) {
             <div className="absolute inset-0 gta6-sunset opacity-40" />
             <div className="gta6-accent-line absolute top-0 left-0 right-0" />
 
-            <div className="relative max-w-[1320px] mx-auto px-4 xl:px-8 py-4 md:py-5">
+            <div className="relative container-page py-4 md:py-5">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-6">
                     {/* Left: icon + title */}
                     <div className="flex items-center gap-3">

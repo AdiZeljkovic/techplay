@@ -2,11 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
-import {
-    Shield, Sparkles, Zap, TrendingUp, Trophy, Clock,
-    ArrowRight, CheckCircle2, Star, Users, Globe,
-    Swords, Target, Brain, Rocket, ChevronDown, AlertCircle
-} from "lucide-react";
+import { Sparkles, Zap, Clock, ArrowRight, CheckCircle2, Star, Globe, Brain, Rocket, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import RealmDropdown from "@/components/wow/RealmDropdown";
 import AnalysisResults from "@/components/wow/AnalysisResults";
@@ -152,7 +148,7 @@ export default function WowAnalyzerClient() {
                             transition={{ delay: 0.2 }}
                             className="text-6xl md:text-7xl lg:text-8xl font-black mb-6 leading-[1.05]"
                         >
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-purple-400 to-purple-500 drop-shadow-[0_4px_30px_rgba(252,65,0,0.6)]">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-purple-400 to-purple-500 drop-shadow-[0_4px_30px_rgba(220, 20, 60,0.6)]">
                                 Ready for Midnight expansion?
                             </span>
                         </motion.h1>

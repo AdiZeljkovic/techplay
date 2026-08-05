@@ -28,7 +28,7 @@ class ProfileService
         ['name' => 'Regular', 'min' => 5000, 'color' => '#60A5FA'],
         ['name' => 'Veteran', 'min' => 10000, 'color' => '#A78BFA'],
         ['name' => 'Elite', 'min' => 20000, 'color' => '#FBBF24'],
-        ['name' => 'Legend', 'min' => 40000, 'color' => '#FC4100'],
+        ['name' => 'Legend', 'min' => 40000, 'color' => '#DC143C'],
     ];
 
     /**

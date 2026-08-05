@@ -30,7 +30,7 @@ export default function AboutPage() {
                 description="Built by gamers, for gamers. Just honest gaming and tech talk."
             />
 
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-16 space-y-24">
+            <div className="container-page py-16 space-y-24">
 
                 {/* Mission Section */}
                 <motion.section

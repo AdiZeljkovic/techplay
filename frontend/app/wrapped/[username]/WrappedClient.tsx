@@ -3,11 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import {
-    Sparkles, Share2, Download, Check, Gamepad2, Trophy, Clock3, PenLine, Star,
-    Flame, TrendingUp, TrendingDown, Users, Shield, MessageSquare, BarChart3,
-    Calendar, Link2, Award,
-} from "lucide-react";
+import { Sparkles, Share2, Download, Check, Gamepad2, Trophy, Clock3, PenLine, Star, Flame, TrendingUp, TrendingDown, Users, Shield, MessageSquare, BarChart3, Link2, Award } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import { useCountUp } from "@/hooks/useCountUp";
 
@@ -200,7 +196,7 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
                     style={{ background: "radial-gradient(70% 150% at 15% -20%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 58%)" }}
                 />
 
-                <div className="relative z-10 max-w-[1400px] mx-auto px-4 xl:px-6 py-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div className="relative z-10 container-page py-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                     <div>
                         <p className="inline-flex items-center gap-2 h-[24px] px-3 rounded-[6px] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] font-display text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
                             <Sparkles className="w-3 h-3" /> Year in review
@@ -319,7 +315,7 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
             </div>
 
             {!data.has_data ? (
-                <div className="max-w-[1400px] mx-auto px-4 xl:px-6 py-16 text-center">
+                <div className="container-page py-16 text-center">
                     <Sparkles className="w-8 h-8 mx-auto mb-3 text-white/15" />
                     <p className="font-display text-[16px] font-bold text-white">{data.year} is still empty</p>
                     <p className="mt-2 text-[12.5px] text-white/40 max-w-[400px] mx-auto leading-snug">
@@ -330,7 +326,7 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
                     </Link>
                 </div>
             ) : (
-                <div className="max-w-[1400px] mx-auto px-4 xl:px-6 py-6 space-y-4">
+                <div className="container-page py-6 space-y-4">
                     {/* ── stat strip ── */}
                     <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[#100e0d] px-5 py-4 overflow-x-auto scrollbar-none">
                         <div className="flex items-center gap-8 md:gap-0 md:justify-between min-w-max md:min-w-0">
@@ -346,7 +342,7 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
                     {/* ── top games · dna · timeline ── */}
                     <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
                         <div className="xl:col-span-5 min-w-0">
-                            <Panel title={`Top games of ${data.year}`} icon={<Gamepad2 className="w-4 h-4 text-[var(--accent)]" />}>
+                            <Panel title={`Top games of ${data.year}`}>
                                 {data.top_games.length === 0 ? (
                                     <p className="py-2 text-[12px] text-white/30">Nothing played this year yet.</p>
                                 ) : (
@@ -381,7 +377,7 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
                         </div>
 
                         <div className="xl:col-span-4 min-w-0">
-                            <Panel title={`Your gamer DNA in ${data.year}`} icon={<BarChart3 className="w-4 h-4 text-[var(--accent)]" />}>
+                            <Panel title={`Your gamer DNA in ${data.year}`}>
                                 {data.dna.genres.length === 0 ? (
                                     <p className="py-2 text-[12px] text-white/30">No genres recorded this year.</p>
                                 ) : (
@@ -424,7 +420,7 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
                         </div>
 
                         <div className="xl:col-span-3 min-w-0">
-                            <Panel title={`${data.year} timeline`} icon={<Calendar className="w-4 h-4 text-[var(--accent)]" />}>
+                            <Panel title={`${data.year} timeline`}>
                                 {data.timeline.length === 0 ? (
                                     <p className="py-2 text-[12px] text-white/30 leading-snug">
                                         Nothing marked yet — completions, sessions and achievements land here as they happen.
@@ -451,7 +447,7 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
                     {/* ── moments · percentiles · community ── */}
                     <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
                         <div className="xl:col-span-5 min-w-0">
-                            <Panel title="Your biggest moments" icon={<Trophy className="w-4 h-4 text-[#f0b429]" />}>
+                            <Panel title="Your biggest moments">
                                 {data.moments.length === 0 ? (
                                     <p className="py-2 text-[12px] text-white/30">Nothing to crown yet.</p>
                                 ) : (
@@ -482,7 +478,7 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
                         </div>
 
                         <div className="xl:col-span-3 min-w-0">
-                            <Panel title="Compared to TechPlay" icon={<BarChart3 className="w-4 h-4 text-[#a855f7]" />}>
+                            <Panel title="Compared to TechPlay">
                                 {!data.percentiles.available ? (
                                     <p className="py-2 text-[11.5px] text-white/30 leading-snug">
                                         Comparisons unlock once enough players have a year on record — a percentile among a
@@ -506,7 +502,7 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
                         </div>
 
                         <div className="xl:col-span-4 min-w-0">
-                            <Panel title="Friends & community" icon={<Users className="w-4 h-4 text-emerald-400" />}>
+                            <Panel title="Friends & community">
                                 <div className="grid grid-cols-2 gap-2.5">
                                     {data.community.map((c) => {
                                         const Icon = COMMUNITY_ICONS[c.key] ?? Users;

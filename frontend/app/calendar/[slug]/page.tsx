@@ -155,7 +155,7 @@ export default async function ReleasePage({ params }: Props) {
                     </>
                 )}
 
-                <div className="relative z-10 max-w-[1500px] mx-auto px-4 xl:px-6 py-10">
+                <div className="relative z-10 container-page py-10">
                     <Link
                         href="/calendar"
                         className="inline-flex items-center gap-1.5 font-display text-[10px] font-black uppercase tracking-[0.14em] text-white/45 hover:text-white transition-colors"
@@ -205,7 +205,7 @@ export default async function ReleasePage({ params }: Props) {
 
             {/* ── what else lands that month ── */}
             {release.also_this_month.length > 0 && (
-                <div className="max-w-[1500px] mx-auto px-4 xl:px-6 pb-14">
+                <div className="container-page pb-14">
                     <h2 className="font-display text-[12px] font-black uppercase tracking-[0.14em] text-white mb-4">
                         Also in{" "}
                         {release.released
@@ -246,7 +246,7 @@ export default async function ReleasePage({ params }: Props) {
             {/* Credits sit last: they matter to few and are dull to everyone
                 else, but leaving them out would be a gap. */}
             {(release.publisher || release.developer) && (
-                <div className="max-w-[1500px] mx-auto px-4 xl:px-6 pb-14 flex flex-wrap gap-x-8 gap-y-2 text-[12px] text-white/40">
+                <div className="container-page pb-14 flex flex-wrap gap-x-8 gap-y-2 text-[12px] text-white/40">
                     {release.developer && (
                         <span className="inline-flex items-center gap-1.5">
                             <Code2 className="w-3.5 h-3.5" /> {release.developer}

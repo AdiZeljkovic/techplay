@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Play, Gamepad2 } from "lucide-react";
+import { Gamepad2 } from "lucide-react";
 import type { PlayingNowGame } from "@/lib/types/profile";
 import Panel from "@/components/ui/Panel";
 import ProgressBar from "@/components/ui/ProgressBar";
@@ -20,7 +20,6 @@ export default function CurrentlyPlayingSidebar({ games }: { games: PlayingNowGa
     return (
         <Panel
             title="Now Playing"
-            icon={<Play className="w-3.5 h-3.5 text-[var(--accent)]" />}
             action={
                 games.length > 0
                     ? { label: "View all", href: "/profile/me?tab=collection" }

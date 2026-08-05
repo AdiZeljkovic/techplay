@@ -2,10 +2,7 @@
 
 import Link from "next/link";
 import { format } from "date-fns";
-import {
-    Library, Trophy, Activity as ActivityIcon, ListChecks,
-    Dna, Sparkles, CalendarClock, MessagesSquare, Shield,
-} from "lucide-react";
+import { Trophy, Shield } from "lucide-react";
 import { getStorageUrl } from "@/lib/imageUrl";
 import CommentsSection from "@/components/comments/CommentsSection";
 import SectionCard from "./dashboard/SectionCard";
@@ -112,20 +109,20 @@ export default function ProfileOverviewDashboard({
 
                 {/* Collection pulse — non-zero buckets only */}
                 {nonZeroBuckets.length > 0 && (
-                    <SectionCard title="Collection" icon={<Library className="w-4 h-4 text-[var(--accent)]" />} action={{ label: isOwnProfile ? "Manage" : "View All", href: "?tab=collection" }}>
+                    <SectionCard title="Collection" action={{ label: isOwnProfile ? "Manage" : "View All", href: "?tab=collection" }}>
                         <CollectionSnapshot tiles={nonZeroBuckets} />
                     </SectionCard>
                 )}
 
                 {/* Upcoming Releases — own only */}
                 {isOwnProfile && (
-                    <SectionCard title="Upcoming Releases" icon={<CalendarClock className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View Calendar", href: "/calendar" }}>
+                    <SectionCard title="Upcoming Releases" action={{ label: "View Calendar", href: "/calendar" }}>
                         <UpcomingReleasesWidget />
                     </SectionCard>
                 )}
 
                 {/* Recent Activity */}
-                <SectionCard title="Recent Activity" icon={<ActivityIcon className="w-4 h-4 text-[var(--accent)]" />}>
+                <SectionCard title="Recent Activity">
                     <ActivityFeed username={userData.username} compact />
                 </SectionCard>
 
@@ -135,7 +132,7 @@ export default function ProfileOverviewDashboard({
 
                 {/* Achievement Spotlight — only with unlocks */}
                 {recentUnlocked.length > 0 && (
-                    <SectionCard title="Achievement Spotlight" icon={<Trophy className="w-4 h-4 text-yellow-400" />} action={{ label: "View All", href: "?tab=achievements" }}>
+                    <SectionCard title="Achievement Spotlight" action={{ label: "View All", href: "?tab=achievements" }}>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                             {recentUnlocked.map((ach) => (
                                 <div key={ach.id} className="rounded-xl bg-white/[0.03] border border-[var(--border)] p-4 flex flex-col items-center text-center hover:border-white/[0.14] transition-colors">
@@ -156,27 +153,27 @@ export default function ProfileOverviewDashboard({
 
                 {/* Custom Lists — only when there are lists */}
                 {lists.length > 0 && (
-                    <SectionCard title="Game Lists" icon={<ListChecks className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "View All", href: "?tab=lists" }}>
+                    <SectionCard title="Game Lists" action={{ label: "View All", href: "?tab=lists" }}>
                         <CustomLists lists={lists} />
                     </SectionCard>
                 )}
 
                 {/* Gamer DNA — only with data */}
                 {hasDna && (
-                    <SectionCard title="Gamer DNA" icon={<Dna className="w-4 h-4 text-[var(--accent)]" />}>
+                    <SectionCard title="Gamer DNA">
                         <GamerDnaPanel dna={gamerDna!} />
                     </SectionCard>
                 )}
 
                 {/* Friend Activity — own only */}
                 {isOwnProfile && (
-                    <SectionCard title="Friend Activity" icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />} action={{ label: "All Friends", href: "/friends" }}>
+                    <SectionCard title="Friend Activity" action={{ label: "All Friends", href: "/friends" }}>
                         <FriendActivityFeed />
                     </SectionCard>
                 )}
 
                 {/* Profile Wall — visitors can leave a message */}
-                <SectionCard title="Profile Wall" icon={<MessagesSquare className="w-4 h-4 text-[var(--accent)]" />}>
+                <SectionCard title="Profile Wall">
                     <CommentsSection commentableId={userData.id} commentableType="profile" />
                 </SectionCard>
             </div>
@@ -185,7 +182,7 @@ export default function ProfileOverviewDashboard({
             <div className="space-y-6 min-w-0">
                 {/* Clan membership */}
                 {clan && (
-                    <SectionCard title="Clan" icon={<Shield className="w-4 h-4 text-[var(--accent)]" />}>
+                    <SectionCard title="Clan">
                         <Link href={clan.slug ? `/clans/${clan.slug}` : "/clans"} className="group flex items-center gap-3.5">
                             <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/[0.04] border border-[var(--border)] flex items-center justify-center shrink-0">
                                 {clan.logo ? (
@@ -222,7 +219,7 @@ export default function ProfileOverviewDashboard({
 
                 {/* 3. Supporter & Cosmetics */}
                 {customization && (isOwnProfile || customization.tier || customization.equipped?.theme || customization.equipped?.frame || customization.equipped?.badge) && (
-                    <SectionCard title="Supporter & Cosmetics" icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />}>
+                    <SectionCard title="Supporter & Cosmetics">
                         <LoyaltyCustomization
                             data={customization}
                             isOwnProfile={isOwnProfile}

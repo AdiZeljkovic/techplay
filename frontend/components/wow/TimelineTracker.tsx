@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Clock, AlertTriangle, Calendar, Zap, Sparkles } from "lucide-react";
+import { Clock, AlertTriangle, Zap, Sparkles } from "lucide-react";
 import { MidnightTheme, getUrgencyTheme, glassCard } from "@/lib/wow-midnight-theme";
 
 interface TimelineData {

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import HubPage from "@/app/games/_hub/HubPage";
-import { getApiUrl } from "@/lib/api";
+import GameDatabaseHub from "@/components/games/GameDatabaseHub";
+import { tagFilter } from "@/lib/gameFacets";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -139,8 +139,6 @@ export default async function TagHubPage({ params }: { params: Promise<{ tag: st
     const meta = getMeta(tag);
     const url = `https://techplay.gg/games/tag/${tag}`;
 
-    const initialData = await fetch(`${getApiUrl()}/games/hub/tag/${tag}?page=1&sort=rating`, { next: { revalidate: 600 } })
-        .then((r) => r.ok ? r.json() : null).catch(() => null);
 
     const breadcrumb = {
         "@context": "https://schema.org",
@@ -164,7 +162,7 @@ export default async function TagHubPage({ params }: { params: Promise<{ tag: st
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPage) }} />
-            <HubPage type="tag" value={tag} title={meta.h1} description={meta.description} initialData={initialData} />
+            <GameDatabaseHub preset={{ tag: tagFilter(tag) }} heading={meta.h1} intro={meta.description} />
         </>
     );
 }

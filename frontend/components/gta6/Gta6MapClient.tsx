@@ -28,7 +28,7 @@ const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
     restaurant:     { label: "Restaurant",     color: "#F59E0B" },
     retail:         { label: "Retail",         color: "#8B5CF6" },
     office:         { label: "Office",         color: "#6366F1" },
-    safehouse:      { label: "Safehouse",      color: "#FC4100" },
+    safehouse:      { label: "Safehouse",      color: "#DC143C" },
     landmark:       { label: "Landmark",       color: "#EC4899" },
     transportation: { label: "Transport",      color: "#06B6D4" },
     leisure:        { label: "Leisure",        color: "#84CC16" },

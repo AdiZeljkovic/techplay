@@ -2,12 +2,7 @@
 
 import PageHero from "@/components/ui/PageHero";
 import { motion } from "framer-motion";
-import {
-    TrendingUp, Users, Target, Zap, BarChart3, Layout,
-    Share2, Mail, Download, ArrowRight, CheckCircle2,
-    MonitorSmartphone, MousePointerClick, Shield, Globe,
-    Cpu, Gamepad2, Layers
-} from "lucide-react";
+import { Users, Zap, Layout, Mail, Download, MonitorSmartphone, MousePointerClick, Shield, Globe, Cpu, Gamepad2, Layers } from "lucide-react";
 const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } }
@@ -66,7 +61,7 @@ export default function MarketingClient() {
 
             {/* Introduction: The "Gamers Who Read" Value Prop */}
             <section className="py-20 relative overflow-hidden">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 relative z-10 text-center">
+                <div className="container-page relative z-10 text-center">
                     <motion.div
                         initial="hidden"
                         whileInView="visible"
@@ -96,7 +91,7 @@ export default function MarketingClient() {
 
             {/* Audience Demographics */}
             <section className="py-20 bg-[var(--bg-secondary)] border-y border-[var(--border)]">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
+                <div className="container-page">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -167,7 +162,7 @@ export default function MarketingClient() {
 
             {/* Ad Placements Showcase */}
             <section className="py-20">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
+                <div className="container-page">
                     <motion.div
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
@@ -249,7 +244,7 @@ export default function MarketingClient() {
 
             {/* Custom Solutions (Replaces Pricing) */}
             <section className="py-24 bg-[var(--bg-elevated)] border-y border-[var(--border)] overflow-hidden">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
+                <div className="container-page">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         whileInView={{ opacity: 1, scale: 1 }}
@@ -301,7 +296,7 @@ export default function MarketingClient() {
 
             {/* CTA Section */}
             <section className="py-20 text-center">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0">
+                <div className="container-page">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}

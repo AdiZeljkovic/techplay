@@ -31,7 +31,7 @@ export default function Gta6SectionHero({ icon: Icon, title, subtitle, breadcrum
                 </>
             )}
 
-            <div className={`relative max-w-[1320px] mx-auto px-4 xl:px-8 ${image ? "py-14 md:py-20" : "py-10 md:py-14"}`}>
+            <div className={`relative container-page ${image ? "py-14 md:py-20" : "py-10 md:py-14"}`}>
                 <nav className="flex items-center gap-1.5 text-[12px] text-[#71717A] mb-5">
                     <Link href="/gta6" className="hover:text-[var(--gta-pink)] transition-colors">GTA 6 Hub</Link>
                     <ChevronRight className="w-3.5 h-3.5" />

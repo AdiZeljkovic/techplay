@@ -154,7 +154,7 @@ p {
 
 .button {
     border-radius: 50px;
-    box-shadow: 0 4px 6px rgba(252, 65, 0, 0.3);
+    box-shadow: 0 4px 6px rgba(220, 20, 60, 0.3);
     color: #fff;
     display: inline-block;
     text-decoration: none;
@@ -167,11 +167,11 @@ p {
 }
 
 .button-primary {
-    background-color: #FC4100;
-    border-top: 10px solid #FC4100;
-    border-right: 24px solid #FC4100;
-    border-bottom: 10px solid #FC4100;
-    border-left: 24px solid #FC4100;
+    background-color: #DC143C;
+    border-top: 10px solid #DC143C;
+    border-right: 24px solid #DC143C;
+    border-bottom: 10px solid #DC143C;
+    border-left: 24px solid #DC143C;
 }
 
 .button-success {
@@ -206,7 +206,7 @@ p {
 /* Panels */
 
 .panel {
-    border-left: #FC4100 solid 4px;
+    border-left: #DC143C solid 4px;
     margin: 21px 0;
 }
 

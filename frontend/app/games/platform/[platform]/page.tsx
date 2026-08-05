@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import HubPage from "@/app/games/_hub/HubPage";
-import { getApiUrl } from "@/lib/api";
+import GameDatabaseHub from "@/components/games/GameDatabaseHub";
+import { platformFilter } from "@/lib/gameFacets";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -82,8 +82,6 @@ export default async function PlatformHubPage({ params }: { params: Promise<{ pl
     const meta = getMeta(platform);
     const url = `https://techplay.gg/games/platform/${platform}`;
 
-    const initialData = await fetch(`${getApiUrl()}/games/hub/platform/${platform}?page=1&sort=rating`, { next: { revalidate: 600 } })
-        .then((r) => r.ok ? r.json() : null).catch(() => null);
 
     const breadcrumb = {
         "@context": "https://schema.org",
@@ -107,7 +105,7 @@ export default async function PlatformHubPage({ params }: { params: Promise<{ pl
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPage) }} />
-            <HubPage type="platform" value={platform} title={meta.h1} description={meta.description} initialData={initialData} />
+            <GameDatabaseHub preset={{ platform: platformFilter(platform) }} heading={meta.h1} intro={meta.description} />
         </>
     );
 }

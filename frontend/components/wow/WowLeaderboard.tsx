@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Crown, Sword, Shield, ChevronDown } from "lucide-react";
+import { Trophy, Crown, Sword, Shield } from "lucide-react";
 import axios from "@/lib/axios";
 import { getClassColor, getFactionTheme } from "@/data/wow-theme";
 import { MidnightTheme, glassCard } from "@/lib/wow-midnight-theme";

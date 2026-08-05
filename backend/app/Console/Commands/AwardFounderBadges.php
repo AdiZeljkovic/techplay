@@ -36,7 +36,7 @@ class AwardFounderBadges extends Command
                 'name' => 'Founder',
                 'type' => 'badge',
                 'cost' => 0,
-                'value' => '#FC4100',
+                'value' => '#DC143C',
                 'is_active' => true,
                 'description' => 'One of the first fully-built gamer profiles on TechPlay.',
                 'sort_order' => 0,

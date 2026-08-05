@@ -3,7 +3,7 @@
 import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import { Bell, Bookmark, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import SectionCard from "./dashboard/SectionCard";
 
@@ -76,7 +76,7 @@ export default function ForumActivityTab({ isOwnProfile }: Props) {
 
     return (
         <div className="space-y-6">
-            <SectionCard title="Watched Threads" icon={<Bell className="w-4 h-4 text-[var(--accent)]" />}>
+            <SectionCard title="Watched Threads">
                 {watchedLoading ? (
                     <div className="space-y-2">
                         {[...Array(3)].map((_, i) => (
@@ -88,7 +88,7 @@ export default function ForumActivityTab({ isOwnProfile }: Props) {
                 )}
             </SectionCard>
 
-            <SectionCard title="Saved Threads" icon={<Bookmark className="w-4 h-4 text-[var(--accent)]" />}>
+            <SectionCard title="Saved Threads">
                 {bookmarkedLoading ? (
                     <div className="space-y-2">
                         {[...Array(3)].map((_, i) => (

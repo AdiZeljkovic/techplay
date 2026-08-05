@@ -5,11 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import {
-    Shield, Users, Crown, ShieldCheck, MessageSquare, LogOut, UserPlus, Check, X,
-    Loader2, Flame, Gamepad2, Clock3, CalendarDays, Globe2, Sparkles, ChevronRight,
-    Coins, Hourglass, Send, Castle, Settings,
-} from "lucide-react";
+import { Shield, Users, Crown, ShieldCheck, MessageSquare, LogOut, UserPlus, Check, X, Loader2, Flame, Gamepad2, CalendarDays, Globe2, Sparkles, ChevronRight, Coins, Hourglass, Send, Castle, Settings } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
@@ -116,7 +112,6 @@ function ApplicationsPanel({ slug, onHandled }: { slug: string; onHandled: () =>
     return (
         <Panel
             title="Pending Applications"
-            icon={<UserPlus className="w-4 h-4 text-[var(--accent)]" />}
             meta={rows.length > 0 ? (
                 <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full bg-[var(--accent)] font-display text-[10px] font-black text-white tabular-nums">
                     {rows.length}
@@ -192,7 +187,7 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
     if (isLoading) {
         return (
             <main className="min-h-screen bg-[var(--surface-0)]">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-6 space-y-4">
+                <div className="container-page py-6 space-y-4">
                     <div className="h-[220px] rounded-[var(--radius-panel)] bg-white/[0.04] animate-pulse" />
                     <div className="h-[86px] rounded-[var(--radius-panel)] bg-white/[0.04] animate-pulse" />
                     <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
@@ -239,7 +234,7 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
                     />
                 )}
 
-                <div className="relative z-10 max-w-[1320px] mx-auto px-4 xl:px-0 pt-8 pb-7">
+                <div className="relative z-10 container-page pt-8 pb-7">
                     <p className="flex items-center gap-2 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/30 mb-5">
                         <Link href="/clans" className="hover:text-white transition-colors">Clans</Link>
                         <ChevronRight className="w-3 h-3" />
@@ -349,7 +344,7 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
                 </div>
             </div>
 
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-5 space-y-4">
+            <div className="container-page py-5 space-y-4">
                 {/* ── stat strip ── */}
                 <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[#100e0d] px-5 py-4">
                     <div className="flex items-center gap-6 md:gap-0 md:justify-between overflow-x-auto scrollbar-none min-w-max md:min-w-0">
@@ -403,7 +398,7 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
                     {/* ── left: feed + roster ── */}
                     <div className="xl:col-span-8 min-w-0 space-y-4">
-                        <Panel title="Clan Feed" icon={<Flame className="w-4 h-4 text-[var(--accent)]" />}>
+                        <Panel title="Clan Feed">
                             {clan.feed.length === 0 ? (
                                 <EmptyState
                                     variant="compact"
@@ -430,7 +425,6 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
 
                         <Panel
                             title="Clan Roster"
-                            icon={<Users className="w-4 h-4 text-[var(--accent)]" />}
                             meta={<span className="font-display text-[11px] font-black tabular-nums text-white/35">{clan.members_count} members</span>}
                             padding="none"
                         >
@@ -454,7 +448,7 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
 
                         {/* clan games */}
                         {clan.clan_games.length > 0 && (
-                            <Panel title="Clan Games" icon={<Gamepad2 className="w-4 h-4 text-[var(--accent)]" />}>
+                            <Panel title="Clan Games">
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                                     {clan.clan_games.map((g) => (
                                         <Link
@@ -484,7 +478,7 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
 
                     {/* ── right: about, contributors, applications, online ── */}
                     <aside className="xl:col-span-4 min-w-0 space-y-4">
-                        <Panel title="About Clan" icon={<Shield className="w-4 h-4 text-[var(--accent)]" />}>
+                        <Panel title="About Clan">
                             {clan.description && <p className="text-[12.5px] text-white/55 leading-relaxed mb-4">{clan.description}</p>}
                             <div className="grid grid-cols-2 gap-3">
                                 {([
@@ -509,7 +503,7 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
                             )}
                         </Panel>
 
-                        <Panel title="Top Contributors" icon={<Crown className="w-4 h-4 text-[#f0b429]" />} meta={<span className="font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/30">This week</span>}>
+                        <Panel title="Top Contributors" meta={<span className="font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/30">This week</span>}>
                             {clan.top_contributors.length === 0 ? (
                                 <EmptyState variant="compact" title="Nobody has earned this week yet" body="Reviews, completions and achievements all count." />
                             ) : (
@@ -531,7 +525,7 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
                         </Panel>
 
                         {clan.trophies.length > 0 && (
-                            <Panel title="Clan Trophies" icon={<Trophy className="w-4 h-4 text-[#f0b429]" />}>
+                            <Panel title="Clan Trophies">
                                 <div className="space-y-2.5">
                                     {clan.trophies.map((t) => (
                                         <div key={t.id} className="flex items-center gap-3">
@@ -554,7 +548,6 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
 
                         <Panel
                             title="Online Now"
-                            icon={<Clock3 className="w-4 h-4 text-emerald-400" />}
                             meta={<span className="font-display text-[11px] font-black tabular-nums text-emerald-400">{onlineNow.length}</span>}
                         >
                             {onlineNow.length === 0 ? (

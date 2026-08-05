@@ -242,7 +242,7 @@ export default function ForumPage() {
                 {/* Extra bottom darkness so the whole hero blends into page */}
                 <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#060810] to-transparent" />
 
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-14 lg:py-20 relative z-10">
+                <div className="container-page py-14 lg:py-20 relative z-10">
                     <div className="grid lg:grid-cols-[1fr_auto] gap-8 xl:gap-16 items-center">
                         {/* Left */}
                         <div className="max-w-[520px]">
@@ -333,7 +333,7 @@ export default function ForumPage() {
             </section>
 
             {/* ── MAIN CONTENT ── */}
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
+            <div className="container-page py-8">
                 {/* Filter Tabs */}
                 <div className="flex items-center justify-between mb-8 border-b border-zinc-200 dark:border-[#161B22]">
                     <div className="flex">

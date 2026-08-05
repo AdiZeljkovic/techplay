@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Users, MessageSquare } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import type { FriendOnline } from "@/lib/types/dashboard";
 import Panel from "@/components/ui/Panel";
 import Avatar from "@/components/ui/Avatar";
@@ -18,7 +18,6 @@ export default function FriendsOnlineWidget({ friends }: { friends: FriendOnline
     return (
         <Panel
             title="Friends"
-            icon={<Users className="w-3.5 h-3.5 text-[var(--accent)]" />}
             action={{ label: "All friends", href: "/social" }}
             className="h-full flex flex-col"
             bodyClassName="p-3 flex-1 flex flex-col"

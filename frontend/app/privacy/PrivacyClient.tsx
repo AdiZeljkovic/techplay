@@ -1,7 +1,7 @@
 "use client";
 
 import PageHero from "@/components/ui/PageHero";
-import { Shield, Lock, Calendar, Mail } from "lucide-react";
+import { Shield, Lock, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function PrivacyPage() {
@@ -13,7 +13,7 @@ export default function PrivacyPage() {
                 icon={Shield}
             />
 
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-16">
+            <div className="container-page py-16">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

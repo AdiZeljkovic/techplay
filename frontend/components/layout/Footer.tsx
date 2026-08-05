@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Facebook, Twitter, Instagram, Youtube, ArrowRight, ArrowUp } from "lucide-react";
+import { Facebook, Instagram, Youtube, ArrowRight, ArrowUp, Rss } from "lucide-react";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 const DiscordIcon = ({ className }: { className?: string }) => (
@@ -16,175 +16,172 @@ const TikTokIcon = ({ className }: { className?: string }) => (
     </svg>
 );
 
+/** X, not the old bird — lucide still ships Twitter's. */
+const XIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644z" />
+    </svg>
+);
+
+/** Bluesky's butterfly. */
+const BlueskyIcon = ({ className }: { className?: string }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M5.769 3.383C8.322 5.298 11.07 9.18 12 11.264c.93-2.084 3.678-5.966 6.231-7.881C20.067 2.005 23 .935 23 4.28c0 .668-.383 5.611-.607 6.414-.783 2.79-3.628 3.502-6.158 3.071 4.421.752 5.546 3.245 3.116 5.738-4.615 4.734-6.634-1.187-7.151-2.705-.095-.278-.139-.408-.14-.297-.001-.111-.045.019-.14.297-.517 1.518-2.536 7.439-7.151 2.705-2.43-2.493-1.305-4.986 3.116-5.738-2.53.431-5.375-.281-6.158-3.071C1.383 9.891 1 4.948 1 4.28c0-3.345 2.933-2.275 4.769-.897z" />
+    </svg>
+);
+
+/**
+ * The social row, in the order it is shown. Discord is deliberately absent —
+ * it has its own panel above, because it is where the community actually is
+ * rather than another place to follow us.
+ *
+ * Each entry only renders when its URL is filled in the admin, so a network we
+ * are not on yet leaves no dead icon behind.
+ */
 const SOCIAL_ICON_MAP: Record<string, { Icon: React.ComponentType<{ className?: string }>; label: string }> = {
-    twitter_url:   { Icon: Twitter,     label: "Twitter" },
-    facebook_url:  { Icon: Facebook,    label: "Facebook" },
-    instagram_url: { Icon: Instagram,   label: "Instagram" },
-    youtube_url:   { Icon: Youtube,     label: "YouTube" },
-    discord_url:   { Icon: DiscordIcon, label: "Discord" },
-    tiktok_url:    { Icon: TikTokIcon,  label: "TikTok" },
+    facebook_url:  { Icon: Facebook,     label: "Facebook" },
+    instagram_url: { Icon: Instagram,    label: "Instagram" },
+    youtube_url:   { Icon: Youtube,      label: "YouTube" },
+    tiktok_url:    { Icon: TikTokIcon,   label: "TikTok" },
+    bluesky_url:   { Icon: BlueskyIcon,  label: "Bluesky" },
+    twitter_url:   { Icon: XIcon,        label: "X" },
 };
 
 const DISCORD_FALLBACK = "https://discord.gg/wPQG9gUMXH";
 
-const NAV = [
-    {
-        heading: "Explore",
-        links: [
-            { name: "News",         href: "/news" },
-            { name: "Reviews",      href: "/reviews" },
-            { name: "Guides",       href: "/guides" },
-            { name: "Hardware Lab", href: "/hardware" },
-            { name: "GTA 6 Hub",    href: "/gta6" },
-            { name: "Giveaways",    href: "/giveaways" },
-        ],
-    },
-    {
-        heading: "Database",
-        links: [
-            { name: "All Games",        href: "/games" },
-            { name: "Release Calendar", href: "/calendar" },
-            { name: "WoW Analyzer",     href: "/wow-analyzer" },
-            { name: "Backlog Advisor",  href: "/backlog-advisor" },
-            { name: "Shop",             href: "/shop" },
-        ],
-    },
-    {
-        heading: "Community",
-        links: [
-            { name: "Forum",       href: "/forum" },
-            { name: "Leaderboard", href: "/leaderboard" },
-            { name: "Clans",       href: "/clans" },
-            { name: "Discord",     href: DISCORD_FALLBACK },
-        ],
-    },
-    {
-        heading: "Company",
-        links: [
-            { name: "About Us",          href: "/about" },
-            { name: "Contact",           href: "/contact" },
-            { name: "Advertise With Us", href: "/marketing" },
-            { name: "Our Rating System", href: "/rating-system" },
-            { name: "Roadmap",           href: "/roadmap" },
-        ],
-    },
+/**
+ * What the footer is for now.
+ *
+ * It used to repeat the header: four columns of section links a reader had
+ * already been given at the top of every page. This carries only what the bar
+ * up there does not — who runs the site, how to reach us, and how to work with
+ * us — laid out as one rail rather than a grid of columns.
+ */
+const ABOUT = [
+    { name: "About Us",          href: "/about" },
+    { name: "Contact",           href: "/contact" },
+    { name: "Advertise With Us", href: "/marketing" },
+    { name: "Media Kit",         href: "/media-kit" },
+    { name: "Our Rating System", href: "/rating-system" },
+    { name: "Roadmap",           href: "/roadmap" },
+    { name: "Shop",              href: "/shop" },
+    { name: "Support Us",        href: "/support" },
 ];
 
 const LEGAL = [
-    { name: "Privacy Policy",   href: "/privacy" },
-    { name: "Terms of Service", href: "/terms" },
-    { name: "Cookies",          href: "/cookies" },
-    { name: "Impressum",        href: "/impressum" },
+    { name: "Privacy",   href: "/privacy" },
+    { name: "Terms",     href: "/terms" },
+    { name: "Cookies",   href: "/cookies" },
+    { name: "Impressum", href: "/impressum" },
 ];
 
 export default function Footer() {
     const { settings } = useSiteSettings();
 
     const socialLinks = Object.keys(SOCIAL_ICON_MAP)
-        .filter(key => settings[key])
-        .map(key => ({ ...SOCIAL_ICON_MAP[key], href: settings[key] || '#' }));
+        .filter((key) => settings[key])
+        .map((key) => ({ ...SOCIAL_ICON_MAP[key], href: settings[key] || "#" }));
 
     const discordUrl = settings.discord_url || DISCORD_FALLBACK;
 
     return (
         <footer className="relative bg-[var(--surface-0)] border-t border-[var(--line)] overflow-hidden">
-            {/* The Crown */}
+            {/* The crown, and a single wash of accent behind the wordmark */}
             <span aria-hidden className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent" />
-            {/* ambient depth */}
-            <span aria-hidden className="absolute inset-0 bg-hud-grid opacity-50 pointer-events-none" />
+            <span aria-hidden className="absolute inset-0 bg-hud-grid opacity-40 pointer-events-none" />
             <span
                 aria-hidden
-                className="pointer-events-none absolute -top-40 left-[8%] w-[520px] h-[420px] rounded-full opacity-[0.07]"
+                className="pointer-events-none absolute -top-32 left-0 w-[560px] h-[380px] rounded-full opacity-[0.06]"
                 style={{ background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)" }}
             />
 
+            {/* ── Band: the brand on the left, the community door on the right ── */}
             <div className="relative container-page pt-14 pb-10">
-                <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-12 lg:gap-16">
-
-                    {/* Brand column */}
-                    <div className="flex flex-col">
-                        <Link href="/" className="group mb-5 w-fit" aria-label="TechPlay — home">
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+                    <div className="max-w-[440px]">
+                        <Link href="/" className="group inline-block" aria-label="TechPlay — home">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src="/techplay-logo.png"
                                 alt="TechPlay"
-                                width={192}
-                                height={32}
-                                className="h-[32px] w-auto group-hover:brightness-110 transition-[filter]"
+                                width={252}
+                                height={42}
+                                className="h-[42px] w-auto group-hover:brightness-110 transition-[filter]"
                             />
                         </Link>
 
-                        <p className="text-[13px] text-[var(--ink-low)] leading-relaxed mb-6 max-w-[280px]">
-                            Your home for gaming news, honest reviews, release dates, and a community that actually cares about games.
+                        <p className="mt-5 text-[14px] text-[var(--ink-low)] leading-relaxed">
+                            Your home for gaming news, honest reviews, release dates, and a
+                            community that actually cares about games.
                         </p>
+                    </div>
 
-                        {/* Discord CTA — the community door, and it earns the column its space */}
+                    <div className="flex flex-col items-start lg:items-end gap-3">
                         <Link
                             href={discordUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="group flex items-center gap-3 p-3 rounded-[var(--radius-card)] bg-[var(--fill-1)] border border-[var(--line)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300 mb-6 max-w-[280px]"
+                            className="group w-full sm:w-[320px] flex items-center gap-3 h-[56px] pl-3 pr-4 rounded-[var(--radius-card)] bg-[var(--fill-1)] border border-[var(--line)] hover:border-[color-mix(in_srgb,#5865F2_55%,transparent)] transition-colors duration-300"
                         >
-                            <span className="shrink-0 w-9 h-9 rounded-[var(--radius-inner)] bg-[var(--accent-soft)] flex items-center justify-center text-[var(--accent)] group-hover:bg-[var(--accent)] group-hover:text-white transition-colors duration-300">
-                                <DiscordIcon className="w-[18px] h-[18px]" />
+                            {/* Discord's own blurple, not our accent — it is their
+                                mark, and an orange tile made it read as our icon. */}
+                            <span className="shrink-0 w-10 h-10 rounded-[var(--radius-inner)] flex items-center justify-center text-white transition-transform duration-300 group-hover:scale-105" style={{ backgroundColor: "#5865F2" }}>
+                                <DiscordIcon className="w-[22px] h-[22px]" />
                             </span>
                             <span className="flex-1 min-w-0">
-                                <span className="block font-display text-[12px] font-bold text-[var(--ink-hi)]">Join our Discord</span>
-                                <span className="block text-[11px] text-[var(--ink-faint)]">Talk games with the community</span>
+                                <span className="block font-display text-[13px] font-bold text-[var(--ink-hi)] leading-tight">
+                                    Join our Discord
+                                </span>
+                                <span className="block text-[11px] text-[var(--ink-faint)] leading-tight">
+                                    Talk games with the community
+                                </span>
                             </span>
-                            <ArrowRight className="w-4 h-4 shrink-0 text-[var(--ink-faint)] group-hover:text-[var(--accent)] group-hover:translate-x-0.5 transition-all duration-300" />
+                            <ArrowRight className="w-4 h-4 shrink-0 text-[var(--ink-faint)] group-hover:translate-x-0.5 transition-all duration-300" style={{ transitionProperty: "transform, color" }} />
                         </Link>
 
                         {socialLinks.length > 0 && (
-                            <div className="flex items-center gap-2">
-                                {socialLinks.map((s, i) => (
+                            <div className="w-full sm:w-[320px] grid grid-cols-6 gap-2">
+                                {socialLinks.map((s) => (
                                     <Link
-                                        key={i}
+                                        key={s.label}
                                         href={s.href}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         aria-label={s.label}
                                         title={s.label}
-                                        className="w-9 h-9 rounded-[var(--radius-inner)] bg-[var(--fill-2)] border border-[var(--line-strong)] flex items-center justify-center text-[var(--ink-low)] hover:text-white hover:bg-[var(--accent)] hover:border-transparent transition-colors duration-300"
+                                        className="h-[42px] rounded-[var(--radius-inner)] bg-[var(--fill-2)] border border-[var(--line-strong)] flex items-center justify-center text-[var(--ink-low)] hover:text-white hover:bg-[var(--accent)] hover:border-transparent transition-colors duration-300"
                                     >
-                                        <s.Icon className="w-[16px] h-[16px]" />
+                                        <s.Icon className="w-[17px] h-[17px]" />
                                     </Link>
                                 ))}
                             </div>
                         )}
                     </div>
-
-                    {/* Nav columns */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-10">
-                        {NAV.map((col) => (
-                            <div key={col.heading}>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <span className="w-1 h-4 rounded-full bg-[var(--accent)]" />
-                                    <h4 className="font-display text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
-                                        {col.heading}
-                                    </h4>
-                                </div>
-                                <ul className="flex flex-col gap-2.5">
-                                    {col.links.map(item => (
-                                        <li key={item.name}>
-                                            <Link
-                                                href={item.href}
-                                                className="group inline-flex items-center gap-1.5 text-[13px] text-[var(--ink-low)] hover:text-[var(--ink-hi)] transition-colors duration-150"
-                                            >
-                                                {/* accent tick slides in on hover */}
-                                                <span aria-hidden className="w-0 h-px bg-[var(--accent)] group-hover:w-2.5 transition-all duration-300 ease-[var(--ease-hud)]" />
-                                                {item.name}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
                 </div>
             </div>
 
-            {/* Bottom bar */}
+            {/* ── Rail: one line of links instead of a grid of columns ── */}
+            <div className="relative border-t border-[var(--line)]">
+                <nav aria-label="About TechPlay" className="container-page py-5">
+                    <ul className="flex flex-wrap items-center gap-x-1 gap-y-2">
+                        {ABOUT.map((item, i) => (
+                            <li key={item.name} className="flex items-center">
+                                {i > 0 && (
+                                    <span aria-hidden className="w-1 h-1 mx-3 rounded-full bg-[var(--line-strong)]" />
+                                )}
+                                <Link
+                                    href={item.href}
+                                    className="font-display text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors duration-150"
+                                >
+                                    {item.name}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+            </div>
+
+            {/* ── Small print ── */}
             <div className="relative border-t border-[var(--line)]">
                 <div className="container-page py-4 flex flex-col lg:flex-row items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
@@ -204,9 +201,23 @@ export default function Footer() {
                     </div>
 
                     <div className="flex items-center gap-4">
+                        {/* The feed has existed all along and nothing pointed at it. */}
+                        <a
+                            href="/rss"
+                            className="inline-flex items-center gap-1.5 text-[12px] text-[var(--ink-faint)] hover:text-[var(--accent)] transition-colors duration-150"
+                        >
+                            <Rss className="w-3.5 h-3.5" />
+                            RSS
+                        </a>
+                        <span aria-hidden className="hidden sm:block w-px h-3 bg-[var(--line-strong)]" />
                         <p className="text-[12px] text-[var(--ink-faint)]">
                             Made by{" "}
-                            <Link href="https://luminor.agency" target="_blank" rel="noopener noreferrer" className="text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors font-medium">
+                            <Link
+                                href="https://luminor.agency"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors font-medium"
+                            >
                                 Luminor Solutions
                             </Link>
                         </p>

@@ -62,7 +62,7 @@ export default function ShopClient() {
             />
 
             {/* Content */}
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 pb-20">
+            <div className="container-page pb-20">
 
                 {/* Toolbar: search + count */}
                 <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">

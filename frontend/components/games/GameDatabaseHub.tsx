@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import axios from "@/lib/axios";
+import PlatformIcon, { platformBrandColor } from "@/components/games/PlatformIcon";
 import {
     Search, Star, Shuffle, SlidersHorizontal, Flame, Heart, Clock,
     ArrowRight, Gamepad2, Loader2, X, TrendingUp, CalendarDays, Sparkles, Layers,
@@ -119,14 +120,29 @@ function Choice({
 
 /* ── the page ─────────────────────────────────────────────────────────── */
 
-export default function GameDatabaseHub() {
+/**
+ * @param preset  a facet the page opens with — /games/genre/action and friends
+ *                are real, indexed pages, and they render this same hub rather
+ *                than a second design that has to be kept in step with it.
+ * @param heading the h1 those pages need. Passed from the server so it is in
+ *                the HTML a crawler reads, not filled in after hydration.
+ */
+export default function GameDatabaseHub({
+    preset,
+    heading,
+    intro,
+}: {
+    preset?: { genre?: string; platform?: string; tag?: string; yearFrom?: number; yearTo?: number };
+    heading?: string;
+    intro?: string;
+} = {}) {
     const router = useRouter();
     const params = useSearchParams();
 
     const [search, setSearch] = useState(params.get("search") ?? "");
     const [typed, setTyped] = useState(params.get("search") ?? "");
-    const [genre, setGenre] = useState(params.get("genres") ?? "");
-    const [platform, setPlatform] = useState(params.get("platforms") ?? "");
+    const [genre, setGenre] = useState(preset?.genre ?? params.get("genres") ?? "");
+    const [platform, setPlatform] = useState(preset?.platform ?? params.get("platforms") ?? "");
     const [era, setEra] = useState(params.get("era") ?? "");
     const [status, setStatus] = useState(params.get("status") ?? "all");
     const [sort, setSort] = useState(params.get("ordering") ?? "-rating");
@@ -149,17 +165,20 @@ export default function GameDatabaseHub() {
         if (search) q.set("search", search);
         if (genre) q.set("genres", genre);
         if (platform) q.set("platforms", platform);
+        if (preset?.tag) q.set("tags", preset.tag);
         if (sort) q.set("ordering", sort);
         if (status && status !== "all") q.set("status", status);
 
-        const band = facets?.eras.find((e) => e.key === era);
+        const band = preset?.yearFrom
+            ? { from: preset.yearFrom, to: preset.yearTo ?? preset.yearFrom }
+            : facets?.eras.find((e) => e.key === era);
         if (band) {
             q.set("year_from", String(band.from));
             q.set("year_to", String(band.to));
         }
 
         q.set("page", String(page));
-        q.set("page_size", "24");
+        q.set("page_size", "30");
         return q.toString();
     }, [search, genre, platform, era, status, sort, page, facets]);
 
@@ -205,15 +224,22 @@ export default function GameDatabaseHub() {
             <section className="relative overflow-hidden border-b border-white/[0.07]">
                 <span aria-hidden className="absolute inset-0 bg-[radial-gradient(90%_120%_at_50%_0%,color-mix(in_srgb,var(--accent)_16%,transparent),transparent_65%)]" />
 
-                <div className="relative z-10 max-w-[1500px] mx-auto px-4 xl:px-6 py-12 text-center">
+                <div className="relative z-10 container-page py-12 text-center">
                     <h1 className="font-display font-black tracking-tight text-[42px] md:text-[58px] leading-none">
-                        <span className="text-white">GAME </span>
-                        <span className="text-[var(--accent)]">DATABASE</span>
+                        {heading ? (
+                            <span className="text-white">{heading}</span>
+                        ) : (
+                            <>
+                                <span className="text-white">GAME </span>
+                                <span className="text-[var(--accent)]">DATABASE</span>
+                            </>
+                        )}
                     </h1>
-                    <p className="mt-3 text-[13px] text-white/45">
-                        {typeof stats?.games === "number"
-                            ? `Discover, explore and track ${stats.games.toLocaleString()} games across every generation.`
-                            : "Discover, explore and track games across every generation."}
+                    <p className="mt-3 max-w-[720px] mx-auto text-[13px] text-white/45">
+                        {intro ??
+                            (typeof stats?.games === "number"
+                                ? `Discover, explore and track ${stats.games.toLocaleString()} games across every generation.`
+                                : "Discover, explore and track games across every generation.")}
                     </p>
 
                     <div className="mt-6 max-w-[640px] mx-auto relative">
@@ -237,19 +263,31 @@ export default function GameDatabaseHub() {
 
                     {/* quick ways in, for the 86% of the catalogue that has no rating */}
                     <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-                        {facets?.platforms.slice(0, 4).map((p) => (
-                            <button
-                                key={p.key}
-                                onClick={() => change(() => setPlatform(platform === p.label ? "" : p.label))}
-                                className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full border font-display text-[10.5px] font-bold uppercase tracking-[0.06em] transition-colors ${
-                                    platform === p.label
-                                        ? "border-[var(--accent)] bg-[var(--accent)] text-white"
-                                        : "border-white/[0.09] bg-white/[0.03] text-white/55 hover:text-white"
-                                }`}
-                            >
-                                <Gamepad2 className="w-3.5 h-3.5" /> {p.label}
-                            </button>
-                        ))}
+                        {facets?.platforms.slice(0, 4).map((p) => {
+                            const on = platform === p.label;
+                            // The mark wears its brand colour at rest. On the
+                            // selected chip the ground is already accent, and a
+                            // blue PlayStation logo on orange fights it — there
+                            // the mark goes white with the label.
+                            const brand = on ? null : platformBrandColor(p.label);
+
+                            return (
+                                <button
+                                    key={p.key}
+                                    onClick={() => change(() => setPlatform(on ? "" : p.label))}
+                                    className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full border font-display text-[10.5px] font-bold uppercase tracking-[0.06em] transition-colors ${
+                                        on
+                                            ? "border-[var(--accent)] bg-[var(--accent)] text-white"
+                                            : "border-white/[0.09] bg-white/[0.03] text-white/55 hover:text-white"
+                                    }`}
+                                >
+                                    <span style={brand ? { color: brand } : undefined}>
+                                        <PlatformIcon label={p.label} className="w-3.5 h-3.5" />
+                                    </span>
+                                    {p.label}
+                                </button>
+                            );
+                        })}
 
                         <button
                             onClick={roll}
@@ -264,7 +302,7 @@ export default function GameDatabaseHub() {
             </section>
 
             {/* ── four ways in ── */}
-            <section className="max-w-[1500px] mx-auto px-4 xl:px-6 py-5 grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <section className="container-page py-5 grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {SHELVES.map((shelf) => (
                     <Shelf
                         key={shelf.key}
@@ -278,7 +316,7 @@ export default function GameDatabaseHub() {
                 ))}
             </section>
 
-            <div className="max-w-[1500px] mx-auto px-4 xl:px-6 pb-12 grid grid-cols-1 xl:grid-cols-[248px_1fr_296px] gap-5 items-start">
+            <div className="container-page pb-12 grid grid-cols-1 xl:grid-cols-[248px_1fr_296px] gap-5 items-start">
                 {/* ── filters ── */}
                 <aside className={`${railOpen ? "block" : "hidden"} xl:block rounded-[14px] border border-white/[0.07] bg-white/[0.02] p-4 xl:sticky xl:top-4`}>
                     <div className="flex items-center justify-between mb-3">
@@ -353,7 +391,7 @@ export default function GameDatabaseHub() {
                 </aside>
 
                 {/* ── the grid ── */}
-                <section className="min-w-0">
+                <section className="min-w-0 xl:self-stretch flex flex-col">
                     <div className="flex items-center justify-between gap-4 mb-4">
                         <p className="flex items-baseline gap-2.5 min-w-0">
                             <span className="font-display text-[13px] font-black uppercase tracking-[0.14em] text-white truncate">
@@ -398,15 +436,19 @@ export default function GameDatabaseHub() {
                             <p className="mt-1 text-[12px] text-white/35">Try fewer filters, or a different spelling.</p>
                         </div>
                     ) : (
-                        <>
+                        <div className="flex-1 flex flex-col">
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                                 {rows.map((game) => (
                                     <GameCard key={`${game.id}-${game.slug}`} game={game} />
                                 ))}
                             </div>
 
+                            {/* Pushed to the floor of the column, so it lands
+                                level with the bottom of the filter rail at any
+                                width — a fixed number of cards could not, since
+                                the grid is 2, 3 or 5 across depending on room. */}
                             {data?.next && (
-                                <div className="mt-6 flex justify-center">
+                                <div className="mt-auto pt-8 flex justify-center">
                                     <button
                                         onClick={() => setPage((p) => p + 1)}
                                         disabled={isLoading}
@@ -417,7 +459,7 @@ export default function GameDatabaseHub() {
                                     </button>
                                 </div>
                             )}
-                        </>
+                        </div>
                     )}
                 </section>
 
@@ -477,7 +519,7 @@ export default function GameDatabaseHub() {
             {/* ── what the catalogue actually is ── */}
             {stats && (
                 <section className="border-t border-white/[0.07]">
-                    <div className="max-w-[1500px] mx-auto px-4 xl:px-6 py-6 grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="container-page py-6 grid grid-cols-2 md:grid-cols-4 gap-6">
                         <Figure value={stats.games.toLocaleString()} label="Games in the database" />
                         <Figure value={stats.platforms.toLocaleString()} label="Platforms represented" />
                         <Figure value={stats.genres.toLocaleString()} label="Genres" />

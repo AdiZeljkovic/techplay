@@ -126,7 +126,7 @@ export default async function Gta6HubPage() {
                 <Gta6HypeBar stats={stats} />
 
                 {/* Bento explore grid */}
-                <section className="max-w-[1320px] mx-auto px-4 xl:px-8 py-14">
+                <section className="container-page py-14">
                     <SectionHeading kicker="Explore" title="Explore the GTA 6 Hub" />
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-7">
@@ -170,7 +170,7 @@ export default async function Gta6HubPage() {
                 </section>
 
                 {/* Trailers */}
-                <section id="trailers" className="max-w-[1320px] mx-auto px-4 xl:px-8 pb-14 scroll-mt-24">
+                <section id="trailers" className="container-page pb-14 scroll-mt-24">
                     <div className="flex items-center justify-between mb-7">
                         <SectionHeading kicker="Watch" title="Official Trailers" noMargin />
                         <a href="https://www.youtube.com/@RockstarGames" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#71717A] hover:text-[var(--gta-pink)] text-[13px] font-semibold transition-colors">
@@ -181,13 +181,13 @@ export default async function Gta6HubPage() {
                 </section>
 
                 {/* Pre-order */}
-                <section className="max-w-[1320px] mx-auto px-4 xl:px-8 pb-14">
+                <section className="container-page pb-14">
                     <Gta6PreOrder />
                 </section>
 
                 {/* Latest news */}
                 {news.length > 0 && (
-                    <section className="max-w-[1320px] mx-auto px-4 xl:px-8 pb-14">
+                    <section className="container-page pb-14">
                         <div className="flex items-center justify-between mb-7">
                             <SectionHeading kicker="Fresh" title="Latest GTA 6 News" noMargin />
                             <Link href="/news?search=gta+6" className="inline-flex items-center gap-1 text-[#71717A] hover:text-[var(--gta-pink)] text-[13px] font-semibold transition-colors">
@@ -222,7 +222,7 @@ export default async function Gta6HubPage() {
                 )}
 
                 {/* Newsletter */}
-                <section className="max-w-[1320px] mx-auto px-4 xl:px-8">
+                <section className="container-page">
                     <Gta6NewsletterCTA />
                 </section>
             </div>

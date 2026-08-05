@@ -11,13 +11,18 @@ import {
 } from "react";
 
 /**
- * The Command Button — TechPlay's one button (signature move S4).
- * Sora uppercase, rounded-card, ease-hud transitions. The accent glow lives
- * on `primary` only; nothing else on a page may glow (except the XP ring).
+ * TechPlay's one button. Display face, uppercase, ease-hud transitions. The
+ * accent glow lives on the accent variants only; nothing else on a page may
+ * glow (except the XP ring).
+ *
+ * `command` is the notched treatment — two corners cut at 45° with a hazard
+ * hatch. It is the loudest thing the system has, so it belongs on the single
+ * decisive action of a surface and nowhere else; `commandQuiet` is its
+ * secondary partner for when two notched buttons sit side by side.
  */
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     /** `outline` is a deprecated alias for `secondary` (legacy imports). */
-    variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
+    variant?: "primary" | "command" | "commandQuiet" | "secondary" | "outline" | "ghost" | "danger";
     size?: "sm" | "md" | "lg";
     isLoading?: boolean;
     /** Renders the child element (e.g. a <Link>) with button styling instead of a <button>. */
@@ -29,12 +34,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const BASE =
     "inline-flex items-center justify-center gap-2 font-display font-bold uppercase tracking-wider " +
     "rounded-[var(--radius-card)] transition-colors duration-300 " +
+    // .btn-command sets border-radius: 0 itself, so the two never disagree.
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--accent)_60%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-0)] " +
     "disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]";
 
 const VARIANTS: Record<string, string> = {
     primary:
         "bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-[var(--glow-accent)]",
+    command:
+        "btn-command bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]",
+    commandQuiet:
+        "btn-command btn-command-quiet bg-[var(--fill-2)] text-[var(--ink-hi)] hover:bg-[var(--fill-3)]",
     secondary:
         "bg-[var(--fill-2)] text-[var(--ink-hi)] border border-[var(--line-strong)] hover:bg-[var(--fill-3)]",
     outline:

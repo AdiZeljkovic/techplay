@@ -2,7 +2,7 @@
 
 import { Article } from "@/types";
 import dynamic from 'next/dynamic';
-import { Gamepad2, Monitor, Trophy, Building2, Calendar, Clock, ShoppingCart, ThumbsUp, ThumbsDown, Star, Zap, Meh, Medal } from "lucide-react";
+import { Gamepad2, Trophy, Building2, Calendar, Clock, ShoppingCart, ThumbsUp, ThumbsDown, Zap, Meh, Medal } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 

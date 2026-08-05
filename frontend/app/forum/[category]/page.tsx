@@ -79,7 +79,7 @@ function CategoryThreadsPageInner() {
     if (isLoading) {
         return (
             <div className="min-h-screen bg-[#060810]">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
+                <div className="container-page py-8">
                     <div className="animate-pulse space-y-4 mb-8">
                         <div className="h-6 w-32 bg-[#0D1117] rounded" />
                         <div className="h-16 w-full bg-[#0D1117] rounded-2xl" />
@@ -121,7 +121,7 @@ function CategoryThreadsPageInner() {
                     style={{ background: `linear-gradient(135deg, ${color} 0%, transparent 60%)` }}
                 />
 
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8 relative z-10">
+                <div className="container-page py-8 relative z-10">
                     <Link
                         href="/forum"
                         className="inline-flex items-center gap-2 text-sm text-[#6B7280] hover:text-tp-accent transition-colors mb-6"
@@ -178,7 +178,7 @@ function CategoryThreadsPageInner() {
             </div>
 
             {/* Content */}
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
+            <div className="container-page py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     <div className="lg:col-span-3">
                         {category.rules && (

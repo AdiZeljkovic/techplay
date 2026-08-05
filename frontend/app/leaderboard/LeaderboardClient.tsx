@@ -4,11 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import {
-    Trophy, Zap, Star, Library, CheckCircle2, Crown, Search, X, ChevronRight,
-    TrendingUp, TrendingDown, Minus, Medal, Award, BadgeCheck, Flame, Sparkles,
-    MessageSquare, BookOpen, Gamepad2, Clock3, ShieldCheck,
-} from "lucide-react";
+import { Trophy, Zap, Star, Library, CheckCircle2, Crown, Search, X, ChevronRight, TrendingUp, TrendingDown, Minus, Medal, Award, BadgeCheck, Flame, MessageSquare, BookOpen, Gamepad2, Clock3, ShieldCheck } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import Avatar from "@/components/ui/Avatar";
@@ -185,7 +181,7 @@ function SeasonPanel({ season }: { season: NonNullable<Payload["season"]> }) {
     const left = useCountdown(season.ends_at);
 
     return (
-        <Panel variant="console" title={season.name} icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />}>
+        <Panel variant="console" title={season.name}>
             {season.ends_at && (
                 <>
                     <p className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 mb-2">Season ends in</p>
@@ -260,7 +256,7 @@ export default function LeaderboardClient() {
                     className="absolute inset-0"
                     style={{ background: "radial-gradient(90% 130% at 50% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%)" }}
                 />
-                <div className="relative z-10 max-w-[1320px] mx-auto px-4 xl:px-0 py-12 md:py-16 text-center">
+                <div className="relative z-10 container-page py-12 md:py-16 text-center">
                     <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] mb-4">
                         <Trophy className="w-7 h-7 text-[var(--accent)]" />
                     </span>
@@ -273,7 +269,7 @@ export default function LeaderboardClient() {
                 </div>
             </div>
 
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+            <div className="container-page py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
                 <div className="xl:col-span-9 min-w-0 space-y-4">
                     {/* ── board switcher ── */}
                     <div className="flex flex-wrap gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[#0f0d0c]">
@@ -535,7 +531,7 @@ export default function LeaderboardClient() {
                 <aside className="xl:col-span-3 min-w-0 space-y-4">
                     {data?.season && <SeasonPanel season={data.season} />}
 
-                    <Panel title="Rising Players" icon={<TrendingUp className="w-4 h-4 text-emerald-400" />}>
+                    <Panel title="Rising Players">
                         {(data?.rising ?? []).length === 0 ? (
                             <EmptyState variant="compact" title="Nobody has moved yet this week" />
                         ) : (
@@ -556,7 +552,7 @@ export default function LeaderboardClient() {
                         )}
                     </Panel>
 
-                    <Panel title="How to earn more XP" icon={<Zap className="w-4 h-4 text-[var(--xp-bright)]" />}>
+                    <Panel title="How to earn more XP">
                         <div className="space-y-2.5">
                             {[
                                 [<BookOpen key="a" className="w-3.5 h-3.5" />, "Read articles and leave comments", "/news"],

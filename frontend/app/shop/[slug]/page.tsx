@@ -4,7 +4,7 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import { useParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
-import { ShoppingCart, Check, PackageOpen, ArrowLeft, Truck, ShieldCheck, Heart } from "lucide-react";
+import { ShoppingCart, PackageOpen, ArrowLeft, Truck, ShieldCheck, Heart } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import PageHero from "@/components/ui/PageHero";
@@ -34,7 +34,7 @@ export default function ProductDetailPage() {
         return (
             <div className="min-h-screen">
                 <PageHero title="Loading..." icon={PackageOpen} />
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-12">
+                <div className="container-page py-12">
                     <div className="animate-pulse h-96 bg-[var(--bg-card)] rounded-2xl" />
                 </div>
             </div>
@@ -46,7 +46,7 @@ export default function ProductDetailPage() {
         return (
             <div className="min-h-screen">
                 <PageHero title="Product Not Found" icon={PackageOpen} />
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-12 text-center">
+                <div className="container-page py-12 text-center">
                     <Link href="/shop" className="text-[var(--accent)] hover:underline">Return to Shop</Link>
                 </div>
             </div>
@@ -61,7 +61,7 @@ export default function ProductDetailPage() {
                 icon={PackageOpen}
             />
 
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-12">
+            <div className="container-page py-12">
                 <div className="mb-8">
                     <Link href="/shop" className="inline-flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors">
                         <ArrowLeft className="w-4 h-4" />

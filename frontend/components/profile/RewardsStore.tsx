@@ -4,11 +4,7 @@ import { useMemo, useState } from "react";
 import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import {
-    Coins, Award, Frame, Palette, Sparkles, Ticket, Package, Loader2, History,
-    Check, Lock, HelpCircle, ChevronRight, ChevronDown, Layers, Target, Clock3,
-    TrendingUp, TrendingDown, ShoppingBag, type LucideIcon,
-} from "lucide-react";
+import { Coins, Award, Frame, Palette, Sparkles, Ticket, Package, Loader2, History, Check, Lock, HelpCircle, ChevronRight, ChevronDown, Target, Clock3, TrendingUp, TrendingDown, ShoppingBag, type LucideIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -346,7 +342,7 @@ function WalletHero({ wallet, onOpenTiers }: { wallet: BountyWallet; onOpenTiers
 
 function TierLadder({ wallet, onClose }: { wallet: BountyWallet; onClose: () => void }) {
     return (
-        <Panel title="Reward tiers" icon={<Layers className="w-4 h-4 text-amber-400" />} action={{ label: "Close", onClick: onClose }}>
+        <Panel title="Reward tiers" action={{ label: "Close", onClick: onClose }}>
             <p className="mb-4 text-[12px] text-white/40 leading-snug">
                 Tiers climb on Bounty <span className="text-white font-semibold">earned</span>, never on Bounty held — spending
                 in the store can never cost you a tier.
@@ -394,7 +390,7 @@ function WalletBreakdown({ wallet, onHelp }: { wallet: BountyWallet; onHelp: () 
     );
 
     return (
-        <Panel title="Wallet Breakdown" icon={<Coins className="w-4 h-4 text-amber-400" />}>
+        <Panel title="Wallet Breakdown">
             <div className="space-y-2.5">
                 <div className="flex items-center justify-between gap-3 pb-2.5 border-b border-white/[0.07]">
                     <span className="flex items-center gap-2 text-[12.5px] font-semibold text-white">
@@ -429,7 +425,6 @@ function DailyBounties() {
     return (
         <Panel
             title="Daily Missions"
-            icon={<Target className="w-4 h-4 text-[var(--accent)]" />}
             meta={soonest ? (
                 <span className="inline-flex items-center gap-1.5 font-display text-[10px] font-bold tabular-nums text-amber-400/80">
                     <Clock3 className="w-3.5 h-3.5" /> {timeLeft(soonest)}
@@ -570,7 +565,6 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
                 {showHelp && (
                     <Panel
                         title="How bounty works"
-                        icon={<HelpCircle className="w-4 h-4 text-[var(--accent)]" />}
                         action={{ label: "Close", onClick: () => setShowHelp(false) }}
                     >
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[12.5px] text-white/50 leading-relaxed">
@@ -649,7 +643,7 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
                 )}
 
                 {/* ── history ── */}
-                <Panel title="Bounty History" icon={<History className="w-4 h-4 text-white/40" />} padding="none">
+                <Panel title="Bounty History" padding="none">
                     {wallet.transactions.length === 0 ? (
                         <div className="p-5">
                             <EmptyState variant="compact" title="No bounty movement yet" body="Everything you earn and spend is logged here." />
@@ -704,7 +698,7 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
             <aside className="xl:col-span-3 min-w-0 space-y-4">
                 <WalletBreakdown wallet={wallet} onHelp={() => setShowHelp((v) => !v)} />
 
-                <Panel title="Recently Redeemed" icon={<ShoppingBag className="w-4 h-4 text-[var(--accent)]" />}>
+                <Panel title="Recently Redeemed">
                     {(redemptionsRes?.data ?? []).length === 0 ? (
                         <EmptyState variant="compact" title="Nothing redeemed yet" />
                     ) : (
@@ -738,7 +732,6 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
 
                 <Panel
                     title="Owned Cosmetics"
-                    icon={<Frame className="w-4 h-4 text-violet-400" />}
                     meta={<span className="font-display text-[11px] font-black tabular-nums text-white/35">{ownedCosmetics.length}</span>}
                 >
                     {ownedCosmetics.length === 0 ? (

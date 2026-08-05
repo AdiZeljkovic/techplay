@@ -1,6 +1,6 @@
 "use client";
 
-import { Trophy, Medal } from "lucide-react";
+import { Trophy } from "lucide-react";
 import type { DashboardAchievement } from "@/lib/types/dashboard";
 import { getStorageUrl } from "@/lib/imageUrl";
 import Panel from "@/components/ui/Panel";
@@ -94,7 +94,6 @@ export default function RecentAchievementsRail({
     return (
         <Panel
             title="Recent Achievements"
-            icon={<Medal className="w-3.5 h-3.5 text-[var(--accent)]" />}
             action={{ label: "All achievements", href: "/profile/me?tab=achievements" }}
             className="h-full flex flex-col"
             bodyClassName="p-4 flex-1 flex flex-col"

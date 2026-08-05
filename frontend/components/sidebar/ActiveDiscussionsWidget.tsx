@@ -84,7 +84,7 @@ export default function ActiveDiscussionsWidget() {
                                 }}
                                 onMouseEnter={e => {
                                     e.currentTarget.style.background = '#051830';
-                                    e.currentTarget.style.borderLeftColor = 'rgba(252,65,0,0.5)';
+                                    e.currentTarget.style.borderLeftColor = 'rgba(220, 20, 60,0.5)';
                                 }}
                                 onMouseLeave={e => {
                                     e.currentTarget.style.background = 'transparent';

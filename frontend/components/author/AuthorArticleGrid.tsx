@@ -55,7 +55,7 @@ export default function AuthorArticleGrid({ slug, stats }: AuthorArticleGridProp
     }
 
     return (
-        <div className="max-w-[1320px] mx-auto px-4 xl:px-8 py-10">
+        <div className="container-page py-10">
 
             {/* Tab filter */}
             <div className="flex flex-wrap gap-2 mb-8">
@@ -68,7 +68,7 @@ export default function AuthorArticleGrid({ slug, stats }: AuthorArticleGridProp
                             onClick={() => handleTabChange(id)}
                             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all border ${
                                 isActive
-                                    ? "bg-[var(--accent)] text-white border-[var(--accent)] shadow-[0_0_15px_rgba(252,65,0,0.25)]"
+                                    ? "bg-[var(--accent)] text-white border-[var(--accent)] shadow-[0_0_15px_rgba(220, 20, 60,0.25)]"
                                     : "text-[#A1A1AA] border-[#161B22] hover:border-[var(--accent)]/40 hover:text-white bg-[#0B0E14]"
                             }`}
                         >

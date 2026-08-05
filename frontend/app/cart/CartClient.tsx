@@ -30,7 +30,7 @@ export default function CartClient() {
         <div className="min-h-screen">
             {/* Header */}
             <div className="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-6">
+                <div className="container-page py-6">
                     <Link
                         href="/shop"
                         className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors mb-4"
@@ -52,7 +52,7 @@ export default function CartClient() {
             </div>
 
             {/* Cart Content */}
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
+            <div className="container-page py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Cart Items */}
                     <div className="lg:col-span-8">

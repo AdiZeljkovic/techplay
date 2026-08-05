@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
-import { Gift, Clock, Users, Trophy, Filter, Loader2, Calendar, AlertTriangle } from "lucide-react";
+import { Gift, Clock, Users, Trophy, Filter, Loader2, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 import PageHero from "@/components/ui/PageHero";
 
@@ -83,7 +83,7 @@ export default function GiveawaysClient() {
                 icon={Gift}
             />
 
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-16">
+            <div className="container-page py-16">
                 {/* Filters */}
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-2">

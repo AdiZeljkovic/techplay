@@ -1,15 +1,43 @@
 import { Monitor, Laptop, Smartphone, Gamepad2 } from "lucide-react";
 
 /**
+ * What each platform's mark is actually coloured, for surfaces that want the
+ * logo to look like the logo rather than like the site.
+ *
+ * PC, Mac and mobile are deliberately absent: they are categories, not brands,
+ * and inventing a colour for them would be the only made-up entry here.
+ */
+export const PLATFORM_BRAND: Record<string, string> = {
+    PS5: "#0070D1",
+    PS4: "#0070D1",
+    PS: "#0070D1",
+    PLAYSTATION: "#0070D1",
+    SERIES: "#107C10",
+    ONE: "#107C10",
+    XBOX: "#107C10",
+    SWITCH: "#E60012",
+    NINTENDO: "#E60012",
+    STEAM: "#C7D5E0",
+    EPIC: "#F5F5F5",
+    DISCORD: "#5865F2",
+};
+
+/** The mark's own colour, or null when the platform is a category rather than a brand. */
+export function platformBrandColor(label: string): string | null {
+    return PLATFORM_BRAND[label.toUpperCase()] ?? null;
+}
+
+/**
  * Brand glyph for a platform label (PS5, SERIES, SWITCH, PC, MAC, …).
  * PlayStation / Xbox / Switch are drawn as inline brand marks; everything
- * else falls back to a device glyph. Rendered at currentColor.
+ * else falls back to a device glyph. Rendered at currentColor, so the caller
+ * decides whether it wears its brand colour or the surface's.
  */
 export default function PlatformIcon({ label, className = "w-4 h-4" }: { label: string; className?: string }) {
     const l = label.toUpperCase();
 
     // PlayStation family
-    if (l === "PS5" || l === "PS4" || l === "PS") {
+    if (l === "PS5" || l === "PS4" || l === "PS" || l === "PLAYSTATION") {
         return (
             <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
                 <path d="M8.985 2.596v17.548l3.915 1.261V6.688c0-.69.304-1.151.794-.997.636.181.76.814.76 1.505v5.876c2.441 1.193 4.362-.002 4.362-3.153 0-3.237-1.126-4.675-4.438-5.827-1.297-.448-3.664-1.19-5.393-1.496zm4.656 16.242l6.296-2.275c.715-.258.826-.62.246-.818-.586-.192-1.637-.139-2.357.123l-4.205 1.5v-2.385l.24-.085s1.201-.42 2.913-.615c1.696-.18 3.785.03 5.437.661 1.848.601 2.041 1.472 1.576 2.072-.474.601-1.63 1.036-1.63 1.036l-8.516 3.054v-2.27zM1.807 18.6c-1.9-.545-2.214-1.658-1.354-2.298.802-.588 2.165-1.032 2.165-1.032l5.634-2.005v2.288L4.19 17.014c-.717.256-.827.62-.246.818.586.19 1.636.138 2.354-.123l1.947-.71v2.05c-.124.021-.261.04-.386.06-1.938.316-4.006.184-6.052-.51z" />

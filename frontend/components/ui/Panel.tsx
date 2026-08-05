@@ -7,7 +7,6 @@ import type { ReactNode } from "react";
 
 interface PanelProps {
     title?: string;
-    icon?: ReactNode;
     action?: { label: string; href?: string; onClick?: () => void };
     /** Right-side header content that is information, not a link — e.g. a
      *  countdown. Ignored when `action` is present. */
@@ -43,7 +42,6 @@ const CONSOLE_FACE: React.CSSProperties = {
  */
 export default function Panel({
     title,
-    icon,
     action,
     meta,
     crown = false,
@@ -76,7 +74,6 @@ export default function Panel({
                         with the content — the accent belongs to the action */}
                     <h3 className="flex items-center gap-2.5 font-display text-[11px] font-bold uppercase tracking-[0.15em] text-white/55">
                         <span className="w-1 h-3.5 rounded-full bg-[var(--accent)]" />
-                        {icon}
                         {title}
                     </h3>
                     {!action && meta}

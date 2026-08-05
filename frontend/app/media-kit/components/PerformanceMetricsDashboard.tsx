@@ -6,7 +6,7 @@ import { TrendingUp, Users, Activity, Globe } from "lucide-react";
 
 const deviceData = [
     { name: 'Desktop', value: 62, color: '#3B82F6' },
-    { name: 'Mobile', value: 31, color: '#FC4100' },
+    { name: 'Mobile', value: 31, color: '#DC143C' },
     { name: 'Tablet', value: 7, color: '#8B5CF6' },
 ];
 
@@ -141,7 +141,7 @@ export default function PerformanceMetricsDashboard() {
                                 style={{ fontSize: '12px', fill: 'rgba(255,255,255,0.5)' }}
                             />
                             <Tooltip content={<CustomTooltip />} />
-                            <Bar dataKey="avgViews" name="Avg Views" fill="#FC4100" radius={[8, 8, 0, 0]} />
+                            <Bar dataKey="avgViews" name="Avg Views" fill="#DC143C" radius={[8, 8, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </motion.div>

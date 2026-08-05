@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
             width: 600,
             height: 600,
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(252,65,0,0.18) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(220, 20, 60,0.18) 0%, transparent 70%)",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
@@ -84,11 +84,11 @@ export async function GET(req: NextRequest) {
           {/* Badge */}
           <div
             style={{
-              background: "rgba(252,65,0,0.15)",
-              border: "1px solid rgba(252,65,0,0.3)",
+              background: "rgba(220, 20, 60,0.15)",
+              border: "1px solid rgba(220, 20, 60,0.3)",
               borderRadius: 999,
               padding: "6px 20px",
-              color: "#FC4100",
+              color: "#DC143C",
               fontSize: 13,
               fontWeight: 800,
               letterSpacing: 3,
@@ -107,7 +107,7 @@ export async function GET(req: NextRequest) {
               height={100}
               style={{
                 borderRadius: "50%",
-                border: "3px solid #FC4100",
+                border: "3px solid #DC143C",
                 marginBottom: 16,
               }}
             />
@@ -131,7 +131,7 @@ export async function GET(req: NextRequest) {
             style={{
               fontSize: 24,
               fontWeight: 700,
-              color: "#FC4100",
+              color: "#DC143C",
               marginBottom: 32,
             }}
           >

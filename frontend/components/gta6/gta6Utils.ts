@@ -4,7 +4,7 @@ export const CATEGORY_COLOR: Record<string, string> = {
     restaurant:     "#F59E0B",
     retail:         "#8B5CF6",
     office:         "#6366F1",
-    safehouse:      "#FC4100",
+    safehouse:      "#DC143C",
     landmark:       "#EC4899",
     transportation: "#06B6D4",
     leisure:        "#84CC16",

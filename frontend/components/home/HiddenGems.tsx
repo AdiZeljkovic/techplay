@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { Gem, Gamepad2, Users } from "lucide-react";
+import { Gamepad2, Users } from "lucide-react";
 import axios from "@/lib/axios";
 import Panel from "@/components/ui/Panel";
 import ScoreBadge from "@/components/ui/ScoreBadge";
@@ -34,7 +34,6 @@ export default function HiddenGems() {
     return (
         <Panel
             title="Hidden Gems"
-            icon={<Gem className="w-3.5 h-3.5 text-[var(--accent)]" />}
             action={{ label: "Browse database", href: "/games" }}
             className="h-full"
             bodyClassName="p-4"

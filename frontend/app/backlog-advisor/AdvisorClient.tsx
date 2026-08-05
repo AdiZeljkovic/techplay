@@ -5,10 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import {
-    Compass, Library, CheckCircle2, BarChart3, SlidersHorizontal, Plus, Check,
-    Loader2, Sparkles, Users, Star, CalendarClock, Info, X, ChevronDown, Gamepad2,
-} from "lucide-react";
+import { Compass, Library, CheckCircle2, BarChart3, Plus, Check, Loader2, Users, Star, CalendarClock, Info, X, ChevronDown, Gamepad2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import RingMeter from "@/components/ui/RingMeter";
@@ -258,7 +255,7 @@ export default function AdvisorClient() {
                     className="absolute inset-0"
                     style={{ background: "radial-gradient(65% 150% at 80% -20%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 58%)" }}
                 />
-                <div className="relative z-10 max-w-[1400px] mx-auto px-4 xl:px-6 pt-9 pb-6">
+                <div className="relative z-10 container-page pt-9 pb-6">
                     <p className="inline-flex items-center gap-2 h-[24px] px-3 rounded-[6px] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] font-display text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
                         <Compass className="w-3 h-3" /> Backlog Advisor
                     </p>
@@ -312,10 +309,10 @@ export default function AdvisorClient() {
                 </div>
             </div>
 
-            <div className="max-w-[1400px] mx-auto px-4 xl:px-6 py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+            <div className="container-page py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
                 {/* ── refine ── */}
                 <aside className="xl:col-span-3 min-w-0">
-                    <Panel title="Refine" icon={<SlidersHorizontal className="w-4 h-4 text-[var(--accent)]" />}>
+                    <Panel title="Refine">
                         <p className="font-display text-[9px] font-black uppercase tracking-[0.14em] text-white/40 mb-2">Mood</p>
                         <div className="flex flex-wrap gap-1.5 mb-5">
                             {MOODS.map((m) => (
@@ -433,7 +430,7 @@ export default function AdvisorClient() {
                     {/* ── how this works + health ── */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-1">
                         <div className="lg:col-span-2">
-                            <Panel title="How these are scored" icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />}>
+                            <Panel title="How these are scored">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {(data?.weights ?? []).map((w) => (
                                         <div key={w.key} className="flex items-start gap-3">
@@ -460,7 +457,7 @@ export default function AdvisorClient() {
                             </Panel>
                         </div>
 
-                        <Panel variant="console" title="Backlog health" icon={<CheckCircle2 className="w-4 h-4 text-[var(--accent)]" />}>
+                        <Panel variant="console" title="Backlog health">
                             <div className="flex items-center gap-4">
                                 <RingMeter value={health} size={72} strokeWidth={6}>
                                     <span className="font-display text-[15px] font-black tabular-nums text-[var(--accent)]">{health}%</span>

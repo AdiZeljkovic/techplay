@@ -4,11 +4,11 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  /* Display font (headings) — Sora, loaded via next/font in layout.tsx */
-  --font-display: var(--font-sora), "Sora", sans-serif;
-  /* Body font — Inter, loaded via next/font in layout.tsx */
-  --font-body: var(--font-inter), "Inter", sans-serif;
-  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Headings and identity — Archivo (SemiCondensed via font-stretch), loaded in layout.tsx */
+  --font-display: var(--font-display-src), "Archivo", sans-serif;
+  /* Everything a reader reads — Inter, same place */
+  --font-body: var(--font-body-src), "Inter", sans-serif;
+  --font-sans: var(--font-body-src), "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme {
@@ -53,10 +53,33 @@
   --color-score-fair: var(--score-fair);
   --color-score-poor: var(--score-poor);
 
-  /* Radii: panel 16 / card+control 12 / inner thumb 8 */
-  --radius-panel: 1rem;
-  --radius-card: 0.75rem;
-  --radius-inner: 0.5rem;
+  /* ── Radii — the sharpened ladder ──
+     panel 8 / card 5 / inner 3. Tightened from 16/12/8 so the system agrees
+     with the notched command button: a HUD reads angular, and soft 16px
+     corners next to a 45° cut looked like two design languages sharing a
+     page.
+
+     Sharpened, not squared. Zero radius is harsh at card size and dates
+     quickly; a few pixels still catch the light and keep panels from looking
+     like unstyled boxes. */
+  --radius-panel: 0.5rem;
+  --radius-card: 0.3125rem;
+  --radius-inner: 0.1875rem;
+
+  /* Tailwind's own scale, redefined. In v4 the rounded-* utilities read
+     these, so the 551 places written as rounded-xl / rounded-lg sharpen with
+     the tokens instead of needing 551 edits.
+
+     rounded-full is deliberately absent: 236 of its uses are avatars, status
+     dots and rings, and 32 are progress tracks. Squaring those would not read
+     as sharp, it would read as broken. Pill-shaped chips are the only honest
+     candidates there, and they are a separate, hand-picked pass. */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.1875rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.375rem;
+  --radius-2xl: 0.5rem;
+  --radius-3xl: 0.75rem;
 
   /* The one easing curve (ease-hud) */
   --ease-hud: cubic-bezier(0.22, 1, 0.36, 1);
@@ -129,15 +152,30 @@
   --ink-low: rgba(255, 255, 255, 0.45);
   --ink-faint: rgba(255, 255, 255, 0.30);
 
-  /* ── Accent ramp — #FC4100 is the ONLY hardcoded accent value.
-       Everything derives via color-mix so per-user profile themes
-       (inline --accent override) recolor the whole system. ── */
-  --accent: #FC4100;
-  --accent-hover: color-mix(in srgb, var(--accent) 85%, black);
+  /* ── Accent ramp — crimson.
+       primary #DC143C (CSS crimson) · lighter #FF4D6A · deep #4A0D1A
+
+       Measured on --surface-0: crimson itself is 4.04:1, just under the
+       4.5:1 needed for small text, while white on crimson is 4.99:1. So the
+       primary owns the fills — buttons, chips, badges — and --accent-ink is
+       the brighter cut for accent-coloured *text*, which lands at 6.26:1.
+       Using the primary for both would have quietly made every 10px kicker
+       borderline.
+
+       Hover is the lighter stop, not a darkened mix: the rest of the site
+       brightens on hover, so controls should not be the one thing that dims.
+
+       bright/soft still derive from --accent via color-mix, so a per-user
+       profile theme overriding --accent keeps recoloring the system. New
+       code reads the tokens, never the hex. ── */
+  --accent: #DC143C;
+  --accent-hover: #FF4D6A;
+  --accent-ink: #FF4D6A;
   --accent-bright: color-mix(in oklab, var(--accent) 62%, white);
   --accent-soft: color-mix(in srgb, var(--accent) 15%, transparent);
-  --glow-accent: 0 0 20px color-mix(in srgb, var(--accent) 30%, transparent);
-  --accent-rgb: 252, 65, 0; /* legacy — migrate consumers to color-mix */
+  --accent-deep: #4A0D1A;
+  --glow-accent: 0 0 20px var(--accent-deep);
+  --accent-rgb: 220, 20, 60; /* legacy — migrate consumers to color-mix */
 
   /* ── Progression palette ──
      XP deliberately does NOT ride the brand accent. The accent means "act on
@@ -199,6 +237,14 @@ html {
   scrollbar-width: thin;
 }
 
+/* Archivo is a variable font; SemiCondensed is its 87.5% width cut. The
+   utility only sets font-family, so the width is pinned here — unlayered,
+   which outranks the utilities layer. Inter has no width axis, so this
+   touches nothing else. */
+.font-display {
+  font-stretch: 87.5%;
+}
+
 body {
   font-family: var(--font-body);
   background-color: var(--surface-0);
@@ -208,15 +254,22 @@ body {
   overflow-x: clip;
 }
 
-/* Page container — replaces the 91 retyped `max-w-[1320px] mx-auto px-4 xl:px-0` */
+/* Page container — the one width the whole site lines up on.
+   Header, footer and every page use this class, so the site's width is this
+   one number. It was 1320 while newer pages were built at 1500, which is why
+   the header used to sit narrower than the content under it. */
+:root {
+  --page-width: 1500px;
+}
+
 .container-page {
   width: 100%;
-  max-width: 1320px;
+  max-width: var(--page-width);
   margin-inline: auto;
   padding-inline: 1rem;
 }
 @media (min-width: 1280px) {
-  .container-page { padding-inline: 0; }
+  .container-page { padding-inline: 1.5rem; }
 }
 
 /* Custom Scrollbar */
@@ -474,6 +527,103 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .gta6-accent-line { animation: none; }
+}
+
+/* ========================================
+   COMMAND BUTTON — the notched primary
+   ========================================
+   Two corners cut at 45° and a hazard hatch in the bottom-right. Reserved
+   for the one decisive action on a surface: the site's shapes are otherwise
+   rounded (hundreds of pills), so this reads as emphasis precisely because
+   it is rare. Repeat it on every control and it stops meaning anything and
+   starts looking like a different site.
+
+   clip-path over a border, because a border cannot follow a cut corner —
+   and the clip also trims the hatch, so it can be a plain overlay. */
+
+.btn-command {
+  --notch: 11px;
+  position: relative;
+  border-radius: 0;
+  clip-path: polygon(
+    var(--notch) 0,
+    100% 0,
+    100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%,
+    0 100%,
+    0 var(--notch)
+  );
+}
+
+/* Hazard hatch, tucked into the corner the notch cuts through. */
+/* Short controls get a proportionally smaller cut. */
+.btn-command.h-8,
+.btn-command.h-9 {
+  --notch: 8px;
+}
+
+.btn-command::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 58px;
+  height: 15px;
+  /* Scales with the notch, so a shorter button gets a shorter hatch. */
+  height: calc(var(--notch) * 1.35);
+  pointer-events: none;
+  opacity: 0.5;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(0, 0, 0, 0.55) 0 3px,
+    transparent 3px 7px
+  );
+}
+
+/* Secondary sits on a dark fill, where black-on-black hatch would vanish. */
+.btn-command-quiet::after {
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--accent) 60%, transparent) 0 3px,
+    transparent 3px 7px
+  );
+  opacity: 0.65;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-command { transition: none; }
+}
+
+/* ========================================
+   PAGE TRANSITION — exit dim + entrance
+   ========================================
+   Two halves. PageTransition (components/layout) marks <body> the moment a
+   real navigation starts, and the outgoing page eases down to a dim; the
+   template remounts with the new page, lifts the mark and plays the
+   entrance. The 90ms transition delay is the trick: a prefetched navigation
+   that resolves instantly never shows the dim at all. */
+
+.tp-page {
+  animation: tp-page-in 0.4s var(--ease-hud);
+  /* The dim, when body is marked. Delayed so instant navs skip it. */
+  transition: opacity 0.22s ease-out 0.09s, filter 0.22s ease-out 0.09s;
+}
+
+body.tp-navigating .tp-page {
+  opacity: 0.45;
+  filter: saturate(0.72);
+  /* The dimmed page is history — don't let a stray click restart anything. */
+  pointer-events: none;
+}
+
+@keyframes tp-page-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tp-page { animation: none; transition: none; }
+  body.tp-navigating .tp-page { opacity: 1; filter: none; }
 }
 
 /* ========================================

@@ -4,10 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import {
-    Flame, ArrowRight, Clock, User, ChevronLeft, ChevronRight,
-    BookOpenText, Mail, Loader2, Star,
-} from "lucide-react";
+import { Flame, ArrowRight, Clock, User, ChevronLeft, ChevronRight, Loader2, Star } from "lucide-react";
 import toast from "react-hot-toast";
 import { getStorageUrl } from "@/lib/imageUrl";
 import { SECTIONS, SectionKey } from "./sections";
@@ -187,19 +184,42 @@ export default function SectionHub({
         }
     };
 
-    // On a category page the category is the headline and the section is the
-    // kicker under it: GAMING / NEWS. On the section itself the section's own
-    // name splits across the two lines.
-    const [head, ...tail] = pinned
-        ? [currentName, hub?.section.title ?? ""]
-        : (hub?.section.title ?? "").split(" ");
+    // The heading and its line come from the static config, not the hub
+    // endpoint: that endpoint is fetched on the client, so anything read from
+    // it is absent from the server HTML — which is where a crawler looks.
+    // "Gaming — Gaming News" says the same word twice; where the category is
+    // already inside the section's own name, the category alone is the heading
+    // and the line underneath says which section it belongs to.
+    const label = currentName || "This category";
+    const heading = !pinned
+        ? config.title
+        : config.title.toLowerCase().includes(label.toLowerCase())
+            ? label
+            : `${label} — ${config.title}`;
+
+    // One pager, rendered at both ends of the list.
+    const pager = pages && pages.last > 1 && (
+        <span className="flex items-center gap-3">
+            <span className="font-display text-[10.5px] font-bold tabular-nums text-white/30 whitespace-nowrap">
+                {pages.total.toLocaleString()} · page {pages.current} of {pages.last}
+            </span>
+            <span className="flex items-center gap-1.5">
+                <PageButton disabled={page <= 1} onClick={() => setPage((p) => p - 1)} label="Previous page">
+                    <ChevronLeft className="w-4 h-4" />
+                </PageButton>
+                <PageButton disabled={page >= pages.last} onClick={() => setPage((p) => p + 1)} label="Next page">
+                    <ChevronRight className="w-4 h-4" />
+                </PageButton>
+            </span>
+        </span>
+    );
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
             {/* ── the ticker: what has landed lately ── */}
             {hub?.trending.length ? (
                 <div className="border-b border-white/[0.07] bg-white/[0.02]">
-                    <div className="max-w-[1500px] mx-auto px-4 xl:px-6 h-11 flex items-center gap-4 overflow-x-auto scrollbar-none">
+                    <div className="container-page h-11 flex items-center gap-4 overflow-x-auto scrollbar-none">
                         <span className="shrink-0 inline-flex items-center gap-1.5 h-[24px] px-2.5 rounded-[6px] bg-[var(--accent)] font-display text-[9px] font-black uppercase tracking-[0.12em] text-white">
                             <Flame className="w-3 h-3" /> Just in
                         </span>
@@ -218,66 +238,64 @@ export default function SectionHub({
                 </div>
             ) : null}
 
-            <div className="max-w-[1500px] mx-auto px-4 xl:px-6 py-8 grid grid-cols-1 xl:grid-cols-[1fr_324px] gap-6 items-start">
+            <div className="container-page py-8 grid grid-cols-1 xl:grid-cols-[1fr_324px] gap-6 items-start">
                 <div className="min-w-0">
-                    {/* ── masthead + lead story ── */}
-                    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,340px)_1fr] gap-6 items-start">
-                        <div className="relative pl-4">
-                            <span aria-hidden className="absolute left-0 top-1 bottom-1 w-[3px] rounded bg-[var(--accent)]" />
-                            <h1 className="font-display font-black tracking-tight text-[46px] md:text-[58px] leading-[0.86] uppercase">
-                                <span className="block text-white">{head}</span>
-                                {tail.length > 0 && <span className="block text-[var(--accent)]">{tail.join(" ")}</span>}
-                            </h1>
-                            {hub && (
-                                <p className="mt-4 text-[13.5px] font-medium text-white/70">
+                    {/* ── header: says what the page is, then gets out of the way ── */}
+                    <header className="relative pl-4 mb-6">
+                        <span aria-hidden className="absolute left-0 top-1 bottom-1 w-[3px] rounded bg-[var(--accent)]" />
+
+                        <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+                            <div className="min-w-0">
+                                <h1 className="font-display text-[26px] md:text-[30px] font-bold tracking-tight leading-none text-white">
+                                    {heading}
+                                </h1>
+                                <p className="mt-2 text-[13px] text-white/50">
                                     {pinned ? (
                                         <>
-                                            {currentName || "This category"} in{" "}
+                                            Part of{" "}
                                             <Link href={config.path} className="text-[var(--accent)] hover:brightness-110">
-                                                {hub.section.title.toLowerCase()}
+                                                {config.title.toLowerCase()}
                                             </Link>
                                             .
                                         </>
                                     ) : (
-                                        hub.section.line
+                                        config.line
                                     )}
                                 </p>
-                            )}
+                            </div>
 
                             {/* What the section can honestly say about itself. The
                                 mockup offered "50+ experts"; there are six people
                                 writing here, so it says six. */}
                             {hub && (
-                                <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 font-display text-[10.5px] font-bold uppercase tracking-[0.1em] text-white/35">
-                                    <span className="inline-flex items-center gap-1.5">
-                                        <BookOpenText className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                        {(pinned ? current?.count ?? 0 : hub.stats.articles).toLocaleString()} published
-                                    </span>
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 font-display text-[10.5px] font-bold uppercase tracking-[0.1em] text-white/30">
+                                    <span>{(pinned ? current?.count ?? 0 : hub.stats.articles).toLocaleString()} published</span>
                                     {/* Writers and this-month are counted across the
                                         section; quoting them on one category would
                                         credit it with work done elsewhere. */}
                                     {!pinned && (
                                         <>
-                                            <span className="inline-flex items-center gap-1.5">
-                                                <User className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                                {hub.stats.authors} {hub.stats.authors === 1 ? "writer" : "writers"}
-                                            </span>
+                                            <span aria-hidden className="w-1 h-1 rounded-full bg-white/20" />
+                                            <span>{hub.stats.authors} {hub.stats.authors === 1 ? "writer" : "writers"}</span>
                                             {hub.stats.this_month > 0 && (
-                                                <span className="inline-flex items-center gap-1.5">
-                                                    <Clock className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                                    {hub.stats.this_month} this month
-                                                </span>
+                                                <>
+                                                    <span aria-hidden className="w-1 h-1 rounded-full bg-white/20" />
+                                                    <span>{hub.stats.this_month} this month</span>
+                                                </>
                                             )}
                                         </>
                                     )}
                                 </div>
                             )}
                         </div>
+                    </header>
 
+                    {/* ── the lead story, now the full width of the column ── */}
+                    <div>
                         {spotlight ? (
                             <Link
                                 href={`${config.path}/${spotlight.slug}`}
-                                className="group relative block rounded-[14px] overflow-hidden border border-white/[0.07] min-h-[330px]"
+                                className="group relative block rounded-[14px] overflow-hidden border border-white/[0.07] min-h-[300px] lg:min-h-[380px]"
                             >
                                 {spotlight.featured_image_url && (
                                     // eslint-disable-next-line @next/next/no-img-element
@@ -298,11 +316,11 @@ export default function SectionHub({
                                     <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/50">
                                         {shortDate(spotlight.published_at)}
                                     </span>
-                                    <span className="mt-2 block font-display text-[22px] md:text-[26px] font-black text-white leading-tight line-clamp-3">
+                                    <span className="mt-2 block max-w-[820px] font-display text-[24px] md:text-[32px] font-bold text-white leading-tight line-clamp-3">
                                         {spotlight.title}
                                     </span>
                                     {spotlight.excerpt && (
-                                        <span className="mt-2 block text-[12.5px] text-white/55 leading-snug line-clamp-2">
+                                        <span className="mt-2 block max-w-[680px] text-[13px] text-white/55 leading-snug line-clamp-2">
                                             {spotlight.excerpt}
                                         </span>
                                     )}
@@ -312,7 +330,7 @@ export default function SectionHub({
                                 </span>
                             </Link>
                         ) : (
-                            <div className="rounded-[14px] border border-dashed border-white/[0.09] min-h-[330px] grid place-items-center px-6 text-center">
+                            <div className="rounded-[14px] border border-dashed border-white/[0.09] min-h-[300px] lg:min-h-[380px] grid place-items-center px-6 text-center">
                                 <p className="text-[12.5px] text-white/30">
                                     {pinned
                                         ? "Nothing published under this category yet."
@@ -357,26 +375,12 @@ export default function SectionHub({
                             </span>
                         </p>
 
-                        {pages && pages.last > 1 && (
-                            <span className="flex items-center gap-3">
-                                <span className="font-display text-[10.5px] font-bold tabular-nums text-white/30 whitespace-nowrap">
-                                    {pages.total.toLocaleString()} · page {pages.current} of {pages.last}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                    <PageButton disabled={page <= 1} onClick={() => setPage((p) => p - 1)} label="Previous page">
-                                        <ChevronLeft className="w-4 h-4" />
-                                    </PageButton>
-                                    <PageButton disabled={page >= pages.last} onClick={() => setPage((p) => p + 1)} label="Next page">
-                                        <ChevronRight className="w-4 h-4" />
-                                    </PageButton>
-                                </span>
-                            </span>
-                        )}
+                        {pager}
                     </div>
 
                     {isLoading && !articles.length ? (
-                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {Array.from({ length: 8 }).map((_, i) => (
+                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {Array.from({ length: 9 }).map((_, i) => (
                                 <span key={i} className="block h-[300px] rounded-[12px] bg-white/[0.03] animate-pulse" />
                             ))}
                         </div>
@@ -385,11 +389,21 @@ export default function SectionHub({
                             Nothing published under this filter yet.
                         </p>
                     ) : (
-                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {articles.map((a) => (
-                                <ArticleCard key={a.id} article={a} path={config.path} showScore={config.showScore} />
-                            ))}
-                        </div>
+                        <>
+                            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {articles.map((a) => (
+                                    <ArticleCard key={a.id} article={a} path={config.path} showScore={config.showScore} />
+                                ))}
+                            </div>
+
+                            {/* Again at the bottom: after two dozen cards the
+                                controls at the top are a long way back up. */}
+                            {pages && pages.last > 1 && (
+                                <div className="mt-6 pt-5 border-t border-white/[0.07] flex justify-end">
+                                    {pager}
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 
@@ -469,7 +483,7 @@ export default function SectionHub({
                         )}
                     </Panel>
 
-                    <Panel title="Stay in the loop" icon={<Mail className="w-3.5 h-3.5 text-[var(--accent)]" />}>
+                    <Panel title="Stay in the loop">
                         <p className="text-[11.5px] text-white/40 leading-snug mb-3">
                             The bigger stories, sent when there is something worth sending.
                         </p>
@@ -536,7 +550,7 @@ function PageButton({
             onClick={onClick}
             disabled={disabled}
             aria-label={label}
-            className="w-7 h-7 rounded-[6px] bg-white/[0.05] text-white/50 hover:text-white disabled:opacity-25 disabled:hover:text-white/50 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-[7px] bg-[var(--accent)] text-white hover:brightness-110 disabled:bg-white/[0.05] disabled:text-white/25 flex items-center justify-center transition-all"
         >
             {children}
         </button>

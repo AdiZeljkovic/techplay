@@ -208,7 +208,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                             "absolute z-50 bg-[var(--surface-2)] backdrop-blur-xl border border-white/[0.07] rounded-xl shadow-2xl overflow-hidden",
                             isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[min(400px,calc(100vw-2rem))]"
                         )}
-                        style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(252,65,0,0.1)" }}
+                        style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(220, 20, 60,0.1)" }}
                     >
                         <div className="h-[2px] bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent w-full" />
                         <div className="max-h-[400px] overflow-y-auto">

@@ -423,7 +423,7 @@ export default function ThreadPage() {
     if (isLoading) {
         return (
             <div className="min-h-screen bg-[#060810]">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
+                <div className="container-page py-8">
                     <div className="animate-pulse space-y-6">
                         <div className="h-8 bg-[#0D1117] rounded-lg w-1/3" />
                         <div className="h-48 bg-[#0D1117] rounded-2xl" />
@@ -478,7 +478,7 @@ export default function ThreadPage() {
         <div className="min-h-screen bg-[#060810]">
             {/* Header */}
             <div className="bg-[#0B0E1A] border-b border-[#1A2030]">
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-6">
+                <div className="container-page py-6">
                     {/* Breadcrumb */}
                     <div className="flex items-center gap-2 text-sm text-[#6B7280] mb-4">
                         <Link href="/forum" className="hover:text-tp-accent transition-colors flex items-center gap-1">
@@ -597,7 +597,7 @@ export default function ThreadPage() {
             </div>
 
             {/* Main Content */}
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-8">
+            <div className="container-page py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Thread Content & Replies */}
                     <div className="lg:col-span-3 space-y-6">

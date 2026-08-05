@@ -5,10 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import {
-    ArrowLeft, Rocket, Save, Search, Plus, X, GripVertical, Loader2, Trash2,
-    Eye, MessageSquare, AlertTriangle, Heart, Bookmark, Lightbulb, Gamepad2, Trophy,
-} from "lucide-react";
+import { ArrowLeft, Rocket, Save, Search, Plus, X, GripVertical, Loader2, Eye, MessageSquare, AlertTriangle, Heart, Gamepad2, Trophy } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import type { GameListDetail, GameListItemEntry, GameListPreview, ListType } from "@/lib/types/profile";
 
@@ -456,7 +453,7 @@ export default function ListEditor({
                         <PreviewCard form={form} list={list} items={items} username={username} />
                     </Panel>
 
-                    <Panel title="List Tips" icon={<Lightbulb className="w-3.5 h-3.5 text-[var(--accent)]" />} bodyClassName="p-4">
+                    <Panel title="List Tips" bodyClassName="p-4">
                         <ul className="space-y-2.5">
                             {TIPS.map((tip) => (
                                 <li key={tip} className="flex gap-2.5 text-[12px] text-white/50 leading-snug">

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import HubPage from "@/app/games/_hub/HubPage";
-import { getApiUrl } from "@/lib/api";
+import GameDatabaseHub from "@/components/games/GameDatabaseHub";
+import { genreFilter } from "@/lib/gameFacets";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -136,8 +136,6 @@ export default async function GenreHubPage({ params }: { params: Promise<{ genre
     const meta = getMeta(genre);
     const url = `https://techplay.gg/games/genre/${genre}`;
 
-    const initialData = await fetch(`${getApiUrl()}/games/hub/genre/${genre}?page=1&sort=rating`, { next: { revalidate: 600 } })
-        .then((r) => r.ok ? r.json() : null).catch(() => null);
 
     const breadcrumb = {
         "@context": "https://schema.org",
@@ -161,7 +159,7 @@ export default async function GenreHubPage({ params }: { params: Promise<{ genre
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPage) }} />
-            <HubPage type="genre" value={genre} title={meta.h1} description={meta.description} initialData={initialData} />
+            <GameDatabaseHub preset={{ genre: genreFilter(genre) }} heading={meta.h1} intro={meta.description} />
         </>
     );
 }

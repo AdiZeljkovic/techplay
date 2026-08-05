@@ -38,11 +38,11 @@ export default function AuthorHeader({ author, stats }: AuthorHeaderProps) {
             </div>
 
             {/* Profile content */}
-            <div className="max-w-[1320px] mx-auto px-4 xl:px-8 -mt-20 pb-8 relative z-10">
+            <div className="container-page -mt-20 pb-8 relative z-10">
                 <div className="flex flex-col md:flex-row gap-6 items-start md:items-end">
                     {/* Avatar */}
                     <div className="shrink-0">
-                        <div className="w-28 h-28 md:w-36 md:h-36 rounded-2xl border-2 border-[var(--accent)]/40 overflow-hidden bg-[#1A1F26] shadow-[0_0_40px_rgba(252,65,0,0.15)]">
+                        <div className="w-28 h-28 md:w-36 md:h-36 rounded-2xl border-2 border-[var(--accent)]/40 overflow-hidden bg-[#1A1F26] shadow-[0_0_40px_rgba(220, 20, 60,0.15)]">
                             {author.avatar_url ? (
                                 <Image
                                     src={author.avatar_url}

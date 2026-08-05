@@ -5,12 +5,12 @@
         <tr>
             {{-- Icon Box (White Square with Orange Text) --}}
             <td width="40" height="40" bgcolor="#ffffff" style="background-color: #ffffff; border-radius: 8px; text-align: center; vertical-align: middle; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-                <span style="color: #FC4100; font-family: Arial, sans-serif; font-weight: bold; font-size: 20px; line-height: 1;">TP</span>
+                <span style="color: #DC143C; font-family: Arial, sans-serif; font-weight: bold; font-size: 20px; line-height: 1;">TP</span>
             </td>
             <td width="10"></td>
             {{-- Text --}}
             <td style="vertical-align: middle;">
-                <span class="logo-tech" style="color: #ffffff; font-weight: 800; font-size: 26px; font-family: 'Arial Black', Arial, sans-serif; line-height: 1;">TECH</span><span class="logo-play" style="color: #FC4100; font-weight: 800; font-size: 26px; font-family: 'Arial Black', Arial, sans-serif; line-height: 1;">PLAY</span>
+                <span class="logo-tech" style="color: #ffffff; font-weight: 800; font-size: 26px; font-family: 'Arial Black', Arial, sans-serif; line-height: 1;">TECH</span><span class="logo-play" style="color: #DC143C; font-weight: 800; font-size: 26px; font-family: 'Arial Black', Arial, sans-serif; line-height: 1;">PLAY</span>
             </td>
         </tr>
     </table>

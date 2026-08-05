@@ -17,7 +17,7 @@ export default function ArticleFooterMessage() {
         { name: "YouTube", url: settings.youtube_url, icon: Youtube, color: "#FF0000" },
         { name: "Instagram", url: settings.instagram_url, icon: Instagram, color: "#E4405F" },
         { name: "Facebook", url: settings.facebook_url, icon: Facebook, color: "#1877F2" },
-        { name: "TechPlay.gg", url: "https://techplay.gg", icon: Globe, color: "#FC4100" },
+        { name: "TechPlay.gg", url: "https://techplay.gg", icon: Globe, color: "#DC143C" },
     ].filter(link => link.url);
 
     return (
@@ -25,8 +25,8 @@ export default function ArticleFooterMessage() {
             {/* Main Footer Card */}
             <div className="relative overflow-hidden bg-[#0B0E14]/80 backdrop-blur-md border border-[#161B22] rounded-[24px] p-8 md:p-10 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
                 {/* Orange accent hairline + glow */}
-                <div className="absolute top-0 left-[25%] w-[50%] h-[1px] bg-gradient-to-r from-transparent via-[#FC4100]/40 to-transparent" />
-                <div className="absolute -top-[120px] left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-[#FC4100]/10 blur-[90px] rounded-full pointer-events-none" />
+                <div className="absolute top-0 left-[25%] w-[50%] h-[1px] bg-gradient-to-r from-transparent via-[#DC143C]/40 to-transparent" />
+                <div className="absolute -top-[120px] left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-[#DC143C]/10 blur-[90px] rounded-full pointer-events-none" />
 
                 {/* Stay Connected Section */}
                 <div className="text-center mb-8 relative z-10">

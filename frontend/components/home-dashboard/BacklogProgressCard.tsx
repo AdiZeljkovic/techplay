@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Gamepad2, Wand2, ListPlus, ArrowRight, Swords } from "lucide-react";
+import { Gamepad2, Wand2, ListPlus, ArrowRight } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import RingMeter from "@/components/ui/RingMeter";
@@ -30,7 +30,6 @@ export default function BacklogProgressCard({
         return (
             <Panel
                 title="Campaign Progress"
-                icon={<Swords className="w-4 h-4 text-[var(--accent)]" />}
                 className="h-full flex flex-col"
                 bodyClassName="p-5 flex-1 flex flex-col"
             >
@@ -47,7 +46,6 @@ export default function BacklogProgressCard({
     return (
         <Panel
             title="Campaign Progress"
-            icon={<Swords className="w-4 h-4 text-[var(--accent)]" />}
             variant="console"
             className="h-full flex flex-col"
             bodyClassName="p-5 flex-1 flex flex-col"

@@ -110,7 +110,7 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
             />
 
             {/* ── MAIN LAYOUT: Left back bar + content + right sidebar ── */}
-            <div className="w-full max-w-[1500px] mx-auto px-4 xl:px-8 pt-4 pb-8 flex gap-8">
+            <div className="w-full container-page pt-4 pb-8 flex gap-8">
 
                 {/* Left Sticky Bar (back) */}
                 <aside className="hidden lg:flex flex-col gap-6 sticky top-[140px] shrink-0 h-[max-content]">

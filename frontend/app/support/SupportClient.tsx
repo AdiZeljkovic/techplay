@@ -43,7 +43,7 @@ export default function SupportPage() {
                     icon={Heart}
                 />
 
-                <div className="max-w-[1320px] mx-auto px-4 xl:px-0 py-20">
+                <div className="container-page py-20">
                     {/* Intro */}
                     <div className="max-w-3xl mx-auto text-center mb-20 space-y-6">
                         <h2 className="text-3xl md:text-5xl font-bold text-white">

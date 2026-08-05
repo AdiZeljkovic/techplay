@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import HubPage from "@/app/games/_hub/HubPage";
-import { getApiUrl } from "@/lib/api";
+import GameDatabaseHub from "@/components/games/GameDatabaseHub";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -57,8 +56,6 @@ export default async function YearHubPage({ params }: { params: Promise<{ year: 
     const meta = getMeta(year);
     const url = `https://techplay.gg/games/year/${year}`;
 
-    const initialData = await fetch(`${getApiUrl()}/games/hub/year/${year}?page=1&sort=rating`, { next: { revalidate: 600 } })
-        .then((r) => r.ok ? r.json() : null).catch(() => null);
 
     const breadcrumb = {
         "@context": "https://schema.org",
@@ -82,7 +79,7 @@ export default async function YearHubPage({ params }: { params: Promise<{ year: 
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPage) }} />
-            <HubPage type="year" value={year} title={meta.h1} description={meta.description} initialData={initialData} />
+            <GameDatabaseHub preset={{ yearFrom: Number(year), yearTo: Number(year) }} heading={meta.h1} intro={meta.description} />
         </>
     );
 }

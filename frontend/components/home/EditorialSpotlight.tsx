@@ -2,19 +2,19 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronRight, Clock, Newspaper, Star, Cpu, BookOpen, Film, User as UserIcon } from "lucide-react";
+import { ChevronRight, Clock, User as UserIcon } from "lucide-react";
 import { Article } from "@/types";
 import { articleHref } from "@/lib/articleHref";
 
-const TYPE_META: Record<string, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
-    news: { label: "News", icon: Newspaper },
-    reviews: { label: "Reviews", icon: Star },
-    tech: { label: "Hardware", icon: Cpu },
-    guides: { label: "Guides", icon: BookOpen },
-    videos: { label: "Videos", icon: Film },
+/** What each vertical is called. The name carries it; an icon beside it only repeated the word. */
+const TYPE_LABEL: Record<string, string> = {
+    news: "News",
+    reviews: "Reviews",
+    tech: "Hardware",
+    guides: "Guides",
 };
 
-const typeMeta = (a: Article) => TYPE_META[a.category?.type ?? "news"] ?? TYPE_META.news;
+const typeLabel = (a: Article) => TYPE_LABEL[a.category?.type ?? "news"] ?? TYPE_LABEL.news;
 
 /** Round-robin across the verticals so the rail never turns into one long news list. */
 function interleave(...lists: Article[][]): Article[] {
@@ -27,11 +27,9 @@ function interleave(...lists: Article[][]): Article[] {
 }
 
 function Kicker({ article, className = "" }: { article: Article; className?: string }) {
-    const { label, icon: Icon } = typeMeta(article);
     return (
-        <span className={`inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[var(--accent)] ${className}`}>
-            <Icon className="w-3 h-3" />
-            {label}
+        <span className={`inline-flex items-center text-[10px] font-black uppercase tracking-widest text-[var(--accent)] ${className}`}>
+            {typeLabel(article)}
         </span>
     );
 }
@@ -105,7 +103,7 @@ function SideCard({ article }: { article: Article }) {
     return (
         <Link
             href={articleHref(article)}
-            className="group relative flex gap-4 items-stretch rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
+            className="group relative flex-1 flex gap-4 items-stretch rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
         >
             <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--accent)] scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300" />
             <div className="relative w-[120px] sm:w-[132px] shrink-0 overflow-hidden">
@@ -119,7 +117,7 @@ function SideCard({ article }: { article: Article }) {
                     />
                 )}
             </div>
-            <div className="flex-1 min-w-0 py-3.5 pr-4">
+            <div className="flex-1 min-w-0 flex flex-col justify-center py-3.5 pr-4">
                 <Kicker article={article} />
                 <p className="mt-1.5 font-display text-[14px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                     {article.title}
@@ -135,7 +133,7 @@ function GridCard({ article }: { article: Article }) {
     return (
         <Link
             href={articleHref(article)}
-            className="group flex flex-col rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
+            className="group h-full flex flex-col rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
         >
             <div className="relative aspect-[16/9] overflow-hidden bg-[var(--fill-1)]">
                 {article.featured_image_url && (
@@ -194,7 +192,7 @@ export default function EditorialSpotlight({ news, reviews, tech }: { news: Arti
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                 <div className="lg:col-span-7"><FeaturedCard article={featured} /></div>
-                <div className="lg:col-span-5 flex flex-col gap-5">
+                <div className="lg:col-span-5 flex flex-col gap-5 min-h-[340px] lg:min-h-[420px]">
                     {side.map((a) => <SideCard key={a.slug} article={a} />)}
                 </div>
             </div>
@@ -202,7 +200,7 @@ export default function EditorialSpotlight({ news, reviews, tech }: { news: Arti
             {grid.length > 0 && (
                 <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     {grid.map((a, i) => (
-                        <div key={a.slug} className={`tp-fade-up tp-d${Math.min(6, i + 1)}`}>
+                        <div key={a.slug} className={`h-full tp-fade-up tp-d${Math.min(6, i + 1)}`}>
                             <GridCard article={a} />
                         </div>
                     ))}

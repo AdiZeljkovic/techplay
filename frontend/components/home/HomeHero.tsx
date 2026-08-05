@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, UserPlus, Compass } from "lucide-react";
+import { Search } from "lucide-react";
 import { Article } from "@/types";
 import HeroSlider from "./HeroSlider";
 
@@ -83,18 +83,21 @@ export default function HomeHero({ heroArticles }: { heroArticles: Article[] }) 
                         </div>
                     </form>
 
-                    <div className="mt-6 flex flex-wrap items-center gap-3">
+                    {/* Same 440px as the search field above, split in two — the
+                        pair reads as one block with it rather than a shorter
+                        row starting under it. */}
+                    <div className="mt-6 max-w-[440px] flex flex-wrap sm:flex-nowrap items-center gap-3">
                         <Link
                             href="/register"
-                            className="inline-flex items-center gap-2 px-7 h-12 rounded-[var(--radius-card)] bg-[var(--accent)] text-white font-display text-[13px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)]"
+                            className="btn-command flex-1 inline-flex items-center justify-center gap-2 px-5 h-12 bg-[var(--accent)] text-white font-display text-[13px] font-bold uppercase tracking-wider whitespace-nowrap hover:bg-[var(--accent-hover)] transition-colors duration-300"
                         >
-                            <UserPlus className="w-4 h-4" /> Create Your Profile
+                            Create Your Profile
                         </Link>
                         <Link
                             href="/games"
-                            className="inline-flex items-center gap-2 px-7 h-12 rounded-[var(--radius-card)] bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-hi)] font-display text-[13px] font-bold uppercase tracking-wider hover:bg-[var(--fill-3)] transition-colors duration-300"
+                            className="btn-command btn-command-quiet flex-1 inline-flex items-center justify-center gap-2 px-5 h-12 bg-[var(--fill-2)] text-[var(--ink-hi)] font-display text-[13px] font-bold uppercase tracking-wider whitespace-nowrap hover:bg-[var(--fill-3)] transition-colors duration-300"
                         >
-                            <Compass className="w-4 h-4" /> Explore Games
+                            Explore Games
                         </Link>
                     </div>
 

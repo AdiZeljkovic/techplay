@@ -183,6 +183,58 @@ Obrisano: `ProfileHeader.tsx`, `ProfileTabs.tsx`, `OwnProfileShell.tsx`.
 
 ---
 
+## Dizajn sistem (08/2026)
+
+Sve živi u `app/globals.css`. Nijedna od ovih vrijednosti se ne piše ručno po
+komponentama — postoji token, čita se token.
+
+**Fontovi** — `Archivo` za naslove, `Inter` za tekst, oba preko `next/font`.
+„Archivo SemiCondensed" nije zasebna familija nego Archivo na 87,5% širine, pa
+je `font-stretch: 87.5%` pinovan na `.font-display` klasu; time pokriva svih
+100+ mjesta bez diranja ijednog. Archivo ide do težine 900, pa `font-black`
+konačno crta pravi Black.
+
+**Boje** — crimson rampa:
+
+| Token | Vrijednost | Uloga |
+|---|---|---|
+| `--accent` | `#DC143C` | ispune: dugmad, čipovi, badgevi |
+| `--accent-hover` / `--accent-ink` | `#FF4D6A` | hover, i accent obojen **tekst** |
+| `--accent-deep` | `#4A0D1A` | glow |
+
+Podjela nije kozmetička: `#DC143C` na `--surface-0` daje 4,04:1, ispod praga
+od 4,5:1 za sitan tekst, dok je bijelo *na* njemu 4,99:1. Zato primarna drži
+ispune, a `--accent-ink` (6,26:1) postoji za accent obojene natpise.
+
+**Radijusi — naoštrena ljestvica.** Panel 8 / kartica 5 / unutrašnji 3,
+stegnuto sa 16/12/8. Tailwind v4 čita `rounded-*` utility klase iz
+`--radius-*` tokena, pa je redefinisanje ljestvice pomjerilo i svih 551
+mjesto pisano kao `rounded-xl`/`rounded-lg` bez ijedne izmjene fajla.
+
+`rounded-full` je **namjerno netaknut**: od 662 upotrebe 236 su stvarni
+krugovi (avatari, tačkice, ringovi) i 32 progress trake. Kvadriranje njih ne
+bi čitalo kao oštro nego kao pokvareno.
+
+**Prelaz stranice** — dvije polovine. `components/layout/PageTransition`
+označi `<body>` kad počne stvarna navigacija i odlazeća stranica se prigasi;
+`app/template.tsx` se remontira s novom, skine oznaku i pusti ulaz. Prigašenje
+ima 90ms kašnjenja, pa prefetchana navigacija koja se riješi trenutno nikad ne
+pokaže dim. Sve je CSS na kompozitoru i gasi se uz `prefers-reduced-motion`.
+
+**Command dugme** — `.btn-command` (i `Button variant="command"`): dva ugla
+odsječena pod 45° i hazard šrafura. Rezervisano za **jednu odlučujuću akciju
+po površini**; ponovljeno na svakoj kontroli prestaje išta značiti. Zasjek je
+`clip-path`, ne border — border ne može pratiti odsječen ugao — i isti clip
+reže šrafuru, pa ona može biti običan overlay. Skalira s visinom dugmeta.
+
+**Brend assets** — `techplay-logo.png` (wordmark), `techplay-mark.png` (sam
+znak), `logo.png` (JSON-LD Organization), pun set favicona i `quicklinks/*`
+ikone naslovnice. Izvori su transparentni PNG-ovi; obrada ih normalizuje na
+`--accent` i kropuje na najveću povezanu grupu tinte, jer izvozi nose i film
+alfe preko cijelog platna i pokoju usamljenu liniju uz ivicu.
+
+---
+
 ## Što je hardkodirano (treba provjeriti)
 
 - `lib/categories.ts` — kategorije su vjerovatno hardkodirane + API

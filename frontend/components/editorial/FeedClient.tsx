@@ -4,10 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import {
-    Clock, User, ChevronLeft, ChevronRight, Star, Sparkles,
-    Layers, Info, ArrowRight,
-} from "lucide-react";
+import { Clock, User, ChevronLeft, ChevronRight, Star, Sparkles, Info } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { getStorageUrl } from "@/lib/imageUrl";
 
@@ -111,7 +108,7 @@ export default function FeedClient() {
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
-            <div className="max-w-[1500px] mx-auto px-4 xl:px-6 py-8">
+            <div className="container-page py-8">
                 {/* ── masthead ── */}
                 <div className="relative pl-4">
                     <span aria-hidden className="absolute left-0 top-1 bottom-1 w-[3px] rounded bg-[var(--accent)]" />
@@ -126,10 +123,10 @@ export default function FeedClient() {
 
                 {/* ── which feed ── */}
                 <div className="mt-7 flex flex-wrap items-center gap-2">
-                    <Tab active={tab === "latest"} onClick={() => switchTab("latest")} icon={<Layers className="w-3.5 h-3.5" />}>
+                    <Tab active={tab === "latest"} onClick={() => switchTab("latest")}>
                         Latest
                     </Tab>
-                    <Tab active={tab === "you"} onClick={() => switchTab("you")} icon={<Sparkles className="w-3.5 h-3.5" />}>
+                    <Tab active={tab === "you"} onClick={() => switchTab("you")}>
                         For you
                     </Tab>
 
@@ -226,17 +223,17 @@ export default function FeedClient() {
 /* ── pieces ───────────────────────────────────────────────────────────── */
 
 function Tab({
-    active, onClick, icon, children,
-}: { active: boolean; onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
+    active, onClick, children,
+}: { active: boolean; onClick: () => void; children: React.ReactNode }) {
     return (
         <button
             onClick={onClick}
             aria-pressed={active}
-            className={`inline-flex items-center gap-2 h-10 px-5 rounded-[10px] font-display text-[11px] font-black uppercase tracking-[0.1em] transition-colors ${
+            className={`inline-flex items-center h-10 px-5 rounded-[10px] font-display text-[11px] font-black uppercase tracking-[0.1em] transition-colors ${
                 active ? "bg-[var(--accent)] text-white" : "bg-white/[0.04] text-white/50 hover:text-white"
             }`}
         >
-            {icon} {children}
+            {children}
         </button>
     );
 }

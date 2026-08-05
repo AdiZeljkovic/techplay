@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, X, AlertCircle, BookOpen, Home, Swords, Target } from "lucide-react";
+import { Check, X, AlertCircle, BookOpen, Home, Target } from "lucide-react";
 import { MidnightTheme, glassCard, QualityColors } from "@/lib/wow-midnight-theme";
 
 interface ChecklistItem {

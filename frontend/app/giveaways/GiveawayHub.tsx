@@ -4,10 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import {
-    Gift, Gem, Trophy, Users, Timer, ArrowRight, Lock, Check,
-    Globe, ShieldCheck, Sparkles, ListChecks,
-} from "lucide-react";
+import { Gift, Gem, Trophy, Users, Timer, ArrowRight, Lock, Check, Globe, Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
@@ -162,7 +159,7 @@ export default function GiveawayHub() {
             <section className="relative overflow-hidden border-b border-white/[0.07]">
                 <span aria-hidden className="absolute inset-0 bg-[radial-gradient(85%_130%_at_18%_0%,color-mix(in_srgb,var(--accent)_22%,transparent),transparent_62%)]" />
 
-                <div className="relative z-10 max-w-[1500px] mx-auto px-4 xl:px-6 py-11">
+                <div className="relative z-10 container-page py-11">
                     <h1 className="font-display font-black tracking-tight text-[44px] md:text-[60px] leading-none text-white">
                         GIVEAWAYS
                     </h1>
@@ -180,7 +177,7 @@ export default function GiveawayHub() {
                 </div>
             </section>
 
-            <div className="max-w-[1500px] mx-auto px-4 xl:px-6 py-6 grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5 items-start">
+            <div className="container-page py-6 grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5 items-start">
                 <div className="min-w-0">
                     {/* ── filter row ── */}
                     <div className="flex flex-wrap items-center gap-2 mb-5">
@@ -255,7 +252,7 @@ export default function GiveawayHub() {
 
                 {/* ── right rail ── */}
                 <aside className="space-y-4 xl:sticky xl:top-4">
-                    <Panel title="How it works" icon={<ListChecks className="w-3.5 h-3.5 text-[var(--accent)]" />}>
+                    <Panel title="How it works">
                         <ol className="space-y-3">
                             {[
                                 { t: "Find one you want", d: "Browse what is running and pick your prizes." },
@@ -275,7 +272,7 @@ export default function GiveawayHub() {
                         </ol>
                     </Panel>
 
-                    <Panel title="Recent winners" icon={<Trophy className="w-3.5 h-3.5 text-[var(--accent)]" />}>
+                    <Panel title="Recent winners">
                         {hub?.recent_winners.length ? (
                             <div className="space-y-3">
                                 {hub.recent_winners.map((w) => (
@@ -304,7 +301,7 @@ export default function GiveawayHub() {
                         )}
                     </Panel>
 
-                    <Panel title="Your entries" icon={<ShieldCheck className="w-3.5 h-3.5 text-[var(--accent)]" />}>
+                    <Panel title="Your entries">
                         {!user ? (
                             <p className="text-[11.5px] text-white/30">
                                 <Link href="/login" className="text-[var(--accent)] hover:brightness-110">Sign in</Link>{" "}
@@ -350,11 +347,11 @@ function Tally({ value, label }: { value: number; label: string }) {
     );
 }
 
-function Panel({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+function Panel({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <div className="rounded-[13px] border border-white/[0.07] bg-white/[0.02] p-4">
-            <p className="flex items-center gap-2 mb-3 font-display text-[10px] font-black uppercase tracking-[0.14em] text-white">
-                {icon} {title}
+            <p className="mb-3 font-display text-[10px] font-black uppercase tracking-[0.14em] text-white">
+                {title}
             </p>
             {children}
         </div>

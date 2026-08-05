@@ -2068,7 +2068,7 @@ textarea:focus-visible {
                                 @click="selectMention(item)" @mouseenter="mentionIndex = idx">
                                 <template x-if="item.type === 'broadcast'">
                                     <div class="mention-item-avatar"
-                                        style="background: var(--tp-accent, #FC4100); font-size: 0.7rem;">
+                                        style="background: var(--tp-accent, #DC143C); font-size: 0.7rem;">
                                         <span x-text="item.username === 'channel' ? '📢' : '👋'"></span>
                                     </div>
                                 </template>
