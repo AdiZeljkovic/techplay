@@ -104,7 +104,7 @@ export default function Footer() {
 
                     {/* Brand column */}
                     <div className="flex flex-col">
-                        <Link href="/" className="flex flex-col gap-2 group mb-5 w-fit" aria-label="TechPlay — home">
+                        <Link href="/" className="group mb-5 w-fit" aria-label="TechPlay — home">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src="/techplay-logo.png"
@@ -113,7 +113,6 @@ export default function Footer() {
                                 height={32}
                                 className="h-[32px] w-auto group-hover:brightness-110 transition-[filter]"
                             />
-                            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--ink-low)]">Gaming Portal</span>
                         </Link>
 
                         <p className="text-[13px] text-[var(--ink-low)] leading-relaxed mb-6 max-w-[280px]">
@@ -191,7 +190,7 @@ export default function Footer() {
                 <div className="container-page py-4 flex flex-col lg:flex-row items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                         <p className="text-[12px] text-[var(--ink-faint)]">
-                            © {new Date().getFullYear()} TechPlay Gaming Portal
+                            © {new Date().getFullYear()} TechPlay
                         </p>
                         <span aria-hidden className="hidden sm:block w-px h-3 bg-[var(--line-strong)]" />
                         {LEGAL.map((l) => (

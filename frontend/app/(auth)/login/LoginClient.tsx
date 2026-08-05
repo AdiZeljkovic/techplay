@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { Gamepad2, Shield, Mail, RefreshCw, Zap, Trophy, MessageSquare, Gift, ChevronsRight } from "lucide-react";
+import { Shield, Mail, RefreshCw, Zap, Trophy, MessageSquare, Gift, ChevronsRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Turnstile from "@/components/ui/Turnstile";
 import axios from "@/lib/axios";
@@ -35,14 +35,9 @@ function BrandPanel() {
             <div className="absolute bottom-5 right-5 w-6 h-6 border-b-2 border-r-2 border-[var(--accent)]/40" />
 
             {/* Logo */}
-            <Link href="/" className="relative z-10 flex items-center gap-3 group w-max">
-                <div className="w-10 h-10 bg-[var(--accent)] rounded-lg flex items-center justify-center shadow-lg group-hover:bg-[var(--accent-hover)] transition-colors">
-                    <Gamepad2 className="w-5 h-5 text-white" strokeWidth={2} />
-                </div>
-                <div className="flex flex-col leading-none">
-                    <span className="font-display font-bold text-[16px] text-white tracking-tight leading-none">TECHPLAY</span>
-                    <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-[var(--ink-low)] mt-[3px]">GAMING PORTAL</span>
-                </div>
+<Link href="/" className="relative z-10 flex items-center group w-max" aria-label="TechPlay — home">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/techplay-logo.png" alt="TechPlay" width={156} height={26} className="h-[26px] w-auto group-hover:brightness-110 transition-[filter]" />
             </Link>
 
             {/* Middle */}
@@ -240,11 +235,9 @@ export default function LoginClient() {
                 {/* Form side */}
                 <div className="relative p-8 md:p-10 lg:p-12">
                     {/* Mobile mini-logo */}
-                    <Link href="/" className="lg:hidden flex items-center gap-2.5 mb-8 w-max">
-                        <div className="w-9 h-9 bg-[var(--accent)] rounded-lg flex items-center justify-center">
-                            <Gamepad2 className="w-4.5 h-4.5 text-white" strokeWidth={2} />
-                        </div>
-                        <span className="font-display font-bold text-[15px] text-[var(--ink-hi)] tracking-tight">TECHPLAY</span>
+                    <Link href="/" className="lg:hidden flex items-center mb-8 w-max" aria-label="TechPlay — home">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/techplay-logo.png" alt="TechPlay" width={144} height={24} className="h-[24px] w-auto" />
                     </Link>
 
                     <div className="mb-8">

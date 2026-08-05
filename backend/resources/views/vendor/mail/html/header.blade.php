@@ -11,7 +11,6 @@
             {{-- Text --}}
             <td style="vertical-align: middle;">
                 <span class="logo-tech" style="color: #ffffff; font-weight: 800; font-size: 26px; font-family: 'Arial Black', Arial, sans-serif; line-height: 1;">TECH</span><span class="logo-play" style="color: #FC4100; font-weight: 800; font-size: 26px; font-family: 'Arial Black', Arial, sans-serif; line-height: 1;">PLAY</span>
-                <div style="font-size: 10px; color: #94a3b8; font-family: Arial, sans-serif; letter-spacing: 2px; text-transform: uppercase;">Gaming Portal</div>
             </td>
         </tr>
     </table>

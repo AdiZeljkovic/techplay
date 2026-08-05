@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Mail, RefreshCw, CheckCircle, Gamepad2 } from "lucide-react";
+import { Mail, RefreshCw, CheckCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 
@@ -70,11 +70,9 @@ export default function VerifyEmailPage() {
     return (
         <div className="min-h-screen flex items-center justify-center px-4 py-12">
             <div className="w-full max-w-md">
-                <Link href="/" className="flex items-center gap-2.5 mb-8 w-max mx-auto">
-                    <div className="w-9 h-9 bg-[var(--accent)] rounded-lg flex items-center justify-center">
-                        <Gamepad2 className="w-4 h-4 text-white" strokeWidth={2} />
-                    </div>
-                    <span className="font-display font-bold text-[15px] text-[var(--ink-hi)] tracking-tight">TECHPLAY</span>
+                <Link href="/" className="flex items-center mb-8 w-max mx-auto" aria-label="TechPlay — home">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/techplay-logo.png" alt="TechPlay" width={150} height={25} className="h-[25px] w-auto" />
                 </Link>
 
                 <div className="rounded-[24px] overflow-hidden border border-[var(--line)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-[var(--surface-1)]">
