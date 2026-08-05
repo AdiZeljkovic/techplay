@@ -33,7 +33,6 @@ const NAV = [
         links: [
             { name: "News",         href: "/news" },
             { name: "Reviews",      href: "/reviews" },
-            { name: "Videos",       href: "/videos" },
             { name: "Guides",       href: "/guides" },
             { name: "Hardware Lab", href: "/hardware" },
             { name: "GTA 6 Hub",    href: "/gta6" },

@@ -596,7 +596,7 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
     { name: "Feed", href: "/latest", activePaths: ["/latest"] },
     {
         name: "Discover", href: "/news", hasDropdown: true,
-        activePaths: ["/news", "/reviews", "/hardware", "/videos", "/guides"],
+        activePaths: ["/news", "/reviews", "/hardware", "/guides"],
         columns: [
             { title: "News", href: "/news", items: [
                 { name: "Gaming",      href: "/news/gaming" },
@@ -619,9 +619,8 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
                 { name: "Guides",     href: "/hardware/guides" },
                 { name: "Tech News",  href: "/hardware/news" },
             ]},
-            { title: "Watch & Learn", href: "/videos", items: [
-                { name: "Videos", href: "/videos" },
-                { name: "Guides", href: "/guides" },
+            { title: "Guides", href: "/guides", items: [
+                { name: "All Guides", href: "/guides" },
             ]},
         ],
     },

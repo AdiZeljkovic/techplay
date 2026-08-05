@@ -96,9 +96,6 @@ class CommentResource extends Resource
                         'App\\Models\\Article' => $record->commentable_id
                             ? route('filament.admin.resources.news-articles.edit', $record->commentable_id)
                             : null,
-                        'App\\Models\\Video' => $record->commentable_id
-                            ? route('filament.admin.resources.videos.edit', $record->commentable_id)
-                            : null,
                         default => null,
                     })
                     ->openUrlInNewTab(),

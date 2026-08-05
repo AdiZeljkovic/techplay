@@ -62,18 +62,17 @@
 
 ---
 
-## Videos
+## Videos — UKLONJENO 08/2026
 
-**Status:** COMPLETE
+**Status:** REMOVED
 
-**Opis:** Video embeds (YouTube/Twitch vjerovatno), listing i detalj.
+Sekcija je stajala u navigaciji s nula redova u tabeli. Uklonjeni su stranica,
+API rute, `VideoController`, `Video` model, `VideoObserver`, `VideoPublished`,
+`VideoResource` u adminu i `sitemap-videos.xml`. Tabela `videos` je ostavljena
+netaknuta — brisanje je nepovratno, a prazna tabela ne smeta.
 
-**Frontend:** `app/videos/`, `components/`
-**Backend:** `VideoController`, `Video` model, `VideoObserver`
-**Admin:** `VideoResource`
-**Database:** `videos`
-**API:** `GET /videos`, `GET /videos/{slug}`
-**Napomene:** Real-time (`VideoPublished`). Format embed URL-a — UNKNOWN.
+Ovdje je živio i jedini preostali Privée blok (logo, App Store linkovi); otišao
+je s njom.
 
 ---
 
@@ -198,7 +197,7 @@ tuđi ispad nije naš ispad — test to i tvrdi (`Http::preventStrayRequests`).
 
 **Status:** COMPLETE
 
-**Opis:** Polymorphic komentari na news, reviews, guides, videos. Voting, nesting.
+**Opis:** Polymorphic komentari na news, reviews i guides. Voting, nesting.
 
 **Frontend:** `components/comments/`
 **Backend:** `CommentController`, `Comment` model, `CommentObserver`

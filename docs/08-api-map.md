@@ -10,7 +10,7 @@
 
 | Metoda | Ruta | Controller::Metoda | Auth | Opis |
 |--------|------|--------------------|------|------|
-| GET | `/system/status` | SystemController::status | - | Maintenance mode status |
+| GET | `/system/status` | SystemController::status | - | Health check. Vraća i `maintenance_mode`, ali ga od 08/2026 niko ne čita — frontend middleware je uklonjen |
 
 ---
 
@@ -77,8 +77,6 @@
 
 | Metoda | Ruta | Controller::Metoda | Auth | Opis |
 |--------|------|--------------------|------|------|
-| GET | `/videos` | VideoController::index | - | Lista videa |
-| GET | `/videos/{slug}` | VideoController::show | - | Detalj videa |
 
 ---
 

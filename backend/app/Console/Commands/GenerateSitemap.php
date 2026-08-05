@@ -27,7 +27,6 @@ class GenerateSitemap extends Command
             'sitemap-categories.xml' => fn () => $sitemap->categories(),
             'sitemap-hub.xml' => fn () => $sitemap->hub(),
             'sitemap-guides.xml' => fn () => $sitemap->guides(),
-            'sitemap-videos.xml' => fn () => $sitemap->videos(),
             'sitemap-products.xml' => fn () => $sitemap->products(),
             'sitemap-news.xml' => fn () => $sitemap->news(),
             'sitemap-images.xml' => fn () => $sitemap->images(),

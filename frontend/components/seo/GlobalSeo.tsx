@@ -9,7 +9,6 @@ const navigationItems = [
     { name: "News", url: "/news" },
     { name: "Reviews", url: "/reviews" },
     { name: "Guides", url: "/guides" },
-    { name: "Videos", url: "/videos" },
     { name: "Hardware", url: "/hardware" },
     { name: "Games Database", url: "/games" },
     { name: "Calendar", url: "/calendar" },

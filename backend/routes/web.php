@@ -18,7 +18,6 @@ Route::get('/sitemap-pages.xml', [SitemapController::class, 'pages']);
 Route::get('/sitemap-articles.xml', [SitemapController::class, 'articles']);
 Route::get('/sitemap-categories.xml', [SitemapController::class, 'categories']);
 Route::get('/sitemap-guides.xml', [SitemapController::class, 'guides']);
-Route::get('/sitemap-videos.xml', [SitemapController::class, 'videos']);
 Route::get('/sitemap-products.xml', [SitemapController::class, 'products']);
 Route::get('/sitemap-news.xml', [SitemapController::class, 'news']);
 Route::get('/sitemap-images.xml', [SitemapController::class, 'images']);

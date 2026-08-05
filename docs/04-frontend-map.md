@@ -49,7 +49,6 @@ filtriraju na mjestu.
 Jedna razlika u API-ju: **guides liste vraćaju goli paginator** (`current_page`
 na vrhu), a articles resource collection (`meta`). `SectionHub` čita oba oblika.
 | `/hardware` | `app/hardware/` | Tech/hardware listing + `[slug]` detalj — dijeli `components/editorial/SectionHub` |
-| `/videos` | `app/videos/` | Videos listing + `[slug]` detalj |
 | `/games` | `app/games/` | Game database listing + `[slug]` detalj |
 | `/calendar` | `app/calendar/` | Release calendar |
 | `/forum` | `app/forum/` | Forum kategorije + `[slug]` thread |
@@ -66,7 +65,6 @@ na vrhu), a articles resource collection (`meta`). `SectionHub` čita oba oblika
 | `/cart` | `app/cart/` | Košarica |
 | `/checkout` | `app/checkout/` | PayPal checkout |
 | `/wow-analyzer` | `app/wow-analyzer/` | WoW karakter analiza |
-| `/wow-characters` | `app/wow-characters/` | Moji WoW likovi |
 | `/backlog-advisor` | `app/backlog-advisor/` | AI preporuka igara |
 | `/wrapped` | `app/wrapped/` | Godišnji gaming rezime |
 | `/about` | `app/about/` | O nama / Staff |
@@ -97,7 +95,7 @@ na vrhu), a articles resource collection (`meta`). `SectionHub` čita oba oblika
 
 - **Metoda:** Client-side, Bearer token u `localStorage`
 - **`AuthContext`** (`context/AuthContext.tsx`) — stores token + user, restores on mount, verifikuje u pozadini
-- **Middleware** (`middleware.ts`) — ne enforces auth (localStorage nije dostupan server-side). Samo maintenance mode check.
+- **Middleware** — nema ga. `middleware.ts` je postojao samo zbog maintenance modea koji nikad nije radio (nije bilo `/coming-soon` stranice ni prekidača u adminu), a plaćao se blokirajućim `fetch`-om na svaki zahtjev. Auth je ionako client-side; `protectedRoutes` je bio prazan.
 - **Protected stranice** — client-side redirect na `/login` kada token nije prisutan
 - **Login flow:** POST `/api/v1/auth/login` → token → localStorage
 

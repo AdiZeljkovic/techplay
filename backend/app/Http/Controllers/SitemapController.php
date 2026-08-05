@@ -8,7 +8,6 @@ use App\Models\Game;
 use App\Models\Gta6Character;
 use App\Models\Guide;
 use App\Models\Product;
-use App\Models\Video;
 use Carbon\Carbon;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
@@ -48,9 +47,6 @@ class SitemapController extends Controller
         if (Guide::where('status', 'published')->where('is_noindex', false)->exists()) {
             $sitemaps[] = 'sitemap-guides.xml';
         }
-        if (Video::whereNotNull('published_at')->exists()) {
-            $sitemaps[] = 'sitemap-videos.xml';
-        }
         if (Product::where('is_active', true)->exists()) {
             $sitemaps[] = 'sitemap-products.xml';
         }
@@ -65,7 +61,6 @@ class SitemapController extends Controller
         $lastmod = Cache::remember('sitemap.index.lastmod', 300, function () {
             $articleLastmod = Article::where('status', 'published')->max('updated_at');
             $guideLastmod = Guide::where('status', 'published')->max('updated_at');
-            $videoLastmod = Video::whereNotNull('published_at')->max('published_at');
             $productLastmod = Product::where('is_active', true)->max('updated_at');
 
             return [
@@ -74,7 +69,6 @@ class SitemapController extends Controller
                 'sitemap-articles.xml' => $articleLastmod ? Carbon::parse($articleLastmod)->toIso8601String() : now()->toIso8601String(),
                 'sitemap-categories.xml' => now()->subDays(7)->toIso8601String(),
                 'sitemap-guides.xml' => $guideLastmod ? Carbon::parse($guideLastmod)->toIso8601String() : now()->toIso8601String(),
-                'sitemap-videos.xml' => $videoLastmod ? Carbon::parse($videoLastmod)->toIso8601String() : now()->toIso8601String(),
                 'sitemap-products.xml' => $productLastmod ? Carbon::parse($productLastmod)->toIso8601String() : now()->toIso8601String(),
                 'sitemap-news.xml' => $articleLastmod ? Carbon::parse($articleLastmod)->toIso8601String() : now()->toIso8601String(),
                 'sitemap-images.xml' => $articleLastmod ? Carbon::parse($articleLastmod)->toIso8601String() : now()->toIso8601String(),
@@ -119,7 +113,6 @@ class SitemapController extends Controller
             ['/news', 'hourly', '0.9'],
             ['/reviews', 'daily', '0.9'],
             ['/hardware', 'daily', '0.9'],
-            ['/videos', 'daily', '0.8'],
             ['/guides', 'weekly', '0.8'],
             ['/calendar', 'daily', '0.7'],
             ['/games', 'weekly', '0.7'],
@@ -254,50 +247,6 @@ class SitemapController extends Controller
                 'monthly',
                 '0.6'
             );
-        }
-
-        $xml .= '</urlset>';
-
-        return response($xml, 200)->header('Content-Type', 'application/xml');
-    }
-
-    /**
-     * Videos Sitemap (standalone videos, not article embeds)
-     */
-    public function videos(): Response
-    {
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
-        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">'."\n";
-
-        $videos = Video::whereNotNull('published_at')
-            ->select('slug', 'title', 'youtube_url', 'thumbnail_url', 'published_at')
-            ->orderBy('published_at', 'desc')
-            ->limit(2000)
-            ->get();
-
-        if ($videos->isEmpty()) {
-            $xml .= "  <url>\n";
-            $xml .= "    <loc>{$this->frontendUrl}/videos</loc>\n";
-            $xml .= "    <changefreq>daily</changefreq>\n";
-            $xml .= "    <priority>0.8</priority>\n";
-            $xml .= "  </url>\n";
-        }
-
-        foreach ($videos as $video) {
-            $xml .= "  <url>\n";
-            $xml .= "    <loc>{$this->frontendUrl}/videos/{$video->slug}</loc>\n";
-            $xml .= "    <video:video>\n";
-            $xml .= '      <video:title>'.htmlspecialchars($video->title)."</video:title>\n";
-            $xml .= '      <video:description>'.htmlspecialchars($video->title)."</video:description>\n";
-            if ($video->thumbnail_url) {
-                $xml .= "      <video:thumbnail_loc>{$video->thumbnail_url}</video:thumbnail_loc>\n";
-            }
-            if ($video->youtube_url) {
-                $xml .= "      <video:player_loc>{$video->youtube_url}</video:player_loc>\n";
-            }
-            $xml .= '      <video:publication_date>'.$video->published_at->toIso8601String()."</video:publication_date>\n";
-            $xml .= "    </video:video>\n";
-            $xml .= "  </url>\n";
         }
 
         $xml .= '</urlset>';

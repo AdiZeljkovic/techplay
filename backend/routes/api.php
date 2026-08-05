@@ -78,7 +78,6 @@ use App\Http\Controllers\Api\V1\TechController;
 use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\UserWowCharactersController;
 use App\Http\Controllers\Api\V1\VerificationController;
-use App\Http\Controllers\Api\V1\VideoController;
 use App\Http\Controllers\Api\V1\WebhookController;
 use App\Http\Controllers\Api\V1\WowAnalyzerController;
 use App\Http\Controllers\Api\V1\WrappedController;
@@ -402,8 +401,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/forum/search', [ForumController::class, 'search'])->middleware('throttle:30,1');
 
         // Videos
-        Route::get('/videos', [VideoController::class, 'index']);
-        Route::get('/videos/{slug}', [VideoController::class, 'show']);
 
         // Guides
         Route::get('/guides', [GuideController::class, 'index']);
