@@ -38,6 +38,7 @@ use App\Http\Controllers\Api\V1\GameListController;
 use App\Http\Controllers\Api\V1\GameRatingController;
 use App\Http\Controllers\Api\V1\GamerDnaController;
 use App\Http\Controllers\Api\V1\GiveawayController;
+use App\Http\Controllers\Api\V1\GiveawayHubController;
 use App\Http\Controllers\Api\V1\Gta6CharactersController;
 use App\Http\Controllers\Api\V1\Gta6Controller;
 use App\Http\Controllers\Api\V1\Gta6VehiclesController;
@@ -560,6 +561,7 @@ Route::prefix('v1')->group(function () {
     // ═══════════════════════════════════════════════════════════════════════
 
     // Public routes
+    Route::get('/giveaways/hub', [GiveawayHubController::class, 'index']);
     Route::get('/giveaways', [GiveawayController::class, 'index']);
     Route::get('/giveaways/{slug}', [GiveawayController::class, 'show']);
     Route::get('/giveaways/{slug}/leaderboard', [GiveawayController::class, 'leaderboard']);

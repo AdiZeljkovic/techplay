@@ -33,6 +33,12 @@ class GiveawayController extends Controller
             $query->where('status', 'ended')->orWhere('ends_at', '<', now());
         }
 
+        // The page offers these with counts beside them, so the list has to
+        // be able to answer them rather than look like it can.
+        foreach (['platform', 'prize_type', 'region', 'entry_type'] as $facet) {
+            $query->when($request->filled($facet), fn ($q) => $q->where($facet, $request->input($facet)));
+        }
+
         // Order by: active first, then by end date
         $query->orderByRaw("
             CASE
@@ -72,7 +78,15 @@ class GiveawayController extends Controller
 
                 'stats' => [
                     'total_entries' => $giveaway->entries_count,
+                    // Null until an editor sets a target; the page draws no
+                    // progress bar without one rather than inventing a scale.
+                    'entry_goal' => $giveaway->entry_goal,
                 ],
+
+                'platform' => $giveaway->platform,
+                'prize_type' => $giveaway->prize_type,
+                'region' => $giveaway->region,
+                'entry_type' => $giveaway->entry_type,
 
                 'winner' => $giveaway->winner ? [
                     'id' => $giveaway->winner->id,

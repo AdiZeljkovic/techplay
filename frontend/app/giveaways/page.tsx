@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { generatePageMetadata } from "@/lib/seo";
-import GiveawaysClient from "./GiveawaysClient";
+import GiveawayHub from "./GiveawayHub";
 
 export async function generateMetadata(): Promise<Metadata> {
     const metadata = await generatePageMetadata('/giveaways', {
@@ -11,5 +11,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function GiveawaysPage() {
-    return <GiveawaysClient />;
+    return <GiveawayHub />;
 }
