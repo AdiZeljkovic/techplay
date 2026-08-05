@@ -68,6 +68,9 @@ class GameController extends Controller
         $yearFrom = (int) $request->input('year_from', 0);
         $yearTo = (int) $request->input('year_to', 0);
         $minRating = (float) $request->input('min_rating', 0);
+        // released | upcoming | undated — the hub's rail offers these with
+        // counts, so the list has to be able to answer them.
+        $status = $request->input('status', 'all');
         $page = max(1, (int) $request->input('page', 1));
         $pageSize = min(40, max(10, (int) $request->input('page_size', 20)));
 
@@ -76,10 +79,11 @@ class GameController extends Controller
         }
 
         $cacheKey = 'games.index.v1.'.md5(json_encode([
-            $search, $genre, $platform, $ordering, $yearFrom, $yearTo, $minRating, $page, $pageSize,
+            $search, $genre, $platform, $ordering, $yearFrom, $yearTo, $minRating, $status, $page, $pageSize,
         ]));
 
-        $payload = Cache::remember($cacheKey, 300, function () use ($search, $genre, $platform, $ordering, $yearFrom, $yearTo, $minRating, $page, $pageSize, $request) {
+        $payload = Cache::remember($cacheKey, 300, function () use ($search, $genre, $platform, $ordering, $yearFrom, $yearTo, $minRating, $status, $page, $pageSize, $request) {
+            $today = now()->toDateString();
             $q = Game::query()
                 ->when($search, fn ($q) => $q->where('name', 'ilike', "%{$search}%"))
                 ->when($genre, fn ($q) => $q->whereRaw('genre_names @> ARRAY[?]::text[]', [$genre]))
@@ -87,6 +91,9 @@ class GameController extends Controller
                 ->when($yearFrom > 0, fn ($q) => $q->where('released', '>=', "{$yearFrom}-01-01"))
                 ->when($yearTo > 0, fn ($q) => $q->where('released', '<=', "{$yearTo}-12-31"))
                 ->when($minRating > 0, fn ($q) => $q->where('rating', '>=', $minRating))
+                ->when($status === 'released', fn ($q) => $q->where('released', '<=', $today))
+                ->when($status === 'upcoming', fn ($q) => $q->where('released', '>', $today))
+                ->when($status === 'undated', fn ($q) => $q->whereNull('released'))
                 ->select(['id', 'slug', 'name', 'released', 'rating', 'metacritic', 'background_image', 'platforms', 'short_screenshots']);
 
             // Ordering

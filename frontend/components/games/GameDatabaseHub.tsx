@@ -150,6 +150,7 @@ export default function GameDatabaseHub() {
         if (genre) q.set("genres", genre);
         if (platform) q.set("platforms", platform);
         if (sort) q.set("ordering", sort);
+        if (status && status !== "all") q.set("status", status);
 
         const band = facets?.eras.find((e) => e.key === era);
         if (band) {
@@ -160,9 +161,12 @@ export default function GameDatabaseHub() {
         q.set("page", String(page));
         q.set("page_size", "24");
         return q.toString();
-    }, [search, genre, platform, era, sort, page, facets]);
+    }, [search, genre, platform, era, status, sort, page, facets]);
 
-    const { data, isLoading } = useSWR<{ results: Game[]; total: number; last_page: number }>(
+    // The list endpoint answers in RAWG's shape — count, next, previous,
+    // results — not Laravel's paginator. Assuming otherwise crashed the page
+    // on `total.toLocaleString()`.
+    const { data, isLoading } = useSWR<{ results: Game[]; count: number; next: string | null }>(
         `/games?${query}`,
         fetcher,
         { keepPreviousData: true },
@@ -207,7 +211,7 @@ export default function GameDatabaseHub() {
                         <span className="text-[var(--accent)]">DATABASE</span>
                     </h1>
                     <p className="mt-3 text-[13px] text-white/45">
-                        {stats
+                        {typeof stats?.games === "number"
                             ? `Discover, explore and track ${stats.games.toLocaleString()} games across every generation.`
                             : "Discover, explore and track games across every generation."}
                     </p>
@@ -355,9 +359,9 @@ export default function GameDatabaseHub() {
                             <span className="font-display text-[13px] font-black uppercase tracking-[0.14em] text-white truncate">
                                 {search ? `“${search}”` : SORTS.find((s) => s.value === sort)?.label ?? "All games"}
                             </span>
-                            {data && (
+                            {typeof data?.count === "number" && (
                                 <span className="font-display text-[10.5px] font-bold tabular-nums text-white/30 whitespace-nowrap">
-                                    {data.total.toLocaleString()} found
+                                    {data.count.toLocaleString()} found
                                 </span>
                             )}
                         </p>
@@ -401,7 +405,7 @@ export default function GameDatabaseHub() {
                                 ))}
                             </div>
 
-                            {data && page < data.last_page && (
+                            {data?.next && (
                                 <div className="mt-6 flex justify-center">
                                     <button
                                         onClick={() => setPage((p) => p + 1)}
