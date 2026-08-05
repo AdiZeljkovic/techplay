@@ -1,7 +1,7 @@
 import { Article } from "@/types";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import NewsCategoryView from "@/components/news/NewsCategoryView";
+import SectionHub from "@/components/editorial/SectionHub";
 import ArticleDetailView from "@/components/news/ArticleDetailView";
 import { NEWS_CATEGORIES } from "@/lib/categories";
 import { getServerApiUrl } from "@/lib/api";
@@ -9,6 +9,24 @@ import { getServerApiUrl } from "@/lib/api";
 // On-demand ISR - no automatic revalidation, only manual via /api/revalidate
 // Backend triggers revalidation when content is updated
 export const revalidate = false; // Disable automatic revalidation - only on-demand
+
+/**
+ * A category page is a real, indexed page, so its first screen is rendered on
+ * the server rather than left to the client to fetch.
+ */
+async function getInitialCategoryData(categorySlug: string) {
+    try {
+        const params = new URLSearchParams({ page: '1', category: categorySlug });
+        const res = await fetch(`${getServerApiUrl()}/news?${params.toString()}`, {
+            next: { revalidate: 300, tags: ['news'] },
+            headers: { 'Accept': 'application/json' },
+        });
+        if (!res.ok) return null;
+        return await res.json();
+    } catch {
+        return null;
+    }
+}
 
 async function getArticle(slug: string): Promise<Article | null> {
     try {
@@ -158,7 +176,10 @@ export default async function NewsSlugPage({ params }: Props) {
     const category = NEWS_CATEGORIES.find(c => c.slug === slug);
 
     if (category) {
-        return <NewsCategoryView categorySlug={category.slug} />;
+        // `id` is the slug the database and the API use; `slug` is the segment
+        // in the URL. The hub filters on the former.
+        const initialData = await getInitialCategoryData(category.id);
+        return <SectionHub section="news" category={category.id} categoryName={category.label} initialData={initialData} />;
     }
 
     const article = await getArticle(slug);

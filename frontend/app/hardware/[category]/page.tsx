@@ -1,4 +1,4 @@
-import HardwareCategoryClient from "./HardwareCategoryClient";
+import SectionHub from "@/components/editorial/SectionHub";
 import ArticleDetailView from "@/components/news/ArticleDetailView";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
@@ -117,7 +117,7 @@ export default async function HardwareSlugPage({ params }: Props) {
 
     if (categoryDef) {
         const initialData = await getInitialCategoryData(categoryDef.id);
-        return <HardwareCategoryClient categorySlug={slug} initialData={initialData} />;
+        return <SectionHub section="tech" category={categoryDef.id} categoryName={categoryDef.label} initialData={initialData} />;
     }
 
     // It's an article slug — fetch server-side

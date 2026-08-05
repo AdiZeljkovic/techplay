@@ -110,18 +110,35 @@ const timeAgo = (iso?: string | null) => {
 
 export default function SectionHub({
     section,
+    category,
+    categoryName,
     initialData,
 }: {
     section: SectionKey;
+    /**
+     * The DB category slug when this is a category page rather than the
+     * section itself — /news/gaming, /hardware/benchmarks. The page is the
+     * same page; it is simply pinned to one tab and cannot leave it.
+     */
+    category?: string;
+    /**
+     * What to call that category. Comes from the page rather than the hub
+     * because a category nobody has written for yet is absent from the tab
+     * row, and its page would otherwise have no headline.
+     */
+    categoryName?: string;
     /** The server component already fetched page one; don't make the reader wait for it twice. */
     initialData?: ListBody | null;
 }) {
     const config = SECTIONS[section];
+    const pinned = Boolean(category);
 
-    const [filter, setFilter] = useState("all");
+    const [chosen, setChosen] = useState("all");
     const [page, setPage] = useState(1);
     const [email, setEmail] = useState("");
     const [subscribing, setSubscribing] = useState(false);
+
+    const filter = category ?? chosen;
 
     const { data: hubBody } = useSWR<{ data: HubData }>(`/newsroom/${config.key}`, fetcher, {
         revalidateOnFocus: false,
@@ -134,15 +151,24 @@ export default function SectionHub({
         return `/${config.key}?${q.toString()}`;
     }, [config.key, config.filterParam, filter, page]);
 
-    const untouched = page === 1 && filter === "all";
-
     const { data: listBody, isLoading } = useSWR<ListBody>(listUrl, fetcher, {
         keepPreviousData: true,
-        fallbackData: untouched && initialData ? initialData : undefined,
+        fallbackData: page === 1 && initialData ? initialData : undefined,
     });
 
-    const articles = listBody?.data ?? [];
+    const rows = listBody?.data ?? [];
     const pages = pageInfo(listBody);
+
+    /**
+     * On a category page the section-wide spotlight would be off-topic — a PC
+     * story leading the Esports page. There the newest piece in the category
+     * leads instead, and drops out of the grid so it is not shown twice.
+     */
+    const current = hub?.categories.find((c) => c.slug === category);
+    const currentName = current?.name ?? categoryName ?? "";
+    const lead = pinned ? (page === 1 ? rows[0] ?? null : null) : null;
+    const articles = lead ? rows.slice(1) : rows;
+    const spotlight = pinned ? lead : hub?.featured ?? null;
 
     const subscribe = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -161,7 +187,12 @@ export default function SectionHub({
         }
     };
 
-    const [head, ...tail] = (hub?.section.title ?? "").split(" ");
+    // On a category page the category is the headline and the section is the
+    // kicker under it: GAMING / NEWS. On the section itself the section's own
+    // name splits across the two lines.
+    const [head, ...tail] = pinned
+        ? [currentName, hub?.section.title ?? ""]
+        : (hub?.section.title ?? "").split(" ");
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
@@ -197,7 +228,21 @@ export default function SectionHub({
                                 <span className="block text-white">{head}</span>
                                 {tail.length > 0 && <span className="block text-[var(--accent)]">{tail.join(" ")}</span>}
                             </h1>
-                            {hub && <p className="mt-4 text-[13.5px] font-medium text-white/70">{hub.section.line}</p>}
+                            {hub && (
+                                <p className="mt-4 text-[13.5px] font-medium text-white/70">
+                                    {pinned ? (
+                                        <>
+                                            {currentName || "This category"} in{" "}
+                                            <Link href={config.path} className="text-[var(--accent)] hover:brightness-110">
+                                                {hub.section.title.toLowerCase()}
+                                            </Link>
+                                            .
+                                        </>
+                                    ) : (
+                                        hub.section.line
+                                    )}
+                                </p>
+                            )}
 
                             {/* What the section can honestly say about itself. The
                                 mockup offered "50+ experts"; there are six people
@@ -206,31 +251,38 @@ export default function SectionHub({
                                 <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 font-display text-[10.5px] font-bold uppercase tracking-[0.1em] text-white/35">
                                     <span className="inline-flex items-center gap-1.5">
                                         <BookOpenText className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                        {hub.stats.articles.toLocaleString()} published
+                                        {(pinned ? current?.count ?? 0 : hub.stats.articles).toLocaleString()} published
                                     </span>
-                                    <span className="inline-flex items-center gap-1.5">
-                                        <User className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                        {hub.stats.authors} {hub.stats.authors === 1 ? "writer" : "writers"}
-                                    </span>
-                                    {hub.stats.this_month > 0 && (
-                                        <span className="inline-flex items-center gap-1.5">
-                                            <Clock className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                            {hub.stats.this_month} this month
-                                        </span>
+                                    {/* Writers and this-month are counted across the
+                                        section; quoting them on one category would
+                                        credit it with work done elsewhere. */}
+                                    {!pinned && (
+                                        <>
+                                            <span className="inline-flex items-center gap-1.5">
+                                                <User className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                                {hub.stats.authors} {hub.stats.authors === 1 ? "writer" : "writers"}
+                                            </span>
+                                            {hub.stats.this_month > 0 && (
+                                                <span className="inline-flex items-center gap-1.5">
+                                                    <Clock className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                                    {hub.stats.this_month} this month
+                                                </span>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             )}
                         </div>
 
-                        {hub?.featured ? (
+                        {spotlight ? (
                             <Link
-                                href={`${config.path}/${hub.featured.slug}`}
+                                href={`${config.path}/${spotlight.slug}`}
                                 className="group relative block rounded-[14px] overflow-hidden border border-white/[0.07] min-h-[330px]"
                             >
-                                {hub.featured.featured_image_url && (
+                                {spotlight.featured_image_url && (
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img
-                                        src={getStorageUrl(hub.featured.featured_image_url)}
+                                        src={getStorageUrl(spotlight.featured_image_url)}
                                         alt=""
                                         aria-hidden
                                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
@@ -239,19 +291,19 @@ export default function SectionHub({
                                 <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-transparent" />
 
                                 <span className="absolute top-3 left-3 inline-flex items-center h-[21px] px-2 rounded-[5px] bg-[var(--accent)] font-display text-[9px] font-black uppercase tracking-[0.12em] text-white">
-                                    Featured
+                                    {pinned ? "Latest" : "Featured"}
                                 </span>
 
                                 <span className="absolute inset-x-0 bottom-0 p-5">
                                     <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/50">
-                                        {shortDate(hub.featured.published_at)}
+                                        {shortDate(spotlight.published_at)}
                                     </span>
                                     <span className="mt-2 block font-display text-[22px] md:text-[26px] font-black text-white leading-tight line-clamp-3">
-                                        {hub.featured.title}
+                                        {spotlight.title}
                                     </span>
-                                    {hub.featured.excerpt && (
+                                    {spotlight.excerpt && (
                                         <span className="mt-2 block text-[12.5px] text-white/55 leading-snug line-clamp-2">
-                                            {hub.featured.excerpt}
+                                            {spotlight.excerpt}
                                         </span>
                                     )}
                                     <span className="mt-3 inline-flex items-center gap-1.5 font-display text-[10.5px] font-black uppercase tracking-[0.1em] text-[var(--accent)]">
@@ -262,7 +314,9 @@ export default function SectionHub({
                         ) : (
                             <div className="rounded-[14px] border border-dashed border-white/[0.09] min-h-[330px] grid place-items-center px-6 text-center">
                                 <p className="text-[12.5px] text-white/30">
-                                    Nothing is flagged for the spotlight here yet.
+                                    {pinned
+                                        ? "Nothing published under this category yet."
+                                        : "Nothing is flagged for the spotlight here yet."}
                                 </p>
                             </div>
                         )}
@@ -274,20 +328,21 @@ export default function SectionHub({
                             label="Everything"
                             count={hub?.stats.articles}
                             active={filter === "all"}
-                            onClick={() => { setFilter("all"); setPage(1); }}
+                            href={pinned ? config.path : undefined}
+                            onClick={() => { setChosen("all"); setPage(1); }}
                         />
                         {hub?.categories.map((c) => {
                             const route = config.categoryRoutes?.[c.slug];
 
                             return route ? (
-                                <Tab key={c.slug} label={c.name} count={c.count} href={route} />
+                                <Tab key={c.slug} label={c.name} count={c.count} href={route} active={filter === c.slug} />
                             ) : (
                                 <Tab
                                     key={c.slug}
                                     label={c.name}
                                     count={c.count}
                                     active={filter === c.slug}
-                                    onClick={() => { setFilter(c.slug); setPage(1); }}
+                                    onClick={() => { setChosen(c.slug); setPage(1); }}
                                 />
                             );
                         })}

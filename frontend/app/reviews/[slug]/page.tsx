@@ -1,13 +1,31 @@
 import { Review } from "@/types";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import ReviewsCategoryView from "@/components/reviews/ReviewsCategoryView";
+import SectionHub from "@/components/editorial/SectionHub";
 import ReviewDetailView from "@/components/reviews/ReviewDetailView";
 import { REVIEW_CATEGORIES } from "@/lib/categories";
 import { getServerApiUrl } from "@/lib/api";
 
 // ISR enabled with on-demand revalidation
 export const revalidate = false; // 10 minutes (reviews change less frequently than news)
+
+/**
+ * A category page is a real, indexed page, so its first screen is rendered on
+ * the server rather than left to the client to fetch.
+ */
+async function getInitialCategoryData(categorySlug: string) {
+    try {
+        const params = new URLSearchParams({ page: '1', category: categorySlug });
+        const res = await fetch(`${getServerApiUrl()}/reviews?${params.toString()}`, {
+            next: { revalidate: 600, tags: ['reviews'] },
+            headers: { 'Accept': 'application/json' },
+        });
+        if (!res.ok) return null;
+        return await res.json();
+    } catch {
+        return null;
+    }
+}
 
 async function getReview(slug: string): Promise<Review | null> {
     try {
@@ -112,8 +130,10 @@ export default async function ReviewSlugPage({ params }: Props) {
     const category = REVIEW_CATEGORIES.find(c => c.slug === slug);
 
     if (category) {
-        // Render Client Component for Category View
-        return <ReviewsCategoryView categorySlug={category.slug} />;
+        // `id` is the slug the database and the API use; `slug` is the segment
+        // in the URL. The hub filters on the former.
+        const initialData = await getInitialCategoryData(category.id);
+        return <SectionHub section="reviews" category={category.id} categoryName={category.label} initialData={initialData} />;
     }
 
     const review = await getReview(slug);

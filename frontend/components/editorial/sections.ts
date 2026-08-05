@@ -1,3 +1,5 @@
+import { HARDWARE_CATEGORIES, NEWS_CATEGORIES, REVIEW_CATEGORIES } from "@/lib/categories";
+
 /**
  * The four editorial sections, and the things about them that genuinely differ.
  *
@@ -25,31 +27,56 @@ export interface SectionConfig {
     /**
      * DB category slug → the page that already exists for it.
      *
-     * Only hardware has these: /hardware/benchmarks and friends are real,
-     * indexed routes. Filtering them away into client-side tabs would leave
-     * them without a single internal link, so there the tab *is* the link.
-     * News and reviews have no such routes, and there the tabs filter in
-     * place — which is faster anyway.
+     * News, reviews and tech all have real, indexed category pages; for news
+     * and reviews they hide inside the [slug] route, which decides whether a
+     * segment names a category or an article. Where a page exists the tab *is*
+     * the link, so those pages keep their internal links and their ranking.
+     * Guides have no categories at all — only a difficulty — and filter in
+     * place.
      */
-    categoryRoutes?: Record<string, string>;
+    categoryRoutes: Record<string, string>;
 }
 
+/**
+ * The category lists in lib/categories carry both halves of the mapping: `id`
+ * is the slug the database and the API use, `slug` is the segment in the URL.
+ * Deriving the routes from them keeps one source of truth, so a category added
+ * there does not silently lose its tab here.
+ *
+ * "all" is the section's own page, not a subpage, and is skipped.
+ */
+const routesFrom = (
+    categories: ReadonlyArray<{ id: string; slug: string }>,
+    base: string,
+): Record<string, string> =>
+    Object.fromEntries(
+        categories.filter((c) => c.slug !== "all").map((c) => [c.id, `${base}/${c.slug}`]),
+    );
+
 export const SECTIONS: Record<SectionKey, SectionConfig> = {
-    news: { key: "news", path: "/news", filterParam: "category" },
-    reviews: { key: "reviews", path: "/reviews", filterParam: "category", showScore: true },
+    news: {
+        key: "news",
+        path: "/news",
+        filterParam: "category",
+        categoryRoutes: routesFrom(NEWS_CATEGORIES, "/news"),
+    },
+    reviews: {
+        key: "reviews",
+        path: "/reviews",
+        filterParam: "category",
+        showScore: true,
+        categoryRoutes: routesFrom(REVIEW_CATEGORIES, "/reviews"),
+    },
     tech: {
         key: "tech",
         path: "/hardware",
         filterParam: "category",
-        // Mirrors HARDWARE_CATEGORIES in lib/categories: its `id` is the DB
-        // slug, its `slug` is the URL segment. "tech" itself is the section,
-        // not a subpage, so it is left to filter in place.
-        categoryRoutes: {
-            "tech-reviews": "/hardware/reviews",
-            "tech-benchmarks": "/hardware/benchmarks",
-            "tech-guides": "/hardware/guides",
-            "tech-tech-news": "/hardware/news",
-        },
+        categoryRoutes: routesFrom(HARDWARE_CATEGORIES, "/hardware"),
     },
-    guides: { key: "guides", path: "/guides", filterParam: "difficulty" },
+    guides: {
+        key: "guides",
+        path: "/guides",
+        filterParam: "difficulty",
+        categoryRoutes: {},
+    },
 };

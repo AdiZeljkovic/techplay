@@ -33,12 +33,21 @@ Okvir stranice (tabovi s brojevima, spotlight, ticker, most read, upcoming
 releases, stats) dolazi s `GET /newsroom/{section}`; sama lista i dalje ide na
 postojeći endpoint sekcije, jer admin za svaku ima zasebnu površinu za pisanje.
 
-Dva mjesta gdje se razlikuju:
-- **Hardware tabovi su linkovi**, ne filteri — `/hardware/benchmarks` i slične
-  su stvarne indeksirane rute, pa bi filtriranje na mjestu ostavilo te stranice
-  bez ijednog internog linka. News i reviews nemaju takve rute i filtriraju na mjestu.
-- **Guides liste vraćaju goli paginator** (`current_page` na vrhu), articles
-  resource collection (`meta`). `SectionHub` čita oba oblika.
+Ista komponenta renderuje i **podkategorije** (`/news/gaming`,
+`/reviews/indie-gems`, `/hardware/benchmarks`) preko `category` propa: lista je
+prikovana na tu kategoriju, naslov postaje ime kategorije, a spotlight je
+najnoviji članak iz nje — sekcijski spotlight bi tu bio van teme. Kod news i
+reviews te rute nisu zaseban folder nego žive unutar `[slug]`, koja odlučuje je
+li segment ime kategorije ili slug članka; zato ih je lako previdjeti.
+
+Tabovi su **linkovi na te stranice**, ne filteri na mjestu — inače bi
+indeksirane podkategorije ostale bez ijednog internog linka. Mapiranje DB slug →
+URL segment se izvodi iz `lib/categories` (`id` = DB slug, `slug` = URL segment),
+da ne postoje dva izvora istine. Guides nemaju kategorije, samo `difficulty`, i
+filtriraju na mjestu.
+
+Jedna razlika u API-ju: **guides liste vraćaju goli paginator** (`current_page`
+na vrhu), a articles resource collection (`meta`). `SectionHub` čita oba oblika.
 | `/hardware` | `app/hardware/` | Tech/hardware listing + `[slug]` detalj — dijeli `components/editorial/SectionHub` |
 | `/videos` | `app/videos/` | Videos listing + `[slug]` detalj |
 | `/games` | `app/games/` | Game database listing + `[slug]` detalj |
