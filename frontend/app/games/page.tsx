@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { generatePageMetadata } from "@/lib/seo";
-import GamesClientPage from "@/components/games/GamesClientPage";
+import GameDatabaseHub from "@/components/games/GameDatabaseHub";
 
 export async function generateMetadata(): Promise<Metadata> {
     return generatePageMetadata('/games', {
@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 export default function GamesPage() {
     return (
         <Suspense>
-            <GamesClientPage />
+            <GameDatabaseHub />
         </Suspense>
     );
 }

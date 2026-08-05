@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\V1\FriendActivityController;
 use App\Http\Controllers\Api\V1\FriendController;
 use App\Http\Controllers\Api\V1\GameCollectionController;
 use App\Http\Controllers\Api\V1\GameController;
+use App\Http\Controllers\Api\V1\GameHubController;
 use App\Http\Controllers\Api\V1\GameListController;
 use App\Http\Controllers\Api\V1\GameRatingController;
 use App\Http\Controllers\Api\V1\GamerDnaController;
@@ -518,6 +519,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware('throttle:60,1')->group(function () {
         Route::get('/calendar', [CalendarController::class, 'index']);
         Route::get('/calendar/{slug}', [CalendarController::class, 'show']);
+        Route::get('/games/hub', [GameHubController::class, 'index']);
         Route::get('/games/calendar', [GameController::class, 'calendar']);
         Route::get('/games/hidden-gems', [GameController::class, 'hiddenGems']);
         Route::get('/games/on-this-day', [GameController::class, 'onThisDay']);
