@@ -651,14 +651,10 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
     { name: "Shop", href: "/shop" },
 ];
 
-/**
- * The wordmark carries the name itself, so the lockup no longer spells
- * TECHPLAY beside it. The tagline stays, set against the mark rather than
- * under a second copy of the name.
- */
+/** The wordmark carries the name; nothing needs to be set beside it. */
 function BrandLogo() {
     return (
-        <Link href="/" className="flex items-center gap-3 group" aria-label="TechPlay — home">
+        <Link href="/" className="flex items-center group" aria-label="TechPlay — home">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
                 src="/techplay-logo.png"
@@ -667,9 +663,6 @@ function BrandLogo() {
                 height={28}
                 className="h-[28px] w-auto group-hover:brightness-110 transition-[filter]"
             />
-            <span className="hidden 2xl:block text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--ink-low)] border-l border-[var(--line)] pl-3">
-                Gaming Portal
-            </span>
         </Link>
     );
 }
