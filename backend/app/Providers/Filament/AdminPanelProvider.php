@@ -33,7 +33,11 @@ class AdminPanelProvider extends PanelProvider
             ->darkMode(true)
             ->defaultThemeMode(ThemeMode::Dark)
             ->brandName('TechPlay')
-            ->brandLogoHeight('3rem')
+            // brandLogoHeight was already set, but no logo had ever been given
+            // to size, so the panel fell back to the name as text.
+            ->brandLogo(asset('techplay-logo.png'))
+            ->brandLogoHeight('2rem')
+            ->favicon(asset('favicon.ico'))
             ->sidebarCollapsibleOnDesktop()
             ->collapsedSidebarWidth('9rem')
             ->plugin(BriskTheme::make())

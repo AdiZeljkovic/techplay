@@ -651,17 +651,25 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
     { name: "Shop", href: "/shop" },
 ];
 
-// Logo Component
+/**
+ * The wordmark carries the name itself, so the lockup no longer spells
+ * TECHPLAY beside it. The tagline stays, set against the mark rather than
+ * under a second copy of the name.
+ */
 function BrandLogo() {
     return (
-        <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center shadow-lg group-hover:bg-accent-hover transition-colors">
-                <Gamepad2 className="w-5 h-5 text-white" strokeWidth={2} />
-            </div>
-            <div className="flex flex-col leading-none">
-                <span className="font-display font-bold text-[18px] text-[var(--ink-hi)] tracking-tight leading-none">TECHPLAY</span>
-                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--ink-low)] mt-[3px]">GAMING PORTAL</span>
-            </div>
+        <Link href="/" className="flex items-center gap-3 group" aria-label="TechPlay — home">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+                src="/techplay-logo.png"
+                alt="TechPlay"
+                width={168}
+                height={28}
+                className="h-[28px] w-auto group-hover:brightness-110 transition-[filter]"
+            />
+            <span className="hidden 2xl:block text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--ink-low)] border-l border-[var(--line)] pl-3">
+                Gaming Portal
+            </span>
         </Link>
     );
 }
@@ -1229,14 +1237,9 @@ export default function Header() {
                         >
                             {/* Drawer header */}
                             <div className="flex items-center justify-between px-5 h-[60px] border-b border-[var(--line)] shrink-0">
-                                <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5">
-                                    <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center shadow-lg shadow-accent/30">
-                                        <Gamepad2 className="w-4 h-4 text-white" strokeWidth={2} />
-                                    </div>
-                                    <div className="flex flex-col leading-none">
-                                        <span className="font-display font-bold text-[15px] text-white tracking-tight">TECHPLAY</span>
-                                        <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--ink-low)] mt-[2px]">GAMING PORTAL</span>
-                                    </div>
+                                <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center" aria-label="TechPlay — home">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src="/techplay-logo.png" alt="TechPlay" width={144} height={24} className="h-[24px] w-auto" />
                                 </Link>
                                 <button
                                     onClick={() => setIsMobileMenuOpen(false)}

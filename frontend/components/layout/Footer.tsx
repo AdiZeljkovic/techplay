@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Gamepad2, Facebook, Twitter, Instagram, Youtube, ArrowRight, ArrowUp } from "lucide-react";
+import { Facebook, Twitter, Instagram, Youtube, ArrowRight, ArrowUp } from "lucide-react";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 
 const DiscordIcon = ({ className }: { className?: string }) => (
@@ -104,14 +104,16 @@ export default function Footer() {
 
                     {/* Brand column */}
                     <div className="flex flex-col">
-                        <Link href="/" className="flex items-center gap-3 group mb-5 w-fit">
-                            <span className="w-10 h-10 bg-[var(--accent)] rounded-[var(--radius-inner)] flex items-center justify-center shadow-[var(--glow-accent)] group-hover:bg-[var(--accent-hover)] transition-colors duration-300">
-                                <Gamepad2 className="w-5 h-5 text-white" strokeWidth={2} />
-                            </span>
-                            <span className="flex flex-col leading-none">
-                                <span className="font-display font-bold text-[18px] text-[var(--ink-hi)] tracking-tight leading-none">TECHPLAY</span>
-                                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--ink-low)] mt-[3px]">GAMING PORTAL</span>
-                            </span>
+                        <Link href="/" className="flex flex-col gap-2 group mb-5 w-fit" aria-label="TechPlay — home">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src="/techplay-logo.png"
+                                alt="TechPlay"
+                                width={192}
+                                height={32}
+                                className="h-[32px] w-auto group-hover:brightness-110 transition-[filter]"
+                            />
+                            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--ink-low)]">Gaming Portal</span>
                         </Link>
 
                         <p className="text-[13px] text-[var(--ink-low)] leading-relaxed mb-6 max-w-[280px]">
