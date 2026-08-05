@@ -11,7 +11,6 @@ import { TriviaService } from './services/TriviaService';
 import { RecapService } from './services/RecapService';
 import { SubscriptionService } from './services/SubscriptionService';
 import { ChallengeService } from './services/ChallengeService';
-import { PriveeService } from './services/PriveeService';
 
 console.log('🦉 Starting Professor Buffy (TechPlay Bot)...');
 
@@ -83,9 +82,6 @@ client.once(Events.ClientReady, async (readyClient) => {
 
     const challengeService = ChallengeService.getInstance(client);
     challengeService.start();
-
-    const priveeService = new PriveeService(client);
-    await priveeService.start();
 
     console.log('\n✅ All services started successfully!');
 });

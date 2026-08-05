@@ -296,11 +296,6 @@ class GiveawayResource extends Resource
                                         ->default(true)
                                         ->helperText('Anyone with the link can view'),
 
-                                    Toggle::make('requires_privee_auth')
-                                        ->label('Requires Privee authentication')
-                                        ->default(false)
-                                        ->helperText('Users must log in with a Privee account to enter. Replaces TechPlay login.')
-                                        ->columnSpanFull(),
                                 ]),
                         ]),
                 ])

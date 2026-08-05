@@ -8,7 +8,6 @@ import Image from "next/image";
 import { Gift, Clock, Users, Trophy, Check, ExternalLink, Share2, Loader2, Zap, Award, Star, CalendarDays, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
-import PriveeLoginCard from "./components/PriveeLoginCard";
 
 interface Task {
     id: number;
@@ -61,14 +60,6 @@ interface Giveaway {
         avatar: string | null;
     } | null;
     status: string;
-    requires_privee_auth: boolean;
-}
-
-interface PriveeEntry {
-    id: number;
-    privee_email: string | null;
-    privee_display_name: string | null;
-    entered_at: string;
 }
 
 interface Entry {
@@ -97,7 +88,6 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     const { user, isAuthenticated } = useAuth();
     const [giveaway, setGiveaway]           = useState<Giveaway | null>(null);
     const [entry, setEntry]                 = useState<Entry | null>(null);
-    const [priveeEntry, setPriveeEntry]     = useState<PriveeEntry | null>(null);
     const [loading, setLoading]             = useState(true);
     const [entering, setEntering]           = useState(false);
     const [completingTask, setCompletingTask] = useState<number | null>(null);
@@ -129,24 +119,11 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
         }
     }, [slug, isAuthenticated]);
 
-    const fetchPriveeEntry = useCallback(async () => {
-        try {
-            const res = await axios.get(`/giveaways/${slug}/privee/entry`);
-            setPriveeEntry(res.data.entry);
-        } catch (error) {
-            // No session — user hasn't logged in with Privee yet
-        }
-    }, [slug]);
 
     useEffect(() => { fetchGiveaway(); }, [fetchGiveaway]);
     useEffect(() => {
-        if (!giveaway) return;
-        if (giveaway.requires_privee_auth) {
-            fetchPriveeEntry();
-        } else {
-            fetchEntry();
-        }
-    }, [giveaway, fetchEntry, fetchPriveeEntry]);
+        if (giveaway) fetchEntry();
+    }, [giveaway, fetchEntry]);
 
     useEffect(() => {
         if (giveaway?.winner) {
@@ -592,38 +569,8 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
             <div className="max-w-3xl mx-auto px-4 pt-8 pb-20">
                 <div className="space-y-6">
 
-                        {/* Entry CTA — Privee giveaway */}
-                        {giveaway.requires_privee_auth && giveaway.timing.is_active && (
-                            priveeEntry ? (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 12 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="relative rounded-2xl border border-green-500/25 bg-green-500/[0.04] p-8 text-center overflow-hidden"
-                                >
-                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.06),transparent_70%)]" />
-                                    <div className="relative">
-                                        <div className="w-16 h-16 rounded-full bg-green-500/15 border border-green-500/25 flex items-center justify-center mx-auto mb-4">
-                                            <Check className="w-8 h-8 text-green-400" />
-                                        </div>
-                                        <h2 className="text-2xl font-black text-green-400 mb-2">You&apos;re in!</h2>
-                                        <p className="text-sm text-white/50">
-                                            Entered as <span className="text-white font-bold">{priveeEntry.privee_display_name || priveeEntry.privee_email}</span>
-                                        </p>
-                                    </div>
-                                </motion.div>
-                            ) : (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 12 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="rounded-2xl border border-[var(--accent)]/20 bg-white/[0.02] p-6 shadow-[0_0_40px_rgba(252,65,0,0.06)]"
-                                >
-                                    <PriveeLoginCard slug={slug} onSuccess={setPriveeEntry} />
-                                </motion.div>
-                            )
-                        )}
-
-                        {/* Entry CTA — Standard giveaway */}
-                        {!giveaway.requires_privee_auth && (
+                        {/* Entry CTA */}
+                        {(
                             !isAuthenticated ? (
                                 <motion.div
                                     initial={{ opacity: 0, y: 12 }}

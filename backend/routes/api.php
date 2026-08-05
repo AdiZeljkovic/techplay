@@ -55,7 +55,6 @@ use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PayPalController;
 use App\Http\Controllers\Api\V1\PayPalWebhookController;
 use App\Http\Controllers\Api\V1\PresenceController;
-use App\Http\Controllers\Api\V1\PriveeGiveawayController;
 use App\Http\Controllers\Api\V1\QuestController;
 use App\Http\Controllers\Api\V1\ReadingController;
 use App\Http\Controllers\Api\V1\RecognitionController;
@@ -576,13 +575,6 @@ Route::prefix('v1')->group(function () {
 
         // Read actions - more relaxed
         Route::get('/giveaways/{slug}/my-entry', [GiveawayController::class, 'myEntry']);
-    });
-
-    // Privee giveaway auth — separate from TechPlay auth (no sanctum required)
-    Route::middleware('throttle:20,1')->prefix('giveaways/{slug}/privee')->group(function () {
-        Route::post('/login', [PriveeGiveawayController::class, 'login']);
-        Route::post('/google-login', [PriveeGiveawayController::class, 'googleLogin']);
-        Route::get('/entry', [PriveeGiveawayController::class, 'myEntry']);
     });
 
     // ═══════════════════════════════════════════════════════════════════════
