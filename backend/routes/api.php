@@ -51,6 +51,7 @@ use App\Http\Controllers\Api\V1\MediaKitController;
 use App\Http\Controllers\Api\V1\MessageController;
 use App\Http\Controllers\Api\V1\NavigationController;
 use App\Http\Controllers\Api\V1\NewsController;
+use App\Http\Controllers\Api\V1\NewsroomController;
 use App\Http\Controllers\Api\V1\NewsletterController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PayPalController;
@@ -377,6 +378,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/feed/latest', [FeedController::class, 'latest']);
 
         // News
+        // One endpoint for news, reviews and tech — they are the same model
+        // told apart by their category's type.
+        Route::get('/newsroom/{section}', [NewsroomController::class, 'index']);
         Route::get('/news', [NewsController::class, 'index']);
         Route::get('/news/trending', [NewsController::class, 'trending']);
         Route::get('/news/{slug}', [NewsController::class, 'show']);

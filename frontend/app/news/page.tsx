@@ -1,5 +1,5 @@
 
-import NewsClient from "./NewsClient";
+import SectionHub from "@/components/editorial/SectionHub";
 import { generateDynamicMetadata } from "@/lib/seo";
 import { getServerApiUrl } from "@/lib/api";
 import { Metadata } from "next";
@@ -27,5 +27,5 @@ async function getInitialNews() {
 export default async function NewsPage() {
     const initialData = await getInitialNews();
 
-    return <NewsClient initialData={initialData} />;
+    return <SectionHub section="news" initialData={initialData} />;
 }

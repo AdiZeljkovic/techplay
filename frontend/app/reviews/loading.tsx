@@ -1,20 +1,5 @@
-import { CardGridSkeleton } from "@/components/ui/Skeleton";
+import SectionHubSkeleton from "@/components/editorial/SectionHubSkeleton";
 
-/**
- * Loading state for /reviews page
- * Shows skeleton cards while reviews are being fetched
- */
-export default function ReviewsLoading() {
-    return (
-        <div className="min-h-screen">
-            {/* Hero Skeleton */}
-            <div className="h-[40vh] bg-[var(--bg-elevated)] animate-pulse" />
-
-            {/* Content */}
-            <div className="container mx-auto px-4 py-12">
-                <div className="h-8 w-48 bg-[var(--bg-elevated)] rounded animate-pulse mb-8" />
-                <CardGridSkeleton count={9} />
-            </div>
-        </div>
-    );
+export default function Loading() {
+    return <SectionHubSkeleton />;
 }

@@ -1,4 +1,4 @@
-import HardwareClient from "./HardwareClient";
+import SectionHub from "@/components/editorial/SectionHub";
 import { Metadata } from "next";
 import { generatePageMetadata } from "@/lib/seo";
 import { getServerApiUrl } from "@/lib/api";
@@ -29,5 +29,5 @@ async function getInitialHardware() {
 export default async function HardwarePage() {
     const initialData = await getInitialHardware();
 
-    return <HardwareClient initialData={initialData} />;
+    return <SectionHub section="tech" initialData={initialData} />;
 }

@@ -45,6 +45,7 @@
 
 | Metoda | Ruta | Controller::Metoda | Auth | Opis |
 |--------|------|--------------------|------|------|
+| GET | `/newsroom/{section}` | NewsroomController::index | - | Okvir sekcijske stranice: tabovi s brojevima, spotlight, ticker, most read, upcoming releases, stats. `section` = news\|reviews\|tech\|guides; nepoznata sekcija → 404 |
 | GET | `/news` | NewsController::index | - | Lista news članaka |
 | GET | `/news/trending` | NewsController::trending | - | Trending news |
 | GET | `/news/{slug}` | NewsController::show | - | Detalj news članka |

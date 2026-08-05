@@ -20,8 +20,26 @@ Sve stranice su u `frontend/app/`. Svaki folder = ruta.
 | `/` | `app/page.tsx` | Homepage — ISR gost verzija; `app/HomeGate.tsx` client-side swapa logovane korisnike na dashboard (`components/home-dashboard/DashboardHome`, podaci iz `GET /me/dashboard` + self-fetching widgeti). Gate koristi `hooks/useAuth`, ne AuthContext |
 | `/news` | `app/news/` | News listing + `[slug]` detalj |
 | `/reviews` | `app/reviews/` | Reviews listing + `[slug]` detalj |
-| `/guides` | `app/guides/` | Guides listing + `[slug]` detalj |
-| `/hardware` | `app/hardware/` | Tech/hardware listing + `[slug]` detalj |
+| `/guides` | `app/guides/` | Guides listing + `[slug]` detalj — dijeli `components/editorial/SectionHub` |
+
+### Sekcijske stranice (news / reviews / hardware / guides)
+
+Sve četiri renderuje jedna komponenta, `components/editorial/SectionHub`, uz
+`components/editorial/sections.ts` gdje su skupljene razlike: endpoint ključ,
+URL prefiks (tech članci žive pod `/hardware`), naziv filter parametra
+(`category` vs `difficulty` za guides) i da li kategorija ima vlastitu stranicu.
+
+Okvir stranice (tabovi s brojevima, spotlight, ticker, most read, upcoming
+releases, stats) dolazi s `GET /newsroom/{section}`; sama lista i dalje ide na
+postojeći endpoint sekcije, jer admin za svaku ima zasebnu površinu za pisanje.
+
+Dva mjesta gdje se razlikuju:
+- **Hardware tabovi su linkovi**, ne filteri — `/hardware/benchmarks` i slične
+  su stvarne indeksirane rute, pa bi filtriranje na mjestu ostavilo te stranice
+  bez ijednog internog linka. News i reviews nemaju takve rute i filtriraju na mjestu.
+- **Guides liste vraćaju goli paginator** (`current_page` na vrhu), articles
+  resource collection (`meta`). `SectionHub` čita oba oblika.
+| `/hardware` | `app/hardware/` | Tech/hardware listing + `[slug]` detalj — dijeli `components/editorial/SectionHub` |
 | `/videos` | `app/videos/` | Videos listing + `[slug]` detalj |
 | `/games` | `app/games/` | Game database listing + `[slug]` detalj |
 | `/calendar` | `app/calendar/` | Release calendar |

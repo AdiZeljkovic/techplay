@@ -1,5 +1,5 @@
 
-import ReviewsClient from "./ReviewsClient";
+import SectionHub from "@/components/editorial/SectionHub";
 import { generateDynamicMetadata } from "@/lib/seo";
 import { getServerApiUrl } from "@/lib/api";
 import { Metadata } from "next";
@@ -27,5 +27,5 @@ async function getInitialReviews() {
 export default async function ReviewsPage() {
     const initialData = await getInitialReviews();
 
-    return <ReviewsClient initialData={initialData} />;
+    return <SectionHub section="reviews" initialData={initialData} />;
 }

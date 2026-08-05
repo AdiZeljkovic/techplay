@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { generatePageMetadata } from "@/lib/seo";
-import GuidesClientPage from "@/components/guides/GuidesClientPage";
+import SectionHub from "@/components/editorial/SectionHub";
 import { getServerApiUrl } from "@/lib/api";
 
 // Revalidate every 15 minutes
@@ -29,5 +29,5 @@ async function getInitialGuides() {
 export default async function GuidesPage() {
     const initialData = await getInitialGuides();
 
-    return <GuidesClientPage initialData={initialData} />;
+    return <SectionHub section="guides" initialData={initialData} />;
 }
