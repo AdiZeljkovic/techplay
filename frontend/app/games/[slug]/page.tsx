@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { getApiUrl } from "@/lib/api";
+import { fetchContent } from "@/lib/fetchContent";
 import {
     Calendar, Star, Globe, Gamepad2, ChevronLeft, Tag, Info,
     Layers, Shield, Newspaper, Users, Cpu, Package, Eye,
@@ -103,9 +104,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const { slug } = await params;
 
     try {
-        const res = await fetch(`${getApiUrl()}/games/${slug}`);
-        if (!res.ok) return { title: "Game Not Found — TechPlay" };
-        const game: GameDetail = await res.json();
+        const game = await fetchContent<GameDetail>(`${getApiUrl()}/games/${slug}`);
+        if (!game) return { title: "Game Not Found — TechPlay" };
 
         const year      = game.released ? new Date(game.released).getFullYear() : null;
         const platforms = (game.platforms ?? []).slice(0, 3).join(", ");
@@ -283,12 +283,17 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
     const { slug } = await params;
     const base     = getApiUrl();
 
+    // The main record goes through fetchContent: a real 404/410 renders
+    // notFound, a backend hiccup retries and then throws — it must never
+    // become a cached claim that the game does not exist. The side rails
+    // swallow their failures instead; a page without suggestions is a page,
+    // a page that 404s because the screenshots call dropped is a lie.
     const [game, screenshotsRes, seriesRes, suggestedRes, articlesRes] = await Promise.all([
-        fetch(`${base}/games/${slug}`).then((r) => (r.ok ? r.json() : null)),
-        fetch(`${base}/games/${slug}/screenshots`).then((r) => (r.ok ? r.json() : null)),
-        fetch(`${base}/games/${slug}/series`).then((r) => (r.ok ? r.json() : null)),
-        fetch(`${base}/games/${slug}/suggested`).then((r) => (r.ok ? r.json() : null)),
-        fetch(`${base}/games/${slug}/articles`).then((r) => (r.ok ? r.json() : null)),
+        fetchContent<GameDetail>(`${base}/games/${slug}`),
+        fetch(`${base}/games/${slug}/screenshots`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        fetch(`${base}/games/${slug}/series`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        fetch(`${base}/games/${slug}/suggested`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        fetch(`${base}/games/${slug}/articles`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ]) as [GameDetail | null, { results: ApiScreenshot[] } | null, { results: GameListItem[] } | null, { results: GameListItem[] } | null, { data: RelatedArticle[] } | null];
 
     if (!game) notFound();
