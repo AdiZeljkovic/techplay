@@ -37,9 +37,9 @@ class GameObserver
         }
 
         // Local API cache is always busted, even from CLI/queue jobs
-        Cache::forget("games.show.v2.{$game->slug}");
+        Cache::forget("games.show.v3.{$game->slug}");
         if ($game->wasChanged('slug')) {
-            Cache::forget('games.show.v2.'.$game->getOriginal('slug'));
+            Cache::forget('games.show.v3.'.$game->getOriginal('slug'));
         }
 
         // Outbound HTTP (revalidation, IndexNow) only for web requests, so bulk
@@ -71,7 +71,7 @@ class GameObserver
             return;
         }
 
-        Cache::forget("games.show.v2.{$game->slug}");
+        Cache::forget("games.show.v3.{$game->slug}");
         Cache::forget("games.articles.v1.{$game->id}");
 
         if (app()->runningInConsole()) {

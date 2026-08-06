@@ -126,7 +126,7 @@ class GameController extends Controller
 
     public function show(Request $request, string $slug)
     {
-        $payload = Cache::remember("games.show.v2.{$slug}", 600, fn () => $this->buildShowPayload($slug));
+        $payload = Cache::remember("games.show.v3.{$slug}", 600, fn () => $this->buildShowPayload($slug));
 
         if (! $payload) {
             // Deleted on purpose (adult purge) answers 410, so crawlers drop
@@ -220,11 +220,36 @@ class GameController extends Controller
             'series_key' => $game->series_key,
             'series_name' => $game->series_name,
             'videos' => $game->videos ?? [],
+            'box_art' => $this->boxArt($raw),
             'screenshots_count' => count(array_is_list($game->screenshots ?? [])
                 ? ($game->screenshots ?? [])
                 : (($game->screenshots ?? [])['screenshots'] ?? ($game->screenshots ?? [])['results'] ?? [])),
             'views' => (int) $game->views,
         ];
+    }
+
+    /**
+     * The box-art gallery, flattened out of the Moby payload's nesting
+     * ([{covers: [{image, scan_of}]}]) — front covers first, since that is
+     * the shot people mean by "the box".
+     *
+     * @return array<int,array{image:string,thumbnail:?string,label:?string}>
+     */
+    private function boxArt(array $raw): array
+    {
+        return collect($raw['covers'] ?? [])
+            ->flatMap(fn ($group) => $group['covers'] ?? [])
+            ->filter(fn ($c) => ! empty($c['image']))
+            ->map(fn ($c) => [
+                'image' => $c['image'],
+                'thumbnail' => $c['thumbnail_image'] ?? null,
+                'label' => $c['scan_of'] ?? null,
+            ])
+            ->unique('image')
+            ->sortBy(fn ($c) => $c['label'] === 'Front Cover' ? 0 : 1)
+            ->take(12)
+            ->values()
+            ->all();
     }
 
     public function articles(string $slug)

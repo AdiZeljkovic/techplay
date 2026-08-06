@@ -47,7 +47,7 @@ function Lightbox({ images, initial, onClose }: {
             </button>
             <div className="relative w-full max-w-5xl max-h-[80vh] mx-16" onClick={(e) => e.stopPropagation()}>
                 <Image src={images[idx].image} alt={`Screenshot ${idx + 1}`} width={1920} height={1080}
-                    className="w-full h-auto max-h-[80vh] object-contain rounded-xl" />
+                    className="w-full h-auto max-h-[80vh] object-contain rounded-[8px]" />
                 <p className="text-center text-white/40 text-sm mt-3">{idx + 1} / {images.length}</p>
             </div>
             <button onClick={(e) => { e.stopPropagation(); next(); }}
@@ -69,7 +69,7 @@ export default function GameScreenshotsLightbox({ screenshots, wrapperClassName 
                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                     {screenshots.map((s, i) => (
                         <button key={s.id} onClick={() => setLightboxIdx(i)}
-                            className="relative shrink-0 w-48 h-28 rounded-xl overflow-hidden border border-white/10 hover:border-[var(--accent)] transition-all group">
+                            className="relative shrink-0 w-48 h-28 rounded-[8px] overflow-hidden border border-white/[0.07] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors group">
                             <Image src={s.image} alt={`Screenshot ${i + 1}`} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors flex items-center justify-center">
                                 <Camera className="w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
