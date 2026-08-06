@@ -1,79 +1,87 @@
 # Achievement icon mapping
 
-Source: `C:\Users\adize\Desktop\Achivments` (7 packs × 10 icons, 70 total).
-Every icon was reviewed and matched to the achievement whose *meaning* it
-carries, not just its category. Target: `storage/app/public/achievements/`.
+Source: `C:\Users\adize\Desktop\ach` — 66 cards, delivered 08/2026.
 
-| Pack | # | What the icon shows | Achievement | File |
-|---|---|---|---|---|
-| 1 | 1 | Crosshair, orange core | In the Zone | in-the-zone.png |
-| 1 | 2 | Compass rose, green | Game Hunter | game-hunter.png |
-| 1 | 3 | Fist bump + heart | Friendly | friendly.png |
-| 1 | 4 | Dog tag: controller + person | Gamer Tag | gamer-tag.png |
-| 1 | 5 | 4 device quadrants (gold) | Multi-Platform | multi-platform.png |
-| 1 | 6 | PC tower + monitor, RGB | Battlestation | battlestation.png |
-| 1 | 7 | Shield + green check | Verified Gamer | verified-gamer.png |
-| 1 | 8 | Speech bubble + first spark | First Steps | first-steps.png |
-| 1 | 9 | Two speech bubbles | Active Voice | active-voice.png |
-| 1 | 10 | Branching bubble tree | Conversation Starter | conversation-starter.png |
-| 2 | 1 | Star + rising chevrons | Rising Star | rising-star.png |
-| 2 | 2 | Stacked speech bubbles | Prolific Poster | prolific-poster.png |
-| 2 | 3 | Crown + laurel + bubbles | Forum Legend | forum-legend.png |
-| 2 | 4 | Spiked shield, crowned bubble | Discussion Leader | discussion-leader.png |
-| 2 | 5 | Greek column + handshake | Community Pillar | community-pillar.png |
-| 2 | 6 | Diamond + crown + laurel | Recognized | recognized.png |
-| 2 | 7 | "5" hexagon | Level 5 | level-5.png |
-| 2 | 8 | "10" hexagon | Level 10 | level-10.png |
-| 2 | 9 | "25" hexagon | Level 25 | level-25.png |
-| 2 | 10 | "50" hexagon | Level 50 | level-50.png |
-| 3 | 1 | Three figures + laurel | Socialite | socialite.png |
-| 3 | 2 | Crowned head + hearts | Beloved | beloved.png |
-| 3 | 3 | Rocket launching | Early Adopter | early-adopter.png |
-| 3 | 4 | Hands holding star + chip | TechPlay Patron | techplay-patron.png |
-| 3 | 5 | Ornate gold shield + diamond | Legacy Supporter | legacy-supporter.png |
-| 3 | 6 | Treasure chest, gems | Collector | collector.png |
-| 3 | 7 | Wallet + coins | Gear Collector | gear-collector.png |
-| 3 | 8 | Quote bubble + pencil | First Opinion | first-opinion.png |
-| 3 | 9 | Quill + 3 stars | Critic | critic.png |
-| 3 | 10 | Megaphone + crowd | Voice of the People | voice-of-the-people.png |
-| 4 | 1 | Few cases on a shelf, green | Growing Library | growing-library.png |
-| 4 | 2 | Full bookshelf + trophy, gold | Librarian | librarian.png |
-| 4 | 3 | Overflowing pile of cases | Game Hoarder | game-hoarder.png |
-| 4 | 4 | Library shelves + open book | Dedicated Collector | dedicated-collector.png |
-| 4 | 5 | 4 device quadrants (blue) | Platform Pioneer | platform-pioneer.png |
-| 4 | 6 | Devices in circular sync | Cross-Platform Gamer | cross-platform-gamer.png |
-| 4 | 7 | Lit trophy display case | Shelf Starter | shelf-starter.png |
-| 4 | 8 | Display shelf, trophy + gem | Serious Shelf | serious-shelf.png |
-| 4 | 9 | Bank vault + green gems | The Vault | the-vault.png |
-| 4 | 10 | Museum temple + gold star | Museum Curator | museum-curator.png |
-| 5 | 1 | Trophy + green check | Finisher | finisher.png |
-| 5 | 2 | Trophy + 5 check shields | Completionist | completionist.png |
-| 5 | 3 | Crowned trophy + swords | Master of Games | master-of-games.png |
-| 5 | 4 | Sword slashing a checklist | First Blood | first-blood.png |
-| 5 | 5 | "X" + sword + tally marks | Ten Down | ten-down.png |
-| 5 | 6 | Sword through chained stack | Backlog Slayer | backlog-slayer.png |
-| 5 | 7 | Crowned trophy on cleared pile | Backlog Conqueror | backlog-conqueror.png |
-| 5 | 8 | Controller orbited by platforms | Juggler | juggler.png |
-| 5 | 9 | Shooting star + game case | Dreamer | dreamer.png |
-| 5 | 10 | Shop window + bag + star | Window Shopper | window-shopper.png |
-| 6 | 1 | Calendar full of checks | Dedicated | dedicated.png |
-| 6 | 2 | Calendar + 3 chevron checks | Consistent | consistent.png |
-| 6 | 3 | Calendar on fire | Warming Up | warming-up.png |
-| 6 | 4 | 7 segments, last alight | One Week Strong | one-week-strong.png |
-| 6 | 5 | Anvil + forge + check | Iron Habit | iron-habit.png |
-| 6 | 6 | Shield in unbroken chains | Unbreakable | unbreakable.png |
-| 6 | 7 | Power connector + nodes | Plugged In | plugged-in.png |
-| 6 | 8 | Headset + chat bubbles | Discord Native | discord-native.png |
-| 6 | 9 | Bulb + tools + puzzle + check | Problem Solver | problem-solver.png |
-| 6 | 10 | Gears + wrenches + check | Solution Machine | solution-machine.png |
-| 7 | 1 | Podium + mics + crown | Agenda Setter | agenda-setter.png |
-| 7 | 2 | Open book + quill + laurel | Essayist | essayist.png |
-| 7 | 3 | Trophy with a heart | Popular | popular.png |
-| 7 | 4 | Trophy + location pin | Local Legend | local-legend.png |
-| 7 | 5 | Temple + gold star | Hall of Fame | hall-of-fame.png |
-| 7 | 6 | Squad of 4 armoured figures | Elite Member | elite-member.png |
+Unlike the previous set, these arrive as full presentation cards: the name,
+the description, the icon and the points are all printed on each one. Nothing
+below is inferred from the artwork — every card was opened and read, and the
+points on it were checked against the catalogue.
 
-**Not iconed:** Squad Goals — hidden until referrals ship.
+The UI draws no frame of its own, so the badge has to *be* the artwork. The
+extractor (kept out of the repo; see the commit that added these) peels the
+card off the transparent canvas by alpha, steps inside its lit border, keys
+the icon off its panel by luminance, and takes the icon as the largest cluster
+of connected blobs inside the middle band. Output is 256x256 PNG with alpha.
 
-Reputation ladder reads left to right: Rising Star (star) → Recognized
-(diamond) → Local Legend (pin) → Hall of Fame (temple).
+**Three achievements have no card in this delivery and keep their old
+hexagonal art:** Critic, First Opinion, Voice of the People. They will look
+different from the rest until art arrives for them.
+
+| # | Achievement | File | What the icon shows |
+|---|---|---|---|
+| 0 | Verified Gamer | verified-gamer.png | Shield + tick |
+| 1 | Gamer Tag | gamer-tag.png | ID card, locked |
+| 2 | Multi-Platform | multi-platform.png | Xbox + two PlayStation nodes |
+| 3 | Battlestation | battlestation.png | Monitor + tower |
+| 4 | Discord Native | discord-native.png | Discord mark in a bubble |
+| 5 | Plugged In | plugged-in.png | Three linked nodes |
+| 6 | Early Adopter | early-adopter.png | Rocket launching |
+| 7 | Game Hunter | game-hunter.png | Case + magnifier |
+| 8 | Growing Library | growing-library.png | Stack of cases |
+| 9 | Dedicated Collector | dedicated-collector.png | Filled shelf |
+| 10 | Game Hoarder | game-hoarder.png | Crates piled on a cabinet |
+| 11 | Librarian | librarian.png | Full bookcase |
+| 12 | Platform Pioneer | platform-pioneer.png | Two consoles, sync arrows |
+| 13 | Cross-Platform Gamer | cross-platform-gamer.png | Four linked PlayStation nodes |
+| 14 | In the Zone | in-the-zone.png | Crosshair on a pad |
+| 15 | Juggler | juggler.png | Three pads in the air |
+| 16 | Dreamer | dreamer.png | Star rosette |
+| 17 | Window Shopper | window-shopper.png | Shopfront with hearts |
+| 18 | Finisher | finisher.png | Chequered flag |
+| 19 | Completionist | completionist.png | Ticked clipboard |
+| 20 | Master of Games | master-of-games.png | Crowned trophy |
+| 21 | First Blood | first-blood.png | Sword through one brick wall |
+| 22 | Ten Down | ten-down.png | Brick wall + "10" |
+| 23 | Backlog Slayer | backlog-slayer.png | Sword across scattered bricks |
+| 24 | Backlog Conqueror | backlog-conqueror.png | Crown on a brick wall |
+| 25 | First Steps | first-steps.png | Single speech bubble |
+| 26 | Conversation Starter | conversation-starter.png | Bubble + plus |
+| 27 | Active Voice | active-voice.png | Bubble with a waveform |
+| 28 | Prolific Poster | prolific-poster.png | Dense bubble |
+| 29 | Elite Member | elite-member.png | Crowned bubble |
+| 30 | Discussion Leader | discussion-leader.png | Two overlapping bubbles |
+| 31 | Essayist | essayist.png | Long document |
+| 32 | Forum Legend | forum-legend.png | Bubble in laurels |
+| 33 | Agenda Setter | agenda-setter.png | Megaphone |
+| 34 | Problem Solver | problem-solver.png | Hammer + wrench |
+| 35 | Solution Machine | solution-machine.png | Cog + tick + arrow |
+| 36 | Beloved | beloved.png | Heart |
+| 37 | Community Pillar | community-pillar.png | Column + arrow |
+| 38 | — | — | Collection poster, not a badge — skipped |
+| 39 | Rising Star | rising-star.png | Violet star |
+| 40 | Recognized | recognized.png | Star rosette, violet |
+| 41 | Local Legend | local-legend.png | Star on a shield |
+| 42 | Hall of Fame | hall-of-fame.png | Building in laurels |
+| 43 | Level 5 | level-5.png | "5" in a ring |
+| 44 | Level 10 | level-10.png | "10" in a ring |
+| 45 | Level 25 | level-25.png | "25" in a ring |
+| 46 | Level 50 | level-50.png | "50" in a ring |
+| 47 | Warming Up | warming-up.png | Calendar "3" + flame |
+| 48 | One Week Strong | one-week-strong.png | Calendar "7" + flame |
+| 49 | Iron Habit | iron-habit.png | Calendar "30" |
+| 50 | Unbreakable | unbreakable.png | Calendar "100" |
+| 51 | Consistent | consistent.png | Ticked calendar + star |
+| 52 | Dedicated | dedicated.png | Filled calendar + star |
+| 53 | Friendly | friendly.png | Figure + plus |
+| 54 | Socialite | socialite.png | Three figures |
+| 55 | Popular | popular.png | Crowd |
+| 56 | Squad Goals | squad-goals.png | Handshake + lock |
+| 57 | The Vault | the-vault.png | Safe door |
+| 58 | Shelf Starter | shelf-starter.png | Three trophies, one lit |
+| 59 | Serious Shelf | serious-shelf.png | Three trophies, all lit |
+| 60 | — | — | Second copy of The Vault — skipped |
+| 61 | Museum Curator | museum-curator.png | Museum facade |
+| 62 | Collector | collector.png | Shopping bag |
+| 63 | Gear Collector | gear-collector.png | Bag + cog |
+| 64 | TechPlay Patron | techplay-patron.png | Heart on a shield |
+| 65 | Legacy Supporter | legacy-supporter.png | Crowned "12" shield |
