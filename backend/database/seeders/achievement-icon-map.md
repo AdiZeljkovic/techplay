@@ -7,11 +7,11 @@ the description, the icon and the points are all printed on each one. Nothing
 below is inferred from the artwork — every card was opened and read, and the
 points on it were checked against the catalogue.
 
-The UI draws no frame of its own, so the badge has to *be* the artwork. The
-extractor (kept out of the repo; see the commit that added these) peels the
-card off the transparent canvas by alpha, steps inside its lit border, keys
-the icon off its panel by luminance, and takes the icon as the largest cluster
-of connected blobs inside the middle band. Output is 256x256 PNG with alpha.
+**The card is the asset.** It is installed whole, exactly as delivered; the
+only change is scaling to a 640px long edge so 64 of them are not 130 MB in
+the repo, and trimming the blank transparent margin around the card so it does
+not shrink inside whatever box renders it. Nothing is cropped out of the card
+and nothing is keyed.
 
 **Three achievements have no card in this delivery and keep their old
 hexagonal art:** Critic, First Opinion, Voice of the People. They will look
