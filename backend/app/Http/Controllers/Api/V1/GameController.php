@@ -68,7 +68,7 @@ class GameController extends Controller
             $this->logSearchQuery($search);
         }
 
-        $cacheKey = 'games.index.v1.'.md5(json_encode([
+        $cacheKey = 'games.index.v2.'.md5(json_encode([
             $search, $genre, $platform, $tag, $ordering, $yearFrom, $yearTo, $minRating, $status, $page, $pageSize,
         ]));
 
@@ -87,16 +87,27 @@ class GameController extends Controller
                 ->when($status === 'undated', fn ($q) => $q->whereNull('released'))
                 ->select(['id', 'slug', 'name', 'released', 'rating', 'cover_url', 'platforms', 'genres']);
 
-            // Ordering
+            // The game itself before its editions: a search for "Half-Life 2"
+            // should lead with the game, not sixteen compilations of it.
+            // Within an explicit Compilation/Add-on filter every row carries
+            // the same penalty, so this changes nothing there. (Postgres
+            // array-overlap; the sqlite test database skips the demote.)
+            if (DB::getDriverName() === 'pgsql') {
+                $q->orderByRaw("(genres && ARRAY['Add-on','Compilation','Special edition']::text[])::int asc");
+            }
+
+            // Ordering. DESC on Postgres puts NULLs first, which led every
+            // "Top Rated" list with unrated games — hence the explicit
+            // NULLS LAST (modern SQLite accepts the same spelling).
             match ($ordering) {
                 'rating' => $q->orderBy('rating'),
-                '-released' => $q->orderByDesc('released'),
+                '-released' => $q->orderByRaw('released DESC NULLS LAST'),
                 'released' => $q->orderBy('released'),
                 'name' => $q->orderBy('name'),
                 '-name' => $q->orderByDesc('name'),
                 '-views' => $q->orderByDesc('views'),  // trending by real page views
                 '-added' => $q->orderByDesc('id'),     // recently added to the database
-                default => $q->orderByDesc('rating'),  // -rating (default)
+                default => $q->orderByRaw('rating DESC NULLS LAST'),  // -rating (default)
             };
 
             $games = $q->paginate($pageSize, ['*'], 'page', $page);

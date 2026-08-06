@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\LevelService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class SearchController extends Controller
@@ -90,6 +91,9 @@ class SearchController extends Controller
             $results = Game::query()
                 ->where('name', 'ILIKE', "%{$query}%")
                 ->whereNotNull('description')
+                // The game before its editions — same demote as the catalogue list.
+                ->when(DB::getDriverName() === 'pgsql', fn ($q) => $q
+                    ->orderByRaw("(genres && ARRAY['Add-on','Compilation','Special edition']::text[])::int asc"))
                 ->orderByDesc('rating')
                 ->select('id', 'name', 'slug', 'cover_url', 'released', 'rating')
                 ->limit(5)
