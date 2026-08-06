@@ -15,6 +15,11 @@ return [
         'token' => env('INTERNAL_API_TOKEN'),
     ],
 
+    'opencritic' => [
+        'key' => env('RAPIDAPI_KEY'),
+        'daily_budget' => env('OPENCRITIC_DAILY_BUDGET', 24),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

@@ -24,6 +24,9 @@ Schedule::job(new SendGiveawayReminders)->everySixHours();
 // CALENDAR: tell watchers their game landed, once, on release day
 Schedule::job(new SendReleaseReminders)->dailyAt('09:00');
 
+// One daily sip from the OpenCritic API budget — most-viewed modern games first.
+Schedule::command('games:enrich-opencritic')->dailyAt('05:30');
+
 // PERFORMANCE: Clean old view tracking records daily (keep last 7 days)
 Schedule::command('views:clean')->daily();
 
