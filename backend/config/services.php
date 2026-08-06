@@ -20,6 +20,11 @@ return [
         'daily_budget' => env('OPENCRITIC_DAILY_BUDGET', 24),
     ],
 
+    'youtube' => [
+        'key' => env('YOUTUBE_API_KEY'),
+        'daily_budget' => env('YOUTUBE_DAILY_BUDGET', 90),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
