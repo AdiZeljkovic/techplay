@@ -10,24 +10,31 @@ const FEATURES = [
 ];
 
 /**
- * Closing conversion band. The right side is the dashboard itself, staged —
- * one produced shot of the product sells it better than a live card that
- * depends on whoever happens to top the leaderboard that week.
+ * Closing conversion band. The staged dashboard shot IS the box — the scene
+ * is dark on the left by design, so the pitch sits directly on it and the
+ * product glows behind the words instead of beside them.
  */
 export default function ProfileCtaBand() {
     return (
-        <section className="relative rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] overflow-hidden">
-            {/* Crown + ambient depth */}
-            <span aria-hidden className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent" />
-            <span aria-hidden className="absolute inset-0 bg-hud-grid opacity-60 pointer-events-none" />
-            <span
+        <section className="relative rounded-[var(--radius-panel)] border border-[var(--line)] overflow-hidden">
+            {/* The scene, full bleed — dashboard anchored right where the render puts it */}
+            <Image
+                src="/images/profile-showcase.webp"
+                alt=""
                 aria-hidden
-                className="pointer-events-none absolute -right-24 -top-32 w-[560px] h-[560px] rounded-full opacity-[0.10]"
-                style={{ background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)" }}
+                fill
+                sizes="(max-width: 1280px) 100vw, 1280px"
+                className="object-cover object-[72%_center]"
+                priority={false}
             />
+            {/* Legibility scrim: solid under the words, gone over the product */}
+            <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)]/95 via-[var(--surface-0)]/60 to-transparent" />
+            <span aria-hidden className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--surface-0)]/70 to-transparent" />
+            {/* Crown */}
+            <span aria-hidden className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent" />
 
-            <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 p-6 md:p-10 items-center">
-                {/* ── Pitch ── */}
+            <div className="relative grid grid-cols-1 lg:grid-cols-2 p-6 md:p-10 lg:py-14">
+                {/* ── Pitch, on the dark side of the scene ── */}
                 <div className="flex flex-col justify-center">
                     <p className="flex items-center gap-2.5 font-display text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--accent)] mb-3">
                         <span className="w-1 h-4 rounded-full bg-[var(--accent)]" />
@@ -74,22 +81,8 @@ export default function ProfileCtaBand() {
                     </div>
                 </div>
 
-                {/* ── The dashboard, staged ── */}
-                <div className="relative">
-                    <div className="relative rounded-[var(--radius-panel)] border border-[var(--line-strong)] overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.5)]">
-                        <Image
-                            src="/images/profile-showcase.webp"
-                            alt="A TechPlay profile dashboard — games played, achievements, rank and community"
-                            width={1672}
-                            height={941}
-                            sizes="(max-width: 1024px) 100vw, 640px"
-                            className="w-full h-auto"
-                        />
-                    </div>
-                    <p className="mt-3 text-center text-[11px] text-[var(--ink-faint)]">
-                        Yours starts empty — and fills up fast.
-                    </p>
-                </div>
+                {/* Right half belongs to the render itself; it only needs the room. */}
+                <div aria-hidden className="hidden lg:block min-h-[380px]" />
             </div>
         </section>
     );
