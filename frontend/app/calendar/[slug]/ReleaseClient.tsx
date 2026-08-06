@@ -6,6 +6,7 @@ import axios from "@/lib/axios";
 import { Heart, Bell, BellRing, Check, Loader2, ExternalLink, X, Store } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
+import TrailerPlayer from "@/components/games/TrailerPlayer";
 import type { Release } from "./page";
 
 /** Store buttons carry the storefront's own colour, which is how people find them. */
@@ -59,14 +60,7 @@ export default function ReleaseClient({ release }: { release: Release }) {
                     {/* ── trailer, if a studio cut one ── */}
                     {release.trailers.length > 0 && (
                         <Panel title="Trailer" padding="none">
-                            <video
-                                controls
-                                preload="metadata"
-                                poster={release.cover_url ?? undefined}
-                                className="w-full aspect-video bg-black"
-                            >
-                                <source src={release.trailers[0]} />
-                            </video>
+                            <TrailerPlayer src={release.trailers[0]} poster={release.cover_url} />
                         </Panel>
                     )}
 

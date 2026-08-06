@@ -221,11 +221,39 @@ class GameController extends Controller
             'series_name' => $game->series_name,
             'videos' => $game->videos ?? [],
             'box_art' => $this->boxArt($raw),
+            'critic_scores' => $game->critic_scores,
+            'techplay_score' => $this->techplayScore($game),
             'screenshots_count' => count(array_is_list($game->screenshots ?? [])
                 ? ($game->screenshots ?? [])
                 : (($game->screenshots ?? [])['screenshots'] ?? ($game->screenshots ?? [])['results'] ?? [])),
             'views' => (int) $game->views,
         ];
+    }
+
+    /**
+     * The TechPlay score, same blend the ratings endpoint serves: our own
+     * editorial review (60%) against the community stars (40%), each alone
+     * when the other is missing. Computed, never stored — a stored copy
+     * would only ever be stale.
+     */
+    private function techplayScore(Game $game): ?float
+    {
+        $editorial = Article::where('game_id', $game->id)
+            ->where('status', 'published')
+            ->whereNotNull('review_score')
+            ->orderByDesc('published_at')
+            ->value('review_score');
+        $editorial = $editorial !== null ? (float) $editorial : null;
+
+        $stars = DB::table('game_ratings')->where('game_slug', $game->slug)->avg('rating');
+        $community = $stars !== null ? round(((float) $stars) * 2, 1) : null;
+
+        return match (true) {
+            $editorial !== null && $community !== null => round(0.6 * $editorial + 0.4 * $community, 1),
+            $editorial !== null => round($editorial, 1),
+            $community !== null => $community,
+            default => null,
+        };
     }
 
     /**

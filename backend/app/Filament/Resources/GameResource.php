@@ -170,6 +170,28 @@ class GameResource extends Resource
                                     ->placeholder('https://...'),
                             ]),
 
+                        Section::make('Critic Scores')
+                            ->icon('heroicon-o-star')
+                            ->description('Filled by enrichment where sources exist; hand-entered otherwise. TechPlay score is computed from our reviews and is not edited here.')
+                            ->schema([
+                                Grid::make(2)->schema([
+                                    Forms\Components\TextInput::make('critic_scores.opencritic.score')
+                                        ->label('OpenCritic')
+                                        ->numeric()->minValue(0)->maxValue(100)->placeholder('—'),
+                                    Forms\Components\TextInput::make('critic_scores.opencritic.url')
+                                        ->label('OpenCritic URL')
+                                        ->url()->placeholder('https://opencritic.com/game/...'),
+                                ]),
+                                Grid::make(2)->schema([
+                                    Forms\Components\TextInput::make('critic_scores.metacritic.score')
+                                        ->label('Metacritic')
+                                        ->numeric()->minValue(0)->maxValue(100)->placeholder('—'),
+                                    Forms\Components\TextInput::make('critic_scores.metacritic.url')
+                                        ->label('Metacritic URL')
+                                        ->url()->placeholder('https://www.metacritic.com/game/...'),
+                                ]),
+                            ]),
+
                         Section::make('Companies')
                             ->icon('heroicon-o-building-office')
                             ->schema([

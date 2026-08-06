@@ -27,7 +27,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.26",
-    "hls.js": "^1.6.15",
+    "hls.js": "^1.6.17",
     "isomorphic-dompurify": "^2.35.0",
     "laravel-echo": "^2.3.0",
     "leaflet": "^1.9.4",

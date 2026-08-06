@@ -17,6 +17,7 @@ class GameObserver
         'name', 'slug', 'released', 'rating', 'cover_url', 'description',
         'screenshots', 'videos', 'genres', 'platforms', 'tags',
         'developers', 'publishers', 'alt_titles', 'age_ratings', 'website',
+        'critic_scores',
     ];
 
     /**

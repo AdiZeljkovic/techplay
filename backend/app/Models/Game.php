@@ -29,6 +29,7 @@ class Game extends Model
         'series_key',
         'series_name',
         'import_payload',
+        'critic_scores',
         // Written by the release aggregator.
         'match_key',
         'release_precision',
@@ -48,6 +49,7 @@ class Game extends Model
         'alt_titles' => 'array',
         'age_ratings' => 'array',
         'import_payload' => 'array',
+        'critic_scores' => 'array',
         'released' => 'date',
         'rating' => 'float',
         'series_key' => 'integer',

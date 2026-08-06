@@ -303,6 +303,40 @@ abstract class StoreSync
     {
         $title = $details['title'] ?: $row['title'];
 
+        // The catalogue may already know this game — Moby recorded plenty of
+        // titles years before their release. Adopting that row instead of
+        // creating a slug-2 twin keeps one game one page. Guarded by year:
+        // an old game sharing the exact title (Batman Returns, 1992, eight
+        // times over) must NOT be claimed, so only an undated row or one
+        // whose release year matches the store's anchor qualifies.
+        $anchorYear = $row['anchor']?->year;
+        $existing = Game::whereNull('match_key')
+            ->whereRaw('lower(name) = ?', [mb_strtolower($title)])
+            ->where(function ($q) use ($anchorYear) {
+                $q->whereNull('released');
+                if ($anchorYear) {
+                    // Bounds as plain date comparisons, so Postgres and the
+                    // SQLite test database read the same query.
+                    $q->orWhereBetween('released', [($anchorYear - 1).'-01-01', ($anchorYear + 1).'-12-31']);
+                }
+            })
+            ->orderByRaw('released is null')
+            ->first();
+
+        if ($existing) {
+            $existing->forceFill(array_filter([
+                'match_key' => $this->normalizer->key($title),
+                'released' => $row['anchor']?->toDateString(),
+                'release_precision' => $row['precision'],
+                'cover_url' => $existing->cover_url ?: ($details['hero'] ?? null),
+                'description' => $existing->description ?: ($details['description'] ?? null),
+                'developers' => ($existing->developers ?? []) !== [] ? null : array_values(array_filter([$details['developer'] ?? null])),
+                'publishers' => ($existing->publishers ?? []) !== [] ? null : array_values(array_filter([$details['publisher'] ?? null])),
+            ], fn ($v) => $v !== null))->save();
+
+            return $existing;
+        }
+
         return Game::create([
             'slug' => $this->uniqueSlug($title),
             'name' => $title,

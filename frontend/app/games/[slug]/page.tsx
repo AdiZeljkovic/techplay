@@ -14,6 +14,7 @@ import GameRating from "@/components/games/GameRating";
 import TrackGameButton from "@/components/games/TrackGameButton";
 import GameForumThreads from "@/components/games/GameForumThreads";
 import BoxArtGallery, { type BoxArt } from "@/components/games/BoxArtGallery";
+import TrailerPlayer from "@/components/games/TrailerPlayer";
 import Panel from "@/components/ui/Panel";
 
 /* ─── Rendering: SSR on every request, Cloudflare caches at edge ─────────────
@@ -65,6 +66,11 @@ interface GameDetail {
     series_name: string | null;
     videos: string[];
     box_art: BoxArt[];
+    critic_scores: {
+        opencritic?: { score?: number | null; tier?: string | null; url?: string | null } | null;
+        metacritic?: { score?: number | null; url?: string | null } | null;
+    } | null;
+    techplay_score: number | null;
     screenshots_count: number;
     views: number;
 }
@@ -184,6 +190,24 @@ const ESRB_COLORS: Record<string, string> = {
     "Adults Only":    "bg-red-700/90",
     "Rating Pending": "bg-gray-500/90",
 };
+
+/** 0-100 critic scales wear the traffic-light everyone already reads. */
+function criticTone(score: number): string {
+    if (score >= 75) return "bg-emerald-600/90";
+    if (score >= 50) return "bg-yellow-600/90";
+    return "bg-red-700/90";
+}
+
+function ScoreChip({ label, value, tone, href }: { label: string; value: string; tone: string; href?: string | null }) {
+    const body = (
+        <span className={`inline-flex items-center overflow-hidden rounded-[5px] border border-white/[0.12] ${href ? "hover:border-white/[0.3] transition-colors" : ""}`}>
+            <span className={`px-2 py-1 font-display text-[15px] font-black tabular-nums text-white leading-none ${tone}`}>{value}</span>
+            <span className="px-2 py-1 font-display text-[9px] font-black uppercase tracking-[0.12em] text-white/55 bg-black/40 leading-none">{label}</span>
+        </span>
+    );
+
+    return href ? <a href={href} target="_blank" rel="noopener noreferrer">{body}</a> : body;
+}
 
 /**
  * What the record actually claims. Moby dates default to Jan 1 when only a
@@ -426,6 +450,32 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         )}
                     </div>
 
+                    {(game.techplay_score !== null
+                        || game.critic_scores?.opencritic?.score != null
+                        || game.critic_scores?.metacritic?.score != null) && (
+                        <div className="mt-5 flex flex-wrap items-center gap-2.5">
+                            {game.techplay_score !== null && (
+                                <ScoreChip label="TechPlay" value={game.techplay_score.toFixed(1)} tone="bg-[var(--accent)]" />
+                            )}
+                            {game.critic_scores?.opencritic?.score != null && (
+                                <ScoreChip
+                                    label="OpenCritic"
+                                    value={String(game.critic_scores.opencritic.score)}
+                                    tone={criticTone(game.critic_scores.opencritic.score)}
+                                    href={game.critic_scores.opencritic.url}
+                                />
+                            )}
+                            {game.critic_scores?.metacritic?.score != null && (
+                                <ScoreChip
+                                    label="Metacritic"
+                                    value={String(game.critic_scores.metacritic.score)}
+                                    tone={criticTone(game.critic_scores.metacritic.score)}
+                                    href={game.critic_scores.metacritic.url}
+                                />
+                            )}
+                        </div>
+                    )}
+
                     {isUpcoming && game.released && (
                         <div className="mt-6">
                             <GameCountdownTimer targetDate={game.released} />
@@ -450,10 +500,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                     className="w-full aspect-video bg-black"
                                 />
                             ) : (
-                                <video controls preload="metadata" poster={game.cover_url ?? undefined}
-                                    className="w-full aspect-video bg-black">
-                                    <source src={trailer} />
-                                </video>
+                                <TrailerPlayer src={trailer} poster={game.cover_url} />
                             )}
                         </Panel>
                     )}
