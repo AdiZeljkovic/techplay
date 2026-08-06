@@ -13,15 +13,15 @@ use Illuminate\Support\Facades\DB;
  *
  * Three kinds of clutter, measured before this was written:
  *
- *  - Empty shells (~1.9k): no cover, no description, no screenshots, no
- *    rating. A page with literally nothing on it.
+ *  - Empty shells (~2k): no cover and no description. A page with nothing
+ *    to say for itself, whatever else it may carry.
  *  - DLC stubs (~31k): "Add-on" genre with neither a rating nor a
  *    description — SingStar tracks, language packs, microtransaction
  *    currency. Add-ons anyone bothered to rate or describe (Lost Coast)
  *    stay.
- *  - Empty editions (~3.3k): Compilations and Special editions with no
- *    rating and no cover. Rated editions (Game of the Year) keep their
- *    pages; search demotes the rest rather than deleting them.
+ *  - Unrated editions (~12k): Compilations and Special editions nobody
+ *    scored — boxings of games the catalogue already has. Rated editions
+ *    (Game of the Year) keep their pages.
  *
  * The aggregator's rows are untouchable: an upcoming release legitimately
  * has no rating yet, so anything with a match_key — and anything not yet
@@ -52,8 +52,6 @@ class PurgeClutterGames extends Command
         $shells = $guarded()
             ->whereNull('cover_url')
             ->whereNull('description')
-            ->where(fn ($q) => $q->whereNull('screenshots')->orWhereRaw("screenshots::text in ('[]', 'null')"))
-            ->where(fn ($q) => $q->whereNull('rating')->orWhere('rating', 0))
             ->pluck('id');
 
         $stubs = $guarded()
@@ -66,7 +64,6 @@ class PurgeClutterGames extends Command
             ->where(fn ($q) => $q->whereRaw("genres @> ARRAY['Compilation']::text[]")
                 ->orWhereRaw("genres @> ARRAY['Special edition']::text[]"))
             ->where(fn ($q) => $q->whereNull('rating')->orWhere('rating', 0))
-            ->whereNull('cover_url')
             ->pluck('id');
 
         // A row can be in more than one set; the reason records the first
