@@ -199,7 +199,7 @@ class NewsroomController extends Controller
                 'name' => $g->name,
                 'released' => $g->released?->toDateString(),
                 'days_away' => (int) round(now()->startOfDay()->diffInDays($g->released->copy()->startOfDay(), false)),
-                'background_image' => $g->background_image,
+                'cover_url' => $g->cover_url,
             ])
             ->all());
     }

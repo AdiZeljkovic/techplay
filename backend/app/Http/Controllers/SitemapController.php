@@ -77,10 +77,10 @@ class SitemapController extends Controller
 
         // Game sitemaps — paginated, 50,000 URLs per file (Google limit)
         // Must use the same filter as games() below, or the page count drifts
-        $gamesCount = Game::where('has_description', true)->count();
+        $gamesCount = Game::whereNotNull('description')->count();
         if ($gamesCount > 0) {
             $gamePages = (int) ceil($gamesCount / 50000);
-            $gameLastmodRaw = Game::where('has_description', true)->max('details_crawled_at');
+            $gameLastmodRaw = Game::whereNotNull('description')->max('updated_at');
             $gameLastmodStr = $gameLastmodRaw ? Carbon::parse($gameLastmodRaw)->toIso8601String() : now()->toIso8601String();
             for ($p = 1; $p <= $gamePages; $p++) {
                 $filename = "sitemap-games-{$p}.xml";
@@ -415,8 +415,8 @@ class SitemapController extends Controller
         $perPage = 50000;
         $xml = $this->xmlHeader();
 
-        Game::where('has_description', true)
-            ->select('slug', 'details_crawled_at')
+        Game::whereNotNull('description')
+            ->select('slug', 'updated_at')
             ->orderBy('slug')
             ->offset(($page - 1) * $perPage)
             ->limit($perPage)
@@ -427,7 +427,7 @@ class SitemapController extends Controller
                 }
                 $xml .= $this->urlEntry(
                     "{$this->frontendUrl}/games/{$game->slug}",
-                    $game->details_crawled_at?->toIso8601String(),
+                    $game->updated_at?->toIso8601String(),
                     'monthly',
                     '0.8'
                 );

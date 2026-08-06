@@ -59,7 +59,7 @@ export interface WrappedPayload {
     level: number;
     has_data: boolean;
     stats: StatRow[];
-    top_games: { name: string; slug: string; background_image: string | null; status: string; hours: number }[];
+    top_games: { name: string; slug: string; cover_url: string | null; status: string; hours: number }[];
     dna: { genres: { name: string; count: number; percent: number }[]; tags: string[] };
     timeline: { at: string; month: string; key: string; title: string; detail: string }[];
     moments: { key: string; label: string; value: string; note: string; image?: string | null }[];
@@ -183,10 +183,10 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
         <main className="min-h-screen bg-[var(--surface-0)]">
             {/* ── hero ── */}
             <div className="relative overflow-hidden border-b border-white/[0.07]">
-                {topGame?.background_image && (
+                {topGame?.cover_url && (
                     <>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={topGame.background_image} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-[0.14]" />
+                        <img src={topGame.cover_url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-[0.14]" />
                         <span aria-hidden className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--surface-0)]/70 to-[var(--surface-0)]" />
                     </>
                 )}
@@ -350,9 +350,9 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
                                         {data.top_games.map((game) => (
                                             <Link key={game.slug} href={`/games/${game.slug}`} className="group">
                                                 <span className="relative block h-[132px] rounded-[9px] overflow-hidden bg-white/[0.04] border border-white/[0.07] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors">
-                                                    {game.background_image ? (
+                                                    {game.cover_url ? (
                                                         // eslint-disable-next-line @next/next/no-img-element
-                                                        <img src={game.background_image} alt={game.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500" />
+                                                        <img src={game.cover_url} alt={game.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500" />
                                                     ) : (
                                                         <span className="w-full h-full flex items-center justify-center text-white/15"><Gamepad2 className="w-6 h-6" /></span>
                                                     )}

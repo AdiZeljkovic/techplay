@@ -279,10 +279,10 @@ abstract class StoreSync
         $locked = (array) ($game->locked_fields ?? []);
 
         $fields = array_filter([
-            'background_image' => $details['hero'] ?? null,
-            'screenshots_data' => $details['screenshot_urls'] ?? null,
-            'movies_data' => $details['trailer_urls'] ?? null,
-            'genre_names' => $details['genres'] ?? null,
+            'cover_url' => $details['hero'] ?? null,
+            'screenshots' => $details['screenshot_urls'] ?? null,
+            'videos' => $details['trailer_urls'] ?? null,
+            'genres' => $details['genres'] ?? null,
         ], fn ($value, $key) => $value !== null && ! in_array($key, $locked, true), ARRAY_FILTER_USE_BOTH);
 
         // A store that has since gone quiet must not blank what we already show.
@@ -309,18 +309,14 @@ abstract class StoreSync
             'match_key' => $this->normalizer->key($title),
             'released' => $row['anchor']?->toDateString(),
             'release_precision' => $row['precision'],
-            'background_image' => $details['hero'] ?? null,
-            'metacritic' => $details['metacritic'] ?? null,
-            'genre_names' => $details['genres'] ?? [],
-            'platform_names' => $this->platformNames($row, $details),
-            'screenshots_data' => $details['screenshot_urls'] ?? [],
-            'movies_data' => $details['trailer_urls'] ?? [],
-            'details_data' => [
-                'description' => $details['description'] ?? null,
-                'developer' => $details['developer'] ?? null,
-                'publisher' => $details['publisher'] ?? null,
-            ],
-            'has_description' => filled($details['description'] ?? null),
+            'cover_url' => $details['hero'] ?? null,
+            'genres' => $details['genres'] ?? [],
+            'platforms' => $this->platformNames($row, $details),
+            'screenshots' => $details['screenshot_urls'] ?? [],
+            'videos' => $details['trailer_urls'] ?? [],
+            'description' => $details['description'] ?? null,
+            'developers' => array_values(array_filter([$details['developer'] ?? null])),
+            'publishers' => array_values(array_filter([$details['publisher'] ?? null])),
         ]);
     }
 

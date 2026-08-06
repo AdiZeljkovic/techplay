@@ -62,7 +62,7 @@ export default function ReleaseClient({ release }: { release: Release }) {
                             <video
                                 controls
                                 preload="metadata"
-                                poster={release.background_image ?? undefined}
+                                poster={release.cover_url ?? undefined}
                                 className="w-full aspect-video bg-black"
                             >
                                 <source src={release.trailers[0]} />

@@ -113,9 +113,9 @@ class XboxReleaseSyncTest extends TestCase
         $game = Game::first();
         $this->assertSame('Octo Curse', $game->name);
         $this->assertSame('2026-08-14', $game->released->toDateString());
-        $this->assertSame('https://store-images.example/hero.jpg', $game->background_image);
-        $this->assertSame(['Xbox Series X|S'], $game->platform_names, 'read from the packages, not guessed');
-        $this->assertSame(['Platformer'], $game->genre_names);
+        $this->assertSame('https://store-images.example/hero.jpg', $game->cover_url);
+        $this->assertSame(['Xbox Series X|S'], $game->platforms, 'read from the packages, not guessed');
+        $this->assertSame(['Platformer'], $game->genres);
     }
 
     public function test_only_the_market_we_read_is_walked(): void

@@ -9,7 +9,7 @@ import Panel from "@/components/ui/Panel";
 interface AnniversaryGame {
     slug: string;
     name: string;
-    background_image: string | null;
+    cover_url: string | null;
     rating: number;
     released: string | null;
     genres: string[];
@@ -78,10 +78,10 @@ export default function OnThisDay() {
                             {/* content row */}
                             <span className="flex-1 min-w-0 flex items-center gap-3 py-2 pr-1 -mr-1 rounded-[var(--radius-card)] group-hover:bg-[var(--fill-1)] transition-colors duration-300">
                                 <span className="relative w-[68px] h-[44px] rounded-[var(--radius-inner)] overflow-hidden shrink-0 bg-[var(--fill-1)] border border-[var(--line)]">
-                                    {g.background_image ? (
+                                    {g.cover_url ? (
                                         // eslint-disable-next-line @next/next/no-img-element
                                         <img
-                                            src={g.background_image}
+                                            src={g.cover_url}
                                             alt={g.name}
                                             loading="lazy"
                                             className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]"

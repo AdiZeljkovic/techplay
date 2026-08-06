@@ -15,7 +15,7 @@ interface CalendarGame {
     slug: string;
     name: string;
     released: string | null;
-    background_image: string | null;
+    cover_url: string | null;
     platforms?: (string | { platform?: { name?: string } } | null)[];
 }
 
@@ -103,9 +103,9 @@ export default function UpcomingForYouRow() {
                     g ? (
                         <div key={g.slug} className={`group/card flex flex-col rounded-[12px] overflow-hidden border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_14px_36px_rgba(0,0,0,0.45)] transition-all duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}>
                             <Link href={`/games/${g.slug}`} prefetch={false} className="group block relative aspect-[16/9]">
-                                {g.background_image ? (
+                                {g.cover_url ? (
                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={g.background_image} alt={g.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]" />
+                                    <img src={g.cover_url} alt={g.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-[var(--ink-faint)] bg-[var(--fill-1)]"><Gamepad2 className="w-8 h-8" /></div>
                                 )}

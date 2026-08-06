@@ -181,7 +181,6 @@ class GameRatingController extends Controller
         $page = max(1, (int) $request->input('page', 1));
         $perPage = 24;
         $sort = $request->input('sort', 'rating');
-        $metacriticMin = (int) $request->input('metacritic_min', 0);
         $yearFrom = (int) $request->input('year_from', 0);
         $yearTo = (int) $request->input('year_to', 0);
         $platform = trim((string) $request->input('platform', ''));
@@ -191,9 +190,9 @@ class GameRatingController extends Controller
             return response()->json(['message' => 'Invalid hub type'], 400);
         }
 
-        $cacheKey = "hub:{$type}:{$value}:{$sort}:{$page}:{$metacriticMin}:{$yearFrom}:{$yearTo}:{$platform}";
+        $cacheKey = "hub:v2:{$type}:{$value}:{$sort}:{$page}:{$yearFrom}:{$yearTo}:{$platform}";
 
-        $result = Cache::remember($cacheKey, 600, function () use ($type, $value, $sort, $page, $perPage, $metacriticMin, $yearFrom, $yearTo, $platform) {
+        $result = Cache::remember($cacheKey, 600, function () use ($type, $value, $sort, $page, $perPage, $yearFrom, $yearTo, $platform) {
             $genreMap = [
                 'action' => 'Action',
                 'indie' => 'Indie',
@@ -220,7 +219,7 @@ class GameRatingController extends Controller
                 'first-person' => 'First-Person',
             ];
 
-            // Platform label → stored platform_names value (lowercase partial)
+            // Platform label → stored platforms value (lowercase partial)
             $platformMap = [
                 'pc' => 'pc',
                 'playstation' => 'playstation',
@@ -230,35 +229,30 @@ class GameRatingController extends Controller
             ];
 
             $orderCol = match ($sort) {
-                'metacritic' => 'metacritic',
                 'released' => 'released',
                 'name' => 'name',
                 default => 'rating',
             };
 
-            $where = 'has_description = true';
+            $where = 'description IS NOT NULL';
             $bindings = [];
 
             // Primary hub filter
             if ($type === 'genre') {
-                $where .= ' AND genre_names @> ARRAY[?]::text[]';
+                $where .= ' AND genres @> ARRAY[?]::text[]';
                 $bindings[] = $genreMap[$value] ?? ucwords(str_replace('-', ' ', $value));
             } elseif ($type === 'platform') {
-                $where .= ' AND platform_names @> ARRAY[?]::text[]';
+                $where .= ' AND platforms @> ARRAY[?]::text[]';
                 $bindings[] = strtolower(str_replace('-', ' ', $value));
             } elseif ($type === 'year') {
                 $where .= ' AND EXTRACT(YEAR FROM released) = ?';
                 $bindings[] = (int) $value;
             } elseif ($type === 'tag') {
-                $where .= ' AND tag_names @> ARRAY[?]::text[]';
+                $where .= ' AND tags @> ARRAY[?]::text[]';
                 $bindings[] = strtolower(str_replace('-', ' ', $value));
             }
 
             // Additional filters
-            if ($metacriticMin > 0) {
-                $where .= ' AND metacritic >= ?';
-                $bindings[] = $metacriticMin;
-            }
             if ($yearFrom > 0) {
                 $where .= ' AND EXTRACT(YEAR FROM released) >= ?';
                 $bindings[] = $yearFrom;
@@ -269,7 +263,7 @@ class GameRatingController extends Controller
             }
             if ($platform !== '' && $type !== 'platform') {
                 $mapped = $platformMap[$platform] ?? strtolower($platform);
-                $where .= ' AND EXISTS (SELECT 1 FROM unnest(platform_names) p WHERE p LIKE ?)';
+                $where .= ' AND EXISTS (SELECT 1 FROM unnest(platforms) p WHERE p LIKE ?)';
                 $bindings[] = '%'.$mapped.'%';
             }
 
@@ -277,8 +271,8 @@ class GameRatingController extends Controller
             $orderDir = ($orderCol === 'name') ? 'ASC' : 'DESC NULLS LAST';
 
             $rows = DB::select("
-                SELECT id, slug, name, released, rating, metacritic,
-                       background_image, platforms,
+                SELECT id, slug, name, released, rating,
+                       cover_url, array_to_json(platforms) AS platforms,
                        COUNT(*) OVER() AS total_count
                 FROM games
                 WHERE {$where}
@@ -293,9 +287,8 @@ class GameRatingController extends Controller
                 'name' => $r->name,
                 'slug' => $r->slug,
                 'released' => $r->released,
-                'background_image' => $r->background_image,
+                'cover_url' => $r->cover_url,
                 'rating' => $r->rating ? (float) $r->rating : null,
-                'metacritic' => $r->metacritic ? (int) $r->metacritic : null,
                 'platforms' => json_decode($r->platforms ?? '[]', true) ?? [],
             ], $rows);
 

@@ -10,7 +10,7 @@ import { useLibraryIndex } from "@/hooks/useLibraryIndex";
 interface GameHit {
     slug: string;
     name: string;
-    background_image: string | null;
+    cover_url: string | null;
     released?: string | null;
 }
 
@@ -129,9 +129,9 @@ export default function AddFavoriteInline({
                         className="group w-full flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-[var(--fill-2)] transition-colors text-left disabled:opacity-50"
                     >
                         <span className="relative w-[52px] h-[32px] rounded overflow-hidden shrink-0 bg-[var(--fill-2)]">
-                            {g.background_image ? (
+                            {g.cover_url ? (
                                 // eslint-disable-next-line @next/next/no-img-element
-                                <img src={g.background_image} alt="" className="w-full h-full object-cover" />
+                                <img src={g.cover_url} alt="" className="w-full h-full object-cover" />
                             ) : (
                                 <span className="w-full h-full flex items-center justify-center"><Gamepad2 className="w-3 h-3 text-[var(--ink-faint)]" /></span>
                             )}

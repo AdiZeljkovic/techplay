@@ -56,7 +56,7 @@ interface HubData {
     most_read: Card[];
     upcoming_releases: {
         slug: string; name: string; released: string | null;
-        days_away: number; background_image: string | null;
+        days_away: number; cover_url: string | null;
     }[];
     stats: { articles: number; authors: number; this_month: number };
 }
@@ -456,9 +456,9 @@ export default function SectionHub({
                                 {hub.upcoming_releases.map((g) => (
                                     <Link key={g.slug} href={`/calendar/${g.slug}`} className="flex items-center gap-3 group">
                                         <span className="w-[46px] h-[31px] shrink-0 rounded-[6px] overflow-hidden bg-white/[0.05]">
-                                            {g.background_image && (
+                                            {g.cover_url && (
                                                 // eslint-disable-next-line @next/next/no-img-element
-                                                <img src={getStorageUrl(g.background_image)} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
+                                                <img src={getStorageUrl(g.cover_url)} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
                                             )}
                                         </span>
                                         <span className="min-w-0 flex-1">

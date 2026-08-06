@@ -16,12 +16,10 @@ interface Game {
     id: number;
     name: string;
     slug: string;
-    background_image: string;
+    cover_url: string;
     released: string | null;
     rating: number;
-    metacritic: null;
-    platforms: { platform_id: number; platform_name: string }[];
-    short_screenshots: { image: string; thumbnail_image?: string }[];
+    platforms: string[];
 }
 
 interface GamesResponse {
@@ -33,7 +31,7 @@ interface GamesResponse {
 
 const PAGE_SIZE = 24;
 
-// Genre names match MobyGames "Basic Genres" values stored in genre_names[]
+// Genre names match MobyGames "Basic Genres" values stored in genres[]
 const GENRES = [
     { id: "Action",             name: "Action" },
     { id: "Adventure",          name: "Adventure" },
@@ -47,7 +45,7 @@ const GENRES = [
     { id: "Shooter",            name: "Shooter" },
 ];
 
-// Platform names match normalized platform_names[] values stored in DB
+// Platform names match normalized platforms[] values stored in DB
 const PLATFORMS = [
     { id: "PC",          name: "PC" },
     { id: "PlayStation", name: "PlayStation" },
@@ -376,9 +374,9 @@ export default function GamesClientPage() {
                     {/* Cover-art collage backdrop */}
                     {data?.results && data.results.length > 5 && (
                         <div className="absolute -inset-x-8 -top-8 flex gap-3 blur-[3px] opacity-25 dark:opacity-30">
-                            {data.results.slice(0, 12).map((g) => g.background_image && (
+                            {data.results.slice(0, 12).map((g) => g.cover_url && (
                                 <div key={g.id} className="relative w-[120px] md:w-[150px] shrink-0 aspect-[3/4] rounded-xl overflow-hidden rotate-0">
-                                    <Image src={g.background_image} alt="" fill sizes="150px" quality={60} className="object-cover" />
+                                    <Image src={g.cover_url} alt="" fill sizes="150px" quality={60} className="object-cover" />
                                 </div>
                             ))}
                         </div>
@@ -579,19 +577,13 @@ export default function GamesClientPage() {
 }
 
 function GameCard({ game }: { game: Game }) {
-    const [imgSrc, setImgSrc] = useState(game.background_image);
-    const screenshots = game.short_screenshots?.slice(1) ?? []; // skip first (same as bg)
-    const [hoverIdx, setHoverIdx] = useState<number | null>(null);
-
-    const displayImg = hoverIdx !== null && screenshots[hoverIdx]
-        ? screenshots[hoverIdx].image
-        : imgSrc;
+    const [imgSrc, setImgSrc] = useState(game.cover_url);
 
     // Deduped colored platform chips
     const chips = useMemo(() => {
         const out: { label: string; cls: string }[] = [];
         for (const p of game.platforms ?? []) {
-            const chip = platformChip(p.platform_name);
+            const chip = platformChip(p);
             if (chip && !out.some(c => c.label === chip.label)) out.push(chip);
         }
         return out.slice(0, 4);
@@ -603,13 +595,12 @@ function GameCard({ game }: { game: Game }) {
         <Link
             href={`/games/${game.slug}`}
             prefetch={false}
-            onMouseLeave={() => setHoverIdx(null)}
             className="group relative block aspect-[3/4] rounded-xl overflow-hidden border border-zinc-200 dark:border-[#161B22] bg-zinc-100 dark:bg-[#10141B] hover:border-tp-accent/60 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-[0_16px_40px_rgba(0,0,0,0.55)] transition-all duration-300"
         >
             {/* Cover art fills the card */}
-            {displayImg ? (
+            {imgSrc ? (
                 <Image
-                    src={displayImg}
+                    src={imgSrc}
                     alt={game.name}
                     fill
                     sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 240px"
@@ -637,19 +628,6 @@ function GameCard({ game }: { game: Game }) {
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                 <TrackGameButton slug={game.slug} gameName={game.name} variant="compact" />
             </div>
-
-            {/* Screenshot hover dots */}
-            {screenshots.length > 0 && (
-                <div className="absolute bottom-[74px] left-1/2 -translate-x-1/2 hidden group-hover:flex gap-1.5">
-                    {screenshots.slice(0, 4).map((_, i) => (
-                        <span
-                            key={i}
-                            onMouseEnter={() => setHoverIdx(i)}
-                            className={`w-1.5 h-1.5 rounded-full transition-all cursor-pointer ${hoverIdx === i ? "bg-tp-accent scale-125" : "bg-white/50"}`}
-                        />
-                    ))}
-                </div>
-            )}
 
             {/* Bottom content — title, platforms, rating */}
             <div className="absolute inset-x-0 bottom-0 p-3">

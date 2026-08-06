@@ -10,7 +10,6 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -88,17 +87,17 @@ class GameResource extends Resource
                         Section::make('Cover Image')
                             ->icon('heroicon-o-photo')
                             ->schema([
-                                Forms\Components\TextInput::make('background_image')
+                                Forms\Components\TextInput::make('cover_url')
                                     ->label('Image URL')
                                     ->placeholder('https://...')
                                     ->url()
                                     ->helperText('Paste direct image URL (JPG/PNG)'),
 
-                                Forms\Components\Placeholder::make('background_image_preview')
+                                Forms\Components\Placeholder::make('cover_preview')
                                     ->label('Preview')
                                     ->content(fn ($get) => new HtmlString(
-                                        $get('background_image')
-                                            ? '<img src="'.e($get('background_image')).'" style="max-height:200px;border-radius:6px;object-fit:cover;" />'
+                                        $get('cover_url')
+                                            ? '<img src="'.e($get('cover_url')).'" style="max-height:200px;border-radius:6px;object-fit:cover;" />'
                                             : '<span style="color:#6b7280">No image set</span>'
                                     )),
                             ]),
@@ -107,20 +106,38 @@ class GameResource extends Resource
                             ->icon('heroicon-o-camera')
                             ->collapsed()
                             ->schema([
-                                Forms\Components\Repeater::make('short_screenshots')
+                                Forms\Components\Repeater::make('screenshots')
                                     ->label('')
-                                    ->schema([
-                                        Forms\Components\TextInput::make('image')
+                                    ->simple(
+                                        Forms\Components\TextInput::make('url')
                                             ->label('Screenshot URL')
                                             ->url()
                                             ->placeholder('https://...')
                                             ->required(),
-                                    ])
+                                    )
                                     ->addActionLabel('Add Screenshot')
                                     ->defaultItems(0)
-                                    ->maxItems(10)
                                     ->reorderable()
-                                    ->helperText('Add up to 10 screenshot URLs'),
+                                    ->helperText('Direct image URLs, in display order'),
+                            ]),
+
+                        Section::make('Trailers & Videos')
+                            ->icon('heroicon-o-film')
+                            ->collapsed()
+                            ->schema([
+                                Forms\Components\Repeater::make('videos')
+                                    ->label('')
+                                    ->simple(
+                                        Forms\Components\TextInput::make('url')
+                                            ->label('Video URL')
+                                            ->url()
+                                            ->placeholder('https://... (YouTube or direct mp4)')
+                                            ->required(),
+                                    )
+                                    ->addActionLabel('Add Video')
+                                    ->defaultItems(0)
+                                    ->reorderable()
+                                    ->helperText('The first video is the lead trailer'),
                             ]),
                     ])
                     ->columnSpan(['default' => 1, 'lg' => 2]),
@@ -138,65 +155,52 @@ class GameResource extends Resource
                                     ->native(false)
                                     ->displayFormat('M j, Y'),
 
-                                Grid::make(2)->schema([
-                                    Forms\Components\TextInput::make('rating')
-                                        ->label('Rating')
-                                        ->numeric()
-                                        ->minValue(0)
-                                        ->maxValue(5)
-                                        ->step(0.01)
-                                        ->placeholder('0.00')
-                                        ->suffix('/ 5'),
-
-                                    Forms\Components\TextInput::make('metacritic')
-                                        ->label('Metacritic')
-                                        ->numeric()
-                                        ->minValue(0)
-                                        ->maxValue(100)
-                                        ->placeholder('0')
-                                        ->suffix('/ 100'),
-                                ]),
-
-                                Forms\Components\TextInput::make('moby_id')
-                                    ->label('MobyGames ID')
+                                Forms\Components\TextInput::make('rating')
+                                    ->label('Rating')
                                     ->numeric()
-                                    ->disabled()
-                                    ->helperText('Auto-populated from MobyGames import'),
+                                    ->minValue(0)
+                                    ->maxValue(5)
+                                    ->step(0.01)
+                                    ->placeholder('0.00')
+                                    ->suffix('/ 5'),
+
+                                Forms\Components\TextInput::make('website')
+                                    ->label('Official Website')
+                                    ->url()
+                                    ->placeholder('https://...'),
+                            ]),
+
+                        Section::make('Companies')
+                            ->icon('heroicon-o-building-office')
+                            ->schema([
+                                Forms\Components\TagsInput::make('developers')
+                                    ->label('Developers')
+                                    ->placeholder('Add developer...'),
+
+                                Forms\Components\TagsInput::make('publishers')
+                                    ->label('Publishers')
+                                    ->placeholder('Add publisher...'),
                             ]),
 
                         Section::make('Taxonomy')
                             ->icon('heroicon-o-tag')
                             ->schema([
-                                Forms\Components\TagsInput::make('genre_names')
+                                Forms\Components\TagsInput::make('genres')
                                     ->label('Genres')
                                     ->placeholder('Add genre...')
                                     ->helperText('e.g. Action, RPG, Strategy'),
 
-                                Forms\Components\TagsInput::make('platform_names')
+                                Forms\Components\TagsInput::make('platforms')
                                     ->label('Platforms')
                                     ->placeholder('Add platform...')
                                     ->helperText('e.g. PC, PlayStation 5, Xbox Series'),
 
-                                Forms\Components\TagsInput::make('tag_names')
+                                Forms\Components\TagsInput::make('tags')
                                     ->label('Tags')
                                     ->placeholder('Add tag...')
                                     ->helperText('Additional keywords'),
                             ]),
 
-                        Section::make('Enrichment Status')
-                            ->icon('heroicon-o-check-circle')
-                            ->schema([
-                                Forms\Components\Toggle::make('has_description')
-                                    ->label('Has Description')
-                                    ->disabled()
-                                    ->helperText('Auto-managed — set when description is saved'),
-
-                                Forms\Components\DateTimePicker::make('details_crawled_at')
-                                    ->label('Last Enriched')
-                                    ->native(false)
-                                    ->displayFormat('M j, Y H:i')
-                                    ->helperText('Set this to now when manually enriching'),
-                            ]),
                     ])
                     ->columnSpan(['default' => 1, 'lg' => 1]),
             ]);
@@ -206,7 +210,7 @@ class GameResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('background_image')
+                ImageColumn::make('cover_url')
                     ->label('')
                     ->width(60)
                     ->height(40)
@@ -228,24 +232,13 @@ class GameResource extends Resource
                     })
                     ->formatStateUsing(fn ($state) => $state ? number_format($state, 2) : '—'),
 
-                TextColumn::make('metacritic')
-                    ->sortable()
-                    ->badge()
-                    ->color(fn ($state) => match (true) {
-                        $state >= 75 => 'success',
-                        $state >= 50 => 'warning',
-                        default => 'danger',
-                    })
-                    ->formatStateUsing(fn ($state) => $state ?: '—')
-                    ->toggleable(isToggledHiddenByDefault: true),
-
                 TextColumn::make('released')
                     ->label('Released')
                     ->date('Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make('platform_names')
+                TextColumn::make('platforms')
                     ->label('Platforms')
                     ->badge()
                     ->color('info')
@@ -253,7 +246,7 @@ class GameResource extends Resource
                     ->limit(3)
                     ->toggleable(),
 
-                TextColumn::make('genre_names')
+                TextColumn::make('genres')
                     ->label('Genres')
                     ->badge()
                     ->color('gray')
@@ -261,16 +254,18 @@ class GameResource extends Resource
                     ->limit(3)
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                IconColumn::make('has_description')
+                IconColumn::make('description')
                     ->label('Desc')
+                    ->state(fn ($record) => filled($record->description))
                     ->boolean()
                     ->trueIcon('heroicon-s-check-circle')
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger'),
 
-                IconColumn::make('screenshots_crawled_at')
+                IconColumn::make('screenshots')
                     ->label('Screenshots')
+                    ->state(fn ($record) => count($record->screenshots ?? []) > 0)
                     ->boolean()
                     ->trueIcon('heroicon-s-photo')
                     ->falseIcon('heroicon-o-photo')
@@ -279,20 +274,14 @@ class GameResource extends Resource
             ])
             ->defaultSort('rating', 'desc')
             ->filters([
-                TernaryFilter::make('has_description')
+                TernaryFilter::make('description')
                     ->label('Description')
+                    ->queries(
+                        true: fn (Builder $q) => $q->whereNotNull('description'),
+                        false: fn (Builder $q) => $q->whereNull('description'),
+                    )
                     ->trueLabel('Has description')
                     ->falseLabel('Needs description')
-                    ->placeholder('All games'),
-
-                TernaryFilter::make('screenshots_crawled_at')
-                    ->label('Screenshots')
-                    ->queries(
-                        true: fn (Builder $q) => $q->whereNotNull('screenshots_crawled_at'),
-                        false: fn (Builder $q) => $q->whereNull('screenshots_crawled_at'),
-                    )
-                    ->trueLabel('Has screenshots')
-                    ->falseLabel('No screenshots')
                     ->placeholder('All games'),
             ])
             ->headerActions([

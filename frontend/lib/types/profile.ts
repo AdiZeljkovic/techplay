@@ -13,7 +13,7 @@ export interface Achievement {
 export interface JournalGameRef {
     slug: string;
     name: string;
-    background_image: string | null;
+    cover_url: string | null;
 }
 
 export interface GamingMoment {
@@ -59,7 +59,7 @@ export interface JournalPayload {
     calendar: { date: string; minutes: number; sessions: number; games: string[] }[];
     per_game: { game: JournalGameRef; minutes: number; sessions: number; percent: number; last_played: string | null }[];
     completed_timeline: {
-        slug: string; name: string; background_image: string | null;
+        slug: string; name: string; cover_url: string | null;
         completed_at: string | null; hours: number; from_backlog: boolean;
     }[];
     reviews: {
@@ -334,8 +334,8 @@ export interface RecentArticle {
 export interface PlayingNowGame {
     slug: string;
     name: string;
-    background_image: string | null;
-    platform_names: string[];
+    cover_url: string | null;
+    platforms: string[];
     progress: number;
     hours_played: number;
     /**
@@ -385,9 +385,9 @@ export interface CollectionEntry {
         name: string;
         released: string | null;
         rating: number;
-        background_image: string | null;
-        platform_names: string[];
-        genre_names: string[];
+        cover_url: string | null;
+        platforms: string[];
+        genres: string[];
     } | null;
 }
 
@@ -470,8 +470,8 @@ export interface GameListItemEntry {
         name: string;
         released: string | null;
         rating: number;
-        background_image: string | null;
-        platform_names: string[];
+        cover_url: string | null;
+        platforms: string[];
     } | null;
 }
 

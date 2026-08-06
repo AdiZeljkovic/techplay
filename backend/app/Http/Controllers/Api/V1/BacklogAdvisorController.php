@@ -87,7 +87,7 @@ class BacklogAdvisorController extends Controller
 
         $backlog = UserGame::where('user_id', $user->id)
             ->where('status', 'backlog')
-            ->with('game:id,name,slug,background_image,genre_names,platform_names,rating')
+            ->with('game:id,name,slug,cover_url,genres,platforms,rating')
             ->orderByDesc('updated_at')
             ->limit(40)
             ->get();
@@ -101,7 +101,7 @@ class BacklogAdvisorController extends Controller
             if (! $g) {
                 return null;
             }
-            $genres = is_array($g->genre_names) ? implode(', ', array_slice($g->genre_names, 0, 3)) : '';
+            $genres = is_array($g->genres) ? implode(', ', array_slice($g->genres, 0, 3)) : '';
 
             return "- {$g->name}".($genres ? " [{$genres}]" : '').($g->rating ? " (rating: {$g->rating})" : '');
         })->filter()->implode("\n");
@@ -160,7 +160,7 @@ PROMPT;
                 'estimated_hours' => $aiData['estimated_hours'] ?? $timeAvailable,
                 'game' => $matched?->game ? [
                     'slug' => $matched->game->slug,
-                    'background_image' => $matched->game->background_image,
+                    'cover_url' => $matched->game->cover_url,
                     'rating' => $matched->game->rating,
                 ] : null,
             ]);
@@ -177,7 +177,7 @@ PROMPT;
                 'estimated_hours' => $timeAvailable,
                 'game' => $fallback->game ? [
                     'slug' => $fallback->game->slug,
-                    'background_image' => $fallback->game->background_image,
+                    'cover_url' => $fallback->game->cover_url,
                     'rating' => $fallback->game->rating,
                 ] : null,
             ]);

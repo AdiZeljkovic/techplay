@@ -216,13 +216,14 @@ class GameMerger
             $attributes = [
                 'name' => $this->plainestTitle($keep, $drop),
                 // The truth this whole exercise exists to tell.
-                'platform_names' => $this->union($keep->platform_names, $drop->platform_names),
-                'genre_names' => $this->union($keep->genre_names, $drop->genre_names),
-                'background_image' => $this->bestArt($keep, $drop),
-                'screenshots_data' => $this->longer($keep->screenshots_data, $drop->screenshots_data),
-                'movies_data' => $this->longer($keep->movies_data, $drop->movies_data),
-                'metacritic' => $keep->metacritic ?? $drop->metacritic,
-                'details_data' => $this->bestDetails($keep, $drop),
+                'platforms' => $this->union($keep->platforms, $drop->platforms),
+                'genres' => $this->union($keep->genres, $drop->genres),
+                'cover_url' => $this->bestArt($keep, $drop),
+                'screenshots' => $this->longer($keep->screenshots, $drop->screenshots),
+                'videos' => $this->longer($keep->videos, $drop->videos),
+                'description' => $this->fullerDescription($keep, $drop),
+                'developers' => $this->union($keep->developers, $drop->developers),
+                'publishers' => $this->union($keep->publishers, $drop->publishers),
                 'released' => $this->earliest($keep, $drop),
             ];
 
@@ -230,8 +231,6 @@ class GameMerger
             foreach ($locked as $field) {
                 unset($attributes[$field]);
             }
-
-            $attributes['has_description'] = filled(data_get($attributes['details_data'] ?? [], 'description'));
 
             $keep->forceFill($attributes)->save();
 
@@ -247,7 +246,7 @@ class GameMerger
         return [
             'title' => $game->name,
             'released' => $game->released?->toDateString(),
-            'publisher' => data_get($game->details_data, 'publisher'),
+            'publisher' => ($game->publishers ?? [])[0] ?? null,
         ];
     }
 
@@ -288,7 +287,7 @@ class GameMerger
         $priority = (array) config('releases.hero_priority');
 
         $ranked = collect([$keep, $drop])
-            ->filter(fn (Game $g) => filled($g->background_image))
+            ->filter(fn (Game $g) => filled($g->cover_url))
             ->sortBy(function (Game $g) use ($priority) {
                 $best = $g->storeLinks
                     ->map(fn (GameStoreLink $l) => array_search($l->store, $priority, true))
@@ -297,24 +296,16 @@ class GameMerger
                 return $best->min() ?? PHP_INT_MAX;
             });
 
-        return $ranked->first()?->background_image ?? $keep->background_image ?? $drop->background_image;
+        return $ranked->first()?->cover_url ?? $keep->cover_url ?? $drop->cover_url;
     }
 
-    /** The fuller write-up wins; a publisher we know beats one we do not. */
-    private function bestDetails(Game $keep, Game $drop): array
+    /** The fuller write-up wins. */
+    private function fullerDescription(Game $keep, Game $drop): ?string
     {
-        $a = (array) ($keep->details_data ?? []);
-        $b = (array) ($drop->details_data ?? []);
-
-        $descriptions = collect([$a['description'] ?? null, $b['description'] ?? null])
+        return collect([$keep->description, $drop->description])
             ->filter()
-            ->sortByDesc(fn (string $d) => mb_strlen($d));
-
-        return [
-            'description' => $descriptions->first(),
-            'publisher' => $a['publisher'] ?? $b['publisher'] ?? null,
-            'developer' => $a['developer'] ?? $b['developer'] ?? null,
-        ];
+            ->sortByDesc(fn (string $d) => mb_strlen($d))
+            ->first();
     }
 
     /**

@@ -11,7 +11,7 @@ interface GameHit {
     id: number;
     slug: string;
     name: string;
-    background_image: string | null;
+    cover_url: string | null;
     released: string | null;
 }
 
@@ -259,9 +259,9 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                                                 : "border-transparent hover:border-[var(--accent)]/30 hover:bg-white/[0.03]"
                                         }`}>
                                         <div className="relative w-12 h-16 rounded-lg overflow-hidden bg-white/[0.04] shrink-0">
-                                            {g.background_image && (
+                                            {g.cover_url && (
                                                 // eslint-disable-next-line @next/next/no-img-element
-                                                <img src={g.background_image} alt="" className="w-full h-full object-cover" />
+                                                <img src={g.cover_url} alt="" className="w-full h-full object-cover" />
                                             )}
                                         </div>
                                         <div className="flex-1 min-w-0">

@@ -248,18 +248,18 @@ class DashboardController extends Controller
             // Candidates: well-rated games sharing at least one top genre, not in the library.
             $query = Game::query()
                 ->whereNotIn('id', $libraryGameIds)
-                ->where('has_description', true)
-                ->whereNotNull('background_image')
+                ->whereNotNull('description')
+                ->whereNotNull('cover_url')
                 ->where('rating', '>', 0);
 
             if (DB::getDriverName() === 'pgsql') {
                 $genreList = array_keys($genreWeights);
                 $placeholders = implode(',', array_fill(0, count($genreList), '?'));
-                $query->whereRaw("genre_names && ARRAY[{$placeholders}]::text[]", $genreList);
+                $query->whereRaw("genres && ARRAY[{$placeholders}]::text[]", $genreList);
             }
 
             $candidates = $query->orderByDesc('rating')->limit(150)
-                ->get(['id', 'slug', 'name', 'background_image', 'rating', 'metacritic', 'genre_names', 'platform_names']);
+                ->get(['id', 'slug', 'name', 'cover_url', 'rating', 'genres', 'platforms']);
 
             $scored = [];
             foreach ($candidates as $g) {
@@ -272,7 +272,7 @@ class DashboardController extends Controller
                 $scored[] = [
                     'slug' => $g->slug,
                     'name' => $g->name,
-                    'background_image' => $g->background_image,
+                    'cover_url' => $g->cover_url,
                     'rating' => $g->rating,
                     'match_percent' => $match['percent'],
                     'matched_genres' => $match['genres'],
@@ -295,7 +295,7 @@ class DashboardController extends Controller
     {
         $backlog = UserGame::where('user_id', $user->id)
             ->where('status', 'backlog')
-            ->with('game:id,slug,name,background_image,rating,genre_names,platform_names')
+            ->with('game:id,slug,name,cover_url,rating,genres,platforms')
             ->orderByDesc('updated_at')
             ->limit(40)
             ->get()
@@ -316,7 +316,7 @@ class DashboardController extends Controller
                     $best = [
                         'slug' => $game->slug,
                         'name' => $game->name,
-                        'background_image' => $game->background_image,
+                        'cover_url' => $game->cover_url,
                         'genres' => $match['genres'],
                         'match_percent' => $match['percent'],
                     ];
@@ -333,8 +333,8 @@ class DashboardController extends Controller
         return [
             'slug' => $fallback->slug,
             'name' => $fallback->name,
-            'background_image' => $fallback->background_image,
-            'genres' => array_slice((array) $fallback->genre_names, 0, 3),
+            'cover_url' => $fallback->cover_url,
+            'genres' => array_slice((array) $fallback->genres, 0, 3),
             'match_percent' => null,
         ];
     }
@@ -353,15 +353,15 @@ class DashboardController extends Controller
 
         // Computed in PHP so the same code runs on pgsql and sqlite
         $libraryGames = Game::whereIn('id', array_slice($libraryGameIds, 0, 300))
-            ->get(['id', 'genre_names', 'platform_names']);
+            ->get(['id', 'genres', 'platforms']);
 
         $genreCounts = [];
         $platformSet = [];
         foreach ($libraryGames as $g) {
-            foreach ((array) $g->genre_names as $genre) {
+            foreach ((array) $g->genres as $genre) {
                 $genreCounts[$genre] = ($genreCounts[$genre] ?? 0) + 1;
             }
-            foreach ((array) $g->platform_names as $p) {
+            foreach ((array) $g->platforms as $p) {
                 $platformSet[$p] = true;
             }
         }
@@ -392,7 +392,7 @@ class DashboardController extends Controller
         $genreScore = 0.0;
         $matched = [];
 
-        foreach ((array) $game->genre_names as $genre) {
+        foreach ((array) $game->genres as $genre) {
             if (isset($weights[$genre])) {
                 $genreScore += $weights[$genre];
                 $matched[] = $genre;
@@ -403,7 +403,7 @@ class DashboardController extends Controller
             return null;
         }
 
-        $platformOverlap = count(array_intersect((array) $game->platform_names, array_keys($profile['platforms']))) > 0;
+        $platformOverlap = count(array_intersect((array) $game->platforms, array_keys($profile['platforms']))) > 0;
         $rating5 = min(5, (float) $game->rating);
         $score = 0.8 * ($genreScore / array_sum($weights)) + ($platformOverlap ? 0.1 : 0) + 0.1 * ($rating5 / 5);
 
@@ -420,14 +420,14 @@ class DashboardController extends Controller
     {
         return UserGame::where('user_id', $user->id)
             ->where($where)
-            ->with('game:id,slug,name,background_image')
+            ->with('game:id,slug,name,cover_url')
             ->orderByDesc('updated_at')
             ->limit($limit)
             ->get()
             ->map(fn (UserGame $ug) => [
                 'slug' => $ug->game?->slug,
                 'name' => $ug->game?->name,
-                'background_image' => $ug->game?->background_image,
+                'cover_url' => $ug->game?->cover_url,
                 'hours_played' => (int) ($ug->hours_played ?? 0),
                 'progress' => (int) ($ug->progress ?? 0),
                 // null means nothing measured it — the shelf says "not tracked"

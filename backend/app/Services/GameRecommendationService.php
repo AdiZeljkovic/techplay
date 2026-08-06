@@ -48,7 +48,7 @@ class GameRecommendationService
             $rows = DB::table('user_games')
                 ->join('games', 'games.id', '=', 'user_games.game_id')
                 ->where('user_games.user_id', $user->id)
-                ->get(['games.id', 'games.genre_names', 'games.released', 'user_games.status', 'user_games.is_favorite']);
+                ->get(['games.id', 'games.genres', 'games.released', 'user_games.status', 'user_games.is_favorite']);
 
             $genreWeights = [];
             $years = [];
@@ -77,7 +77,7 @@ class GameRecommendationService
                     default => 1.0,
                 };
 
-                foreach ($this->genresOf($row->genre_names) as $genre) {
+                foreach ($this->genresOf($row->genres) as $genre) {
                     $genreWeights[$genre] = ($genreWeights[$genre] ?? 0) + $weight;
                 }
 
@@ -173,7 +173,7 @@ class GameRecommendationService
                 'components' => $components,
                 'score' => $total,
                 // A filtered search should honour the filter strictly.
-                'matches_filter' => ! $wanted || array_intersect($this->genresOf($game->genre_names), $wanted),
+                'matches_filter' => ! $wanted || array_intersect($this->genresOf($game->genres), $wanted),
             ];
         })
             ->filter(fn (array $row) => $row['matches_filter'])
@@ -189,7 +189,7 @@ class GameRecommendationService
     /** @return array<string,float> */
     private function score(Game $game, array $taste, Collection $peerOwners, int $peerMax): array
     {
-        $genres = $this->genresOf($game->genre_names);
+        $genres = $this->genresOf($game->genres);
 
         // Genre: the share of the player's taste this game covers, softened
         // so a single perfect genre doesn't max the component alone.
@@ -203,13 +203,9 @@ class GameRecommendationService
         $owners = (int) ($peerOwners[$game->id] ?? 0);
         $peerScore = $peerMax > 0 ? min(1.0, $owners / $peerMax) * self::WEIGHTS['peers'] : 0.0;
 
-        // Quality: rating first, metacritic as a second opinion.
+        // Quality: the catalogue's own player rating.
         $rating = (float) ($game->rating ?: 0);
-        $meta = (int) ($game->metacritic ?: 0);
         $quality = $rating > 0 ? min(1.0, ($rating - 3.0) / 2.0) : 0.0;
-        if ($meta > 0) {
-            $quality = max($quality, min(1.0, ($meta - 60) / 40));
-        }
         $qualityScore = max(0.0, $quality) * self::WEIGHTS['quality'];
 
         // Era: how close its release sits to the era the player lives in.
@@ -237,7 +233,7 @@ class GameRecommendationService
     private function reasons(Game $game, array $components, array $taste, int $peerOwners): array
     {
         $reasons = [];
-        $genres = $this->genresOf($game->genre_names);
+        $genres = $this->genresOf($game->genres);
 
         if ($components['genre'] >= self::WEIGHTS['genre'] * 0.45) {
             $shared = array_values(array_intersect($genres, $taste['top_genres']));
@@ -253,9 +249,7 @@ class GameRecommendationService
         }
 
         if ($components['quality'] >= self::WEIGHTS['quality'] * 0.6) {
-            $reasons[] = $game->metacritic
-                ? "Critically acclaimed — Metacritic {$game->metacritic}"
-                : 'Rated highly by players';
+            $reasons[] = 'Rated highly by players';
         }
 
         if ($components['era'] >= self::WEIGHTS['era'] * 0.7 && $taste['avg_year']) {
@@ -279,11 +273,10 @@ class GameRecommendationService
         return [
             'slug' => $game->slug,
             'name' => $game->name,
-            'background_image' => $game->background_image,
+            'cover_url' => $game->cover_url,
             'released' => $game->released,
             'rating' => (float) $game->rating,
-            'metacritic' => $game->metacritic ? (int) $game->metacritic : null,
-            'genres' => array_slice($this->genresOf($game->genre_names), 0, 3),
+            'genres' => array_slice($this->genresOf($game->genres), 0, 3),
             'match_score' => (int) round($row['score'] / $maxScore * 100),
             'reasons' => $this->reasons($game, $row['components'], $taste, $owners),
             // The working, for anyone who wants to see it.
@@ -302,7 +295,7 @@ class GameRecommendationService
     private function candidatePool(array $genres, array $excludeIds, array $peerIds): Collection
     {
         $query = Game::query()
-            ->whereNotNull('background_image')
+            ->whereNotNull('cover_url')
             ->where('rating', '>=', self::MIN_RATING)
             ->when($excludeIds, fn ($q) => $q->whereNotIn('id', $excludeIds));
 
@@ -312,11 +305,11 @@ class GameRecommendationService
             $driver = $query->getConnection()->getDriverName();
 
             if ($driver === 'pgsql') {
-                $query->whereRaw('genre_names && ?::text[]', ['{'.implode(',', array_map(fn ($g) => '"'.str_replace('"', '', $g).'"', $genres)).'}']);
+                $query->whereRaw('genres && ?::text[]', ['{'.implode(',', array_map(fn ($g) => '"'.str_replace('"', '', $g).'"', $genres)).'}']);
             } else {
                 $query->where(function ($q) use ($genres) {
                     foreach ($genres as $genre) {
-                        $q->orWhere('genre_names', 'like', '%'.$genre.'%');
+                        $q->orWhere('genres', 'like', '%'.$genre.'%');
                     }
                 });
             }
@@ -324,7 +317,7 @@ class GameRecommendationService
 
         $byGenre = $query->orderByDesc('rating')
             ->limit(self::CANDIDATE_POOL)
-            ->get(['id', 'slug', 'name', 'background_image', 'released', 'rating', 'metacritic', 'genre_names']);
+            ->get(['id', 'slug', 'name', 'cover_url', 'released', 'rating', 'genres']);
 
         // Peer favourites deserve a look even when their genre isn't a match —
         // that is the whole point of a collaborative signal.
@@ -332,9 +325,9 @@ class GameRecommendationService
             ? Game::whereIn('id', array_slice($peerIds, 0, 120))
                 ->whereNotIn('id', $excludeIds ?: [0])
                 ->whereNotIn('id', $byGenre->pluck('id'))
-                ->whereNotNull('background_image')
+                ->whereNotNull('cover_url')
                 ->where('rating', '>=', self::MIN_RATING)
-                ->get(['id', 'slug', 'name', 'background_image', 'released', 'rating', 'metacritic', 'genre_names'])
+                ->get(['id', 'slug', 'name', 'cover_url', 'released', 'rating', 'genres'])
             : collect();
 
         return $byGenre->concat($peerExtras);
@@ -395,8 +388,8 @@ class GameRecommendationService
             }
 
             return collect(DB::select('
-                select unnest(genre_names) as genre, count(*) as tally
-                from games where genre_names is not null
+                select unnest(genres) as genre, count(*) as tally
+                from games where genres is not null
                 group by 1 order by tally desc limit 14
             '))
                 ->pluck('genre')

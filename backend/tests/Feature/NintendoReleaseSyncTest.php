@@ -82,10 +82,10 @@ class NintendoReleaseSyncTest extends TestCase
         $this->assertSame('Castaway', $game->name);
         $this->assertSame('2026-08-01', $game->released->toDateString());
         $this->assertSame('day', $game->release_precision);
-        $this->assertSame('https://nintendo.example/16x9.jpg', $game->background_image);
-        $this->assertSame(['Adventure', 'Simulation'], $game->genre_names);
-        $this->assertSame(['Nintendo Switch'], $game->platform_names);
-        $this->assertSame('Nerd Games', $game->details_data['publisher']);
+        $this->assertSame('https://nintendo.example/16x9.jpg', $game->cover_url);
+        $this->assertSame(['Adventure', 'Simulation'], $game->genres);
+        $this->assertSame(['Nintendo Switch'], $game->platforms);
+        $this->assertSame(['Nerd Games'], $game->publishers);
 
         $link = GameStoreLink::first();
         $this->assertSame('nintendo', $link->store);
@@ -100,7 +100,7 @@ class NintendoReleaseSyncTest extends TestCase
         $this->docs = [$this->doc()];
 
         $this->assertSame(1, $this->sync()['created']);
-        $this->assertLessThan(200, mb_strlen(Game::first()->details_data['description']));
+        $this->assertLessThan(200, mb_strlen(Game::first()->description));
     }
 
     public function test_a_listing_with_nothing_written_about_it_still_falls(): void

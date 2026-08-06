@@ -37,7 +37,7 @@ class GameListController extends Controller
             ->where('is_public', true)
             ->where('is_draft', false)
             ->withCount(['items', 'likes', 'comments'])
-            ->with(['items' => fn ($q) => $q->limit(4)->with('game:id,background_image')])
+            ->with(['items' => fn ($q) => $q->limit(4)->with('game:id,cover_url')])
             ->latest()
             ->get();
 
@@ -52,7 +52,7 @@ class GameListController extends Controller
     {
         $lists = GameList::where('user_id', $request->user()->id)
             ->withCount(['items', 'likes', 'comments'])
-            ->with(['items' => fn ($q) => $q->limit(4)->with('game:id,background_image')])
+            ->with(['items' => fn ($q) => $q->limit(4)->with('game:id,cover_url')])
             ->latest()
             ->get();
 
@@ -65,7 +65,7 @@ class GameListController extends Controller
      */
     public function show(Request $request, int $id)
     {
-        $list = GameList::with(['items.game:id,slug,name,released,rating,background_image,platform_names', 'user:id,username,display_name,avatar_url'])
+        $list = GameList::with(['items.game:id,slug,name,released,rating,cover_url,platforms', 'user:id,username,display_name,avatar_url'])
             ->withCount(['likes', 'comments'])
             ->findOrFail($id);
 
@@ -90,7 +90,7 @@ class GameListController extends Controller
 
         $list = GameList::where('user_id', $user->id)
             ->where('slug', $slug)
-            ->with(['items.game:id,slug,name,released,rating,background_image,platform_names', 'user:id,username,display_name,avatar_url'])
+            ->with(['items.game:id,slug,name,released,rating,cover_url,platforms', 'user:id,username,display_name,avatar_url'])
             ->withCount(['likes', 'comments'])
             ->firstOrFail();
 
@@ -198,7 +198,7 @@ class GameListController extends Controller
             ['position' => $position],
         );
 
-        $list->load(['items.game:id,slug,name,released,rating,background_image,platform_names'])->loadCount('items');
+        $list->load(['items.game:id,slug,name,released,rating,cover_url,platforms'])->loadCount('items');
 
         return $this->success($this->presentList($list, true), 'Added to list');
     }
@@ -265,7 +265,7 @@ class GameListController extends Controller
             ->where('is_draft', false)
             ->has('items')
             ->withCount(['items', 'likes', 'comments'])
-            ->with(['user:id,username,display_name,avatar_url', 'items' => fn ($q) => $q->limit(4)->with('game:id,background_image')])
+            ->with(['user:id,username,display_name,avatar_url', 'items' => fn ($q) => $q->limit(4)->with('game:id,cover_url')])
             ->orderByDesc('likes_count')
             ->latest()
             ->limit($limit)
@@ -432,7 +432,7 @@ class GameListController extends Controller
     private function presentList(GameList $list, bool $withItems = false): array
     {
         $covers = $list->relationLoaded('items')
-            ? $list->items->map(fn ($it) => $it->game?->background_image)->filter()->take(4)->values()->all()
+            ? $list->items->map(fn ($it) => $it->game?->cover_url)->filter()->take(4)->values()->all()
             : [];
 
         $data = [
@@ -475,8 +475,8 @@ class GameListController extends Controller
                     'name' => $it->game->name,
                     'released' => $it->game->released?->format('Y-m-d'),
                     'rating' => $it->game->rating,
-                    'background_image' => $it->game->background_image,
-                    'platform_names' => $it->game->platform_names ?? [],
+                    'cover_url' => $it->game->cover_url,
+                    'platforms' => $it->game->platforms ?? [],
                 ] : null,
             ])->values()->all();
         }

@@ -34,8 +34,8 @@ class WrappedTest extends TestCase
         return Game::create(array_merge([
             'slug' => 'wrapped-game-'.$n,
             'name' => 'Wrapped Game '.$n,
-            'genre_names' => ['Role-playing (RPG)'],
-            'background_image' => 'https://example.com/'.$n.'.jpg',
+            'genres' => ['Role-playing (RPG)'],
+            'cover_url' => 'https://example.com/'.$n.'.jpg',
         ], $attrs));
     }
 
@@ -126,8 +126,8 @@ class WrappedTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $big = $this->game(['name' => 'The Long One', 'genre_names' => ['Role-playing (RPG)']]);
-        $small = $this->game(['name' => 'The Short One', 'genre_names' => ['Puzzle']]);
+        $big = $this->game(['name' => 'The Long One', 'genres' => ['Role-playing (RPG)']]);
+        $small = $this->game(['name' => 'The Short One', 'genres' => ['Puzzle']]);
         $this->played($user, $big, 'playing');
         $this->played($user, $small, 'playing');
 
@@ -179,7 +179,7 @@ class WrappedTest extends TestCase
 
         // Finishes most of what they start → Relentless; RPGs → Explorer.
         foreach (range(1, 3) as $_) {
-            $this->played($user, $this->game(['genre_names' => ['Role-playing (RPG)']]), 'completed', now()->toDateString());
+            $this->played($user, $this->game(['genres' => ['Role-playing (RPG)']]), 'completed', now()->toDateString());
         }
 
         $archetype = app(WrappedService::class)->build($user, $this->year)['archetype'];

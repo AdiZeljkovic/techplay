@@ -35,8 +35,7 @@ interface Release {
     name: string;
     released: string | null;
     tba: boolean;
-    background_image: string | null;
-    metacritic: number | null;
+    cover_url: string | null;
     rating: number;
     added: number;
     genres: string[];
@@ -57,7 +56,7 @@ interface CalendarPayload {
     upcoming: Release[];
     platform_breakdown: { key: string; label: string; count: number; percent: number }[];
     genres: { name: string; count: number }[];
-    watchlist: { slug: string; name: string; background_image: string | null; released: string; reminder: boolean }[];
+    watchlist: { slug: string; name: string; cover_url: string | null; released: string; reminder: boolean }[];
     most_followed: Release[];
 }
 
@@ -191,8 +190,8 @@ export default function CalendarClient() {
                     <CalendarDays className="w-8 h-8 mx-auto mb-3 text-white/20" />
                     <p className="font-display text-[15px] font-bold text-white">The calendar is unavailable</p>
                     <p className="mt-1.5 text-[12.5px] text-white/40 leading-snug">
-                        Release data comes from RAWG, and it isn&apos;t answering right now. We keep the last good copy
-                        of every month, so this only shows when we have never managed to load this one.
+                        The release feed isn&apos;t answering right now. We keep the last good copy of every month,
+                        so this only shows when we have never managed to load this one.
                     </p>
                     <button
                         onClick={() => mutate()}
@@ -218,10 +217,10 @@ export default function CalendarClient() {
         <main className="min-h-screen bg-[var(--surface-0)]">
             {/* ── hero ── */}
             <div className="relative overflow-hidden border-b border-white/[0.07]">
-                {data?.hero?.background_image && (
+                {data?.hero?.cover_url && (
                     <>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={data.hero.background_image} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-[0.28]" />
+                        <img src={data.hero.cover_url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-[0.28]" />
                         <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)] via-[var(--surface-0)]/80 to-transparent" />
                         <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
                     </>
@@ -314,9 +313,9 @@ export default function CalendarClient() {
                                             </span>
                                         </span>
                                         <span className="w-[52px] h-[34px] shrink-0 rounded-[6px] overflow-hidden bg-white/[0.05]">
-                                            {game.background_image && (
+                                            {game.cover_url && (
                                                 // eslint-disable-next-line @next/next/no-img-element
-                                                <img src={game.background_image} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
+                                                <img src={game.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
                                             )}
                                         </span>
                                         <span className="min-w-0 flex-1">
@@ -399,9 +398,9 @@ export default function CalendarClient() {
                                 {data!.most_anticipated.map((game) => (
                                     <div key={game.slug} className="group">
                                         <Link href={`/calendar/${game.slug}`} className="relative block h-[190px] rounded-[10px] overflow-hidden border border-white/[0.07] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors">
-                                            {game.background_image ? (
+                                            {game.cover_url ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
-                                                <img src={game.background_image} alt={game.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500" />
+                                                <img src={game.cover_url} alt={game.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500" />
                                             ) : (
                                                 <span className="w-full h-full flex items-center justify-center bg-white/[0.03] text-white/15"><Gamepad2 className="w-7 h-7" /></span>
                                             )}
@@ -465,9 +464,9 @@ export default function CalendarClient() {
                                             {day.games.map((game) => (
                                                 <div key={game.slug} className="group flex items-center gap-3 rounded-[10px] border border-white/[0.06] bg-white/[0.015] hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors p-2.5">
                                                     <Link href={`/calendar/${game.slug}`} className="w-[64px] h-[40px] shrink-0 rounded-[7px] overflow-hidden bg-white/[0.05]">
-                                                        {game.background_image ? (
+                                                        {game.cover_url ? (
                                                             // eslint-disable-next-line @next/next/no-img-element
-                                                            <img src={game.background_image} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
+                                                            <img src={game.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
                                                         ) : (
                                                             <span className="w-full h-full flex items-center justify-center text-white/15"><Gamepad2 className="w-4 h-4" /></span>
                                                         )}
@@ -519,9 +518,9 @@ export default function CalendarClient() {
                                 {data!.watchlist.map((game) => (
                                     <div key={game.slug} className="group flex items-center gap-3">
                                         <Link href={`/games/${game.slug}`} className="w-[48px] h-[32px] shrink-0 rounded-[6px] overflow-hidden bg-white/[0.05]">
-                                            {game.background_image && (
+                                            {game.cover_url && (
                                                 // eslint-disable-next-line @next/next/no-img-element
-                                                <img src={game.background_image} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
+                                                <img src={game.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
                                             )}
                                         </Link>
                                         <span className="min-w-0 flex-1">
@@ -549,9 +548,9 @@ export default function CalendarClient() {
                                 {data!.most_followed.map((game) => (
                                     <Link key={game.slug} href={`/calendar/${game.slug}`} className="group flex items-center gap-3">
                                         <span className="w-[52px] h-[34px] shrink-0 rounded-[6px] overflow-hidden bg-white/[0.05]">
-                                            {game.background_image && (
+                                            {game.cover_url && (
                                                 // eslint-disable-next-line @next/next/no-img-element
-                                                <img src={game.background_image} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
+                                                <img src={game.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
                                             )}
                                         </span>
                                         <span className="min-w-0 flex-1">

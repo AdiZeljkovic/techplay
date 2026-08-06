@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
 
             // Pinned showcase first, then playing — the games that define this gamer
             covers = [...(json.showcase ?? []), ...(json.playing_now ?? [])]
-                .map((g: any) => g?.background_image)
+                .map((g: any) => g?.cover_url)
                 .filter((src: unknown): src is string => typeof src === "string" && src.startsWith("http"))
                 .filter((src: string, i: number, arr: string[]) => arr.indexOf(src) === i)
                 .slice(0, 3);

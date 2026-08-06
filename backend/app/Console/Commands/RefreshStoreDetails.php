@@ -47,11 +47,11 @@ class RefreshStoreDetails extends Command
         $links = GameStoreLink::where('store', $store)
             ->whereNotNull('game_id')
             ->with('game')
-            // whereJsonLength rather than hand-written SQL: movies_data is a
+            // whereJsonLength rather than hand-written SQL: videos is a
             // json column, not jsonb, and the two have different functions.
             ->when(
                 $this->option('missing-trailers'),
-                fn ($q) => $q->whereHas('game', fn ($g) => $g->whereJsonLength('movies_data', 0)->orWhereNull('movies_data'))
+                fn ($q) => $q->whereHas('game', fn ($g) => $g->whereJsonLength('videos', 0)->orWhereNull('videos'))
             )
             ->get();
 

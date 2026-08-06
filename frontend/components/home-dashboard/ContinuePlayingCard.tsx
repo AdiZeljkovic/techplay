@@ -38,10 +38,10 @@ export default function ContinuePlayingCard({ games }: { games: PlayingNowGame[]
                         stretch, this card sets the height for two others that
                         have nothing to fill it with. */}
                     <Link href={`/games/${game.slug}`} prefetch={false} className="group relative h-[142px] block overflow-hidden">
-                        {game.background_image ? (
+                        {game.cover_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                                src={game.background_image}
+                                src={game.cover_url}
                                 alt={game.name}
                                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-[var(--ease-hud)]"
                             />

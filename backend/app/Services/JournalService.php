@@ -144,7 +144,7 @@ class JournalService
                     'game' => $game ? [
                         'slug' => $game->slug,
                         'name' => $game->name,
-                        'background_image' => $game->background_image,
+                        'cover_url' => $game->cover_url,
                     ] : null,
                     'minutes' => $minutes,
                     'sessions' => $rows->count(),
@@ -169,7 +169,7 @@ class JournalService
         return UserGame::where('user_id', $user->id)
             ->where('status', 'completed')
             ->whereNotNull('completed_at')
-            ->with('game:id,slug,name,background_image')
+            ->with('game:id,slug,name,cover_url')
             ->orderByDesc('completed_at')
             ->limit($limit)
             ->get()
@@ -177,7 +177,7 @@ class JournalService
             ->map(fn (UserGame $ug) => [
                 'slug' => $ug->game->slug,
                 'name' => $ug->game->name,
-                'background_image' => $ug->game->background_image,
+                'cover_url' => $ug->game->cover_url,
                 'completed_at' => $ug->completed_at?->toDateString(),
                 'hours' => (int) ($ug->hours_played ?? 0),
                 'from_backlog' => (bool) $ug->from_backlog,
@@ -195,7 +195,7 @@ class JournalService
         return GameRating::where('user_id', $user->id)
             ->where('is_draft', false)
             ->whereNotNull('review')
-            ->with('game:id,slug,name,background_image')
+            ->with('game:id,slug,name,cover_url')
             ->latest()
             ->limit($limit)
             ->get()
@@ -207,8 +207,8 @@ class JournalService
                 'game' => $r->game ? [
                     'slug' => $r->game->slug,
                     'name' => $r->game->name,
-                    'background_image' => $r->game->background_image,
-                ] : ['slug' => $r->game_slug, 'name' => $r->game_slug, 'background_image' => null],
+                    'cover_url' => $r->game->cover_url,
+                ] : ['slug' => $r->game_slug, 'name' => $r->game_slug, 'cover_url' => null],
             ])
             ->all();
     }

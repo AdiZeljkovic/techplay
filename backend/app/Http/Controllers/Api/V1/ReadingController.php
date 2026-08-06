@@ -146,7 +146,7 @@ class ReadingController extends Controller
     {
         $drafts = GameRating::where('user_id', $user->id)
             ->where('is_draft', true)
-            ->with('game:id,slug,name,background_image')
+            ->with('game:id,slug,name,cover_url')
             ->latest('updated_at')
             ->limit(5)
             ->get();
@@ -157,7 +157,7 @@ class ReadingController extends Controller
                 ->map(fn (GameRating $r) => [
                     'slug' => $r->game?->slug ?? $r->game_slug,
                     'name' => $r->game?->name ?? $r->game_slug,
-                    'background_image' => $r->game?->background_image,
+                    'cover_url' => $r->game?->cover_url,
                     'rating' => $r->rating,
                     'updated_at' => $r->updated_at?->toIso8601String(),
                 ])

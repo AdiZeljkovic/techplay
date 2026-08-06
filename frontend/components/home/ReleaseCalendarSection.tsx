@@ -10,7 +10,7 @@ interface CalendarGame {
     slug: string;
     name: string;
     released: string;
-    background_image: string;
+    cover_url: string;
     platforms: unknown;
 }
 
@@ -90,9 +90,9 @@ export default function ReleaseCalendarSection() {
 
                                 {/* Thumbnail */}
                                 <div className="relative w-[54px] h-[54px] overflow-hidden rounded-[8px] opacity-90 group-hover:opacity-100 shrink-0 border border-zinc-200 dark:border-white/5">
-                                    {game.background_image ? (
+                                    {game.cover_url ? (
                                         <Image
-                                            src={game.background_image}
+                                            src={game.cover_url}
                                             alt={game.name}
                                             fill
                                             sizes="54px"

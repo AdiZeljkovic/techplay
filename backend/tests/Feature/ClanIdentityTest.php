@@ -71,7 +71,7 @@ class ClanIdentityTest extends TestCase
         $make = function (array $genres, string $released) use (&$n) {
             $n++;
 
-            return Game::create(['slug' => "dna-{$n}", 'name' => "DNA {$n}", 'genre_names' => $genres, 'released' => $released]);
+            return Game::create(['slug' => "dna-{$n}", 'name' => "DNA {$n}", 'genres' => $genres, 'released' => $released]);
         };
 
         // Owner: three completed strategy games; member: one action backlog title.

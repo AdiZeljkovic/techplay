@@ -37,8 +37,8 @@ class GenerateSitemap extends Command
             $this->line("  ✓ {$filename}");
         }
 
-        // Game sitemaps — dynamic count based on crawled games
-        $gamesCount = Game::whereNotNull('details_crawled_at')->count();
+        // Game sitemaps — dynamic count over the browseable catalogue
+        $gamesCount = Game::whereNotNull('description')->count();
         if ($gamesCount > 0) {
             $gamePages = (int) ceil($gamesCount / 50000);
             for ($p = 1; $p <= $gamePages; $p++) {

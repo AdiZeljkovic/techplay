@@ -89,7 +89,7 @@ export function heroFromDashboard(data: DashboardData): HeroModel {
             achievements: stats.achievements_count,
             hours: stats.hours_played,
         },
-        backdrop_fallback: firstPlaying?.background_image ?? data.favorites[0]?.background_image ?? null,
+        backdrop_fallback: firstPlaying?.cover_url ?? data.favorites[0]?.cover_url ?? null,
         continue_playing: firstPlaying ? { slug: firstPlaying.slug, name: firstPlaying.name } : null,
     };
 }
@@ -131,7 +131,7 @@ export function heroFromProfile(profile: UserProfile): HeroModel {
             achievements: stats.achievements_count,
             hours: stats.hours_played ?? 0,
         },
-        backdrop_fallback: firstPlaying?.background_image ?? profile.showcase?.[0]?.background_image ?? null,
+        backdrop_fallback: firstPlaying?.cover_url ?? profile.showcase?.[0]?.cover_url ?? null,
         continue_playing: firstPlaying ? { slug: firstPlaying.slug, name: firstPlaying.name } : null,
     };
 }

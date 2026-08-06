@@ -25,7 +25,7 @@ class GameReleaseNotification extends Notification
             'title' => "{$this->game->name} is out",
             'message' => 'A game on your watchlist just released.',
             'url' => "/games/{$this->game->slug}",
-            'image' => $this->game->background_image,
+            'image' => $this->game->cover_url,
         ];
     }
 

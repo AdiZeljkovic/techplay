@@ -47,9 +47,9 @@ export function RecentlyAdded({ username }: { username: string }) {
                             className="group flex items-center gap-3 p-2 rounded-[10px] border border-transparent hover:border-[color-mix(in_srgb,var(--accent)_30%,transparent)] hover:bg-[var(--fill-1)] transition-colors duration-300"
                         >
                             <span className="relative w-[44px] h-[36px] shrink-0 rounded-[6px] overflow-hidden bg-white/[0.04]">
-                                {e.game?.background_image ? (
+                                {e.game?.cover_url ? (
                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={e.game.background_image} alt={e.game.name} loading="lazy" className="w-full h-full object-cover" />
+                                    <img src={e.game.cover_url} alt={e.game.name} loading="lazy" className="w-full h-full object-cover" />
                                 ) : (
                                     <span className="w-full h-full flex items-center justify-center text-white/20"><Gamepad2 className="w-3.5 h-3.5" /></span>
                                 )}

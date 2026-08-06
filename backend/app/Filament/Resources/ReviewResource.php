@@ -11,7 +11,6 @@ use App\Models\Game;
 // Layout Components (from Schemas)
 use App\Policies\ArticlePolicy;
 use App\Services\CacheService;
-use App\Services\RawgService;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 // Form Field Components (from Forms)
@@ -192,19 +191,18 @@ class ReviewResource extends Resource
                             ->collapsed(false) // Uncollapsed to show validation errors
                             ->collapsible()
                             ->schema([
-                                Select::make('rawg_game_slug')
-                                    ->label('🔍 Auto-fill from RAWG.io')
+                                Select::make('catalogue_game_search')
+                                    ->label('🔍 Auto-fill from the games database')
                                     ->placeholder('Type a game name to search...')
                                     ->searchable()
                                     ->getSearchResultsUsing(function (string $search) {
-                                        $service = new RawgService;
-                                        $results = $service->searchGames($search);
-                                        if (! $results || ! isset($results['results'])) {
-                                            return [];
-                                        }
-
-                                        return collect($results['results'])
-                                            ->mapWithKeys(fn ($game) => [$game['slug'] => "{$game['name']} (".substr($game['released'] ?? 'N/A', 0, 4).')'])
+                                        // Our own 200k catalogue, via the trgm index.
+                                        return Game::query()
+                                            ->where('name', 'ilike', "%{$search}%")
+                                            ->orderByDesc('rating')
+                                            ->limit(20)
+                                            ->get(['slug', 'name', 'released'])
+                                            ->mapWithKeys(fn ($g) => [$g->slug => "{$g->name} (".($g->released?->format('Y') ?? 'N/A').')'])
                                             ->toArray();
                                     })
                                     ->getOptionLabelUsing(fn ($value) => $value)
@@ -213,38 +211,22 @@ class ReviewResource extends Resource
                                         if (! $state) {
                                             return;
                                         }
-                                        $service = new RawgService;
-                                        $details = $service->getGameDetails($state);
-                                        if (! $details) {
-                                            Notification::make()->title('Failed to fetch data from RAWG')->danger()->send();
+                                        $game = Game::where('slug', $state)->first();
+                                        if (! $game) {
+                                            Notification::make()->title('Game not found in the catalogue')->danger()->send();
 
                                             return;
                                         }
-                                        $set('review_data.game_title', $details['name']);
-                                        $set('review_data.developer', $details['developers'][0]['name'] ?? null);
-                                        $set('review_data.publisher', $details['publishers'][0]['name'] ?? null);
-                                        $set('review_data.release_date', $details['released'] ?? null);
-                                        if (isset($details['parent_platforms'])) {
-                                            $set('review_data.platforms', collect($details['parent_platforms'])->pluck('platform.name')->toArray());
-                                        }
-                                        if (isset($details['genres'])) {
-                                            $set('review_data.genres', collect($details['genres'])->pluck('name')->map(fn ($g) => strtolower($g))->toArray());
-                                        }
+                                        $set('review_data.game_title', $game->name);
+                                        $set('review_data.developer', ($game->developers ?? [])[0] ?? null);
+                                        $set('review_data.publisher', ($game->publishers ?? [])[0] ?? null);
+                                        $set('review_data.release_date', $game->released?->toDateString());
+                                        $set('review_data.platforms', array_slice((array) $game->platforms, 0, 6));
+                                        $set('review_data.genres', array_map('strtolower', array_slice((array) $game->genres, 0, 4)));
 
-                                        // Upsert local Game record so ArticleObserver can link the review
-                                        $game = Game::firstOrCreate(
-                                            ['slug' => $state],
-                                            [
-                                                'name'             => $details['name'],
-                                                'released'         => $details['released'] ?? null,
-                                                'background_image' => $details['background_image'] ?? null,
-                                                'rating'           => $details['rating'] ?? 0,
-                                                'details_crawled_at' => now(),
-                                            ]
-                                        );
                                         $set('game_id', $game->id);
 
-                                        Notification::make()->title('Fields filled from RAWG')->success()->send();
+                                        Notification::make()->title('Fields filled from the games database')->success()->send();
                                     })
                                     ->dehydrated(false)
                                     ->helperText('Select a game to auto-fill title, developer, publisher, release date, platforms and genres'),

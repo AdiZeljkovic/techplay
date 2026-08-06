@@ -49,7 +49,7 @@ class JournalController extends Controller
 
         $sessions = PlaySession::where('user_id', $user->id)
             ->when(! $isOwner, fn ($q) => $q->where('is_private', false))
-            ->with(['game:id,slug,name,background_image', 'moments'])
+            ->with(['game:id,slug,name,cover_url', 'moments'])
             ->orderByDesc('played_on')
             ->orderByDesc('id')
             ->get();
@@ -266,7 +266,7 @@ class JournalController extends Controller
             'game' => $session->game ? [
                 'slug' => $session->game->slug,
                 'name' => $session->game->name,
-                'background_image' => $session->game->background_image,
+                'cover_url' => $session->game->cover_url,
             ] : null,
             'moments' => $session->moments->map(fn (GamingMoment $m) => $this->presentMoment($m))->all(),
         ];

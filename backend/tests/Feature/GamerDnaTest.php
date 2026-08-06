@@ -28,8 +28,8 @@ class GamerDnaTest extends TestCase
             'slug' => 'game-'.$n,
             'name' => 'Game '.$n,
             'released' => '2018-01-01',
-            'genre_names' => ['Action'],
-            'tag_names' => [],
+            'genres' => ['Action'],
+            'tags' => [],
         ], $attrs));
     }
 
@@ -62,12 +62,12 @@ class GamerDnaTest extends TestCase
     {
         $strategist = User::factory()->create(['username' => 'strat']);
         foreach (range(1, 4) as $_) {
-            $this->own($strategist, $this->game(['genre_names' => ['Strategy / tactics']]));
+            $this->own($strategist, $this->game(['genres' => ['Strategy / tactics']]));
         }
 
         $reader = User::factory()->create(['username' => 'reader']);
         foreach (range(1, 4) as $_) {
-            $this->own($reader, $this->game(['genre_names' => ['Adventure'], 'tag_names' => ['Visual novel']]));
+            $this->own($reader, $this->game(['genres' => ['Adventure'], 'tags' => ['Visual novel']]));
         }
 
         $focus = fn (string $u) => collect(
@@ -141,7 +141,7 @@ class GamerDnaTest extends TestCase
     {
         $user = User::factory()->create(['username' => 'adi']);
         foreach (range(1, 6) as $_) {
-            $this->own($user, $this->game(['genre_names' => ['Role-playing (RPG)']]), 'completed');
+            $this->own($user, $this->game(['genres' => ['Role-playing (RPG)']]), 'completed');
         }
 
         $archetypes = collect($this->getJson('/api/v1/users/adi/gamer-dna')->assertOk()->json('data.archetypes'))

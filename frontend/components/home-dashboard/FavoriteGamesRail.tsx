@@ -55,10 +55,10 @@ export default function FavoriteGamesRail({
                             title={g.name}
                             className={`group relative aspect-[3/4] rounded-[10px] overflow-hidden border border-white/[0.07] bg-[var(--fill-1)] hover:border-[color-mix(in_srgb,var(--accent)_55%,transparent)] hover:shadow-[0_10px_26px_rgba(0,0,0,0.5)] transition-all duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}
                         >
-                            {g.background_image && (
+                            {g.cover_url && (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
-                                    src={g.background_image}
+                                    src={g.cover_url}
                                     alt={g.name}
                                     loading="lazy"
                                     className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-[var(--ease-hud)]"
@@ -77,10 +77,10 @@ export default function FavoriteGamesRail({
                             href={`/profile/${username}?tab=collection`}
                             className="relative aspect-[3/4] rounded-[10px] overflow-hidden border border-white/[0.07] bg-[var(--fill-1)] flex items-center justify-center hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
                         >
-                            {favorites[SHOWN]?.background_image && (
+                            {favorites[SHOWN]?.cover_url && (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
-                                    src={favorites[SHOWN].background_image!}
+                                    src={favorites[SHOWN].cover_url!}
                                     alt=""
                                     aria-hidden
                                     className="absolute inset-0 w-full h-full object-cover opacity-25"

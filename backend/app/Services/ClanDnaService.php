@@ -47,7 +47,7 @@ class ClanDnaService
                 ->join('games', 'games.id', '=', 'user_games.game_id')
                 ->whereIn('user_games.user_id', $memberIds)
                 ->limit(4000)
-                ->get(['games.genre_names', 'games.released', 'user_games.status']);
+                ->get(['games.genres', 'games.released', 'user_games.status']);
 
             $genreTally = [];
             $eraTally = array_fill_keys(array_column(self::ERAS, 'key'), 0);
@@ -62,7 +62,7 @@ class ClanDnaService
                     }
                 }
 
-                foreach ($this->genres($row->genre_names) as $genre) {
+                foreach ($this->genres($row->genres) as $genre) {
                     if (in_array($genre, ['Add-on', 'Compilation', 'Special edition'], true)) {
                         continue;
                     }
@@ -125,7 +125,7 @@ class ClanDnaService
     }
 
     /**
-     * genre_names arrives as a PHP array on Postgres (casted) or as a raw
+     * genres arrives as a PHP array on Postgres (casted) or as a raw
      * `{A,"B (C)"}` string over some drivers — the pgArray lesson from the
      * games controller, applied here.
      *

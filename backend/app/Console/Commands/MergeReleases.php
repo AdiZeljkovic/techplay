@@ -69,8 +69,8 @@ class MergeReleases extends Command
 
         foreach ($merger->candidates() as [$left, $right]) {
             $verdict = $matcher->verdict(
-                ['title' => $left->name, 'released' => $left->released?->toDateString(), 'publisher' => data_get($left->details_data, 'publisher')],
-                ['title' => $right->name, 'released' => $right->released?->toDateString(), 'publisher' => data_get($right->details_data, 'publisher')],
+                ['title' => $left->name, 'released' => $left->released?->toDateString(), 'publisher' => ($left->publishers ?? [])[0] ?? null],
+                ['title' => $right->name, 'released' => $right->released?->toDateString(), 'publisher' => ($right->publishers ?? [])[0] ?? null],
             );
 
             if ($verdict !== GameMatcher::REVIEW) {

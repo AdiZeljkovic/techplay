@@ -50,7 +50,7 @@ const hhmm = (minutes: number) => {
 /* ── the composer ─────────────────────────────────────────────────────── */
 
 interface Draft {
-    game: { slug: string; name: string; background_image: string | null } | null;
+    game: { slug: string; name: string; cover_url: string | null } | null;
     played_on: string;
     hours: string;
     minutes: string;
@@ -96,7 +96,7 @@ const draftFromSession = (s: PlaySession): Draft => ({
 
 function GamePicker({ value, onPick }: { value: Draft["game"]; onPick: (g: Draft["game"]) => void }) {
     const [term, setTerm] = useState("");
-    const { data, isLoading } = useSWR<{ data: { slug: string; name: string; background_image: string | null }[] }>(
+    const { data, isLoading } = useSWR<{ data: { slug: string; name: string; cover_url: string | null }[] }>(
         term.trim().length >= 2 ? `/games?search=${encodeURIComponent(term.trim())}&page_size=8` : null,
         fetcher
     );
@@ -105,9 +105,9 @@ function GamePicker({ value, onPick }: { value: Draft["game"]; onPick: (g: Draft
         return (
             <div className="flex items-center gap-3 p-2 rounded-[10px] border border-white/[0.09] bg-white/[0.03]">
                 <span className="w-[62px] h-[36px] shrink-0 rounded-[6px] overflow-hidden bg-white/[0.05]">
-                    {value.background_image && (
+                    {value.cover_url && (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={value.background_image} alt="" aria-hidden className="w-full h-full object-cover" />
+                        <img src={value.cover_url} alt="" aria-hidden className="w-full h-full object-cover" />
                     )}
                 </span>
                 <span className="flex-1 min-w-0 text-[13px] font-bold text-white truncate">{value.name}</span>
@@ -141,9 +141,9 @@ function GamePicker({ value, onPick }: { value: Draft["game"]; onPick: (g: Draft
                                 className="w-full flex items-center gap-3 p-2 hover:bg-white/[0.05] transition-colors text-left"
                             >
                                 <span className="w-[52px] h-[30px] shrink-0 rounded-[5px] overflow-hidden bg-white/[0.05]">
-                                    {g.background_image && (
+                                    {g.cover_url && (
                                         // eslint-disable-next-line @next/next/no-img-element
-                                        <img src={g.background_image} alt="" aria-hidden className="w-full h-full object-cover" />
+                                        <img src={g.cover_url} alt="" aria-hidden className="w-full h-full object-cover" />
                                     )}
                                 </span>
                                 <span className="flex-1 min-w-0 text-[12.5px] text-white truncate">{g.name}</span>
@@ -720,9 +720,9 @@ export default function JournalTab({ username }: { username: string }) {
                                             <Link key={g.slug + g.completed_at} href={`/games/${g.slug}`} className="group relative flex items-center gap-3">
                                                 <span aria-hidden className="absolute -left-5 top-1/2 -translate-y-1/2 w-[11px] h-[11px] rounded-full bg-emerald-400 border-2 border-[#12100f]" />
                                                 <span className="w-[78px] h-[44px] shrink-0 rounded-[7px] overflow-hidden bg-white/[0.04]">
-                                                    {g.background_image && (
+                                                    {g.cover_url && (
                                                         // eslint-disable-next-line @next/next/no-img-element
-                                                        <img src={g.background_image} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
+                                                        <img src={g.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
                                                     )}
                                                 </span>
                                                 <span className="min-w-0 flex-1">
@@ -754,9 +754,9 @@ export default function JournalTab({ username }: { username: string }) {
                                     {journal.reviews.map((r) => (
                                         <div key={r.id} className="flex gap-3 p-3 rounded-[10px] border border-white/[0.07] bg-white/[0.02]">
                                             <Link href={`/games/${r.game.slug}`} className="w-[86px] h-[50px] shrink-0 rounded-[7px] overflow-hidden bg-white/[0.04]">
-                                                {r.game.background_image && (
+                                                {r.game.cover_url && (
                                                     // eslint-disable-next-line @next/next/no-img-element
-                                                    <img src={r.game.background_image} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
+                                                    <img src={r.game.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
                                                 )}
                                             </Link>
                                             <div className="min-w-0 flex-1">

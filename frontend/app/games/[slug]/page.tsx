@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getApiUrl } from "@/lib/api";
 import {
     Calendar, Monitor, Star, Globe,
-    ExternalLink, Gamepad2, ArrowLeft, Tag, Info,
+    Gamepad2, ArrowLeft, Tag, Info,
     Camera, Layers, ThumbsUp, Shield, Newspaper,
 } from "lucide-react";
 import GameScreenshotsLightbox from "@/components/games/GameScreenshotsLightbox";
@@ -28,26 +28,14 @@ interface AgeRating {
     rating_system_name: string;
 }
 
-interface SystemRequirement {
+interface GameAttribute {
     attribute_category_name: string;
     attribute_name: string;
 }
 
 interface AlternateTitle {
     title: string;
-    description: string;
-}
-
-interface GamePlatform {
-    platform_id: number;
-    platform_name: string;
-    first_release_date?: string;
-}
-
-interface GameCompany {
-    company_id: number;
-    company_name: string;
-    moby_url?: string;
+    description: string | null;
 }
 
 interface GameDetail {
@@ -55,49 +43,43 @@ interface GameDetail {
     name: string;
     slug: string;
     description: string | null;
-    description_raw: string | null;
     released: string | null;
-    background_image: string | null;
-    background_image_additional: string | null;
+    release_precision: string | null;
+    cover_url: string | null;
     website: string | null;
-    moby_url: string | null;
     rating: number;
     rating_top: number;
     ratings_count: number;
-    metacritic: null;
-    playtime: null;
     esrb_rating: { name: string } | null;
     age_ratings: AgeRating[];
-    system_requirements: SystemRequirement[];
-    alternate_titles: AlternateTitle[];
-    platforms: GamePlatform[];
-    genres: { name: string }[];
-    tags: { name: string; slug: string; language: string }[];
-    developers: GameCompany[];
-    publishers: GameCompany[];
-    moby_group_id: number | null;
-    moby_group_name: string | null;
-    short_screenshots: { image: string; thumbnail_image: string; caption: string }[];
-    movies_count: number;
-    additions_count: number;
-    game_series_count: number;
+    attributes: GameAttribute[];
+    alt_titles: AlternateTitle[];
+    platforms: string[];
+    genres: string[];
+    tags: string[];
+    developers: string[];
+    publishers: string[];
+    series_key: number | null;
+    series_name: string | null;
+    videos: string[];
     screenshots_count: number;
-    stores: [];
+    views: number;
 }
 
-interface MobyScreenshot {
+/** The screenshots endpoint serves Moby objects and aggregator URL strings alike. */
+type ApiScreenshot = string | {
     image: string;
     thumbnail_image?: string;
     caption?: string;
     width?: number;
     height?: number;
-}
+};
 
 interface GameListItem {
     id: number;
     name: string;
     slug: string;
-    background_image: string;
+    cover_url: string;
     released: string;
     rating: number;
 }
@@ -124,14 +106,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         const game: GameDetail = await res.json();
 
         const year      = game.released ? new Date(game.released).getFullYear() : null;
-        const platforms = (game.platforms ?? []).slice(0, 3).map((p) => p.platform_name).join(", ");
-        const developer = game.developers?.[0]?.company_name;
+        const platforms = (game.platforms ?? []).slice(0, 3).join(", ");
+        const developer = game.developers?.[0];
         const esrb      = game.esrb_rating?.name;
+        const plainDescription = (game.description ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
         // Trim description to last complete sentence within 155 chars
         let description = "";
-        if (game.description_raw && game.description_raw.trim().length > 50) {
-            const raw        = game.description_raw.slice(0, 200);
+        if (plainDescription.length > 50) {
+            const raw        = plainDescription.slice(0, 200);
             const lastPeriod = Math.max(raw.lastIndexOf(". "), raw.lastIndexOf("! "), raw.lastIndexOf("? "));
             description      = lastPeriod > 80
                 ? raw.slice(0, lastPeriod + 1)
@@ -148,9 +131,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         }
 
         const keywords = [
-            ...(game.genres ?? []).map((g) => g.name),
-            ...(game.platforms ?? []).slice(0, 4).map((p) => p.platform_name),
-            ...(game.tags ?? []).slice(0, 5).map((t) => t.name),
+            ...(game.genres ?? []),
+            ...(game.platforms ?? []).slice(0, 4),
+            ...(game.tags ?? []).slice(0, 5),
             game.name,
             year?.toString(),
             developer,
@@ -158,7 +141,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         ].filter(Boolean).join(", ");
 
         const title      = year ? `${game.name} (${year}) — TechPlay` : `${game.name} — TechPlay`;
-        const hasContent = !!(game.description_raw && game.description_raw.trim().length > 50);
+        const hasContent = plainDescription.length > 50;
 
         return {
             title,
@@ -172,15 +155,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
                 url:   `https://techplay.gg/games/${slug}`,
                 type:  "website",
                 siteName: "TechPlay",
-                images: game.background_image
-                    ? [{ url: game.background_image, width: 1280, height: 720, alt: `${game.name} cover` }]
+                images: game.cover_url
+                    ? [{ url: game.cover_url, width: 1280, height: 720, alt: `${game.name} cover` }]
                     : [],
             },
             twitter: {
                 card:        "summary_large_image",
                 title,
                 description,
-                images: game.background_image ? [game.background_image] : [],
+                images: game.cover_url ? [game.cover_url] : [],
             },
         };
     } catch {
@@ -205,8 +188,8 @@ function MiniGameCard({ game }: { game: GameListItem }) {
         <Link href={`/games/${game.slug}`} prefetch={false}
             className="group flex flex-col bg-[var(--bg-card)] border border-[var(--border)] rounded-xl overflow-hidden hover:border-[var(--accent)] transition-all hover:shadow-xl hover:shadow-[var(--accent)]/10">
             <div className="relative h-32 bg-[var(--bg-elevated)] overflow-hidden">
-                {game.background_image ? (
-                    <Image src={game.background_image} alt={game.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                {game.cover_url ? (
+                    <Image src={game.cover_url} alt={game.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center">
                         <Gamepad2 className="w-8 h-8 text-[var(--text-muted)]" />
@@ -233,7 +216,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
         fetch(`${base}/games/${slug}/series`).then((r) => (r.ok ? r.json() : null)),
         fetch(`${base}/games/${slug}/suggested`).then((r) => (r.ok ? r.json() : null)),
         fetch(`${base}/games/${slug}/articles`).then((r) => (r.ok ? r.json() : null)),
-    ]) as [GameDetail | null, { results: MobyScreenshot[] } | null, { results: GameListItem[] } | null, { results: GameListItem[] } | null, { data: RelatedArticle[] } | null];
+    ]) as [GameDetail | null, { results: ApiScreenshot[] } | null, { results: GameListItem[] } | null, { results: GameListItem[] } | null, { data: RelatedArticle[] } | null];
 
     if (!game) notFound();
 
@@ -242,21 +225,21 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
     // Ensure rating is always a number
     if (game.rating) game.rating = Number(game.rating);
 
-    // Transform MobyGames screenshots into the format GameScreenshotsLightbox expects
+    // Normalise both shapes (Moby objects, aggregator URL strings) for the lightbox
     const screenshots = (screenshotsRes?.results ?? []).map((s, i) => ({
         id:     i,
-        image:  s.image,
-        width:  s.width  ?? 640,
-        height: s.height ?? 480,
-    }));
+        image:  typeof s === "string" ? s : s.image,
+        width:  typeof s === "string" ? 1280 : (s.width  ?? 640),
+        height: typeof s === "string" ? 720  : (s.height ?? 480),
+    })).filter((s) => !!s.image);
 
     const series    = (seriesRes?.results ?? []).filter((g) => g.slug !== slug);
     const suggested = suggestedRes?.results ?? [];
 
     const isUpcoming = game.released && new Date(game.released) > new Date();
 
-    // Group system_requirements by category for display
-    const sysReqGroups = (game.system_requirements ?? []).reduce<Record<string, string[]>>(
+    // Group Moby attributes by category for display
+    const sysReqGroups = (game.attributes ?? []).reduce<Record<string, string[]>>(
         (acc, attr) => {
             const cat = attr.attribute_category_name;
             if (!acc[cat]) acc[cat] = [];
@@ -271,10 +254,9 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
         "@context":          "https://schema.org",
         "@type":             "VideoGame",
         name:                game.name,
-        description:         (game.description_raw ?? "").slice(0, 500),
-        image:               game.background_image ?? "",
+        description:         (game.description ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 500),
+        image:               game.cover_url ?? "",
         url:                 `https://techplay.gg/games/${game.slug}`,
-        ...(game.moby_url   ? { sameAs: game.moby_url } : {}),
         ...(game.released   ? { datePublished: game.released } : {}),
         ...(game.esrb_rating ? { contentRating: game.esrb_rating.name } : {}),
         // timeRequired intentionally omitted — MobyGames doesn't provide playtime
@@ -288,11 +270,11 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
             },
         } : {}),
         ...(screenshots.length > 0 ? { screenshot: screenshots.slice(0, 5).map((s) => s.image) } : {}),
-        ...((game.alternate_titles ?? []).length > 0 ? { alternateName: game.alternate_titles.map((t) => t.title) } : {}),
-        genre:               (game.genres    ?? []).map((g) => g.name),
-        gamePlatform:        (game.platforms ?? []).map((p) => p.platform_name),
-        publisher:           (game.publishers ?? []).map((p) => ({ "@type": "Organization", name: p.company_name })),
-        developer:           (game.developers ?? []).map((d) => ({ "@type": "Organization", name: d.company_name })),
+        ...((game.alt_titles ?? []).length > 0 ? { alternateName: game.alt_titles.map((t) => t.title) } : {}),
+        genre:               game.genres    ?? [],
+        gamePlatform:        game.platforms ?? [],
+        publisher:           (game.publishers ?? []).map((name) => ({ "@type": "Organization", name })),
+        developer:           (game.developers ?? []).map((name) => ({ "@type": "Organization", name })),
         applicationCategory: "Game",
     };
 
@@ -314,24 +296,14 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
             {/* ── Hero ──────────────────────────────────────────────────────── */}
             <div className="relative h-[85vh] w-full overflow-hidden">
                 <div className="absolute inset-0 z-0">
-                    {game.background_image && (
+                    {game.cover_url && (
                         <Image
-                            src={game.background_image}
+                            src={game.cover_url}
                             alt={game.name}
                             fill
                             className="object-cover"
                             priority
                         />
-                    )}
-                    {game.background_image_additional && (
-                        <div className="absolute inset-0 hidden md:block">
-                            <Image
-                                src={game.background_image_additional}
-                                alt=""
-                                fill
-                                className="object-cover opacity-30 [mask-image:linear-gradient(to_left,rgba(0,0,0,0.8)_0%,transparent_60%)]"
-                            />
-                        </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)]/40 to-black/60" />
                     <div className="absolute inset-0 bg-gradient-to-r from-[var(--bg-primary)]/90 via-transparent to-transparent" />
@@ -347,8 +319,8 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                     <div className="max-w-4xl animate-in slide-in-from-bottom-10 fade-in duration-700">
                         <div className="flex flex-wrap gap-2 mb-5">
                             {game.genres?.map((g) => (
-                                <span key={g.name} className="px-3 py-1 bg-[var(--accent)]/90 text-white border border-[var(--accent)] rounded-full text-xs font-bold uppercase tracking-widest">
-                                    {g.name}
+                                <span key={g} className="px-3 py-1 bg-[var(--accent)]/90 text-white border border-[var(--accent)] rounded-full text-xs font-bold uppercase tracking-widest">
+                                    {g}
                                 </span>
                             ))}
                         </div>
@@ -473,14 +445,14 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         )}
 
                         {/* Alternate Titles */}
-                        {game.alternate_titles && game.alternate_titles.length > 0 && (
+                        {game.alt_titles && game.alt_titles.length > 0 && (
                             <div className="bg-[#0f1221]/60 border border-white/5 rounded-2xl p-6">
                                 <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
                                     <Info className="w-4 h-4 text-[var(--accent)]" />
                                     Also Known As
                                 </h3>
                                 <div className="space-y-2">
-                                    {game.alternate_titles.map((alt) => (
+                                    {game.alt_titles.map((alt) => (
                                         <div key={alt.title} className="flex items-start gap-3">
                                             <span className="text-white font-medium text-sm">{alt.title}</span>
                                             {alt.description && (
@@ -495,7 +467,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         {/* Stats grid */}
                         <div className="grid grid-cols-2 gap-4">
                             {[
-                                { icon: ThumbsUp, label: "MobyScore", value: game.rating > 0 ? `${Number(game.rating).toFixed(1)} / 10` : "No score" },
+                                { icon: ThumbsUp, label: "Player Score", value: game.rating > 0 ? `${Number(game.rating).toFixed(1)} / 10` : "No score" },
                                 { icon: Camera,   label: "Screenshots", value: game.screenshots_count || screenshots.length || 0 },
                             ].map(({ icon: Icon, label, value }) => (
                                 <div key={label} className="bg-[#0f1221]/60 border border-white/5 rounded-2xl p-5 hover:bg-[#0f1221]/80 transition-colors">
@@ -531,8 +503,8 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                 <div className="flex flex-wrap gap-2">
                                     {game.developers?.length > 0 ? (
                                         game.developers.map((d) => (
-                                            <span key={d.company_id ?? d.company_name} className="text-white font-semibold text-sm">
-                                                {d.company_name}
+                                            <span key={d} className="text-white font-semibold text-sm">
+                                                {d}
                                             </span>
                                         ))
                                     ) : (
@@ -545,8 +517,8 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                 <div className="flex flex-wrap gap-2">
                                     {game.publishers?.length > 0 ? (
                                         game.publishers.map((p) => (
-                                            <span key={p.company_id ?? p.company_name} className="text-white font-semibold text-sm">
-                                                {p.company_name}
+                                            <span key={p} className="text-white font-semibold text-sm">
+                                                {p}
                                             </span>
                                         ))
                                     ) : (
@@ -557,15 +529,15 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         </div>
 
                         {/* Tags */}
-                        {game.tags && game.tags.filter((t) => t.language === "eng").length > 0 && (
+                        {game.tags && game.tags.length > 0 && (
                             <div className="bg-[#0f1221]/60 border border-white/5 rounded-2xl p-5">
                                 <h3 className="text-xs uppercase text-gray-400 font-bold mb-3 tracking-widest flex items-center gap-2">
                                     <Tag className="w-3.5 h-3.5" /> Tags
                                 </h3>
                                 <div className="flex flex-wrap gap-2">
-                                    {game.tags.filter((t) => t.language === "eng").slice(0, 24).map((t) => (
-                                        <span key={t.slug} className="px-2.5 py-1 bg-white/5 rounded-lg text-xs text-gray-400 border border-white/5 hover:border-white/20 transition-colors">
-                                            {t.name}
+                                    {game.tags.slice(0, 24).map((t) => (
+                                        <span key={t} className="px-2.5 py-1 bg-white/5 rounded-lg text-xs text-gray-400 border border-white/5 hover:border-white/20 transition-colors">
+                                            {t}
                                         </span>
                                     ))}
                                 </div>
@@ -584,15 +556,6 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                             <div className="mb-5">
                                 <TrackGameButton slug={slug} gameName={game.name} variant="full" />
                             </div>
-
-                            {/* MobyGames link */}
-                            {game.moby_url && (
-                                <a href={game.moby_url} target="_blank" rel="noopener noreferrer"
-                                    className="mb-5 flex items-center justify-center gap-2 w-full py-3 bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 border border-[var(--accent)]/30 rounded-xl text-white text-sm font-medium transition-all">
-                                    <ExternalLink className="w-4 h-4" />
-                                    View on MobyGames
-                                </a>
-                            )}
 
                             {/* Official Website */}
                             {game.website && (
@@ -623,20 +586,20 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                 <h3 className="text-xs uppercase text-gray-400 font-bold mb-3 tracking-widest">Available On</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {game.platforms?.map((p) => (
-                                        <span key={`${p.platform_id}-${p.platform_name}`} className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs font-medium text-gray-300">
-                                            {p.platform_name}
+                                        <span key={p} className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs font-medium text-gray-300">
+                                            {p}
                                         </span>
                                     ))}
                                 </div>
                             </div>
 
                             {/* Series */}
-                            {game.moby_group_name && (
+                            {game.series_name && (
                                 <div className="mt-5 pt-5 border-t border-white/10">
                                     <h3 className="text-xs uppercase text-gray-400 font-bold mb-2 tracking-widest flex items-center gap-2">
                                         <Layers className="w-3.5 h-3.5" /> Series
                                     </h3>
-                                    <p className="text-sm text-white font-semibold">{game.moby_group_name}</p>
+                                    <p className="text-sm text-white font-semibold">{game.series_name}</p>
                                 </div>
                             )}
                         </div>

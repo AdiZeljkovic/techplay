@@ -456,9 +456,9 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
                                             href={`/games/${g.slug}`}
                                             className="group relative h-[86px] rounded-[10px] overflow-hidden border border-white/[0.07] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors"
                                         >
-                                            {g.background_image ? (
+                                            {g.cover_url ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
-                                                <img src={g.background_image} alt="" aria-hidden loading="lazy" className="absolute inset-0 w-full h-full object-cover opacity-55 group-hover:opacity-75 group-hover:scale-[1.04] transition-[opacity,transform] duration-500" />
+                                                <img src={g.cover_url} alt="" aria-hidden loading="lazy" className="absolute inset-0 w-full h-full object-cover opacity-55 group-hover:opacity-75 group-hover:scale-[1.04] transition-[opacity,transform] duration-500" />
                                             ) : (
                                                 <span className="absolute inset-0 bg-white/[0.03]" />
                                             )}

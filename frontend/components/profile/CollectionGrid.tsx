@@ -58,7 +58,7 @@ interface UpcomingGame {
     slug: string;
     name: string;
     released: string;
-    background_image: string | null;
+    cover_url: string | null;
     status: "wishlist" | "backlog";
 }
 
@@ -125,8 +125,8 @@ function UpcomingList({ isOwnProfile }: { isOwnProfile: boolean }) {
                         </span>
 
                         <span className="relative w-[86px] h-[52px] rounded-[8px] overflow-hidden shrink-0 bg-white/[0.04]">
-                            {game.background_image && (
-                                <Image src={game.background_image} alt={game.name} fill sizes="86px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                            {game.cover_url && (
+                                <Image src={game.cover_url} alt={game.name} fill sizes="86px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                             )}
                         </span>
 
@@ -189,10 +189,10 @@ function GameCard({
             <span aria-hidden className="absolute inset-x-0 top-0 h-[3px] z-10" style={{ background: meta.color }} />
 
             <Link href={entry.game ? `/games/${entry.game.slug}` : "#"} className="block relative aspect-[3/4] overflow-hidden">
-                {entry.game?.background_image ? (
+                {entry.game?.cover_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                        src={entry.game.background_image}
+                        src={entry.game.cover_url}
                         alt={entry.game.name}
                         loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-[var(--ease-hud)]"
@@ -400,7 +400,7 @@ function CollectionLedger({ stats }: { stats?: UserProfile["stats"] }) {
 function FeaturedCard({ entry }: { entry: CollectionEntry }) {
     const meta = STATUS[entry.status] ?? STATUS.backlog;
     const pinned = entry.showcase_order != null;
-    const genres = (entry.game?.genre_names ?? []).slice(0, 2).join(" · ");
+    const genres = (entry.game?.genres ?? []).slice(0, 2).join(" · ");
     const progress = entry.progress ?? 0;
 
     return (
@@ -408,10 +408,10 @@ function FeaturedCard({ entry }: { entry: CollectionEntry }) {
             href={entry.game ? `/games/${entry.game.slug}` : "#"}
             className="group relative flex flex-col justify-end h-full min-h-[320px] rounded-[12px] overflow-hidden border border-white/[0.07] bg-[#0d0b0a] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
         >
-            {entry.game?.background_image ? (
+            {entry.game?.cover_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                    src={entry.game.background_image}
+                    src={entry.game.cover_url}
                     alt={entry.game.name}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]"
                 />
@@ -814,9 +814,9 @@ function AddGameModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =
                                 {results.map((g: any) => (
                                     <li key={g.id} className="flex items-center gap-3 p-2 rounded-[10px] hover:bg-white/[0.04] transition-colors">
                                         <span className="w-[52px] h-[34px] rounded-[6px] overflow-hidden bg-white/5 shrink-0">
-                                            {g.background_image && (
+                                            {g.cover_url && (
                                                 // eslint-disable-next-line @next/next/no-img-element
-                                                <img src={g.background_image} alt={g.name} className="w-full h-full object-cover" />
+                                                <img src={g.cover_url} alt={g.name} className="w-full h-full object-cover" />
                                             )}
                                         </span>
                                         <span className="flex-1 min-w-0">

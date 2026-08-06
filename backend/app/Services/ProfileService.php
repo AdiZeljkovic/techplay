@@ -139,8 +139,8 @@ class ProfileService
                 ->when($b['favorite'], fn ($q) => $q->where('is_favorite', true), fn ($q) => $q->where('status', $b['status']));
 
             $count = (clone $q)->count();
-            $cover = (clone $q)->with('game:id,background_image')
-                ->orderByDesc('updated_at')->first()?->game?->background_image;
+            $cover = (clone $q)->with('game:id,cover_url')
+                ->orderByDesc('updated_at')->first()?->game?->cover_url;
 
             return [
                 'status' => $b['status'],
@@ -159,15 +159,15 @@ class ProfileService
     {
         return UserGame::where('user_id', $user->id)
             ->where('status', 'playing')
-            ->with(['game:id,slug,name,background_image,platform_names'])
+            ->with(['game:id,slug,name,cover_url,platforms'])
             ->orderByRaw('COALESCE(last_played_at, updated_at) DESC')
             ->limit($limit)
             ->get()
             ->map(fn (UserGame $ug) => [
                 'slug' => $ug->game?->slug,
                 'name' => $ug->game?->name,
-                'background_image' => $ug->game?->background_image,
-                'platform_names' => $ug->game?->platform_names ?? [],
+                'cover_url' => $ug->game?->cover_url,
+                'platforms' => $ug->game?->platforms ?? [],
                 'progress' => $ug->progress,
                 'hours_played' => $ug->hours_played,
                 // null when nothing measured it — the UI says "not tracked"
@@ -186,15 +186,15 @@ class ProfileService
     {
         return UserGame::where('user_id', $user->id)
             ->whereNotNull('showcase_order')
-            ->with(['game:id,slug,name,background_image,platform_names'])
+            ->with(['game:id,slug,name,cover_url,platforms'])
             ->orderBy('showcase_order')
             ->limit(4)
             ->get()
             ->map(fn (UserGame $ug) => [
                 'slug' => $ug->game?->slug,
                 'name' => $ug->game?->name,
-                'background_image' => $ug->game?->background_image,
-                'platform_names' => $ug->game?->platform_names ?? [],
+                'cover_url' => $ug->game?->cover_url,
+                'platforms' => $ug->game?->platforms ?? [],
                 'progress' => $ug->progress,
                 'hours_played' => $ug->hours_played,
                 // null when nothing measured it — the UI says "not tracked"
@@ -244,8 +244,8 @@ class ProfileService
             };
 
             return [
-                'platforms' => $aggregate('platform_names'),
-                'genres' => $aggregate('genre_names'),
+                'platforms' => $aggregate('platforms'),
+                'genres' => $aggregate('genres'),
                 'total' => $total,
             ];
         }
@@ -257,7 +257,7 @@ class ProfileService
     private function platformsAndGenresPhp(User $user, int $top): array
     {
         $games = UserGame::where('user_id', $user->id)
-            ->with(['game:id,platform_names,genre_names'])
+            ->with(['game:id,platforms,genres'])
             ->get()
             ->map(fn (UserGame $ug) => $ug->game)
             ->filter();
@@ -267,13 +267,13 @@ class ProfileService
         $genres = [];
 
         foreach ($games as $game) {
-            foreach (($game->platform_names ?? []) as $p) {
+            foreach (($game->platforms ?? []) as $p) {
                 $p = trim((string) $p);
                 if ($p !== '') {
                     $platforms[$p] = ($platforms[$p] ?? 0) + 1;
                 }
             }
-            foreach (($game->genre_names ?? []) as $g) {
+            foreach (($game->genres ?? []) as $g) {
                 $g = trim((string) $g);
                 if ($g !== '') {
                     $genres[$g] = ($genres[$g] ?? 0) + 1;
@@ -319,9 +319,9 @@ class ProfileService
 
         $franchises = UserGame::where('user_id', $user->id)
             ->where('is_favorite', true)
-            ->with(['game:id,moby_group_name'])
+            ->with(['game:id,series_name'])
             ->get()
-            ->map(fn (UserGame $ug) => $ug->game?->moby_group_name)
+            ->map(fn (UserGame $ug) => $ug->game?->series_name)
             ->filter()
             ->unique()
             ->take(5)
@@ -458,7 +458,7 @@ class ProfileService
         return GameList::where('user_id', $user->id)
             ->where('is_public', true)
             ->withCount('items')
-            ->with(['items' => fn ($q) => $q->limit(4)->with('game:id,background_image')])
+            ->with(['items' => fn ($q) => $q->limit(4)->with('game:id,cover_url')])
             ->latest()
             ->limit($limit)
             ->get()
@@ -467,7 +467,7 @@ class ProfileService
                 'name' => $l->name,
                 'slug' => $l->slug,
                 'items_count' => $l->items_count,
-                'covers' => $l->items->map(fn ($it) => $it->game?->background_image)->filter()->take(4)->values()->all(),
+                'covers' => $l->items->map(fn ($it) => $it->game?->cover_url)->filter()->take(4)->values()->all(),
             ])
             ->all();
     }

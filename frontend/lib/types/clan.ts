@@ -71,7 +71,7 @@ export interface ClanFeedItem {
 export interface ClanGameRow {
     slug: string;
     name: string;
-    background_image: string | null;
+    cover_url: string | null;
     players: number;
     percent: number;
 }

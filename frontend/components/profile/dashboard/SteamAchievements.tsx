@@ -14,7 +14,7 @@ type SteamAch = {
   description: string | null
   icon_url: string | null
   achieved_at: string | null
-  game: { name: string; slug: string; background_image: string | null } | null
+  game: { name: string; slug: string; cover_url: string | null } | null
 }
 
 type SteamAchData = {

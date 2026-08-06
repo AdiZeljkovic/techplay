@@ -21,7 +21,7 @@ const Badge = ({ children }: { children: React.ReactNode }) => (
 );
 
 export function PlayingNowCard({ game: g, showResume = false, className = "" }: { game: PlayingNowGame; showResume?: boolean; className?: string }) {
-    const plat = platformLabel(g.platform_names);
+    const plat = platformLabel(g.platforms);
     return (
         <Link
             href={`/games/${g.slug}`}
@@ -29,8 +29,8 @@ export function PlayingNowCard({ game: g, showResume = false, className = "" }: 
             className={`group relative rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300 ${className}`}
         >
             <div className="relative aspect-[16/10] overflow-hidden bg-[var(--surface-1)]">
-                {g.background_image ? (
-                    <img src={g.background_image} alt={g.name} className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]" />
+                {g.cover_url ? (
+                    <img src={g.cover_url} alt={g.name} className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]" />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-white/15"><Gamepad2 className="w-8 h-8" /></div>
                 )}

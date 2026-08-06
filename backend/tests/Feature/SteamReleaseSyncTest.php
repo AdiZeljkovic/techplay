@@ -165,11 +165,10 @@ class SteamReleaseSyncTest extends TestCase
         $this->assertSame('Shadow Princess', $game->name);
         $this->assertSame('2026-08-03', $game->released->toDateString());
         $this->assertSame('day', $game->release_precision);
-        $this->assertSame('https://cdn.example/header.jpg', $game->background_image);
-        $this->assertSame(84, $game->metacritic);
+        $this->assertSame('https://cdn.example/header.jpg', $game->cover_url);
         $this->assertSame('shadow princess', $game->match_key);
-        $this->assertCount(8, $game->screenshots_data);
-        $this->assertCount(1, $game->movies_data);
+        $this->assertCount(8, $game->screenshots);
+        $this->assertCount(1, $game->videos);
 
         $link = GameStoreLink::first();
         $this->assertSame('steam', $link->store);

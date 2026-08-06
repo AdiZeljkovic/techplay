@@ -5,7 +5,7 @@ import type { PlayingNowGame } from "@/lib/types/profile";
 export interface DashboardGameCover {
     slug: string;
     name: string;
-    background_image: string | null;
+    cover_url: string | null;
     hours_played?: number;
     progress?: number;
     /** null means nothing measured it — show "not tracked", never "0h". */
@@ -84,7 +84,7 @@ export interface ProfileCompletion {
 export interface BacklogSuggestion {
     slug: string;
     name: string;
-    background_image: string | null;
+    cover_url: string | null;
     genres: string[];
     /** null when the library is too thin to score against */
     match_percent: number | null;

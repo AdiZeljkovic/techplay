@@ -22,13 +22,4 @@ class EditGame extends EditRecord
             DeleteAction::make(),
         ];
     }
-
-    protected function mutateFormDataBeforeSave(array $data): array
-    {
-        if (! empty($data['description']) && empty($data['details_crawled_at'])) {
-            $data['details_crawled_at'] = now();
-        }
-
-        return $data;
-    }
 }

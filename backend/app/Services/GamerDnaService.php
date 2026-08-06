@@ -87,7 +87,7 @@ class GamerDnaService
     public function build(User $user): array
     {
         $entries = UserGame::where('user_id', $user->id)
-            ->with(['game:id,name,slug,released,genre_names,tag_names,background_image'])
+            ->with(['game:id,name,slug,released,genres,tags,cover_url'])
             ->get();
 
         $games = $entries->pluck('game')->filter();
@@ -107,7 +107,7 @@ class GamerDnaService
         $owned = $counts['playing'] + $counts['completed'] + $counts['backlog'] + $counts['dropped'];
         $completionRate = $owned > 0 ? $counts['completed'] / $owned : 0.0;
 
-        $genres = $this->distribution($games, 'genre_names', 8);
+        $genres = $this->distribution($games, 'genres', 8);
         $platforms = $this->platformSplit($entries);
         $eras = $this->eras($games);
         $fingerprint = $this->fingerprint($games, $completionRate, $owned);
@@ -202,7 +202,7 @@ class GamerDnaService
         foreach ($games as $game) {
             $hit = false;
 
-            foreach ((array) ($game->genre_names ?? []) as $name) {
+            foreach ((array) ($game->genres ?? []) as $name) {
                 if (! isset(self::GENRE_WEIGHTS[$name])) {
                     continue;
                 }
@@ -214,7 +214,7 @@ class GamerDnaService
             }
 
             // Tags carry half a genre's pull — they refine, they don't decide.
-            foreach ((array) ($game->tag_names ?? []) as $name) {
+            foreach ((array) ($game->tags ?? []) as $name) {
                 if (! isset(self::TAG_WEIGHTS[$name])) {
                     continue;
                 }
@@ -490,7 +490,7 @@ class GamerDnaService
         array $counts, int $achievementsOwned, int $reviews, array $genres
     ): array {
         $storyGames = $games->filter(function ($game) {
-            $names = array_merge((array) ($game->genre_names ?? []), (array) ($game->tag_names ?? []));
+            $names = array_merge((array) ($game->genres ?? []), (array) ($game->tags ?? []));
 
             return (bool) array_intersect($names, ['Role-playing (RPG)', 'Adventure', 'Visual novel', 'Story / mission', 'Graphic adventure']);
         })->count();

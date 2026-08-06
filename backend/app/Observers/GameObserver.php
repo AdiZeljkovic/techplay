@@ -14,9 +14,9 @@ class GameObserver
      * Fields whose change should invalidate the public game page.
      */
     private const REVALIDATION_FIELDS = [
-        'name', 'slug', 'released', 'rating', 'metacritic', 'background_image',
-        'details_data', 'screenshots_data', 'movies_data', 'genre_names',
-        'platform_names', 'tag_names', 'has_description',
+        'name', 'slug', 'released', 'rating', 'cover_url', 'description',
+        'screenshots', 'videos', 'genres', 'platforms', 'tags',
+        'developers', 'publishers', 'alt_titles', 'age_ratings', 'website',
     ];
 
     /**
@@ -37,9 +37,9 @@ class GameObserver
         }
 
         // Local API cache is always busted, even from CLI/queue jobs
-        Cache::forget("games.show.v1.{$game->slug}");
+        Cache::forget("games.show.v2.{$game->slug}");
         if ($game->wasChanged('slug')) {
-            Cache::forget('games.show.v1.'.$game->getOriginal('slug'));
+            Cache::forget('games.show.v2.'.$game->getOriginal('slug'));
         }
 
         // Outbound HTTP (revalidation, IndexNow) only for web requests, so bulk
@@ -57,7 +57,7 @@ class GameObserver
         // Ping IndexNow only when a game gains a real description — that's the
         // moment the page stops being noindex'd on the frontend and becomes
         // worth submitting to search engines.
-        if ($game->wasChanged(['details_data', 'has_description']) && $game->has_description) {
+        if ($game->wasChanged('description') && filled($game->description)) {
             $this->pingIndexNow($game->slug);
         }
     }
@@ -71,7 +71,7 @@ class GameObserver
             return;
         }
 
-        Cache::forget("games.show.v1.{$game->slug}");
+        Cache::forget("games.show.v2.{$game->slug}");
         Cache::forget("games.articles.v1.{$game->id}");
 
         if (app()->runningInConsole()) {

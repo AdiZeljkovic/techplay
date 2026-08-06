@@ -29,9 +29,9 @@ class GameRecommendationTest extends TestCase
             'slug' => 'rec-game-'.$n,
             'name' => 'Rec Game '.$n,
             'released' => '2018-01-01',
-            'genre_names' => ['Action'],
+            'genres' => ['Action'],
             'rating' => 4.2,
-            'background_image' => 'https://example.com/'.$n.'.jpg',
+            'cover_url' => 'https://example.com/'.$n.'.jpg',
         ], $attrs));
     }
 
@@ -49,11 +49,11 @@ class GameRecommendationTest extends TestCase
 
         // A shelf full of finished RPGs.
         foreach (range(1, 4) as $_) {
-            $this->own($user, $this->game(['genre_names' => ['Role-playing (RPG)']]), 'completed');
+            $this->own($user, $this->game(['genres' => ['Role-playing (RPG)']]), 'completed');
         }
 
-        $rpg = $this->game(['name' => 'Unowned RPG', 'genre_names' => ['Role-playing (RPG)'], 'rating' => 4.4]);
-        $sport = $this->game(['name' => 'Unowned Sports', 'genre_names' => ['Sports'], 'rating' => 4.4]);
+        $rpg = $this->game(['name' => 'Unowned RPG', 'genres' => ['Role-playing (RPG)'], 'rating' => 4.4]);
+        $sport = $this->game(['name' => 'Unowned Sports', 'genres' => ['Sports'], 'rating' => 4.4]);
 
         $picks = collect(app(GameRecommendationService::class)->recommend($user));
         $names = $picks->pluck('name');
@@ -71,9 +71,9 @@ class GameRecommendationTest extends TestCase
     public function test_a_game_you_already_have_is_never_recommended(): void
     {
         $user = User::factory()->create();
-        $owned = $this->game(['name' => 'Already Mine', 'genre_names' => ['Action']]);
+        $owned = $this->game(['name' => 'Already Mine', 'genres' => ['Action']]);
         $this->own($user, $owned, 'backlog');
-        $this->game(['name' => 'Fresh Blood', 'genre_names' => ['Action']]);
+        $this->game(['name' => 'Fresh Blood', 'genres' => ['Action']]);
 
         $names = collect(app(GameRecommendationService::class)->recommend($user))->pluck('name');
 
@@ -84,8 +84,8 @@ class GameRecommendationTest extends TestCase
     public function test_the_match_score_is_the_sum_of_its_published_breakdown(): void
     {
         $user = User::factory()->create();
-        $this->own($user, $this->game(['genre_names' => ['Adventure']]), 'completed');
-        $this->game(['name' => 'Scored', 'genre_names' => ['Adventure'], 'rating' => 4.6]);
+        $this->own($user, $this->game(['genres' => ['Adventure']]), 'completed');
+        $this->game(['name' => 'Scored', 'genres' => ['Adventure'], 'rating' => 4.6]);
 
         $pick = collect(app(GameRecommendationService::class)->recommend($user))->firstWhere('name', 'Scored');
 
@@ -103,13 +103,13 @@ class GameRecommendationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $shared = collect(range(1, 3))->map(fn () => $this->game(['genre_names' => ['Puzzle']]));
+        $shared = collect(range(1, 3))->map(fn () => $this->game(['genres' => ['Puzzle']]));
         foreach ($shared as $game) {
             $this->own($user, $game, 'playing');
         }
 
         // A game only peers own, in a genre the user has never touched.
-        $peerPick = $this->game(['name' => 'Peer Favourite', 'genre_names' => ['Simulation'], 'rating' => 3.6]);
+        $peerPick = $this->game(['name' => 'Peer Favourite', 'genres' => ['Simulation'], 'rating' => 3.6]);
 
         foreach (range(1, 5) as $_) {
             $peer = User::factory()->create();
@@ -132,10 +132,10 @@ class GameRecommendationTest extends TestCase
     public function test_a_genre_filter_is_honoured_strictly(): void
     {
         $user = User::factory()->create();
-        $this->own($user, $this->game(['genre_names' => ['Action']]), 'completed');
+        $this->own($user, $this->game(['genres' => ['Action']]), 'completed');
 
-        $this->game(['name' => 'Strategy Pick', 'genre_names' => ['Strategy / tactics'], 'rating' => 4.5]);
-        $this->game(['name' => 'Action Pick', 'genre_names' => ['Action'], 'rating' => 4.9]);
+        $this->game(['name' => 'Strategy Pick', 'genres' => ['Strategy / tactics'], 'rating' => 4.5]);
+        $this->game(['name' => 'Action Pick', 'genres' => ['Action'], 'rating' => 4.9]);
 
         $names = collect(app(GameRecommendationService::class)->recommend($user, ['genres' => ['Strategy / tactics']]))
             ->pluck('name');
@@ -149,9 +149,9 @@ class GameRecommendationTest extends TestCase
         $user = User::factory()->create();
 
         foreach (range(1, 3) as $_) {
-            $this->own($user, $this->game(['genre_names' => ['Action']]), 'completed');
+            $this->own($user, $this->game(['genres' => ['Action']]), 'completed');
         }
-        $this->own($user, $this->game(['genre_names' => ['Action']]), 'backlog');
+        $this->own($user, $this->game(['genres' => ['Action']]), 'backlog');
 
         $summary = app(GameRecommendationService::class)->summary($user);
 
@@ -178,8 +178,8 @@ class GameRecommendationTest extends TestCase
     public function test_the_endpoint_returns_the_page_in_one_call(): void
     {
         $user = User::factory()->create();
-        $this->own($user, $this->game(['genre_names' => ['Action']]), 'completed');
-        $this->game(['name' => 'Suggested', 'genre_names' => ['Action'], 'rating' => 4.7]);
+        $this->own($user, $this->game(['genres' => ['Action']]), 'completed');
+        $this->game(['name' => 'Suggested', 'genres' => ['Action'], 'rating' => 4.7]);
 
         $data = $this->actingAs($user)->getJson('/api/v1/backlog/recommendations')->assertOk()->json('data');
 

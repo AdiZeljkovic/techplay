@@ -11,9 +11,9 @@ interface Game {
     slug: string;
     name: string;
     rating: number;
-    background_image: string;
+    cover_url: string;
     released?: string;
-    genre_names?: string | string[];
+    genres?: string | string[];
 }
 
 function parseFirstGenre(raw: string | string[] | null | undefined): string {
@@ -81,7 +81,7 @@ export default function PopularGamesWidget() {
                     ))
                     : games.map((game, idx) => {
                         const year = game.released ? new Date(game.released).getFullYear() : null;
-                        const genre = parseFirstGenre(game.genre_names);
+                        const genre = parseFirstGenre(game.genres);
                         const score = game.rating ? game.rating.toFixed(1) : null;
                         const color = score ? scoreColor(parseFloat(score)) : "#f97316";
 
@@ -116,9 +116,9 @@ export default function PopularGamesWidget() {
                                     height: '54px',
                                     border: '1px solid rgba(255,255,255,0.1)',
                                 }}>
-                                    {game.background_image ? (
+                                    {game.cover_url ? (
                                         <Image
-                                            src={game.background_image}
+                                            src={game.cover_url}
                                             alt={game.name}
                                             fill
                                             sizes="42px"

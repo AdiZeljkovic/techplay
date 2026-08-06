@@ -153,10 +153,10 @@ export default async function GameListPage({ params }: Props) {
                                 </span>
 
                                 <span className="relative w-[112px] h-[64px] shrink-0 rounded-[8px] overflow-hidden bg-white/[0.04]">
-                                    {it.game!.background_image ? (
+                                    {it.game!.cover_url ? (
                                         // eslint-disable-next-line @next/next/no-img-element
                                         <img
-                                            src={it.game!.background_image}
+                                            src={it.game!.cover_url}
                                             alt={it.game!.name}
                                             loading={i < 6 ? "eager" : "lazy"}
                                             className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500"

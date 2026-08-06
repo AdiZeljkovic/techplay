@@ -35,11 +35,12 @@ class GameMergerTest extends TestCase
             'match_key' => $this->normalizer->key($title),
             'released' => '2026-09-04',
             'release_precision' => 'day',
-            'background_image' => "https://{$store}.example/hero.jpg",
-            'platform_names' => [ucfirst($store)],
-            'genre_names' => ['Action'],
-            'screenshots_data' => ['a.jpg'],
-            'details_data' => ['description' => 'A game.', 'publisher' => 'Team Cherry'],
+            'cover_url' => "https://{$store}.example/hero.jpg",
+            'platforms' => [ucfirst($store)],
+            'genres' => ['Action'],
+            'screenshots' => ['a.jpg'],
+            'description' => 'A game.',
+            'publishers' => ['Team Cherry'],
         ], $attrs));
 
         GameStoreLink::create([
@@ -58,9 +59,9 @@ class GameMergerTest extends TestCase
 
     public function test_one_game_from_three_stores_becomes_one_entry(): void
     {
-        $this->entry('steam', 'Hollow Knight: Silksong', ['platform_names' => ['PC']]);
-        $this->entry('xbox', 'Hollow Knight: Silksong', ['platform_names' => ['Xbox Series X|S']]);
-        $this->entry('nintendo', 'Hollow Knight: Silksong', ['platform_names' => ['Nintendo Switch']]);
+        $this->entry('steam', 'Hollow Knight: Silksong', ['platforms' => ['PC']]);
+        $this->entry('xbox', 'Hollow Knight: Silksong', ['platforms' => ['Xbox Series X|S']]);
+        $this->entry('nintendo', 'Hollow Knight: Silksong', ['platforms' => ['Nintendo Switch']]);
 
         $this->merge();
 
@@ -69,7 +70,7 @@ class GameMergerTest extends TestCase
         // The whole point: the entry now tells the truth about where it lands.
         $this->assertSame(
             ['PC', 'Xbox Series X|S', 'Nintendo Switch'],
-            Game::first()->platform_names,
+            Game::first()->platforms,
         );
 
         // And every store still points at it.
@@ -88,27 +89,23 @@ class GameMergerTest extends TestCase
     public function test_the_fuller_record_wins_field_by_field(): void
     {
         $this->entry('nintendo', 'Silksong', [
-            'details_data' => ['description' => 'Short.', 'publisher' => 'Team Cherry'],
-            'screenshots_data' => [],
-            'genre_names' => ['Platformer'],
-            'metacritic' => null,
+            'description' => 'Short.',
+            'screenshots' => [],
+            'genres' => ['Platformer'],
         ]);
 
         $this->entry('steam', 'Silksong', [
-            'details_data' => ['description' => str_repeat('A much fuller write-up. ', 10), 'publisher' => 'Team Cherry'],
-            'screenshots_data' => ['a.jpg', 'b.jpg', 'c.jpg'],
-            'genre_names' => ['Action'],
-            'metacritic' => 94,
+            'description' => str_repeat('A much fuller write-up. ', 10),
+            'screenshots' => ['a.jpg', 'b.jpg', 'c.jpg'],
+            'genres' => ['Action'],
         ]);
 
         $this->merge();
 
         $game = Game::first();
-        $this->assertStringContainsString('much fuller', $game->details_data['description']);
-        $this->assertCount(3, $game->screenshots_data);
-        $this->assertSame(94, $game->metacritic);
-        $this->assertSame(['Platformer', 'Action'], $game->genre_names, 'genres union rather than replace');
-        $this->assertTrue($game->has_description);
+        $this->assertStringContainsString('much fuller', $game->description);
+        $this->assertCount(3, $game->screenshots);
+        $this->assertSame(['Platformer', 'Action'], $game->genres, 'genres union rather than replace');
     }
 
     public function test_the_game_keeps_its_own_name_not_an_editions(): void
@@ -132,7 +129,7 @@ class GameMergerTest extends TestCase
 
         $this->merge();
 
-        $this->assertSame('https://steam.example/hero.jpg', Game::first()->background_image);
+        $this->assertSame('https://steam.example/hero.jpg', Game::first()->cover_url);
     }
 
     public function test_the_earliest_date_wins_when_stores_disagree(): void

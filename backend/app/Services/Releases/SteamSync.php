@@ -50,8 +50,8 @@ class SteamSync extends StoreSync
 
         // The listing's capsule is a poor substitute for the store header, but
         // it beats a card with no art at all.
-        if (blank($game->background_image) && filled($row['capsule'] ?? null)) {
-            $game->forceFill(['background_image' => $row['capsule']])->save();
+        if (blank($game->cover_url) && filled($row['capsule'] ?? null)) {
+            $game->forceFill(['cover_url' => $row['capsule']])->save();
         }
 
         return $game;

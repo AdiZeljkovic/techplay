@@ -10,7 +10,7 @@ import ScoreBadge from "@/components/ui/ScoreBadge";
 interface GemGame {
     slug: string;
     name: string;
-    background_image: string | null;
+    cover_url: string | null;
     rating: number;
     released: string | null;
     genres: string[];
@@ -57,10 +57,10 @@ export default function HiddenGems() {
                     >
                         {/* clean artwork */}
                         <div className="relative aspect-[16/9] overflow-hidden bg-[var(--fill-1)]">
-                            {g.background_image ? (
+                            {g.cover_url ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
-                                    src={g.background_image}
+                                    src={g.cover_url}
                                     alt={g.name}
                                     loading="lazy"
                                     className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]"

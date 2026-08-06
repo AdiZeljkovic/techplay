@@ -400,9 +400,9 @@ export default function ListEditor({
                                         </span>
 
                                         <span className="relative w-[46px] h-[32px] shrink-0 rounded-[6px] overflow-hidden bg-white/[0.04]">
-                                            {item.game?.background_image ? (
+                                            {item.game?.cover_url ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
-                                                <img src={item.game.background_image} alt="" className="w-full h-full object-cover" />
+                                                <img src={item.game.cover_url} alt="" className="w-full h-full object-cover" />
                                             ) : (
                                                 <span className="w-full h-full flex items-center justify-center text-white/20"><Gamepad2 className="w-3.5 h-3.5" /></span>
                                             )}
@@ -484,7 +484,7 @@ function PreviewCard({
     items: GameListItemEntry[];
     username: string;
 }) {
-    const cover = items[0]?.game?.background_image ?? null;
+    const cover = items[0]?.game?.cover_url ?? null;
     const typeLabel = TYPES.find((t) => t.id === form.list_type)?.label;
 
     return (
@@ -577,9 +577,9 @@ function GameSearch({ onAdd, disabled, limitLabel }: { onAdd: (slug: string) => 
                     {results.map((g: any) => (
                         <div key={g.id} className="group relative w-[124px] shrink-0 rounded-[10px] overflow-hidden border border-white/[0.07] bg-white/[0.02]">
                             <span className="relative block aspect-[3/4] bg-white/[0.03]">
-                                {g.background_image && (
+                                {g.cover_url && (
                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={g.background_image} alt={g.name} loading="lazy" className="w-full h-full object-cover" />
+                                    <img src={g.cover_url} alt={g.name} loading="lazy" className="w-full h-full object-cover" />
                                 )}
                                 <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent" />
                                 <span className="absolute inset-x-0 bottom-0 p-2">

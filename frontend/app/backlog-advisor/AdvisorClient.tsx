@@ -32,10 +32,9 @@ const COMPONENT_TINTS: Record<string, string> = {
 interface Recommendation {
     slug: string;
     name: string;
-    background_image: string | null;
+    cover_url: string | null;
     released: string | null;
     rating: number;
-    metacritic: number | null;
     genres: string[];
     match_score: number;
     reasons: string[];
@@ -90,10 +89,10 @@ function RecommendationCard({ pick, onAdded }: { pick: Recommendation; onAdded: 
                     href={`/games/${pick.slug}`}
                     className="relative w-full lg:w-[168px] h-[110px] lg:h-[104px] shrink-0 rounded-[10px] overflow-hidden bg-white/[0.04]"
                 >
-                    {pick.background_image ? (
+                    {pick.cover_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                            src={pick.background_image}
+                            src={pick.cover_url}
                             alt={pick.name}
                             loading="lazy"
                             className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"

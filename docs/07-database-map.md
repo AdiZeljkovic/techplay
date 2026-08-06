@@ -7,7 +7,7 @@
 - **ORM:** Laravel Eloquent
 - **Cache/Queue:** Redis
 
-**Specijalna napomena:** `Game.genre_names`, `Game.platform_names`, `Game.tag_names` su PostgreSQL `TEXT[]` array kolone. PHP ih prima kao raw string `{Action,"Role-Playing (RPG)"}` — uvijek koristiti `pgArray()` helper prije array operacija.
+**Specijalna napomena:** `Game.genres`, `Game.platforms`, `Game.tags`, `Game.developers`, `Game.publishers` su PostgreSQL `TEXT[]` array kolone. PHP ih prima kao raw string `{Action,"Role-Playing (RPG)"}` — Eloquent ih kastuje kroz `PostgresArray`; kod raw upita koristiti `pgArray()` helper prije array operacija.
 
 ---
 
@@ -44,9 +44,10 @@
 
 | Tabela | Opis | Ključne kolone |
 |--------|------|---------------|
-| `games` | Igre | id, moby_id, rawg_slug, name, slug, description, cover_image, release_date, genre_names (TEXT[]), platform_names (TEXT[]), tag_names (TEXT[]), developer, publisher, rating, has_description |
+| `games` | Kanonska TechPlay baza (08/2026 sanacija — nema više RAWG/Moby imena) | id, slug, name, released, release_precision, rating, cover_url, description, genres (TEXT[]), platforms (TEXT[]), tags (TEXT[]), developers (TEXT[]), publishers (TEXT[]), screenshots (json), videos (json — traileri, puni se ručno/agregatorom), alt_titles (json), age_ratings (json), website, series_key, series_name, import_payload (arhiva sirovog Moby payloada — ne izlaže se u API), match_key, hype_score, is_editorial, locked_fields, views |
+| `game_tombstones` | Obrisane igre → API vraća **410** (adult purge) | slug, name, reason, deleted_at |
 | `game_companies` | Izdavači/developeri | id, name, slug, moby_id |
-| `game_external_ids` | Vanjski IDevi | game_id, provider (rawg/igdb/steam), external_id |
+| `game_external_ids` | Vanjski IDevi — provenance | game_id, provider (mobygames/steam/...), external_id |
 | `game_ratings` | User ocjene | game_id, user_id, rating (0-10), review_text |
 | `user_games` | Korisnička biblioteka | user_id, game_id, status (playing/completed/wishlist/dropped/backlog), progress, hours_played, last_played_at (pravi Continue Playing signal — pišu ga upsert status=playing, Steam sync i presence), is_favorite, showcase_order, platform, started_at, completed_at, **from_backlog** (je li završena igra prošla kroz backlog), **playtime_minutes**, **playtime_source** (`steam` \| `discord` \| `presence` \| `manual` \| null — bez izvora UI kaže "not tracked", ne "0h") |
 | `game_lists` | Custom liste igara | id, user_id, name, slug, is_public |
@@ -213,5 +214,5 @@ Detaljno: `docs/34-release-calendar-aggregator.md`
 1. `Article` model se koristi za news I tech/hardware — razlikovanje samo po kategoriji. Može biti konfuzno.
 2. `content_versions` tabela — UNKNOWN kako se koristi (verzionisanje?)
 3. `article_views` + Redis view counters — dvije paralele source of truth za view count
-4. PostgreSQL TEXT[] kolone u `games` tablici zahtijevaju poseban `pgArray()` helper — greška-prone
+4. PostgreSQL TEXT[] kolone u `games` tablici zahtijevaju poseban `pgArray()` helper kod raw upita — greška-prone
 5. `editorial_messages` za interni editorial chat — ova feature nije vidljiva na frontend-u (interna alat)

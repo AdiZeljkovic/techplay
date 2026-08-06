@@ -210,7 +210,7 @@ class ForumController extends Controller
                 },
                 'category',
                 'tags',
-                'game:id,name,slug,background_image',
+                'game:id,name,slug,cover_url',
             ])
             ->withCount(['posts', 'upvotes']) // Add upvotes count
             ->firstOrFail();

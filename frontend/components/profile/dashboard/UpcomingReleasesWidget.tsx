@@ -12,7 +12,7 @@ interface UpcomingGame {
     slug: string;
     name: string;
     released: string;
-    background_image: string | null;
+    cover_url: string | null;
     status: "wishlist" | "backlog";
 }
 
@@ -85,9 +85,9 @@ export default function UpcomingReleasesWidget() {
                     >
                         {/* Thumbnail */}
                         <div className="relative w-14 h-9 rounded-lg overflow-hidden shrink-0 bg-white/[0.05] border border-white/[0.06]">
-                            {game.background_image && (
+                            {game.cover_url && (
                                 <Image
-                                    src={game.background_image}
+                                    src={game.cover_url}
                                     alt={game.name}
                                     fill
                                     sizes="56px"

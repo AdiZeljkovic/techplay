@@ -366,7 +366,7 @@ interface CalendarGame {
     id: number | string;
     slug: string;
     name: string;
-    background_image: string | null;
+    cover_url: string | null;
     released: string | null;
     added?: number;
     platforms?: ({ name?: string; platform?: { name?: string } } | null)[];
@@ -447,10 +447,10 @@ function NavReleaseRadar({ active }: { active: boolean }) {
                             <DateChip released={g.released} />
 
                             <span className="relative w-[52px] h-[36px] shrink-0 rounded-[var(--radius-inner)] overflow-hidden bg-[var(--fill-1)] border border-[var(--line)]">
-                                {g.background_image && (
+                                {g.cover_url && (
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img
-                                        src={g.background_image}
+                                        src={g.cover_url}
                                         alt={g.name}
                                         loading="lazy"
                                         className="w-full h-full object-cover group-hover/rel:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]"

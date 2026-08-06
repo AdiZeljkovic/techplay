@@ -4,7 +4,6 @@ namespace App\Services\Releases;
 
 use App\Models\Game;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Decides what reaches the calendar page.
@@ -42,10 +41,7 @@ class CalendarVisibility
             }, '>=', $rules['min_stores']);
 
             // Somebody cut a trailer, which asset flips do not do.
-            $q->orWhereJsonLength('movies_data', '>', 0);
-
-            // Critics have scored it.
-            $q->orWhere('metacritic', '>', 0);
+            $q->orWhereJsonLength('videos', '>', 0);
 
             // Our own visitors want it.
             $q->orWhereHas('userGames', function (Builder $wishlists) {
@@ -56,24 +52,12 @@ class CalendarVisibility
             // enough written about it that no shovelware bothers.
             $q->orWhere(function (Builder $substantial) use ($rules) {
                 $substantial
-                    ->whereJsonLength('screenshots_data', '>=', $rules['substantial']['screenshots'])
-                    ->whereRaw($this->descriptionLength().' >= ?', [$rules['substantial']['description']]);
+                    ->whereJsonLength('screenshots', '>=', $rules['substantial']['screenshots'])
+                    // A real column now, so one spelling works in both
+                    // Postgres and the SQLite the tests run on.
+                    ->whereRaw("length(coalesce(description, '')) >= ?", [$rules['substantial']['description']]);
             });
         });
-    }
-
-    /**
-     * How long the description is, in whichever dialect we are speaking.
-     *
-     * Postgres runs this in production and SQLite runs it in the tests, and
-     * they disagree about how to read a json field. Writing it once here beats
-     * discovering the difference when the suite turns red.
-     */
-    private function descriptionLength(): string
-    {
-        return DB::connection()->getDriverName() === 'pgsql'
-            ? "length(coalesce(details_data->>'description', ''))"
-            : "length(coalesce(json_extract(details_data, '$.description'), ''))";
     }
 
     /**
@@ -88,11 +72,10 @@ class CalendarVisibility
 
         return [
             'on '.$rules['min_stores'].'+ platforms' => $game->storeLinks->whereNotNull('game_id')->count() >= $rules['min_stores'],
-            'has a trailer' => count($game->movies_data ?? []) > 0,
-            'scored by critics' => (int) $game->metacritic > 0,
+            'has a trailer' => count($game->videos ?? []) > 0,
             'wishlisted here' => $game->userGames()->where('status', 'wishlist')->count() >= $rules['min_wishlists'],
-            'substantial listing' => count($game->screenshots_data ?? []) >= $rules['substantial']['screenshots']
-                && mb_strlen((string) data_get($game->details_data, 'description')) >= $rules['substantial']['description'],
+            'substantial listing' => count($game->screenshots ?? []) >= $rules['substantial']['screenshots']
+                && mb_strlen((string) $game->description) >= $rules['substantial']['description'],
         ];
     }
 

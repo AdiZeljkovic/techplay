@@ -26,12 +26,11 @@ export interface Release {
     description: string | null;
     publisher: string | null;
     developer: string | null;
-    background_image: string | null;
+    cover_url: string | null;
     screenshots: string[];
     trailers: string[];
     genres: string[];
     platforms: string[];
-    metacritic: number | null;
     notability: number;
     stores: { store: string; label: string; url: string }[];
     wishlists: number;
@@ -41,7 +40,7 @@ export interface Release {
         slug: string;
         name: string;
         released: string | null;
-        background_image: string | null;
+        cover_url: string | null;
         platforms: string[];
     }[];
 }
@@ -79,14 +78,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             url: `https://techplay.gg/calendar/${slug}`,
             siteName: "TechPlay",
-            images: release.background_image ? [release.background_image] : [],
+            images: release.cover_url ? [release.cover_url] : [],
             type: "website",
         },
         twitter: {
             card: "summary_large_image",
             title: release.name,
             description,
-            images: release.background_image ? [release.background_image] : [],
+            images: release.cover_url ? [release.cover_url] : [],
         },
     };
 }
@@ -141,11 +140,11 @@ export default async function ReleasePage({ params }: Props) {
         <main className="min-h-screen bg-[var(--surface-0)]">
             {/* ── hero ── */}
             <div className="relative overflow-hidden border-b border-white/[0.07]">
-                {release.background_image && (
+                {release.cover_url && (
                     <>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                            src={release.background_image}
+                            src={release.cover_url}
                             alt=""
                             aria-hidden
                             className="absolute inset-0 w-full h-full object-cover opacity-[0.3]"
@@ -178,12 +177,6 @@ export default async function ReleasePage({ params }: Props) {
                             )}
                         </span>
 
-                        {release.metacritic ? (
-                            <span className="inline-flex items-center gap-1.5 text-[12.5px] text-white/55">
-                                <Star className="w-3.5 h-3.5 text-amber-400" />
-                                <span className="font-display font-black text-white">{release.metacritic}</span> Metacritic
-                            </span>
-                        ) : null}
                     </div>
 
                     {release.platforms.length > 0 && (
@@ -217,10 +210,10 @@ export default async function ReleasePage({ params }: Props) {
                         {release.also_this_month.map((other) => (
                             <Link key={other.slug} href={`/calendar/${other.slug}`} className="group">
                                 <span className="relative block h-[110px] rounded-[10px] overflow-hidden border border-white/[0.07] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors">
-                                    {other.background_image ? (
+                                    {other.cover_url ? (
                                         // eslint-disable-next-line @next/next/no-img-element
                                         <img
-                                            src={other.background_image}
+                                            src={other.cover_url}
                                             alt={other.name}
                                             loading="lazy"
                                             className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500"

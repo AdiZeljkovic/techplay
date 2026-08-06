@@ -54,9 +54,9 @@ export default function ShowcaseStrip({ playingNow, snapshot, playingCount, show
                                 prefetch={false}
                                 className={`group relative aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border)] hover:border-[var(--accent)]/60 transition-all bg-[var(--bg-elevated)] tp-fade-up tp-d${Math.min(6, i + 1)}`}
                             >
-                                {g.background_image ? (
+                                {g.cover_url ? (
                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={g.background_image} alt={g.name} loading="lazy"
+                                    <img src={g.cover_url} alt={g.name} loading="lazy"
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                 ) : (
                                     <div className="absolute inset-0 flex items-center justify-center">

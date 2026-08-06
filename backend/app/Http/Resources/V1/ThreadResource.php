@@ -39,7 +39,7 @@ class ThreadResource extends JsonResource
                     'id' => $this->game->id,
                     'name' => $this->game->name,
                     'slug' => $this->game->slug,
-                    'background_image' => $this->game->background_image,
+                    'cover_url' => $this->game->cover_url,
                 ] : null;
             }),
         ];

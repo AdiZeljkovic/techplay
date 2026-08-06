@@ -136,10 +136,10 @@ class PlaystationReleaseSyncTest extends TestCase
         $game = Game::first();
         $this->assertSame('Arcade Archives TX-1', $game->name);
         $this->assertSame('2026-09-04', $game->released->toDateString());
-        $this->assertSame('https://image.api.playstation.com/hero.jpg', $game->background_image);
-        $this->assertSame(['PlayStation 5', 'PlayStation 4'], $game->platform_names);
-        $this->assertCount(6, $game->screenshots_data);
-        $this->assertSame('HAMSTER Corporation', $game->details_data['publisher']);
+        $this->assertSame('https://image.api.playstation.com/hero.jpg', $game->cover_url);
+        $this->assertSame(['PlayStation 5', 'PlayStation 4'], $game->platforms);
+        $this->assertCount(6, $game->screenshots);
+        $this->assertSame(['HAMSTER Corporation'], $game->publishers);
     }
 
     public function test_a_thin_fragment_does_not_erase_what_a_fuller_one_knew(): void
@@ -178,8 +178,8 @@ class PlaystationReleaseSyncTest extends TestCase
         $game = Game::first();
         $this->assertSame('2026-09-04', $game->released->toDateString(), 'the later fragment must not erase the date');
         // Art hangs off the concept, nested, not beside the product.
-        $this->assertSame('https://image.api.playstation.com/hero.jpg', $game->background_image);
-        $this->assertCount(3, $game->screenshots_data);
+        $this->assertSame('https://image.api.playstation.com/hero.jpg', $game->cover_url);
+        $this->assertCount(3, $game->screenshots);
     }
 
     public function test_the_legal_notice_is_not_the_description(): void
@@ -189,7 +189,7 @@ class PlaystationReleaseSyncTest extends TestCase
 
         $this->sync();
 
-        $description = Game::first()->details_data['description'];
+        $description = Game::first()->description;
         $this->assertStringContainsString('A real description', $description);
         $this->assertStringNotContainsString('All rights reserved', $description);
         $this->assertStringNotContainsString('<p>', $description, 'markup is stripped');

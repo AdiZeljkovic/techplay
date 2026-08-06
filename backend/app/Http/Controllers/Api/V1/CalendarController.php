@@ -138,15 +138,14 @@ class CalendarController extends Controller
             // Negative once it is out, which the page needs in order to stop
             // counting down and start saying it has landed.
             'days_away' => $released ? (int) now()->startOfDay()->diffInDays($released->copy()->startOfDay(), false) : null,
-            'description' => data_get($game->details_data, 'description'),
-            'publisher' => data_get($game->details_data, 'publisher'),
-            'developer' => data_get($game->details_data, 'developer'),
-            'background_image' => $game->background_image,
-            'screenshots' => array_values($game->screenshots_data ?? []),
-            'trailers' => array_values($game->movies_data ?? []),
-            'genres' => array_values($game->genre_names ?? []),
-            'platforms' => array_values($game->platform_names ?? []),
-            'metacritic' => $game->metacritic,
+            'description' => $game->description,
+            'publisher' => ($game->publishers ?? [])[0] ?? null,
+            'developer' => ($game->developers ?? [])[0] ?? null,
+            'cover_url' => $game->cover_url,
+            'screenshots' => array_values($game->screenshots ?? []),
+            'trailers' => array_values($game->videos ?? []),
+            'genres' => array_values($game->genres ?? []),
+            'platforms' => array_values($game->platforms ?? []),
             'notability' => (int) $game->hype_score,
 
             // The one thing this page has that no games database page does:
@@ -271,15 +270,15 @@ class CalendarController extends Controller
                 'slug' => $other->slug,
                 'name' => $other->name,
                 'released' => $other->released?->toDateString(),
-                'background_image' => $other->background_image,
-                'platforms' => array_values($other->platform_names ?? []),
+                'cover_url' => $other->cover_url,
+                'platforms' => array_values($other->platforms ?? []),
             ])
             ->all();
     }
 
     private function present(Game $game): array
     {
-        $platforms = collect($game->platform_names ?? [])->filter()->values();
+        $platforms = collect($game->platforms ?? [])->filter()->values();
 
         return [
             'slug' => $game->slug,
@@ -287,16 +286,15 @@ class CalendarController extends Controller
             'released' => $game->released?->toDateString(),
             'tba' => $game->release_precision === 'tba',
             'precision' => $game->release_precision,
-            'background_image' => $game->background_image,
-            'metacritic' => $game->metacritic,
+            'cover_url' => $game->cover_url,
             'rating' => (float) ($game->rating ?? 0),
             // Not a measure of anticipation — no store publishes one. See
             // Notability for what this actually counts.
             'added' => (int) $game->hype_score,
-            'genres' => collect($game->genre_names ?? [])->filter()->take(2)->values()->all(),
+            'genres' => collect($game->genres ?? [])->filter()->take(2)->values()->all(),
             'platforms' => $platforms->take(4)->all(),
             'platform_slugs' => $platforms->all(),
-            'publisher' => data_get($game->details_data, 'publisher'),
+            'publisher' => ($game->publishers ?? [])[0] ?? null,
         ];
     }
 
@@ -357,11 +355,11 @@ class CalendarController extends Controller
             ->where('games.released', '>=', now()->toDateString())
             ->orderBy('games.released')
             ->limit(6)
-            ->get(['games.slug', 'games.name', 'games.background_image', 'games.released', 'user_games.notify_on_release'])
+            ->get(['games.slug', 'games.name', 'games.cover_url', 'games.released', 'user_games.notify_on_release'])
             ->map(fn ($row) => [
                 'slug' => $row->slug,
                 'name' => $row->name,
-                'background_image' => $row->background_image,
+                'cover_url' => $row->cover_url,
                 'released' => Carbon::parse($row->released)->toDateString(),
                 'reminder' => (bool) $row->notify_on_release,
             ])

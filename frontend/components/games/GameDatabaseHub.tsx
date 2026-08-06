@@ -20,10 +20,9 @@ interface Game {
     slug: string;
     name: string;
     released: string | null;
-    background_image: string | null;
+    cover_url: string | null;
     rating: number | null;
-    metacritic: number | null;
-    platforms?: { platform: { name: string } }[];
+    platforms?: string[];
 }
 
 interface Hub {
@@ -38,7 +37,7 @@ interface Hub {
         status: { key: string; label: string; count: number }[];
     };
     trending_searches: { term: string; count: number }[];
-    most_wishlisted: { slug: string; name: string; background_image: string | null; wishlists: number }[];
+    most_wishlisted: { slug: string; name: string; cover_url: string | null; wishlists: number }[];
 }
 
 const SORTS = [
@@ -182,9 +181,9 @@ export default function GameDatabaseHub({
         return q.toString();
     }, [search, genre, platform, era, status, sort, page, facets]);
 
-    // The list endpoint answers in RAWG's shape — count, next, previous,
-    // results — not Laravel's paginator. Assuming otherwise crashed the page
-    // on `total.toLocaleString()`.
+    // The list endpoint answers with count, next, previous, results — not
+    // Laravel's paginator. Assuming otherwise crashed the page on
+    // `total.toLocaleString()`.
     const { data, isLoading } = useSWR<{ results: Game[]; count: number; next: string | null }>(
         `/games?${query}`,
         fetcher,
@@ -491,9 +490,9 @@ export default function GameDatabaseHub({
                                 {hub.data.most_wishlisted.map((g) => (
                                     <Link key={g.slug} href={`/games/${g.slug}`} className="flex items-center gap-2.5 group">
                                         <span className="w-[44px] h-[29px] shrink-0 rounded-[5px] overflow-hidden bg-white/[0.05]">
-                                            {g.background_image && (
+                                            {g.cover_url && (
                                                 // eslint-disable-next-line @next/next/no-img-element
-                                                <img src={g.background_image} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
+                                                <img src={g.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
                                             )}
                                         </span>
                                         <span className="flex-1 min-w-0 text-[12px] font-medium text-white/70 group-hover:text-white truncate">
@@ -557,10 +556,10 @@ function GameCard({ game }: { game: Game }) {
     return (
         <Link href={`/games/${game.slug}`} className="group block" onClick={() => remember(game)}>
             <span className="relative block h-[190px] rounded-[10px] overflow-hidden border border-white/[0.07] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors">
-                {game.background_image ? (
+                {game.cover_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                        src={game.background_image}
+                        src={game.cover_url}
                         alt={game.name}
                         loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500"
@@ -592,11 +591,6 @@ function GameCard({ game }: { game: Game }) {
                 {game.rating ? (
                     <span className="inline-flex items-center gap-1 font-display text-[10px] font-black tabular-nums text-amber-400">
                         <Star className="w-3 h-3 fill-current" /> {game.rating.toFixed(1)}
-                    </span>
-                ) : null}
-                {game.metacritic ? (
-                    <span className="font-display text-[10px] font-black tabular-nums text-emerald-400">
-                        {game.metacritic}
                     </span>
                 ) : null}
             </span>
@@ -638,9 +632,9 @@ function RecentlyViewed() {
                     {recent.map((g) => (
                         <Link key={g.slug} href={`/games/${g.slug}`} className="flex items-center gap-2.5 group">
                             <span className="w-[44px] h-[29px] shrink-0 rounded-[5px] overflow-hidden bg-white/[0.05]">
-                                {g.background_image && (
+                                {g.cover_url && (
                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={g.background_image} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
+                                    <img src={g.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
                                 )}
                             </span>
                             <span className="flex-1 min-w-0 text-[12px] font-medium text-white/70 group-hover:text-white truncate">

@@ -82,11 +82,11 @@ export default function BacklogProgressCard({
                         className="group relative flex items-center gap-3.5 rounded-[12px] border border-white/[0.07] p-3 overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
                     >
                         {/* the pick's own art, faint, as the row's backdrop */}
-                        {suggestion.background_image && (
+                        {suggestion.cover_url && (
                             <>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
-                                    src={suggestion.background_image}
+                                    src={suggestion.cover_url}
                                     alt=""
                                     aria-hidden
                                     className="absolute inset-0 w-full h-full object-cover opacity-[0.14] group-hover:opacity-[0.22] transition-opacity duration-500"
@@ -95,13 +95,13 @@ export default function BacklogProgressCard({
                                 <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[#0e0c0b] via-[#0e0c0be0] to-[#0e0c0ba6]" />
                             </>
                         )}
-                        {!suggestion.background_image && <span aria-hidden className="absolute inset-0 bg-white/[0.02]" />}
+                        {!suggestion.cover_url && <span aria-hidden className="absolute inset-0 bg-white/[0.02]" />}
 
                         <span className="relative w-[96px] h-[58px] rounded-[var(--radius-inner)] overflow-hidden shrink-0 bg-[var(--fill-1)] border border-[var(--line)]">
-                            {suggestion.background_image ? (
+                            {suggestion.cover_url ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
-                                    src={suggestion.background_image}
+                                    src={suggestion.cover_url}
                                     alt={suggestion.name}
                                     loading="lazy"
                                     className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]"

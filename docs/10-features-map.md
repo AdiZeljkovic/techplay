@@ -78,17 +78,24 @@ je s njom.
 
 ## Game Database
 
-**Status:** COMPLETE (import pipeline funkcionalan, UI robusni)
+**Status:** COMPLETE — kanonska TechPlay baza od 08/2026 (RAWG, Moby i IGDB penzionisani)
 
-**Opis:** Lokalna baza igara importovana iz MobyGames. RAWG kao fallback za screenshote/filmove.
+**Opis:** Vlastita baza od ~187.7k igara. Kanonska schema (cover_url, description,
+genres/platforms/tags/developers/publishers TEXT[], videos/alt_titles/age_ratings json,
+series_key/series_name, website). Adult sadržaj očišćen komandom `games:purge-adult`
+(Adult tag + sigurne riječi; ručni whitelist čuva mainstream naslove poput Witcher/GoW;
+sivi skup ide u `storage/app/adult-review.json` na pregled, ništa se ne briše slijepo).
+Obrisani slugovi ostaju u `game_tombstones` i API im vraća **410**. Nove igre ulaze
+isključivo kroz store agregator; traileri se pune u `videos` kolonu (agregator ih već
+piše, admin ih može ručno dodati).
 
 **Frontend:** `app/games/`, `components/games/`
-**Backend:** `GameController`, `Game` model, `MobyGamesService`, `RawgService`
-**Admin:** `GameResource`
-**Database:** `games`, `game_companies`, `game_external_ids`
-**API:** `GET /games`, `GET /games/{slug}`, `GET /games/calendar`, RAWG fallback endpointi
+**Backend:** `GameController`, `Game` model, `games:purge-adult` komanda
+**Admin:** `GameResource` (opis, cover, screenshoti, traileri, kompanije, taksonomija)
+**Database:** `games`, `game_tombstones`, `game_companies`, `game_external_ids`
+**API:** `GET /games`, `GET /games/{slug}` (410 za tombstone), `/screenshots`, `/videos`, `/series`, `/suggested`, `GET /games/calendar` (lokalno, `match_key` + `hype_score`)
 **Discord bot:** Bot može pretražiti igre (`/search` komanda)
-**Napomene:** TEXT[] PostgreSQL arrays za genre/platform/tags — obavezno koristiti `pgArray()` helper. API NIKAD ne proxira live MobyGames — sve je lokalno.
+**Napomene:** TEXT[] arrays idu kroz `PostgresArray` cast; kod raw upita `pgArray()`. API NIKAD ne zove vanjske servise — sve je lokalno. `import_payload` je arhiva sirovog Moby payloada i ne izlaže se u API.
 
 ---
 

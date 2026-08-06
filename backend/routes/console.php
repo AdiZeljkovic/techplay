@@ -39,8 +39,8 @@ Schedule::command('wishlist:check-releases')->dailyAt('09:00');
 // SEO: Regenerate XML sitemaps every 6 hours
 Schedule::command('sitemap:generate')->everySixHours();
 
-// GAMES: Import new/upcoming releases from RAWG weekly (Moby bulk import is retired)
-Schedule::command('games:sync-new-releases')->weeklyOn(1, '04:00');
+// New titles enter through the store aggregator below — RAWG, Moby and IGDB
+// are all retired, and the catalogue is TechPlay's own from here on.
 
 // CALENDAR: read the stores into our own tables, then fold the duplicates.
 // The window is relative to today, so the far month joins it on its own, and a

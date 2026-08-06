@@ -89,9 +89,9 @@ class SearchController extends Controller
         $result = Cache::remember($cacheKey, 60, function () use ($query) {
             $results = Game::query()
                 ->where('name', 'ILIKE', "%{$query}%")
-                ->where('has_description', true)
+                ->whereNotNull('description')
                 ->orderByDesc('rating')
-                ->select('id', 'name', 'slug', 'background_image', 'released', 'rating')
+                ->select('id', 'name', 'slug', 'cover_url', 'released', 'rating')
                 ->limit(5)
                 ->get();
 
@@ -101,7 +101,7 @@ class SearchController extends Controller
                     'title' => $game->name,
                     'slug' => $game->slug,
                     'excerpt' => null,
-                    'image' => $game->background_image,
+                    'image' => $game->cover_url,
                     'category' => $game->released ? 'Game · '.$game->released->format('Y') : 'Game',
                     'category_slug' => 'games',
                     'type' => 'game',

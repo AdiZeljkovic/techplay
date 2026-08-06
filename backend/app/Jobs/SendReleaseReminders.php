@@ -23,7 +23,7 @@ class SendReleaseReminders implements ShouldQueue
     {
         $today = now()->toDateString();
 
-        $games = Game::whereDate('released', $today)->get(['id', 'name', 'slug', 'background_image']);
+        $games = Game::whereDate('released', $today)->get(['id', 'name', 'slug', 'cover_url']);
 
         if ($games->isEmpty()) {
             return;

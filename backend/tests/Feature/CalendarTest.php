@@ -38,15 +38,15 @@ class CalendarTest extends TestCase
             'match_key' => 'game '.$n,
             'released' => now()->startOfMonth()->addDays(7)->toDateString(),
             'release_precision' => 'day',
-            'background_image' => 'https://example.com/'.$n.'.jpg',
+            'cover_url' => 'https://example.com/'.$n.'.jpg',
             'rating' => 4.1,
             'hype_score' => 100,
-            'genre_names' => ['Action'],
-            'platform_names' => ['PC'],
-            'details_data' => ['publisher' => 'Some Publisher'],
+            'genres' => ['Action'],
+            'platforms' => ['PC'],
+            'publishers' => ['Some Publisher'],
             // Enough to clear the calendar's visibility rules by default; the
             // tests that care about those set their own.
-            'movies_data' => ['https://cdn.example/trailer.mp4'],
+            'videos' => ['https://cdn.example/trailer.mp4'],
         ], $attrs));
 
         foreach ($stores as $store) {
@@ -96,8 +96,8 @@ class CalendarTest extends TestCase
 
     public function test_platform_and_genre_filters_narrow_the_month(): void
     {
-        $this->entry(['name' => 'PC Only', 'platform_names' => ['PC']]);
-        $this->entry(['name' => 'Console Only', 'genre_names' => ['RPG'], 'platform_names' => ['Xbox Series X|S']]);
+        $this->entry(['name' => 'PC Only', 'platforms' => ['PC']]);
+        $this->entry(['name' => 'Console Only', 'genres' => ['RPG'], 'platforms' => ['Xbox Series X|S']]);
 
         $pc = $this->getJson('/api/v1/calendar?platform=pc')->assertOk()->json('data');
         $this->assertSame(1, $pc['stats']['showing']);
@@ -121,7 +121,7 @@ class CalendarTest extends TestCase
         // breakdown has to reflect that rather than picking one.
         $this->entry([
             'name' => 'Silksong',
-            'platform_names' => ['PC', 'Xbox Series X|S', 'Nintendo Switch'],
+            'platforms' => ['PC', 'Xbox Series X|S', 'Nintendo Switch'],
         ], ['steam', 'xbox', 'nintendo']);
 
         $breakdown = collect($this->getJson('/api/v1/calendar')->assertOk()->json('data.platform_breakdown'))->keyBy('key');
@@ -178,9 +178,10 @@ class CalendarTest extends TestCase
 
         $this->entry([
             'name' => 'Nobody Meant This',
-            'movies_data' => [],
-            'screenshots_data' => [],
-            'details_data' => ['publisher' => 'Someone', 'description' => 'Short.'],
+            'videos' => [],
+            'screenshots' => [],
+            'publishers' => ['Someone'],
+            'description' => 'Short.',
         ]);
 
         $data = $this->getJson('/api/v1/calendar')->assertOk()->json('data');
@@ -195,18 +196,18 @@ class CalendarTest extends TestCase
     public function test_any_one_sign_that_somebody_meant_it_is_enough(): void
     {
         $bare = [
-            'movies_data' => [],
-            'screenshots_data' => [],
-            'details_data' => ['publisher' => 'Someone', 'description' => 'Short.'],
+            'videos' => [],
+            'screenshots' => [],
+            'publishers' => ['Someone'],
+            'description' => 'Short.',
         ];
 
         // Each of these fails every rule but one.
         $this->entry(array_merge($bare, ['name' => 'Multi Platform']), ['steam', 'xbox']);
-        $this->entry(array_merge($bare, ['name' => 'Reviewed', 'metacritic' => 84]));
         $this->entry(array_merge($bare, [
             'name' => 'Substantial',
-            'screenshots_data' => array_fill(0, 9, 'a.jpg'),
-            'details_data' => ['publisher' => 'Someone', 'description' => str_repeat('Real copy. ', 70)],
+            'screenshots' => array_fill(0, 9, 'a.jpg'),
+            'description' => str_repeat('Real copy. ', 70),
         ]));
 
         $wanted = $this->entry(array_merge($bare, ['name' => 'Wanted Here']));
@@ -214,7 +215,7 @@ class CalendarTest extends TestCase
 
         $names = collect($this->getJson('/api/v1/calendar')->assertOk()->json('data.days.0.games'))->pluck('name');
 
-        foreach (['Multi Platform', 'Reviewed', 'Substantial', 'Wanted Here'] as $name) {
+        foreach (['Multi Platform', 'Substantial', 'Wanted Here'] as $name) {
             $this->assertContains($name, $names, "{$name} earned its place");
         }
     }
@@ -227,10 +228,12 @@ class CalendarTest extends TestCase
             'slug' => 'silksong',
             'name' => 'Silksong',
             'released' => now()->startOfMonth()->addDays(20)->toDateString(),
-            'screenshots_data' => ['a.jpg', 'b.jpg'],
-            'movies_data' => ['t.mp4'],
-            'platform_names' => ['PC', 'Nintendo Switch'],
-            'details_data' => ['publisher' => 'Team Cherry', 'developer' => 'Team Cherry', 'description' => 'A game.'],
+            'screenshots' => ['a.jpg', 'b.jpg'],
+            'videos' => ['t.mp4'],
+            'platforms' => ['PC', 'Nintendo Switch'],
+            'publishers' => ['Team Cherry'],
+            'developers' => ['Team Cherry'],
+            'description' => 'A game.',
         ], ['steam', 'nintendo']);
 
         GameStoreLink::where('game_id', $game->id)->update(['url' => 'https://store.example/silksong']);

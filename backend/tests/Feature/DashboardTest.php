@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Achievement;
 use App\Models\Friendship;
 use App\Models\Game;
-use App\Models\GameRating;
 use App\Models\Presence;
 use App\Models\User;
 use App\Models\UserGame;
@@ -93,7 +92,6 @@ class DashboardTest extends TestCase
             ->assertStatus(200)
             ->assertJsonPath('data.stats.hours_played', 15);
     }
-
 
     /**
      * The widget lists every accepted friend, online first — an account with
@@ -201,15 +199,15 @@ class DashboardTest extends TestCase
 
         $played = Game::create([
             'slug' => 'played-rpg', 'name' => 'Played RPG', 'rating' => 4.5,
-            'genre_names' => ['RPG'], 'platform_names' => ['PC'], 'has_description' => true,
+            'genres' => ['RPG'], 'platforms' => ['PC'], 'description' => 'A game worth describing.',
         ]);
         $match = Game::create([
             'slug' => 'backlog-rpg', 'name' => 'Backlog RPG', 'rating' => 4.6,
-            'genre_names' => ['RPG'], 'platform_names' => ['PC'], 'has_description' => true,
+            'genres' => ['RPG'], 'platforms' => ['PC'], 'description' => 'A game worth describing.',
         ]);
         $mismatch = Game::create([
             'slug' => 'backlog-racing', 'name' => 'Backlog Racing', 'rating' => 4.9,
-            'genre_names' => ['Racing'], 'platform_names' => ['PC'], 'has_description' => true,
+            'genres' => ['Racing'], 'platforms' => ['PC'], 'description' => 'A game worth describing.',
         ]);
 
         UserGame::create(['user_id' => $user->id, 'game_id' => $played->id, 'status' => 'completed']);
@@ -261,20 +259,20 @@ class DashboardTest extends TestCase
 
         $owned = Game::create([
             'slug' => 'owned-rpg', 'name' => 'Owned RPG', 'rating' => 4.5,
-            'genre_names' => ['RPG', 'Action'], 'platform_names' => ['PC'],
-            'background_image' => 'https://img.test/owned.jpg', 'has_description' => true,
+            'genres' => ['RPG', 'Action'], 'platforms' => ['PC'],
+            'cover_url' => 'https://img.test/owned.jpg', 'description' => 'A game worth describing.',
         ]);
         UserGame::create(['user_id' => $user->id, 'game_id' => $owned->id, 'status' => 'completed']);
 
         $match = Game::create([
             'slug' => 'great-rpg', 'name' => 'Great RPG', 'rating' => 4.8,
-            'genre_names' => ['RPG'], 'platform_names' => ['PC'],
-            'background_image' => 'https://img.test/match.jpg', 'has_description' => true,
+            'genres' => ['RPG'], 'platforms' => ['PC'],
+            'cover_url' => 'https://img.test/match.jpg', 'description' => 'A game worth describing.',
         ]);
         Game::create([
             'slug' => 'racing-game', 'name' => 'Racing Game', 'rating' => 4.9,
-            'genre_names' => ['Racing'], 'platform_names' => ['PC'],
-            'background_image' => 'https://img.test/racing.jpg', 'has_description' => true,
+            'genres' => ['Racing'], 'platforms' => ['PC'],
+            'cover_url' => 'https://img.test/racing.jpg', 'description' => 'A game worth describing.',
         ]);
 
         $response = $this->getJson('/api/v1/me/recommendations');

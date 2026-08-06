@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Http;
  * the whole timeout for nothing.
  *
  * Certificate verification is skipped on local machines only, matching what
- * RawgService already does, because a Windows PHP without a CA bundle cannot
+ * the old RAWG client used to, because a Windows PHP without a CA bundle cannot
  * otherwise reach any of these stores and none of this would be testable by
  * hand. Deployed environments verify normally.
  */

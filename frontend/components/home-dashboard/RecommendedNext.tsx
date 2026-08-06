@@ -12,7 +12,7 @@ import type { DashboardGameCover } from "@/lib/types/dashboard";
 interface Recommendation {
     slug: string;
     name: string;
-    background_image: string | null;
+    cover_url: string | null;
     match_percent: number;
     matched_genres: string[];
 }
@@ -93,10 +93,10 @@ export default function RecommendedNext({ games }: { games: DashboardGameCover[]
                 <div className="flex-1 divide-y divide-white/[0.07]">
                     {hasRecs
                         ? recs!.slice(0, 4).map((r) => (
-                            <Row key={r.slug} slug={r.slug} name={r.name} image={r.background_image} genres={r.matched_genres} match={r.match_percent} />
+                            <Row key={r.slug} slug={r.slug} name={r.name} image={r.cover_url} genres={r.matched_genres} match={r.match_percent} />
                         ))
                         : games.slice(0, 4).map((g) => (
-                            <Row key={g.slug} slug={g.slug} name={g.name} image={g.background_image} genres={[]} />
+                            <Row key={g.slug} slug={g.slug} name={g.name} image={g.cover_url} genres={[]} />
                         ))}
                 </div>
             ) : (

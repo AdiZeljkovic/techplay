@@ -170,7 +170,7 @@ class ReleaseCalendar extends Page
         return [
             'title' => $game->name,
             'released' => $game->released?->toDateString(),
-            'publisher' => data_get($game->details_data, 'publisher'),
+            'publisher' => ($game->publishers ?? [])[0] ?? null,
         ];
     }
 

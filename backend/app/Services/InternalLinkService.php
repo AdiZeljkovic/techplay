@@ -92,7 +92,7 @@ class InternalLinkService
         }
 
         $candidates = Game::query()
-            ->where('has_description', true)
+            ->whereNotNull('description')
             ->where(function ($q) use ($keywords) {
                 foreach ($keywords as $keyword) {
                     $q->orWhere('name', 'ILIKE', "%{$keyword}%");

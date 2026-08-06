@@ -11,7 +11,7 @@ interface CalendarGame {
     slug: string;
     name: string;
     released: string;
-    background_image: string;
+    cover_url: string;
     platforms: unknown;
 }
 
@@ -123,9 +123,9 @@ export default function UpcomingReleasesWidget() {
                                     height: '54px',
                                     border: '1px solid rgba(255,255,255,0.1)',
                                 }}>
-                                    {game.background_image ? (
+                                    {game.cover_url ? (
                                         <Image
-                                            src={game.background_image}
+                                            src={game.cover_url}
                                             alt={game.name}
                                             fill
                                             sizes="42px"

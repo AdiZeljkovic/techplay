@@ -17,22 +17,19 @@ const TABS: { id: Tab; label: string }[] = [
     { id: "coming", label: "Coming Soon" },
 ];
 
-/** Entries vary by source: RAWG objects, Moby rows ({platform_name}), strings, or raw DB rows. */
+/** Kept for older callers that may still hold pre-canonical shapes in cache. */
 type RawNamed = string | { name?: string; platform_name?: string; platform?: { name?: string } } | null | undefined;
 
 interface DiscoverGame {
     id: number | string;
     slug: string;
     name: string;
-    background_image: string | null;
+    cover_url: string | null;
     released?: string | null;
-    added?: number;
+    hype_score?: number;
     rating?: number;
-    metacritic?: number | null;
-    genre_names?: string[];
-    platform_names?: string[];
-    genres?: RawNamed[];
-    platforms?: RawNamed[];
+    genres?: string[];
+    platforms?: string[];
 }
 
 /** Tolerates every shape the three data sources produce. */
@@ -47,8 +44,8 @@ const isoDaysAgo = (days: number) => {
     return d.toISOString().slice(0, 10);
 };
 
-/** RAWG's `added` (how many users track it) separates real launches from shovelware. */
-const byPopularity = (a: DiscoverGame, b: DiscoverGame) => (b.added ?? 0) - (a.added ?? 0);
+/** Our own notability score separates real launches from shovelware. */
+const byPopularity = (a: DiscoverGame, b: DiscoverGame) => (b.hype_score ?? 0) - (a.hype_score ?? 0);
 
 async function fetchReleasedSince(days: number): Promise<DiscoverGame[]> {
     const r = await axios.get("/games/calendar", {
@@ -85,11 +82,11 @@ function releaseLabel(released?: string | null): string | null {
     return `${MONTHS[d.getMonth()]} ${d.getDate()}${sameYear ? "" : `, ${d.getFullYear()}`}`;
 }
 
-/** Normalizes /games (TEXT[] columns) and /games/calendar (RAWG objects) shapes. */
+/** /games and /games/calendar both serve plain string arrays now. */
 function meta(g: DiscoverGame) {
-    const genres = g.genre_names?.length ? g.genre_names : (g.genres ?? []).map(rawName);
-    const platforms = g.platform_names?.length ? g.platform_names : (g.platforms ?? []).map(rawName);
-    const score = g.metacritic ? (g.metacritic / 10).toFixed(1) : g.rating && g.rating > 0 ? (g.rating <= 5 ? g.rating * 2 : g.rating).toFixed(1) : null;
+    const genres = g.genres ?? [];
+    const platforms = g.platforms ?? [];
+    const score = g.rating && g.rating > 0 ? (g.rating <= 5 ? g.rating * 2 : g.rating).toFixed(1) : null;
     // dedupe after shortening — "Nintendo Switch" + "Nintendo Switch 2" both read SWITCH
     const shortPlatforms = [...new Set(platforms.filter(Boolean).map(shortPlatform))].slice(0, 2);
     return { genres: genres.filter(Boolean).slice(0, 2), platforms: shortPlatforms, score };
@@ -164,9 +161,9 @@ export default function DiscoverGames() {
                         >
                             {/* Artwork — untouched, no overlays fighting the cover */}
                             <div className="relative aspect-[3/4] overflow-hidden">
-                                {g.background_image ? (
+                                {g.cover_url ? (
                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={g.background_image} alt={g.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]" />
+                                    <img src={g.cover_url} alt={g.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-[var(--ease-hud)]" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-[var(--ink-faint)] bg-[var(--fill-1)]"><Gamepad2 className="w-10 h-10" /></div>
                                 )}

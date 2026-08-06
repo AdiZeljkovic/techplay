@@ -129,7 +129,7 @@ class InterestProfile
     /**
      * The game collection, read through the genres it is made of.
      *
-     * genre_names is a Postgres text[]; on SQLite, which the tests run on, the
+     * genres is a Postgres text[]; on SQLite, which the tests run on, the
      * same column is plain text. Both are read as a list rather than unnested
      * in SQL, which keeps this one query and one code path.
      */
@@ -139,7 +139,7 @@ class InterestProfile
             ->join('games', 'games.id', '=', 'user_games.game_id')
             ->where('user_games.user_id', $userId)
             ->limit(500)
-            ->get(['games.id', 'games.genre_names', 'user_games.status']);
+            ->get(['games.id', 'games.genres', 'user_games.status']);
 
         $this->basis['games'] = $rows->count();
 
@@ -148,7 +148,7 @@ class InterestProfile
                 $this->wishlist[(int) $row->id] = true;
             }
 
-            foreach (self::genres($row->genre_names) as $genre) {
+            foreach (self::genres($row->genres) as $genre) {
                 $key = self::normalise($genre);
                 if ($key !== '') {
                     $this->tags[$key] = ($this->tags[$key] ?? 0) + self::WEIGHTS['collection'];

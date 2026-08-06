@@ -26,7 +26,7 @@ class SteamAchievementController extends Controller
 
         $achieved = SteamAchievement::where('user_id', $user->id)
             ->where('achieved', true)
-            ->with('game:id,name,slug,background_image')
+            ->with('game:id,name,slug,cover_url')
             ->orderByDesc('achieved_at')
             ->limit(100)
             ->get(['id', 'game_id', 'steam_appid', 'display_name', 'description', 'icon_url', 'achieved_at']);

@@ -22,8 +22,8 @@ interface ProfilePayload {
     user: { display_name?: string; username: string; avatar_url: string | null; rank?: { name: string } | null };
     stats: { level: number; xp: number; games_count: number; achievements_count: number; completed_count: number };
     next_rank: { name: string; min_xp: number } | null;
-    showcase?: { slug: string; name: string; background_image: string | null }[];
-    playing_now?: { slug: string; name: string; background_image: string | null }[];
+    showcase?: { slug: string; name: string; cover_url: string | null }[];
+    playing_now?: { slug: string; name: string; cover_url: string | null }[];
 }
 
 const leaderFetcher = () =>
@@ -47,7 +47,7 @@ export default function ProfileCtaBand() {
     );
 
     const covers = (profile?.showcase?.length ? profile.showcase : profile?.playing_now ?? [])
-        .filter((g) => g.background_image)
+        .filter((g) => g.cover_url)
         .slice(0, 4);
 
     const xp = profile?.stats.xp ?? champion?.value ?? 0;
@@ -119,9 +119,9 @@ export default function ProfileCtaBand() {
                     <div className="relative rounded-[var(--radius-panel)] bg-[var(--surface-2)] border border-[var(--line-strong)] overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.5)]">
                         {/* banner: the champion's own game art, or a HUD field */}
                         <div className="relative h-[92px] overflow-hidden">
-                            {covers[0]?.background_image ? (
+                            {covers[0]?.cover_url ? (
                                 // eslint-disable-next-line @next/next/no-img-element
-                                <img src={covers[0].background_image} alt="" aria-hidden className="w-full h-full object-cover opacity-40" />
+                                <img src={covers[0].cover_url} alt="" aria-hidden className="w-full h-full object-cover opacity-40" />
                             ) : (
                                 <span aria-hidden className="block w-full h-full bg-hud-grid" style={{ background: "radial-gradient(120% 140% at 20% 0%, color-mix(in srgb, var(--accent) 22%, transparent) 0%, transparent 65%)" }} />
                             )}
@@ -178,7 +178,7 @@ export default function ProfileCtaBand() {
                                         {covers.map((c) => (
                                             <span key={c.slug} title={c.name} className="relative aspect-[4/3] rounded-[var(--radius-inner)] overflow-hidden bg-[var(--fill-1)] border border-[var(--line)]">
                                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                <img src={c.background_image!} alt={c.name} loading="lazy" className="w-full h-full object-cover" />
+                                                <img src={c.cover_url!} alt={c.name} loading="lazy" className="w-full h-full object-cover" />
                                             </span>
                                         ))}
                                     </div>

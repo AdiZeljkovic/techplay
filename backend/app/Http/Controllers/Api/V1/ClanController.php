@@ -409,15 +409,15 @@ class ClanController extends Controller
         $clanGames = DB::table('user_games')
             ->join('games', 'games.id', '=', 'user_games.game_id')
             ->whereIn('user_games.user_id', $memberIds)
-            ->selectRaw('games.slug, games.name, games.background_image, COUNT(DISTINCT user_games.user_id) as players')
-            ->groupBy('games.slug', 'games.name', 'games.background_image')
+            ->selectRaw('games.slug, games.name, games.cover_url, COUNT(DISTINCT user_games.user_id) as players')
+            ->groupBy('games.slug', 'games.name', 'games.cover_url')
             ->orderByDesc('players')
             ->limit(4)
             ->get()
             ->map(fn ($g) => [
                 'slug' => $g->slug,
                 'name' => $g->name,
-                'background_image' => $g->background_image,
+                'cover_url' => $g->cover_url,
                 'players' => (int) $g->players,
                 'percent' => (int) round($g->players / $memberCount * 100),
             ]);

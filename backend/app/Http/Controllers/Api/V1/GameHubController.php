@@ -70,8 +70,8 @@ class GameHubController extends Controller
                 'games' => Game::count(),
                 'rated' => Game::where('rating', '>', 0)->count(),
                 'upcoming' => Game::whereNotNull('match_key')->count(),
-                'genres' => $facets ? count($facets['genres']) : $this->distinct('genre_names'),
-                'platforms' => $this->distinct('platform_names'),
+                'genres' => $facets ? count($facets['genres']) : $this->distinct('genres'),
+                'platforms' => $this->distinct('platforms'),
                 'community_ratings' => GameRating::where('is_draft', false)->count(),
                 'tracked' => UserGame::count(),
             ];
@@ -89,7 +89,7 @@ class GameHubController extends Controller
     private function genres(): array
     {
         return collect(DB::select(
-            'select unnest(genre_names) as name, count(*) as tally
+            'select unnest(genres) as name, count(*) as tally
              from games group by 1 order by tally desc'
         ))->map(fn ($row) => ['name' => $row->name, 'count' => (int) $row->tally])->all();
     }
@@ -103,7 +103,7 @@ class GameHubController extends Controller
     private function platformFamilies(): array
     {
         $rows = DB::select(
-            'select unnest(platform_names) as name, count(*) as tally from games group by 1'
+            'select unnest(platforms) as name, count(*) as tally from games group by 1'
         );
 
         $labels = [
@@ -208,17 +208,17 @@ class GameHubController extends Controller
         return Cache::remember('games.hub.wishlisted.v1', 900, fn () => DB::table('user_games')
             ->join('games', 'games.id', '=', 'user_games.game_id')
             ->where('user_games.status', 'wishlist')
-            ->groupBy('games.id', 'games.slug', 'games.name', 'games.background_image')
+            ->groupBy('games.id', 'games.slug', 'games.name', 'games.cover_url')
             ->orderByRaw('count(*) desc')
             ->limit(6)
             ->get([
-                'games.slug', 'games.name', 'games.background_image',
+                'games.slug', 'games.name', 'games.cover_url',
                 DB::raw('count(*) as tally'),
             ])
             ->map(fn ($row) => [
                 'slug' => $row->slug,
                 'name' => $row->name,
-                'background_image' => $row->background_image,
+                'cover_url' => $row->cover_url,
                 'wishlists' => (int) $row->tally,
             ])
             ->all());

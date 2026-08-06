@@ -173,11 +173,11 @@ class WrappedService
             ->join('games', 'games.id', '=', 'user_games.game_id')
             ->where('user_games.user_id', $user->id)
             ->whereBetween('user_games.updated_at', [$start, $end])
-            ->get(['games.id', 'games.name', 'games.slug', 'games.background_image', 'user_games.hours_played', 'user_games.status'])
+            ->get(['games.id', 'games.name', 'games.slug', 'games.cover_url', 'user_games.hours_played', 'user_games.status'])
             ->map(fn ($row) => [
                 'name' => $row->name,
                 'slug' => $row->slug,
-                'background_image' => $row->background_image,
+                'cover_url' => $row->cover_url,
                 'status' => $row->status,
                 'hours' => isset($sessionMinutes[$row->id])
                     ? (int) round($sessionMinutes[$row->id] / 60)
@@ -197,7 +197,7 @@ class WrappedService
             ->join('games', 'games.id', '=', 'user_games.game_id')
             ->where('user_games.user_id', $user->id)
             ->whereBetween('user_games.updated_at', [$start, $end])
-            ->pluck('games.genre_names');
+            ->pluck('games.genres');
 
         $tally = [];
 
@@ -340,7 +340,7 @@ class WrappedService
         $top = $this->topGames($user, $year, 1);
 
         if ($top) {
-            $moments[] = ['key' => 'most_played', 'label' => 'Most played', 'value' => $top[0]['name'], 'note' => $top[0]['hours'].'h', 'image' => $top[0]['background_image']];
+            $moments[] = ['key' => 'most_played', 'label' => 'Most played', 'value' => $top[0]['name'], 'note' => $top[0]['hours'].'h', 'image' => $top[0]['cover_url']];
         }
 
         $dna = $this->dna($user, $year);

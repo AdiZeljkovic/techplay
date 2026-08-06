@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
-use App\Models\GameExternalId;
 use App\Models\User;
 use App\Models\UserGame;
 use App\Services\AchievementService;
@@ -12,7 +11,6 @@ use App\Services\BountyService;
 use App\Services\ClanResourceService;
 use App\Services\GameMatchingService;
 use App\Services\QuestService;
-use App\Services\RawgService;
 use App\Services\XpService;
 use App\Traits\ApiResponse;
 use App\Traits\ProfilePrivacy;
@@ -20,7 +18,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
 
 class GameCollectionController extends Controller
@@ -51,7 +48,7 @@ class GameCollectionController extends Controller
             ->where('user_id', $user->id)
             ->when($status && in_array($status, UserGame::STATUSES), fn ($q) => $q->where('status', $status))
             ->when($favorite, fn ($q) => $q->where('is_favorite', true))
-            ->with(['game:id,slug,name,released,rating,background_image,platform_names,genre_names'])
+            ->with(['game:id,slug,name,released,rating,cover_url,platforms,genres'])
             ->orderByDesc($sort);
 
         $items = $q->paginate($pageSize);
@@ -76,7 +73,7 @@ class GameCollectionController extends Controller
 
         $entry = UserGame::where('user_id', $request->user()->id)
             ->where('game_id', $game->id)
-            ->with(['game:id,slug,name,released,rating,background_image,platform_names,genre_names'])
+            ->with(['game:id,slug,name,released,rating,cover_url,platforms,genres'])
             ->first();
 
         return $this->success($entry ? $this->present($entry) : null);
@@ -90,41 +87,12 @@ class GameCollectionController extends Controller
     {
         $game = Game::where('slug', $slug)->first();
 
-        // Game not in local DB — fetch minimal data from RAWG and create it.
-        // This is the only ingestion path for brand-new releases, so it stays,
-        // but hardened: per-user creation limit + the RAWG result must really
-        // be this slug (no fuzzy matches seeding junk rows).
+        // The catalogue is the catalogue. RAWG used to be asked to conjure a
+        // row for unknown slugs; with it retired, a slug we do not have is a
+        // 404 — new titles arrive through the store aggregator, not through
+        // whatever a client typed into a URL.
         if (! $game) {
-            $limiterKey = 'game-autocreate:'.$request->user()->id;
-            if (! RateLimiter::attempt($limiterKey, 10, fn () => true, 3600)) {
-                return $this->error('Too many new games added recently. Try again later.', 429);
-            }
-
-            try {
-                $rawg = app(RawgService::class)->getGameDetails($slug);
-
-                if (empty($rawg['name']) || ($rawg['slug'] ?? $slug) !== $slug) {
-                    return $this->error('Game not found', 404);
-                }
-
-                $game = Game::create([
-                    'slug' => $slug,
-                    'name' => $rawg['name'],
-                    'released' => $rawg['released'] ?? null,
-                    'rating' => $rawg['rating'] ?? 0,
-                    'background_image' => $rawg['background_image'] ?? null,
-                    'details_crawled_at' => now(),
-                ]);
-
-                if (! empty($rawg['id'])) {
-                    GameExternalId::firstOrCreate(
-                        ['provider' => 'rawg', 'external_id' => (string) $rawg['id']],
-                        ['game_id' => $game->id]
-                    );
-                }
-            } catch (\Throwable) {
-                return $this->error('Game not found', 404);
-            }
+            return $this->error('Game not found', 404);
         }
 
         $data = $request->validate([
@@ -169,7 +137,7 @@ class GameCollectionController extends Controller
         }
 
         $entry->save();
-        $entry->load(['game:id,slug,name,released,rating,background_image,platform_names,genre_names']);
+        $entry->load(['game:id,slug,name,released,rating,cover_url,platforms,genres']);
 
         // Trigger achievement checks after collection change (fire-and-forget)
         try {
@@ -234,7 +202,7 @@ class GameCollectionController extends Controller
     {
         $items = UserGame::where('user_id', Auth::id())
             ->whereIn('status', ['wishlist', 'backlog'])
-            ->with(['game:id,slug,name,released,background_image'])
+            ->with(['game:id,slug,name,released,cover_url'])
             ->whereHas('game', function ($q) {
                 $q->whereNotNull('released')
                     ->whereDate('released', '>', now())
@@ -245,7 +213,7 @@ class GameCollectionController extends Controller
                 'slug' => $ug->game->slug,
                 'name' => $ug->game->name,
                 'released' => $ug->game->released?->format('Y-m-d'),
-                'background_image' => $ug->game->background_image,
+                'cover_url' => $ug->game->cover_url,
                 'status' => $ug->status,
             ])
             ->sortBy('released')
@@ -411,9 +379,9 @@ class GameCollectionController extends Controller
                 'name' => $game->name,
                 'released' => $game->released?->format('Y-m-d'),
                 'rating' => $game->rating,
-                'background_image' => $game->background_image,
-                'platform_names' => $game->platform_names ?? [],
-                'genre_names' => $game->genre_names ?? [],
+                'cover_url' => $game->cover_url,
+                'platforms' => $game->platforms ?? [],
+                'genres' => $game->genres ?? [],
             ] : null,
         ];
     }
