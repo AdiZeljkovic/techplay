@@ -149,7 +149,11 @@ function AchievementCard({ a }: { a: AchievementEntry }) {
             }`}
         >
             {/* the badge itself — greyed while locked, so the shelf reads at a glance */}
-            <span className="relative w-14 h-14 shrink-0 rounded-[11px] flex items-center justify-center bg-white/[0.04]">
+            {/* No plate behind it: the artwork is a card with its own frame and
+                glow, and a tinted square around it was a frame around a frame.
+                Sized 2:3 to match the card, so it fills the space instead of
+                letterboxing inside a square. */}
+            <span className="relative w-[58px] h-[82px] shrink-0 flex items-center justify-center">
                 {a.icon_path ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -234,7 +238,7 @@ function AchievementCard({ a }: { a: AchievementEntry }) {
 function MiniRow({ a }: { a: AchievementEntry }) {
     return (
         <div className="flex items-center gap-3">
-            <span className="w-9 h-9 shrink-0 rounded-[8px] bg-white/[0.04] flex items-center justify-center">
+            <span className="w-[34px] h-[48px] shrink-0 flex items-center justify-center">
                 {a.icon_path ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -314,10 +318,7 @@ function AchievementsSidebar({ data }: { data: AchievementsPayload }) {
             {rarest && (
                 <Panel title="Rarest Owned" variant="console">
                     <div className="flex flex-col items-center text-center py-1">
-                        <span
-                            className="w-16 h-16 rounded-[13px] flex items-center justify-center mb-3"
-                            style={{ background: `color-mix(in srgb, ${RARITY.epic.color} 12%, transparent)` }}
-                        >
+                        <span className="w-[72px] h-[102px] flex items-center justify-center mb-3">
                             {rarest.icon_path ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={getStorageUrl(rarest.icon_path)} alt="" aria-hidden className="w-full h-full object-contain" />
@@ -453,7 +454,7 @@ export default function AchievementsTab({ username }: { username: string }) {
             <div className="space-y-4">
                 <div className="h-[86px] rounded-[var(--radius-panel)] bg-white/[0.04] animate-pulse" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {[...Array(6)].map((_, i) => <div key={i} className="h-[92px] rounded-[12px] bg-white/[0.04] animate-pulse" />)}
+                    {[...Array(6)].map((_, i) => <div key={i} className="h-[114px] rounded-[12px] bg-white/[0.04] animate-pulse" />)}
                 </div>
             </div>
         );
