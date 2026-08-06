@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\DB;
  * A daily sip from the OpenCritic API — the official one, via RapidAPI,
  * scores displayed with attribution as their terms ask.
  *
- * The free tier is a couple dozen requests a day and each game costs two
- * (search, then detail), so this never sweeps: it runs once a day from
+ * The free tier allows 25 searches a day (details bill a separate, roomier
+ * bucket), and each game costs one of each — so this never sweeps: it runs once a day from
  * the scheduler, spends its budget on the most-viewed modern games that
  * still lack a score, and stops. OpenCritic only covers ~2014 onward,
  * so older rows are never attempted.

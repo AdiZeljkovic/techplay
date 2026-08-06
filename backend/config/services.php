@@ -17,7 +17,7 @@ return [
 
     'opencritic' => [
         'key' => env('RAPIDAPI_KEY'),
-        'daily_budget' => env('OPENCRITIC_DAILY_BUDGET', 24),
+        'daily_budget' => env('OPENCRITIC_DAILY_BUDGET', 48),
     ],
 
     'youtube' => [
