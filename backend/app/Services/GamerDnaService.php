@@ -445,7 +445,7 @@ class GamerDnaService
             'items' => $owned->take(4)->map(fn ($a) => [
                 'id' => $a->id,
                 'name' => $a->name,
-                'icon_path' => $a->icon_path,
+                'icon_path' => $a->versionedIconPath(),
                 'points' => (int) $a->points,
             ])->values()->all(),
             'more' => max(0, $owned->count() - 4),

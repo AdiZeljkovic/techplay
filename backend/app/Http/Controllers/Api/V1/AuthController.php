@@ -314,7 +314,7 @@ class AuthController extends Controller
                 'id' => $achievement->id,
                 'name' => $achievement->name,
                 'description' => $achievement->description,
-                'icon_path' => $achievement->icon_path,
+                'icon_path' => $achievement->versionedIconPath(),
                 'points' => $achievement->points,
                 'is_unlocked' => $isUnlocked,
                 'unlocked_at' => $isUnlocked ? $userAchievementsMap->get($achievement->id) : null,

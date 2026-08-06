@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Achievement;
 use App\Models\Friendship;
 use App\Models\Presence;
 use App\Traits\ApiResponse;
@@ -121,7 +122,8 @@ class FriendActivityController extends Controller
                     'avatar_url' => $row->avatar_url,
                 ],
                 'achievement_name' => $row->achievement_name,
-                'icon_path' => $row->icon_path,
+                // Raw row, so there is no model to ask for the stamp.
+                'icon_path' => Achievement::stampPath($row->icon_path),
                 'points' => $row->points,
                 'created_at' => $row->unlocked_at,
             ]);

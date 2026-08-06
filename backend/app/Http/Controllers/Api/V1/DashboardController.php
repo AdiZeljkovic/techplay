@@ -147,7 +147,7 @@ class DashboardController extends Controller
                 'id' => $a->id,
                 'name' => $a->name,
                 'description' => $a->description,
-                'icon_path' => $a->icon_path,
+                'icon_path' => $a->versionedIconPath(),
                 'points' => (int) $a->points,
                 'unlocked_at' => $a->pivot->unlocked_at,
             ])->all();

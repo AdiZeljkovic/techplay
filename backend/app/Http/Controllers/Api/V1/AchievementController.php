@@ -105,7 +105,7 @@ class AchievementController extends Controller
                 'id' => $a->id,
                 'name' => $a->name,
                 'description' => $a->description,
-                'icon_path' => $a->icon_path,
+                'icon_path' => $a->versionedIconPath(),
                 'points' => (int) $a->points,
                 'category' => self::CATEGORIES[$a->criteria_type] ?? 'Other',
                 'criteria_type' => $a->criteria_type,

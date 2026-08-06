@@ -76,7 +76,7 @@ class DiscordXpController extends Controller
             'achievements_unlocked' => array_map(fn ($a) => [
                 'name' => $a->name,
                 'description' => $a->description,
-                'icon' => $a->icon_path,
+                'icon' => $a->versionedIconPath(),
             ], $unlockedAchievements),
         ]);
     }
