@@ -223,7 +223,7 @@ function MessageBubble({
 /* ── the page ─────────────────────────────────────────────────────────── */
 
 export default function SocialClient() {
-    const { user } = useAuth();
+    const { user, isLoading: authLoading } = useAuth();
     const [section, setSection] = useState<Section>("messages");
     const [tab, setTab] = useState<"all" | "direct" | "group" | "clan">("all");
     const [activeId, setActiveId] = useState<number | null>(null);
@@ -378,6 +378,17 @@ export default function SocialClient() {
             toast.error(message ?? "Couldn't send that request.");
         }
     };
+
+    // The session restores on the client, so `user` is null for a moment on
+    // every load. Rendering the gate during that moment told a signed-in
+    // reader they were signed out.
+    if (authLoading) {
+        return (
+            <main className="min-h-screen bg-[var(--surface-0)] flex items-center justify-center">
+                <Loader2 className="w-6 h-6 animate-spin text-white/20" />
+            </main>
+        );
+    }
 
     if (!user) {
         return (

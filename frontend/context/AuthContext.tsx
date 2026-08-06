@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useRouter } from "next/navigation";
 
 import { User } from "@/types";
 import { trackD1Return } from "@/lib/track";
@@ -22,39 +21,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const router = useRouter();
-
-    useEffect(() => {
-        // Restore auth state from localStorage on mount
-        const storedToken = localStorage.getItem("token");
-        const storedUser = localStorage.getItem("user");
-
-        if (storedToken) {
-            setToken(storedToken);
-
-            if (storedUser) {
-                try {
-                    const parsedUser = JSON.parse(storedUser);
-                    setUser(parsedUser);
-                    // Verify token in background (don't block UI)
-                    verifyToken(storedToken);
-                } catch (e) {
-                    // Invalid JSON - fetch fresh user data
-                    fetchAndSetUser(storedToken);
-                }
-            } else {
-                // Token exists but no cached user - fetch it
-                fetchAndSetUser(storedToken);
-            }
-        }
-
-        setIsLoading(false);
-    }, []);
-
-    // Activation funnel: single-shot D1-return marker (accounts 24-48h old)
-    useEffect(() => {
-        if (user?.created_at) trackD1Return(user.created_at);
-    }, [user?.created_at]);
 
     // Fetch user and store in localStorage
     const fetchAndSetUser = async (authToken: string) => {
@@ -115,6 +81,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(null);
         setUser(null);
     };
+
+    useEffect(() => {
+        // Restore auth state from localStorage on mount
+        const storedToken = localStorage.getItem("token");
+        const storedUser = localStorage.getItem("user");
+
+        if (!storedToken) {
+            setIsLoading(false);
+            return;
+        }
+
+        setToken(storedToken);
+
+        let cached: User | null = null;
+        if (storedUser) {
+            try {
+                cached = JSON.parse(storedUser);
+            } catch {
+                cached = null;
+            }
+        }
+
+        if (cached) {
+            // A cached user means the page can render immediately; the token is
+            // confirmed in the background.
+            setUser(cached);
+            setIsLoading(false);
+            verifyToken(storedToken);
+            return;
+        }
+
+        // No usable cache, so there is nothing to show until /auth/me answers.
+        // isLoading has to stay true across that request: it used to be cleared
+        // here, synchronously, which told every gate "loading is done, and there
+        // is no user" — and gates that trusted it showed a signed-out screen to
+        // a signed-in reader.
+        fetchAndSetUser(storedToken).finally(() => setIsLoading(false));
+    }, []);
+
+    // Activation funnel: single-shot D1-return marker (accounts 24-48h old)
+    useEffect(() => {
+        if (user?.created_at) trackD1Return(user.created_at);
+    }, [user?.created_at]);
 
     const login = (newToken: string, newUser: User) => {
         localStorage.setItem("token", newToken);

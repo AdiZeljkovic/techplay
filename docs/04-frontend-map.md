@@ -183,6 +183,31 @@ Obrisano: `ProfileHeader.tsx`, `ProfileTabs.tsx`, `OwnProfileShell.tsx`.
 
 ---
 
+## Auth — jedan izvor istine (08/2026)
+
+`context/AuthContext` je **jedino** stanje sesije. Drži korisnika i token u
+localStorage, vraća ih pri mountu i potvrđuje token u pozadini.
+
+`hooks/useAuth` je sloj nad njim: nudi `register` / `login` / `logout` i
+`middleware` preusmjeravanja, ali **nema vlastito stanje**. Import ostaje isti
+za svih 22 fajla koji ga koriste.
+
+Do 08/2026 su to bila **dva nezavisna sistema** — hook je držao svog korisnika
+u SWR kešu s `/auth/me`, kontekst svog u localStorage. Posljedice:
+
+- header (hook) je pokazivao prijavljenog čitaoca dok je stranica koja čita
+  kontekst pokazivala „Sign in" — tako se manifestovalo na Social Hubu
+- hookov `login()` je pisao **samo `token`**, nikad `user`, pa je kontekst na
+  svakom učitavanju morao ići po `/auth/me` prije nego zna ko si
+- `SettingsClient` je čitao korisnika iz hooka a ažurirao ga u kontekstu, pa
+  snimanje profila nije osvježavalo prikaz
+
+**Pravilo:** `isLoading` mora biti istinit dok se sesija vraća, i **nijedan
+gate ne smije odlučivati dok traje**. `if (!user) return <SignIn/>` bez te
+provjere prijavljenom čitaocu kaže da nije prijavljen.
+
+---
+
 ## Dizajn sistem (08/2026)
 
 Sve živi u `app/globals.css`. Nijedna od ovih vrijednosti se ne piše ručno po

@@ -1,27 +1,29 @@
-import useSWR from 'swr';
-import axios from '@/lib/axios';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import axios from '@/lib/axios';
+import { useAuth as useAuthContext } from '@/context/AuthContext';
 
-export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 'auth' | 'guest', redirectIfAuthenticated?: string } = {}) => {
+/**
+ * Sign-in, sign-up and sign-out, over the one auth state.
+ *
+ * This used to be a second, independent auth system: it kept its own copy of
+ * the user in an SWR cache off /auth/me while AuthContext kept another in
+ * localStorage. Two sources meant two answers — the header could show a
+ * signed-in reader while a page reading the context showed "sign in", which is
+ * exactly what happened on the Social Hub.
+ *
+ * Worse, its login() wrote only `token` to localStorage and never `user`, so
+ * the context had nothing cached and had to re-fetch /auth/me on every page
+ * load before it could say who you were.
+ *
+ * It now reads and writes AuthContext and holds no state of its own. The
+ * returned surface is unchanged, so its callers did not have to move.
+ */
+export const useAuth = (
+    { middleware, redirectIfAuthenticated }: { middleware?: 'auth' | 'guest'; redirectIfAuthenticated?: string } = {},
+) => {
     const router = useRouter();
-
-    // Only fetch /auth/me when a token exists to avoid 401 console errors
-    const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('token');
-
-    const { data: user, error, mutate } = useSWR(hasToken ? '/auth/me' : null, () =>
-        axios.get('/auth/me')
-            .then(res => {
-                // Handle Laravel Resource 'data' wrapper
-                return res.data.data || res.data;
-            })
-            .catch(error => {
-                if (error.response?.status !== 409) throw error;
-            })
-        , {
-            shouldRetryOnError: false,
-            revalidateOnFocus: false
-        });
+    const { user, isLoading, login: setSession, logout: clearSession } = useAuthContext();
 
     const register = async ({ setErrors, setSuccess, ...props }: any) => {
         setErrors([]);
@@ -32,33 +34,28 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 
             // ApiResponse wraps in {success, message, data}
             const payload = response.data.data || response.data;
 
-            // Redirect to verify email if required - do NOT store token or login user
+            // Verification pending: no session yet, the email link creates it.
             if (payload.requires_verification) {
-                // Call success callback if provided
                 if (setSuccess) setSuccess(true);
-                // Redirect to login page with verification status to show the "Verify Email" screen
                 const emailEncoded = encodeURIComponent(props.email || '');
                 router.push(`/login?verification_required=true&email=${emailEncoded}`);
                 return;
             }
 
-            // Only store token and login if no verification required
-            if (payload.access_token) {
-                localStorage.setItem('token', payload.access_token);
+            if (payload.access_token && payload.user) {
+                setSession(payload.access_token, payload.user);
             }
-            await mutate();
 
-            // Call success callback if provided
             if (setSuccess) setSuccess(true);
         } catch (error: any) {
             if (error.response?.status !== 422) throw error;
 
             const responseErrors = error.response.data.errors;
-            if (responseErrors) {
-                setErrors(Object.values(responseErrors).flat());
-            } else {
-                setErrors([error.response.data.message || 'An error occurred during registration.']);
-            }
+            setErrors(
+                responseErrors
+                    ? Object.values(responseErrors).flat()
+                    : [error.response.data.message || 'An error occurred during registration.'],
+            );
         }
     };
 
@@ -69,21 +66,20 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 
 
         try {
             const response = await axios.post('/auth/login', { email, ...props });
-            // ApiResponse wraps in {success, message, data}
             const payload = response.data.data || response.data;
 
-            // If verification is required, do NOT store token or login user
+            // If verification is required, do NOT start a session
             if (payload.requires_verification) {
-                // Notify the component that verification is required
                 if (setRequiresVerification) setRequiresVerification(email);
                 return;
             }
 
-            // Only store token and login if verified
+            // The response carries the user alongside the token, so the session
+            // is complete from the first moment and nothing has to go and ask
+            // who this is afterwards.
             if (payload.access_token) {
-                localStorage.setItem('token', payload.access_token);
+                setSession(payload.access_token, payload.user);
             }
-            await mutate();
         } catch (error: any) {
             if (error.response?.status !== 422) {
                 setErrors([error.response?.data?.message || 'Something went wrong.']);
@@ -91,11 +87,11 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 
             }
 
             const responseErrors = error.response.data.errors;
-            if (responseErrors) {
-                setErrors(Object.values(responseErrors).flat());
-            } else {
-                setErrors([error.response.data.message || 'Invalid credentials.']);
-            }
+            setErrors(
+                responseErrors
+                    ? Object.values(responseErrors).flat()
+                    : [error.response.data.message || 'Invalid credentials.'],
+            );
         }
     };
 
@@ -103,28 +99,34 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: { middleware?: 
         try {
             await axios.post('/auth/logout');
         } catch (error) {
-            console.error("Logout error", error);
+            // The server may already have dropped the token; the local session
+            // goes either way.
+            console.error('Logout error', error);
         } finally {
-            localStorage.removeItem('token');
-            mutate(null, false);
+            clearSession();
             router.push('/login');
         }
     };
 
     useEffect(() => {
-        if (middleware === 'guest' && redirectIfAuthenticated && user) router.push(redirectIfAuthenticated);
-        if (middleware === 'auth' && error) logout();
-    }, [user, error, middleware, redirectIfAuthenticated, router]);
+        // Nothing is decided until the session has finished restoring.
+        // Redirecting on a null user mid-restore signed people out of their own
+        // pages, which is the same mistake the Social Hub gate was making.
+        if (isLoading) return;
 
-    // If no token exists, user is definitely not logged in - not loading
-    // If token exists but we have no user and no error yet - still loading
-    const isLoading = hasToken && !user && !error;
-    const isAuthenticated = !!user;
+        if (middleware === 'guest' && redirectIfAuthenticated && user) {
+            router.push(redirectIfAuthenticated);
+        }
+
+        if (middleware === 'auth' && !user) {
+            router.push('/login');
+        }
+    }, [user, isLoading, middleware, redirectIfAuthenticated, router]);
 
     return {
         user,
         isLoading,
-        isAuthenticated,
+        isAuthenticated: !!user,
         register,
         login,
         logout,
