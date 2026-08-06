@@ -136,12 +136,12 @@ class DashboardController extends Controller
         ]);
     }
 
-    /** Latest unlocked achievements, newest first. */
+    /** Latest unlocked achievements, newest first. The shelf shows ten. */
     private function recentAchievements($user): array
     {
         return $user->achievements()
             ->orderByPivot('unlocked_at', 'desc')
-            ->limit(5)
+            ->limit(10)
             ->get()
             ->map(fn ($a) => [
                 'id' => $a->id,

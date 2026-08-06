@@ -4,7 +4,6 @@ import { Trophy } from "lucide-react";
 import type { DashboardAchievement } from "@/lib/types/dashboard";
 import { getStorageUrl } from "@/lib/imageUrl";
 import Panel from "@/components/ui/Panel";
-import { timeAgo } from "@/lib/timeAgo";
 import EmptyState from "@/components/ui/EmptyState";
 
 const HEX = "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)";
@@ -36,18 +35,16 @@ function Medallion({ achievement, size = 66 }: { achievement: DashboardAchieveme
 
     if (icon) {
         return (
+            // The art is a 2:3 card, so the frame it sits in is too — a square
+            // would letterbox it and waste the height the shelf just gained.
             // eslint-disable-next-line @next/next/no-img-element
             <img
                 src={icon}
                 alt=""
                 aria-hidden
                 loading="lazy"
-                className="block shrink-0 object-contain"
-                style={{
-                    width: size + 12,
-                    height: size + 12,
-                    filter: `drop-shadow(0 3px 10px color-mix(in srgb, ${tier.color} 40%, transparent))`,
-                }}
+                className="block w-full aspect-[2/3] object-contain"
+                style={{ filter: `drop-shadow(0 3px 10px color-mix(in srgb, ${tier.color} 40%, transparent))` }}
             />
         );
     }
@@ -107,53 +104,23 @@ export default function RecentAchievementsRail({
                 />
             ) : (
                 <>
-                    <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 content-center">
-                        {achievements.slice(0, 5).map((a, i) => {
-                            const tier = tierFor(a.points);
-                            return (
-                                <div
-                                    key={a.id}
-                                    title={a.description ?? a.name}
-                                    className={`group relative flex flex-col items-center text-center gap-2.5 p-3.5 rounded-[var(--radius-card)] bg-white/[0.02] border border-white/[0.07] overflow-hidden transition-colors duration-300 tp-fade-up tp-d${Math.min(6, i + 1)}`}
-                                    style={{ ["--tier" as string]: tier.color }}
-                                >
-                                    {/* the tier's own light blooms in on hover */}
-                                    <span
-                                        aria-hidden
-                                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                                        style={{ background: `radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, ${tier.color} 18%, transparent) 0%, transparent 70%)` }}
-                                    />
-                                    <span
-                                        aria-hidden
-                                        className="absolute inset-0 rounded-[var(--radius-card)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                                        style={{ boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${tier.color} 45%, transparent)` }}
-                                    />
-
-                                    <span className="relative transition-transform duration-500 ease-[var(--ease-hud)] group-hover:scale-[1.08]">
-                                        <Medallion achievement={a} />
-                                    </span>
-
-                                    <span className="relative min-w-0 w-full">
-                                        <span
-                                            className="block text-[8px] font-black uppercase tracking-[0.16em] mb-1"
-                                            style={{ color: tier.color }}
-                                        >
-                                            {tier.label}
-                                        </span>
-                                        <span className="block text-[11px] font-bold text-[var(--ink-hi)] leading-tight line-clamp-2 min-h-[26px]">
-                                            {a.name}
-                                        </span>
-                                        <span className="mt-1.5 flex items-center justify-center gap-1.5 text-[9px] uppercase tracking-wider">
-                                            <span className="font-display font-bold tabular-nums" style={{ color: tier.color }}>
-                                                +{a.points}
-                                            </span>
-                                            <span aria-hidden className="w-0.5 h-0.5 rounded-full bg-[var(--ink-faint)]" />
-                                            <span className="text-[var(--ink-faint)]">{timeAgo(a.unlocked_at)}</span>
-                                        </span>
-                                    </span>
-                                </div>
-                            );
-                        })}
+                    {/* Ten badges, and nothing else. The artwork already carries
+                        its name and its points, so repeating them under each one
+                        said everything twice and left room for very little art.
+                        No plate either — the card has its own frame; a tile
+                        behind it was a frame around a frame. */}
+                    <div className="flex-1 grid grid-cols-4 sm:grid-cols-5 gap-2 content-center">
+                        {achievements.slice(0, 10).map((a, i) => (
+                            <div
+                                key={a.id}
+                                title={`${a.name}${a.description ? ` — ${a.description}` : ""}`}
+                                className={`group relative flex items-center justify-center tp-fade-up tp-d${Math.min(6, i + 1)}`}
+                            >
+                                <span className="block w-full transition-transform duration-500 ease-[var(--ease-hud)] group-hover:scale-[1.06]">
+                                    <Medallion achievement={a} />
+                                </span>
+                            </div>
+                        ))}
                     </div>
 
                     {total > achievements.length && (
