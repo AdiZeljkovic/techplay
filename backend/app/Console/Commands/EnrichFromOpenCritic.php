@@ -99,9 +99,9 @@ class EnrichFromOpenCritic extends Command
             ->throw()
             ->json() ?? [];
 
-        $match = collect($results)->first(function ($r) use ($game) {
-            return mb_strtolower(trim($r['name'] ?? '')) === mb_strtolower(trim($game->name));
-        }) ?? ($results[0] ?? null);
+        $ours = $this->comparable($game->name);
+        $exact = collect($results)->first(fn ($r) => $this->comparable($r['name'] ?? '') === $ours);
+        $match = $exact ?? ($results[0] ?? null);
 
         if (! $match || ! isset($match['id'])) {
             return $this->record($game, ['miss' => true]);
@@ -112,11 +112,19 @@ class EnrichFromOpenCritic extends Command
             ->throw()
             ->json() ?? [];
 
-        // The year guard, as everywhere: a name match from the wrong year is
-        // a different game wearing the same clothes.
+        // The year guard, as everywhere — with one asymmetry for exact-name
+        // matches: Moby records the Early Access launch (Baldur's Gate 3,
+        // 2020) while OpenCritic scores the 1.0 release (2023), so an exact
+        // name may run up to three years LATER than ours. Never further —
+        // that is where remakes wearing the same name live (Resident Evil 4,
+        // eighteen years apart) — and never looser for fuzzy matches.
         $ocYear = isset($detail['firstReleaseDate']) ? (int) substr($detail['firstReleaseDate'], 0, 4) : null;
-        if ($ocYear && $game->released && abs($ocYear - $game->released->year) > 1) {
-            return $this->record($game, ['miss' => true]);
+        if ($ocYear && $game->released) {
+            $drift = $ocYear - $game->released->year;
+            $allowed = $exact !== null ? ($drift >= -1 && $drift <= 3) : abs($drift) <= 1;
+            if (! $allowed) {
+                return $this->record($game, ['miss' => true]);
+            }
         }
 
         $score = $detail['topCriticScore'] ?? null;
@@ -133,6 +141,27 @@ class EnrichFromOpenCritic extends Command
         $this->line(sprintf('  %s → %d (%s)', $game->name, (int) round($score), $detail['tier'] ?? '—'));
 
         return true;
+    }
+
+    /**
+     * A name reduced for comparison: lowercased, punctuation out, roman
+     * numerals as digits — we say "Baldur's Gate III", OpenCritic says
+     * "Baldur's Gate 3", and both mean the same game.
+     */
+    private function comparable(string $name): string
+    {
+        $romans = ['x' => '10', 'ix' => '9', 'viii' => '8', 'vii' => '7', 'vi' => '6',
+            'v' => '5', 'iv' => '4', 'iii' => '3', 'ii' => '2'];
+
+        $s = mb_strtolower(trim($name));
+        $s = (string) preg_replace('/[^\p{L}\p{N} ]+/u', ' ', $s);
+        $s = (string) preg_replace_callback(
+            '/\b(x|ix|viii|vii|vi|v|iv|iii|ii)\b/',
+            fn ($m) => $romans[$m[1]],
+            $s
+        );
+
+        return trim((string) preg_replace('/\s+/', ' ', $s));
     }
 
     private function record(Game $game, array $entry): bool
