@@ -4,6 +4,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Internal server-to-server auth
+    |--------------------------------------------------------------------------
+    | The Next.js SSR process presents this token (X-Internal-Token) so the
+    | api rate limiter can tell our own server from a visitor. Same box,
+    | both .env files. No token configured = no exemption.
+    */
+
+    'internal' => [
+        'token' => env('INTERNAL_API_TOKEN'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Third Party Services
     |--------------------------------------------------------------------------
     |

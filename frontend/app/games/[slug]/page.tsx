@@ -288,12 +288,15 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
     // become a cached claim that the game does not exist. The side rails
     // swallow their failures instead; a page without suggestions is a page,
     // a page that 404s because the screenshots call dropped is a lie.
+    const headers: HeadersInit = process.env.INTERNAL_API_TOKEN
+        ? { "X-Internal-Token": process.env.INTERNAL_API_TOKEN }
+        : {};
     const [game, screenshotsRes, seriesRes, suggestedRes, articlesRes] = await Promise.all([
         fetchContent<GameDetail>(`${base}/games/${slug}`),
-        fetch(`${base}/games/${slug}/screenshots`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
-        fetch(`${base}/games/${slug}/series`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
-        fetch(`${base}/games/${slug}/suggested`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
-        fetch(`${base}/games/${slug}/articles`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        fetch(`${base}/games/${slug}/screenshots`, { headers }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        fetch(`${base}/games/${slug}/series`, { headers }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        fetch(`${base}/games/${slug}/suggested`, { headers }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        fetch(`${base}/games/${slug}/articles`, { headers }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ]) as [GameDetail | null, { results: ApiScreenshot[] } | null, { results: GameListItem[] } | null, { results: GameListItem[] } | null, { data: RelatedArticle[] } | null];
 
     if (!game) notFound();

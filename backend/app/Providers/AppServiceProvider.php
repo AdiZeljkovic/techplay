@@ -38,9 +38,11 @@ use App\Observers\SiteSettingObserver;
 use App\Observers\ThreadObserver;
 use App\Services\LoggingService;
 use App\Services\Socialite\BattleNetProvider;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Socialite\Contracts\Factory;
@@ -56,10 +58,35 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
+     * The default 60/min-per-IP api limiter, with one exception: our own
+     * Next.js server. Every SSR request reaches Octane from 127.0.0.1, so
+     * the whole site's server-side rendering shared a single visitor's
+     * budget — five API calls per game page meant twelve page views a
+     * minute site-wide before the backend started answering 429, which the
+     * frontend dutifully showed readers as missing pages. The SSR process
+     * now identifies itself with a shared-secret header instead; source IP
+     * proves nothing here, since X-Forwarded-For passes through.
+     */
+    private function bootApiRateLimiter(): void
+    {
+        RateLimiter::for('api', function ($request) {
+            $secret = (string) config('services.internal.token');
+
+            if ($secret !== '' && hash_equals($secret, (string) $request->header('X-Internal-Token'))) {
+                return Limit::none();
+            }
+
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+    }
+
+    /**
      * Bootstrap any application services.
      */
     public function boot(): void
     {
+        $this->bootApiRateLimiter();
+
         // Register custom Socialite providers
         $this->bootSocialite();
 

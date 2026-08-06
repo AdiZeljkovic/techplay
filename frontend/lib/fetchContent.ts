@@ -62,7 +62,17 @@ export async function fetchContent<T = unknown>(
         try {
             const res = await fetch(url, {
                 ...init,
-                headers: { Accept: "application/json", ...init?.headers },
+                // The internal token lifts the backend's per-IP rate limit for
+                // our own SSR process — every server render arrives from
+                // 127.0.0.1, so without it the whole site shared one
+                // visitor's budget. Runtime env only; never reaches clients.
+                headers: {
+                    Accept: "application/json",
+                    ...(process.env.INTERNAL_API_TOKEN
+                        ? { "X-Internal-Token": process.env.INTERNAL_API_TOKEN }
+                        : {}),
+                    ...init?.headers,
+                },
             });
 
             if (MEANS_MISSING.includes(res.status)) return null;

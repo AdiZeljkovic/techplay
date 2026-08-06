@@ -516,8 +516,11 @@ Route::prefix('v1')->group(function () {
             ->middleware(['auth:sanctum', 'throttle:30,1']);
     });
 
-    // Games (Rate limited - 60 per minute to prevent scraping)
-    Route::middleware('throttle:60,1')->group(function () {
+    // Games — the named 'api' limiter: 60/min per visitor against scraping,
+    // but our own SSR process (X-Internal-Token) is exempt. A fixed
+    // throttle:60,1 here made every server render on the site share one
+    // visitor's budget, which is where the intermittent 404s came from.
+    Route::middleware('throttle:api')->group(function () {
         Route::get('/calendar', [CalendarController::class, 'index']);
         Route::get('/calendar/{slug}', [CalendarController::class, 'show']);
         Route::get('/games/hub', [GameHubController::class, 'index']);
