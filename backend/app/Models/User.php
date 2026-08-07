@@ -56,16 +56,12 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'subscription_ends_at',
         'last_seen_at',
         'discord_id',
-        'discord_token',
-        'discord_refresh_token',
         'discord_avatar',
         'last_daily_claim',
         'daily_streak',
         'author_slug',
         'author_social_links',
         'battlenet_id',
-        'battlenet_token',
-        'battlenet_refresh_token',
         'battlenet_region',
         'battletag',
         'post_color',
@@ -98,10 +94,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'cookie_preferences',       // Private
         'settings',                 // Private
         'updated_at',               // Not needed publicly
-        'discord_token',            // Security
-        'discord_refresh_token',    // Security
-        'battlenet_token',          // Security
-        'battlenet_refresh_token',  // Security
     ];
 
     /**
@@ -289,5 +281,10 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function mainWowCharacter()
     {
         return $this->hasOne(WowCharacter::class)->where('is_main', true);
+    }
+
+    public function integrations()
+    {
+        return $this->hasMany(UserIntegration::class);
     }
 }

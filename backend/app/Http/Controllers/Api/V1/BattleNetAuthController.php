@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\UserIntegration;
 use App\Models\WowCharacter;
 use App\Services\BlizzardService;
 use Illuminate\Http\Request;
@@ -51,17 +52,19 @@ class BattleNetAuthController extends Controller
                     'email_verified_at' => now(), // Auto-verify
                     'password' => Hash::make(Str::random(32)), // Random password
                     'battlenet_id' => $battlenetUser->id,
-                    'battlenet_token' => $battlenetUser->token,
-                    'battlenet_refresh_token' => $battlenetUser->refreshToken,
                     'battlenet_region' => $region,
                     'battletag' => $battlenetUser->battletag,
                 ]);
-            } else {
-                // Update tokens for existing user
-                $user->update([
-                    'battlenet_token' => $battlenetUser->token,
-                    'battlenet_refresh_token' => $battlenetUser->refreshToken,
-                ]);
+            }
+
+            // Secrets go to user_integrations, encrypted — new and returning alike.
+            try {
+                UserIntegration::updateOrCreate(
+                    ['user_id' => $user->id, 'provider' => 'battlenet'],
+                    ['access_token' => $battlenetUser->token, 'refresh_token' => $battlenetUser->refreshToken]
+                );
+            } catch (\Throwable $e) {
+                Log::warning('battlenet storeTokens failed: '.$e->getMessage());
             }
 
             // Fetch user's WoW characters from Battle.net API and auto-link

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\UserIntegration;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -12,6 +13,22 @@ use Laravel\Socialite\Facades\Socialite;
 
 class SocialAuthController extends Controller
 {
+    /**
+     * OAuth secrets live in user_integrations, encrypted at rest — never
+     * on the users row. Failure to store must never break the login.
+     */
+    private function storeTokens($user, string $provider, ?string $access, ?string $refresh): void
+    {
+        try {
+            UserIntegration::updateOrCreate(
+                ['user_id' => $user->id, 'provider' => $provider],
+                ['access_token' => $access, 'refresh_token' => $refresh]
+            );
+        } catch (\Throwable $e) {
+            Log::warning('storeTokens failed: '.$e->getMessage());
+        }
+    }
+
     use ApiResponse;
 
     /**
@@ -101,6 +118,7 @@ class SocialAuthController extends Controller
         $existingUser = User::where('discord_id', $discordUser->getId())->first();
 
         if ($existingUser) {
+            $this->storeTokens($existingUser, 'discord', $discordUser->token, $discordUser->refreshToken);
             // User exists with this Discord ID.
             // Login logic:
             $token = $existingUser->createToken('auth_token')->plainTextToken;
@@ -128,11 +146,11 @@ class SocialAuthController extends Controller
             // Link Discord to existing email account
             $userWithEmail->update([
                 'discord_id' => $discordUser->getId(),
-                'discord_token' => $discordUser->token,
-                'discord_refresh_token' => $discordUser->refreshToken,
                 'discord_avatar' => $discordUser->getAvatar(),
                 'gamertags' => array_merge($userWithEmail->gamertags ?? [], ['discord' => $discordUser->getNickname() ?? $discordUser->getName()]),
             ]);
+
+            $this->storeTokens($userWithEmail, 'discord', $discordUser->token, $discordUser->refreshToken);
 
             // Auto-join user to our Discord server
             $this->addUserToGuild($discordUser->getId(), $discordUser->token);
@@ -151,12 +169,12 @@ class SocialAuthController extends Controller
             'password' => bcrypt(str()->random(16)), // Random password
             'email_verified_at' => now(), // Verified via Discord
             'discord_id' => $discordUser->getId(),
-            'discord_token' => $discordUser->token,
-            'discord_refresh_token' => $discordUser->refreshToken,
             'discord_avatar' => $discordUser->getAvatar(),
             'gamertags' => ['discord' => $discordUser->getNickname() ?? $discordUser->getName()],
             'role' => 'user',
         ]);
+
+        $this->storeTokens($newUser, 'discord', $discordUser->token, $discordUser->refreshToken);
 
         // Auto-join new user to our Discord server
         $this->addUserToGuild($discordUser->getId(), $discordUser->token);
