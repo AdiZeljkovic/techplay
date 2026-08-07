@@ -660,7 +660,7 @@ function NavItem({ item, badge, onHoverChange }: {
     const pathname = usePathname();
     const isActive = (item.activePaths ?? [item.href]).some((p) => pathname.startsWith(p));
     const [isOpen, setIsOpen] = useState(false);
-    const isMegaMenu = !!(item.hasDropdown && item.children?.[0]?.icon);
+    const isMegaMenu = !!(item.hasDropdown && (item.children?.[0]?.icon || item.children?.[0]?.art));
     const hasColumns = !!(item.hasDropdown && item.columns?.length);
 
     useEffect(() => { setIsOpen(false); onHoverChange?.(null); }, [pathname]);
