@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserGame;
 use App\Services\AchievementService;
 use App\Services\BountyService;
+use App\Services\Chronicle\TasteProfileService;
 use App\Services\ClanResourceService;
 use App\Services\GameMatchingService;
 use App\Services\QuestService;
@@ -85,6 +86,9 @@ class GameCollectionController extends Controller
      */
     public function upsert(Request $request, string $slug)
     {
+        // A shelf or score change is taste news — the chronicle relearns on next read.
+        app(TasteProfileService::class)->forget($request->user());
+
         $game = Game::where('slug', $slug)->first();
 
         // The catalogue is the catalogue. RAWG used to be asked to conjure a

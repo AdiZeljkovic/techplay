@@ -95,11 +95,16 @@ class TasteProfileService
         return $weightSum > 0 ? (int) round($sum / $weightSum) : null;
     }
 
-    /** Marks the chronicle stale-enough-to-rebuild on next read. */
+    /**
+     * Invalidates the chronicle after a meaningful action — the row is
+     * dropped and lazily rebuilt on the next read, so a rating you just
+     * gave shows up in your recommendations within one page load.
+     */
     public function forget(User $user): void
     {
         unset($this->rows[$user->id]);
         Cache::forget("chronicle.row.{$user->id}");
+        DB::table('user_chronicles')->where('user_id', $user->id)->delete();
     }
 
     private function taste(User $user): array

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Season;
 use App\Models\User;
 use App\Notifications\WeeklyDigestNotification;
+use App\Services\Chronicle\TasteProfileService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -39,10 +40,17 @@ class SendWeeklyDigest extends Command
                     }
 
                     // Fresh articles (7d) about games in the user's collection
+                    // OR among their chronicle's top affinities — the digest
+                    // reads the same brain as every on-site surface now.
+                    $affinityIds = array_slice(array_keys(
+                        app(TasteProfileService::class)->gameAffinities($user)
+                    ), 0, 30);
+                    $collectionIds = DB::table('user_games')->where('user_id', $user->id)->pluck('game_id')->all();
+                    $interesting = array_values(array_unique(array_merge($collectionIds, $affinityIds)));
+
                     $articles = DB::table('articles')
-                        ->join('user_games', 'user_games.game_id', '=', 'articles.game_id')
                         ->join('categories', 'categories.id', '=', 'articles.category_id')
-                        ->where('user_games.user_id', $user->id)
+                        ->whereIn('articles.game_id', $interesting !== [] ? $interesting : [0])
                         ->where('articles.status', 'published')
                         ->where('articles.published_at', '>=', now()->subDays(7))
                         ->orderByDesc('articles.published_at')

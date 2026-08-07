@@ -7,6 +7,7 @@ use App\Models\GameList;
 use App\Models\GameRating;
 use App\Models\User;
 use App\Models\UserGame;
+use App\Services\Chronicle\TasteProfileService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -107,7 +108,9 @@ class GamerDnaService
         $owned = $counts['playing'] + $counts['completed'] + $counts['backlog'] + $counts['dropped'];
         $completionRate = $owned > 0 ? $counts['completed'] / $owned : 0.0;
 
-        $genres = $this->distribution($games, 'genres', 8);
+        // Genre mix comes from the chronicle when it knows the player —
+        // ratings, hours and reading sharpen what mere ownership blurs.
+        $genres = $this->chronicleGenres($user) ?? $this->distribution($games, 'genres', 8);
         $platforms = $this->platformSplit($entries);
         $eras = $this->eras($games);
         $fingerprint = $this->fingerprint($games, $completionRate, $owned);
@@ -246,6 +249,26 @@ class GamerDnaService
     /**
      * Share of the collection per value of a Postgres TEXT[] column.
      */
+    /** The chronicle's weighted genre mix in the DNA panel's shape, or null. */
+    private function chronicleGenres($user): ?array
+    {
+        $taste = app(TasteProfileService::class);
+        if (! $taste->isPersonalisable($user)) {
+            return null;
+        }
+
+        $weights = collect($taste->genreWeights($user))
+            ->reject(fn ($w, $name) => in_array($name, ['Add-on', 'Compilation', 'Special edition'], true))
+            ->take(8);
+        $total = max(1e-6, $weights->sum());
+
+        return $weights->map(fn ($w, $name) => [
+            'name' => $name,
+            'count' => (int) round($w * 100),
+            'percent' => (int) round($w / $total * 100),
+        ])->values()->all();
+    }
+
     private function distribution(Collection $games, string $column, int $limit): array
     {
         $tally = [];

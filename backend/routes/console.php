@@ -30,6 +30,9 @@ Schedule::command('games:enrich-opencritic')->dailyAt('05:30');
 // The daily ration of YouTube searches, spent on trailers Steam could not give us.
 Schedule::command('games:enrich-trailers')->dailyAt('06:00');
 
+// The chronicle refreshes overnight for anyone whose signals moved.
+Schedule::command('chronicle:rebuild --stale')->dailyAt('04:45');
+
 // PERFORMANCE: Clean old view tracking records daily (keep last 7 days)
 Schedule::command('views:clean')->daily();
 

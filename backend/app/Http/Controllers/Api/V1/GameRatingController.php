@@ -8,6 +8,7 @@ use App\Models\Game;
 use App\Models\GameRating;
 use App\Services\AchievementService;
 use App\Services\BountyService;
+use App\Services\Chronicle\TasteProfileService;
 use App\Services\ClanResourceService;
 use App\Services\XpService;
 use Illuminate\Http\Request;
@@ -118,6 +119,9 @@ class GameRatingController extends Controller
      */
     public function upsert(Request $request, string $slug)
     {
+        // A shelf or score change is taste news — the chronicle relearns on next read.
+        app(TasteProfileService::class)->forget($request->user());
+
         $validated = $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'review' => 'nullable|string|min:10|max:1000',
