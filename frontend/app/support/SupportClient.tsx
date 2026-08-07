@@ -70,7 +70,7 @@ export default function SupportPage() {
                     {/* Benefits / Why Support */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto">
                         <div className="text-center space-y-4">
-                            <div className="w-16 h-16 rounded-[var(--radius-panel)] bg-teal-500/10 flex items-center justify-center text-teal-400 mx-auto mb-6">
+                            <div className="w-16 h-16 rounded-[var(--radius-panel)] bg-[color-mix(in_srgb,#34d399_14%,transparent)] flex items-center justify-center text-[#34d399] mx-auto mb-6">
                                 <Shield className="w-8 h-8" />
                             </div>
                             <h3 className="text-xl font-bold text-white">Ad-Free Experience</h3>
@@ -79,7 +79,7 @@ export default function SupportPage() {
                             </p>
                         </div>
                         <div className="text-center space-y-4">
-                            <div className="w-16 h-16 rounded-[var(--radius-panel)] bg-violet-500/10 flex items-center justify-center text-violet-400 mx-auto mb-6">
+                            <div className="w-16 h-16 rounded-[var(--radius-panel)] bg-[color-mix(in_srgb,#a855f7_14%,transparent)] flex items-center justify-center text-[#a855f7] mx-auto mb-6">
                                 <Star className="w-8 h-8" />
                             </div>
                             <h3 className="text-xl font-bold text-white">Exclusive Badges</h3>
@@ -88,7 +88,7 @@ export default function SupportPage() {
                             </p>
                         </div>
                         <div className="text-center space-y-4">
-                            <div className="w-16 h-16 rounded-[var(--radius-panel)] bg-amber-500/10 flex items-center justify-center text-amber-500 mx-auto mb-6">
+                            <div className="w-16 h-16 rounded-[var(--radius-panel)] bg-[color-mix(in_srgb,#f0b429_14%,transparent)] flex items-center justify-center text-[#f0b429] mx-auto mb-6">
                                 <Zap className="w-8 h-8" />
                             </div>
                             <h3 className="text-xl font-bold text-white">Direct Impact</h3>

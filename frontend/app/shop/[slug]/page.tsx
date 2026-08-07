@@ -73,7 +73,6 @@ export default function ProductDetailPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
                     {/* Product Image */}
                     <div className="relative group">
-                        <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-deep)] opacity-10 blur-2xl rounded-[var(--radius-panel)]" />
                         <div className="relative bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] overflow-hidden aspect-square flex items-center justify-center p-8 shadow-2xl">
                             {product.image_url ? (
                                 <div className="relative w-full h-full">

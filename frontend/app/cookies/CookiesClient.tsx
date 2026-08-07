@@ -64,7 +64,6 @@ export default function CookiePolicyPage() {
                     <div className="md:w-2/3">
                         <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-8 md:p-12 relative overflow-hidden">
                             {/* Decor */}
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl -z-0 pointer-events-none" />
 
                             <div className="prose prose-invert prose-lg max-w-none relative z-10 prose-headings:text-white prose-p:text-white/55 prose-li:text-white/55 prose-strong:text-white prose-a:text-[var(--accent)] hover:prose-a:text-[var(--accent-soft)]">
 

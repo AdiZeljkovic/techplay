@@ -39,17 +39,17 @@ interface StaffData {
 const getRoleColor = (role: string) => {
     switch (role) {
         case 'Super Admin':
-            return { border: 'border-[var(--accent)]', text: 'text-[var(--accent)]', bg: 'from-[var(--accent)] to-[#FF7A3D]' };
+            return { border: 'border-[var(--accent)]', text: 'text-[var(--accent)]', bg: 'from-[var(--accent)] to-[var(--accent-deep)]' };
         case 'Editor-in-Chief':
-            return { border: 'border-[var(--accent)]/80', text: 'text-[var(--accent)]', bg: 'from-[var(--accent)] to-[#FF7A3D]' };
+            return { border: 'border-[var(--accent)]/80', text: 'text-[var(--accent)]', bg: 'from-[var(--accent)] to-[var(--accent-deep)]' };
         case 'Editor':
-            return { border: 'border-[var(--accent)]/60', text: 'text-[var(--accent)]/80', bg: 'from-[var(--accent)]/80 to-[#FF7A3D]' };
+            return { border: 'border-[var(--accent)]/60', text: 'text-[var(--accent)]/80', bg: 'from-[var(--accent)]/80 to-[var(--accent-deep)]' };
         case 'Journalist':
-            return { border: 'border-[var(--accent)]/40', text: 'text-[var(--accent)]/70', bg: 'from-[var(--accent)]/70 to-[#FF7A3D]/70' };
+            return { border: 'border-[var(--accent)]/40', text: 'text-[var(--accent)]/70', bg: 'from-[var(--accent)]/70 to-[var(--accent-deep)]/70' };
         case 'Moderator':
-            return { border: 'border-[var(--accent)]/30', text: 'text-[var(--accent)]/60', bg: 'from-[var(--accent)]/60 to-[#FF7A3D]/60' };
+            return { border: 'border-[var(--accent)]/30', text: 'text-[var(--accent)]/60', bg: 'from-[var(--accent)]/60 to-[var(--accent-deep)]/60' };
         default:
-            return { border: 'border-[var(--accent)]', text: 'text-[var(--accent)]', bg: 'from-[var(--accent)] to-[#FF7A3D]' };
+            return { border: 'border-[var(--accent)]', text: 'text-[var(--accent)]', bg: 'from-[var(--accent)] to-[var(--accent-deep)]' };
     }
 };
 
@@ -88,7 +88,6 @@ const TeamMemberCard = ({ member, featured = false }: { member: StaffMember; fea
             >
                 {/* Avatar */}
                 <div className={`relative ${featured ? 'w-28 h-28' : 'w-20 h-20'} mb-4`}>
-                    <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${roleColors.bg} opacity-20 group-hover:opacity-40 blur-lg transition-opacity`} />
                     <div className={`relative w-full h-full rounded-full overflow-hidden border-2 ${roleColors.border} bg-[var(--surface-2)]`}>
                         {member.avatar_url ? (
                             <Image

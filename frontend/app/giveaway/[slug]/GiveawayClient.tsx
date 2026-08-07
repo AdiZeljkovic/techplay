@@ -279,7 +279,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                         ? 'bg-gradient-to-r from-green-400 to-emerald-500'
                         : task.is_required
                             ? 'bg-gradient-to-r from-red-500 to-orange-500'
-                            : 'bg-gradient-to-r from-[var(--accent)]/40 to-orange-500/30'
+                            : 'bg-[var(--accent)]/35'
                 }`} />
 
                 {/* Icon + badges */}
@@ -322,7 +322,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                         className={`flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-card)] text-sm font-bold transition-all duration-200 ${
                             isCompleted
                                 ? 'bg-green-500/10 text-green-400 cursor-default'
-                                : 'bg-gradient-to-r from-[var(--accent)] to-orange-500 text-white shadow-lg shadow-[var(--accent)]/15 hover:shadow-[var(--accent)]/25 disabled:opacity-30 disabled:cursor-not-allowed'
+                                : 'btn-command bg-[var(--accent)] text-white hover:brightness-110 disabled:opacity-30 disabled:cursor-not-allowed'
                         }`}
                     >
                         {isCompleting ? (
@@ -365,9 +365,6 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                 {/* Fallback orbs when no image */}
                 {!heroBgImage && (
                     <div className="absolute inset-0 overflow-hidden">
-                        <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-[var(--accent)]/10 rounded-full blur-[120px]" />
-                        <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-[var(--accent)]/5 rounded-full blur-[100px]" />
-                        <div className="absolute top-0 right-1/4 w-64 h-64 bg-[var(--accent)]/4 rounded-full blur-[80px]" />
                     </div>
                 )}
 
@@ -421,8 +418,6 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                         className="flex justify-center mb-8"
                     >
                         <div className="relative">
-                            <div className="absolute -inset-6 rounded-[var(--radius-panel)] bg-[var(--accent)]/12 blur-2xl" />
-                            <div className="absolute -inset-3 rounded-[var(--radius-panel)] bg-[var(--accent)]/6 blur-xl animate-pulse" />
                             <div className="relative w-40 h-40 md:w-48 md:h-48 rounded-[var(--radius-panel)] border border-white/10 bg-black/50 backdrop-blur-md overflow-hidden flex items-center justify-center shadow-2xl">
                                 {giveaway.prize.image ? (
                                     <Image
@@ -542,7 +537,6 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                         className="max-w-2xl mx-auto px-4 pt-8 pb-2"
                     >
                         <div className="relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/15 to-orange-500/15 rounded-[var(--radius-panel)] blur-xl" />
                             <div className="relative rounded-[var(--radius-panel)] bg-[var(--surface-1)] border-2 border-yellow-500/30 p-6 text-center shadow-2xl">
                                 <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-3 drop-shadow-[0_0_20px_rgba(250,204,21,0.4)]" />
                                 <h2 className="text-2xl font-black mb-4 bg-gradient-to-r from-yellow-200 to-orange-200 bg-clip-text text-transparent">

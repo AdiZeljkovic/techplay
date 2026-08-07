@@ -145,8 +145,6 @@ export default function ContactPage() {
                     >
                         <div className="bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-panel)] p-8 md:p-10 relative overflow-hidden">
                             {/* Decorative gradients */}
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--accent)]/5 rounded-full blur-3xl -z-0 pointer-events-none" />
-                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-[var(--accent)]/3 rounded-full blur-3xl -z-0 pointer-events-none" />
 
                             <div className="relative z-10">
                                 <h3 className="text-2xl font-bold text-white mb-2">Send us a message</h3>

@@ -103,7 +103,7 @@ function SupportCheckoutContent() {
                                     </div>
 
                                     <div className="relative z-10 flex flex-col sm:flex-row gap-6 items-start">
-                                        <div className="w-20 h-20 bg-gradient-to-br from-[var(--accent)] to-orange-600 rounded-[var(--radius-panel)] flex items-center justify-center shadow-lg shadow-orange-900/20">
+                                        <div className="w-20 h-20 bg-gradient-to-br from-[var(--accent)] to-[var(--accent-deep)] rounded-[var(--radius-panel)] flex items-center justify-center shadow-lg shadow-black/40">
                                             <Star className="w-10 h-10 text-white fill-white/20" />
                                         </div>
                                         <div>
@@ -141,7 +141,7 @@ function SupportCheckoutContent() {
                                 <div className="flex justify-end pt-4">
                                     <button
                                         onClick={() => setStep(2)}
-                                        className="bg-[var(--accent)] hover:bg-[#ff5722] text-white font-bold text-lg px-8 py-4 rounded-[var(--radius-card)] shadow-lg shadow-orange-900/20 hover:shadow-orange-900/40 transition-all hover:scale-[1.02] flex items-center gap-2"
+                                        className="bg-[var(--accent)] hover:brightness-110 text-white font-bold text-lg px-8 py-4 rounded-[var(--radius-card)] shadow-lg shadow-black/40 hover:shadow-orange-900/40 transition-all hover:scale-[1.02] flex items-center gap-2"
                                     >
                                         Continue to Payment <ChevronRight className="w-5 h-5" />
                                     </button>
@@ -385,7 +385,7 @@ function SuccessView({ user, router }: any) {
 
                 <button
                     onClick={() => router.push(`/profile/${user?.username}`)}
-                    className="w-full bg-[var(--accent)] hover:bg-[#ff5722] text-white font-bold py-3.5 rounded-[var(--radius-card)] transition-colors"
+                    className="w-full bg-[var(--accent)] hover:brightness-110 text-white font-bold py-3.5 rounded-[var(--radius-card)] transition-colors"
                 >
                     View Your Profile
                 </button>

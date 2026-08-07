@@ -25,7 +25,6 @@ const ScoreCard = ({ score, title, description, color, bgGradient, icon: Icon }:
         className={`group relative overflow-hidden bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-8 hover:border-[var(--accent)] transition-all duration-300`}
     >
         {/* Background glow */}
-        <div className={`absolute -top-10 -right-10 w-40 h-40 ${color} opacity-5 rounded-full blur-3xl group-hover:opacity-10 transition-opacity`} />
 
         <div className="flex items-start justify-between mb-4 relative z-10">
             <div>
@@ -66,7 +65,6 @@ export default function RatingSystemPage() {
                     variants={fadeInUp}
                     className="relative mb-24 text-center max-w-4xl mx-auto"
                 >
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--accent)]/5 rounded-full blur-[100px] -z-10" />
 
                     <span className="inline-block py-1 px-3 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] text-sm font-bold uppercase tracking-wider mb-6">
                         The TechPlay Standard
@@ -149,8 +147,6 @@ export default function RatingSystemPage() {
                     className="relative bg-[var(--surface-2)] border border-[var(--line)] rounded-[3rem] p-10 md:p-20 overflow-hidden"
                 >
                     {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--accent)]/5 rounded-full blur-[100px]" />
-                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-[var(--accent)]/5 rounded-full blur-[100px]" />
 
                     <div className="relative z-10 text-center mb-16">
                         <h2 className="text-3xl md:text-5xl font-black text-white mb-6">The 5 Pillars</h2>

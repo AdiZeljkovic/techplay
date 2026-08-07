@@ -3,6 +3,7 @@
 import PageHero from "@/components/ui/PageHero";
 import { motion } from "framer-motion";
 import { Users, Zap, Layout, Mail, Download, MonitorSmartphone, MousePointerClick, Shield, Globe, Cpu, Gamepad2, Layers } from "lucide-react";
+import Link from "next/link";
 const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } }
@@ -69,7 +70,7 @@ export default function MarketingClient() {
                     >
                         <h2 className="text-3xl md:text-5xl font-black text-white mb-8 leading-tight">
                             More Than Just <br className="hidden md:block" />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] to-[#FF7A3D]">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] to-[var(--accent-deep)]">
                                 Impressions
                             </span>
                         </h2>
@@ -84,8 +85,6 @@ export default function MarketingClient() {
                 </div>
 
                 {/* Background Glows */}
-                <div className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-[var(--accent)]/10 rounded-full blur-[120px] -z-0 pointer-events-none" />
-                <div className="absolute top-1/3 right-0 w-80 h-80 bg-[var(--accent)]/5 rounded-full blur-[100px] -z-0 pointer-events-none" />
             </section>
 
             {/* Audience Demographics */}
@@ -311,9 +310,9 @@ export default function MarketingClient() {
                             <a href="mailto:marketing@techplay.gg" className="inline-flex items-center gap-2 h-[52px] px-8 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[13px] shadow-lg shadow-[var(--accent)]/20">
                                 <Mail className="w-5 h-5" /> marketing@techplay.gg
                             </a>
-                            <button disabled className="inline-flex items-center gap-2 h-[52px] px-8 border border-[var(--line)] text-white/55 font-bold rounded-[var(--radius-card)] uppercase tracking-[0.08em] text-[13px] opacity-50 cursor-not-allowed">
-                                <Download className="w-5 h-5" /> Download Media Kit (PDF)
-                            </button>
+                            <Link href="/media-kit" className="btn-command btn-command-quiet inline-flex items-center gap-2 h-[52px] px-8 bg-white/[0.04] text-white/70 hover:text-white font-bold uppercase tracking-[0.08em] text-[13px] transition-colors">
+                                <Download className="w-5 h-5" /> View Media Kit
+                            </Link>
                         </div>
                         <p className="mt-8 text-white/35 text-sm">
                             Agency? Ask for our agency rate card.

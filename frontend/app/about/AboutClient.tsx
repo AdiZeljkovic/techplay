@@ -128,9 +128,6 @@ export default function AboutPage() {
                             }} />
 
                             {/* Glowing orbs */}
-                            <div className="absolute top-10 left-10 w-32 h-32 bg-[var(--accent)]/20 rounded-full blur-3xl" />
-                            <div className="absolute bottom-20 right-20 w-40 h-40 bg-[var(--accent)]/10 rounded-full blur-3xl" />
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[var(--accent)]/5 rounded-full blur-3xl" />
 
                             {/* Floating gaming icons */}
                             <motion.div
@@ -179,7 +176,7 @@ export default function AboutPage() {
                                     initial={{ scale: 0.9, opacity: 0 }}
                                     whileInView={{ scale: 1, opacity: 1 }}
                                     viewport={{ once: true }}
-                                    className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] to-[#FF7A3D]"
+                                    className="text-6xl font-black text-transparent bg-clip-text text-[var(--accent)]"
                                 >
                                     TP
                                 </motion.div>
@@ -217,7 +214,6 @@ export default function AboutPage() {
                     variants={staggerContainer}
                     className="bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-panel)] p-12 relative overflow-hidden"
                 >
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--accent)]/5 rounded-full blur-3xl pointer-events-none" />
 
                     <div className="relative z-10">
                         <div className="text-center mb-12">
