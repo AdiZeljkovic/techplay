@@ -251,11 +251,17 @@ export default function LeaderboardClient() {
         <main className="min-h-screen bg-[var(--surface-0)]">
             {/* ── hero ── */}
             <div className="relative overflow-hidden border-b border-white/[0.07]">
-                <span
+                {/* The arena: trophy on the left, banners and podium on the
+                    right, dark centre carrying the title — already painted
+                    near-black, so it needs only a soft seam into the page. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src="/images/leaderboard-hero.webp"
+                    alt=""
                     aria-hidden
-                    className="absolute inset-0"
-                    style={{ background: "radial-gradient(90% 130% at 50% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%)" }}
+                    className="absolute inset-0 w-full h-full object-cover object-center"
                 />
+                <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
                 <div className="relative z-10 container-page py-12 md:py-16 text-center">
                     <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] mb-4">
                         <Trophy className="w-7 h-7 text-[var(--accent)]" />
