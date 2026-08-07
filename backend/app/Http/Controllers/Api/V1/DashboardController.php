@@ -12,6 +12,7 @@ use App\Models\Presence;
 use App\Models\User;
 use App\Models\UserCustomization;
 use App\Models\UserGame;
+use App\Services\Chronicle\TasteProfileService;
 use App\Services\LevelService;
 use App\Services\ProfileService;
 use App\Services\StreakService;
@@ -235,9 +236,9 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        $items = Cache::remember("recommendations:v1:{$user->id}", 3600, function () use ($user) {
+        $items = Cache::remember("recommendations:v2:{$user->id}", 3600, function () use ($user) {
             $libraryGameIds = UserGame::where('user_id', $user->id)->pluck('game_id')->all();
-            $profile = $this->tasteProfile($libraryGameIds);
+            $profile = $this->tasteProfile($user);
 
             if (! $profile) {
                 return [];
@@ -306,7 +307,7 @@ class DashboardController extends Controller
             return null;
         }
 
-        $profile = $this->tasteProfile($libraryGameIds);
+        $profile = $this->tasteProfile($user);
         $best = null;
 
         if ($profile) {
@@ -345,38 +346,23 @@ class DashboardController extends Controller
      *
      * @return array{weights: array<string,float>, platforms: array<string,bool>}|null
      */
-    private function tasteProfile(array $libraryGameIds): ?array
+    private function tasteProfile($user): ?array
     {
-        if (count($libraryGameIds) === 0) {
+        // The chronicle already condensed every signal the site holds —
+        // this used to be a second, weaker brain reading only the library.
+        $taste = app(TasteProfileService::class);
+
+        $genreWeights = array_slice($taste->genreWeights($user), 0, 5, true);
+        if ($genreWeights === []) {
             return null;
         }
 
-        // Computed in PHP so the same code runs on pgsql and sqlite
-        $libraryGames = Game::whereIn('id', array_slice($libraryGameIds, 0, 300))
-            ->get(['id', 'genres', 'platforms']);
-
-        $genreCounts = [];
-        $platformSet = [];
-        foreach ($libraryGames as $g) {
-            foreach ((array) $g->genres as $genre) {
-                $genreCounts[$genre] = ($genreCounts[$genre] ?? 0) + 1;
-            }
-            foreach ((array) $g->platforms as $p) {
-                $platformSet[$p] = true;
-            }
-        }
-
-        if (! $genreCounts) {
-            return null;
-        }
-
-        arsort($genreCounts);
-        $topGenres = array_slice($genreCounts, 0, 5, true);
-        $total = array_sum($topGenres);
+        $total = max(1e-6, array_sum($genreWeights));
 
         return [
-            'weights' => array_map(fn ($c) => $c / $total, $topGenres),
-            'platforms' => $platformSet,
+            'weights' => array_map(fn ($w) => $w / $total, $genreWeights),
+            'platforms' => array_fill_keys(array_keys($taste->platformWeights($user)), true),
+            'negative' => $taste->negativeGenres($user),
         ];
     }
 
@@ -406,6 +392,14 @@ class DashboardController extends Controller
         $platformOverlap = count(array_intersect((array) $game->platforms, array_keys($profile['platforms']))) > 0;
         $rating5 = min(5, (float) $game->rating);
         $score = 0.8 * ($genreScore / array_sum($weights)) + ($platformOverlap ? 0.1 : 0) + 0.1 * ($rating5 / 5);
+
+        // Bounced-off genres push back — the chronicle's negative map.
+        foreach ((array) $game->genres as $genre) {
+            $score -= 0.3 * (float) (($profile['negative'] ?? [])[$genre] ?? 0);
+        }
+        if ($score <= 0) {
+            return null;
+        }
 
         return [
             'percent' => (int) round(min(0.99, $score) * 100),
