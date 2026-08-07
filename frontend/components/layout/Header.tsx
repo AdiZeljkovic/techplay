@@ -11,7 +11,7 @@ import { useCart } from "@/context/CartContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { useMobileMenu } from "@/context/MobileMenuContext";
 import axios from "@/lib/axios";
-import { Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Facebook, Twitter, Instagram, Youtube, Mail, Users, Sword, Tag, Calendar, Gamepad2, Newspaper, Trophy, ArrowRight, MessageSquare, Gem, Rocket, Shield, Bookmark, Settings, Layers } from "lucide-react";
+import { Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Facebook, Twitter, Instagram, Youtube, Mail, Users, Tag, Calendar, Gamepad2, Newspaper, Trophy, ArrowRight, MessageSquare, Rocket, Bookmark, Settings, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ScoreBadge from "@/components/ui/ScoreBadge";
 import { levelForXp } from "@/lib/level";
@@ -625,11 +625,12 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
     },
     {
         name: "Tools", href: "/wow-analyzer", hasDropdown: true, viewAllLabel: "All Tools",
-        activePaths: ["/wow-analyzer", "/backlog-advisor", "/wrapped"],
+        activePaths: ["/wow-analyzer", "/backlog-advisor", "/wrapped", "/gta6"],
         children: [
-            { name: "WoW Analyzer",    href: "/wow-analyzer",    icon: Sword,  description: "AI character readiness check" },
-            { name: "Backlog Advisor", href: "/backlog-advisor", icon: Rocket, description: "What should you play next?" },
-            { name: "Gaming Wrapped",  href: "/wrapped",         icon: Gem,    description: "Your year in gaming, shareable" },
+            { name: "WoW Analyzer",    href: "/wow-analyzer",    art: "/images/menu/menu-wow-analyzer.webp",    description: "AI character readiness check" },
+            { name: "Backlog Advisor", href: "/backlog-advisor", art: "/images/menu/menu-backlog-advisor.webp", description: "What should you play next?" },
+            { name: "Gaming Wrapped",  href: "/wrapped",         art: "/images/menu/menu-wrapped.webp",         description: "Your year in gaming, shareable" },
+            { name: "GTA 6 Hub",       href: "/gta6",            art: "/images/menu/menu-gta6.webp",            description: "Map, characters, vehicles, weapons" },
         ],
     },
     { name: "Shop", href: "/shop" },
