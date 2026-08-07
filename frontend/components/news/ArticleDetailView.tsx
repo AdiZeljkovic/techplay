@@ -142,7 +142,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                         <div className="flex-1 min-w-0 flex flex-col">
 
                             {/* Hero Banner */}
-                            <div className="relative w-full rounded-[24px] flex flex-col overflow-hidden bg-[#0B0E14] border border-[#161B22] h-[580px]">
+                            <div className="relative w-full rounded-[var(--radius-panel)] flex flex-col overflow-hidden bg-[var(--surface-1)] border border-[var(--line)] h-[580px]">
                                 <div className="relative w-full flex-1 flex flex-col justify-end min-h-0">
 
                                     {/* Background layer — hidden when video is playing */}
@@ -313,17 +313,16 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                         </div>
 
                         {/* Right Sidebar */}
-                        <aside className="hidden xl:flex flex-col gap-8 w-[340px] shrink-0">
+                        <aside className="hidden xl:flex flex-col gap-5 w-[340px] shrink-0">
                             <AdUnit position="sidebar_top" />
 
                             {article.game && <GameInfoCard game={article.game} />}
 
                             <RecommendedNews excludeSlug={article.slug} />
 
-                            {/* Wrapper divs neutralize the widgets' h-full (meant for homepage grid rows) */}
-                            <div><ReleaseCalendarSection /></div>
+                                                        <ReleaseCalendarSection />
 
-                            <div><DiscordWidget /></div>
+                            <DiscordWidget />
 
                             <AdUnit position="sidebar_bottom" />
                         </aside>

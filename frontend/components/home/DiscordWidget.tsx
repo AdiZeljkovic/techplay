@@ -1,7 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { Bell, Gift, Users } from "lucide-react";
+import Panel from "@/components/ui/Panel";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
+
+const BLURPLE = "#5865F2";
 
 const DiscordIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -9,61 +13,53 @@ const DiscordIcon = ({ className }: { className?: string }) => (
     </svg>
 );
 
+/** What the server actually gives you — no invented member counts. */
+const PERKS = [
+    { icon: Bell, text: "News the moment it publishes" },
+    { icon: Gift, text: "Giveaway pings before they close" },
+    { icon: Users, text: "Squads, LFG and the editors" },
+];
+
 export default function DiscordWidget() {
     const { settings } = useSiteSettings();
     const discordUrl = settings.discord_url || "https://discord.gg/wPQG9gUMXH";
     const siteName = settings.site_name || "TechPlay.gg";
 
     return (
-        <aside className="w-full h-full flex flex-col bg-zinc-50/80 dark:bg-[#0B0E14]/80 backdrop-blur-md border border-zinc-200 dark:border-[#161B22] rounded-[24px] p-6 lg:p-8 relative overflow-hidden shadow-sm dark:shadow-[0_0_40px_rgba(0,0,0,0.5)] transition-colors duration-300">
-            <div className="absolute top-0 right-[10%] w-[50%] h-[1px] bg-gradient-to-r from-transparent via-[#5865F2]/20 dark:via-[#5865F2]/40 to-transparent" />
-            <div className="absolute -top-[100px] -right-[50px] w-[250px] h-[250px] bg-[#5865F2]/5 dark:bg-[#5865F2]/10 blur-[80px] rounded-full pointer-events-none" />
-
-            <h2 className="text-[17px] font-bold text-zinc-900 dark:text-white uppercase tracking-wider mb-8 relative z-10">
-                COMMUNITY DISCORD
-            </h2>
-
-            <div className="flex flex-col relative z-10 flex-1 px-1">
-                <div className="flex items-center gap-5 mb-6">
-                    <div className="w-[54px] h-[54px] rounded-[16px] bg-[#5865F2] flex items-center justify-center shrink-0 shadow-sm dark:shadow-lg dark:shadow-[#5865F2]/20">
-                        <DiscordIcon className="w-8 h-8 text-white" />
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="text-zinc-900 dark:text-white font-bold text-[18px] leading-tight mb-1 block">{siteName}</span>
-                        <span className="text-zinc-500 dark:text-[#8B949E] text-[13px]">Official Discord Server</span>
-                    </div>
-                </div>
-
-                <p className="text-zinc-600 dark:text-[#A1A1AA] text-[14px] leading-relaxed mb-8 flex-1">
-                    Join the conversation. Chat with the editors, find teammates, and discuss the latest gaming news and rumors in real-time.
-                </p>
-
-                <div className="flex flex-col gap-4 mb-2">
-                    <div className="flex items-center justify-between pb-4 border-b border-zinc-200 dark:border-white/[0.04]">
-                        <div className="flex items-center gap-3">
-                            <div className="w-2.5 h-2.5 rounded-full bg-[#23a559] shadow-[0_0_8px_rgba(35,165,89,0.2)] dark:shadow-[0_0_8px_rgba(35,165,89,0.5)]" />
-                            <span className="text-zinc-800 dark:text-[#E4E4E5] text-[14px] font-medium">Online Members</span>
-                        </div>
-                        <strong className="text-zinc-900 dark:text-white text-[15px] tracking-wide">1,248</strong>
-                    </div>
-                    <div className="flex items-center justify-between pb-4 border-b border-zinc-200 dark:border-white/[0.04]">
-                        <div className="flex items-center gap-3">
-                            <div className="w-2.5 h-2.5 rounded-full bg-zinc-400 dark:bg-[#80848e]" />
-                            <span className="text-zinc-800 dark:text-[#E4E4E5] text-[14px] font-medium">Total Members</span>
-                        </div>
-                        <strong className="text-zinc-900 dark:text-white text-[15px] tracking-wide">15,402</strong>
-                    </div>
+        <Panel title="Community Discord">
+            <div className="flex items-center gap-3.5">
+                <span
+                    className="w-12 h-12 shrink-0 rounded-[var(--radius-panel)] flex items-center justify-center"
+                    style={{ background: BLURPLE }}
+                >
+                    <DiscordIcon className="w-7 h-7 text-white" />
+                </span>
+                <div className="min-w-0">
+                    <p className="font-display text-[15px] font-black text-white leading-tight truncate">{siteName}</p>
+                    <p className="mt-0.5 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/30">
+                        Official server
+                    </p>
                 </div>
             </div>
+
+            <ul className="mt-4 space-y-2">
+                {PERKS.map(({ icon: Icon, text }) => (
+                    <li key={text} className="flex items-center gap-2.5 text-[12.5px] text-white/55">
+                        <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: BLURPLE }} />
+                        {text}
+                    </li>
+                ))}
+            </ul>
 
             <Link
                 href={discordUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-8 bg-[#5865F2] hover:bg-[#4752C4] text-white h-[46px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[12px] flex items-center justify-center shadow-lg shadow-[#5865F2]/20 relative z-10"
+                className="btn-command mt-4 flex items-center justify-center gap-2 h-10 font-display text-[10.5px] font-black uppercase tracking-[0.12em] text-white hover:brightness-110 transition-[filter]"
+                style={{ background: BLURPLE }}
             >
-                JOIN DISCORD
+                <DiscordIcon className="w-4 h-4" /> Join Discord
             </Link>
-        </aside>
+        </Panel>
     );
 }

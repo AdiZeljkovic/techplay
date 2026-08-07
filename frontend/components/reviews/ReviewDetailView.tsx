@@ -342,17 +342,16 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                         </div>
 
                         {/* Right Sidebar */}
-                        <aside className="hidden xl:flex flex-col gap-8 w-[340px] shrink-0">
+                        <aside className="hidden xl:flex flex-col gap-5 w-[340px] shrink-0">
                             <AdUnit position="sidebar_top" />
 
                             {review.game && <GameInfoCard game={review.game} />}
 
                             <RecommendedNews />
 
-                            {/* Wrapper divs neutralize the widgets' h-full (meant for homepage grid rows) */}
-                            <div><ReleaseCalendarSection /></div>
+                                                        <ReleaseCalendarSection />
 
-                            <div><DiscordWidget /></div>
+                            <DiscordWidget />
 
                             <AdUnit position="sidebar_bottom" />
                         </aside>

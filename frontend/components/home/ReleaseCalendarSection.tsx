@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import axios from "@/lib/axios";
+import Panel from "@/components/ui/Panel";
+import { Gamepad2 } from "lucide-react";
 
 interface CalendarGame {
     id: number;
@@ -14,7 +16,7 @@ interface CalendarGame {
     platforms: unknown;
 }
 
-const MONTH_SHORT = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+const MONTH_SHORT = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
 function parsePlatforms(raw: unknown): string {
     if (!raw) return "";
@@ -48,28 +50,27 @@ export default function ReleaseCalendarSection() {
     }, []);
 
     return (
-        <aside className="w-full h-full flex flex-col bg-zinc-50/80 dark:bg-[#0B0E14]/80 backdrop-blur-md border border-zinc-200 dark:border-[#161B22] rounded-[24px] p-6 lg:p-8 relative overflow-hidden shadow-sm dark:shadow-[0_0_40px_rgba(0,0,0,0.5)] transition-colors duration-300">
-            {/* Subtle background glow */}
-            <div className="absolute top-0 right-[10%] w-[50%] h-[1px] bg-gradient-to-r from-transparent via-tp-accent/20 dark:via-tp-accent/40 to-transparent" />
-            <div className="absolute -top-[100px] -right-[50px] w-[250px] h-[250px] bg-tp-accent/10 blur-[80px] rounded-full pointer-events-none" />
-
-            <div className="flex items-end justify-between font-sans mb-8 relative z-10">
-                <h2 className="text-[17px] font-bold text-zinc-900 dark:text-white uppercase tracking-wider">UPCOMING RELEASES</h2>
-            </div>
-
-            <div className="flex flex-col px-1 relative z-10 flex-1">
+        <Panel
+            title="Upcoming releases"
+            action={{ label: "Full calendar", href: "/calendar" }}
+            padding="none"
+        >
+            <div className="divide-y divide-white/[0.05]">
                 {loading
                     ? Array.from({ length: 5 }).map((_, i) => (
-                        <div key={i} className={`flex items-center gap-[22px] py-[16px] animate-pulse ${i !== 4 ? 'border-b border-zinc-200 dark:border-white/[0.04]' : ''}`}>
-                            <div className="w-[36px] h-[44px] bg-white/5 rounded shrink-0" />
-                            <div className="w-[54px] h-[54px] bg-white/5 rounded-[8px] shrink-0" />
-                            <div className="flex flex-col gap-2 flex-1">
-                                <div className="h-[14px] bg-white/5 rounded w-3/4" />
-                                <div className="h-[10px] bg-white/5 rounded w-1/2" />
+                        <div key={i} className="flex items-center gap-3.5 px-4 py-3 animate-pulse">
+                            <div className="w-[34px] shrink-0">
+                                <div className="h-2.5 w-7 bg-white/[0.06] rounded-[2px] mb-1.5" />
+                                <div className="h-4 w-6 bg-white/[0.06] rounded-[2px]" />
+                            </div>
+                            <div className="w-[46px] h-[46px] bg-white/[0.06] rounded-[var(--radius-card)] shrink-0" />
+                            <div className="flex-1">
+                                <div className="h-3.5 bg-white/[0.06] rounded-[2px] w-3/4 mb-2" />
+                                <div className="h-2.5 bg-white/[0.06] rounded-[2px] w-1/2" />
                             </div>
                         </div>
                     ))
-                    : games.map((game, i) => {
+                    : games.map((game) => {
                         const date = new Date(game.released);
                         const day = date.getDate();
                         const month = MONTH_SHORT[date.getMonth()];
@@ -80,39 +81,43 @@ export default function ReleaseCalendarSection() {
                                 key={game.id}
                                 href={`/games/${game.slug}`}
                                 prefetch={false}
-                                className={`group flex items-center gap-[22px] py-[16px] ${i !== games.length - 1 ? 'border-b border-zinc-200 dark:border-white/[0.04]' : ''}`}
+                                className="group flex items-center gap-3.5 px-4 py-3 hover:bg-white/[0.02] transition-colors"
                             >
-                                {/* Date column */}
-                                <div className="flex flex-col items-center justify-center w-[36px] shrink-0 text-center">
-                                    <span className="text-tp-accent text-[12px] font-bold uppercase tracking-widest leading-none mb-1">{month}</span>
-                                    <span className="font-display text-[22px] font-medium text-zinc-900 dark:text-white leading-none">{day}</span>
+                                {/* the date, read as one block */}
+                                <div className="flex flex-col items-center w-[34px] shrink-0">
+                                    <span className="font-display text-[9.5px] font-black uppercase tracking-[0.14em] text-[var(--accent)] leading-none">
+                                        {month}
+                                    </span>
+                                    <span className="mt-1 font-display text-[19px] font-black tabular-nums text-white leading-none">
+                                        {day}
+                                    </span>
                                 </div>
 
-                                {/* Thumbnail */}
-                                <div className="relative w-[54px] h-[54px] overflow-hidden rounded-[8px] opacity-90 group-hover:opacity-100 shrink-0 border border-zinc-200 dark:border-white/5">
+                                <div className="relative w-[46px] h-[46px] shrink-0 rounded-[var(--radius-card)] overflow-hidden border border-white/[0.06] bg-black/40">
                                     {game.cover_url ? (
                                         <Image
                                             src={game.cover_url}
                                             alt={game.name}
                                             fill
-                                            sizes="54px"
+                                            sizes="46px"
                                             quality={60}
-                                            className="object-cover"
+                                            className="object-cover group-hover:scale-[1.06] transition-transform duration-500"
                                         />
                                     ) : (
-                                        <div className="w-full h-full bg-[#1A1F26]" />
+                                        <span className="w-full h-full flex items-center justify-center text-white/12">
+                                            <Gamepad2 className="w-5 h-5" />
+                                        </span>
                                     )}
                                 </div>
 
-                                {/* Text */}
-                                <div className="flex flex-col min-w-0 pr-2 pt-[2px]">
-                                    <h4 className="font-sans font-medium text-[15px] text-zinc-800 dark:text-[#E4E4E5] truncate group-hover:text-tp-accent transition-colors leading-[1.2] mb-2">
+                                <div className="min-w-0">
+                                    <h4 className="font-display text-[13px] font-black text-white leading-tight truncate group-hover:text-[var(--accent)] transition-colors">
                                         {game.name}
                                     </h4>
                                     {platforms && (
-                                        <div className="text-[11px] text-zinc-500 dark:text-[#8B949E] font-bold tracking-widest uppercase truncate">
+                                        <p className="mt-1 font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/25 truncate">
                                             {platforms}
-                                        </div>
+                                        </p>
                                     )}
                                 </div>
                             </Link>
@@ -120,14 +125,6 @@ export default function ReleaseCalendarSection() {
                     })
                 }
             </div>
-
-            {/* CTA Button */}
-            <Link
-                href="/calendar"
-                className="mt-8 bg-tp-accent hover:bg-tp-accent-hover text-white h-[46px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[12px] flex items-center justify-center shadow-lg shadow-tp-accent/20 relative z-10"
-            >
-                VIEW FULL CALENDAR
-            </Link>
-        </aside>
+        </Panel>
     );
 }
