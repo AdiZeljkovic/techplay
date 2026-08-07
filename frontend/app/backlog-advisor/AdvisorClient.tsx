@@ -254,21 +254,22 @@ export default function AdvisorClient() {
                     className="absolute inset-0"
                     style={{ background: "radial-gradient(65% 150% at 80% -20%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 58%)" }}
                 />
-                <div className="relative z-10 container-page pt-9 pb-6">
+                <div className="relative z-10 container-page pt-11 pb-7 text-center">
                     <p className="inline-flex items-center gap-2 h-[24px] px-3 rounded-[6px] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] font-display text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
                         <Compass className="w-3 h-3" /> Backlog Advisor
                     </p>
-                    <h1 className="mt-3 font-display text-[32px] md:text-[42px] font-black text-white tracking-tight leading-none">
-                        Your next great game is waiting
+                    <h1 className="mt-3 font-display text-3xl md:text-5xl font-black tracking-tight leading-none">
+                        <span className="text-white">YOUR NEXT GREAT GAME </span>
+                        <span className="text-[var(--accent)]">IS WAITING</span>
                     </h1>
-                    <p className="mt-2.5 text-[13.5px] text-white/45 max-w-[520px] leading-relaxed">
+                    <p className="mt-3 text-[13.5px] text-white/45 max-w-[520px] mx-auto leading-relaxed">
                         Recommendations scored against your own collection — the genres you finish, the players who share
                         your shelf, and how good the game actually is.
                     </p>
 
                     {/* stat strip */}
                     <div className="mt-6 rounded-[var(--radius-panel)] border border-white/[0.07] bg-[#100e0d] px-5 py-4">
-                        <div className="flex items-center gap-6 md:gap-0 md:justify-between overflow-x-auto scrollbar-none min-w-max md:min-w-0">
+                        <div className="flex items-center gap-6 md:gap-12 md:justify-center overflow-x-auto scrollbar-none min-w-max md:min-w-0">
                             {([
                                 [<Library key="b" className="w-4 h-4" />, "Your backlog", summary?.backlog ?? 0, "games to play", "var(--accent)"],
                                 [<Gamepad2 key="l" className="w-4 h-4" />, "Library", summary?.library ?? 0, "games tracked", "#60a5fa"],

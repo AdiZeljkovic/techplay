@@ -583,19 +583,13 @@ export default function ClansClient() {
                 <img src="/images/clans-hero.webp" alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover object-center" />
                 <span aria-hidden className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
-                <div className="relative z-10 container-page pt-8 pb-6">
-                    <div className="flex flex-wrap items-center justify-between gap-5">
-                        <div className="flex items-center gap-3.5">
-                            <span className="w-11 h-11 rounded-[11px] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] flex items-center justify-center">
-                                <Shield className="w-5 h-5 text-[var(--accent)]" />
-                            </span>
-                            <div>
-                                <h1 className="font-display text-[28px] font-black text-white tracking-tight leading-none">Clans</h1>
-                                <p className="mt-1.5 text-[12.5px] text-white/45">Find squads, build communities, and climb together.</p>
-                            </div>
-                        </div>
+                <div className="relative z-10 container-page pt-12 pb-8 text-center">
+                    <h1 className="font-display font-black tracking-tight text-3xl md:text-5xl leading-none text-white">
+                        CLA<span className="text-[var(--accent)]">NS</span>
+                    </h1>
+                    <p className="mt-3 text-[13px] text-white/45">Find squads, build communities, and climb together.</p>
 
-                        <div className="flex items-center gap-2.5">
+                    <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
                             {user && !mine?.clan && (
                                 <button
                                     onClick={() => setCreating(true)}
@@ -612,11 +606,10 @@ export default function ClansClient() {
                                     <Users className="w-4 h-4" /> My clan
                                 </Link>
                             )}
-                        </div>
                     </div>
 
                     {/* row 1 — search and the selects */}
-                    <div className="mt-6 flex flex-wrap items-center gap-2">
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
                         <div className="relative flex-1 min-w-[200px] max-w-[300px]">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/25 pointer-events-none" />
                             <input

@@ -415,18 +415,14 @@ export default function SocialClient() {
                     className="absolute inset-0"
                     style={{ background: "radial-gradient(70% 150% at 82% -10%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 58%)" }}
                 />
-                <div className="relative z-10 container-page py-7 flex flex-wrap items-center justify-between gap-6">
-                    <div className="flex items-center gap-3.5">
-                        <span className="w-12 h-12 rounded-[12px] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] flex items-center justify-center">
-                            <MessageCircle className="w-6 h-6 text-[var(--accent)]" />
-                        </span>
-                        <div>
-                            <h1 className="font-display text-[28px] font-black text-white tracking-tight leading-none">Social Hub</h1>
-                            <p className="mt-1.5 text-[12.5px] text-white/45">Chat, squad up, and stay connected across TechPlay.</p>
-                        </div>
-                    </div>
+                <div className="relative z-10 container-page py-10 text-center">
+                    <h1 className="font-display font-black tracking-tight text-3xl md:text-5xl leading-none">
+                        <span className="text-white">SOCIAL </span>
+                        <span className="text-[var(--accent)]">HUB</span>
+                    </h1>
+                    <p className="mt-3 text-[13px] text-white/45">Chat, squad up, and stay connected across TechPlay.</p>
 
-                    <div className="flex items-center gap-6 md:gap-8">
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-6 md:gap-10">
                         {([
                             [<Users key="f" className="w-4 h-4" />, "Friends", stats?.friends ?? 0, stats ? `${stats.online} online` : null],
                             [<MessageCircle key="c" className="w-4 h-4" />, "Chats", stats?.conversations ?? 0, "conversations"],
