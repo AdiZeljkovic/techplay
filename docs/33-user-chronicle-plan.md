@@ -136,6 +136,22 @@ imenovanja ujednačiti (`customizations` vs `user_customizations`).
 - Rizici: cold start (honest fallback), builder perf (queued, čitanje = 1 red),
   privatnost (chronicle interni, poštuje `profile_visibility` za peer izvore)
 
+## 7b. Dva principa kroz SVE faze (dopuna nakon odobrenja)
+
+**Frontend se gradi gdje fali.** Dio površina za sisteme koje punimo ne postoji ili je
+sakriven (questovi imaju panel ali nema quest-log stranice; sezona nema banner logike sa
+sadržajem; Recognition nema dugme; Steam achievements sekcija čeka podatke). Svaka faza
+uključuje i frontend rad: kreiranje, otkopavanje orphana ili doradu — u postojećem
+dizajn-jeziku (Panel, matte, 8/5 radijusi).
+
+**Struktura baze korisnika prolazi istu sanaciju kao games baza.** Ne "sve u jednu
+tabelu", nego red: izmjeriti svaku user-domenu tabelu, spojiti duple
+(`customizations`/`user_customizations` konvencija), preimenovati nedosljedno,
+`users` dijeta (49 kolona → integracijski tokeni u `user_integrations`, PayPal u
+`user_billing` ili services konvenciju), `game_ratings` na `game_id`, obrisati stvarno
+mrtvo. Mjerenje prvo, reverzibilne migracije, driver-guarded — isti protokol koji je
+games bazu doveo u red. Nove chronicle tabele od prvog dana slijede tu konvenciju.
+
 ## 8. Redoslijed izvedbe
 
 1. **Faza 1**: schema (1.1) + ChronicleBuilder (iz postojećih tabela) + TasteProfileService + rewire 9 površina
