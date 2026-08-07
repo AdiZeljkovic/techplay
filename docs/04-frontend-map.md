@@ -258,6 +258,30 @@ ikone naslovnice. Izvori su transparentni PNG-ovi; obrada ih normalizuje na
 `--accent` i kropuje na najveću povezanu grupu tinte, jer izvozi nose i film
 alfe preko cijelog platna i pokoju usamljenu liniju uz ivicu.
 
+**Migracija na sistem (07.08.2026)** — sistem sada zaista drži cijelu
+stranicu, ne samo redizajnirane sekcije. Prošlo je ~130 fajlova:
+
+- `tp-accent` alias i `--bg-card`/`--text-*`/`--border` legacy tokeni su
+  penzionisani u korist `--surface-*` / `--line` / bijelih alfa.
+- Svi `dark:` parovi su srušeni na tamnu polovinu — `<html>` nosi `dark`
+  bezuslovno, pa svijetla polovina nikad nije ni renderovana.
+- 23 zamućene „glow" kugle uklonjene; narandžasti akcent (prije crimsona)
+  izbačen iz support checkouta, impressuma i giveaway CTA-a.
+- `lib/prose.ts` (tijelo svakog članka) više ne drži privatnu paletu.
+- `PageHero` prepisan: prima i **prikazuje** `backgroundImage`, akcentuje
+  posljednju riječ naslova (staro pravilo je bojilo drugu po redu, pa je na
+  „Advertising & Partnerships" bojilo ampersand).
+- Dvoslojno pravilo dugmadi dovršeno: accent ispuna na visini dugmeta =
+  `.btn-command`; čipovi, badgevi i okrugli markeri zadržavaju svoj oblik.
+
+**Namjerno ostalo van sistema:** `components/wow/**` (analyzer prvo dobija
+nazad nespojene funkcionalnosti) i `app/media-kit/**` (čeka prave brojke).
+GTA 6 zadržava svoju Vice City paletu — to je pod-brend, ne drift.
+
+**Zamka pri pisanju klasa:** razmak unutar Tailwind arbitrary vrijednosti
+(`shadow-[0_0_15px_rgba(220, 20, 60,0.25)]`) cijepa klasu i ona se nikad ne
+kompajlira. Petnaest takvih je zateceno mrtvo 08/2026.
+
 ---
 
 ## Što je hardkodirano (treba provjeriti)
