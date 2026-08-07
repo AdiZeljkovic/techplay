@@ -8,9 +8,15 @@ import type { DashboardData, ProfileCompletion } from "@/lib/types/dashboard";
 import Panel from "@/components/ui/Panel";
 import RingMeter from "@/components/ui/RingMeter";
 
-/** Shares the dashboard's SWR key, so this costs nothing where it's cached. */
-const fetcher = (url: string) =>
-    axios.get(url).then((r) => (r.data?.data as DashboardData)?.profile_completion);
+/**
+ * Shares the dashboard's SWR key, so this costs nothing where it is cached —
+ * which means it must also share its *shape*. Extracting profile_completion
+ * here made the two disagree: whichever fetcher ran first won the cache
+ * entry, so arriving at Settings from the dashboard handed this component a
+ * whole DashboardData and `completion.missing` was undefined. The selection
+ * happens after the read now, not inside the fetcher.
+ */
+const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data as DashboardData);
 
 /** Where each missing signal gets fixed. */
 const ACTION_HREFS: Record<string, string> = {
@@ -31,13 +37,14 @@ const ACTION_HREFS: Record<string, string> = {
  * you already hold; omit it and the widget fetches its own.
  */
 export default function ProfileCompletionWidget({ completion: passed }: { completion?: ProfileCompletion }) {
-    const { data: fetched } = useSWR(passed ? null : "/me/dashboard", fetcher, {
+    const { data: fetched } = useSWR<DashboardData>(passed ? null : "/me/dashboard", fetcher, {
         revalidateOnFocus: false,
     });
 
-    const completion = passed ?? fetched;
+    const completion = passed ?? fetched?.profile_completion;
 
-    if (!completion) {
+    // A payload without the block, or one still on its way, both mean "not yet".
+    if (!completion || !Array.isArray(completion.missing)) {
         return (
             <Panel title="Profile Completion" bodyClassName="p-4">
                 <div className="h-[64px] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />
