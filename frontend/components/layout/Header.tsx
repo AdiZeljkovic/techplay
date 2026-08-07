@@ -14,7 +14,7 @@ import axios from "@/lib/axios";
 import { Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Facebook, Twitter, Instagram, Youtube, Mail, Users, Tag, Calendar, Gamepad2, Newspaper, Trophy, ArrowRight, MessageSquare, Rocket, Bookmark, Settings, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ScoreBadge from "@/components/ui/ScoreBadge";
-import { levelForXp } from "@/lib/level";
+import { levelForXp, xpForLevel } from "@/lib/level";
 import SearchDropdown from "./SearchDropdown";
 import { decodeHtml } from "@/lib/decode";
 import NotificationPanel from "./NotificationPanel";
@@ -853,8 +853,13 @@ function UserMenu({ user, logout }: { user: HeaderUser; logout: () => void }) {
 
     const xp = user.xp || 0;
     const level = levelForXp(xp);
-    const intoLevel = xp % 1000;
-    const percent = Math.round((intoLevel / 1000) * 100);
+    // A level does not cost a flat thousand — the curve steepens with rank, so
+    // `xp % 1000` disagreed with the profile's own bar at almost every value.
+    const bandFloor = xpForLevel(level);
+    const bandCeiling = xpForLevel(level + 1);
+    const intoLevel = xp - bandFloor;
+    const bandSize = Math.max(1, bandCeiling - bandFloor);
+    const percent = Math.min(100, Math.round((intoLevel / bandSize) * 100));
     const name = decodeHtml(user.display_name || user.username || "") || "My Profile";
     const profileHref = `/profile/${user.username || "me"}`;
 
@@ -1292,12 +1297,12 @@ export default function Header() {
                                                     Level {levelForXp(user.xp)}
                                                 </span>
                                                 <span className="font-display text-[10px] font-black tabular-nums text-white/45">
-                                                    {(user.xp || 0) % 1000} / 1000 XP
+                                                    {(user.xp || 0) - xpForLevel(levelForXp(user.xp))} / {Math.max(1, xpForLevel(levelForXp(user.xp) + 1) - xpForLevel(levelForXp(user.xp)))} XP
                                                 </span>
                                             </div>
                                             <div className="mt-1.5 h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
                                                 <div className="h-full rounded-full bg-gradient-to-r from-[var(--xp)] to-[var(--xp-bright)]"
-                                                    style={{ width: `${Math.round(((user.xp || 0) % 1000) / 10)}%` }} />
+                                                    style={{ width: `${Math.min(100, Math.round((((user.xp || 0) - xpForLevel(levelForXp(user.xp))) / Math.max(1, xpForLevel(levelForXp(user.xp) + 1) - xpForLevel(levelForXp(user.xp)))) * 100))}%` }} />
                                             </div>
 
                                             <div className="mt-3.5 flex gap-2">

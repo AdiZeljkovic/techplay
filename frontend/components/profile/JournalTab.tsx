@@ -96,7 +96,7 @@ const draftFromSession = (s: PlaySession): Draft => ({
 
 function GamePicker({ value, onPick }: { value: Draft["game"]; onPick: (g: Draft["game"]) => void }) {
     const [term, setTerm] = useState("");
-    const { data, isLoading } = useSWR<{ data: { slug: string; name: string; cover_url: string | null }[] }>(
+    const { data, isLoading } = useSWR<{ results: { slug: string; name: string; cover_url: string | null }[] }>(
         term.trim().length >= 2 ? `/games?search=${encodeURIComponent(term.trim())}&page_size=8` : null,
         fetcher
     );
@@ -131,10 +131,10 @@ function GamePicker({ value, onPick }: { value: Draft["game"]; onPick: (g: Draft
                 <div className="absolute z-20 left-0 right-0 top-[44px] max-h-[240px] overflow-y-auto rounded-[10px] border border-white/[0.1] bg-[var(--surface-2)] shadow-[0_20px_44px_rgba(0,0,0,0.6)]">
                     {isLoading ? (
                         <p className="flex items-center gap-2 p-3 text-[12px] text-white/35"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Searching…</p>
-                    ) : (data?.data ?? []).length === 0 ? (
+                    ) : (data?.results ?? []).length === 0 ? (
                         <p className="p-3 text-[12px] text-white/30">Nothing matched.</p>
                     ) : (
-                        (data?.data ?? []).map((g) => (
+                        (data?.results ?? []).map((g) => (
                             <button
                                 key={g.slug}
                                 onClick={() => { onPick(g); setTerm(""); }}

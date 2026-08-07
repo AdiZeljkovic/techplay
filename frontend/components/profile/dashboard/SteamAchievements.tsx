@@ -4,9 +4,11 @@ import useSWR from 'swr'
 import Image from 'next/image'
 import { Trophy, Gamepad2, CheckCircle2 } from 'lucide-react'
 import { format } from 'date-fns'
-import { getApiUrl } from '@/lib/api'
+import axios from '@/lib/axios'
 
-const fetcher = (url: string) => fetch(url).then(r => r.json()).then(r => r.data)
+// A raw fetch carries no bearer, so a friends-only profile refused the owner
+// their own achievements and the panel said "connect Steam" to someone who had.
+const fetcher = (url: string) => axios.get(url).then(r => r.data?.data ?? r.data)
 
 type SteamAch = {
   id: number
@@ -26,7 +28,7 @@ type SteamAchData = {
 
 export default function SteamAchievements({ username }: { username: string }) {
   const { data, isLoading } = useSWR<SteamAchData>(
-    `${getApiUrl()}/users/${username}/steam-achievements`,
+    `/users/${username}/steam-achievements`,
     fetcher
   )
 

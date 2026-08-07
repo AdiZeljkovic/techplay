@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import useSWR, { mutate as globalMutate } from "swr";
@@ -479,16 +479,29 @@ export default function CollectionGrid({ username, isOwnProfile }: Props) {
     const fileRef = useRef<HTMLInputElement>(null);
 
     const query = filter === "all" || filter === "upcoming" ? "" : filter === "favorites" ? "?favorite=1" : `&status=${filter}`;
+    // "Load more" used to widen page_size, which the API clamps at 60 — so a
+    // library past sixty games simply stopped, with the button still showing.
+    // Real pages, accumulated as they arrive.
     const key = filter === "upcoming"
         ? null
-        : `/users/${username}/collection?page_size=${pages * PAGE_SIZE}${filter === "favorites" ? "&favorite=1" : query.replace("?favorite=1", "")}`;
-    const { data, isLoading, mutate } = useSWR<{ data: CollectionEntry[]; pagination?: { total: number } }>(key, fetcher);
+        : `/users/${username}/collection?page=${pages}&page_size=${PAGE_SIZE}${filter === "favorites" ? "&favorite=1" : query.replace("?favorite=1", "")}`;
+    const { data, isLoading, mutate } = useSWR<{ data: CollectionEntry[]; pagination?: { total: number } }>(
+        key, fetcher, { keepPreviousData: true }
+    );
+
+    const [accumulated, setAccumulated] = useState<CollectionEntry[]>([]);
+    useEffect(() => {
+        if (!data?.data) return;
+        setAccumulated((prev) => (pages === 1 ? data.data : [...prev, ...data.data.filter(
+            (row) => !prev.some((seen) => seen.game?.slug === row.game?.slug)
+        )]));
+    }, [data, pages]);
 
     // Same SWR key the profile page already loaded — the counts come free.
     const { data: profile } = useSWR<UserProfile>(`/users/${username}`, fetcher);
     const stats = profile?.stats;
 
-    const entries = data?.data ?? [];
+    const entries = pages === 1 ? (data?.data ?? []) : accumulated;
     const total = data?.pagination?.total ?? entries.length;
     const hasMore = entries.length < total;
 

@@ -43,6 +43,8 @@ export interface DashboardUser {
 
 export interface DashboardStats {
     games_count: number;
+    /** Wallet, for the owner's daily hub. */
+    bounty_balance?: number;
     playing_count: number;
     backlog_count: number;
     completed_count: number;

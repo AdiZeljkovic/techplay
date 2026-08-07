@@ -15,6 +15,10 @@ import RecommendedNext from "./RecommendedNext";
 import BacklogProgressCard from "./BacklogProgressCard";
 import OnboardingCard from "./OnboardingCard";
 import DailyMissions from "./DailyMissions";
+import DailyHub from "@/components/profile/dashboard/DailyHub";
+import ProfileChecklist from "@/components/profile/dashboard/ProfileChecklist";
+import FriendActivityFeed from "@/components/profile/FriendActivityFeed";
+import { useRouter } from "next/navigation";
 import { heroFromDashboard } from "@/lib/hero";
 import type { DashboardData } from "@/lib/types/dashboard";
 
@@ -39,6 +43,7 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
     if (!data) return <DashboardSkeleton />;
 
     const hasGames = data.stats.games_count > 0;
+    const router = useRouter();
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
@@ -66,8 +71,31 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                     </div>
                 </div>
 
-                <div className="tp-fade-up tp-d2">
-                    <LatestArticlesFeed />
+                {/* The owner's daily hub — season, streak, quests and the
+                    bounty wallet. It used to live on the profile Overview,
+                    which the owner never reaches: their Overview is this page,
+                    and an early return sent them here before it rendered. So
+                    none of it was on screen anywhere. */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start tp-fade-up tp-d2">
+                    <div className="lg:col-span-5 min-w-0">
+                        <DailyHub
+                            bounty={data.stats.bounty_balance ?? 0}
+                            username={data.user.username}
+                            onOpenTab={(tab) => router.push(`/profile/${data.user.username}?tab=${tab}`)}
+                        />
+                    </div>
+                    <div className="lg:col-span-7 min-w-0 space-y-6">
+                        {!hasGames && (
+                            <ProfileChecklist
+                                stats={data.stats}
+                                listsCount={0}
+                                hasGamertags={Object.keys(data.user.gamertags ?? {}).length > 0}
+                                steamConnected={(data.stats.games_count ?? 0) > 0}
+                                onOpenTab={(tab) => router.push(`/profile/${data.user.username}?tab=${tab}`)}
+                            />
+                        )}
+                        <LatestArticlesFeed />
+                    </div>
                 </div>
 
                 {/* ── the second triptych: what you've earned, what today asks
@@ -98,6 +126,10 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
 
                     <div className="tp-fade-up tp-d4">
                         <UpcomingForYouRow />
+                    </div>
+
+                    <div className="tp-fade-up tp-d5">
+                        <FriendActivityFeed />
                     </div>
 
                     {hasGames && (

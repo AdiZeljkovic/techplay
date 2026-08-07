@@ -124,6 +124,9 @@ class DashboardController extends Controller
                 'completed_this_month' => $completedThisMonth,
                 'hours_played' => (int) UserGame::where('user_id', $user->id)->sum('hours_played'),
                 'friends_count' => $friendIds->count(),
+                // The daily hub shows the wallet, and the dashboard is the only
+                // place it is rendered for the owner.
+                'bounty_balance' => (int) ($user->bounty_balance ?? 0),
             ],
             'playing_now' => $this->profileService->playingNow($user, 8),
             // the shelf scrolls now, so it's worth sending more than fits

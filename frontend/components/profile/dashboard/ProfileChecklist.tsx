@@ -8,7 +8,9 @@ import { CheckCircle2, Circle, Gamepad2, Play, ListChecks, Tag, MessagesSquare, 
 import type { ProfileStats } from "@/lib/types/profile";
 
 interface Props {
-    stats: ProfileStats;
+    /** Only a few counters are read, and both the profile and dashboard
+        payloads carry them — so accept either shape. */
+    stats: Partial<ProfileStats> & { games_count?: number; playing_count?: number };
     listsCount: number;
     hasGamertags: boolean;
     steamConnected: boolean;
