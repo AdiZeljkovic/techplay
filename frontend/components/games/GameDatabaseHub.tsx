@@ -65,14 +65,14 @@ function Shelf({ shelf, onPick }: { shelf: typeof SHELVES[number]; onPick: () =>
     return (
         <button
             onClick={onPick}
-            className="group relative overflow-hidden rounded-[14px] border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors text-left p-4 h-full"
+            className="group relative overflow-hidden rounded-[14px] border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors p-4 h-full flex flex-col items-center text-center"
         >
             {/* The neon art IS the icon — no box, no tint; the PNGs carry their own glow. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={shelf.art} alt="" aria-hidden className="h-14 w-auto select-none pointer-events-none" />
-            <p className="mt-2 font-display text-[13.5px] font-black text-white">{shelf.title}</p>
-            <p className="mt-1 text-[11.5px] leading-snug text-white/40 pr-6">{shelf.line}</p>
-            <ArrowRight className="absolute right-4 bottom-4 w-4 h-4 text-white/25 group-hover:text-[var(--accent)] group-hover:translate-x-0.5 transition-all" />
+            <img src={shelf.art} alt="" aria-hidden className="h-16 w-auto select-none pointer-events-none" />
+            <p className="mt-2.5 font-display text-[13.5px] font-black text-white">{shelf.title}</p>
+            <p className="mt-1 text-[11.5px] leading-snug text-white/40">{shelf.line}</p>
+            <ArrowRight className="mt-2.5 w-4 h-4 text-white/25 group-hover:text-[var(--accent)] group-hover:translate-x-0.5 transition-all" />
         </button>
     );
 }
