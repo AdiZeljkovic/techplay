@@ -10,6 +10,7 @@ import { useCart } from "@/context/CartContext";
 import PageHero from "@/components/ui/PageHero";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
 import AddToCartDialog from "@/components/shop/AddToCartDialog";
+import { getStorageUrl } from "@/lib/imageUrl";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -108,9 +109,7 @@ export default function ShopClient() {
                                     {product.image_url ? (
                                         <div className="relative w-full h-full">
                                             <Image
-                                                src={product.image_url.startsWith('http')
-                                                    ? product.image_url
-                                                    : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}/storage/${product.image_url}`}
+                                                src={getStorageUrl(product.image_url)}
                                                 alt={product.name}
                                                 fill
                                                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"

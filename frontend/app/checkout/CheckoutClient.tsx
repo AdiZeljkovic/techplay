@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { getStorageUrl } from "@/lib/imageUrl";
 
 export default function CheckoutClient() {
     const { items, totalPrice, clearCart } = useCart();
@@ -198,7 +199,7 @@ export default function CheckoutClient() {
                             {items.map(item => (
                                 <div key={item.id} className="flex gap-4">
                                     <div className="w-16 h-16 bg-white/10 rounded-md overflow-hidden shrink-0">
-                                        {item.image_url && <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />}
+                                        {item.image_url && <img src={getStorageUrl(item.image_url)} alt={item.name} className="w-full h-full object-cover" />}
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="text-white font-medium">{item.name}</h4>

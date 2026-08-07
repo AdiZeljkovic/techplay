@@ -10,8 +10,14 @@ import Image from "next/image";
 import axios from "@/lib/axios";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import toast from "react-hot-toast";
+import { getStorageUrl } from "@/lib/imageUrl";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function CheckoutPage() {
+    // POST /shop/orders/cod sits behind auth:sanctum, so a guest who fills in
+    // the whole form only learns that at the end. Ask first.
+    useAuth({ middleware: 'auth' });
+
     const { items, totalPrice, clearCart } = useCart();
     const router = useRouter();
 
@@ -27,13 +33,6 @@ export default function CheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'cod'>('cod');
     const [isProcessing, setIsProcessing] = useState(false);
     const [orderSuccess, setOrderSuccess] = useState(false);
-
-    useEffect(() => {
-        if (items.length === 0 && !orderSuccess) {
-            // Optional: Redirect if empty and not just finished
-            // router.push('/shop');
-        }
-    }, [items, orderSuccess, router]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -250,9 +249,7 @@ export default function CheckoutPage() {
                                         <div className="relative w-16 h-16 bg-[var(--bg-elevated)] rounded-lg overflow-hidden border border-[var(--border)] flex-shrink-0">
                                             {item.image_url ? (
                                                 <Image
-                                                    src={item.image_url.startsWith('http')
-                                                        ? item.image_url
-                                                        : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}/storage/${item.image_url}`}
+                                                    src={getStorageUrl(item.image_url)}
                                                     alt={item.name}
                                                     fill
                                                     className="object-cover"
@@ -294,7 +291,7 @@ export default function CheckoutPage() {
                                     type="submit"
                                     form="checkout-form"
                                     disabled={isProcessing}
-                                    className="w-full py-4 bg-[var(--accent)] text-white font-bold rounded-xl hover:bg-[var(--accent-hover)] transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-[0_0_20px_var(--accent-glow)] disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full py-4 bg-[var(--accent)] text-white font-bold rounded-xl hover:bg-[var(--accent-hover)] transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isProcessing ? (
                                         <>Processing...</>

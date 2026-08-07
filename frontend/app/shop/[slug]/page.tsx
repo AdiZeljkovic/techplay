@@ -4,13 +4,14 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import { useParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
-import { ShoppingCart, PackageOpen, ArrowLeft, Truck, ShieldCheck, Heart } from "lucide-react";
+import { ShoppingCart, PackageOpen, ArrowLeft, Truck, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import PageHero from "@/components/ui/PageHero";
 import Image from "next/image";
 
 import AddToCartDialog from "@/components/shop/AddToCartDialog";
+import { getStorageUrl } from "@/lib/imageUrl";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -72,14 +73,12 @@ export default function ProductDetailPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
                     {/* Product Image */}
                     <div className="relative group">
-                        <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-secondary)] opacity-10 blur-2xl rounded-3xl" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-deep)] opacity-10 blur-2xl rounded-3xl" />
                         <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl overflow-hidden aspect-square flex items-center justify-center p-8 shadow-2xl">
                             {product.image_url ? (
                                 <div className="relative w-full h-full">
                                     <Image
-                                        src={product.image_url.startsWith('http')
-                                            ? product.image_url
-                                            : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}/storage/${product.image_url}`}
+                                        src={getStorageUrl(product.image_url)}
                                         alt={product.name}
                                         fill
                                         className="object-contain group-hover:scale-105 transition-transform duration-500"
@@ -127,13 +126,9 @@ export default function ProductDetailPage() {
                             <button
                                 onClick={handleAddToCart}
                                 disabled={product.stock === 0}
-                                className="flex-1 py-4 px-8 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg hover:shadow-[0_0_20px_var(--accent-glow)] bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:bg-[var(--bg-elevated)] disabled:text-[var(--text-muted)] disabled:cursor-not-allowed"
+                                className="flex-1 py-4 px-8 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:bg-[var(--bg-elevated)] disabled:text-[var(--text-muted)] disabled:cursor-not-allowed"
                             >
                                 <ShoppingCart className="w-6 h-6" /> Add to Cart
-                            </button>
-
-                            <button className="w-full sm:w-auto py-4 px-6 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-white hover:border-[var(--text-secondary)] transition-all flex items-center justify-center">
-                                <Heart className="w-6 h-6" />
                             </button>
                         </div>
 

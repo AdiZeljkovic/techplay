@@ -2,6 +2,8 @@ import { ShoppingCart, X, ArrowRight, ShoppingBag, Minus, Plus } from "lucide-re
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { getStorageUrl } from "@/lib/imageUrl";
+import { useCart } from "@/context/CartContext";
 
 interface Product {
     id: number;
@@ -18,8 +20,17 @@ interface AddToCartDialogProps {
 }
 
 export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartDialogProps) {
+    const { updateQuantity } = useCart();
     const [isVisible, setIsVisible] = useState(false);
     const [quantity, setQuantity] = useState(1);
+
+    /* The caller already added one; the stepper edits that line, it does not
+       collect a number nobody reads. */
+    const setLineQuantity = (next: number) => {
+        const q = Math.max(1, next);
+        setQuantity(q);
+        if (product) updateQuantity(product.id, q);
+    };
 
     useEffect(() => {
         if (isOpen) {
@@ -45,9 +56,7 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
     if (!isVisible && !isOpen) return null;
 
     const imageUrl = product?.image_url
-        ? (product.image_url.startsWith('http')
-            ? product.image_url
-            : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}/storage/${product.image_url}`)
+        ? (getStorageUrl(product.image_url))
         : null;
 
     return (
@@ -120,7 +129,7 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
                         <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 dark:text-[#71717A]">Quantity</span>
                         <div className="flex items-center gap-3">
                             <button
-                                onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                                onClick={() => setLineQuantity(quantity - 1)}
                                 aria-label="Decrease quantity"
                                 className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] text-zinc-600 dark:text-[#A1A1AA] hover:border-tp-accent/40 hover:text-tp-accent transition-colors"
                             >
@@ -128,7 +137,7 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
                             </button>
                             <span className="w-8 text-center font-display font-bold text-[15px] text-zinc-900 dark:text-white">{quantity}</span>
                             <button
-                                onClick={() => setQuantity(q => q + 1)}
+                                onClick={() => setLineQuantity(quantity + 1)}
                                 aria-label="Increase quantity"
                                 className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] text-zinc-600 dark:text-[#A1A1AA] hover:border-tp-accent/40 hover:text-tp-accent transition-colors"
                             >

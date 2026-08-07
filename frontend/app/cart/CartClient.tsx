@@ -4,6 +4,7 @@ import { useCart } from "@/context/CartContext";
 import Link from "next/link";
 import Image from "next/image";
 import { Trash2, ShoppingBag, ArrowRight, ArrowLeft, Minus, Plus } from "lucide-react";
+import { getStorageUrl } from "@/lib/imageUrl";
 
 export default function CartClient() {
     const { items, removeFromCart, updateQuantity, totalPrice, clearCart } = useCart();
@@ -75,7 +76,7 @@ export default function CartClient() {
                                                     <div className="w-16 h-16 rounded-lg bg-[var(--bg-elevated)] overflow-hidden relative flex-shrink-0">
                                                         {item.image_url ? (
                                                             <Image
-                                                                src={item.image_url}
+                                                                src={getStorageUrl(item.image_url)}
                                                                 alt={item.name}
                                                                 fill
                                                                 className="object-cover"
