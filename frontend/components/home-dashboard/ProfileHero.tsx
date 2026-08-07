@@ -4,8 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
     User as UserIcon, MapPin, CalendarDays, Pencil, ExternalLink, Check, BadgeCheck, MoreHorizontal,
-    Flame, Play, Sparkles, ShieldCheck, LinkIcon, UserPlus, Clock, MessageSquare,
-    Gamepad2, Trophy, Star, Medal,
+    Play, Sparkles, ShieldCheck, LinkIcon, UserPlus, Clock, MessageSquare,
 } from "lucide-react";
 import type { HeroModel } from "@/lib/hero";
 import type { FriendStatus } from "@/lib/types/profile";
@@ -373,19 +372,28 @@ export default function ProfileHero({
         {
             label: "Games",
             value: hero.stats.games,
-            icon: <Gamepad2 className="w-[20px] h-[20px] shrink-0 text-[var(--accent)]" />,
+            icon: (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src="/images/profile/stat-games.webp" alt="" aria-hidden className="w-[40px] h-[40px] shrink-0 object-contain select-none" />
+            ),
             href: `${base}?tab=collection`,
         },
         {
             label: "Completed",
             value: hero.stats.completed,
-            icon: <Trophy className="w-[20px] h-[20px] shrink-0 text-[var(--accent)]" />,
+            icon: (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src="/images/profile/stat-completed.webp" alt="" aria-hidden className="w-[40px] h-[40px] shrink-0 object-contain select-none" />
+            ),
             href: `${base}?tab=collection`,
         },
         {
             label: "Reviews",
             value: hero.stats.reviews,
-            icon: <Star className="w-[20px] h-[20px] shrink-0 text-[var(--accent)]" />,
+            icon: (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src="/images/profile/stat-reviews.webp" alt="" aria-hidden className="w-[40px] h-[40px] shrink-0 object-contain select-none" />
+            ),
             // Reviews surface in the overview's activity feed — there is no
             // longer a tab of their own to point at.
             href: base,
@@ -400,7 +408,10 @@ export default function ProfileHero({
                     )}
                 </>
             ),
-            icon: <Medal className="w-[20px] h-[20px] shrink-0 text-[var(--accent)]" />,
+            icon: (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src="/images/profile/stat-achievements.webp" alt="" aria-hidden className="w-[40px] h-[40px] shrink-0 object-contain select-none" />
+            ),
             href: `${base}?tab=achievements`,
         },
         {
@@ -412,9 +423,9 @@ export default function ProfileHero({
                 </>
             ),
             icon: (
-                <Flame
-                    className={`w-[20px] h-[20px] shrink-0 ${hero.streak_days > 0 ? "text-orange-400" : "text-white/25"}`}
-                />
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src="/images/profile/stat-streak.webp" alt="" aria-hidden
+                    className={`w-[40px] h-[40px] shrink-0 object-contain select-none ${hero.streak_days > 0 ? "" : "opacity-40 grayscale"}`} />
             ),
         },
         {
@@ -427,7 +438,7 @@ export default function ProfileHero({
             icon: (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                    src="/rewards/level-cache.png"
+                    src="/images/profile/stat-loot.webp"
                     alt=""
                     aria-hidden
                     width={44}
