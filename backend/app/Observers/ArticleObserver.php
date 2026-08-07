@@ -8,6 +8,7 @@ use App\Models\UserGame;
 use App\Notifications\GameNewsNotification;
 use App\Notifications\WishlistGameReviewedNotification;
 use App\Services\BountyService;
+use App\Services\ContentGameLinker;
 use App\Services\QuestService;
 use App\Services\RevalidationService;
 use App\Services\SanitizationService;
@@ -33,6 +34,18 @@ class ArticleObserver
         if ($article->isDirty('content') && is_string($article->content)) {
             $article->content = app(SanitizationService::class)
                 ->sanitizeStaffContent($article->content);
+        }
+
+        // The content↔game spine: anything written about a game links to it
+        // the moment it is saved, so the game page collects it and the
+        // article page can show what it covers. Editors override in the
+        // admin; the linker only fills silence.
+        if ($article->game_id === null && filled($article->title)) {
+            $article->game_id = app(ContentGameLinker::class)->match(
+                data_get($article->review_data, 'game_title'),
+                $article->title,
+                $article->published_at?->year ?? now()->year,
+            );
         }
     }
 

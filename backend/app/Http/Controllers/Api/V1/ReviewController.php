@@ -57,14 +57,14 @@ class ReviewController extends Controller
         // Increment views directly on DB to bypass cache and ensure accuracy
         Article::where('slug', $slug)->increment('views');
 
-        $cacheKey = "reviews.show.v2.{$slug}";
+        $cacheKey = "reviews.show.v3.{$slug}";
 
         $resource = Cache::remember($cacheKey, CacheService::TTL_LONG, function () use ($slug) {
             $article = Article::where('slug', $slug)
                 ->where('status', 'published')
                 // IMPORTANT: Only show articles with category type 'reviews'
                 ->whereHas('category', fn ($q) => $q->where('type', 'reviews'))
-                ->with(['author:id,username,display_name,avatar_url,bio', 'category'])
+                ->with(['author:id,username,display_name,avatar_url,bio', 'category', 'game:id,slug,name,cover_url,released,rating,genres,platforms,critic_scores'])
                 ->firstOrFail();
 
             return new ReviewResource($article);

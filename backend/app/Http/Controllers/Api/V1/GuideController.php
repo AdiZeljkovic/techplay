@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Guide;
 use App\Models\GuideVote;
 use App\Services\CacheService;
+use App\Services\ContentGameLinker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -47,9 +48,9 @@ class GuideController extends Controller
         Guide::where('slug', $slug)->increment('views');
 
         // Cache the Guide data itself
-        $guide = Cache::remember("guide.show.v2.{$slug}", CacheService::TTL_LONG, function () use ($slug) {
+        $guide = Cache::remember("guide.show.v3.{$slug}", CacheService::TTL_LONG, function () use ($slug) {
             return Guide::where('slug', $slug)
-                ->with(['author:id,username,display_name,avatar_url,bio'])
+                ->with(['author:id,username,display_name,avatar_url,bio', 'game:id,slug,name,cover_url,released,rating,genres,platforms,critic_scores'])
                 ->withCount([
                     'votes as helpful_count' => function ($query) {
                         $query->where('is_helpful', true);
@@ -69,6 +70,7 @@ class GuideController extends Controller
 
         return response()->json([
             'guide' => $guide,
+            'game' => ContentGameLinker::gamePayload($guide->game),
             'user_vote' => $userVote,
         ], 200, ['Cache-Control' => 'no-cache, no-store, must-revalidate']);
     }

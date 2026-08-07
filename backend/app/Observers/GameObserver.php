@@ -73,7 +73,7 @@ class GameObserver
         }
 
         Cache::forget("games.show.v3.{$game->slug}");
-        Cache::forget("games.articles.v1.{$game->id}");
+        Cache::forget("games.articles.v2.{$game->id}");
 
         if (app()->runningInConsole()) {
             return;

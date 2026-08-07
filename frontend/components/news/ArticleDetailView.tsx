@@ -9,6 +9,7 @@ import { useMemo, useState, useEffect } from "react";
 import { processContent } from "@/lib/content";
 import { ARTICLE_PROSE } from "@/lib/prose";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
+import GameInfoCard from "@/components/games/GameInfoCard";
 import AdUnit from "@/components/ads/AdUnit";
 import SocialShare from "@/components/share/SocialShare";
 import RecommendedNews from "@/components/news/RecommendedNews";
@@ -314,6 +315,8 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                         {/* Right Sidebar */}
                         <aside className="hidden xl:flex flex-col gap-8 w-[340px] shrink-0">
                             <AdUnit position="sidebar_top" />
+
+                            {article.game && <GameInfoCard game={article.game} />}
 
                             <RecommendedNews excludeSlug={article.slug} />
 

@@ -7,6 +7,7 @@ use App\Filament\Components\SeoFields;
 use App\Filament\Resources\NewsResource\Pages;
 use App\Filament\Resources\NewsResource\RelationManagers\ContentVersionsRelationManager;
 use App\Models\Article;
+use App\Models\Game;
 use App\Policies\NewsPolicy;
 use App\Services\CacheService;
 use Filament\Actions\BulkActionGroup;
@@ -202,6 +203,19 @@ class NewsResource extends Resource
                                         Forms\Components\Toggle::make('is_featured_in_hero')
                                             ->label('🌟 Feature in Homepage Hero')
                                             ->helperText('Highlight this article at the top of homepage'),
+
+                                        Forms\Components\Select::make('game_id')
+                                            ->label('Linked game')
+                                            ->placeholder('Search the games database...')
+                                            ->searchable()
+                                            ->getSearchResultsUsing(fn (string $search) => Game::query()
+                                                ->where('name', 'ilike', "%{$search}%")
+                                                ->orderByDesc('rating')
+                                                ->limit(20)
+                                                ->pluck('name', 'id')
+                                                ->toArray())
+                                            ->getOptionLabelUsing(fn ($value) => Game::find($value)?->name)
+                                            ->helperText('Auto-detected from the title on save; set it here to override.'),
 
                                         Forms\Components\Select::make('author_id')
                                             ->label('Author')

@@ -1,3 +1,17 @@
+export interface LinkedGameRef {
+    slug: string;
+    name: string;
+    cover_url: string | null;
+    released: string | null;
+    rating: number | null;
+    genres: string[];
+    platforms: string[];
+    critic_scores?: {
+        opencritic?: { score?: number | null; url?: string | null } | null;
+        metacritic?: { score?: number | null; url?: string | null } | null;
+    } | null;
+}
+
 export interface User {
     id: number;
     name: string;
@@ -43,6 +57,7 @@ export interface Category {
 }
 
 export interface Article {
+    game?: LinkedGameRef | null;
     id: number;
     title: string;
     slug: string;
@@ -96,6 +111,7 @@ export interface Article {
 }
 
 export interface Review {
+    game?: LinkedGameRef | null;
     id: number;
     title: string;
     slug: string;

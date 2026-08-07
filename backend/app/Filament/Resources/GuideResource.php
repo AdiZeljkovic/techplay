@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Components\MediaPickerFields;
 use App\Filament\Components\SeoFields;
 use App\Filament\Resources\GuideResource\Pages;
+use App\Models\Game;
 use App\Models\Guide;
 use App\Services\CacheService;
 use Filament\Actions\BulkActionGroup;
@@ -218,6 +219,19 @@ class GuideResource extends Resource
                                             ->label('Tags')
                                             ->placeholder('Add tag...')
                                             ->helperText('Press Enter after each tag'),
+
+                                        Select::make('game_id')
+                                            ->label('Linked game')
+                                            ->placeholder('Search the games database...')
+                                            ->searchable()
+                                            ->getSearchResultsUsing(fn (string $search) => Game::query()
+                                                ->where('name', 'ilike', "%{$search}%")
+                                                ->orderByDesc('rating')
+                                                ->limit(20)
+                                                ->pluck('name', 'id')
+                                                ->toArray())
+                                            ->getOptionLabelUsing(fn ($value) => Game::find($value)?->name)
+                                            ->helperText('Auto-detected from the title on save; set it here to override.'),
 
                                         Select::make('author_id')
                                             ->label('Author')

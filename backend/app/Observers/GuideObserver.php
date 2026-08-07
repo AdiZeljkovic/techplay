@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Events\GuidePublished;
 use App\Models\Guide;
+use App\Services\ContentGameLinker;
 use App\Services\RevalidationService;
 use App\Services\SanitizationService;
 use Illuminate\Support\Facades\Cache;
@@ -28,6 +29,15 @@ class GuideObserver
         if ($guide->isDirty('content') && is_string($guide->content)) {
             $guide->content = app(SanitizationService::class)
                 ->sanitizeStaffContent($guide->content);
+        }
+
+        // Same spine as articles: a guide about a game belongs to it.
+        if ($guide->game_id === null && filled($guide->title)) {
+            $guide->game_id = app(ContentGameLinker::class)->match(
+                null,
+                $guide->title,
+                $guide->published_at?->year ?? now()->year,
+            );
         }
     }
 

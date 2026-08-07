@@ -288,8 +288,8 @@ class GameController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $articles = Cache::remember("games.articles.v1.{$gameId}", 600, function () use ($gameId) {
-            return Article::where('game_id', $gameId)
+        $articles = Cache::remember("games.articles.v2.{$gameId}", 600, function () use ($gameId) {
+            $articles = Article::where('game_id', $gameId)
                 ->where('status', 'published')
                 ->with('category:id,name,type')
                 ->orderByDesc('published_at')
@@ -304,8 +304,28 @@ class GameController extends Controller
                     'review_score' => $a->review_score,
                     'category' => $a->category->name ?? null,
                     'path' => SitemapController::getArticleTypePath($a->category->type ?? 'news'),
-                ])
-                ->values();
+                ]);
+
+            // Guides ride the same spine: everything written about the game,
+            // one list, told apart by the path it links to.
+            $guides = DB::table('guides')
+                ->where('game_id', $gameId)
+                ->where('status', 'published')
+                ->orderByDesc('published_at')
+                ->limit(4)
+                ->get(['slug', 'title', 'excerpt', 'featured_image_url', 'published_at'])
+                ->map(fn ($g) => [
+                    'slug' => $g->slug,
+                    'title' => $g->title,
+                    'excerpt' => $g->excerpt,
+                    'image' => $g->featured_image_url,
+                    'published_at' => $g->published_at,
+                    'review_score' => null,
+                    'category' => 'Guide',
+                    'path' => 'guides',
+                ]);
+
+            return $articles->concat($guides)->sortByDesc('published_at')->values();
         });
 
         return response()->json(['data' => $articles])

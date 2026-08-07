@@ -60,7 +60,7 @@ class NewsController extends Controller
         // Increment views directly on DB to bypass cache and ensure accuracy
         Article::where('slug', $slug)->increment('views');
 
-        $cacheKey = "news.show.v2.{$slug}";
+        $cacheKey = "news.show.v3.{$slug}";
 
         $resource = Cache::remember($cacheKey, 3600, function () use ($slug) {
             $article = Article::where('slug', $slug)
@@ -70,6 +70,7 @@ class NewsController extends Controller
                 ->with([
                     'author',
                     'category',
+                    'game:id,slug,name,cover_url,released,rating,genres,platforms,critic_scores',
                     'comments' => function ($query) {
                         $query->where('status', 'approved')
                             ->whereNull('parent_id')

@@ -9,6 +9,7 @@ import Script from "next/script";
 import { processContent } from "@/lib/content";
 import { ARTICLE_PROSE } from "@/lib/prose";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
+import GameInfoCard from "@/components/games/GameInfoCard";
 import AdUnit from "@/components/ads/AdUnit";
 import RecommendedNews from "@/components/news/RecommendedNews";
 import ReleaseCalendarSection from "@/components/home/ReleaseCalendarSection";
@@ -47,11 +48,12 @@ export interface Guide {
 }
 
 interface GuideDetailViewProps {
+    game?: import("@/components/games/GameInfoCard").LinkedGame | null;
     guide: Guide;
     userVote?: boolean | null;
 }
 
-export default function GuideDetailView({ guide, userVote: initialVote }: GuideDetailViewProps) {
+export default function GuideDetailView({ guide, game, userVote: initialVote }: GuideDetailViewProps) {
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const { user } = useAuth();
     useEmbedScripts();
@@ -298,6 +300,8 @@ export default function GuideDetailView({ guide, userVote: initialVote }: GuideD
                         {/* Right Sidebar */}
                         <aside className="hidden xl:flex flex-col gap-8 w-[340px] shrink-0">
                             <AdUnit position="sidebar_top" />
+
+                            {game && <GameInfoCard game={game} />}
 
                             <RecommendedNews />
 

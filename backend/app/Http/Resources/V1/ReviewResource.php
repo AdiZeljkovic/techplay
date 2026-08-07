@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\V1;
 
+use App\Services\ContentGameLinker;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -58,6 +59,9 @@ class ReviewResource extends JsonResource
 
             'tags' => $this->tags ?? [],
             'is_featured_in_hero' => $this->is_featured_in_hero ?? false,
+
+            // The game this review covers — same card shape as news and guides.
+            'game' => $this->whenLoaded('game', fn () => ContentGameLinker::gamePayload($this->game)),
 
             'status' => $this->status,
             'published_at' => $this->published_at,

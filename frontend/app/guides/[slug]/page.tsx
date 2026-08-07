@@ -9,7 +9,7 @@ export const revalidate = false; // 15 minutes (guides are more evergreen conten
 
 async function getGuide(slug: string) {
     // Shape: { guide: {...}, user_vote: ... }
-    return fetchContent<{ guide: Guide; user_vote: boolean | null }>(`${getServerApiUrl()}/guides/${slug}`, {
+    return fetchContent<{ guide: Guide; game: import("@/components/games/GameInfoCard").LinkedGame | null; user_vote: boolean | null }>(`${getServerApiUrl()}/guides/${slug}`, {
         next: { revalidate: 900, tags: ['guides', `guide-${slug}`] },
     });
 }
@@ -117,7 +117,7 @@ export default async function GuidePage({ params }: Props) {
     return (
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-            <GuideDetailView guide={guide} userVote={data.user_vote} />
+            <GuideDetailView guide={guide} game={data.game ?? null} userVote={data.user_vote} />
         </>
     );
 }

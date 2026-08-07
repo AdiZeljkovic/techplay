@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\V1;
 
+use App\Services\ContentGameLinker;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -56,6 +57,10 @@ class ArticleResource extends JsonResource
 
             'review_score' => $this->review_score,
             'review_data' => $this->review_data,
+
+            // The game this piece is about — one shape everywhere, so every
+            // content page can render the same game card.
+            'game' => $this->whenLoaded('game', fn () => ContentGameLinker::gamePayload($this->game)),
 
             // Embed comments if eager loaded to avoid extra HTTP request
             'comments' => CommentResource::collection($this->whenLoaded('comments')),

@@ -7,6 +7,7 @@ import Image from "next/image";
 import { format } from "date-fns";
 import { useMemo, useEffect } from "react";
 import Script from "next/script";
+import GameInfoCard from "@/components/games/GameInfoCard";
 import AdUnit from "@/components/ads/AdUnit";
 import ReviewSidebar from "@/components/reviews/ReviewSidebar";
 import RecommendedNews from "@/components/news/RecommendedNews";
@@ -343,6 +344,8 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                         {/* Right Sidebar */}
                         <aside className="hidden xl:flex flex-col gap-8 w-[340px] shrink-0">
                             <AdUnit position="sidebar_top" />
+
+                            {review.game && <GameInfoCard game={review.game} />}
 
                             <RecommendedNews />
 

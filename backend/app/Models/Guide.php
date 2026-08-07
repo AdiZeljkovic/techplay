@@ -21,6 +21,7 @@ class Guide extends Model
         'featured_image_url',
         'difficulty', // beginner, intermediate, advanced
         'author_id',
+        'game_id',
         'seo_title',
         'seo_description',
         'focus_keyword',
@@ -132,5 +133,10 @@ class Guide extends Model
                 Cache::forget("guides.index.page_{$i}.diff_{$diff}.search_{$emptySearchHash}");
             }
         }
+    }
+
+    public function game()
+    {
+        return $this->belongsTo(Game::class);
     }
 }
