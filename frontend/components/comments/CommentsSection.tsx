@@ -161,7 +161,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
             <div className="flex items-center gap-3 mb-6">
                 <h3 className="font-display text-[16px] font-bold text-white uppercase tracking-[0.08em] flex items-center gap-2.5">
                     Discussion
-                    <span className="text-[#71717A] text-[13px] font-normal tracking-normal normal-case">({comments.length})</span>
+                    <span className="text-white/35 text-[13px] font-normal tracking-normal normal-case">({comments.length})</span>
                 </h3>
             </div>
 
@@ -170,18 +170,18 @@ export default function CommentsSection({ commentableId, commentableType, initia
                 <div className="flex gap-4 animate-pulse mb-8">
                     <div className="w-10 h-10 rounded-full bg-white/5 shrink-0" />
                     <div className="flex-1 space-y-3">
-                        <div className="h-[100px] w-full bg-white/5 rounded-xl" />
-                        <div className="h-8 w-32 bg-white/5 rounded-lg" />
+                        <div className="h-[100px] w-full bg-white/5 rounded-[var(--radius-card)]" />
+                        <div className="h-8 w-32 bg-white/5 rounded-[var(--radius-card)]" />
                     </div>
                 </div>
             ) : user ? (
                 <form onSubmit={(e) => handleSubmit(e)} className="mb-8">
                     <div className="flex gap-3">
-                        <div className="hidden sm:block shrink-0 w-9 h-9 rounded-full overflow-hidden bg-[#1A1F26] ring-2 ring-white/5 mt-0.5">
+                        <div className="hidden sm:block shrink-0 w-9 h-9 rounded-full overflow-hidden bg-[var(--surface-2)] ring-2 ring-white/5 mt-0.5">
                             {user.avatar_url ? (
                                 <Image src={user.avatar_url} alt={user.username} width={36} height={36} className="object-cover" />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center font-bold text-tp-accent text-sm">
+                                <div className="w-full h-full flex items-center justify-center font-bold text-[var(--accent)] text-sm">
                                     {user?.username?.charAt(0)?.toUpperCase() || '?'}
                                 </div>
                             )}
@@ -191,12 +191,12 @@ export default function CommentsSection({ commentableId, commentableType, initia
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
                                 placeholder="Share your thoughts… (earn 10 XP!)"
-                                className="w-full bg-[#05070A] border border-[#1E2430] rounded-xl p-4 text-[14px] text-white focus:outline-none focus:border-tp-accent/50 transition-colors min-h-[90px] resize-y placeholder:text-[#4B5563]"
+                                className="w-full bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] p-4 text-[14px] text-white focus:outline-none focus:border-[var(--accent)]/50 transition-colors min-h-[90px] resize-y placeholder:text-white/30"
                                 required
                             />
                             {error && <p className="text-red-500 text-[12px] mt-2">{error}</p>}
                             {statusMessage && (
-                                <div className={`mt-3 p-3 rounded-lg text-[13px] border ${statusMessage.type === 'warning'
+                                <div className={`mt-3 p-3 rounded-[var(--radius-card)] text-[13px] border ${statusMessage.type === 'warning'
                                     ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
                                     : 'bg-green-500/10 border-green-500/20 text-green-500'
                                     }`}>
@@ -204,11 +204,11 @@ export default function CommentsSection({ commentableId, commentableType, initia
                                 </div>
                             )}
                             <div className="mt-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                                <p className="text-[11px] text-[#4B5563]">Be respectful and follow our community guidelines.</p>
+                                <p className="text-[11px] text-white/30">Be respectful and follow our community guidelines.</p>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting || !content.trim()}
-                                    className="bg-tp-accent hover:bg-tp-accent-hover text-white px-6 h-[38px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[11px] flex items-center justify-center shadow-lg shadow-tp-accent/20 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                                    className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white px-6 h-[38px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[11px] flex items-center justify-center shadow-lg shadow-[var(--accent)]/20 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                                 >
                                     {isSubmitting ? "Posting…" : "Post Comment"}
                                 </button>
@@ -217,26 +217,26 @@ export default function CommentsSection({ commentableId, commentableType, initia
                     </div>
                 </form>
             ) : (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-5 px-5 mb-8 bg-[#05070A] rounded-xl border border-[#1E2430]">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-5 px-5 mb-8 bg-[var(--surface-0)] rounded-[var(--radius-card)] border border-white/[0.07]">
                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-tp-accent/10 border border-tp-accent/20 flex items-center justify-center shrink-0">
-                            <Gamepad2 className="w-5 h-5 text-tp-accent" />
+                        <div className="w-10 h-10 rounded-[var(--radius-card)] bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center shrink-0">
+                            <Gamepad2 className="w-5 h-5 text-[var(--accent)]" />
                         </div>
                         <div>
                             <p className="text-white font-bold text-[14px]">Join the Conversation</p>
-                            <p className="text-[#6B7280] text-[12px] mt-0.5">Log in to comment and earn community XP.</p>
+                            <p className="text-white/35 text-[12px] mt-0.5">Log in to comment and earn community XP.</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                         <Link
                             href="/login?redirect=back"
-                            className="border border-[#1E2430] hover:border-tp-accent/40 text-[#A1A1AA] hover:text-white px-5 h-[36px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[11px] flex items-center"
+                            className="border border-white/[0.07] hover:border-[var(--accent)]/40 text-white/45 hover:text-white px-5 h-[36px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[11px] flex items-center"
                         >
                             Log In
                         </Link>
                         <Link
                             href="/register?redirect=back"
-                            className="bg-tp-accent hover:bg-tp-accent-hover text-white px-5 h-[36px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[11px] flex items-center shadow-lg shadow-tp-accent/20"
+                            className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white px-5 h-[36px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[11px] flex items-center shadow-lg shadow-[var(--accent)]/20"
                         >
                             Sign Up
                         </Link>
@@ -247,8 +247,8 @@ export default function CommentsSection({ commentableId, commentableType, initia
             {/* Comment list */}
             {isLoading ? (
                 <div className="text-center py-10">
-                    <div className="w-6 h-6 border-2 border-tp-accent border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                    <p className="text-[#71717A] text-[13px]">Loading discussion…</p>
+                    <div className="w-6 h-6 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                    <p className="text-white/35 text-[13px]">Loading discussion…</p>
                 </div>
             ) : comments.length > 0 ? (
                 <div className="space-y-6">
@@ -270,9 +270,9 @@ export default function CommentsSection({ commentableId, commentableType, initia
                 </div>
             ) : (
                 <div className="text-center py-10">
-                    <MessageSquare className="w-8 h-8 text-[#71717A] mx-auto mb-3 opacity-30" />
-                    <p className="text-[#A1A1AA] font-bold text-[13px] uppercase tracking-wider">No comments yet</p>
-                    <p className="text-[#71717A] text-[12px] mt-1">Be the first to share your thoughts!</p>
+                    <MessageSquare className="w-8 h-8 text-white/35 mx-auto mb-3 opacity-30" />
+                    <p className="text-white/45 font-bold text-[13px] uppercase tracking-wider">No comments yet</p>
+                    <p className="text-white/35 text-[12px] mt-1">Be the first to share your thoughts!</p>
                 </div>
             )}
         </div>
@@ -307,18 +307,17 @@ const CommentItem = memo(function CommentItem({
 }: CommentItemProps) {
     const displayName = decodeHtml(comment.user.name || comment.user.username);
     const isStaff = comment.user.role === 'admin' || comment.user.role === 'editor';
-    const isOwner = user?.id === comment.user.id;
 
     return (
         <div className={`group animate-fade-in-up ${depth > 0 ? 'mt-4' : ''}`}>
             <div className="flex gap-4">
                 {/* Avatar */}
                 <Link href={`/profile/${comment.user.username}`} className="shrink-0 relative">
-                    <div className={`w-10 h-10 rounded-full overflow-hidden bg-[#1A1F26] ring-2 transition-all ${isStaff ? 'ring-tp-accent' : 'ring-transparent group-hover:ring-white/20'}`}>
+                    <div className={`w-10 h-10 rounded-full overflow-hidden bg-[var(--surface-2)] ring-2 transition-all ${isStaff ? 'ring-[var(--accent)]' : 'ring-transparent group-hover:ring-white/20'}`}>
                         {comment.user.avatar_url ? (
                             <Image src={comment.user.avatar_url} alt={comment.user.username} width={40} height={40} className="object-cover" />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center font-bold text-tp-accent text-lg">
+                            <div className="w-full h-full flex items-center justify-center font-bold text-[var(--accent)] text-lg">
                                 {comment.user?.username?.charAt(0)?.toUpperCase() || '?'}
                             </div>
                         )}
@@ -328,13 +327,13 @@ const CommentItem = memo(function CommentItem({
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center flex-wrap gap-2 mb-1.5">
-                        <Link href={`/profile/${comment.user.username}`} className={`font-bold text-sm hover:underline ${isStaff ? 'text-tp-accent' : 'text-white'}`}>
+                        <Link href={`/profile/${comment.user.username}`} className={`font-bold text-sm hover:underline ${isStaff ? 'text-[var(--accent)]' : 'text-white'}`}>
                             {displayName}
                         </Link>
 
                         {/* Staff Badge */}
                         {isStaff && (
-                            <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-tp-accent/10 text-tp-accent border border-tp-accent/20 uppercase tracking-wide">
+                            <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide">
                                 <ShieldCheck className="w-3 h-3" />
                                 Staff
                             </span>
@@ -343,37 +342,37 @@ const CommentItem = memo(function CommentItem({
                         {/* Rank Badge */}
                         {comment.user.rank && !isStaff && (
                             <span
-                                className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#0B0E14] text-[#71717A] border border-[#161B22]"
+                                className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-[var(--surface-1)] text-white/35 border border-white/[0.07]"
                                 style={{ color: comment.user.rank.color }}
                             >
                                 {comment.user.rank.name}
                             </span>
                         )}
 
-                        <span className="text-[11px] text-[#71717A] font-bold uppercase tracking-wider" suppressHydrationWarning>• {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}</span>
+                        <span className="text-[11px] text-white/35 font-bold uppercase tracking-wider" suppressHydrationWarning>• {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}</span>
                     </div>
 
-                    <div className={`text-[#A1A1AA] leading-relaxed text-sm ${depth === 0 ? 'text-base' : ''}`}>
+                    <div className={`text-white/45 leading-relaxed text-sm ${depth === 0 ? 'text-base' : ''}`}>
                         {decodeHtml(comment.content)}
                     </div>
 
                     {/* Actions */}
                     <div className="flex items-center gap-4 mt-3">
                         {/* Vote Pill */}
-                        <div className="flex items-center gap-1 bg-[#05070A] rounded-lg p-0.5 border border-[#161B22]">
+                        <div className="flex items-center gap-1 bg-[var(--surface-0)] rounded-[var(--radius-card)] p-0.5 border border-white/[0.07]">
                             <button
                                 onClick={() => handleVote(comment.id, 'up')}
-                                className={`p-1 rounded hover:bg-green-500/10 transition-colors ${comment.user_vote === 'up' ? 'text-green-500' : 'text-[#71717A] hover:text-green-400'}`}
+                                className={`p-1 rounded hover:bg-green-500/10 transition-colors ${comment.user_vote === 'up' ? 'text-green-500' : 'text-white/35 hover:text-green-400'}`}
                                 title="Upvote"
                             >
                                 <ChevronUp className="w-4 h-4" />
                             </button>
-                            <span className={`text-xs font-bold min-w-[16px] text-center ${comment.user_vote === 'up' ? 'text-green-500' : comment.user_vote === 'down' ? 'text-red-500' : 'text-[#A1A1AA]'}`}>
+                            <span className={`text-xs font-bold min-w-[16px] text-center ${comment.user_vote === 'up' ? 'text-green-500' : comment.user_vote === 'down' ? 'text-red-500' : 'text-white/45'}`}>
                                 {comment.score || 0}
                             </span>
                             <button
                                 onClick={() => handleVote(comment.id, 'down')}
-                                className={`p-1 rounded hover:bg-red-500/10 transition-colors ${comment.user_vote === 'down' ? 'text-red-500' : 'text-[#71717A] hover:text-red-400'}`}
+                                className={`p-1 rounded hover:bg-red-500/10 transition-colors ${comment.user_vote === 'down' ? 'text-red-500' : 'text-white/35 hover:text-red-400'}`}
                                 title="Downvote"
                             >
                                 <ChevronDown className="w-4 h-4" />
@@ -382,18 +381,11 @@ const CommentItem = memo(function CommentItem({
 
                         <button
                             onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                            className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#71717A] hover:text-tp-accent transition-colors"
+                            className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-white/35 hover:text-[var(--accent)] transition-colors"
                         >
                             <MessageSquare className="w-4 h-4" />
                             Reply
                         </button>
-
-                        {isOwner && (
-                            <button className="text-[11px] font-bold uppercase tracking-wider text-[#71717A] hover:text-red-500 transition-colors">
-                                Delete
-                            </button>
-                            // TODO: Implement delete functionality
-                        )}
                     </div>
 
                     {/* Reply Form */}
@@ -405,7 +397,7 @@ const CommentItem = memo(function CommentItem({
                                         value={replyContent}
                                         onChange={(e) => setReplyContent(e.target.value)}
                                         placeholder={`Reply to ${displayName}...`}
-                                        className="w-full bg-[#05070A] border border-[#161B22] rounded-xl p-3 pr-12 text-sm text-white focus:outline-none focus:border-tp-accent/50 min-h-[60px] resize-y placeholder:text-[#71717A]"
+                                        className="w-full bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] p-3 pr-12 text-sm text-white focus:outline-none focus:border-[var(--accent)]/50 min-h-[60px] resize-y placeholder:text-white/35"
                                         autoFocus
                                         required
                                     />
@@ -413,7 +405,7 @@ const CommentItem = memo(function CommentItem({
                                         type="submit"
                                         size="sm"
                                         variant="ghost"
-                                        className="absolute bottom-2 right-2 hover:bg-tp-accent hover:text-white"
+                                        className="absolute bottom-2 right-2 hover:bg-[var(--accent)] hover:text-white"
                                         disabled={isSubmitting || !replyContent.trim()}
                                     >
                                         <Send className="w-4 h-4" />
@@ -422,7 +414,7 @@ const CommentItem = memo(function CommentItem({
                                 <div className="flex justify-end mt-2">
                                     <button
                                         type="button"
-                                        className="text-xs text-[#71717A] hover:text-white"
+                                        className="text-xs text-white/35 hover:text-white"
                                         onClick={() => setReplyingTo(null)}
                                     >
                                         Cancel
@@ -436,7 +428,7 @@ const CommentItem = memo(function CommentItem({
                     {comment.replies && comment.replies.length > 0 && (
                         <div className="mt-3 relative">
                             {/* Connector Line for Thread */}
-                            <div className="absolute top-0 bottom-0 left-[-26px] w-[2px] bg-[#161B22] hover:bg-tp-accent/50 transition-colors" />
+                            <div className="absolute top-0 bottom-0 left-[-26px] w-[2px] bg-white/[0.07] hover:bg-[var(--accent)]/50 transition-colors" />
 
                             <div className="">
                                 {comment.replies.map(reply => (
