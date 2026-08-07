@@ -38,10 +38,10 @@ function Lightbox({ images, initial, onClose }: {
 
     return (
         <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center" onClick={onClose}>
-            <button onClick={onClose} className="absolute top-4 right-4 p-2 text-white/70 hover:text-white bg-white/10 rounded-full z-10 transition-colors">
+            <button onClick={onClose} aria-label="Close gallery" className="absolute top-4 right-4 p-2 text-white/70 hover:text-white bg-white/10 rounded-full z-10 transition-colors">
                 <X className="w-6 h-6" />
             </button>
-            <button onClick={(e) => { e.stopPropagation(); prev(); }}
+            <button aria-label="Previous screenshot" onClick={(e) => { e.stopPropagation(); prev(); }}
                 className="absolute left-4 p-3 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full z-10 transition-all">
                 <ChevronLeft className="w-6 h-6" />
             </button>
@@ -50,7 +50,7 @@ function Lightbox({ images, initial, onClose }: {
                     className="w-full h-auto max-h-[80vh] object-contain rounded-[8px]" />
                 <p className="text-center text-white/40 text-sm mt-3">{idx + 1} / {images.length}</p>
             </div>
-            <button onClick={(e) => { e.stopPropagation(); next(); }}
+            <button aria-label="Next screenshot" onClick={(e) => { e.stopPropagation(); next(); }}
                 className="absolute right-4 p-3 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full z-10 transition-all">
                 <ChevronRight className="w-6 h-6" />
             </button>

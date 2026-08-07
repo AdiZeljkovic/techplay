@@ -262,7 +262,12 @@ export default function SocialClient() {
     }, [conversations, activeId]);
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+        // Only follow the conversation if the reader is already at the end —
+        // and scroll the message list, not the document.
+        const list = bottomRef.current?.parentElement;
+        if (!list) return;
+        const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 120;
+        if (nearBottom) list.scrollTop = list.scrollHeight;
     }, [thread?.messages?.length, activeId]);
 
     /* Live delivery: the open thread listens on its own channel, and the

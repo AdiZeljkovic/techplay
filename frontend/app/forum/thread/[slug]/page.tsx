@@ -217,6 +217,7 @@ export default function ThreadPage() {
         }
         if (isUpvoting) return;
         setIsUpvoting(true);
+        if (!data) { setIsUpvoting(false); return; }
 
         // Optimistic update
         if (data) {

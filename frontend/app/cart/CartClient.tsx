@@ -115,10 +115,10 @@ export default function CartClient() {
                                             </td>
                                             <td className="p-4">
                                                 <button
-                                                    onClick={() => removeFromCart(item.id)}
+                                                    onClick={() => removeFromCart(item.id)} aria-label="Remove from cart"
                                                     className="text-white/35 hover:text-red-500 transition-colors"
                                                 >
-                                                    <Trash2 className="w-5 h-5" />
+                                                    <Trash2 className="w-5 h-5" aria-hidden />
                                                 </button>
                                             </td>
                                         </tr>

@@ -89,9 +89,11 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
         return `${minutes} min read`;
     }, [article.content]);
 
-    if (!article) return null;
-
     const { content: processedContent } = useMemo(() => processContent(article.content), [article.content]);
+
+    // Every hook has run by here. The guard used to sit above the memo, which
+    // is a hook-order mismatch the first time a caller passes a falsy article.
+    if (!article) return null;
 
     const imageUrl = article.featured_image_url?.startsWith('http')
         ? article.featured_image_url
