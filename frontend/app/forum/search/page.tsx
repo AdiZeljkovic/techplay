@@ -36,7 +36,13 @@ function ForumSearchResults() {
     const [hasError, setHasError] = useState(false);
 
     useEffect(() => {
-        if (!q || q.length < 3) return;
+        if (!q || q.length < 3) {
+            // Leaving the old rows on screen under a new query read as if they
+            // were results for it.
+            setResults(null);
+            setIsLoading(false);
+            return;
+        }
         setIsLoading(true);
         setHasError(false);
         fetcher(`/forum/search?q=${encodeURIComponent(q)}`)

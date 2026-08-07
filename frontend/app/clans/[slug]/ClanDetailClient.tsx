@@ -302,7 +302,7 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
                                         <Castle className="w-4 h-4" /> Clan Base
                                     </Link>
                                     <Link
-                                        href={`/forum?category=${clan.forum_slug}`}
+                                        href={`/forum/${clan.forum_slug}`}
                                         className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-[8px] bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-white font-display text-[10.5px] font-bold uppercase tracking-[0.1em] transition-colors"
                                     >
                                         <MessageSquare className="w-4 h-4" /> Clan Chat
