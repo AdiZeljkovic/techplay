@@ -82,6 +82,9 @@ interface ThreadData {
     posts: Post[] | {
         data: Post[];
         links: any[];
+        current_page?: number;
+        last_page?: number;
+        total?: number;
     };
 }
 
@@ -124,7 +127,18 @@ export default function ThreadPage() {
     const [isTogglingBookmark, setIsTogglingBookmark] = useState(false);
     const [isSelfPinning, setIsSelfPinning] = useState(false);
 
-    const { data, isLoading, mutate } = useSWR<ThreadData>(slug ? `/forum/threads/${slug}` : null, fetcher);
+    // Replies are paginated fifteen at a time. The page used to ask for the
+    // first page only and offer no way to the rest, so every thread stopped
+    // dead at reply fifteen — and a new reply that landed on page two
+    // appeared, then vanished on the next revalidation.
+    const [page, setPage] = useState(1);
+    const { data, isLoading, mutate } = useSWR<ThreadData>(
+        slug ? `/forum/threads/${slug}?page=${page}` : null,
+        fetcher,
+        { keepPreviousData: true }
+    );
+    const pageInfo = data?.posts && !Array.isArray(data.posts) ? data.posts : null;
+    const lastPage = pageInfo?.last_page ?? 1;
     const { replies: liveReplies } = useRealTimeThreadReplies(data?.thread?.id ?? 0);
 
     // Helper to normalize posts
@@ -147,6 +161,16 @@ export default function ThreadPage() {
             const newPost = response.data.data || response.data;
 
             setReplyContent("");
+
+            // A reply lands at the end of the thread. If we are not on the
+            // last page, go there — appending it to page one only for it to
+            // disappear on the next revalidation is worse than a jump.
+            if (lastPage > page) {
+                setPage(lastPage);
+                toast.success("Reply posted successfully!");
+                setIsSubmitting(false);
+                return;
+            }
 
             // Manually update cache to show the new post immediately
             if (data) {
@@ -730,7 +754,7 @@ export default function ThreadPage() {
                                         return (
                                             <div key={post.id} className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] p-4 flex items-center justify-between">
                                                 <span className="text-sm text-white/30 italic">[This post was deleted]</span>
-                                                <span className="text-xs text-white/30">#{index + 2}</span>
+                                                <span className="text-xs text-white/30">#{(page - 1) * 15 + index + 2}</span>
                                             </div>
                                         );
                                     }
@@ -805,7 +829,7 @@ export default function ThreadPage() {
                                                             {post.edited_at && <span className="ml-2 italic">(edited)</span>}
                                                         </span>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="text-xs text-white/35">#{index + 2}</span>
+                                                            <span className="text-xs text-white/35">#{(page - 1) * 15 + index + 2}</span>
                                                             {user && (user.id === thread.author?.id || currentUserIsStaff) && (
                                                                 <button
                                                                     onClick={() => handleMarkSolution(post.id)}
@@ -866,6 +890,44 @@ export default function ThreadPage() {
                                         </div>
                                     );
                                 })}
+                            </div>
+                        )}
+
+                        {/* Pages — a long thread has more than the fifteen replies
+                            the API hands back at a time. */}
+                        {lastPage > 1 && (
+                            <div className="flex flex-wrap items-center justify-center gap-1.5">
+                                <button
+                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                    disabled={page <= 1}
+                                    className="inline-flex items-center h-8 px-3.5 rounded-[8px] border border-white/[0.07] bg-white/[0.03] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-white/45 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    Previous
+                                </button>
+                                {Array.from({ length: lastPage }, (_, i) => i + 1)
+                                    .filter((n) => n === 1 || n === lastPage || Math.abs(n - page) <= 2)
+                                    .map((n, idx, arr) => (
+                                        <span key={n} className="flex items-center gap-1.5">
+                                            {idx > 0 && arr[idx - 1] !== n - 1 && <span className="text-white/20">…</span>}
+                                            <button
+                                                onClick={() => setPage(n)}
+                                                className={`inline-flex items-center h-8 px-3 rounded-[8px] border font-display text-[9.5px] font-black tabular-nums transition-colors ${
+                                                    n === page
+                                                        ? "bg-[var(--accent)] border-transparent text-white"
+                                                        : "bg-white/[0.03] border-white/[0.07] text-white/45 hover:text-white"
+                                                }`}
+                                            >
+                                                {n}
+                                            </button>
+                                        </span>
+                                    ))}
+                                <button
+                                    onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
+                                    disabled={page >= lastPage}
+                                    className="inline-flex items-center h-8 px-3.5 rounded-[8px] border border-white/[0.07] bg-white/[0.03] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-white/45 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    Next
+                                </button>
                             </div>
                         )}
 

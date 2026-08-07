@@ -310,7 +310,12 @@ class ChatController extends Controller
             ->limit(10)
             ->get()
             ->map(fn (Friendship $f) => [
-                'id' => $f->id,
+                // The accept/decline routes are keyed by the *sender*, which is
+                // what FriendController::pendingRequests has always returned.
+                // Handing back the friendship row id instead meant every
+                // Accept from the Social Hub 404'd.
+                'id' => $f->sender_id,
+                'friendship_id' => $f->id,
                 'created_at' => $f->created_at->toIso8601String(),
                 'user' => $f->sender ? [
                     'id' => $f->sender->id,

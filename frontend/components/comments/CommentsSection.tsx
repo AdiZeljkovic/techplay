@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, memo } from "react";
+import toast from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 import { formatDistanceToNow } from "date-fns";
@@ -62,7 +63,10 @@ export default function CommentsSection({ commentableId, commentableType, initia
     }, [fetchComments, isAuthLoading]);
 
     const handleVote = async (commentId: number, type: 'up' | 'down') => {
-        if (!user) return;
+        if (!user) {
+            toast.error('Sign in to vote on comments.');
+            return;
+        }
 
         setComments(prevComments => {
             const updateVoteInTree = (list: Comment[]): Comment[] => {
@@ -379,13 +383,15 @@ const CommentItem = memo(function CommentItem({
                             </button>
                         </div>
 
-                        <button
-                            onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                            className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-white/35 hover:text-[var(--accent)] transition-colors"
-                        >
-                            <MessageSquare className="w-4 h-4" />
-                            Reply
-                        </button>
+                        {depth < 2 && (
+                            <button
+                                onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                                className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-white/35 hover:text-[var(--accent)] transition-colors"
+                            >
+                                <MessageSquare className="w-4 h-4" />
+                                Reply
+                            </button>
+                        )}
                     </div>
 
                     {/* Reply Form */}

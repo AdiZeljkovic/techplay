@@ -147,6 +147,24 @@ class CommentController extends Controller
         // 2. XP Check: Minimum Length
         $shouldAwardXp = strlen($cleanContent) >= 10;
 
+        // The reader is only ever served three levels of replies, so a reply
+        // to a fourth-level comment used to be saved and then vanish. Refuse
+        // it instead, and say why.
+        if ($request->parent_id) {
+            $depth = 0;
+            $cursor = Comment::find($request->parent_id);
+            while ($cursor && $cursor->parent_id && $depth < 10) {
+                $depth++;
+                $cursor = Comment::find($cursor->parent_id);
+            }
+
+            if ($depth >= 2) {
+                return response()->json([
+                    'message' => 'This thread is as deep as it goes — reply to the comment above instead.',
+                ], 422);
+            }
+        }
+
         $comment = Comment::create([
             'user_id' => $user->id,
             'commentable_type' => $modelClass,

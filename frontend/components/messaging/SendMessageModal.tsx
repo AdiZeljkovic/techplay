@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -32,19 +32,31 @@ export function SendMessageModal({ isOpen, onClose, recipientUsername, replyToMe
         }
     }, [isOpen, initialSubject]);
 
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+
     const handleSend = async () => {
         if (!subject.trim() || !body.trim()) return;
 
         setLoading(true);
         try {
-            await axios.post('/messages', {
-                receiver_username: recipientUsername,
-                subject,
-                body,
-                parent_id: replyToMessageId // Send parent_id for threading
+            // POST /messages writes into the old mail table, which no screen
+            // reads any more: the Social Hub lists conversations. A message
+            // sent that way was invisible to both people, forever.
+            const convo = await axios.post('/conversations', {
+                type: 'direct',
+                username: recipientUsername,
             });
+            const conversationId = convo.data?.data?.id ?? convo.data?.id;
+
+            await axios.post(`/conversations/${conversationId}/messages`, {
+                body: subject.trim() ? `${subject.trim()}
+
+${body}` : body,
+            });
+
             setSent(true);
-            setTimeout(() => {
+            timerRef.current = setTimeout(() => {
                 onClose();
                 setSent(false);
                 setSubject("");
