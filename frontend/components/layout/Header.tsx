@@ -569,6 +569,17 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
     Shop:      ShoppingCart,
 };
 
+/**
+ * The four places a phone actually goes, given the art we already own. They
+ * open the drawer instead of a wall of collapsed accordions.
+ */
+const MOBILE_QUICK_TILES = [
+    { name: "Forum",       href: "/forum",       art: "/images/menu/menu-forum.webp" },
+    { name: "Leaderboard", href: "/leaderboard", art: "/images/menu/menu-leaderboard.webp" },
+    { name: "Clans",       href: "/clans",       art: "/images/menu/menu-clans.webp" },
+    { name: "Giveaways",   href: "/giveaways",   art: "/images/menu/menu-giveaways.webp" },
+];
+
 // App-style grouped navigation. DISCOVER's column items are populated with
 // live categories from GET /navigation/tree (news/reviews/tech keys).
 const INITIAL_NAV_ITEMS: NavItemType[] = [
@@ -1214,169 +1225,312 @@ export default function Header() {
                             animate={{ x: 0 }}
                             exit={{ x: "100%" }}
                             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                            className="xl:hidden fixed inset-0 bg-[var(--surface-1)] z-[60] flex flex-col"
+                            className="xl:hidden fixed inset-0 bg-[var(--surface-0)] z-[60] flex flex-col"
                             style={{ boxShadow: "-20px 0 60px rgba(0,0,0,0.7)" }}
                         >
-                            {/* Drawer header */}
-                            <div className="flex items-center justify-between px-5 h-[60px] border-b border-[var(--line)] shrink-0">
+                            {/* ── header ── */}
+                            <div className="flex items-center justify-between px-4 h-[58px] border-b border-white/[0.07] shrink-0">
                                 <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center" aria-label="TechPlay — home">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img src="/techplay-logo.png" alt="TechPlay" width={144} height={24} className="h-[24px] w-auto" />
                                 </Link>
                                 <button
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="w-8 h-8 rounded-lg bg-[var(--fill-2)] border border-[var(--line-strong)] flex items-center justify-center text-[var(--ink-low)] hover:text-white transition-colors"
+                                    aria-label="Close menu"
+                                    className="w-9 h-9 rounded-[var(--radius-card)] bg-white/[0.04] border border-white/[0.07] flex items-center justify-center text-white/55 hover:text-white transition-colors"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
 
-                            {/* User card */}
-                            {user && (
-                                <div className="px-4 py-3 border-b border-[var(--line)] shrink-0">
-                                    <Link href={`/profile/${user.username || 'me'}`} onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 mb-3">
-                                        {user.avatar_url ? (
-                                            <Image src={user.avatar_url} alt={user.username || ''} width={40} height={40}
-                                                className="w-10 h-10 rounded-full object-cover border-2 border-accent/40"
-                                                unoptimized={user.avatar_url.includes('discord') || user.avatar_url.includes('gravatar')} />
-                                        ) : (
-                                            <div className="w-10 h-10 rounded-full bg-accent/15 border-2 border-accent/30 flex items-center justify-center">
-                                                <User className="w-5 h-5 text-accent" />
+                            <div className="flex-1 overflow-y-auto overscroll-contain">
+                                {/* ── who you are ── */}
+                                {user ? (
+                                    <div className="px-4 pt-4">
+                                        <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-4">
+                                            <Link href={`/profile/${user.username || 'me'}`} onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3.5">
+                                                <span className="relative shrink-0">
+                                                    {user.avatar_url ? (
+                                                        <Image src={user.avatar_url} alt={user.username || ''} width={52} height={52}
+                                                            className="w-[52px] h-[52px] rounded-full object-cover ring-2 ring-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
+                                                            unoptimized={user.avatar_url.includes('discord') || user.avatar_url.includes('gravatar')} />
+                                                    ) : (
+                                                        <span className="w-[52px] h-[52px] rounded-full bg-[var(--accent-soft)] ring-2 ring-[color-mix(in_srgb,var(--accent)_45%,transparent)] flex items-center justify-center">
+                                                            <User className="w-6 h-6 text-[var(--accent)]" />
+                                                        </span>
+                                                    )}
+                                                    <span className="absolute -bottom-1 -right-1 min-w-[22px] h-[22px] px-1 rounded-full bg-[var(--accent)] border-2 border-[var(--surface-1)] flex items-center justify-center font-display text-[10px] font-black tabular-nums text-white">
+                                                        {levelForXp(user.xp)}
+                                                    </span>
+                                                </span>
+
+                                                <span className="min-w-0 flex-1">
+                                                    <span className="block font-display text-[15px] font-black text-white truncate leading-tight">
+                                                        {decodeHtml(user.display_name || user.username)}
+                                                    </span>
+                                                    {user.rank?.name && (
+                                                        <span className="mt-1 flex items-center gap-1.5">
+                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                            <img
+                                                                src={`/images/ranks/${(user.rank.name || '').toLowerCase().replace(/[^a-z]/g, '')}.webp`}
+                                                                alt=""
+                                                                aria-hidden
+                                                                className="w-[22px] h-[22px] object-contain select-none"
+                                                            />
+                                                            <span className="font-display text-[10px] font-black uppercase tracking-[0.14em] truncate"
+                                                                style={{ color: user.rank.color || "var(--accent)" }}>
+                                                                {user.rank.name}
+                                                            </span>
+                                                        </span>
+                                                    )}
+                                                </span>
+                                            </Link>
+
+                                            {/* the climb, in one line */}
+                                            <div className="mt-3.5 flex items-center justify-between">
+                                                <span className="font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/30">
+                                                    Level {levelForXp(user.xp)}
+                                                </span>
+                                                <span className="font-display text-[10px] font-black tabular-nums text-white/45">
+                                                    {(user.xp || 0) % 1000} / 1000 XP
+                                                </span>
                                             </div>
-                                        )}
-                                        <div>
-                                            <div className="text-white font-bold text-[14px] leading-tight">{decodeHtml(user.display_name || user.username)}</div>
-                                            <div className="text-[11px] text-[var(--ink-low)] mt-0.5">Level {levelForXp(user.xp)} · {user.xp || 0} XP</div>
+                                            <div className="mt-1.5 h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
+                                                <div className="h-full rounded-full bg-gradient-to-r from-[var(--xp)] to-[var(--xp-bright)]"
+                                                    style={{ width: `${Math.round(((user.xp || 0) % 1000) / 10)}%` }} />
+                                            </div>
+
+                                            <div className="mt-3.5 flex gap-2">
+                                                <Link href="/social" onClick={() => setIsMobileMenuOpen(false)}
+                                                    className="btn-command btn-command-quiet relative flex-1 flex items-center justify-center gap-1.5 h-9 bg-white/[0.04] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55 hover:text-white hover:bg-white/[0.08] transition-colors">
+                                                    <Mail className="w-3.5 h-3.5" /> Messages
+                                                    {notifications.unread_messages > 0 && (
+                                                        <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[var(--accent)] flex items-center justify-center font-display text-[9px] font-black tabular-nums text-white">
+                                                            {notifications.unread_messages}
+                                                        </span>
+                                                    )}
+                                                </Link>
+                                                <Link href="/social" onClick={() => setIsMobileMenuOpen(false)}
+                                                    className="btn-command btn-command-quiet relative flex-1 flex items-center justify-center gap-1.5 h-9 bg-white/[0.04] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55 hover:text-white hover:bg-white/[0.08] transition-colors">
+                                                    <Users className="w-3.5 h-3.5" /> Friends
+                                                    {notifications.pending_requests > 0 && (
+                                                        <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[var(--accent)] flex items-center justify-center font-display text-[9px] font-black tabular-nums text-white">
+                                                            {notifications.pending_requests}
+                                                        </span>
+                                                    )}
+                                                </Link>
+                                            </div>
                                         </div>
-                                    </Link>
-                                    <div className="flex gap-2">
-                                        <Link href="/social" onClick={() => setIsMobileMenuOpen(false)}
-                                            className="relative flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-low)] text-[11px] font-bold uppercase tracking-wide hover:text-white hover:bg-[var(--fill-3)] transition-colors">
-                                            <Mail className="w-3.5 h-3.5" /> Messages
-                                            {notifications.unread_messages > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center">{notifications.unread_messages}</span>}
-                                        </Link>
-                                        <Link href="/social" onClick={() => setIsMobileMenuOpen(false)}
-                                            className="relative flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-low)] text-[11px] font-bold uppercase tracking-wide hover:text-white hover:bg-[var(--fill-3)] transition-colors">
-                                            <Users className="w-3.5 h-3.5" /> Friends
-                                            {notifications.pending_requests > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center">{notifications.pending_requests}</span>}
-                                        </Link>
+                                    </div>
+                                ) : (
+                                    <div className="px-4 pt-4">
+                                        <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-4 text-center">
+                                            <p className="font-display text-[14px] font-black text-white">Join TechPlay</p>
+                                            <p className="mt-1 text-[12px] text-white/35 leading-relaxed">
+                                                Track your collection, earn XP, and climb the ranks.
+                                            </p>
+                                            <div className="mt-3.5 flex gap-2">
+                                                <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}
+                                                    className="btn-command flex-1 flex items-center justify-center h-9 bg-[var(--accent)] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white hover:brightness-110 transition-[filter]">
+                                                    Sign in
+                                                </Link>
+                                                <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}
+                                                    className="btn-command btn-command-quiet flex-1 flex items-center justify-center h-9 bg-white/[0.04] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55 hover:text-white hover:bg-white/[0.08] transition-colors">
+                                                    Register
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ── the four places a phone actually goes ── */}
+                                <div className="px-4 pt-4">
+                                    <p className="font-display text-[8.5px] font-black uppercase tracking-[0.18em] text-white/25 mb-2.5">
+                                        Jump to
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {MOBILE_QUICK_TILES.map((tile) => (
+                                            <Link
+                                                key={tile.name}
+                                                href={tile.href}
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                className="group flex flex-col items-center gap-2 rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] px-3 py-3.5 active:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors"
+                                            >
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img
+                                                    src={tile.art}
+                                                    alt=""
+                                                    aria-hidden
+                                                    className="w-11 h-11 object-contain select-none transition-transform duration-300 group-active:scale-[1.08]"
+                                                />
+                                                <span className="font-display text-[10px] font-black uppercase tracking-[0.12em] text-white/70">
+                                                    {tile.name}
+                                                </span>
+                                            </Link>
+                                        ))}
                                     </div>
                                 </div>
-                            )}
 
-                            {/* Nav */}
-                            <nav className="flex-1 overflow-y-auto py-1">
-                                {navItems.map((item) => {
-                                    const Icon = NAV_ICONS[item.name];
-                                    const hasExpandable = !!(item.hasDropdown && (item.children?.length || item.columns?.length));
-                                    return (
-                                        <div key={item.name}>
-                                            {hasExpandable ? (
-                                                <>
-                                                    <button
-                                                        onClick={() => setExpandedMobileItem(expandedMobileItem === item.name ? null : item.name)}
-                                                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[var(--fill-1)] transition-colors group"
-                                                    >
-                                                        {Icon && (
-                                                            <div className="w-8 h-8 rounded-lg bg-[var(--fill-2)] border border-[var(--line)] flex items-center justify-center shrink-0 group-hover:bg-accent/10 group-hover:border-accent/20 transition-all">
-                                                                <Icon className="w-[15px] h-[15px] text-[var(--ink-low)] group-hover:text-accent transition-colors" />
-                                                            </div>
-                                                        )}
-                                                        <span className="flex-1 text-[13px] font-bold uppercase tracking-[0.07em] text-[var(--ink-hi)] group-hover:text-white transition-colors text-left">{item.name}</span>
-                                                        <ChevronDown className={cn("w-4 h-4 text-[var(--ink-faint)] transition-transform duration-200 shrink-0", expandedMobileItem === item.name ? "rotate-180 text-accent" : "")} />
-                                                    </button>
-                                                    <AnimatePresence>
-                                                        {expandedMobileItem === item.name && (
-                                                            <motion.div
-                                                                initial={{ height: 0, opacity: 0 }}
-                                                                animate={{ height: "auto", opacity: 1 }}
-                                                                exit={{ height: 0, opacity: 0 }}
-                                                                transition={{ duration: 0.18 }}
-                                                                className="overflow-hidden"
+                                {/* ── everything else ── */}
+                                <nav className="px-4 pt-5 pb-2">
+                                    <p className="font-display text-[8.5px] font-black uppercase tracking-[0.18em] text-white/25 mb-2.5">
+                                        Browse
+                                    </p>
+                                    <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] overflow-hidden divide-y divide-white/[0.05]">
+                                        {navItems.map((item) => {
+                                            const Icon = NAV_ICONS[item.name];
+                                            const hasExpandable = !!(item.hasDropdown && (item.children?.length || item.columns?.length));
+                                            const expanded = expandedMobileItem === item.name;
+
+                                            const glyph = Icon && (
+                                                <span className={cn(
+                                                    "w-9 h-9 shrink-0 rounded-[var(--radius-card)] flex items-center justify-center transition-colors",
+                                                    expanded ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "bg-white/[0.04] text-white/45"
+                                                )}>
+                                                    <Icon className="w-[17px] h-[17px]" />
+                                                </span>
+                                            );
+
+                                            return (
+                                                <div key={item.name}>
+                                                    {hasExpandable ? (
+                                                        <>
+                                                            <button
+                                                                onClick={() => setExpandedMobileItem(expanded ? null : item.name)}
+                                                                aria-expanded={expanded}
+                                                                className="w-full flex items-center gap-3 px-3.5 py-3 text-left"
                                                             >
-                                                                <div className="ml-[52px] mr-4 mb-1 pl-3 border-l border-accent/25 flex flex-col gap-0.5">
-                                                                    {item.columns ? (
-                                                                        /* Multi-column items (DISCOVER) flatten into titled groups */
-                                                                        item.columns.map((col) => (
-                                                                            <div key={col.title} className="mb-1.5">
-                                                                                <Link href={col.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                                                    className="block py-2 text-accent text-[11px] font-bold uppercase tracking-widest">
-                                                                                    {col.title}
-                                                                                </Link>
-                                                                                {col.items.slice(0, 6).map((child, idx) => (
-                                                                                    <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                                                        className="block py-1.5 text-[13px] text-[var(--ink-low)] hover:text-white transition-colors">
-                                                                                        {child.name}
+                                                                {glyph}
+                                                                <span className={cn(
+                                                                    "flex-1 font-display text-[12.5px] font-black uppercase tracking-[0.1em] transition-colors",
+                                                                    expanded ? "text-white" : "text-white/70"
+                                                                )}>
+                                                                    {item.name}
+                                                                </span>
+                                                                <ChevronDown className={cn(
+                                                                    "w-4 h-4 shrink-0 transition-transform duration-200",
+                                                                    expanded ? "rotate-180 text-[var(--accent)]" : "text-white/25"
+                                                                )} />
+                                                            </button>
+
+                                                            <AnimatePresence initial={false}>
+                                                                {expanded && (
+                                                                    <motion.div
+                                                                        initial={{ height: 0, opacity: 0 }}
+                                                                        animate={{ height: "auto", opacity: 1 }}
+                                                                        exit={{ height: 0, opacity: 0 }}
+                                                                        transition={{ duration: 0.18 }}
+                                                                        className="overflow-hidden"
+                                                                    >
+                                                                        <div className="px-3.5 pb-3.5">
+                                                                            {item.columns ? (
+                                                                                /* Discover flattens its columns into titled groups */
+                                                                                <div className="space-y-3">
+                                                                                    {item.columns.map((col) => (
+                                                                                        <div key={col.title}>
+                                                                                            <Link href={col.href} onClick={() => setIsMobileMenuOpen(false)}
+                                                                                                className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)] mb-1.5">
+                                                                                                {col.title}
+                                                                                            </Link>
+                                                                                            <div className="flex flex-wrap gap-1.5">
+                                                                                                {col.items.slice(0, 6).map((child, idx) => (
+                                                                                                    <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
+                                                                                                        className="inline-flex items-center h-8 px-3 rounded-[var(--radius-card)] bg-white/[0.04] border border-white/[0.06] text-[12px] text-white/60 active:text-white transition-colors">
+                                                                                                        {child.name}
+                                                                                                    </Link>
+                                                                                                ))}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                            ) : item.children?.[0]?.art ? (
+                                                                                /* Community and Tools carry their own art */
+                                                                                <div className="flex flex-col gap-1">
+                                                                                    {item.children.map((child, idx) => (
+                                                                                        <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
+                                                                                            className="flex items-center gap-3 py-2 rounded-[var(--radius-card)] active:bg-white/[0.03] transition-colors">
+                                                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                                            <img src={child.art} alt="" aria-hidden className="w-8 h-8 shrink-0 object-contain select-none" />
+                                                                                            <span className="min-w-0">
+                                                                                                <span className="block font-display text-[12.5px] font-black text-white leading-tight">{child.name}</span>
+                                                                                                {child.description && (
+                                                                                                    <span className="block mt-0.5 text-[11px] text-white/30 truncate">{child.description}</span>
+                                                                                                )}
+                                                                                            </span>
+                                                                                        </Link>
+                                                                                    ))}
+                                                                                </div>
+                                                                            ) : (
+                                                                                /* Games: many short labels, so they wrap as chips */
+                                                                                <div className="flex flex-wrap gap-1.5">
+                                                                                    <Link href={item.href} onClick={() => setIsMobileMenuOpen(false)}
+                                                                                        className="inline-flex items-center h-8 px-3 rounded-[var(--radius-card)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-[var(--accent)]">
+                                                                                        All {item.name}
                                                                                     </Link>
-                                                                                ))}
-                                                                            </div>
-                                                                        ))
-                                                                    ) : (
-                                                                        <>
-                                                                            <Link href={item.href} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-accent text-[11px] font-bold uppercase tracking-widest">
-                                                                                All {item.name}
-                                                                            </Link>
-                                                                            {item.children?.map((child, idx) => (
-                                                                                <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                                                    className="py-1.5 text-[13px] text-[var(--ink-low)] hover:text-white transition-colors">
-                                                                                    {child.name}
-                                                                                </Link>
-                                                                            ))}
-                                                                        </>
-                                                                    )}
-                                                                </div>
-                                                            </motion.div>
-                                                        )}
-                                                    </AnimatePresence>
-                                                </>
-                                            ) : (
-                                                <Link href={item.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                    className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--fill-1)] transition-colors group">
-                                                    {Icon && (
-                                                        <div className="w-8 h-8 rounded-lg bg-[var(--fill-2)] border border-[var(--line)] flex items-center justify-center shrink-0 group-hover:bg-accent/10 group-hover:border-accent/20 transition-all">
-                                                            <Icon className="w-[15px] h-[15px] text-[var(--ink-low)] group-hover:text-accent transition-colors" />
-                                                        </div>
+                                                                                    {item.children?.map((child, idx) => (
+                                                                                        <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
+                                                                                            className="inline-flex items-center h-8 px-3 rounded-[var(--radius-card)] bg-white/[0.04] border border-white/[0.06] text-[12px] text-white/60 active:text-white transition-colors">
+                                                                                            {child.name}
+                                                                                        </Link>
+                                                                                    ))}
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </motion.div>
+                                                                )}
+                                                            </AnimatePresence>
+                                                        </>
+                                                    ) : (
+                                                        <Link href={item.href} onClick={() => setIsMobileMenuOpen(false)}
+                                                            className="flex items-center gap-3 px-3.5 py-3">
+                                                            {glyph}
+                                                            <span className="flex-1 font-display text-[12.5px] font-black uppercase tracking-[0.1em] text-white/70">{item.name}</span>
+                                                            <ArrowRight className="w-4 h-4 shrink-0 text-white/20" />
+                                                        </Link>
                                                     )}
-                                                    <span className="text-[13px] font-bold uppercase tracking-[0.07em] text-[var(--ink-hi)] group-hover:text-white transition-colors">{item.name}</span>
-                                                </Link>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </nav>
 
-                                {/* Utility links */}
-                                <div className="mx-4 mt-2 pt-3 border-t border-[var(--line)] grid grid-cols-2 gap-1">
-                                    {UTILITY_LINKS.map((link) => (
-                                        <Link key={link.name} href={link.href} onClick={() => setIsMobileMenuOpen(false)}
-                                            className={cn("py-2 px-2 text-[11px] font-semibold tracking-wider rounded-lg hover:bg-[var(--fill-2)] transition-colors",
-                                                link.highlight ? "text-accent" : "text-[var(--ink-faint)] hover:text-[var(--ink-mid)]")}>
-                                            {link.name}
-                                        </Link>
-                                    ))}
+                                {/* ── the small print ── */}
+                                <div className="px-4 pb-5">
+                                    <div className="grid grid-cols-2 gap-x-3 gap-y-1 pt-3 border-t border-white/[0.06]">
+                                        {UTILITY_LINKS.map((link) => (
+                                            <Link key={link.name} href={link.href} onClick={() => setIsMobileMenuOpen(false)}
+                                                className={cn(
+                                                    "py-1.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] transition-colors",
+                                                    link.highlight ? "text-[var(--accent)]" : "text-white/30 active:text-white/70"
+                                                )}>
+                                                {link.name}
+                                            </Link>
+                                        ))}
+                                    </div>
                                 </div>
-                            </nav>
+                            </div>
 
-                            {/* Bottom */}
-                            <div className="shrink-0 border-t border-[var(--line)] px-4 py-4 flex flex-col gap-3">
+                            {/* ── footer ── */}
+                            <div className="shrink-0 border-t border-white/[0.07] bg-[var(--surface-1)] px-4 py-3.5 flex items-center gap-3">
                                 {socialLinks.length > 0 && (
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1.5">
                                         {socialLinks.map((social, idx) => (
                                             <Link key={idx} href={social.href} target="_blank" rel="noopener noreferrer"
-                                                className="w-8 h-8 rounded-lg bg-[var(--fill-2)] border border-[var(--line-strong)] flex items-center justify-center text-[var(--ink-low)] hover:text-white hover:bg-accent/10 hover:border-accent/30 transition-all">
-                                                <social.icon className="w-[14px] h-[14px]" />
+                                                className="w-9 h-9 rounded-[var(--radius-card)] bg-white/[0.04] border border-white/[0.07] flex items-center justify-center text-white/45 active:text-white transition-colors">
+                                                <social.icon className="w-[15px] h-[15px]" />
                                             </Link>
                                         ))}
                                     </div>
                                 )}
                                 {user ? (
                                     <button onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                                        className="w-full py-2.5 text-red-400 border border-red-400/20 rounded-xl hover:bg-red-400/10 transition-colors flex items-center justify-center gap-2 text-[12px] font-bold uppercase tracking-wide">
-                                        <LogOut className="w-3.5 h-3.5" /> Sign Out
+                                        className="btn-command btn-command-quiet flex-1 flex items-center justify-center gap-2 h-9 bg-white/[0.04] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55 active:text-white transition-colors">
+                                        <LogOut className="w-3.5 h-3.5" /> Sign out
                                     </button>
                                 ) : (
                                     <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}
-                                        className="w-full text-center py-3 font-bold text-white bg-accent hover:bg-accent-hover rounded-xl transition-colors text-[12px] uppercase tracking-widest shadow-lg shadow-accent/20">
-                                        Sign In / Register
+                                        className="btn-command flex-1 flex items-center justify-center h-9 bg-[var(--accent)] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white">
+                                        Sign in
                                     </Link>
                                 )}
                             </div>
