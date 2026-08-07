@@ -10,6 +10,7 @@ use App\Services\AchievementService;
 use App\Services\BountyService;
 use App\Services\Chronicle\TasteProfileService;
 use App\Services\ClanResourceService;
+use App\Services\QuestService;
 use App\Services\XpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -121,6 +122,7 @@ class GameRatingController extends Controller
     {
         // A shelf or score change is taste news — the chronicle relearns on next read.
         app(TasteProfileService::class)->forget($request->user());
+        app(QuestService::class)->progress($request->user(), 'game_rated');
 
         $validated = $request->validate([
             'rating' => 'required|integer|min:1|max:5',

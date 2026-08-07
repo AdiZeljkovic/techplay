@@ -17,6 +17,7 @@ import FriendActivityFeed from "./FriendActivityFeed";
 import ForumActivityTab from "./ForumActivityTab";
 import UpcomingReleasesWidget from "./dashboard/UpcomingReleasesWidget";
 import ShowcaseStrip from "./dashboard/ShowcaseStrip";
+import GiveRecognitionButton from "@/components/profile/GiveRecognitionButton";
 import CommunityStanding from "./dashboard/CommunityStanding";
 import ProfileChecklist from "./dashboard/ProfileChecklist";
 import DailyHub from "./dashboard/DailyHub";
@@ -207,6 +208,7 @@ export default function ProfileOverviewDashboard({
                 {reputation && (
                     <SectionCard title="Community Standing">
                         <CommunityStanding reputation={reputation} recognitions={recognitions} />
+                        {!isOwnProfile && <GiveRecognitionButton username={userData.username} />}
                     </SectionCard>
                 )}
 

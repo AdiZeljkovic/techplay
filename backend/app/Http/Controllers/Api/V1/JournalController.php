@@ -9,6 +9,7 @@ use App\Models\PlaySession;
 use App\Models\User;
 use App\Services\ClanResourceService;
 use App\Services\JournalService;
+use App\Services\QuestService;
 use App\Services\SanitizationService;
 use App\Traits\ApiResponse;
 use App\Traits\ProfilePrivacy;
@@ -75,6 +76,8 @@ class JournalController extends Controller
      */
     public function store(Request $request, JournalService $journal, SanitizationService $sanitizer): JsonResponse
     {
+        app(QuestService::class)->progress($request->user(), 'session_logged');
+
         $data = $request->validate($this->rules());
 
         $game = Game::where('slug', $data['game_slug'])->firstOrFail();
