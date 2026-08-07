@@ -333,6 +333,7 @@ Route::prefix('v1')->group(function () {
         // Support Plans
         Route::post('/support/create-plan', [SupportController::class, 'createPlan']);
         Route::post('/support/pledge', [SupportController::class, 'pledge']);
+        Route::get('/support/mine', [SupportController::class, 'mySupport']);
     });
 
     // Public Routes (High Rate Limit - 3000 per minute for production traffic)

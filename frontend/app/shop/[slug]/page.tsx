@@ -109,7 +109,7 @@ export default function ProductDetailPage() {
 
                         <div className="flex items-center gap-6 mb-8">
                             <div className="text-4xl font-bold text-[var(--accent)]">
-                                {product.price.toLocaleString('bs-BA', { minimumFractionDigits: 2 })} <span className="text-lg text-white/35">KM</span>
+                                {Number(product.price).toLocaleString('bs-BA', { minimumFractionDigits: 2 })} <span className="text-lg text-white/35">KM</span>
                             </div>
                             <div className={`px-4 py-1.5 rounded-full text-sm font-bold border ${product.stock > 0 ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'}`}>
                                 {product.stock > 0 ? 'In Stock' : 'Out of Stock'}

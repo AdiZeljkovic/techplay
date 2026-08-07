@@ -59,7 +59,21 @@ class PayPalService
         return $response->json()['access_token'];
     }
 
-    public function createOrder($amount, $currency = 'USD')
+    /**
+     * Site prices are in convertible marks; PayPal charges in euro. The mark
+     * is pegged at 1.95583 to the euro, so this is an exact conversion, not a
+     * rate lookup. Rounds up to the cent so we are never short.
+     */
+    public function toPayableAmount(float $bam): float
+    {
+        if (strtoupper((string) config('paypal.currency')) === 'BAM') {
+            return round($bam, 2);
+        }
+
+        return ceil(($bam / (float) config('paypal.bam_per_eur', 1.95583)) * 100) / 100;
+    }
+
+    public function createOrder($amount, $currency = 'EUR')
     {
         $token = $this->getAccessToken();
 
@@ -99,6 +113,39 @@ class PayPalService
         if ($response->failed()) {
             Log::error('PayPal Capture Failed: '.$response->body());
             throw new \Exception('Could not capture PayPal order');
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Read a subscription back from PayPal. Used before any benefit is granted:
+     * a subscription id supplied by the browser proves nothing on its own.
+     */
+    public function getSubscription(string $subscriptionId): ?array
+    {
+        $response = $this->http()->withToken($this->getAccessToken())
+            ->get("{$this->baseUrl}/v1/billing/subscriptions/{$subscriptionId}");
+
+        if ($response->failed()) {
+            Log::warning('PayPal subscription lookup failed: '.$response->body());
+
+            return null;
+        }
+
+        return $response->json();
+    }
+
+    /** Read an order back, to confirm a one-off payment actually captured. */
+    public function getOrder(string $orderId): ?array
+    {
+        $response = $this->http()->withToken($this->getAccessToken())
+            ->get("{$this->baseUrl}/v2/checkout/orders/{$orderId}");
+
+        if ($response->failed()) {
+            Log::warning('PayPal order lookup failed: '.$response->body());
+
+            return null;
         }
 
         return $response->json();

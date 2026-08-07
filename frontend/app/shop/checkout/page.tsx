@@ -265,7 +265,7 @@ export default function CheckoutPage() {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <h4 className="text-sm font-medium text-white line-clamp-2">{item.name}</h4>
-                                            <p className="text-sm text-[var(--accent)] font-bold">{item.price.toLocaleString('bs-BA', { minimumFractionDigits: 2 })} KM</p>
+                                            <p className="text-sm text-[var(--accent)] font-bold">{Number(item.price).toLocaleString('bs-BA', { minimumFractionDigits: 2 })} KM</p>
                                         </div>
                                     </div>
                                 ))}
@@ -274,7 +274,7 @@ export default function CheckoutPage() {
                             <div className="border-t border-[var(--line)] pt-4 space-y-2 mb-6">
                                 <div className="flex justify-between text-white/55">
                                     <span>Subtotal</span>
-                                    <span>{totalPrice.toLocaleString('bs-BA', { minimumFractionDigits: 2 })} KM</span>
+                                    <span>{Number(totalPrice).toLocaleString('bs-BA', { minimumFractionDigits: 2 })} KM</span>
                                 </div>
                                 <div className="flex justify-between text-white/55">
                                     <span>Shipping</span>
@@ -282,7 +282,7 @@ export default function CheckoutPage() {
                                 </div>
                                 <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-[var(--line)]">
                                     <span>Total</span>
-                                    <span>{totalPrice.toLocaleString('bs-BA', { minimumFractionDigits: 2 })} KM</span>
+                                    <span>{Number(totalPrice).toLocaleString('bs-BA', { minimumFractionDigits: 2 })} KM</span>
                                 </div>
                             </div>
 

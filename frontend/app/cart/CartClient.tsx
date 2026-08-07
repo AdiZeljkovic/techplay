@@ -91,7 +91,7 @@ export default function CartClient() {
                                                 </div>
                                             </td>
                                             <td className="p-4 text-center text-white/55 hidden sm:table-cell">
-                                                {item.price.toFixed(2)} KM
+                                                {Number(item.price).toFixed(2)} KM
                                             </td>
                                             <td className="p-4">
                                                 <div className="flex items-center justify-center gap-2">
@@ -111,7 +111,7 @@ export default function CartClient() {
                                                 </div>
                                             </td>
                                             <td className="p-4 text-right font-bold text-[var(--accent)]">
-                                                {(item.price * item.quantity).toFixed(2)} KM
+                                                {(Number(item.price) * item.quantity).toFixed(2)} KM
                                             </td>
                                             <td className="p-4">
                                                 <button
@@ -149,7 +149,7 @@ export default function CartClient() {
                                 </div>
                             </div>
 
-                            <Link href="/checkout" className="btn-command flex items-center justify-center gap-2 h-[50px] w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold transition-colors uppercase tracking-[0.08em] text-[13px]">
+                            <Link href="/shop/checkout" className="btn-command flex items-center justify-center gap-2 h-[50px] w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold transition-colors uppercase tracking-[0.08em] text-[13px]">
                                 Proceed to Checkout
                                 <ArrowRight className="w-4 h-4" />
                             </Link>

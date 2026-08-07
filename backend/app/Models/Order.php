@@ -19,6 +19,7 @@ class Order extends Model
         'shipping_address',
         'notes',
         'paypal_order_id',
+        'paypal_transaction_id',
         'payment_status',
     ];
 

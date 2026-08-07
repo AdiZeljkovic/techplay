@@ -152,7 +152,7 @@ export default function ShopClient() {
 
                                     <div className="mt-auto pt-4 flex items-center justify-between gap-4 border-t border-white/[0.04]">
                                         <div className="font-display text-[20px] font-bold text-[var(--accent)] tracking-tight leading-none">
-                                            {product.price.toLocaleString('bs-BA', { minimumFractionDigits: 2 })}
+                                            {Number(product.price).toLocaleString('bs-BA', { minimumFractionDigits: 2 })}
                                             <span className="text-[11px] font-bold text-white/35 ml-1">KM</span>
                                         </div>
 

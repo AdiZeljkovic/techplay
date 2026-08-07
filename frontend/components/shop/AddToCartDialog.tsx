@@ -20,7 +20,7 @@ interface AddToCartDialogProps {
 }
 
 export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartDialogProps) {
-    const { updateQuantity } = useCart();
+    const { items, updateQuantity } = useCart();
     const [isVisible, setIsVisible] = useState(false);
     const [quantity, setQuantity] = useState(1);
 
@@ -35,14 +35,17 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
     useEffect(() => {
         if (isOpen) {
             setIsVisible(true);
-            setQuantity(1);
+            // Show what the cart actually holds. Resetting to 1 on every open
+            // meant the next tap of "+" wrote an absolute 2 over a line of 4.
+            const line = product ? items.find((i) => i.id === product.id) : undefined;
+            setQuantity(line?.quantity ?? 1);
             document.body.style.overflow = 'hidden';
         } else {
             const timer = setTimeout(() => setIsVisible(false), 300);
             document.body.style.overflow = 'unset';
             return () => clearTimeout(timer);
         }
-    }, [isOpen]);
+    }, [isOpen, product, items]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -117,7 +120,7 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
                                     {product.name}
                                 </h3>
                                 <div className="font-display text-[18px] font-bold text-[var(--accent)] leading-none">
-                                    {product.price.toLocaleString('bs-BA', { minimumFractionDigits: 2 })}
+                                    {Number(product.price).toLocaleString('bs-BA', { minimumFractionDigits: 2 })}
                                     <span className="text-[11px] font-bold text-white/35 ml-1">KM</span>
                                 </div>
                             </div>

@@ -19,7 +19,12 @@ return [
     ],
 
     'payment_action' => 'Sale', // Can only be 'Sale', 'Authorization' or 'Order'
-    'currency' => env('PAYPAL_CURRENCY', 'USD'),
+    // Prices on the site are quoted in convertible marks. PayPal does not
+    // settle BAM, and the mark is pegged to the euro by law, so orders are
+    // created in EUR at the peg rather than at a guessed rate.
+    'currency' => env('PAYPAL_CURRENCY', 'EUR'),
+    'display_currency' => 'BAM',
+    'bam_per_eur' => 1.95583,
     'notify_url' => '', // Change this accordingly for your application.
     'locale' => 'en_US', // force gateway language  i.e. it_IT, es_ES, en_US ... (for express checkout only)
     'validate_ssl' => true, // Validate SSL when creating api client.

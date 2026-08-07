@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { SupportTier } from "@/types/support";
 import { useAuth } from "@/hooks/useAuth";
-import axios from "@/lib/axios";
 
 interface TierCardProps {
     tier: SupportTier;
@@ -14,44 +13,6 @@ interface TierCardProps {
 export default function TierCard({ tier }: TierCardProps) {
     const { user, isLoading: authLoading } = useAuth(); // No middleware needed
     const router = useRouter();
-    const [loading, setLoading] = useState(false);
-
-    const handleSubscribe = async () => {
-        // Prevent action while checking auth
-        if (authLoading) return;
-
-        if (!user) {
-            // Encode redirect URL properly
-            const redirectUrl = encodeURIComponent(`/support/checkout?tier=${tier.id}`);
-            router.push(`/login?redirect=${redirectUrl}`);
-            return;
-        }
-
-        setLoading(true);
-        try {
-            await axios.post('/support/pledge', { tier_id: tier.id });
-
-            // On success
-            router.push(`/profile/${user.username}?success=pledge`);
-        } catch (error: any) {
-            console.error(error);
-            // Fallback: If pledge fails (e.g. requires payment steps), go to checkout page
-            // The previous logic was: POST pledge -> Success. 
-            // BUT checkout page assumes we go there first?
-            // The checkout page is where payment happens. 
-            // Wait, the "Join Now" button should GO TO CHECKOUT PAGE, NOT pledge immediately.
-            // My previous refactor changed behavior to pledge immediately? 
-            // The original code: router.push(`/support/checkout?tier=${tier.id}`)
-            // My recent change in Step 17903: axios.post('/support/pledge') inside handleSubscribe? 
-            // NO! I messed up the logic in Step 17903. 
-            // The user wants to GO TO CHECKOUT. The checkout page handles payment.
-            // I accidentally made "Join Now" try to *execute* the pledge immediately without payment.
-            // Reverting logic to navigation only.
-            router.push(`/support/checkout?tier=${tier.id}`);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     // Dynamic gradient or border color based on tier name or color prop
     const getBorderColor = () => {
@@ -78,7 +39,7 @@ export default function TierCard({ tier }: TierCardProps) {
 
             <h3 className="text-2xl font-bold text-white mb-2">{tier.name}</h3>
             <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-4xl font-bold text-white">${parseFloat(tier.price).toFixed(0)}</span>
+                <span className="text-4xl font-bold text-white">{parseFloat(tier.price).toFixed(2)}€</span>
                 <span className="text-white/45 text-sm">/month</span>
             </div>
 

@@ -47,39 +47,41 @@ class PayPalController extends Controller
      */
     public function createOrder(Request $request)
     {
-        // Flexible validation: allow direct amount OR items
+        // Every line is validated the same way the cash-on-delivery path
+        // validates it. This used to accept `items` as a bare array, so a
+        // crafted quantity of 0.01 bought a 100 KM product for one mark.
         $request->validate([
-            'amount' => 'nullable|numeric|min:0.01',
-            'items' => 'nullable|array',
-            'shipping_address' => 'nullable|string',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|integer|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1|max:99',
+            'shipping_address' => 'nullable|string|max:1000',
         ]);
 
         $user = $request->user();
-        $total = $request->amount ?? 0;
+        $total = 0;
         $orderItemsData = [];
 
-        // If items provided (Shop flow)
-        if ($request->has('items') && is_array($request->items)) {
-            $total = 0;
-            foreach ($request->items as $item) {
-                // Check if Product model exists, otherwise fallback to item['price']
-                if (class_exists(Product::class)) {
-                    $product = Product::find($item['product_id']);
-                    if ($product) {
-                        $price = $product->price;
-                        $total += $price * $item['quantity'];
-                        $orderItemsData[] = [
-                            'product_id' => $product->id,
-                            'quantity' => $item['quantity'],
-                            'price' => $price,
-                        ];
-                    }
-                } else {
-                    // Simple fallback if no Product model
-                    $price = $item['price'] ?? 0;
-                    $total += $price * ($item['quantity'] ?? 1);
-                }
+        foreach ($request->items as $item) {
+            $product = Product::find($item['product_id']);
+            if (! $product) {
+                return response()->json(['error' => 'One of the products is no longer available.'], 422);
             }
+
+            // Stock is checked here as well as at capture: refusing before the
+            // buyer reaches PayPal is far kinder than refunding afterwards.
+            if ($product->stock < $item['quantity']) {
+                return response()->json([
+                    'error' => "Only {$product->stock} left of {$product->name}.",
+                ], 422);
+            }
+
+            $price = (float) $product->price;
+            $total += $price * $item['quantity'];
+            $orderItemsData[] = [
+                'product_id' => $product->id,
+                'quantity' => (int) $item['quantity'],
+                'price' => $price,
+            ];
         }
 
         if ($total <= 0) {
@@ -87,8 +89,12 @@ class PayPalController extends Controller
         }
 
         try {
-            // Create Order on PayPal
-            $response = $this->paypal->createOrder($total, config('paypal.currency', 'EUR'));
+            // Prices are quoted in convertible marks, which PayPal does not
+            // settle. BAM is pegged to the euro, so the conversion is exact
+            // rather than a guess — see config/paypal.php.
+            $charge = $this->paypal->toPayableAmount($total);
+
+            $response = $this->paypal->createOrder($charge, config('paypal.currency'));
 
             if (isset($response['id']) && $response['status'] != null) {
                 // Save pending order to database
@@ -139,20 +145,34 @@ class PayPalController extends Controller
             $response = $this->paypal->captureOrder($orderId);
 
             if (isset($response['status']) && $response['status'] === 'COMPLETED') {
-                // Update order status in database
-                $order = Order::where('paypal_order_id', $orderId)->first();
+                $order = Order::with('items')->where('paypal_order_id', $orderId)->first();
 
-                if ($order) {
-                    $order->update([
-                        'status' => 'COMPLETED', // Normalized status
-                    ]);
+                if ($order && $order->status !== 'COMPLETED') {
+                    \Illuminate\Support\Facades\DB::transaction(function () use ($order, $response) {
+                        // Paid goods leave the shelf. The cash-on-delivery path
+                        // has always done this; PayPal orders never did, so a
+                        // one-off item could be sold repeatedly.
+                        foreach ($order->items as $line) {
+                            Product::where('id', $line->product_id)
+                                ->where('stock', '>=', $line->quantity)
+                                ->decrement('stock', $line->quantity);
+                        }
+
+                        $order->update([
+                            'status' => 'COMPLETED',
+                            'paypal_transaction_id' => $response['purchase_units'][0]['payments']['captures'][0]['id'] ?? null,
+                        ]);
+                    });
                 }
 
-                // SECURITY: Return only essential info, not raw PayPal response
+                // 'status' carries the PayPal vocabulary the client checks for;
+                // it used to answer 'success' here and 'COMPLETED' nowhere, so
+                // a captured payment read as a failure and buyers paid twice.
                 return response()->json([
-                    'status' => 'success',
+                    'status' => 'COMPLETED',
                     'message' => 'Payment completed successfully',
-                    'order_id' => $orderId,
+                    'order_id' => $order->id ?? null,
+                    'paypal_order_id' => $orderId,
                 ]);
             }
 
