@@ -42,7 +42,7 @@ export default function AuthorHeader({ author, stats }: AuthorHeaderProps) {
                 <div className="flex flex-col md:flex-row gap-6 items-start md:items-end">
                     {/* Avatar */}
                     <div className="shrink-0">
-                        <div className="w-28 h-28 md:w-36 md:h-36 rounded-2xl border-2 border-[var(--accent)]/40 overflow-hidden bg-[#1A1F26] shadow-[0_0_40px_rgba(220, 20, 60,0.15)]">
+                        <div className="w-28 h-28 md:w-36 md:h-36 rounded-2xl border-2 border-[var(--accent)]/40 overflow-hidden bg-[#1A1F26]">
                             {author.avatar_url ? (
                                 <Image
                                     src={author.avatar_url}

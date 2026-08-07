@@ -68,7 +68,7 @@ export default function AuthorArticleGrid({ slug, stats }: AuthorArticleGridProp
                             onClick={() => handleTabChange(id)}
                             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all border ${
                                 isActive
-                                    ? "bg-[var(--accent)] text-white border-[var(--accent)] shadow-[0_0_15px_rgba(220, 20, 60,0.25)]"
+                                    ? "bg-[var(--accent)] text-white border-[var(--accent)]"
                                     : "text-[#A1A1AA] border-[#161B22] hover:border-[var(--accent)]/40 hover:text-white bg-[#0B0E14]"
                             }`}
                         >

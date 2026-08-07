@@ -148,7 +148,7 @@ export default function WowAnalyzerClient() {
                             transition={{ delay: 0.2 }}
                             className="text-6xl md:text-7xl lg:text-8xl font-black mb-6 leading-[1.05]"
                         >
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-purple-400 to-purple-500 drop-shadow-[0_4px_30px_rgba(220, 20, 60,0.6)]">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] via-purple-400 to-purple-500 drop-">
                                 Ready for Midnight expansion?
                             </span>
                         </motion.h1>

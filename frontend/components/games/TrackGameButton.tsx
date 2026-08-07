@@ -104,7 +104,7 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
             );
         }
         return (
-            <a href="/login" className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold text-[13px] uppercase tracking-wider transition-colors shadow-[0_0_20px_rgba(220, 20, 60,0.2)]">
+            <a href="/login" className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold text-[13px] uppercase tracking-wider transition-colors">
                 <Plus className="w-4 h-4" /> Track This Game
             </a>
         );
@@ -170,7 +170,7 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
                 </div>
             ) : (
                 <button onClick={() => setOpen((v) => !v)} disabled={busy}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold text-[13px] uppercase tracking-wider transition-colors shadow-[0_0_20px_rgba(220, 20, 60,0.2)]">
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold text-[13px] uppercase tracking-wider transition-colors">
                     {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                     Track This Game
                 </button>

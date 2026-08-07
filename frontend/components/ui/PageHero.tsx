@@ -59,7 +59,7 @@ export default function PageHero({
                 >
                     {/* Icon box */}
                     {MainIcon && (
-                        <div className="w-[52px] h-[52px] rounded-xl bg-tp-accent/10 border border-tp-accent/20 flex items-center justify-center mb-5 shadow-[0_0_30px_rgba(220, 20, 60,0.15)]">
+                        <div className="w-[52px] h-[52px] rounded-xl bg-tp-accent/10 border border-tp-accent/20 flex items-center justify-center mb-5">
                             <MainIcon className="w-6 h-6 text-tp-accent" strokeWidth={1.75} />
                         </div>
                     )}
@@ -91,7 +91,7 @@ export default function PageHero({
                                 const buttonClass = cn(
                                     "flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0",
                                     isSelected
-                                        ? "bg-tp-accent text-white shadow-[0_0_15px_rgba(220, 20, 60,0.35)]"
+                                        ? "bg-tp-accent text-white"
                                         : "text-zinc-600 dark:text-[#A1A1AA] hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5"
                                 );
 

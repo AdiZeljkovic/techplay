@@ -314,7 +314,7 @@ const CommentItem = memo(function CommentItem({
             <div className="flex gap-4">
                 {/* Avatar */}
                 <Link href={`/profile/${comment.user.username}`} className="shrink-0 relative">
-                    <div className={`w-10 h-10 rounded-full overflow-hidden bg-[#1A1F26] ring-2 transition-all ${isStaff ? 'ring-tp-accent shadow-[0_0_10px_rgba(220, 20, 60,0.5)]' : 'ring-transparent group-hover:ring-white/20'}`}>
+                    <div className={`w-10 h-10 rounded-full overflow-hidden bg-[#1A1F26] ring-2 transition-all ${isStaff ? 'ring-tp-accent' : 'ring-transparent group-hover:ring-white/20'}`}>
                         {comment.user.avatar_url ? (
                             <Image src={comment.user.avatar_url} alt={comment.user.username} width={40} height={40} className="object-cover" />
                         ) : (
