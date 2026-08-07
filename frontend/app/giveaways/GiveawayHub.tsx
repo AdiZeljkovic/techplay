@@ -157,18 +157,26 @@ export default function GiveawayHub() {
         <main className="min-h-screen bg-[var(--surface-0)]">
             {/* ── hero ── */}
             <section className="relative overflow-hidden border-b border-white/[0.07]">
-                <span aria-hidden className="absolute inset-0 bg-[radial-gradient(85%_130%_at_18%_0%,color-mix(in_srgb,var(--accent)_22%,transparent),transparent_62%)]" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src="/images/giveaways-hero.webp"
+                    alt=""
+                    aria-hidden
+                    className="absolute inset-0 w-full h-full object-cover object-center opacity-95"
+                />
+                <span aria-hidden className="absolute inset-0 bg-[radial-gradient(50%_115%_at_50%_45%,rgba(5,7,10,0.68),transparent_72%)]" />
+                <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
-                <div className="relative z-10 container-page py-11">
+                <div className="relative z-10 container-page py-12 text-center">
                     <h1 className="font-display font-black tracking-tight text-[44px] md:text-[60px] leading-none text-white">
-                        GIVEAWAYS
+                        GIVE<span className="text-[var(--accent)]">AWAYS</span>
                     </h1>
                     <p className="mt-2.5 text-[13px] text-white/45">
                         Win gaming prizes, collector rewards and exclusive keys.
                     </p>
 
                     {/* Four figures, all of them counted. */}
-                    <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-[880px]">
+                    <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-[880px] mx-auto">
                         <Figure icon={<Gift className="w-4 h-4" />} value={hub ? String(hub.stats.active) : "—"} label="Active giveaways" />
                         <Figure icon={<Gem className="w-4 h-4" />} value={hub ? (money(hub.stats.prize_value) ?? "—") : "—"} label="Total prizes" />
                         <Figure icon={<Trophy className="w-4 h-4" />} value={hub ? String(hub.stats.winners) : "—"} label="Winners announced" />

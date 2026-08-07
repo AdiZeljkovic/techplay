@@ -249,11 +249,15 @@ export default function AdvisorClient() {
         <main className="min-h-screen bg-[var(--surface-0)]">
             {/* ── header ── */}
             <div className="relative overflow-hidden border-b border-white/[0.07]">
-                <span
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src="/images/backlog-hero.webp"
+                    alt=""
                     aria-hidden
-                    className="absolute inset-0"
-                    style={{ background: "radial-gradient(65% 150% at 80% -20%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 58%)" }}
+                    className="absolute inset-0 w-full h-full object-cover object-center opacity-95"
                 />
+                <span aria-hidden className="absolute inset-0 bg-[radial-gradient(55%_120%_at_50%_45%,rgba(5,7,10,0.7),transparent_72%)]" />
+                <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
                 <div className="relative z-10 container-page pt-11 pb-7 text-center">
                     <p className="inline-flex items-center gap-2 h-[24px] px-3 rounded-[6px] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] font-display text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
                         <Compass className="w-3 h-3" /> Backlog Advisor
@@ -268,7 +272,7 @@ export default function AdvisorClient() {
                     </p>
 
                     {/* stat strip */}
-                    <div className="mt-6 rounded-[var(--radius-panel)] border border-white/[0.07] bg-[#100e0d] px-5 py-4">
+                    <div className="mt-6 rounded-[var(--radius-panel)] border border-white/[0.07] bg-[#100e0d]/75 backdrop-blur-sm px-5 py-4">
                         <div className="flex items-center gap-6 md:gap-12 md:justify-center overflow-x-auto scrollbar-none min-w-max md:min-w-0">
                             {([
                                 [<Library key="b" className="w-4 h-4" />, "Your backlog", summary?.backlog ?? 0, "games to play", "var(--accent)"],
