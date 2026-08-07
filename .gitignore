@@ -27,3 +27,7 @@ vendor/
 
 # Generated at runtime by the backend (SitemapController/commands)
 backend/public/sitemap-news.xml
+
+# Lokalni GTA 6 asseti — staging za upload, ne idu u repo
+/Vehicles/
+/weapons/
