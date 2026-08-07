@@ -463,6 +463,9 @@ class AuthController extends Controller
             'pc_specs.case' => 'nullable|string|max:255',
             'avatar' => 'nullable|image|max:2048', // 2MB Max
             'cover_image' => 'nullable|image|max:5120', // 5MB Max
+            'remove_cover' => 'nullable|boolean',
+            'gamertags_cleared' => 'nullable|boolean',
+            'pc_specs_cleared' => 'nullable|boolean',
             'profile_visibility' => 'nullable|in:public,friends',
         ]);
 
@@ -473,6 +476,12 @@ class AuthController extends Controller
         }
 
         // Handle Cover Image Upload
+        // An explicit clear: the form sends remove_cover=1 when the reader
+        // removes the image rather than replacing it.
+        if ($request->boolean('remove_cover')) {
+            $user->cover_image = null;
+        }
+
         if ($request->hasFile('cover_image')) {
             $path = $request->file('cover_image')->store('covers', 'public');
             $user->cover_image = $path;
@@ -484,8 +493,8 @@ class AuthController extends Controller
             'location' => $validated['location'] ?? $user->location,
             'tagline' => $validated['tagline'] ?? $user->tagline,
             'playstyle_tags' => $validated['playstyle_tags'] ?? $user->playstyle_tags,
-            'gamertags' => $validated['gamertags'] ?? $user->gamertags,
-            'pc_specs' => $validated['pc_specs'] ?? $user->pc_specs,
+            'gamertags' => $request->boolean('gamertags_cleared') ? [] : ($validated['gamertags'] ?? $user->gamertags),
+            'pc_specs' => $request->boolean('pc_specs_cleared') ? [] : ($validated['pc_specs'] ?? $user->pc_specs),
             'profile_visibility' => $validated['profile_visibility'] ?? $user->profile_visibility ?? User::VISIBILITY_PUBLIC,
         ]);
 

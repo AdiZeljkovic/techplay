@@ -134,18 +134,26 @@ export default function SettingsClient() {
             formData.append('bio', bio);
             formData.append('display_name', displayName);
 
-            // Append Gamertags
-            Object.keys(gamertags).forEach(key => {
-                if (gamertags[key]) formData.append(`gamertags[${key}]`, gamertags[key]);
-            });
+            // Empty entries are skipped, but the *set* must still be sent —
+            // otherwise clearing the last gamertag omitted the field entirely
+            // and the API fell back to the old value, so it could never be
+            // emptied. An explicit marker keeps the key present.
+            const gamertagKeys = Object.keys(gamertags).filter((k) => gamertags[k]);
+            gamertagKeys.forEach((key) => formData.append(`gamertags[${key}]`, gamertags[key]));
+            if (gamertagKeys.length === 0) formData.append('gamertags_cleared', '1');
 
-            // Append Specs
-            Object.keys(specs).forEach(key => {
-                if (specs[key]) formData.append(`pc_specs[${key}]`, specs[key]);
-            });
+            const specKeys = Object.keys(specs).filter((k) => specs[k]);
+            specKeys.forEach((key) => formData.append(`pc_specs[${key}]`, specs[key]));
+            if (specKeys.length === 0) formData.append('pc_specs_cleared', '1');
 
             if (avatarFile) {
                 formData.append('avatar', avatarFile);
+            }
+
+            // Removing a cover is not the same as not changing it: without an
+            // explicit flag the API kept the old image and "Remove" did nothing.
+            if (!coverFile && !coverPreview) {
+                formData.append('remove_cover', '1');
             }
 
             if (coverFile) {
