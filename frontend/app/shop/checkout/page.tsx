@@ -83,7 +83,7 @@ export default function CheckoutPage() {
                     </p>
                     <Link
                         href="/shop"
-                        className="inline-flex items-center gap-2 px-8 py-3 bg-[var(--accent)] text-white font-bold rounded-[var(--radius-card)] hover:bg-[var(--accent-hover)] transition-all"
+                        className="btn-command inline-flex items-center gap-2 px-8 py-3 bg-[var(--accent)] text-white font-bold hover:bg-[var(--accent-hover)] transition-all"
                     >
                         <Package className="w-5 h-5" /> Continue Shopping
                     </Link>
@@ -104,7 +104,7 @@ export default function CheckoutPage() {
                     <p className="text-white/55 mb-8">Looks like you haven't added any gear yet.</p>
                     <Link
                         href="/shop"
-                        className="inline-flex items-center gap-2 px-8 py-3 bg-[var(--accent)] text-white font-bold rounded-[var(--radius-card)] hover:bg-[var(--accent-hover)] transition-all"
+                        className="btn-command inline-flex items-center gap-2 px-8 py-3 bg-[var(--accent)] text-white font-bold hover:bg-[var(--accent-hover)] transition-all"
                     >
                         Go to Shop
                     </Link>
@@ -291,7 +291,7 @@ export default function CheckoutPage() {
                                     type="submit"
                                     form="checkout-form"
                                     disabled={isProcessing}
-                                    className="w-full py-4 bg-[var(--accent)] text-white font-bold rounded-[var(--radius-card)] hover:bg-[var(--accent-hover)] transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="btn-command w-full py-4 bg-[var(--accent)] text-white font-bold hover:bg-[var(--accent-hover)] transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isProcessing ? (
                                         <>Processing...</>

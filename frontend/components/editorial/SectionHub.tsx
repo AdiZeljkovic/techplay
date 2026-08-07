@@ -500,7 +500,7 @@ export default function SectionHub({
                             <button
                                 type="submit"
                                 disabled={subscribing}
-                                className="shrink-0 h-9 px-4 rounded-[8px] bg-[var(--accent)] hover:brightness-110 disabled:opacity-60 font-display text-[10px] font-black uppercase tracking-[0.1em] text-white transition-all"
+                                className="btn-command shrink-0 h-9 px-4 bg-[var(--accent)] hover:brightness-110 disabled:opacity-60 font-display text-[10px] font-black uppercase tracking-[0.1em] text-white transition-all"
                             >
                                 {subscribing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Subscribe"}
                             </button>

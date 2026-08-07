@@ -98,7 +98,7 @@ export default function LockedProfile({
                         {!viewerSignedIn ? (
                             <Link
                                 href="/login"
-                                className="inline-flex items-center gap-2 px-6 h-11 rounded-[var(--radius-card)] bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)]"
+                                className="btn-command inline-flex items-center gap-2 px-6 h-11 bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)]"
                             >
                                 <UserPlus className="w-4 h-4" /> Sign In To Send A Request
                             </Link>
@@ -109,7 +109,7 @@ export default function LockedProfile({
                         ) : friendStatus === "incoming" ? (
                             <Link
                                 href="/friends"
-                                className="inline-flex items-center gap-2 px-6 h-11 rounded-[var(--radius-card)] bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)]"
+                                className="btn-command inline-flex items-center gap-2 px-6 h-11 bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)]"
                             >
                                 <Check className="w-4 h-4" /> Respond To Their Request
                             </Link>
@@ -117,7 +117,7 @@ export default function LockedProfile({
                             <button
                                 onClick={onAddFriend}
                                 disabled={busy}
-                                className="inline-flex items-center gap-2 px-6 h-11 rounded-[var(--radius-card)] bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)] disabled:opacity-60"
+                                className="btn-command inline-flex items-center gap-2 px-6 h-11 bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)] disabled:opacity-60"
                             >
                                 <UserPlus className="w-4 h-4" /> {busy ? "Sending…" : "Add Friend"}
                             </button>

@@ -125,7 +125,7 @@ export default function ProductDetailPage() {
                             <button
                                 onClick={handleAddToCart}
                                 disabled={product.stock === 0}
-                                className="flex-1 py-4 px-8 rounded-[var(--radius-card)] font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:bg-[var(--surface-2)] disabled:text-white/35 disabled:cursor-not-allowed"
+                                className="btn-command flex-1 py-4 px-8 font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:bg-[var(--surface-2)] disabled:text-white/35 disabled:cursor-not-allowed"
                             >
                                 <ShoppingCart className="w-6 h-6" /> Add to Cart
                             </button>

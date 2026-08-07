@@ -101,7 +101,7 @@ function CategoryThreadsPageInner() {
             <div className="min-h-screen bg-[var(--surface-0)] flex flex-col items-center justify-center gap-4">
                 <MessageSquare className="w-16 h-16 text-white/12" />
                 <h1 className="text-2xl font-bold text-white">Category Not Found</h1>
-                <Link href="/forum" className="btn-command inline-flex items-center gap-2 h-[42px] px-5 bg-[var(--accent)] hover:brightness-110 text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[12px]">
+                <Link href="/forum" className="btn-command inline-flex items-center gap-2 h-[42px] px-5 bg-[var(--accent)] hover:brightness-110 text-white font-bold transition-colors uppercase tracking-[0.08em] text-[12px]">
                     Back to Forums
                 </Link>
             </div>
@@ -147,7 +147,7 @@ function CategoryThreadsPageInner() {
                         </div>
 
                         {user && (
-                            <Link href={`/forum/create?category=${category.slug}`} className="btn-command inline-flex items-center gap-2 h-[42px] px-5 bg-[var(--accent)] hover:brightness-110 text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[12px]">
+                            <Link href={`/forum/create?category=${category.slug}`} className="btn-command inline-flex items-center gap-2 h-[42px] px-5 bg-[var(--accent)] hover:brightness-110 text-white font-bold transition-colors uppercase tracking-[0.08em] text-[12px]">
                                 <Plus className="w-4 h-4" />
                                 New Thread
                             </Link>
@@ -317,12 +317,12 @@ function CategoryThreadsPageInner() {
                                 <h3 className="text-xl font-bold text-white mb-2">No threads yet</h3>
                                 <p className="text-white/45 mb-6">Be the first to start a discussion in this category!</p>
                                 {user ? (
-                                    <Link href={`/forum/create?category=${category.slug}`} className="btn-command inline-flex items-center gap-2 h-[42px] px-5 bg-[var(--accent)] hover:brightness-110 text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[12px]">
+                                    <Link href={`/forum/create?category=${category.slug}`} className="btn-command inline-flex items-center gap-2 h-[42px] px-5 bg-[var(--accent)] hover:brightness-110 text-white font-bold transition-colors uppercase tracking-[0.08em] text-[12px]">
                                         <Plus className="w-4 h-4" />
                                         Start the first discussion
                                     </Link>
                                 ) : (
-                                    <Link href="/login" className="btn-command inline-flex items-center gap-2 h-[42px] px-5 bg-[var(--accent)] hover:brightness-110 text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[12px]">
+                                    <Link href="/login" className="btn-command inline-flex items-center gap-2 h-[42px] px-5 bg-[var(--accent)] hover:brightness-110 text-white font-bold transition-colors uppercase tracking-[0.08em] text-[12px]">
                                         Log in to post
                                     </Link>
                                 )}

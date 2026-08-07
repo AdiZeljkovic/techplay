@@ -159,7 +159,7 @@ export default function ShopClient() {
                                         <button
                                             onClick={() => handleAddToCart(product)}
                                             disabled={product.stock === 0}
-                                            className="w-10 h-10 rounded-[var(--radius-card)] flex items-center justify-center bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] hover:scale-105 shadow-lg shadow-[var(--accent)]/20 disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed transition-all"
+                                            className="btn-command w-10 h-10 flex items-center justify-center bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] hover:scale-105 disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed transition-all"
                                             title="Add to Cart"
                                         >
                                             <ShoppingCart className="w-[18px] h-[18px]" />

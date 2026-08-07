@@ -108,7 +108,7 @@ export default function MarketingClient() {
                             whileHover={{ y: -5 }}
                             className="bg-[var(--surface-1)] border border-[var(--line)] p-8 rounded-[var(--radius-panel)] text-center"
                         >
-                            <div className="w-12 h-12 bg-[var(--accent)]/10 rounded-[var(--radius-panel)] flex items-center justify-center mx-auto mb-6 text-[var(--accent)]">
+                            <div className="btn-command w-12 h-12 bg-[var(--accent)]/10 flex items-center justify-center mx-auto mb-6 text-[var(--accent)]">
                                 <Users className="w-6 h-6" />
                             </div>
                             <h3 className="text-xl font-bold text-white mb-2">Young Professionals</h3>
@@ -121,7 +121,7 @@ export default function MarketingClient() {
                             whileHover={{ y: -5 }}
                             className="bg-[var(--surface-1)] border border-[var(--line)] p-8 rounded-[var(--radius-panel)] text-center"
                         >
-                            <div className="w-12 h-12 bg-[var(--accent)]/10 rounded-[var(--radius-panel)] flex items-center justify-center mx-auto mb-6 text-[var(--accent)]">
+                            <div className="btn-command w-12 h-12 bg-[var(--accent)]/10 flex items-center justify-center mx-auto mb-6 text-[var(--accent)]">
                                 <Globe className="w-6 h-6" />
                             </div>
                             <h3 className="text-xl font-bold text-white mb-2">Global Reach</h3>
@@ -134,7 +134,7 @@ export default function MarketingClient() {
                             whileHover={{ y: -5 }}
                             className="bg-[var(--surface-1)] border border-[var(--line)] p-8 rounded-[var(--radius-panel)] text-center"
                         >
-                            <div className="w-12 h-12 bg-[var(--accent)]/10 rounded-[var(--radius-panel)] flex items-center justify-center mx-auto mb-6 text-[var(--accent)]">
+                            <div className="btn-command w-12 h-12 bg-[var(--accent)]/10 flex items-center justify-center mx-auto mb-6 text-[var(--accent)]">
                                 <Cpu className="w-6 h-6" />
                             </div>
                             <h3 className="text-xl font-bold text-white mb-2">Hardware Enthusiasts</h3>
@@ -147,7 +147,7 @@ export default function MarketingClient() {
                             whileHover={{ y: -5 }}
                             className="bg-[var(--surface-1)] border border-[var(--line)] p-8 rounded-[var(--radius-panel)] text-center"
                         >
-                            <div className="w-12 h-12 bg-[var(--accent)]/10 rounded-[var(--radius-panel)] flex items-center justify-center mx-auto mb-6 text-[var(--accent)]">
+                            <div className="btn-command w-12 h-12 bg-[var(--accent)]/10 flex items-center justify-center mx-auto mb-6 text-[var(--accent)]">
                                 <Gamepad2 className="w-6 h-6" />
                             </div>
                             <h3 className="text-xl font-bold text-white mb-2">Active Buyers</h3>
@@ -307,7 +307,7 @@ export default function MarketingClient() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <a href="mailto:marketing@techplay.gg" className="inline-flex items-center gap-2 h-[52px] px-8 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[13px] shadow-lg shadow-[var(--accent)]/20">
+                            <a href="mailto:marketing@techplay.gg" className="btn-command inline-flex items-center gap-2 h-[52px] px-8 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold transition-colors uppercase tracking-[0.08em] text-[13px]">
                                 <Mail className="w-5 h-5" /> marketing@techplay.gg
                             </a>
                             <Link href="/media-kit" className="btn-command btn-command-quiet inline-flex items-center gap-2 h-[52px] px-8 bg-white/[0.04] text-white/70 hover:text-white font-bold uppercase tracking-[0.08em] text-[13px] transition-colors">

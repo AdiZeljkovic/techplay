@@ -266,7 +266,7 @@ export default function AboutPage() {
                             </p>
                             <a
                                 href="/contact"
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-semibold rounded-[var(--radius-card)] transition-colors"
+                                className="btn-command inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-semibold transition-colors"
                             >
                                 Get in Touch
                                 <ArrowRight className="w-4 h-4" />

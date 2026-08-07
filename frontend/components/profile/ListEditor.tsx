@@ -232,7 +232,7 @@ export default function ListEditor({
                     <button
                         onClick={() => save("publish")}
                         disabled={saving !== null}
-                        className="inline-flex items-center gap-2 h-10 px-5 rounded-[8px] bg-[var(--accent)] hover:brightness-110 text-white font-display text-[11px] font-bold uppercase tracking-[0.08em] transition-[filter] disabled:opacity-60"
+                        className="btn-command inline-flex items-center gap-2 h-10 px-5 bg-[var(--accent)] hover:brightness-110 text-white font-display text-[11px] font-bold uppercase tracking-[0.08em] transition-[filter] disabled:opacity-60"
                     >
                         {saving === "publish" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Rocket className="w-3.5 h-3.5" />}
                         Publish list

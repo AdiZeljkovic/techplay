@@ -141,7 +141,7 @@ function SupportCheckoutContent() {
                                 <div className="flex justify-end pt-4">
                                     <button
                                         onClick={() => setStep(2)}
-                                        className="bg-[var(--accent)] hover:brightness-110 text-white font-bold text-lg px-8 py-4 rounded-[var(--radius-card)] shadow-lg shadow-black/40 hover:shadow-orange-900/40 transition-all hover:scale-[1.02] flex items-center gap-2"
+                                        className="btn-command bg-[var(--accent)] hover:brightness-110 text-white font-bold text-lg px-8 py-4 shadow-lg shadow-black/40 hover:shadow-orange-900/40 transition-all hover:scale-[1.02] flex items-center gap-2"
                                     >
                                         Continue to Payment <ChevronRight className="w-5 h-5" />
                                     </button>
@@ -385,7 +385,7 @@ function SuccessView({ user, router }: any) {
 
                 <button
                     onClick={() => router.push(`/profile/${user?.username}`)}
-                    className="w-full bg-[var(--accent)] hover:brightness-110 text-white font-bold py-3.5 rounded-[var(--radius-card)] transition-colors"
+                    className="btn-command w-full bg-[var(--accent)] hover:brightness-110 text-white font-bold py-3.5 transition-colors"
                 >
                     View Your Profile
                 </button>

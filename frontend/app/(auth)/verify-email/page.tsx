@@ -59,7 +59,7 @@ export default function VerifyEmailPage() {
                     <p className="text-[14px] text-[var(--ink-mid)] mb-8">
                         Your email has been successfully verified. You now have full access to TechPlay.
                     </p>
-                    <Link href="/" className="flex items-center justify-center gap-2 w-full h-[52px] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.1em] text-[13px] shadow-lg shadow-[var(--accent)]/25">
+                    <Link href="/" className="btn-command flex items-center justify-center gap-2 w-full h-[52px] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold transition-colors uppercase tracking-[0.1em] text-[13px]">
                         Continue to TechPlay
                     </Link>
                 </div>
@@ -106,7 +106,7 @@ export default function VerifyEmailPage() {
                         <button
                             onClick={handleResend}
                             disabled={isResending}
-                            className="group w-full h-[52px] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.1em] text-[13px] flex items-center justify-center gap-2 shadow-lg shadow-[var(--accent)]/25 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+                            className="btn-command group w-full h-[52px] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold transition-colors uppercase tracking-[0.1em] text-[13px] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
                         >
                             {isResending ? (
                                 <><RefreshCw className="w-4 h-4 animate-spin" /> Sending...</>

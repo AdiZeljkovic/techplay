@@ -319,7 +319,7 @@ export default function ImpressumClient({ staff }: { staff: StaffData | null }) 
                                 </p>
                                 <a
                                     href="mailto:redakcija@techplay.gg?subject=Želim da se pridružim TechPlay timu"
-                                    className="inline-flex items-center gap-2 px-8 py-4 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-semibold rounded-[var(--radius-card)] transition-all hover:scale-105 shadow-lg shadow-[var(--accent)]/30"
+                                    className="btn-command inline-flex items-center gap-2 px-8 py-4 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-semibold transition-all hover:scale-105"
                                 >
                                     <Mail className="w-5 h-5" />
                                     Get in Touch

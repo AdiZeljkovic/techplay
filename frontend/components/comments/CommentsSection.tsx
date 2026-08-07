@@ -208,7 +208,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                                 <button
                                     type="submit"
                                     disabled={isSubmitting || !content.trim()}
-                                    className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white px-6 h-[38px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[11px] flex items-center justify-center shadow-lg shadow-[var(--accent)]/20 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                                    className="btn-command bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white px-6 h-[38px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[11px] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                                 >
                                     {isSubmitting ? "Posting…" : "Post Comment"}
                                 </button>
@@ -219,7 +219,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
             ) : (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-5 px-5 mb-8 bg-[var(--surface-0)] rounded-[var(--radius-card)] border border-white/[0.07]">
                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-[var(--radius-card)] bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center shrink-0">
+                        <div className="btn-command w-10 h-10 bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center shrink-0">
                             <Gamepad2 className="w-5 h-5 text-[var(--accent)]" />
                         </div>
                         <div>
@@ -236,7 +236,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                         </Link>
                         <Link
                             href="/register?redirect=back"
-                            className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white px-5 h-[36px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[11px] flex items-center shadow-lg shadow-[var(--accent)]/20"
+                            className="btn-command bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white px-5 h-[36px] rounded font-bold transition-colors uppercase tracking-[0.08em] text-[11px] flex items-center"
                         >
                             Sign Up
                         </Link>

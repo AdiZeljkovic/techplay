@@ -235,7 +235,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                     </div>
                     <h1 className="text-2xl font-bold text-white mb-2">Giveaway Not Found</h1>
                     <p className="text-white/40 text-sm leading-relaxed">This giveaway may have ended or doesn&apos;t exist.</p>
-                    <Link href="/" className="inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-[var(--radius-card)] bg-[var(--accent)] text-white text-sm font-bold hover:bg-[var(--accent-hover)] transition-colors">
+                    <Link href="/" className="btn-command inline-flex items-center gap-2 mt-6 px-5 py-2.5 bg-[var(--accent)] text-white text-sm font-bold hover:bg-[var(--accent-hover)] transition-colors">
                         Back to Home
                     </Link>
                 </motion.div>

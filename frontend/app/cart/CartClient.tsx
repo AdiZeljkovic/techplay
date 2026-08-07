@@ -18,7 +18,7 @@ export default function CartClient() {
                     </div>
                     <h2 className="text-2xl font-bold text-white mb-2">Your cart is empty</h2>
                     <p className="text-white/55 mb-8">Looks like you haven't added anything yet.</p>
-                    <Link href="/shop" className="inline-flex items-center gap-2 h-[48px] px-8 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[13px]">
+                    <Link href="/shop" className="btn-command inline-flex items-center gap-2 h-[48px] px-8 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold transition-colors uppercase tracking-[0.08em] text-[13px]">
                         Start Shopping
                         <ArrowRight className="w-4 h-4" />
                     </Link>
@@ -149,7 +149,7 @@ export default function CartClient() {
                                 </div>
                             </div>
 
-                            <Link href="/checkout" className="flex items-center justify-center gap-2 h-[50px] w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[13px] shadow-lg shadow-[var(--accent)]/20">
+                            <Link href="/checkout" className="btn-command flex items-center justify-center gap-2 h-[50px] w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold transition-colors uppercase tracking-[0.08em] text-[13px]">
                                 Proceed to Checkout
                                 <ArrowRight className="w-4 h-4" />
                             </Link>
