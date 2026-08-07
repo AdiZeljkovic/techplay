@@ -56,7 +56,6 @@ export default function MarketingClient() {
             <PageHero
                 title="Advertising & Partnerships"
                 description="Connect with a passionate audience of gamers, tech enthusiasts, and early adopters."
-                backgroundImage="/hero-marketing.jpg"
             />
 
             {/* Introduction: The "Gamers Who Read" Value Prop */}
