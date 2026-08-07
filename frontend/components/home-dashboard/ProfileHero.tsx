@@ -374,7 +374,7 @@ export default function ProfileHero({
             value: hero.stats.games,
             icon: (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src="/images/profile/stat-games.webp" alt="" aria-hidden className="w-[40px] h-[40px] shrink-0 object-contain select-none" />
+                <img src="/images/profile/stat-games.webp" alt="" aria-hidden className="w-[60px] h-[60px] shrink-0 object-contain select-none" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
             ),
             href: `${base}?tab=collection`,
         },
@@ -383,7 +383,7 @@ export default function ProfileHero({
             value: hero.stats.completed,
             icon: (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src="/images/profile/stat-completed.webp" alt="" aria-hidden className="w-[40px] h-[40px] shrink-0 object-contain select-none" />
+                <img src="/images/profile/stat-completed.webp" alt="" aria-hidden className="w-[60px] h-[60px] shrink-0 object-contain select-none" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
             ),
             href: `${base}?tab=collection`,
         },
@@ -392,7 +392,7 @@ export default function ProfileHero({
             value: hero.stats.reviews,
             icon: (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src="/images/profile/stat-reviews.webp" alt="" aria-hidden className="w-[40px] h-[40px] shrink-0 object-contain select-none" />
+                <img src="/images/profile/stat-reviews.webp" alt="" aria-hidden className="w-[60px] h-[60px] shrink-0 object-contain select-none" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
             ),
             // Reviews surface in the overview's activity feed — there is no
             // longer a tab of their own to point at.
@@ -410,7 +410,7 @@ export default function ProfileHero({
             ),
             icon: (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src="/images/profile/stat-achievements.webp" alt="" aria-hidden className="w-[40px] h-[40px] shrink-0 object-contain select-none" />
+                <img src="/images/profile/stat-achievements.webp" alt="" aria-hidden className="w-[60px] h-[60px] shrink-0 object-contain select-none" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
             ),
             href: `${base}?tab=achievements`,
         },
@@ -425,7 +425,7 @@ export default function ProfileHero({
             icon: (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src="/images/profile/stat-streak.webp" alt="" aria-hidden
-                    className={`w-[40px] h-[40px] shrink-0 object-contain select-none ${hero.streak_days > 0 ? "" : "opacity-40 grayscale"}`} />
+                    className={`w-[60px] h-[60px] shrink-0 object-contain select-none ${hero.streak_days > 0 ? "" : "opacity-40 grayscale"}`} style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
             ),
         },
         {
@@ -443,7 +443,7 @@ export default function ProfileHero({
                     aria-hidden
                     width={44}
                     height={44}
-                    className="w-[44px] h-[44px] shrink-0 object-contain"
+                    className="w-[64px] h-[64px] shrink-0 object-contain"
                     style={{ filter: "drop-shadow(0 3px 8px rgba(0,0,0,0.6))" }}
                 />
             ),
