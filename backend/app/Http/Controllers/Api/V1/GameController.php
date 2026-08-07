@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\SitemapController;
 use App\Models\Article;
 use App\Models\Game;
+use App\Services\Chronicle\TasteProfileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -389,6 +390,16 @@ class GameController extends Controller
      */
     public function suggested(string $slug)
     {
+        // A signed-in player with a chronicle gets the list re-ranked by
+        // their own taste; guests keep the shared genre list below.
+        $user = request()->user('sanctum');
+        if ($user) {
+            $taste = app(TasteProfileService::class);
+            if ($taste->isPersonalisable($user)) {
+                return $this->suggestedFor($user, $slug, $taste);
+            }
+        }
+
         $game = Game::where('slug', $slug)->first(['id', 'genres']);
         $lead = $game?->genres[0] ?? null;
 
@@ -411,6 +422,63 @@ class GameController extends Controller
                 'rating' => (float) $g->rating,
                 'cover_url' => $g->cover_url,
             ])->all());
+
+        return response()->json(['count' => count($results), 'results' => $results]);
+    }
+
+    /** The personalised half of suggested(): same shape, their taste. */
+    private function suggestedFor($user, string $slug, TasteProfileService $taste)
+    {
+        $game = Game::where('slug', $slug)->first(['id', 'genres']);
+        if (! $game) {
+            return response()->json(['count' => 0, 'results' => []]);
+        }
+
+        $results = Cache::remember("games.suggested.me.{$user->id}.{$game->id}", 1800, function () use ($user, $game, $taste) {
+            $weights = $taste->genreWeights($user);
+            $negative = $taste->negativeGenres($user);
+            $owned = DB::table('user_games')
+                ->where('user_id', $user->id)->pluck('game_id')->all();
+
+            $pool = ((array) $game->genres) !== []
+                ? array_slice(array_unique(array_merge((array) $game->genres, array_keys($weights))), 0, 6)
+                : array_keys($weights);
+
+            if ($pool === []) {
+                return [];
+            }
+
+            $placeholders = implode(',', array_fill(0, count($pool), '?'));
+
+            return Game::query()
+                ->whereRaw("genres && ARRAY[{$placeholders}]::text[]", $pool)
+                ->where('id', '!=', $game->id)
+                ->when($owned !== [], fn ($q) => $q->whereNotIn('id', $owned))
+                ->whereNotNull('cover_url')
+                ->where('rating', '>=', 6.5)
+                ->orderByDesc('rating')
+                ->limit(60)
+                ->get(['slug', 'name', 'released', 'rating', 'cover_url', 'genres'])
+                ->map(function (Game $g) use ($weights, $negative) {
+                    $fit = 0.0;
+                    foreach ((array) $g->genres as $genre) {
+                        $fit += (float) ($weights[$genre] ?? 0) - 0.5 * (float) ($negative[$genre] ?? 0);
+                    }
+
+                    return ['fit' => $fit + ((float) $g->rating) / 20, 'game' => $g];
+                })
+                ->sortByDesc('fit')
+                ->take(8)
+                ->map(fn ($row) => [
+                    'slug' => $row['game']->slug,
+                    'name' => $row['game']->name,
+                    'released' => $row['game']->released?->toDateString(),
+                    'rating' => (float) $row['game']->rating,
+                    'cover_url' => $row['game']->cover_url,
+                ])
+                ->values()
+                ->all();
+        });
 
         return response()->json(['count' => count($results), 'results' => $results]);
     }

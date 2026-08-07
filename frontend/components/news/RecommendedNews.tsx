@@ -14,13 +14,25 @@ interface RecommendedNewsProps {
     excludeSlug?: string;
 }
 
+interface RecommendedPayload {
+    personalised: boolean;
+    articles: Article[];
+}
+
 export default function RecommendedNews({ excludeSlug }: RecommendedNewsProps) {
-    const { data: articles, isLoading } = useSWR<Article[]>('/news', fetcher);
+    // The chronicle decides: articles about the games occupying this
+    // reader, or most-read as an honest fallback for strangers.
+    const { data, isLoading } = useSWR<RecommendedPayload>(
+        `/feed/recommended-news${excludeSlug ? `?exclude=${excludeSlug}` : ""}`,
+        fetcher
+    );
+    const articles = data?.articles;
+    const heading = data?.personalised ? "RECOMMENDED FOR YOU" : "POPULAR NOW";
 
     if (isLoading) {
         return (
             <aside className="w-full bg-zinc-50/80 dark:bg-[#0B0E14]/80 backdrop-blur-md border border-zinc-200 dark:border-[#161B22] rounded-[24px] p-6 lg:p-8 relative overflow-hidden shadow-sm dark:shadow-[0_0_40px_rgba(0,0,0,0.5)] transition-colors duration-300">
-                <h2 className="text-[17px] font-bold text-zinc-900 dark:text-white uppercase tracking-wider mb-8">RECOMMENDED NEWS</h2>
+                <h2 className="text-[17px] font-bold text-zinc-900 dark:text-white uppercase tracking-wider mb-8">{heading}</h2>
                 <div className="flex flex-col gap-[22px]">
                     {[1, 2, 3, 4].map((i) => (
                         <div key={i} className="flex gap-4">
@@ -36,9 +48,7 @@ export default function RecommendedNews({ excludeSlug }: RecommendedNewsProps) {
         );
     }
 
-    const recommended = (articles || [])
-        .filter(a => a.slug !== excludeSlug)
-        .slice(0, 4);
+    const recommended = (articles || []).filter((a) => a.slug !== excludeSlug).slice(0, 4);
 
     if (recommended.length === 0) return null;
 
@@ -48,7 +58,7 @@ export default function RecommendedNews({ excludeSlug }: RecommendedNewsProps) {
             <div className="absolute top-0 right-[10%] w-[50%] h-[1px] bg-gradient-to-r from-transparent via-tp-accent/20 dark:via-tp-accent/40 to-transparent" />
             <div className="absolute -top-[100px] -right-[50px] w-[250px] h-[250px] bg-tp-accent/5 dark:bg-tp-accent/10 blur-[80px] rounded-full pointer-events-none" />
 
-            <h2 className="text-[17px] font-bold text-zinc-900 dark:text-white uppercase tracking-wider mb-8 relative z-10">RECOMMENDED NEWS</h2>
+            <h2 className="text-[17px] font-bold text-zinc-900 dark:text-white uppercase tracking-wider mb-8 relative z-10">{heading}</h2>
 
             <div className="flex flex-col gap-[22px] relative z-10">
                 {recommended.map((article) => {
@@ -57,7 +67,7 @@ export default function RecommendedNews({ excludeSlug }: RecommendedNewsProps) {
                         : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${article.featured_image_url}`;
 
                     return (
-                        <Link key={article.id} href={`/news/${article.slug}`} className="flex gap-4 group">
+                        <Link key={article.slug} href={`/news/${article.slug}`} className="flex gap-4 group">
                             <div className="w-[110px] h-[72px] rounded-[10px] overflow-hidden shrink-0 border border-zinc-200 dark:border-[#161B22] relative">
                                 {article.featured_image_url ? (
                                     <Image

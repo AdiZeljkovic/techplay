@@ -20,7 +20,7 @@ interface CalendarGame {
 }
 
 const fetcher = () =>
-    axios.get("/games/calendar").then((r) => (r.data?.results ?? []) as CalendarGame[]);
+    axios.get("/me/upcoming").then((r) => (r.data?.data ?? []) as CalendarGame[]);
 
 function releaseLabel(released: string): string {
     const date = new Date(released);

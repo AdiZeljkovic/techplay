@@ -240,6 +240,7 @@ Route::prefix('v1')->group(function () {
         // Logged-in homepage dashboard (aggregated read-only payload)
         Route::get('/me/dashboard', [DashboardController::class, 'index']);
         Route::get('/me/recommendations', [DashboardController::class, 'recommendations']);
+        Route::get('/me/upcoming', [DashboardController::class, 'upcoming']);
 
         // Reading list, progress and search history
         Route::get('/me/reading', [ReadingController::class, 'index']);
@@ -375,6 +376,7 @@ Route::prefix('v1')->group(function () {
 
         // Latest across the editorial sections, for the dashboard strip
         Route::get('/feed/latest', [FeedController::class, 'latest']);
+        Route::get('/feed/recommended-news', [FeedController::class, 'recommendedNews']);
 
         // News
         // One endpoint for news, reviews and tech — they are the same model

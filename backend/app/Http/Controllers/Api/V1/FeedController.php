@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Article;
+use App\Services\Chronicle\TasteProfileService;
 use App\Services\Feed\ContentFeed;
 use App\Services\Feed\InterestProfile;
 use App\Traits\ApiResponse;
@@ -11,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Everything the site publishes, as one stream — and the same stream reordered
@@ -33,6 +36,80 @@ class FeedController extends Controller
      *
      * Newest first, across articles and guides alike.
      */
+    /**
+     * GET /feed/recommended-news — the sidebar that used to ship the four
+     * newest articles under the word RECOMMENDED. Now: articles about the
+     * games occupying this reader (chronicle affinities, then taste
+     * genres), honest fallback to most-read when we do not know them.
+     */
+    public function recommendedNews(Request $request): JsonResponse
+    {
+        $user = $request->user('sanctum');
+        $exclude = (string) $request->query('exclude', '');
+        $taste = app(TasteProfileService::class);
+
+        $personalised = $user && $taste->isPersonalisable($user);
+
+        $articles = collect();
+
+        if ($personalised) {
+            $gameIds = array_keys($taste->gameAffinities($user));
+
+            $query = Article::query()
+                ->where('status', 'published')
+                ->where('published_at', '<=', now())
+                ->where('slug', '!=', $exclude)
+                ->with('category:id,name,slug,type');
+
+            if ($gameIds !== []) {
+                $articles = (clone $query)->whereIn('game_id', array_slice($gameIds, 0, 50))
+                    ->orderByDesc('published_at')->limit(4)->get();
+            }
+
+            // Not enough about their exact games — widen to their genres.
+            if ($articles->count() < 4 && DB::getDriverName() === 'pgsql') {
+                $genres = array_slice(array_keys($taste->genreWeights($user)), 0, 4);
+                if ($genres !== []) {
+                    $placeholders = implode(',', array_fill(0, count($genres), '?'));
+                    $more = (clone $query)
+                        ->whereNotIn('id', $articles->pluck('id'))
+                        ->whereIn('game_id', function ($q) use ($genres, $placeholders) {
+                            $q->select('id')->from('games')
+                                ->whereRaw("genres && ARRAY[{$placeholders}]::text[]", $genres);
+                        })
+                        ->orderByDesc('published_at')->limit(4 - $articles->count())->get();
+                    $articles = $articles->concat($more);
+                }
+            }
+        }
+
+        if ($articles->count() < 4) {
+            $fill = Article::query()
+                ->where('status', 'published')
+                ->where('published_at', '<=', now())
+                ->where('slug', '!=', $exclude)
+                ->whereNotIn('id', $articles->pluck('id'))
+                ->where('published_at', '>=', now()->subDays(14))
+                ->with('category:id,name,slug,type')
+                ->orderByDesc('views')
+                ->limit(4 - $articles->count())
+                ->get();
+            $articles = $articles->concat($fill);
+        }
+
+        return $this->success([
+            'personalised' => $personalised,
+            'articles' => $articles->map(fn ($a) => [
+                'slug' => $a->slug,
+                'title' => $a->title,
+                'featured_image_url' => is_array($a->featured_image_url) ? ($a->featured_image_url[0] ?? null) : $a->featured_image_url,
+                'published_at' => $a->published_at?->toIso8601String(),
+                'category' => $a->category?->name,
+                'type' => $a->category?->type ?? 'news',
+            ])->values()->all(),
+        ]);
+    }
+
     public function latest(Request $request): JsonResponse
     {
         $type = ContentFeed::resolveType($request->query('type'));

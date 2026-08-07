@@ -289,6 +289,55 @@ class DashboardController extends Controller
     }
 
     /**
+     * GET /me/upcoming — the release calendar seen through the chronicle:
+     * wishlisted games first (they asked), then whatever upcoming matches
+     * their taste. "Upcoming For You" finally earns its name.
+     */
+    public function upcoming(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $items = Cache::remember("me.upcoming.v1.{$user->id}", 1800, function () use ($user) {
+            $taste = app(TasteProfileService::class);
+            $weights = $taste->genreWeights($user);
+
+            $wishlisted = UserGame::where('user_id', $user->id)
+                ->where('status', 'wishlist')->pluck('game_id')->flip();
+
+            return Game::query()
+                ->whereNotNull('match_key')
+                ->whereBetween('released', [now()->toDateString(), now()->addDays(90)->toDateString()])
+                ->orderByDesc('hype_score')
+                ->limit(60)
+                ->get(['id', 'slug', 'name', 'released', 'cover_url', 'genres', 'platforms', 'hype_score'])
+                ->map(function (Game $g) use ($weights, $wishlisted) {
+                    $fit = 0.0;
+                    foreach ((array) $g->genres as $genre) {
+                        $fit += (float) ($weights[$genre] ?? 0);
+                    }
+
+                    return [
+                        'slug' => $g->slug,
+                        'name' => $g->name,
+                        'released' => $g->released?->toDateString(),
+                        'cover_url' => $g->cover_url,
+                        'genres' => array_slice((array) $g->genres, 0, 2),
+                        'platforms' => array_slice((array) $g->platforms, 0, 4),
+                        'reason' => isset($wishlisted[$g->id]) ? 'wishlist' : ($fit > 0.3 ? 'taste' : null),
+                        '_sort' => (isset($wishlisted[$g->id]) ? 100 : 0) + $fit * 10 + min(5, ((int) $g->hype_score) / 200),
+                    ];
+                })
+                ->sortByDesc('_sort')
+                ->take(8)
+                ->map(fn ($row) => collect($row)->except('_sort')->all())
+                ->values()
+                ->all();
+        });
+
+        return $this->success($items);
+    }
+
+    /**
      * The backlog game that best fits the user's taste — "play this next".
      * Falls back to the most recently added backlog entry when nothing scores.
      */
