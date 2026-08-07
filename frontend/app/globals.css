@@ -178,14 +178,12 @@
   --accent-rgb: 220, 20, 60; /* legacy — migrate consumers to color-mix */
 
   /* ── Progression palette ──
-     XP deliberately does NOT ride the brand accent. The accent means "act on
-     this"; levelling is a state, and it sits on an accent-tinted band where an
-     accent gauge would vanish into its own background. Violet is the one hue
-     that stays legible on that surface and never gets confused for a button.
-     Fixed on purpose — it must not shift with per-user accent themes. ── */
-  --xp: #8b5cf6;
-  --xp-bright: #b39cff;
-  --xp-deep: #6d28d9;
+     XP rides the house crimson. The violet era existed to survive an
+     accent-tinted rank band that no longer exists — the emblem stands bare
+     now, so the one-accent identity wins. ── */
+  --xp: var(--accent);
+  --xp-bright: var(--accent-ink);
+  --xp-deep: var(--accent-deep);
 
   /* ── One track for every meter ── */
   --track: rgba(255, 255, 255, 0.08);
