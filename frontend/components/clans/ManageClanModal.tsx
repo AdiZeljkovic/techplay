@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { Settings, X, Loader2, Upload, Trash2, Shield, ImageIcon, Check } from "lucide-react";
+import { Settings, X, Loader2, Upload, Trash2, Shield, ImageIcon, Check, UserPlus } from "lucide-react";
 import { getStorageUrl } from "@/lib/imageUrl";
 import type { ClanProfile } from "@/lib/types/clan";
 
@@ -32,6 +32,26 @@ export default function ManageClanModal({
     onClose: () => void;
     onSaved: () => void;
 }) {
+    const [inviteName, setInviteName] = useState("");
+    const [inviting, setInviting] = useState(false);
+
+    const sendInvite = async () => {
+        const username = inviteName.trim();
+        if (!username) return;
+
+        setInviting(true);
+        try {
+            await axios.post(`/clans/${clan.slug}/invite`, { username });
+            toast.success(`Invite sent to ${username}.`);
+            setInviteName("");
+        } catch (e: unknown) {
+            const message = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(message ?? "Couldn't send that invite.");
+        } finally {
+            setInviting(false);
+        }
+    };
+
     const [form, setForm] = useState({
         name: clan.name,
         tag: clan.tag ?? "",
@@ -297,6 +317,32 @@ export default function ManageClanModal({
                             placeholder="18+, mic, active weekly…"
                             className="w-full px-3 py-2.5 rounded-[8px] bg-white/[0.04] border border-white/[0.09] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] resize-none"
                         />
+                    </div>
+
+                    {/* Invite by username — the endpoint has been live all
+                        along, and the clans directory already tells people
+                        this is how they get in. */}
+                    <div className="pt-1">
+                        <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-1.5">
+                            Invite a player
+                        </label>
+                        <div className="flex gap-2">
+                            <input
+                                value={inviteName}
+                                onChange={(e) => setInviteName(e.target.value)}
+                                placeholder="Username"
+                                className="flex-1 h-10 px-3 rounded-[8px] bg-white/[0.04] border border-white/[0.09] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
+                            />
+                            <button
+                                type="button"
+                                onClick={sendInvite}
+                                disabled={inviting || !inviteName.trim()}
+                                className="btn-command inline-flex items-center gap-2 h-10 px-4 bg-white/[0.06] hover:bg-white/[0.1] disabled:opacity-40 text-white font-display text-[10px] font-black uppercase tracking-[0.1em] transition-colors"
+                            >
+                                {inviting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserPlus className="w-3.5 h-3.5" />}
+                                Invite
+                            </button>
+                        </div>
                     </div>
 
                     <div className="flex justify-end gap-2 pt-1">
