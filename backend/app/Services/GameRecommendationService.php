@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Game;
 use App\Models\User;
+use App\Services\Chronicle\TasteProfileService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,9 @@ use Illuminate\Support\Facades\DB;
  */
 class GameRecommendationService
 {
+    /** @var int[] peers from the chronicle, set per recommend() call */
+    private array $chroniclePeers = [];
+
     /** Weights sum to 100 — the match score is a percentage of a real total. */
     private const WEIGHTS = [
         'genre' => 42,
@@ -39,63 +43,34 @@ class GameRecommendationService
     ];
 
     /**
-     * The player's taste, read off their collection. Cached briefly because
-     * it costs a couple of queries and changes at the speed of a shelf.
+     * The player's taste — read from the chronicle, where every signal the
+     * site holds already lives (statuses, favourites, their own scores,
+     * hours, sessions, what they read about) with age decay applied. The
+     * inventory facts (owned ids, backlog counts) still come from
+     * user_games, because those are facts, not taste.
      */
     public function tasteProfile(User $user): array
     {
-        return Cache::remember("recommend.taste.{$user->id}.v1", 900, function () use ($user) {
+        return Cache::remember("recommend.taste.{$user->id}.v2", 900, function () use ($user) {
             $rows = DB::table('user_games')
-                ->join('games', 'games.id', '=', 'user_games.game_id')
-                ->where('user_games.user_id', $user->id)
-                ->get(['games.id', 'games.genres', 'games.released', 'user_games.status', 'user_games.is_favorite']);
+                ->where('user_id', $user->id)
+                ->get(['game_id', 'status']);
 
-            $genreWeights = [];
-            $years = [];
-            $owned = [];
-            $completed = 0;
-            $ownedCount = 0;
+            $owned = $rows->pluck('game_id')->map(fn ($id) => (int) $id)->all();
+            $ownedCount = $rows->where('status', '!=', 'wishlist')->count();
+            $completed = $rows->where('status', 'completed')->count();
 
-            foreach ($rows as $row) {
-                $owned[] = (int) $row->id;
-
-                if ($row->status !== 'wishlist') {
-                    $ownedCount++;
-                    if ($row->status === 'completed') {
-                        $completed++;
-                    }
-                }
-
-                // A finished or favourited game says more about taste than a
-                // wishlisted one you may never touch.
-                $weight = match (true) {
-                    (bool) $row->is_favorite => 3.0,
-                    $row->status === 'completed' => 2.5,
-                    $row->status === 'playing' => 2.0,
-                    $row->status === 'wishlist' => 0.6,
-                    $row->status === 'dropped' => 0.2,
-                    default => 1.0,
-                };
-
-                foreach ($this->genresOf($row->genres) as $genre) {
-                    $genreWeights[$genre] = ($genreWeights[$genre] ?? 0) + $weight;
-                }
-
-                $year = $row->released ? (int) substr((string) $row->released, 0, 4) : 0;
-                if ($year > 1950) {
-                    $years[] = $year;
-                }
-            }
-
-            arsort($genreWeights);
+            $taste = app(TasteProfileService::class);
+            $genreWeights = $taste->genreWeights($user);
             $genreTotal = max(1e-6, array_sum($genreWeights));
 
             return [
                 'genres' => collect($genreWeights)->map(fn ($w) => $w / $genreTotal)->all(),
-                'top_genres' => array_slice(array_keys($genreWeights), 0, 6),
-                'avg_year' => $years ? (int) round(array_sum($years) / count($years)) : null,
+                'top_genres' => $taste->topGenres($user),
+                'negative_genres' => $taste->negativeGenres($user),
+                'avg_year' => $taste->avgYear($user),
                 'owned_ids' => $owned,
-                'library' => count($rows),
+                'library' => $rows->count(),
                 'completion_rate' => $ownedCount > 0 ? (int) round($completed / $ownedCount * 100) : 0,
                 'backlog' => $rows->where('status', 'backlog')->count(),
                 'completed' => $completed,
@@ -116,14 +91,21 @@ class GameRecommendationService
             return collect();
         }
 
-        $peers = DB::table('user_games')
-            ->whereIn('game_id', $ownedIds)
-            ->selectRaw('user_id, COUNT(*) as shared')
-            ->groupBy('user_id')
-            ->havingRaw('COUNT(*) >= 3')
-            ->orderByDesc('shared')
-            ->limit(200)
-            ->pluck('user_id');
+        // The chronicle already knows who resembles this player (cosine over
+        // game affinities, all signals included) — trust it first, and fall
+        // back to raw shelf overlap for users it has not met yet.
+        $peers = collect($this->chroniclePeers ?? []);
+
+        if ($peers->isEmpty()) {
+            $peers = DB::table('user_games')
+                ->whereIn('game_id', $ownedIds)
+                ->selectRaw('user_id, COUNT(*) as shared')
+                ->groupBy('user_id')
+                ->havingRaw('COUNT(*) >= 3')
+                ->orderByDesc('shared')
+                ->limit(200)
+                ->pluck('user_id');
+        }
 
         if ($peers->isEmpty()) {
             return collect();
@@ -147,6 +129,7 @@ class GameRecommendationService
     public function recommend(User $user, array $filters = [], int $limit = 12): array
     {
         $taste = $this->tasteProfile($user);
+        $this->chroniclePeers = app(TasteProfileService::class)->peerIds($user);
         $peerOwners = $this->peerSignal($taste['owned_ids']);
         $peerMax = max(1, (int) $peerOwners->max());
 
@@ -197,7 +180,14 @@ class GameRecommendationService
         foreach ($genres as $genre) {
             $affinity += (float) ($taste['genres'][$genre] ?? 0);
         }
-        $genreScore = min(1.0, sqrt(min(1.0, $affinity * 1.6))) * self::WEIGHTS['genre'];
+        // What they bounced off pushes back: a dropped-genre match halves
+        // its own contribution rather than banning the game outright.
+        $repulsion = 0.0;
+        foreach ($genres as $genre) {
+            $repulsion += (float) ($taste['negative_genres'][$genre] ?? 0);
+        }
+
+        $genreScore = max(0.0, min(1.0, sqrt(min(1.0, $affinity * 1.6))) - min(0.5, $repulsion * 0.5)) * self::WEIGHTS['genre'];
 
         // Peers: how many taste-alike players own it, against the busiest.
         $owners = (int) ($peerOwners[$game->id] ?? 0);
