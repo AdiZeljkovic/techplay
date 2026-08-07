@@ -19,7 +19,12 @@ export async function POST(request: NextRequest) {
         // Accept both x-revalidate-token (RevalidationService) and Authorization: Bearer (CacheRevalidationService)
         const headerToken = request.headers.get('x-revalidate-token')
             ?? request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? null;
-        const expectedToken = process.env.REVALIDATE_SECRET_TOKEN;
+        // Two names for one secret have been in circulation: the backend's
+        // .env says REVALIDATE_SECRET_TOKEN, the frontend's said
+        // REVALIDATION_SECRET, and this file read only the first — so every
+        // purge came back 401 and edited articles never went live.
+        const expectedToken = process.env.REVALIDATE_SECRET_TOKEN
+            || process.env.REVALIDATION_SECRET;
 
         if (!expectedToken || headerToken !== expectedToken) {
             return NextResponse.json(
@@ -33,7 +38,10 @@ export async function POST(request: NextRequest) {
         const { type, slug, category } = body;
 
         // Handle paths array (sent by CacheRevalidationService::revalidatePaths for GTA6 content)
-        if (body.paths && Array.isArray(body.paths)) {
+        // An empty array is truthy, and the backend sends `paths: []` on every
+        // article purge — so this branch swallowed the request, revalidated
+        // nothing and answered "success".
+        if (Array.isArray(body.paths) && body.paths.length > 0) {
             const paths: string[] = body.paths.filter((p: unknown) => typeof p === 'string');
             for (const path of paths) {
                 revalidatePath(path);
@@ -69,15 +77,19 @@ export async function POST(request: NextRequest) {
 
                 // Revalidate cache tags (critical for data fetching)
                 // Map category to tag format (some use singular form)
+                // The hardware pages tag their data as `tech-*`, and the
+                // observer sends category 'hardware', so the tag purge missed.
                 const tagPrefix = category === 'reviews' ? 'review'
                                 : category === 'guides' ? 'guide'
+                                : category === 'hardware' ? 'tech'
                                 : category; // news/tech use plural
 
                 // Map category to path (tech uses hardware route)
                 const pathPrefix = category === 'tech' ? 'hardware' : category;
+                const tagCategory = category === 'hardware' ? 'tech' : category;
 
                 revalidateTag(`${tagPrefix}-${slug}`, { expire: 0 });
-                revalidateTag(category, { expire: 0 });
+                revalidateTag(tagCategory, { expire: 0 });
 
                 // Also revalidate paths (for page-level cache)
                 revalidatePath(`/${pathPrefix}/${slug}`);
@@ -167,6 +179,7 @@ export async function POST(request: NextRequest) {
                 });
             }
 
+            case 'home':
             case 'homepage':
                 revalidatePath('/');
                 return NextResponse.json({
@@ -176,12 +189,19 @@ export async function POST(request: NextRequest) {
                     timestamp: new Date().toISOString(),
                 });
 
+            case 'navigation':
             case 'category':
+                // A navigation purge carries no category of its own: the menus
+                // live on every page, so the root layout is what must refresh.
                 if (!category) {
-                    return NextResponse.json(
-                        { error: 'Missing "category" parameter' },
-                        { status: 400 }
-                    );
+                    revalidatePath('/', 'layout');
+
+                    return NextResponse.json({
+                        success: true,
+                        revalidated: true,
+                        paths: ['/'],
+                        timestamp: new Date().toISOString(),
+                    });
                 }
                 revalidatePath(`/${category}`);
                 return NextResponse.json({
