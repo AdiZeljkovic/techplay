@@ -8,7 +8,7 @@ import axios from "@/lib/axios";
 import PlatformIcon, { platformBrandColor } from "@/components/games/PlatformIcon";
 import {
     Search, Star, Shuffle, SlidersHorizontal, Flame, Heart, Clock,
-    ArrowRight, Gamepad2, Loader2, X, TrendingUp, CalendarDays, Sparkles, Layers,
+    ArrowRight, Gamepad2, Loader2, X, TrendingUp, CalendarDays,
 } from "lucide-react";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
@@ -55,24 +55,22 @@ const compact = (n: number) =>
 /* ── the shelves at the top ───────────────────────────────────────────── */
 
 const SHELVES = [
-    { key: "-rating", icon: Star, title: "Top Rated", line: "The highest scored games in the catalogue." },
-    { key: "-released", icon: Sparkles, title: "Recently Added", line: "The newest arrivals in our database." },
-    { key: "upcoming", icon: CalendarDays, title: "Upcoming Releases", line: "What is still to come, on every platform." },
-    { key: "platforms", icon: Layers, title: "Explore by Platform", line: "Browse across every console and generation." },
+    { key: "-rating", art: "/images/games/shelf-top-rated.webp", title: "Top Rated", line: "The highest scored games in the catalogue." },
+    { key: "-released", art: "/images/games/shelf-recently-added.webp", title: "Recently Added", line: "The newest arrivals in our database." },
+    { key: "upcoming", art: "/images/games/shelf-upcoming.webp", title: "Upcoming Releases", line: "What is still to come, on every platform." },
+    { key: "platforms", art: "/images/games/shelf-platforms.webp", title: "Explore by Platform", line: "Browse across every console and generation." },
 ];
 
 function Shelf({ shelf, onPick }: { shelf: typeof SHELVES[number]; onPick: () => void }) {
-    const Icon = shelf.icon;
-
     return (
         <button
             onClick={onPick}
             className="group relative overflow-hidden rounded-[14px] border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors text-left p-4 h-full"
         >
-            <span className="inline-flex w-9 h-9 rounded-[9px] items-center justify-center bg-[var(--accent)]/15 text-[var(--accent)]">
-                <Icon className="w-[18px] h-[18px]" />
-            </span>
-            <p className="mt-3 font-display text-[13.5px] font-black text-white">{shelf.title}</p>
+            {/* The neon art IS the icon — no box, no tint; the PNGs carry their own glow. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={shelf.art} alt="" aria-hidden className="h-14 w-auto select-none pointer-events-none" />
+            <p className="mt-2 font-display text-[13.5px] font-black text-white">{shelf.title}</p>
             <p className="mt-1 text-[11.5px] leading-snug text-white/40 pr-6">{shelf.line}</p>
             <ArrowRight className="absolute right-4 bottom-4 w-4 h-4 text-white/25 group-hover:text-[var(--accent)] group-hover:translate-x-0.5 transition-all" />
         </button>
