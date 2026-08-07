@@ -39,14 +39,18 @@ const BASE =
     "disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]";
 
 const VARIANTS: Record<string, string> = {
+    // The two-tier rule: ACTIONS wear the notched command cut, selection
+    // controls (tabs, filter pills) keep their pill language. `primary` and
+    // `secondary` ARE the command styles now, so every shared-Button call
+    // site on the site speaks it without being touched.
     primary:
-        "bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-[var(--glow-accent)]",
+        "btn-command bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]",
     command:
         "btn-command bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]",
     commandQuiet:
         "btn-command btn-command-quiet bg-[var(--fill-2)] text-[var(--ink-hi)] hover:bg-[var(--fill-3)]",
     secondary:
-        "bg-[var(--fill-2)] text-[var(--ink-hi)] border border-[var(--line-strong)] hover:bg-[var(--fill-3)]",
+        "btn-command btn-command-quiet bg-[var(--fill-2)] text-[var(--ink-hi)] hover:bg-[var(--fill-3)]",
     outline:
         "bg-[var(--fill-2)] text-[var(--ink-hi)] border border-[var(--line-strong)] hover:bg-[var(--fill-3)]",
     ghost:

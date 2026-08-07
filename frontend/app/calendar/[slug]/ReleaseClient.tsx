@@ -97,9 +97,9 @@ export default function ReleaseClient({ release }: { release: Release }) {
                             <button
                                 onClick={() => act("wishlist")}
                                 disabled={busy !== null || wishlisted}
-                                className={`w-full inline-flex items-center justify-center gap-2 h-10 rounded-[8px] font-display text-[11px] font-black uppercase tracking-[0.1em] transition-colors ${
+                                className={`btn-command w-full inline-flex items-center justify-center gap-2 h-10 font-display text-[11px] font-black uppercase tracking-[0.1em] transition-colors ${
                                     wishlisted
-                                        ? "bg-[var(--accent)]/15 border border-[var(--accent)]/40 text-[var(--accent)]"
+                                        ? "bg-[var(--accent)]/15 text-[var(--accent)]"
                                         : "bg-[var(--accent)] hover:brightness-110 text-white"
                                 }`}
                             >
@@ -112,10 +112,10 @@ export default function ReleaseClient({ release }: { release: Release }) {
                             <button
                                 onClick={() => act("reminder")}
                                 disabled={busy !== null}
-                                className={`w-full inline-flex items-center justify-center gap-2 h-10 rounded-[8px] border font-display text-[11px] font-black uppercase tracking-[0.1em] transition-colors ${
+                                className={`btn-command btn-command-quiet w-full inline-flex items-center justify-center gap-2 h-10 font-display text-[11px] font-black uppercase tracking-[0.1em] transition-colors ${
                                     reminder
-                                        ? "border-[var(--accent)]/40 bg-[var(--accent)]/12 text-[var(--accent)]"
-                                        : "border-white/[0.09] bg-white/[0.04] text-white/55 hover:text-white"
+                                        ? "bg-[var(--accent)]/12 text-[var(--accent)]"
+                                        : "bg-white/[0.05] text-white/55 hover:text-white"
                                 }`}
                             >
                                 {busy === "reminder" ? <Loader2 className="w-4 h-4 animate-spin" />

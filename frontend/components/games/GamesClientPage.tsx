@@ -435,7 +435,7 @@ export default function GamesClientPage() {
                         <button
                             onClick={randomGame}
                             disabled={randomLoading}
-                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-tp-accent/60 bg-tp-accent/10 text-[12px] font-bold text-tp-accent hover:bg-tp-accent hover:text-white transition-all disabled:opacity-60 shadow-[0_0_18px_rgba(220, 20, 60,0.15)]"
+                            className="btn-command h-9 flex items-center gap-2 px-4 bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] font-display text-[11px] font-black uppercase tracking-[0.08em] transition-colors disabled:opacity-60"
                         >
                             {randomLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shuffle className="w-3.5 h-3.5" />}
                             Random Game

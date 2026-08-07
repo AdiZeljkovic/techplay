@@ -98,7 +98,7 @@ export default function GameInfoCard({ game }: { game: LinkedGame }) {
             )}
 
             <Link href={`/games/${game.slug}`} prefetch={false}
-                className="mt-3.5 mx-4 mb-4 flex items-center justify-center gap-1.5 h-9 rounded-[5px] border border-white/[0.09] bg-white/[0.04] font-display text-[10px] font-black uppercase tracking-[0.12em] text-white/60 hover:text-white hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors">
+                className="btn-command btn-command-quiet mt-3.5 mx-4 mb-4 flex items-center justify-center gap-1.5 h-9 bg-[var(--fill-2,rgba(255,255,255,0.05))] font-display text-[10px] font-black uppercase tracking-[0.12em] text-white/60 hover:text-white hover:bg-[var(--fill-3,rgba(255,255,255,0.09))] transition-colors">
                 Full game page <ChevronRight className="w-3.5 h-3.5" />
             </Link>
         </div>
