@@ -44,9 +44,21 @@ function ListCard({
 }) {
     const covers = (list.covers ?? []).slice(0, 4);
 
+    // A draft or private list is not readable at its public URL — that page
+    // fetches without a session and answers 404, which is what the console
+    // was reporting on every profile with a draft. The owner goes to the
+    // editor instead, the only door that opens.
+    const reachable = !list.is_draft && list.is_public;
+    const CardShell = ({ children }: { children: React.ReactNode }) =>
+        reachable ? (
+            <Link href={`/lists/${username}/${list.slug}`} className="block">{children}</Link>
+        ) : (
+            <button type="button" onClick={onEdit} className="block w-full text-left">{children}</button>
+        );
+
     return (
         <div className="group relative rounded-[12px] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.5)] transition-all duration-300">
-            <Link href={`/lists/${username}/${list.slug}`} className="block">
+            <CardShell>
                 {/* a collage of what's inside, not a placeholder */}
                 <span className="relative flex h-[104px] bg-white/[0.03]">
                     {covers.length === 0 ? (
@@ -114,7 +126,7 @@ function ListCard({
                         </span>
                     )}
                 </span>
-            </Link>
+            </CardShell>
 
             {isOwnProfile && (
                 <div className="absolute top-2.5 right-2.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
