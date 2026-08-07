@@ -553,6 +553,7 @@ export default function JournalTab({ username }: { username: string }) {
     const sessionCount = useCountUp(journal?.summary.sessions ?? 0, 1100);
 
     const remove = async (session: PlaySession) => {
+        if (!window.confirm('Delete this session and everything logged with it?')) return;
         try {
             await axios.delete(`/journal/sessions/${session.id}`);
             toast.success("Session deleted");

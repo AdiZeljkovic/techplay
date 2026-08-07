@@ -227,7 +227,7 @@ export default function LeaderboardClient() {
     const [period, setPeriod] = useState<Period>("all");
     const [query, setQuery] = useState("");
 
-    const { data, isLoading } = useSWR<Payload>(
+    const { data, isLoading, error } = useSWR<Payload>(
         `/leaderboard?type=${board}&period=${period}`,
         fetcher,
         { revalidateOnFocus: false }

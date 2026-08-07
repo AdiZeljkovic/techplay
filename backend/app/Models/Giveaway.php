@@ -121,7 +121,11 @@ class Giveaway extends Model
             return null;
         }
 
-        return $this->ends_at->diffInSeconds(now());
+        // Carbon 3 dropped the absolute default and flipped the direction, so
+        // this returned a negative for every live giveaway — and the detail
+        // page, which renders the countdown only when the value is positive,
+        // showed none at all.
+        return max(0, now()->diffInSeconds($this->ends_at, false));
     }
 
     public function getTotalEntryPool(): int

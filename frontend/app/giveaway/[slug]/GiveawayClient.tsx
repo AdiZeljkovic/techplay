@@ -8,6 +8,7 @@ import Image from "next/image";
 import { Gift, Clock, Users, Trophy, Check, ExternalLink, Share2, Loader2, Zap, Award, Star, CalendarDays, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
+import toast from "react-hot-toast";
 
 interface Task {
     id: number;
@@ -102,8 +103,9 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
             const res = await axios.get(`/giveaways/${slug}`);
             setGiveaway(res.data.data);
             setTimeRemaining(res.data.data.timing.time_remaining || 0);
-        } catch (error) {
-            console.error("Failed to fetch giveaway:", error);
+        } catch (e: unknown) {
+            const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(msg ?? "That did not go through. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -114,8 +116,9 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
         try {
             const res = await axios.get(`/giveaways/${slug}/my-entry`);
             setEntry(res.data.data);
-        } catch (error) {
-            console.error("Failed to fetch entry:", error);
+        } catch (e: unknown) {
+            const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(msg ?? "That did not go through. Please try again.");
         }
     }, [slug, isAuthenticated]);
 
@@ -159,8 +162,9 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
         try {
             const res = await axios.post(`/giveaways/${slug}/enter`);
             setEntry(res.data.data);
-        } catch (error) {
-            console.error("Failed to enter:", error);
+        } catch (e: unknown) {
+            const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(msg ?? "That did not go through. Please try again.");
         } finally {
             setEntering(false);
         }
@@ -174,8 +178,9 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
             const res = await axios.post(`/giveaways/${slug}/tasks/${taskId}/complete`);
             setEntry(res.data.data);
             confetti({ particleCount: 30, spread: 60, origin: { y: 0.7 }, colors: ['#DC143C', '#f7931e', '#fdc830'] });
-        } catch (error) {
-            console.error("Failed to complete task:", error);
+        } catch (e: unknown) {
+            const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(msg ?? "That did not go through. Please try again.");
         } finally {
             setCompletingTask(null);
         }
@@ -188,8 +193,9 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
             const res = await axios.post(`/giveaways/${slug}/daily-bonus`);
             setEntry(res.data.data);
             confetti({ particleCount: 20, spread: 50, origin: { y: 0.6 }, colors: ['#f97316', '#eab308', '#fbbf24'] });
-        } catch (error) {
-            console.error("Failed to claim daily bonus:", error);
+        } catch (e: unknown) {
+            const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(msg ?? "That did not go through. Please try again.");
         } finally {
             setClaimingBonus(false);
         }

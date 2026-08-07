@@ -342,7 +342,7 @@ function Card({ item }: { item: FeedItem }) {
                     )}
                     <span className="inline-flex items-center gap-1.5 shrink-0">
                         <Clock className="w-3 h-3" />
-                        {timeAgo(item.published_at) ?? "—"}
+                        <span suppressHydrationWarning>{timeAgo(item.published_at) ?? "—"}</span>
                     </span>
                 </span>
             </span>

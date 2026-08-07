@@ -45,6 +45,10 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
             document.body.style.overflow = 'unset';
             return () => clearTimeout(timer);
         }
+
+        // Navigating away from an open dialog left overflow:hidden behind, and
+        // the page stayed unscrollable for the rest of the session.
+        return () => { document.body.style.overflow = 'unset'; };
     }, [isOpen, product, items]);
 
     useEffect(() => {

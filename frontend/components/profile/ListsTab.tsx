@@ -165,6 +165,9 @@ export default function ListsTab({ username, isOwnProfile }: Props) {
     };
 
     const remove = async (id: number) => {
+        // A list carries its items, its likes and its comments — one stray tap
+        // should not take all of it.
+        if (!window.confirm('Delete this list? This cannot be undone.')) return;
         try {
             await axios.delete(`/game-lists/${id}`);
             toast.success("List deleted");

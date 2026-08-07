@@ -627,7 +627,7 @@ function ArticleCard({
                     )}
                     <span className="inline-flex items-center gap-1.5 shrink-0">
                         <Clock className="w-3 h-3" />
-                        {article.published_at_human ?? timeAgo(article.published_at ?? article.created_at) ?? "—"}
+                        <span suppressHydrationWarning>{article.published_at_human ?? timeAgo(article.published_at ?? article.created_at) ?? "—"}</span>
                     </span>
                 </span>
             </span>

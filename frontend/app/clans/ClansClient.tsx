@@ -548,7 +548,7 @@ export default function ClansClient() {
         return q.toString();
     }, [search, playstyle, region, recruitingOnly, sort]);
 
-    const { data, isLoading, mutate } = useSWR<DirectoryPayload>(`/clans?${params}&page=1`, fetcher, {
+    const { data, isLoading, error, mutate } = useSWR<DirectoryPayload>(`/clans?${params}&page=1`, fetcher, {
         keepPreviousData: true,
     });
     const { data: more } = useSWR<DirectoryPayload[]>(
@@ -706,7 +706,7 @@ export default function ClansClient() {
             <div className="container-page py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
                 {/* ── main column ── */}
                 <div className="xl:col-span-9 min-w-0 space-y-5">
-                    {isLoading && !data ? (
+                    {(isLoading || error) && !data ? (
                         <div className="h-[168px] rounded-[12px] bg-white/[0.04] animate-pulse" />
                     ) : data?.spotlight && !filtering ? (
                         <SpotlightCard spotlight={data.spotlight} canApply={canApply} />

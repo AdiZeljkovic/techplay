@@ -216,7 +216,7 @@ export default function AdvisorClient() {
         return q.toString();
     }, [mood, genres, excludeBacklog, excludePlayed]);
 
-    const { data, isLoading, mutate } = useSWR<AdvisorPayload>(
+    const { data, isLoading, error, mutate } = useSWR<AdvisorPayload>(
         user ? `/backlog/recommendations?${query}` : null,
         fetcher,
         { keepPreviousData: true, revalidateOnFocus: false }
@@ -399,7 +399,7 @@ export default function AdvisorClient() {
                         {isLoading && <Loader2 className="w-4 h-4 text-white/25 animate-spin" />}
                     </div>
 
-                    {isLoading && !data ? (
+                    {(isLoading || error) && !data ? (
                         <div className="space-y-3">
                             {[...Array(4)].map((_, i) => <div key={i} className="h-[148px] rounded-[12px] bg-white/[0.04] animate-pulse" />)}
                         </div>

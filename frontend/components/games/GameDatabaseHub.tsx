@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
@@ -189,9 +189,23 @@ export default function GameDatabaseHub({
     );
 
     // Page 1 replaces; later pages append, so "load more" reads as one list.
+    // keepPreviousData means `data` still holds the previous page when `page`
+    // changes, so keying the effect on both appended page one to itself — and
+    // a tab revalidation did it again. Track what has already been folded in.
+    const foldedPage = useRef(0);
     useEffect(() => {
         if (!data?.results) return;
-        setRows((prev) => (page === 1 ? data.results : [...prev, ...data.results]));
+        if (page === 1) {
+            foldedPage.current = 1;
+            setRows(data.results);
+            return;
+        }
+        if (foldedPage.current === page) return;
+        foldedPage.current = page;
+        setRows((prev) => {
+            const seen = new Set(prev.map((g) => g.id));
+            return [...prev, ...data.results.filter((g) => !seen.has(g.id))];
+        });
     }, [data, page]);
 
     const reset = useCallback(() => {

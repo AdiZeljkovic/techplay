@@ -7,6 +7,16 @@ import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 
+/** Stored preferences are untrusted input; a bad value must not take the page. */
+function safeParse(raw: string) {
+    try {
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch {
+        return null;
+    }
+}
+
 interface CookiePreferences {
     necessary: boolean;
     analytics: boolean;
@@ -35,7 +45,7 @@ export default function CookieConsentBanner() {
             }
             // No consent yet — banner already visible (initial state true)
         } else {
-            setPreferences(JSON.parse(saved));
+            setPreferences(safeParse(saved) ?? preferences);
             setIsVisible(false);
         }
     }, [isAuthenticated, user]);
