@@ -83,10 +83,8 @@ php artisan ads:sync-metrics
   - `home_mid_1` - Između News i Reviews sekcija
   - `home_mid_2` - Između Reviews i Hardware sekcija
 
-- ✅ [HomeSidebar.tsx](frontend/components/sidebar/HomeSidebar.tsx)
-  - `home_sidebar` - Na vrhu sidebar-a
-  - `sidebar_top` - Globalni sidebar top
-  - `sidebar_bottom` - Globalni sidebar bottom
+> HomeSidebar je uklonjen u redizajnu portala; `sidebar_top` i `sidebar_bottom`
+> danas žive u `components/news/ArticleDetailView.tsx` (aside kolona).
 
 **Listing Pages:**
 - ✅ [NewsClient.tsx](frontend/app/news/NewsClient.tsx) - `listing_top`
@@ -126,12 +124,17 @@ php artisan ads:sync-metrics
 
 ---
 
-### Phase 4: In-Text Ads (Auto Injection) ✅
+### Phase 4: In-Text Ads (Auto Injection) ⚠️ NIJE AKTIVNO
+
+Pozicija `article_in_text` postoji u adminu (AdCampaignResource) i backend je
+servira, ali frontend je ne renderuje: `InTextAd.tsx` je izvađen iz
+`ArticleDetailView` (commit e60a9e2d) zbog razmaka između paragrafa koji je
+lomilo dijeljenje HTML-a. Komponenta stoji spremna; treba riješiti taj CSS
+problem prije nego se vrati. Prvi pokušaj (`ContentWithInTextAds` +
+`injectInTextAds`) je obrisan — nikad nije prikazivao reklamu.
 
 **Frontend Fajlovi:**
-- ✅ [InTextAd.tsx](frontend/components/ads/InTextAd.tsx) - Komponenta za in-text reklame
-- ✅ [injectInTextAds.ts](frontend/lib/injectInTextAds.ts) - Helper funkcije
-- ✅ [ArticleDetailView.tsx](frontend/components/news/ArticleDetailView.tsx) - Integracija
+- ⚠️ [InTextAd.tsx](frontend/components/ads/InTextAd.tsx) - spremna, nije uvezana
 
 **Kako Radi:**
 1. Parsira HTML content i broji paragrafe

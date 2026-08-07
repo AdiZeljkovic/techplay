@@ -140,8 +140,7 @@ Laravel Reverb → WebSocket → Frontend real-time update
 1. Server Component → GET `/news/{slug}`
 2. ISR (revalidate: ~300s ili na update)
 3. `ArticleBody` komponenta renderuje HTML
-4. `lib/injectInTextAds.ts` injektuje in-text reklame
-5. `components/tracking/` prati view
+4. `components/tracking/` prati view
 6. Comments sekcija (client-side, real-time)
 
 ---
