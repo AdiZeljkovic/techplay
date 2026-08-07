@@ -99,7 +99,7 @@ export default function LoginClient() {
         // Handle Discord OAuth errors
         const error = searchParams.get('error');
         if (error) {
-            setErrors([decodeURIComponent(error)]);
+            setErrors([error === 'oauth_failed' ? 'That sign-in did not complete. Please try again.' : decodeURIComponent(error)]);
         }
     }, [searchParams]);
 
@@ -151,7 +151,7 @@ export default function LoginClient() {
         setResendSuccess(false);
 
         try {
-            await axios.post('/auth/email/resend', { email: requiresVerification });
+            await axios.post('/email/resend-public', { email: requiresVerification });
             setResendSuccess(true);
         } catch (error: any) {
             setErrors([error.response?.data?.message || 'Failed to resend verification email.']);

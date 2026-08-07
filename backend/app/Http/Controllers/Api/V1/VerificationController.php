@@ -26,6 +26,31 @@ class VerificationController extends Controller
     }
 
     /**
+     * Resend by email address, for someone who cannot be signed in yet: an
+     * unverified account is issued no token, so the authenticated resend was
+     * unreachable by exactly the people who needed it.
+     *
+     * Answers the same way whether or not the address exists, so the endpoint
+     * cannot be used to discover who has an account here.
+     */
+    public function resendPublic(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $user = User::where('email', $validated['email'])->first();
+
+        if ($user && ! $user->hasVerifiedEmail()) {
+            $user->sendEmailVerificationNotification();
+        }
+
+        return response()->json([
+            'message' => 'If that address needs verifying, a new link is on its way.',
+        ]);
+    }
+
+    /**
      * Verify email from signed URL
      */
     public function verify(Request $request, $id, $hash)

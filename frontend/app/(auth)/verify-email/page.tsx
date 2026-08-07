@@ -10,8 +10,9 @@ export default function VerifyEmailPage() {
     const [isResending, setIsResending] = useState(false);
     const [resendStatus, setResendStatus] = useState<"idle" | "success" | "error">("idle");
     const [isVerified, setIsVerified] = useState(false);
+    const [email, setEmail] = useState("");
 
-    const { user } = useAuth({ middleware: "auth" });
+    const { user } = useAuth();
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -19,23 +20,42 @@ export default function VerifyEmailPage() {
             setIsVerified(true);
             return;
         }
+        setEmail(urlParams.get('email') ?? "");
 
+        // Only a signed-in reader can be polled about their own status, and
+        // only until they are verified — this used to keep polling behind the
+        // success screen for as long as the tab stayed open.
+        if (!user) return;
+
+        let cancelled = false;
         const checkStatus = async () => {
             try {
                 const res = await axios.get("/email/status");
-                if (res.data.verified) setIsVerified(true);
+                if (!cancelled && res.data.verified) setIsVerified(true);
             } catch {}
         };
 
+        checkStatus();
         const interval = setInterval(checkStatus, 5000);
-        return () => clearInterval(interval);
-    }, []);
+
+        return () => { cancelled = true; clearInterval(interval); };
+    }, [user]);
+
+    useEffect(() => {
+        if (isVerified) setResendStatus("idle");
+    }, [isVerified]);
 
     const handleResend = async () => {
         setIsResending(true);
         setResendStatus("idle");
         try {
-            await axios.post("/email/resend");
+            // Signed in, we can ask as ourselves; arriving from the login
+            // screen with no session, we ask by address instead.
+            if (user) {
+                await axios.post("/email/resend");
+            } else {
+                await axios.post("/email/resend-public", { email });
+            }
             setResendStatus("success");
         } catch {
             setResendStatus("error");

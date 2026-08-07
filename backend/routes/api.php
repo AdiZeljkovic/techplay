@@ -93,6 +93,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/auth/login', [AuthController::class, 'login']);
 
         // Social Auth (Discord)
+        Route::post('/email/resend-public', [VerificationController::class, 'resendPublic'])
+            ->middleware('throttle:5,10');
         Route::get('/auth/discord/redirect', [SocialAuthController::class, 'redirect']);
         Route::get('/auth/discord/callback', [SocialAuthController::class, 'callback']);
 

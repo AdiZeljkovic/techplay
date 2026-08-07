@@ -74,13 +74,18 @@ export default function RegisterClient() {
         setErrors([]);
         setSuccess(false);
 
-        await registerAuth({
-            setErrors,
-            setSuccess,
-            ...data,
-            recaptcha_token: turnstileToken
-        });
-        setIsLoading(false);
+        try {
+            await registerAuth({
+                setErrors,
+                setSuccess,
+                ...data,
+                recaptcha_token: turnstileToken,
+            });
+        } catch {
+            setErrors(["Something went wrong on our end. Please try again."]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const metCount = PASSWORD_REQUIREMENTS.filter(req => req.test(password)).length;

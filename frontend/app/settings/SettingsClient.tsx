@@ -94,15 +94,21 @@ export default function SettingsClient() {
     };
 
     // Sync state when user loads
-    if (user) {
-        if (bio === "" && user.bio) setBio(user.bio);
-        if (displayName === "" && user.display_name) setDisplayName(user.display_name);
-        if (Object.keys(gamertags).length === 0 && user.gamertags) setGamertags(user.gamertags);
-        if (Object.keys(specs).length === 0 && user.pc_specs) setSpecs(user.pc_specs);
-        // Only set preview if not already set by file selection
-        if (!avatarPreview && user.avatar_url) setAvatarPreview(user.avatar_url);
-        if (!coverPreview && user.cover_image) setCoverPreview(user.cover_image);
-    }
+    // Seed the form from the account once. This used to run during render on
+    // every pass, so deleting the last character of a bio immediately restored
+    // the old text — the field could be edited but never emptied.
+    const seeded = useRef(false);
+    useEffect(() => {
+        if (seeded.current || !user) return;
+        seeded.current = true;
+
+        if (user.bio) setBio(user.bio);
+        if (user.display_name) setDisplayName(user.display_name);
+        if (user.gamertags) setGamertags(user.gamertags);
+        if (user.pc_specs) setSpecs(user.pc_specs);
+        if (user.avatar_url) setAvatarPreview(user.avatar_url);
+        if (user.cover_image) setCoverPreview(user.cover_image);
+    }, [user]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

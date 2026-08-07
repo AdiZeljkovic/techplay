@@ -84,6 +84,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         disconnectEcho();
     };
 
+    // Two ways a session can end somewhere other than here: the API answered
+    // 401 (axios announces it), or another tab signed out. Both used to leave
+    // this tab showing an avatar and a menu for a session that was gone.
+    useEffect(() => {
+        const onExpired = () => clearAuth();
+        const onStorage = (e: StorageEvent) => {
+            if (e.key === "token" && !e.newValue) clearAuth();
+        };
+
+        window.addEventListener("techplay:session-expired", onExpired);
+        window.addEventListener("storage", onStorage);
+
+        return () => {
+            window.removeEventListener("techplay:session-expired", onExpired);
+            window.removeEventListener("storage", onStorage);
+        };
+    }, []);
+
     useEffect(() => {
         // Restore auth state from localStorage on mount
         const storedToken = localStorage.getItem("token");

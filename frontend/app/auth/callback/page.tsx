@@ -29,7 +29,8 @@ function AuthCallbackContent() {
                 // login(token); 
 
                 // Option B: Manual storage (depends on how AuthContext works)
-                localStorage.setItem("token", token);
+                localStorage.removeItem("user");   // the next visitor is not the last one
+            localStorage.setItem("token", token);
                 // Dispatch event or force context update?
                 // Easiest is to redirect to home and let AuthContext pick it up on mount
 

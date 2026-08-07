@@ -118,18 +118,6 @@ axiosInstance.interceptors.request.use(async (config) => {
     return config;
 });
 
-// Track if we're currently refreshing to avoid loops
-let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
-
-const onRefreshed = (token: string) => {
-    refreshSubscribers.forEach((callback) => callback(token));
-    refreshSubscribers = [];
-};
-
-const addRefreshSubscriber = (callback: (token: string) => void) => {
-    refreshSubscribers.push(callback);
-};
 
 /**
  * Reset CSRF state (used when token is invalid)
@@ -138,6 +126,21 @@ const resetCsrf = () => {
     csrfInitialized = false;
     csrfPromise = null;
 };
+
+
+/**
+ * The session is over. Clear it, tell the application (AuthContext listens,
+ * so the header stops showing an avatar for a session that no longer exists)
+ * and say so once — not once per in-flight request.
+ */
+function endSession(): void {
+    if (typeof window === 'undefined') return;
+
+    removeStorageItem('token');
+    removeStorageItem('user');
+    window.dispatchEvent(new Event('techplay:session-expired'));
+    toast.error('Session expired. Please sign in again.', { id: 'session-expired' });
+}
 
 // Response interceptor - handle 401 and 419 (CSRF) errors gracefully
 axiosInstance.interceptors.response.use(
@@ -168,68 +171,28 @@ axiosInstance.interceptors.response.use(
             }
         }
 
-        // If 401 and not already retrying
+        // A 401 with a token in hand means the token is gone — revoked,
+        // expired, or logged out in another tab. Refreshing it was never
+        // possible: /auth/refresh sits behind the same guard that just
+        // refused us, so the old code always fell into its catch, and on the
+        // way there it read the wrong field off the response and wrote the
+        // string "undefined" into localStorage, which then rode along on
+        // every later request as `Bearer undefined`.
         if (error.response?.status === 401 && !originalRequest._retry) {
-            // Don't retry for login/register endpoints
             if (originalRequest.url?.includes('/auth/login') ||
                 originalRequest.url?.includes('/auth/register')) {
                 return Promise.reject(error);
             }
 
-            // Check if user was logged in (had token)
-            const hadToken = !!getStorageItem('token');
-
-            // If no token existed, user is just a guest - don't redirect
-            if (!hadToken) {
+            // A guest getting a 401 is simply a guest.
+            if (!getStorageItem('token')) {
                 return Promise.reject(error);
             }
 
-            if (isRefreshing) {
-                // Wait for the refresh to complete
-                return new Promise((resolve) => {
-                    addRefreshSubscriber((token: string) => {
-                        originalRequest.headers.Authorization = `Bearer ${token}`;
-                        resolve(axiosInstance(originalRequest));
-                    });
-                });
-            }
-
             originalRequest._retry = true;
-            isRefreshing = true;
+            endSession();
 
-            try {
-                // Try to refresh the token
-                const refreshResponse = await axios.post(
-                    `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-                    {},
-                    {
-                        headers: {
-                            Authorization: `Bearer ${getStorageItem('token')}`,
-                        },
-                    }
-                );
-
-                const newToken = refreshResponse.data.token;
-                setStorageItem('token', newToken);
-
-                // Update header and retry original request
-                originalRequest.headers.Authorization = `Bearer ${newToken}`;
-                onRefreshed(newToken);
-                isRefreshing = false;
-
-                return axiosInstance(originalRequest);
-            } catch (refreshError) {
-                // Refresh failed - clear token gracefully
-                isRefreshing = false;
-                removeStorageItem('token');
-
-                // Show toast so user knows their session expired
-                toast.error('Session expired. Please login again.', { id: 'session-expired' });
-
-                // Don't redirect - let user stay on current page and choose to login
-
-                return Promise.reject(refreshError);
-            }
+            return Promise.reject(error);
         }
 
         return Promise.reject(error);
