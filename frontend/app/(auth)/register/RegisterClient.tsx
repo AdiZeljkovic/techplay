@@ -27,7 +27,7 @@ const PERKS = [
     { icon: Gift,          text: "Enter exclusive giveaways" },
 ];
 
-const inputClass = "w-full h-[48px] bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-4 text-[14px] text-[var(--ink-hi)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]/60 transition-colors";
+const inputClass = "w-full h-[48px] bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-card)] px-4 text-[14px] text-[var(--ink-hi)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]/60 transition-colors";
 const labelClass = "block text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--ink-low)] mb-2";
 
 const STRENGTH_LABELS = ["WEAK", "WEAK", "OK", "GOOD", "STRONG", "MAX"];
@@ -116,14 +116,14 @@ export default function RegisterClient() {
                             START<br />
                             <span className="text-[var(--accent)]">NEW GAME</span>
                         </h2>
-                        <p className="text-[14px] text-[#A1A1AA] leading-relaxed max-w-[300px] mb-8">
+                        <p className="text-[14px] text-white/45 leading-relaxed max-w-[300px] mb-8">
                             Create your player profile and unlock everything TechPlay has to offer:
                         </p>
 
                         <ul className="flex flex-col gap-3.5">
                             {PERKS.map(({ icon: Icon, text }) => (
                                 <li key={text} className="flex items-center gap-3">
-                                    <span className="w-8 h-8 rounded-lg bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center shrink-0">
+                                    <span className="w-8 h-8 rounded-[var(--radius-card)] bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center shrink-0">
                                         <Icon className="w-4 h-4 text-[var(--accent)]" />
                                     </span>
                                     <span className="text-[13px] text-[#D4D4D8]">{text}</span>
@@ -132,7 +132,7 @@ export default function RegisterClient() {
                         </ul>
                     </div>
 
-                    <div className="relative z-10 flex items-center gap-5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#71717A]">
+                    <div className="relative z-10 flex items-center gap-5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/35">
                         <span><span className="text-white">15K+</span> MEMBERS</span>
                         <span className="w-1 h-1 rounded-full bg-[var(--accent)]" />
                         <span><span className="text-white">50K+</span> GAMES</span>
@@ -160,7 +160,7 @@ export default function RegisterClient() {
                     </div>
 
                     {success && (
-                        <div className="mb-5 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                        <div className="mb-5 p-3 bg-green-500/10 border border-green-500/20 rounded-[var(--radius-card)]">
                             <p className="text-sm text-[var(--success)]">
                                 Registration successful! Please check your email to verify your account.
                             </p>
@@ -168,7 +168,7 @@ export default function RegisterClient() {
                     )}
 
                     {errors.length > 0 && (
-                        <div className="mb-5 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                        <div className="mb-5 p-3 bg-red-500/10 border border-red-500/20 rounded-[var(--radius-card)]">
                             <ul className="text-sm text-[var(--danger)] list-disc list-inside">
                                 {errors.map((error, index) => (
                                     <li key={index}>{error}</li>
@@ -226,7 +226,7 @@ export default function RegisterClient() {
 
                             {/* Security level — gamified password strength */}
                             {password.length > 0 && (
-                                <div className="mt-3 p-4 bg-[var(--surface-2)] rounded-xl border border-[var(--line)]">
+                                <div className="mt-3 p-4 bg-[var(--surface-2)] rounded-[var(--radius-card)] border border-[var(--line)]">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--ink-low)]">
                                             Security Level
@@ -281,7 +281,7 @@ export default function RegisterClient() {
                         <button
                             type="submit"
                             disabled={isLoading || (!allRequirementsMet && password.length > 0) || (!turnstileToken && process.env.NEXT_PUBLIC_TURNSTILE_ENABLED !== 'false')}
-                            className="group w-full h-[52px] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-lg transition-colors uppercase tracking-[0.1em] text-[13px] flex items-center justify-center gap-1.5 shadow-lg shadow-[var(--accent)]/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="group w-full h-[52px] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.1em] text-[13px] flex items-center justify-center gap-1.5 shadow-lg shadow-[var(--accent)]/25 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isLoading ? "Creating account..." : (
                                 <>

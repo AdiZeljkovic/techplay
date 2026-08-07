@@ -15,27 +15,27 @@ interface Props {
 
 export default function Gta6SectionHero({ icon: Icon, title, subtitle, breadcrumb, badge, image, children }: Props) {
     return (
-        <div className="relative overflow-hidden border-b border-[#161B22] bg-[#0B0E14] gta6-grain">
+        <div className="relative overflow-hidden border-b border-white/[0.07] bg-[var(--surface-1)] gta6-grain">
             {image ? (
                 <>
                     <Image src={image} alt="" fill priority sizes="100vw" className="object-cover object-center" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#05070A] via-[#05070A]/75 to-[#05070A]/30" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)] via-[var(--surface-0)]/75 to-[var(--surface-0)]/30" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] via-transparent to-transparent" />
                     <div className="absolute inset-0 gta6-sunset opacity-30 mix-blend-screen pointer-events-none" />
                 </>
             ) : (
                 <>
                     <div className="absolute inset-0 gta6-grid opacity-40" />
                     <div className="absolute inset-0 gta6-sunset opacity-50" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#05070A]" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[var(--surface-0)]" />
                 </>
             )}
 
             <div className={`relative container-page ${image ? "py-14 md:py-20" : "py-10 md:py-14"}`}>
-                <nav className="flex items-center gap-1.5 text-[12px] text-[#71717A] mb-5">
+                <nav className="flex items-center gap-1.5 text-[12px] text-white/35 mb-5">
                     <Link href="/gta6" className="hover:text-[var(--gta-pink)] transition-colors">GTA 6 Hub</Link>
                     <ChevronRight className="w-3.5 h-3.5" />
-                    <span className="text-[#A1A1AA]">{breadcrumb}</span>
+                    <span className="text-white/45">{breadcrumb}</span>
                 </nav>
 
                 {badge && (
@@ -43,7 +43,7 @@ export default function Gta6SectionHero({ icon: Icon, title, subtitle, breadcrum
                 )}
 
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-[var(--gta-pink)]/15 border border-[var(--gta-pink)]/35 flex items-center justify-center shrink-0 gta6-glow-pink backdrop-blur-sm">
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-[var(--radius-card)] bg-[var(--gta-pink)]/15 border border-[var(--gta-pink)]/35 flex items-center justify-center shrink-0 gta6-glow-pink backdrop-blur-sm">
                         <Icon className="w-6 h-6 md:w-7 md:h-7 text-[var(--gta-pink)]" />
                     </div>
                     <div>

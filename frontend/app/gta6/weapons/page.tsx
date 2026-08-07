@@ -81,7 +81,7 @@ export default async function Gta6WeaponsPage() {
             {weapons.length > 0 && (
                 <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }} />
             )}
-            <div className="min-h-screen bg-[#05070A]">
+            <div className="min-h-screen bg-[var(--surface-0)]">
                 <Gta6SectionHero
                     icon={Crosshair}
                     title="GTA 6 Weapons"
@@ -92,7 +92,7 @@ export default async function Gta6WeaponsPage() {
                 />
 
                 <div className="container-page py-8">
-                    <p className="text-[#A1A1AA] text-[15px] leading-relaxed max-w-2xl mb-8">
+                    <p className="text-white/45 text-[15px] leading-relaxed max-w-2xl mb-8">
                         The Leonida criminal underworld doesn&apos;t travel light. Every GTA 6 weapon confirmed via official trailers is catalogued below — from sidearms to heavy weapons.
                     </p>
                     <Gta6EntityGrid

@@ -48,7 +48,7 @@ function NewsletterVerifyContent() {
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-white/5 border border-white/10 p-8 rounded-2xl text-center backdrop-blur-xl">
+            <div className="max-w-md w-full bg-white/5 border border-white/10 p-8 rounded-[var(--radius-panel)] text-center backdrop-blur-xl">
                 {status === 'loading' && (
                     <div className="flex flex-col items-center">
                         <Loader2 className="w-12 h-12 text-[var(--accent)] animate-spin mb-4" />
@@ -62,8 +62,8 @@ function NewsletterVerifyContent() {
                             <CheckCircle2 className="w-8 h-8 text-green-500" />
                         </div>
                         <h2 className="text-white text-2xl font-bold mb-2">Verified!</h2>
-                        <p className="text-gray-400">{message}</p>
-                        <p className="text-gray-400 text-sm mt-4">Redirecting you to homepage...</p>
+                        <p className="text-white/45">{message}</p>
+                        <p className="text-white/45 text-sm mt-4">Redirecting you to homepage...</p>
                     </div>
                 )}
 
@@ -73,10 +73,10 @@ function NewsletterVerifyContent() {
                             <XCircle className="w-8 h-8 text-red-500" />
                         </div>
                         <h2 className="text-white text-2xl font-bold mb-2">Verification Failed</h2>
-                        <p className="text-gray-400">{message}</p>
+                        <p className="text-white/45">{message}</p>
                         <button
                             onClick={() => router.push('/')}
-                            className="mt-6 px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
+                            className="mt-6 px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-[var(--radius-card)] transition-colors"
                         >
                             Back to Home
                         </button>

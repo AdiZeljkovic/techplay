@@ -8,7 +8,7 @@ export default function GoogleNewsFollow() {
             href="https://www.google.com/preferences/source?q=techplay.gg"
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-4 w-full bg-[#0B0E14] border border-[#161B22] rounded-[16px] px-5 py-4 hover:border-[var(--accent)]/40 hover:bg-[#0f1420] transition-all duration-300 my-8"
+            className="group flex items-center gap-4 w-full bg-[var(--surface-1)] border border-white/[0.07] rounded-[16px] px-5 py-4 hover:border-[var(--accent)]/40 hover:bg-[#0f1420] transition-all duration-300 my-8"
         >
             {/* Google G logo */}
             <div className="shrink-0 w-9 h-9">
@@ -25,13 +25,13 @@ export default function GoogleNewsFollow() {
                 <p className="text-[13px] text-white font-bold leading-snug mb-0.5">
                     Add TechPlay.gg as a preferred source on Google
                 </p>
-                <p className="text-[12px] text-[#71717A] leading-snug group-hover:text-[#A1A1AA] transition-colors duration-200">
+                <p className="text-[12px] text-white/35 leading-snug group-hover:text-white/45 transition-colors duration-200">
                     See more of our gaming news, reviews and guides when you search for the latest gaming topics.
                 </p>
             </div>
 
             {/* Arrow */}
-            <ChevronRight className="w-5 h-5 text-[#3F3F46] group-hover:text-[var(--accent)] transition-colors duration-200 shrink-0" />
+            <ChevronRight className="w-5 h-5 text-white/12 group-hover:text-[var(--accent)] transition-colors duration-200 shrink-0" />
         </a>
     );
 }

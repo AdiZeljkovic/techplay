@@ -17,7 +17,7 @@ export default function CollectionSnapshot({ tiles }: { tiles: CollectionSnapsho
                 const meta = META[t.status] ?? META.backlog;
                 const Icon = meta.icon;
                 return (
-                    <div key={t.status} className="relative rounded-xl overflow-hidden border border-white/[0.06] bg-[#0B0E14] aspect-[4/3] group">
+                    <div key={t.status} className="relative rounded-[var(--radius-card)] overflow-hidden border border-white/[0.06] bg-[var(--surface-1)] aspect-[4/3] group">
                         {t.cover ? (
                             <img src={t.cover} alt={t.label} className="absolute inset-0 w-full h-full object-cover opacity-45 group-hover:opacity-60 group-hover:scale-105 transition-all duration-500" />
                         ) : (

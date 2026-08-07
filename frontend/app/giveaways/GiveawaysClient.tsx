@@ -87,8 +87,8 @@ export default function GiveawaysClient() {
                 {/* Filters */}
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-2">
-                        <Filter className="w-5 h-5 text-[var(--text-secondary)]" />
-                        <span className="text-[var(--text-secondary)] font-medium">Filter:</span>
+                        <Filter className="w-5 h-5 text-white/55" />
+                        <span className="text-white/55 font-medium">Filter:</span>
                     </div>
                     <div className="flex gap-2">
                         {[
@@ -102,10 +102,10 @@ export default function GiveawaysClient() {
                                     setFilter(option.value as any);
                                     setCurrentPage(1);
                                 }}
-                                className={`px-4 py-2 rounded-xl font-medium transition-all ${
+                                className={`px-4 py-2 rounded-[var(--radius-card)] font-medium transition-all ${
                                     filter === option.value
                                         ? "bg-[var(--accent)] text-white"
-                                        : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                                        : "bg-[var(--surface-2)] text-white/55 hover:text-white"
                                 }`}
                             >
                                 {option.label}
@@ -122,11 +122,11 @@ export default function GiveawaysClient() {
                 ) : giveaways.length === 0 ? (
                     /* Empty State */
                     <div className="text-center py-20">
-                        <Gift className="w-16 h-16 text-[var(--text-muted)] mx-auto mb-4" />
-                        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
+                        <Gift className="w-16 h-16 text-white/35 mx-auto mb-4" />
+                        <h2 className="text-2xl font-bold text-white mb-2">
                             No giveaways found
                         </h2>
-                        <p className="text-[var(--text-secondary)]">
+                        <p className="text-white/55">
                             Check back later for new giveaways!
                         </p>
                     </div>
@@ -142,7 +142,7 @@ export default function GiveawaysClient() {
                                     transition={{ delay: index * 0.1 }}
                                 >
                                     <Link href={`/giveaway/${giveaway.slug}`}>
-                                        <div className="group bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl overflow-hidden hover:border-[var(--accent)]/50 transition-all hover:shadow-xl hover:shadow-[var(--accent)]/10">
+                                        <div className="group bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-panel)] overflow-hidden hover:border-[var(--accent)]/50 transition-all hover:shadow-xl hover:shadow-[var(--accent)]/10">
                                             {/* Prize Image */}
                                             <div className="relative h-48 bg-gradient-to-br from-[var(--accent)]/10 to-transparent overflow-hidden">
                                                 {giveaway.prize.image ? (
@@ -154,7 +154,7 @@ export default function GiveawaysClient() {
                                                     />
                                                 ) : (
                                                     <div className="absolute inset-0 flex items-center justify-center">
-                                                        <Gift className="w-20 h-20 text-[var(--text-muted)]" />
+                                                        <Gift className="w-20 h-20 text-white/35" />
                                                     </div>
                                                 )}
 
@@ -171,7 +171,7 @@ export default function GiveawaysClient() {
                                                             Active
                                                         </div>
                                                     ) : (
-                                                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-500/90 backdrop-blur-md text-white rounded-full text-xs font-bold">
+                                                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/35/90 backdrop-blur-md text-white rounded-full text-xs font-bold">
                                                             Ended
                                                         </div>
                                                     )}
@@ -189,13 +189,13 @@ export default function GiveawaysClient() {
                                             {/* Content */}
                                             <div className="p-6">
                                                 {/* Title */}
-                                                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2 group-hover:text-[var(--accent)] transition-colors line-clamp-2">
+                                                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-[var(--accent)] transition-colors line-clamp-2">
                                                     {giveaway.title}
                                                 </h3>
 
                                                 {/* Prize */}
                                                 <div className="flex items-center justify-between mb-4">
-                                                    <span className="text-sm font-semibold text-[var(--text-secondary)]">
+                                                    <span className="text-sm font-semibold text-white/55">
                                                         {giveaway.prize.name}
                                                     </span>
                                                     {giveaway.prize.value && (
@@ -206,8 +206,8 @@ export default function GiveawaysClient() {
                                                 </div>
 
                                                 {/* Stats */}
-                                                <div className="flex items-center justify-between pt-4 border-t border-[var(--border)]">
-                                                    <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+                                                <div className="flex items-center justify-between pt-4 border-t border-[var(--line)]">
+                                                    <div className="flex items-center gap-2 text-white/55">
                                                         <Users className="w-4 h-4" />
                                                         <span className="text-sm">
                                                             {giveaway.stats.total_entries} entries
@@ -219,7 +219,7 @@ export default function GiveawaysClient() {
                                                             <div className="w-6 h-6 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-xs font-bold">
                                                                 {giveaway.winner.username[0].toUpperCase()}
                                                             </div>
-                                                            <span className="text-sm text-[var(--text-secondary)]">
+                                                            <span className="text-sm text-white/55">
                                                                 @{giveaway.winner.username}
                                                             </span>
                                                         </div>
@@ -228,7 +228,7 @@ export default function GiveawaysClient() {
 
                                                 {/* Countdown bar for active giveaways */}
                                                 {giveaway.timing.is_active && giveaway.timing.time_remaining && (
-                                                    <div className={`flex items-center justify-center gap-2 mt-3 py-2 rounded-lg text-xs font-bold ${
+                                                    <div className={`flex items-center justify-center gap-2 mt-3 py-2 rounded-[var(--radius-card)] text-xs font-bold ${
                                                         giveaway.timing.time_remaining < 86400
                                                             ? "bg-red-500/10 text-red-400"
                                                             : "bg-[var(--accent)]/10 text-[var(--accent)]"
@@ -250,19 +250,19 @@ export default function GiveawaysClient() {
                                 <button
                                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                                     disabled={currentPage === 1}
-                                    className="px-4 py-2 bg-[var(--bg-elevated)] text-[var(--text-primary)] rounded-xl hover:bg-[var(--accent)] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="px-4 py-2 bg-[var(--surface-2)] text-white rounded-[var(--radius-card)] hover:bg-[var(--accent)] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Previous
                                 </button>
 
-                                <span className="px-4 py-2 text-[var(--text-secondary)]">
+                                <span className="px-4 py-2 text-white/55">
                                     Page {currentPage} of {totalPages}
                                 </span>
 
                                 <button
                                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="px-4 py-2 bg-[var(--bg-elevated)] text-[var(--text-primary)] rounded-xl hover:bg-[var(--accent)] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="px-4 py-2 bg-[var(--surface-2)] text-white rounded-[var(--radius-card)] hover:bg-[var(--accent)] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Next
                                 </button>

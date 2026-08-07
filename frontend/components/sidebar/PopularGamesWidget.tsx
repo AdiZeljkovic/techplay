@@ -47,7 +47,7 @@ export default function PopularGamesWidget() {
     }, []);
 
     return (
-        <div className="rounded-xl overflow-hidden relative" style={{
+        <div className="rounded-[var(--radius-card)] overflow-hidden relative" style={{
             background: 'linear-gradient(180deg, #061830 0%, #041225 100%)',
             border: '1px solid #0d2444',
         }}>
@@ -71,7 +71,7 @@ export default function PopularGamesWidget() {
                     ? Array.from({ length: 5 }).map((_, i) => (
                         <div key={i} className="flex items-center gap-3 px-4 py-3 animate-pulse">
                             <div className="rounded-full flex-shrink-0" style={{ width: '26px', height: '26px', background: 'rgba(255,255,255,0.05)' }} />
-                            <div className="rounded-md flex-shrink-0" style={{ width: '40px', height: '52px', background: 'rgba(255,255,255,0.05)' }} />
+                            <div className="rounded-[var(--radius-inner)] flex-shrink-0" style={{ width: '40px', height: '52px', background: 'rgba(255,255,255,0.05)' }} />
                             <div className="flex-1 space-y-2">
                                 <div className="h-3 rounded w-3/4" style={{ background: 'rgba(255,255,255,0.05)' }} />
                                 <div className="h-2 rounded w-1/3" style={{ background: 'rgba(255,255,255,0.05)' }} />
@@ -111,7 +111,7 @@ export default function PopularGamesWidget() {
                                 </div>
 
                                 {/* Cover */}
-                                <div className="flex-shrink-0 relative rounded-md overflow-hidden" style={{
+                                <div className="flex-shrink-0 relative rounded-[var(--radius-inner)] overflow-hidden" style={{
                                     width: '42px',
                                     height: '54px',
                                     border: '1px solid rgba(255,255,255,0.1)',

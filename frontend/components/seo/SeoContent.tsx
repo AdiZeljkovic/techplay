@@ -13,10 +13,10 @@ export default async function SeoContent({ path }: SeoContentProps) {
     }
 
     return (
-        <section className="bg-[var(--bg-elevated)] border-t border-[var(--border)] py-12 mt-12">
+        <section className="bg-[var(--surface-2)] border-t border-[var(--line)] py-12 mt-12">
             <div className="container mx-auto px-4">
                 <div
-                    className="prose prose-invert max-w-none text-[var(--text-secondary)]
+                    className="prose prose-invert max-w-none text-white/55
                         prose-headings:text-white prose-a:text-[var(--accent)] 
                         prose-strong:text-white"
                     dangerouslySetInnerHTML={{ __html: seo.seo_text }}

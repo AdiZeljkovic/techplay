@@ -50,7 +50,7 @@ export default function RichTextEditor({
             }),
             Image.configure({
                 HTMLAttributes: {
-                    class: "max-w-full rounded-lg my-4",
+                    class: "max-w-full rounded-[var(--radius-card)] my-4",
                 },
             }),
             Placeholder.configure({
@@ -96,8 +96,8 @@ export default function RichTextEditor({
 
     if (!editor) {
         return (
-            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl animate-pulse" style={{ minHeight }}>
-                <div className="h-10 bg-[var(--bg-elevated)] rounded-t-xl" />
+            <div className="bg-[var(--surface-0)] border border-[var(--line)] rounded-[var(--radius-card)] animate-pulse" style={{ minHeight }}>
+                <div className="h-10 bg-[var(--surface-2)] rounded-t-xl" />
                 <div className="p-4" style={{ minHeight }} />
             </div>
         );
@@ -121,9 +121,9 @@ export default function RichTextEditor({
             onClick={onClick}
             disabled={disabled}
             title={title}
-            className={`p-2 rounded-lg transition-all ${isActive
+            className={`p-2 rounded-[var(--radius-card)] transition-all ${isActive
                     ? "bg-[var(--accent)] text-white"
-                    : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
+                    : "text-white/35 hover:text-white hover:bg-[var(--surface-2)]"
                 } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
         >
             {children}
@@ -131,9 +131,9 @@ export default function RichTextEditor({
     );
 
     return (
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl overflow-hidden focus-within:border-[var(--accent)] focus-within:ring-1 focus-within:ring-[var(--accent)] transition-all">
+        <div className="bg-[var(--surface-0)] border border-[var(--line)] rounded-[var(--radius-card)] overflow-hidden focus-within:border-[var(--accent)] focus-within:ring-1 focus-within:ring-[var(--accent)] transition-all">
             {/* Toolbar */}
-            <div className="flex flex-wrap items-center gap-1 px-3 py-2 border-b border-[var(--border)] bg-[var(--bg-elevated)]/50">
+            <div className="flex flex-wrap items-center gap-1 px-3 py-2 border-b border-[var(--line)] bg-[var(--surface-2)]/50">
                 {/* Text Formatting */}
                 <ToolbarButton
                     onClick={() => editor.chain().focus().toggleBold().run()}
@@ -164,7 +164,7 @@ export default function RichTextEditor({
                     <Code className="w-4 h-4" />
                 </ToolbarButton>
 
-                <div className="w-px h-6 bg-[var(--border)] mx-1" />
+                <div className="w-px h-6 bg-[var(--line)] mx-1" />
 
                 {/* Headings */}
                 <ToolbarButton
@@ -175,7 +175,7 @@ export default function RichTextEditor({
                     <Heading2 className="w-4 h-4" />
                 </ToolbarButton>
 
-                <div className="w-px h-6 bg-[var(--border)] mx-1" />
+                <div className="w-px h-6 bg-[var(--line)] mx-1" />
 
                 {/* Lists */}
                 <ToolbarButton
@@ -200,7 +200,7 @@ export default function RichTextEditor({
                     <Quote className="w-4 h-4" />
                 </ToolbarButton>
 
-                <div className="w-px h-6 bg-[var(--border)] mx-1" />
+                <div className="w-px h-6 bg-[var(--line)] mx-1" />
 
                 {/* Links & Images */}
                 <ToolbarButton
@@ -239,7 +239,7 @@ export default function RichTextEditor({
             {/* Editor Content */}
             <EditorContent
                 editor={editor}
-                className="text-[var(--text-primary)]"
+                className="text-white"
                 style={{ minHeight }}
             />
         </div>

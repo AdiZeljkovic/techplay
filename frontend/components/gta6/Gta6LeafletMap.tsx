@@ -340,14 +340,14 @@ function MapToolbar({ onOpenPanel, resetBounds }: { onOpenPanel?: (tab: "search"
             onClick={onClick}
             title={title}
             aria-label={title}
-            className="w-10 h-10 flex items-center justify-center text-[#A1A1AA] hover:text-white hover:bg-[var(--gta-pink)]/20 transition-colors"
+            className="w-10 h-10 flex items-center justify-center text-white/45 hover:text-white hover:bg-[var(--gta-pink)]/20 transition-colors"
         >
             {children}
         </button>
     );
 
     return (
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 z-[800] flex flex-col rounded-xl bg-[#0B0E14]/90 backdrop-blur border border-[#161B22] shadow-xl overflow-hidden divide-y divide-[#161B22]">
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 z-[800] flex flex-col rounded-[var(--radius-card)] bg-[var(--surface-1)]/90 backdrop-blur border border-white/[0.07] shadow-xl overflow-hidden divide-y divide-white/[0.07]">
             <Btn onClick={() => map.zoomIn()} title="Zoom in"><Plus className="w-[18px] h-[18px]" /></Btn>
             <Btn onClick={() => map.zoomOut()} title="Zoom out"><Minus className="w-[18px] h-[18px]" /></Btn>
             <Btn onClick={() => {
@@ -373,7 +373,7 @@ function CoordinateHud() {
         },
     });
     return (
-        <div className="absolute bottom-3 left-3 z-[800] hidden md:block px-3 py-1.5 rounded-lg bg-[#0B0E14]/90 backdrop-blur border border-[#161B22] text-[11px] font-mono text-[var(--gta-cyan)] shadow-lg pointer-events-none">
+        <div className="absolute bottom-3 left-3 z-[800] hidden md:block px-3 py-1.5 rounded-[var(--radius-card)] bg-[var(--surface-1)]/90 backdrop-blur border border-white/[0.07] text-[11px] font-mono text-[var(--gta-cyan)] shadow-lg pointer-events-none">
             <span ref={ref}>X: — · Y: —</span>
         </div>
     );

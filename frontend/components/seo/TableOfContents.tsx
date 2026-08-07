@@ -68,8 +68,8 @@ export default function TableOfContents({ content, className = '' }: TableOfCont
     if (items.length < 3) return null; // Don't show TOC for short articles
 
     return (
-        <nav className={`bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border)] ${className}`}>
-            <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-[var(--text-primary)]">
+        <nav className={`bg-[var(--surface-1)] rounded-[var(--radius-card)] p-4 border border-[var(--line)] ${className}`}>
+            <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-white">
                 <List className="w-4 h-4 text-[var(--accent)]" />
                 Table of Contents
             </div>
@@ -85,7 +85,7 @@ export default function TableOfContents({ content, className = '' }: TableOfCont
                 text-left text-sm py-1 transition-colors w-full truncate
                 ${activeId === item.id
                                     ? 'text-[var(--accent)] font-medium'
-                                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                                    : 'text-white/55 hover:text-white'
                                 }
               `}
                         >

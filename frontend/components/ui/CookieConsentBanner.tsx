@@ -92,16 +92,16 @@ export default function CookieConsentBanner() {
                     exit={{ y: 100, opacity: 0 }}
                     className="fixed bottom-0 left-0 right-0 z-[100] p-4 md:p-6 flex justify-center pointer-events-none"
                 >
-                    <div className="bg-[var(--bg-elevated)]/90 backdrop-blur-xl border border-[var(--border)] rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden pointer-events-auto ring-1 ring-white/10">
+                    <div className="bg-[var(--surface-2)]/90 backdrop-blur-xl border border-[var(--line)] rounded-[var(--radius-panel)] shadow-2xl w-full max-w-4xl overflow-hidden pointer-events-auto ring-1 ring-white/10">
                         <div className="p-6 md:p-8">
                             <div className="flex items-start justify-between gap-6 mb-6">
                                 <div className="flex gap-4">
-                                    <div className="w-12 h-12 bg-[var(--accent)]/10 rounded-xl flex items-center justify-center flex-shrink-0 text-[var(--accent)]">
+                                    <div className="w-12 h-12 bg-[var(--accent)]/10 rounded-[var(--radius-card)] flex items-center justify-center flex-shrink-0 text-[var(--accent)]">
                                         <Cookie className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">We value your privacy</h3>
-                                        <p className="text-[var(--text-secondary)] text-sm leading-relaxed max-w-2xl">
+                                        <h3 className="text-xl font-bold text-white mb-2">We value your privacy</h3>
+                                        <p className="text-white/55 text-sm leading-relaxed max-w-2xl">
                                             We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic.
                                             You can choose to accept all or customize your preferences. Read our <Link href="/privacy" className="text-[var(--accent)] hover:underline">Privacy Policy</Link> and <Link href="/cookies" className="text-[var(--accent)] hover:underline">Cookie Policy</Link>.
                                         </p>
@@ -109,7 +109,7 @@ export default function CookieConsentBanner() {
                                 </div>
                                 <button
                                     onClick={() => handleRejectAll()}
-                                    className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                                    className="text-white/35 hover:text-white transition-colors"
                                     aria-label="Close cookie consent"
                                 >
                                     <X className="w-5 h-5" />
@@ -127,10 +127,10 @@ export default function CookieConsentBanner() {
                                     >
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-2">
                                             {/* Necessary */}
-                                            <div className="bg-[var(--bg-card)] border border-[var(--border)] p-4 rounded-xl flex items-center justify-between">
+                                            <div className="bg-[var(--surface-1)] border border-[var(--line)] p-4 rounded-[var(--radius-card)] flex items-center justify-between">
                                                 <div>
-                                                    <span className="font-bold text-[var(--text-primary)] block">Essential</span>
-                                                    <span className="text-xs text-[var(--text-muted)]">Required for the site to work.</span>
+                                                    <span className="font-bold text-white block">Essential</span>
+                                                    <span className="text-xs text-white/35">Required for the site to work.</span>
                                                 </div>
                                                 <div className="relative flex items-center">
                                                     <Check className="w-5 h-5 text-green-500" />
@@ -139,12 +139,12 @@ export default function CookieConsentBanner() {
 
                                             {/* Analytics */}
                                             <div
-                                                className={`cursor-pointer border p-4 rounded-xl flex items-center justify-between transition-all ${preferences.analytics ? 'bg-[var(--accent)]/10 border-[var(--accent)]' : 'bg-[var(--bg-card)] border-[var(--border)]'}`}
+                                                className={`cursor-pointer border p-4 rounded-[var(--radius-card)] flex items-center justify-between transition-all ${preferences.analytics ? 'bg-[var(--accent)]/10 border-[var(--accent)]' : 'bg-[var(--surface-1)] border-[var(--line)]'}`}
                                                 onClick={() => togglePreference('analytics')}
                                             >
                                                 <div>
-                                                    <span className={`font-bold block ${preferences.analytics ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'}`}>Analytics</span>
-                                                    <span className="text-xs text-[var(--text-muted)]">Help us improve the site.</span>
+                                                    <span className={`font-bold block ${preferences.analytics ? 'text-[var(--accent)]' : 'text-white'}`}>Analytics</span>
+                                                    <span className="text-xs text-white/35">Help us improve the site.</span>
                                                 </div>
                                                 <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors ${preferences.analytics ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-[var(--text-muted)]'}`}>
                                                     {preferences.analytics && <Check className="w-4 h-4 text-white" />}
@@ -153,12 +153,12 @@ export default function CookieConsentBanner() {
 
                                             {/* Marketing */}
                                             <div
-                                                className={`cursor-pointer border p-4 rounded-xl flex items-center justify-between transition-all ${preferences.marketing ? 'bg-[var(--accent)]/10 border-[var(--accent)]' : 'bg-[var(--bg-card)] border-[var(--border)]'}`}
+                                                className={`cursor-pointer border p-4 rounded-[var(--radius-card)] flex items-center justify-between transition-all ${preferences.marketing ? 'bg-[var(--accent)]/10 border-[var(--accent)]' : 'bg-[var(--surface-1)] border-[var(--line)]'}`}
                                                 onClick={() => togglePreference('marketing')}
                                             >
                                                 <div>
-                                                    <span className={`font-bold block ${preferences.marketing ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'}`}>Marketing</span>
-                                                    <span className="text-xs text-[var(--text-muted)]">Personalized offers.</span>
+                                                    <span className={`font-bold block ${preferences.marketing ? 'text-[var(--accent)]' : 'text-white'}`}>Marketing</span>
+                                                    <span className="text-xs text-white/35">Personalized offers.</span>
                                                 </div>
                                                 <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors ${preferences.marketing ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-[var(--text-muted)]'}`}>
                                                     {preferences.marketing && <Check className="w-4 h-4 text-white" />}
@@ -169,10 +169,10 @@ export default function CookieConsentBanner() {
                                 )}
                             </AnimatePresence>
 
-                            <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-4 border-t border-[var(--border)]">
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-4 border-t border-[var(--line)]">
                                 <button
                                     onClick={() => setShowDetails(!showDetails)}
-                                    className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center gap-1 transition-colors"
+                                    className="text-sm font-medium text-white/55 hover:text-white flex items-center gap-1 transition-colors"
                                 >
                                     {showDetails ? 'Hide Details' : 'Customize Preferences'}
                                     {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}

@@ -21,7 +21,7 @@ function playstyleIcon(tag: string) {
 }
 
 const Panel = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-4">
+    <div className="rounded-[var(--radius-card)] bg-white/[0.02] border border-white/[0.06] p-4">
         <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 mb-3">{title}</h4>
         {children}
     </div>

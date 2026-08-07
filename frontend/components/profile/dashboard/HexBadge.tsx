@@ -23,7 +23,7 @@ export default function HexBadge({
             <div className="absolute inset-0" style={{ clipPath: hex, background: color, opacity: 0.9 }} />
             <div
                 className="absolute"
-                style={{ inset: 2, clipPath: hex, background: "var(--bg-card)" }}
+                style={{ inset: 2, clipPath: hex, background: "var(--surface-1)" }}
             />
             <div className="absolute inset-0 flex items-center justify-center" style={{ color }}>
                 {children}

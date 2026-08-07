@@ -173,8 +173,8 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                     className={cn(
                         "w-full bg-[var(--surface-2)] border border-[var(--line-strong)] text-white focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_60%,transparent)] focus:ring-1 focus:ring-[var(--accent-soft)] transition-all placeholder:text-[var(--ink-faint)]",
                         isMobile
-                            ? "rounded-xl py-3 pl-12 pr-10 text-base"
-                            : "rounded-lg py-2 pl-9 pr-8 text-sm"
+                            ? "rounded-[var(--radius-card)] py-3 pl-12 pr-10 text-base"
+                            : "rounded-[var(--radius-card)] py-2 pl-9 pr-8 text-sm"
                     )}
                 />
 
@@ -183,7 +183,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                     <button
                         onClick={clearSearch}
                         className={cn(
-                            "absolute top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors",
+                            "absolute top-1/2 -translate-y-1/2 text-white/45 hover:text-white transition-colors",
                             isMobile ? "right-4" : "right-3"
                         )}
                     >
@@ -205,7 +205,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                         exit={{ opacity: 0, y: -6, scale: 0.98 }}
                         transition={{ duration: 0.15, ease: "easeOut" }}
                         className={cn(
-                            "absolute z-50 bg-[var(--surface-2)] backdrop-blur-xl border border-white/[0.07] rounded-xl shadow-2xl overflow-hidden",
+                            "absolute z-50 bg-[var(--surface-2)] backdrop-blur-xl border border-white/[0.07] rounded-[var(--radius-card)] shadow-2xl overflow-hidden",
                             isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[min(400px,calc(100vw-2rem))]"
                         )}
                         style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(220, 20, 60,0.1)" }}
@@ -228,15 +228,15 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                                         <img
                                             src={result.image}
                                             alt=""
-                                            className="w-16 h-12 object-cover rounded-lg flex-shrink-0"
+                                            className="w-16 h-12 object-cover rounded-[var(--radius-card)] flex-shrink-0"
                                         />
                                     ) : (
-                                        <div className="w-16 h-12 bg-[var(--fill-3)] rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <div className="w-16 h-12 bg-[var(--fill-3)] rounded-[var(--radius-card)] flex items-center justify-center flex-shrink-0">
                                             {result.type === 'game'
-                                                ? <Gamepad2 className="w-5 h-5 text-gray-400" />
+                                                ? <Gamepad2 className="w-5 h-5 text-white/45" />
                                                 : result.type === 'user'
-                                                    ? <UserIcon className="w-5 h-5 text-gray-400" />
-                                                    : <FileText className="w-5 h-5 text-gray-400" />}
+                                                    ? <UserIcon className="w-5 h-5 text-white/45" />
+                                                    : <FileText className="w-5 h-5 text-white/45" />}
                                         </div>
                                     )}
 
@@ -255,9 +255,9 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
 
                         {/* Footer */}
                         <div className="px-4 py-2 border-t border-[var(--line-strong)] bg-[var(--fill-2)]">
-                            <p className="text-xs text-gray-400 text-center">
-                                Press <kbd className="px-1 py-0.5 bg-[var(--fill-3)] rounded text-gray-400">↵</kbd> to select,
-                                <kbd className="px-1 py-0.5 bg-[var(--fill-3)] rounded text-gray-400 ml-1">↑↓</kbd> to navigate
+                            <p className="text-xs text-white/45 text-center">
+                                Press <kbd className="px-1 py-0.5 bg-[var(--fill-3)] rounded text-white/45">↵</kbd> to select,
+                                <kbd className="px-1 py-0.5 bg-[var(--fill-3)] rounded text-white/45 ml-1">↑↓</kbd> to navigate
                             </p>
                         </div>
                     </motion.div>
@@ -271,13 +271,13 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                         exit={{ opacity: 0, y: -6, scale: 0.98 }}
                         transition={{ duration: 0.15, ease: "easeOut" }}
                         className={cn(
-                            "absolute z-50 bg-[var(--surface-2)] backdrop-blur-xl border border-white/[0.07] rounded-xl shadow-2xl p-6 text-center",
+                            "absolute z-50 bg-[var(--surface-2)] backdrop-blur-xl border border-white/[0.07] rounded-[var(--radius-card)] shadow-2xl p-6 text-center",
                             isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[min(300px,calc(100vw-2rem))]"
                         )}
                         style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}
                     >
-                        <Search className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-                        <p className="text-gray-400 text-sm">No results found for "{query}"</p>
+                        <Search className="w-8 h-8 text-white/30 mx-auto mb-2" />
+                        <p className="text-white/45 text-sm">No results found for "{query}"</p>
                     </motion.div>
                 )}
             </AnimatePresence>

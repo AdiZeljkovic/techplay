@@ -45,7 +45,7 @@ export default function GameForumThreads({ gameSlug }: { gameSlug: string }) {
             {isLoading ? (
                 <div className="space-y-3">
                     {[...Array(3)].map((_, i) => (
-                        <div key={i} className="h-16 bg-white/[0.04] rounded-xl animate-pulse" />
+                        <div key={i} className="h-16 bg-white/[0.04] rounded-[var(--radius-card)] animate-pulse" />
                     ))}
                 </div>
             ) : (
@@ -54,7 +54,7 @@ export default function GameForumThreads({ gameSlug }: { gameSlug: string }) {
                         const avatarSrc = getAvatarSrc(thread.author?.avatar_url);
                         return (
                             <Link key={thread.id} href={`/forum/thread/${thread.slug}`} className="block">
-                                <div className="flex items-center gap-3 bg-[#0D1117] border border-[#1A2030] rounded-xl p-4 hover:border-[var(--accent)]/30 transition-colors">
+                                <div className="flex items-center gap-3 bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-card)] p-4 hover:border-[var(--accent)]/30 transition-colors">
                                     <div className="w-9 h-9 rounded-full overflow-hidden bg-white/[0.03] flex-shrink-0">
                                         {avatarSrc ? (
                                             <Image src={avatarSrc} alt={thread.author?.username || ""} width={36} height={36} className="object-cover w-full h-full" />

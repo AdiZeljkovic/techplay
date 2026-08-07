@@ -56,7 +56,7 @@ export function PlayingNowCard({ game: g, showResume = false, className = "" }: 
                     </div>
                     {/* visual affordance only — the whole card is the link */}
                     {showResume && (
-                        <span className="mt-2.5 flex items-center justify-center h-8 rounded-lg bg-[var(--accent)] text-white text-[11px] font-bold uppercase tracking-wider group-hover:bg-[var(--accent-hover)] transition-colors">
+                        <span className="mt-2.5 flex items-center justify-center h-8 rounded-[var(--radius-card)] bg-[var(--accent)] text-white text-[11px] font-bold uppercase tracking-wider group-hover:bg-[var(--accent-hover)] transition-colors">
                             Resume
                         </span>
                     )}

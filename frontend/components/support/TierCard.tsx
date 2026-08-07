@@ -67,7 +67,7 @@ export default function TierCard({ tier }: TierCardProps) {
 
     return (
         <div
-            className="relative bg-[var(--bg-secondary)]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 flex flex-col h-full hover:border-[var(--card-border-hover)] transition-all group overflow-hidden"
+            className="relative bg-[var(--surface-1)]/80 backdrop-blur-xl border border-white/10 rounded-[var(--radius-panel)] p-8 flex flex-col h-full hover:border-[var(--card-border-hover)] transition-all group overflow-hidden"
             style={{ '--card-border-hover': borderColor } as any}
         >
             {/* Glow Effect */}
@@ -79,12 +79,12 @@ export default function TierCard({ tier }: TierCardProps) {
             <h3 className="text-2xl font-bold text-white mb-2">{tier.name}</h3>
             <div className="flex items-baseline gap-1 mb-6">
                 <span className="text-4xl font-bold text-white">${parseFloat(tier.price).toFixed(0)}</span>
-                <span className="text-gray-400 text-sm">/month</span>
+                <span className="text-white/45 text-sm">/month</span>
             </div>
 
             <ul className="space-y-4 mb-8 flex-1">
                 {tier.features?.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-gray-300 text-sm">
+                    <li key={idx} className="flex items-start gap-3 text-white/60 text-sm">
                         <div
                             className="mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-white"
                             style={{ backgroundColor: `${borderColor}30` }} // 30% opacity
@@ -108,7 +108,7 @@ export default function TierCard({ tier }: TierCardProps) {
                     }
                 }}
                 disabled={authLoading}
-                className="w-full py-4 rounded-xl font-bold text-white transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 mt-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-4 rounded-[var(--radius-card)] font-bold text-white transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 mt-auto disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: borderColor, boxShadow: `0 10px 40px -10px ${borderColor}60` }}
             >
                 {authLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Join Now'}

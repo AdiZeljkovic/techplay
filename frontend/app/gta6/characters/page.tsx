@@ -64,7 +64,7 @@ export default async function Gta6CharactersPage() {
             {characters.length > 0 && (
                 <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }} />
             )}
-            <div className="min-h-screen bg-[#05070A]">
+            <div className="min-h-screen bg-[var(--surface-0)]">
                 <Gta6SectionHero
                     icon={Users}
                     title="GTA 6 Characters"
@@ -75,7 +75,7 @@ export default async function Gta6CharactersPage() {
                 />
 
                 <div className="container-page py-8">
-                    <p className="text-[#A1A1AA] text-[15px] leading-relaxed max-w-2xl mb-8">
+                    <p className="text-white/45 text-[15px] leading-relaxed max-w-2xl mb-8">
                         Grand Theft Auto VI introduces Jason Duval and Lucia Caminos as a dual-protagonist duo — Lucia being the series&apos; first playable female lead. Below is every confirmed GTA 6 character, updated as Rockstar reveals the full cast. Click any character for their full profile, background and gallery.
                     </p>
                     <Gta6EntityGrid

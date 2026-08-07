@@ -12,7 +12,7 @@ interface SkeletonProps {
 export function Skeleton({ className = "" }: SkeletonProps) {
     return (
         <div
-            className={`animate-pulse bg-[var(--bg-elevated)] rounded ${className}`}
+            className={`animate-pulse bg-[var(--surface-2)] rounded ${className}`}
             aria-hidden="true"
         />
     );
@@ -21,7 +21,7 @@ export function Skeleton({ className = "" }: SkeletonProps) {
 // Card skeleton for news/review cards
 export function CardSkeleton() {
     return (
-        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl overflow-hidden">
+        <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-card)] overflow-hidden">
             <Skeleton className="h-48 w-full rounded-none" />
             <div className="p-4 space-y-3">
                 <Skeleton className="h-4 w-20" />
@@ -73,7 +73,7 @@ export function ArticleSkeleton() {
 export function SidebarSkeleton() {
     return (
         <div className="space-y-6">
-            <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6">
+            <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-card)] p-6">
                 <Skeleton className="h-5 w-32 mb-4" />
                 <div className="space-y-3">
                     <Skeleton className="h-4 w-full" />
@@ -81,7 +81,7 @@ export function SidebarSkeleton() {
                     <Skeleton className="h-4 w-full" />
                 </div>
             </div>
-            <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6">
+            <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-card)] p-6">
                 <Skeleton className="h-5 w-28 mb-4" />
                 <div className="space-y-4">
                     {[1, 2, 3].map(i => (
@@ -99,7 +99,7 @@ export function SidebarSkeleton() {
 // Table row skeleton
 export function TableRowSkeleton({ cols = 4 }: { cols?: number }) {
     return (
-        <tr className="border-b border-[var(--border)]">
+        <tr className="border-b border-[var(--line)]">
             {Array.from({ length: cols }).map((_, i) => (
                 <td key={i} className="p-4">
                     <Skeleton className="h-4 w-full" />

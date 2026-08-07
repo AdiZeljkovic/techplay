@@ -164,9 +164,9 @@ export default function ConnectedAccountsSection() {
                 const isBusy = busyId === account?.id;
 
                 return (
-                    <div key={provider.id} className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.03] border border-white/[0.07] hover:border-white/[0.12] transition-colors">
+                    <div key={provider.id} className="flex items-center gap-4 p-4 rounded-[var(--radius-card)] bg-white/[0.03] border border-white/[0.07] hover:border-white/[0.12] transition-colors">
                         {/* Logo */}
-                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: provider.iconBg }}>
+                        <div className="w-12 h-12 rounded-[var(--radius-card)] flex items-center justify-center shrink-0" style={{ backgroundColor: provider.iconBg }}>
                             {provider.logo}
                         </div>
 
@@ -192,12 +192,12 @@ export default function ConnectedAccountsSection() {
                             {account ? (
                                 <>
                                     <button onClick={() => handleSync(account.id)} disabled={isBusy || account.sync_status === "syncing"}
-                                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-semibold text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] transition-colors disabled:opacity-40">
+                                        className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-card)] text-[12px] font-semibold text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] transition-colors disabled:opacity-40">
                                         {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
                                         Re-sync
                                     </button>
                                     <button onClick={() => handleDisconnect(account.id, account.display_name)} disabled={isBusy}
-                                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-semibold text-red-400 hover:text-red-300 bg-red-500/[0.06] hover:bg-red-500/[0.12] border border-red-500/[0.15] transition-colors disabled:opacity-40">
+                                        className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-card)] text-[12px] font-semibold text-red-400 hover:text-red-300 bg-red-500/[0.06] hover:bg-red-500/[0.12] border border-red-500/[0.15] transition-colors disabled:opacity-40">
                                         {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2Off className="w-3.5 h-3.5" />}
                                         Disconnect
                                     </button>
@@ -212,27 +212,27 @@ export default function ConnectedAccountsSection() {
                                             onChange={(e) => setGamertag(e.target.value)}
                                             onKeyDown={(e) => { if (e.key === "Enter") handleGamertagConnect(provider.id); }}
                                             placeholder="Your gamertag"
-                                            className="w-40 bg-[#0B0E14] border border-white/[0.1] rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[var(--accent)]/50"
+                                            className="w-40 bg-[var(--surface-1)] border border-white/[0.1] rounded-[var(--radius-card)] px-3 py-2 text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[var(--accent)]/50"
                                         />
                                         <button onClick={() => handleGamertagConnect(provider.id)} disabled={connecting === provider.id}
-                                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-60">
+                                            className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-60">
                                             {connecting === provider.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
                                         </button>
                                         <button onClick={() => { setGamertagFor(null); setGamertag(""); }}
-                                            className="p-2 rounded-lg text-white/40 hover:text-white transition-colors">
+                                            className="p-2 rounded-[var(--radius-card)] text-white/40 hover:text-white transition-colors">
                                             <X className="w-3.5 h-3.5" />
                                         </button>
                                     </div>
                                 ) : (
                                     <button onClick={() => setGamertagFor(provider.id)}
-                                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors">
+                                        className="flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors">
                                         <Link2 className="w-3.5 h-3.5" />
                                         Connect
                                     </button>
                                 )
                             ) : (
                                 <button onClick={() => handleConnect(provider.id)} disabled={connecting === provider.id}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-60">
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-60">
                                     {connecting === provider.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
                                     Connect
                                 </button>
@@ -242,7 +242,7 @@ export default function ConnectedAccountsSection() {
                 );
             })}
 
-            <div className="flex items-start gap-2 mt-2 p-3 rounded-lg bg-white/[0.02] border border-white/[0.05]">
+            <div className="flex items-start gap-2 mt-2 p-3 rounded-[var(--radius-card)] bg-white/[0.02] border border-white/[0.05]">
                 <Shield className="w-3.5 h-3.5 text-white/25 mt-0.5 shrink-0" />
                 <p className="text-[11px] text-white/30 leading-relaxed">
                     Platform tokens are encrypted at rest. We only read library data — we never post, purchase, or modify anything on your behalf. You can disconnect at any time.

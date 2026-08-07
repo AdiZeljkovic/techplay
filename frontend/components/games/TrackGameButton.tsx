@@ -98,13 +98,13 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
     if (!user) {
         if (variant === "compact") {
             return (
-                <a href="/login" onClick={(e) => e.stopPropagation()} className="flex items-center justify-center w-8 h-8 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-white/70 hover:text-white hover:border-white/30 transition-colors">
+                <a href="/login" onClick={(e) => e.stopPropagation()} className="flex items-center justify-center w-8 h-8 rounded-[var(--radius-card)] bg-black/60 backdrop-blur-sm border border-white/10 text-white/70 hover:text-white hover:border-white/30 transition-colors">
                     <Plus className="w-4 h-4" />
                 </a>
             );
         }
         return (
-            <a href="/login" className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold text-[13px] uppercase tracking-wider transition-colors">
+            <a href="/login" className="w-full flex items-center justify-center gap-2 py-3 rounded-[var(--radius-card)] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold text-[13px] uppercase tracking-wider transition-colors">
                 <Plus className="w-4 h-4" /> Track This Game
             </a>
         );
@@ -116,7 +116,7 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
             <div className="relative" onClick={(e) => e.preventDefault()}>
                 <button
                     onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-                    className={`flex items-center justify-center w-8 h-8 rounded-lg backdrop-blur-sm border transition-colors ${
+                    className={`flex items-center justify-center w-8 h-8 rounded-[var(--radius-card)] backdrop-blur-sm border transition-colors ${
                         currentMeta
                             ? "border-transparent text-white"
                             : "bg-black/60 border-white/10 text-white/70 hover:text-white hover:border-white/30"
@@ -130,7 +130,7 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
                 {open && (
                     <>
                         <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-                        <div className="absolute right-0 top-9 z-50 w-40 rounded-xl bg-[#0d1117] border border-white/10 shadow-2xl overflow-hidden py-1">
+                        <div className="absolute right-0 top-9 z-50 w-40 rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-white/10 shadow-2xl overflow-hidden py-1">
                             {visibleStatuses.map((s) => (
                                 <button key={s.value} onClick={() => setStatus(s.value)}
                                     className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-[12px] font-semibold transition-colors ${currentStatus === s.value ? "text-white bg-white/10" : "text-white/65 hover:text-white hover:bg-white/[0.05]"}`}>
@@ -159,18 +159,18 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
         <div ref={wrapperRef} className={`relative ${wrapperClassName ?? "w-full"}`}>
             {currentMeta ? (
                 <div className="flex gap-2">
-                    <div className="flex-1 flex items-center gap-2.5 py-3 px-4 rounded-xl border" style={{ backgroundColor: `${currentMeta.color}15`, borderColor: `${currentMeta.color}40` }}>
+                    <div className="flex-1 flex items-center gap-2.5 py-3 px-4 rounded-[var(--radius-card)] border" style={{ backgroundColor: `${currentMeta.color}15`, borderColor: `${currentMeta.color}40` }}>
                         <currentMeta.icon className="w-4 h-4 shrink-0" style={{ color: currentMeta.color }} />
                         <span className="text-[13px] font-bold" style={{ color: currentMeta.color }}>{currentMeta.label}</span>
                     </div>
                     <button onClick={() => setOpen((v) => !v)} disabled={busy}
-                        className="px-3 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-white/60 transition-colors">
+                        className="px-3 rounded-[var(--radius-card)] border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-white/60 transition-colors">
                         {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronDown className="w-4 h-4" />}
                     </button>
                 </div>
             ) : (
                 <button onClick={() => setOpen((v) => !v)} disabled={busy}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold text-[13px] uppercase tracking-wider transition-colors">
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-[var(--radius-card)] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold text-[13px] uppercase tracking-wider transition-colors">
                     {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                     Track This Game
                 </button>
@@ -180,7 +180,7 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
                 <>
                     <div className="fixed inset-0 z-[9998]" onClick={() => setOpen(false)} />
                     <div
-                        className="fixed z-[9999] rounded-xl bg-[#0d1117] border border-white/10 shadow-2xl overflow-hidden py-1"
+                        className="fixed z-[9999] rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-white/10 shadow-2xl overflow-hidden py-1"
                         style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width || undefined, minWidth: 180 }}
                     >
                         {visibleStatuses.map((s) => (

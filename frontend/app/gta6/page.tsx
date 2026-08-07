@@ -121,7 +121,7 @@ export default async function Gta6HubPage() {
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
-            <div className="min-h-screen bg-[#05070A] pb-16">
+            <div className="min-h-screen bg-[var(--surface-0)] pb-16">
                 <Gta6HubHero />
                 <Gta6HypeBar stats={stats} />
 
@@ -131,16 +131,16 @@ export default async function Gta6HubPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-7">
                         {/* Map — big feature */}
-                        <Link href="/gta6/map" className="group relative md:col-span-2 rounded-2xl overflow-hidden border border-[#161B22] bg-[#0B0E14] gta6-card min-h-[240px] md:min-h-[300px]">
+                        <Link href="/gta6/map" className="group relative md:col-span-2 rounded-[var(--radius-panel)] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] gta6-card min-h-[240px] md:min-h-[300px]">
                             <Image src="/gta6/card-map.png" alt="GTA 6 interactive map" fill sizes="(max-width:768px) 100vw, 66vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/55 to-[#05070A]/10" />
-                            <div className="absolute inset-0 bg-gradient-to-r from-[#05070A]/70 to-transparent" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] via-[var(--surface-0)]/55 to-[var(--surface-0)]/10" />
+                            <div className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)]/70 to-transparent" />
                             <div className="relative h-full p-7 flex flex-col justify-end">
-                                <div className="w-12 h-12 rounded-xl bg-[var(--gta-pink)]/15 border border-[var(--gta-pink)]/35 flex items-center justify-center mb-4">
+                                <div className="w-12 h-12 rounded-[var(--radius-card)] bg-[var(--gta-pink)]/15 border border-[var(--gta-pink)]/35 flex items-center justify-center mb-4">
                                     <Map className="w-6 h-6 text-[var(--gta-pink)]" />
                                 </div>
                                 <h3 className="font-display text-[24px] md:text-[30px] font-black text-white mb-2">Interactive Map</h3>
-                                <p className="text-[#A1A1AA] text-[14px] max-w-md mb-4">
+                                <p className="text-white/45 text-[14px] max-w-md mb-4">
                                     Explore Vice City and beyond — <span className="text-white font-bold">{locationCount.toLocaleString()}</span> points of interest, locations and more.
                                 </p>
                                 <span className="inline-flex items-center gap-1.5 text-[var(--gta-cyan)] text-[13px] font-bold">
@@ -150,9 +150,9 @@ export default async function Gta6HubPage() {
                         </Link>
 
                         {/* Characters — image feature */}
-                        <Link href="/gta6/characters" className="group relative rounded-2xl overflow-hidden border border-[#161B22] bg-[#0B0E14] gta6-card min-h-[240px] md:min-h-[300px]">
+                        <Link href="/gta6/characters" className="group relative rounded-[var(--radius-panel)] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] gta6-card min-h-[240px] md:min-h-[300px]">
                             <Image src="/gta6/hero.jpg" alt="GTA 6 characters" fill sizes="(max-width:768px) 100vw, 33vw" className="object-cover object-top group-hover:scale-105 transition-transform duration-500" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/40 to-transparent" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] via-[var(--surface-0)]/40 to-transparent" />
                             <div className="relative h-full p-7 flex flex-col justify-end">
                                 <h3 className="font-display text-[24px] font-black text-white mb-1">Characters</h3>
                                 <p className="text-[#D4D4D8] text-[13px] mb-3">Meet Lucia, Jason and the rest of the cast.</p>
@@ -173,7 +173,7 @@ export default async function Gta6HubPage() {
                 <section id="trailers" className="container-page pb-14 scroll-mt-24">
                     <div className="flex items-center justify-between mb-7">
                         <SectionHeading kicker="Watch" title="Official Trailers" noMargin />
-                        <a href="https://www.youtube.com/@RockstarGames" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#71717A] hover:text-[var(--gta-pink)] text-[13px] font-semibold transition-colors">
+                        <a href="https://www.youtube.com/@RockstarGames" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-white/35 hover:text-[var(--gta-pink)] text-[13px] font-semibold transition-colors">
                             View all <ChevronRight className="w-4 h-4" />
                         </a>
                     </div>
@@ -190,7 +190,7 @@ export default async function Gta6HubPage() {
                     <section className="container-page pb-14">
                         <div className="flex items-center justify-between mb-7">
                             <SectionHeading kicker="Fresh" title="Latest GTA 6 News" noMargin />
-                            <Link href="/news?search=gta+6" className="inline-flex items-center gap-1 text-[#71717A] hover:text-[var(--gta-pink)] text-[13px] font-semibold transition-colors">
+                            <Link href="/news?search=gta+6" className="inline-flex items-center gap-1 text-white/35 hover:text-[var(--gta-pink)] text-[13px] font-semibold transition-colors">
                                 View all <ChevronRight className="w-4 h-4" />
                             </Link>
                         </div>
@@ -198,8 +198,8 @@ export default async function Gta6HubPage() {
                             {news.map(item => {
                                 const img = newsImage(item.image);
                                 return (
-                                    <Link key={item.id} href={item.url} className="group rounded-xl overflow-hidden border border-[#161B22] bg-[#0B0E14] gta6-card">
-                                        <div className="relative h-36 w-full overflow-hidden bg-[#10141B]">
+                                    <Link key={item.id} href={item.url} className="group rounded-[var(--radius-card)] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] gta6-card">
+                                        <div className="relative h-36 w-full overflow-hidden bg-[var(--surface-2)]">
                                             {img ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={img} alt={item.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -212,7 +212,7 @@ export default async function Gta6HubPage() {
                                         </div>
                                         <div className="p-4">
                                             <h3 className="text-[14px] font-bold text-white leading-snug line-clamp-2 group-hover:text-[var(--gta-pink)] transition-colors">{item.title}</h3>
-                                            {item.excerpt && <p className="text-[12px] text-[#71717A] leading-relaxed line-clamp-2 mt-1.5">{item.excerpt}</p>}
+                                            {item.excerpt && <p className="text-[12px] text-white/35 leading-relaxed line-clamp-2 mt-1.5">{item.excerpt}</p>}
                                         </div>
                                     </Link>
                                 );
@@ -241,17 +241,17 @@ function SectionHeading({ kicker, title, noMargin }: { kicker: string; title: st
 
 function BentoCard({ href, icon: Icon, title, desc, cta, image }: { href: string; icon: React.ComponentType<{ className?: string }>; title: string; desc: string; cta: string; image?: string }) {
     return (
-        <Link href={href} className="group relative rounded-2xl overflow-hidden border border-[#161B22] bg-[#0B0E14] gta6-card p-6 min-h-[190px] flex flex-col justify-end">
+        <Link href={href} className="group relative rounded-[var(--radius-panel)] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] gta6-card p-6 min-h-[190px] flex flex-col justify-end">
             {image ? (
                 <>
                     <Image src={image} alt={title} fill sizes="(max-width:768px) 100vw, 25vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/55 to-[#05070A]/10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] via-[var(--surface-0)]/55 to-[var(--surface-0)]/10" />
                 </>
             ) : (
                 <div className="absolute inset-0 bg-gradient-to-br from-[var(--gta-pink)]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             )}
             <div className="relative">
-                <div className="w-10 h-10 rounded-xl bg-[var(--gta-pink)]/15 border border-[var(--gta-pink)]/35 flex items-center justify-center mb-3 backdrop-blur-sm">
+                <div className="w-10 h-10 rounded-[var(--radius-card)] bg-[var(--gta-pink)]/15 border border-[var(--gta-pink)]/35 flex items-center justify-center mb-3 backdrop-blur-sm">
                     <Icon className="w-5 h-5 text-[var(--gta-pink)]" />
                 </div>
                 <h3 className="font-display text-[18px] font-black text-white mb-1 group-hover:text-[var(--gta-pink)] transition-colors">{title}</h3>

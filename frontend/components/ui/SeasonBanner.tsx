@@ -33,13 +33,13 @@ export default function SeasonBanner() {
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl border border-[var(--accent)]/20 bg-gradient-to-r from-[var(--accent)]/10 to-transparent px-5 py-4 flex items-center gap-4"
+      className="relative overflow-hidden rounded-[var(--radius-panel)] border border-[var(--accent)]/20 bg-gradient-to-r from-[var(--accent)]/10 to-transparent px-5 py-4 flex items-center gap-4"
       style={season.cover_image ? { backgroundImage: `url(${season.cover_image})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
     >
       {season.cover_image && <div className="absolute inset-0 bg-black/60" />}
 
       <div className="relative z-10 flex items-center gap-3 flex-1 min-w-0">
-        <div className="w-9 h-9 rounded-xl bg-[var(--accent)]/20 border border-[var(--accent)]/30 flex items-center justify-center shrink-0">
+        <div className="w-9 h-9 rounded-[var(--radius-card)] bg-[var(--accent)]/20 border border-[var(--accent)]/30 flex items-center justify-center shrink-0">
           <Sparkles className="w-4 h-4 text-[var(--accent)]" />
         </div>
         <div className="min-w-0">
@@ -66,8 +66,8 @@ export default function SeasonBanner() {
           </div>
         )}
         {season.days_remaining !== null && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/30 border border-white/10">
-            <Clock className="w-3.5 h-3.5 text-zinc-400" />
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] bg-black/30 border border-white/10">
+            <Clock className="w-3.5 h-3.5 text-white/45" />
             <span className="text-xs font-bold text-white">{season.days_remaining}d left</span>
           </div>
         )}

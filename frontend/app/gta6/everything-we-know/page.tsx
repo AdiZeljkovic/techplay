@@ -96,7 +96,7 @@ export default function Gta6EverythingWeKnowPage() {
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
-            <div className="min-h-screen bg-[#05070A]">
+            <div className="min-h-screen bg-[var(--surface-0)]">
                 <Gta6SectionHero
                     icon={BookOpen}
                     title="GTA 6: Everything We Know"
@@ -113,12 +113,12 @@ export default function Gta6EverythingWeKnowPage() {
                     <h2 className="font-display text-[24px] font-black text-white mb-5">The essentials</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-12">
                         {FACTS.map(({ icon: Icon, label, value }) => (
-                            <div key={label} className="flex items-start gap-3 bg-[#0B0E14] border border-[#161B22] rounded-xl p-4">
-                                <div className="w-9 h-9 rounded-lg bg-[var(--gta-pink)]/10 border border-[var(--gta-pink)]/25 flex items-center justify-center shrink-0">
+                            <div key={label} className="flex items-start gap-3 bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-card)] p-4">
+                                <div className="w-9 h-9 rounded-[var(--radius-card)] bg-[var(--gta-pink)]/10 border border-[var(--gta-pink)]/25 flex items-center justify-center shrink-0">
                                     <Icon className="w-4.5 h-4.5 text-[var(--gta-pink)]" />
                                 </div>
                                 <div>
-                                    <p className="text-[11px] font-bold uppercase tracking-widest text-[#71717A] mb-1">{label}</p>
+                                    <p className="text-[11px] font-bold uppercase tracking-widest text-white/35 mb-1">{label}</p>
                                     <p className="text-[13px] text-[#D4D4D8] leading-relaxed">{value}</p>
                                 </div>
                             </div>
@@ -129,7 +129,7 @@ export default function Gta6EverythingWeKnowPage() {
                     <div className="space-y-10">
                         <section>
                             <h2 className="font-display text-[22px] font-black text-white mb-3">The setting: Vice City & Leonida</h2>
-                            <p className="text-[#A1A1AA] text-[15px] leading-relaxed">
+                            <p className="text-white/45 text-[15px] leading-relaxed">
                                 GTA 6 returns to Vice City, Rockstar&apos;s take on Miami, for the first time since 2002. This time the city
                                 sits within the wider state of Leonida — a sun-soaked, neon-lit reimagining of Florida packed with beaches,
                                 swamps, keys and sprawling suburbs. Explore every known landmark on our{" "}
@@ -139,7 +139,7 @@ export default function Gta6EverythingWeKnowPage() {
 
                         <section>
                             <h2 className="font-display text-[22px] font-black text-white mb-3">The protagonists: Jason & Lucia</h2>
-                            <p className="text-[#A1A1AA] text-[15px] leading-relaxed">
+                            <p className="text-white/45 text-[15px] leading-relaxed">
                                 For the first time in the series, GTA 6 stars a dual protagonist duo where one is a woman. Jason Duval and
                                 Lucia Caminos are bound together in a relationship and a life of crime, in what Rockstar frames as a modern
                                 Bonnie-and-Clyde story. Meet the wider cast on our{" "}
@@ -149,7 +149,7 @@ export default function Gta6EverythingWeKnowPage() {
 
                         <section>
                             <h2 className="font-display text-[22px] font-black text-white mb-3">Story & what to expect</h2>
-                            <p className="text-[#A1A1AA] text-[15px] leading-relaxed">
+                            <p className="text-white/45 text-[15px] leading-relaxed">
                                 The trailers tease a story driven by ambition, money and the bond between Jason and Lucia. Expect Rockstar&apos;s
                                 signature open world packed with vehicles, weapons, activities and a living world that reacts to you.
                                 Browse confirmed{" "}
@@ -164,12 +164,12 @@ export default function Gta6EverythingWeKnowPage() {
                         <h2 className="font-display text-[24px] font-black text-white mb-5">Frequently asked questions</h2>
                         <div className="space-y-2.5">
                             {FAQ.map((f, i) => (
-                                <details key={i} className="group bg-[#0B0E14] border border-[#161B22] rounded-xl overflow-hidden">
+                                <details key={i} className="group bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-card)] overflow-hidden">
                                     <summary className="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer list-none text-[15px] font-bold text-white hover:text-[var(--gta-pink)] transition-colors">
                                         {f.q}
-                                        <ChevronRight className="w-4 h-4 shrink-0 text-[#71717A] group-open:rotate-90 transition-transform" />
+                                        <ChevronRight className="w-4 h-4 shrink-0 text-white/35 group-open:rotate-90 transition-transform" />
                                     </summary>
-                                    <div className="px-5 pb-4 -mt-1 text-[14px] text-[#A1A1AA] leading-relaxed">
+                                    <div className="px-5 pb-4 -mt-1 text-[14px] text-white/45 leading-relaxed">
                                         {f.a}
                                     </div>
                                 </details>
@@ -179,10 +179,10 @@ export default function Gta6EverythingWeKnowPage() {
 
                     {/* CTA */}
                     <div className="mt-14 flex flex-wrap gap-3">
-                        <Link href="/gta6/map" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--gta-pink)] text-white text-[14px] font-bold hover:bg-[#ff1a7a] transition-colors">
+                        <Link href="/gta6/map" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[var(--radius-card)] bg-[var(--gta-pink)] text-white text-[14px] font-bold hover:bg-[#ff1a7a] transition-colors">
                             <MapIcon className="w-4 h-4" /> Explore the Map
                         </Link>
-                        <Link href="/gta6" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#161B22] text-white text-[14px] font-bold hover:border-[var(--gta-pink)]/40 transition-colors">
+                        <Link href="/gta6" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-white/[0.07] text-white text-[14px] font-bold hover:border-[var(--gta-pink)]/40 transition-colors">
                             Back to GTA 6 Hub
                         </Link>
                     </div>

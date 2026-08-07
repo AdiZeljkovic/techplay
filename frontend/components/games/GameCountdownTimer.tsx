@@ -32,7 +32,7 @@ export default function GameCountdownTimer({ targetDate }: Props) {
             {(["Days", "Hours", "Mins", "Secs"] as const).map((label, i) => {
                 const val = [timeLeft.days, timeLeft.hours, timeLeft.minutes, timeLeft.seconds][i];
                 return (
-                    <div key={label} className="flex flex-col items-center bg-black/60 backdrop-blur-xl border border-[var(--accent)]/50 p-4 rounded-2xl min-w-[90px] shadow-[0_0_30px_rgba(var(--accent-rgb),0.2)]">
+                    <div key={label} className="flex flex-col items-center bg-black/60 backdrop-blur-xl border border-[var(--accent)]/50 p-4 rounded-[var(--radius-panel)] min-w-[90px] shadow-[0_0_30px_rgba(var(--accent-rgb),0.2)]">
                         <span className="text-4xl font-black text-white font-mono">{String(val).padStart(2, "0")}</span>
                         <span className="text-[10px] uppercase text-[var(--accent)] font-bold tracking-widest mt-1">{label}</span>
                     </div>

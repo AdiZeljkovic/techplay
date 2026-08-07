@@ -71,7 +71,7 @@ export default function GiveRecognitionButton({ username }: { username: string }
         <div className="relative">
             <button
                 onClick={() => setOpen((v) => !v)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-white/70 hover:text-white text-[12px] font-semibold transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-white/70 hover:text-white text-[12px] font-semibold transition-colors"
             >
                 <Heart className="w-3.5 h-3.5" />
                 Recognise
@@ -82,7 +82,7 @@ export default function GiveRecognitionButton({ username }: { username: string }
                 <>
                     {/* Backdrop */}
                     <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-                    <div className="absolute right-0 top-10 z-40 w-48 rounded-xl bg-[#0d1117] border border-white/10 shadow-2xl overflow-hidden">
+                    <div className="absolute right-0 top-10 z-40 w-48 rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-white/10 shadow-2xl overflow-hidden">
                         {(recognitions ?? []).map((r) => (
                             <button
                                 key={r.type}

@@ -51,7 +51,7 @@ function AuthCallbackContent() {
         <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]">
             <div className="flex flex-col items-center gap-4">
                 <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-gray-400">Authenticating with Discord...</p>
+                <p className="text-white/45">Authenticating with Discord...</p>
             </div>
         </div>
     );

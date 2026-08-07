@@ -81,7 +81,7 @@ export default async function Gta6VehiclesPage() {
             {vehicles.length > 0 && (
                 <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }} />
             )}
-            <div className="min-h-screen bg-[#05070A]">
+            <div className="min-h-screen bg-[var(--surface-0)]">
                 <Gta6SectionHero
                     icon={Car}
                     title="GTA 6 Vehicles"
@@ -92,7 +92,7 @@ export default async function Gta6VehiclesPage() {
                 />
 
                 <div className="container-page py-8">
-                    <p className="text-[#A1A1AA] text-[15px] leading-relaxed max-w-2xl mb-8">
+                    <p className="text-white/45 text-[15px] leading-relaxed max-w-2xl mb-8">
                         From supercars on the Vice City strip to airboats in the Leonida swamps — GTA 6 is set to feature the most diverse vehicle roster in the series. Every vehicle below has been confirmed via official trailers or community-verified sources.
                     </p>
                     <Gta6EntityGrid

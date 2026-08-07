@@ -32,7 +32,7 @@ export default function Gta6MapBackdrop() {
             <Palm className="absolute -right-10 top-0 w-[40vh] h-[40vh] text-[#2a0f3a]/70 -rotate-6" />
             <Palm className="absolute right-[14%] bottom-[-4%] w-[26vh] h-[26vh] text-[#3a0f2a]/60" />
             {/* Darken so the map reads clearly on top */}
-            <div className="absolute inset-0 bg-[#05070A]/35" />
+            <div className="absolute inset-0 bg-[var(--surface-0)]/35" />
         </div>
     );
 }

@@ -13,10 +13,10 @@ export default function WowAnalyzerWidget() {
             className="relative overflow-hidden group"
         >
             {/* Glow Effect on Hover */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent)] via-purple-500 to-[var(--accent)] rounded-2xl blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-500" />
+            <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent)] via-purple-500 to-[var(--accent)] rounded-[var(--radius-panel)] blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-500" />
 
             {/* Main Card */}
-            <div className="relative bg-gradient-to-br from-[var(--bg-card)] via-[var(--bg-card)] to-[#001a4d] border-2 border-[var(--border)] group-hover:border-[var(--accent)] rounded-2xl p-6 transition-all duration-300 shadow-2xl">
+            <div className="relative bg-gradient-to-br from-[var(--surface-1)] via-[var(--surface-1)] to-[#001a4d] border-2 border-[var(--line)] group-hover:border-[var(--accent)] rounded-[var(--radius-panel)] p-6 transition-all duration-300 shadow-2xl">
 
                 {/* Decorative Accent Dot */}
                 <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
@@ -35,7 +35,7 @@ export default function WowAnalyzerWidget() {
                 </h3>
 
                 {/* Description */}
-                <p className="text-sm text-[var(--text-secondary)] mb-5 leading-relaxed">
+                <p className="text-sm text-white/55 mb-5 leading-relaxed">
                     Check your <span className="text-white font-semibold">Midnight readiness</span> instantly! Get expert tips from Professor Buffy.
                 </p>
 
@@ -45,27 +45,27 @@ export default function WowAnalyzerWidget() {
                         <div className="w-5 h-5 rounded-full bg-[var(--accent)]/20 flex items-center justify-center shrink-0">
                             <Trophy className="w-3 h-3 text-[var(--accent)]" />
                         </div>
-                        <span className="text-[var(--text-secondary)]">Gear & M+ Score Check</span>
+                        <span className="text-white/55">Gear & M+ Score Check</span>
                     </div>
                     <div className="flex items-center gap-2.5 text-sm">
                         <div className="w-5 h-5 rounded-full bg-[var(--accent)]/20 flex items-center justify-center shrink-0">
                             <Zap className="w-3 h-3 text-[var(--accent)]" />
                         </div>
-                        <span className="text-[var(--text-secondary)]">Instant Analysis</span>
+                        <span className="text-white/55">Instant Analysis</span>
                     </div>
                 </div>
 
                 {/* CTA Button */}
                 <Link
                     href="/wow-analyzer"
-                    className="group/btn relative w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-[var(--accent)] to-orange-600 hover:from-orange-600 hover:to-[var(--accent)] text-white font-bold text-sm rounded-xl transition-all duration-300 shadow-lg shadow-[var(--accent)]/40 hover:shadow-[var(--accent)]/60 hover:scale-[1.02] active:scale-[0.98]"
+                    className="group/btn relative w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-[var(--accent)] to-orange-600 hover:from-orange-600 hover:to-[var(--accent)] text-white font-bold text-sm rounded-[var(--radius-card)] transition-all duration-300 shadow-lg shadow-[var(--accent)]/40 hover:shadow-[var(--accent)]/60 hover:scale-[1.02] active:scale-[0.98]"
                 >
                     <span>Analyze Now</span>
                     <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                 </Link>
 
                 {/* Small Info Text */}
-                <p className="text-xs text-[var(--text-muted)] text-center mt-3">
+                <p className="text-xs text-white/35 text-center mt-3">
                     ✨ No login required • 100% Free
                 </p>
             </div>

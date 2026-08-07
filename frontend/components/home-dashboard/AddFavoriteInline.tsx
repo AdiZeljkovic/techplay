@@ -86,12 +86,12 @@ export default function AddFavoriteInline({
 
     if (!open) {
         return (
-            <div className="flex-1 min-h-[104px] flex flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-[var(--line-strong)] bg-[var(--fill-1)] px-4 text-center">
+            <div className="flex-1 min-h-[104px] flex flex-col items-center justify-center gap-2.5 rounded-[var(--radius-card)] border border-dashed border-[var(--line-strong)] bg-[var(--fill-1)] px-4 text-center">
                 <p className="text-[13px] font-semibold text-[var(--ink-mid)]">No favorites yet</p>
                 <p className="text-[11px] text-[var(--ink-faint)] -mt-1.5">Star the games you love — they show on your profile</p>
                 <button
                     onClick={() => setOpen(true)}
-                    className="mt-1 inline-flex items-center gap-1.5 px-4 h-9 rounded-lg bg-[var(--accent)] text-white text-[12px] font-bold hover:bg-[var(--accent-hover)] transition-colors"
+                    className="mt-1 inline-flex items-center gap-1.5 px-4 h-9 rounded-[var(--radius-card)] bg-[var(--accent)] text-white text-[12px] font-bold hover:bg-[var(--accent-hover)] transition-colors"
                 >
                     <Plus className="w-3.5 h-3.5" /> Add a favorite game
                 </button>
@@ -100,8 +100,8 @@ export default function AddFavoriteInline({
     }
 
     return (
-        <div className="flex-1 min-h-[104px] flex flex-col rounded-xl border border-[var(--line-strong)] bg-[var(--fill-1)] p-3">
-            <div className="flex items-center gap-2 h-9 px-3 rounded-lg bg-black/30 border border-[var(--line-strong)] focus-within:border-[var(--accent)]/50 transition-colors">
+        <div className="flex-1 min-h-[104px] flex flex-col rounded-[var(--radius-card)] border border-[var(--line-strong)] bg-[var(--fill-1)] p-3">
+            <div className="flex items-center gap-2 h-9 px-3 rounded-[var(--radius-card)] bg-black/30 border border-[var(--line-strong)] focus-within:border-[var(--accent)]/50 transition-colors">
                 <Search className="w-3.5 h-3.5 text-[var(--ink-faint)] shrink-0" />
                 <input
                     autoFocus
@@ -126,7 +126,7 @@ export default function AddFavoriteInline({
                         key={g.slug}
                         onClick={() => star(g)}
                         disabled={busySlug !== null}
-                        className="group w-full flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-[var(--fill-2)] transition-colors text-left disabled:opacity-50"
+                        className="group w-full flex items-center gap-2.5 p-1.5 rounded-[var(--radius-card)] hover:bg-[var(--fill-2)] transition-colors text-left disabled:opacity-50"
                     >
                         <span className="relative w-[52px] h-[32px] rounded overflow-hidden shrink-0 bg-[var(--fill-2)]">
                             {g.cover_url ? (

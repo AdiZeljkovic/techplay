@@ -188,7 +188,7 @@ const ESRB_COLORS: Record<string, string> = {
     "Teen":           "bg-yellow-500/90",
     "Mature":         "bg-orange-600/90",
     "Adults Only":    "bg-red-700/90",
-    "Rating Pending": "bg-gray-500/90",
+    "Rating Pending": "bg-white/35/90",
 };
 
 /** 0-100 critic scales wear the traffic-light everyone already reads. */
@@ -437,7 +437,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                             </span>
                         )}
                         {game.esrb_rating && (
-                            <span className={`inline-flex items-center gap-1.5 rounded-[5px] px-2 py-0.5 ${ESRB_COLORS[game.esrb_rating.name] ?? "bg-gray-600/90"}`}>
+                            <span className={`inline-flex items-center gap-1.5 rounded-[5px] px-2 py-0.5 ${ESRB_COLORS[game.esrb_rating.name] ?? "bg-white/30/90"}`}>
                                 <Shield className="w-3.5 h-3.5 text-white/85" />
                                 <span className="font-display text-[10px] font-black uppercase tracking-[0.08em] text-white">{game.esrb_rating.name}</span>
                             </span>

@@ -59,7 +59,7 @@ export default function VerifyEmailPage() {
                     <p className="text-[14px] text-[var(--ink-mid)] mb-8">
                         Your email has been successfully verified. You now have full access to TechPlay.
                     </p>
-                    <Link href="/" className="flex items-center justify-center gap-2 w-full h-[52px] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-lg transition-colors uppercase tracking-[0.1em] text-[13px] shadow-lg shadow-[var(--accent)]/25">
+                    <Link href="/" className="flex items-center justify-center gap-2 w-full h-[52px] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.1em] text-[13px] shadow-lg shadow-[var(--accent)]/25">
                         Continue to TechPlay
                     </Link>
                 </div>
@@ -78,7 +78,7 @@ export default function VerifyEmailPage() {
                 <div className="rounded-[24px] overflow-hidden border border-[var(--line)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-[var(--surface-1)]">
                     <div className="h-[3px] bg-[var(--accent)] w-full" />
                     <div className="p-8 md:p-10 text-center">
-                        <div className="w-16 h-16 bg-[var(--accent)]/10 border border-[var(--accent)]/20 rounded-xl flex items-center justify-center mx-auto mb-6">
+                        <div className="w-16 h-16 bg-[var(--accent)]/10 border border-[var(--accent)]/20 rounded-[var(--radius-card)] flex items-center justify-center mx-auto mb-6">
                             <Mail className="w-8 h-8 text-[var(--accent)]" />
                         </div>
 
@@ -93,12 +93,12 @@ export default function VerifyEmailPage() {
                         </p>
 
                         {resendStatus === "success" && (
-                            <div className="mb-5 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-sm text-[var(--success)]">
+                            <div className="mb-5 p-3 bg-green-500/10 border border-green-500/20 rounded-[var(--radius-card)] text-sm text-[var(--success)]">
                                 Verification email sent successfully!
                             </div>
                         )}
                         {resendStatus === "error" && (
-                            <div className="mb-5 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-[var(--danger)]">
+                            <div className="mb-5 p-3 bg-red-500/10 border border-red-500/20 rounded-[var(--radius-card)] text-sm text-[var(--danger)]">
                                 Failed to send email. Please try again.
                             </div>
                         )}
@@ -106,7 +106,7 @@ export default function VerifyEmailPage() {
                         <button
                             onClick={handleResend}
                             disabled={isResending}
-                            className="group w-full h-[52px] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-lg transition-colors uppercase tracking-[0.1em] text-[13px] flex items-center justify-center gap-2 shadow-lg shadow-[var(--accent)]/25 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+                            className="group w-full h-[52px] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.1em] text-[13px] flex items-center justify-center gap-2 shadow-lg shadow-[var(--accent)]/25 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
                         >
                             {isResending ? (
                                 <><RefreshCw className="w-4 h-4 animate-spin" /> Sending...</>

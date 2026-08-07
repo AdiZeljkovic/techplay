@@ -22,14 +22,14 @@ export default function RoadmapFeatures() {
                         className="mb-24 last:mb-0"
                     >
                         {/* Quarter header */}
-                        <div className="mb-8 pb-4 border-b border-[var(--border)]">
+                        <div className="mb-8 pb-4 border-b border-[var(--line)]">
                             <div className="flex items-center gap-4 mb-2">
                                 <div className="w-2 h-8 bg-[var(--accent)] rounded-full" />
-                                <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
+                                <h2 className="text-3xl md:text-4xl font-bold text-white">
                                     {quarter.label}
                                 </h2>
                             </div>
-                            <p className="text-[var(--text-muted)] ml-6 text-lg">
+                            <p className="text-white/35 ml-6 text-lg">
                                 {quarter.description}
                             </p>
                         </div>

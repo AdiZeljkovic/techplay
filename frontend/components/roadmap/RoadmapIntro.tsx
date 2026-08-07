@@ -32,11 +32,11 @@ export default function RoadmapIntro() {
                         <span className="text-sm font-semibold text-[var(--accent)]">The Future is Here</span>
                     </div>
 
-                    <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-6 leading-tight">
+                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 leading-tight">
                         Building the Ultimate Gaming Platform
                     </h2>
 
-                    <p className="text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed max-w-3xl mx-auto">
+                    <p className="text-lg md:text-xl text-white/55 leading-relaxed max-w-3xl mx-auto">
                         At TechPlay, we're constantly evolving to bring you the best gaming and tech experience.
                         Here's our roadmap for 2026 - a year of innovation, community growth, and groundbreaking features.
                     </p>
@@ -54,14 +54,14 @@ export default function RoadmapIntro() {
                             whileHover={{ y: -5 }}
                             className="relative group"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/20 to-transparent rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/20 to-transparent rounded-[var(--radius-panel)] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                            <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 text-center h-full">
-                                <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-[var(--accent)]/10 flex items-center justify-center">
+                            <div className="relative bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-6 text-center h-full">
+                                <div className="w-12 h-12 mx-auto mb-4 rounded-[var(--radius-card)] bg-[var(--accent)]/10 flex items-center justify-center">
                                     <item.icon className="w-6 h-6 text-[var(--accent)]" />
                                 </div>
-                                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">{item.label}</h3>
-                                <p className="text-sm text-[var(--text-muted)]">{item.description}</p>
+                                <h3 className="text-lg font-bold text-white mb-2">{item.label}</h3>
+                                <p className="text-sm text-white/35">{item.description}</p>
                             </div>
                         </motion.div>
                     ))}

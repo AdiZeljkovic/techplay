@@ -60,7 +60,7 @@ export function SendMessageModal({ isOpen, onClose, recipientUsername, replyToMe
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[500px] bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-primary)] shadow-2xl backdrop-blur-xl">
+            <DialogContent className="sm:max-w-[500px] bg-[var(--surface-1)] border-[var(--line)] text-white shadow-2xl backdrop-blur-xl">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-xl">
                         <Send className="w-5 h-5 text-[var(--accent)]" />
@@ -78,21 +78,21 @@ export function SendMessageModal({ isOpen, onClose, recipientUsername, replyToMe
                 ) : (
                     <div className="space-y-5 py-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-[var(--text-secondary)]">Subject</label>
+                            <label className="text-sm font-medium text-white/55">Subject</label>
                             <Input
                                 value={subject}
                                 onChange={(e) => setSubject(e.target.value)}
                                 placeholder="What's this about?"
-                                className="bg-[var(--bg-elevated)] border-[var(--border)] focus:ring-[var(--accent)]/50"
+                                className="bg-[var(--surface-2)] border-[var(--line)] focus:ring-[var(--accent)]/50"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-[var(--text-secondary)]">Message</label>
+                            <label className="text-sm font-medium text-white/55">Message</label>
                             <textarea
                                 value={body}
                                 onChange={(e) => setBody(e.target.value)}
                                 placeholder="Write your message here..."
-                                className="w-full min-h-[150px] p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/50 text-sm transition-all resize-y placeholder:text-[var(--text-muted)]"
+                                className="w-full min-h-[150px] p-4 rounded-[var(--radius-card)] bg-[var(--surface-2)] border border-[var(--line)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/50 text-sm transition-all resize-y placeholder:text-white/35"
                             />
                         </div>
                     </div>
@@ -100,7 +100,7 @@ export function SendMessageModal({ isOpen, onClose, recipientUsername, replyToMe
 
                 {!sent && (
                     <DialogFooter>
-                        <Button variant="ghost" onClick={onClose} disabled={loading} className="hover:bg-[var(--bg-elevated)]">
+                        <Button variant="ghost" onClick={onClose} disabled={loading} className="hover:bg-[var(--surface-2)]">
                             Cancel
                         </Button>
                         <Button onClick={handleSend} disabled={loading || !subject.trim() || !body.trim()} className="bg-[var(--accent)] text-black hover:bg-[var(--accent)]/90">

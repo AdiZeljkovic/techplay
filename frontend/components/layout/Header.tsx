@@ -1153,7 +1153,7 @@ export default function Header() {
                                 </Link>
                                 <Link
                                     href="/register"
-                                    className="inline-flex items-center justify-center bg-accent hover:bg-accent-hover text-white px-5 h-10 rounded-lg font-bold transition-colors text-[13px] leading-none"
+                                    className="inline-flex items-center justify-center bg-accent hover:bg-accent-hover text-white px-5 h-10 rounded-[var(--radius-card)] font-bold transition-colors text-[13px] leading-none"
                                 >
                                     Join TechPlay
                                 </Link>
@@ -1169,7 +1169,7 @@ export default function Header() {
                             <Search className="w-6 h-6" />
                         </button>
                         <button
-                            className="xl:hidden p-2 text-[var(--ink-mid)] hover:text-white active:bg-[var(--fill-3)] rounded-lg transition-colors"
+                            className="xl:hidden p-2 text-[var(--ink-mid)] hover:text-white active:bg-[var(--fill-3)] rounded-[var(--radius-card)] transition-colors"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Toggle menu"
                         >

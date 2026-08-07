@@ -27,7 +27,7 @@ function calc(): TimeLeft {
 function Unit({ value, label }: { value: number; label: string }) {
     return (
         <div className="flex flex-col items-center">
-            <div className="min-w-[62px] md:min-w-[88px] px-2 py-3 md:py-4 rounded-xl bg-[#0B0E14]/80 backdrop-blur-sm border border-[var(--gta-pink)]/25 text-center gta6-glow-pink">
+            <div className="min-w-[62px] md:min-w-[88px] px-2 py-3 md:py-4 rounded-[var(--radius-card)] bg-[var(--surface-1)]/80 backdrop-blur-sm border border-[var(--gta-pink)]/25 text-center gta6-glow-pink">
                 <span className="font-display text-[28px] md:text-[44px] font-black text-white tabular-nums leading-none gta6-text-glow">
                     {String(value).padStart(2, "0")}
                 </span>
@@ -56,7 +56,7 @@ export default function Gta6Countdown() {
 
     if (time.isOut) {
         return (
-            <div className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[var(--gta-pink)]/15 border border-[var(--gta-pink)]/40 text-[var(--gta-pink)] font-display font-black text-[20px] uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-5 py-3 rounded-[var(--radius-card)] bg-[var(--gta-pink)]/15 border border-[var(--gta-pink)]/40 text-[var(--gta-pink)] font-display font-black text-[20px] uppercase tracking-wider">
                 Out Now
             </div>
         );

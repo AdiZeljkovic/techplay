@@ -64,16 +64,16 @@ export default function Gta6EntityGrid({
             {/* Controls */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
                 <div className="relative sm:w-72">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#71717A]" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/35" />
                     <input
                         type="text"
                         placeholder="Search..."
                         value={search}
                         onChange={e => handleSearch(e.target.value)}
-                        className="w-full bg-[#0B0E14] border border-[#161B22] rounded-lg pl-9 pr-8 py-2 text-[13px] text-white placeholder-[#71717A] focus:outline-none focus:border-[var(--gta-pink)]/50 transition-colors"
+                        className="w-full bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-card)] pl-9 pr-8 py-2 text-[13px] text-white placeholder-white/35 focus:outline-none focus:border-[var(--gta-pink)]/50 transition-colors"
                     />
                     {search && (
-                        <button onClick={() => handleSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#71717A] hover:text-white">
+                        <button onClick={() => handleSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/35 hover:text-white">
                             <X className="w-3.5 h-3.5" />
                         </button>
                     )}
@@ -83,10 +83,10 @@ export default function Gta6EntityGrid({
                     <div className="flex flex-wrap gap-1.5">
                         <button
                             onClick={() => setActiveFilter("all")}
-                            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all ${
+                            className={`px-2.5 py-1 rounded-[var(--radius-inner)] text-[11px] font-semibold transition-all ${
                                 activeFilter === "all"
                                     ? "bg-[var(--gta-pink)] text-white"
-                                    : "bg-[#0B0E14] border border-[#161B22] text-[#71717A] hover:text-white hover:border-[var(--gta-pink)]/30"
+                                    : "bg-[var(--surface-1)] border border-white/[0.07] text-white/35 hover:text-white hover:border-[var(--gta-pink)]/30"
                             }`}
                         >
                             All {filterLabel}
@@ -95,10 +95,10 @@ export default function Gta6EntityGrid({
                             <button
                                 key={opt}
                                 onClick={() => setActiveFilter(a => a === opt ? "all" : opt)}
-                                className={`px-2.5 py-1 rounded-md text-[11px] font-semibold capitalize transition-all ${
+                                className={`px-2.5 py-1 rounded-[var(--radius-inner)] text-[11px] font-semibold capitalize transition-all ${
                                     activeFilter === opt
                                         ? "bg-[var(--gta-pink)]/15 border border-[var(--gta-pink)]/50 text-[var(--gta-pink)]"
-                                        : "bg-[#0B0E14] border border-[#161B22] text-[#71717A] hover:text-white hover:border-white/20"
+                                        : "bg-[var(--surface-1)] border border-white/[0.07] text-white/35 hover:text-white hover:border-white/20"
                                 }`}
                             >
                                 {opt}
@@ -112,9 +112,9 @@ export default function Gta6EntityGrid({
             {isLoading ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="bg-[#0B0E14] border border-[#161B22] rounded-xl overflow-hidden">
-                            <div className="aspect-[4/3] bg-[#10141B] animate-pulse" />
-                            <div className="p-4"><div className="h-4 bg-[#161B22] rounded animate-pulse" /></div>
+                        <div key={i} className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-card)] overflow-hidden">
+                            <div className="aspect-[4/3] bg-[var(--surface-2)] animate-pulse" />
+                            <div className="p-4"><div className="h-4 bg-white/[0.07] rounded animate-pulse" /></div>
                         </div>
                     ))}
                 </div>
@@ -122,7 +122,7 @@ export default function Gta6EntityGrid({
                 <div className="text-center py-20">
                     <Package className="w-10 h-10 mx-auto mb-4 text-[#2A2F38]" />
                     <p className="text-white font-bold text-[16px] mb-1">{emptyTitle}</p>
-                    <p className="text-[#71717A] text-[13px] max-w-md mx-auto">{emptyHint}</p>
+                    <p className="text-white/35 text-[13px] max-w-md mx-auto">{emptyHint}</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">

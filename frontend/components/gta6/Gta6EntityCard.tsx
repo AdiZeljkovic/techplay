@@ -19,11 +19,11 @@ export default function Gta6EntityCard({ entity, basePath, subtitle, linkable = 
         // @ts-expect-error — Wrapper is either Link (needs href) or div (doesn't)
         <Wrapper
             {...wrapperProps}
-            className="group relative bg-[#0B0E14] border border-[#161B22] rounded-xl overflow-hidden gta6-card"
+            className="group relative bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-card)] overflow-hidden gta6-card"
         >
             <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--gta-pink)] scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300 z-20" />
 
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#10141B]">
+            <div className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--surface-2)]">
                 {img ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -33,7 +33,7 @@ export default function Gta6EntityCard({ entity, basePath, subtitle, linkable = 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                 ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--gta-pink)]/15 to-[#1A1F26]">
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--gta-pink)]/15 to-[var(--surface-2)]">
                         <span className="font-display text-[40px] font-black text-white/15 select-none">
                             {entity.name.charAt(0)}
                         </span>

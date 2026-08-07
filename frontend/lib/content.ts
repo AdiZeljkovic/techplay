@@ -95,14 +95,14 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
     // which would corrupt the HTML and break the page.
     const youtubeRegex = /(?<![="'])(?:<p\b[^>]*>)?[\s\u00A0]*https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})[^\s<"']*[\s\u00A0]*(?:<\/p>)?/gi;
     processedContent = processedContent.replace(youtubeRegex, (_, videoId) => {
-        return `<div class="embed-container my-8"><iframe class="w-full aspect-video rounded-xl block" src="https://www.youtube.com/embed/${videoId}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
+        return `<div class="embed-container my-8"><iframe class="w-full aspect-video rounded-[var(--radius-card)] block" src="https://www.youtube.com/embed/${videoId}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
     });
 
     // Step 4b: Normalize raw pasted YouTube embed code (<iframe src="...youtube.com/embed/...">)
     // to the same responsive markup \u2014 strips fixed width/height so it can't overflow the column.
     processedContent = processedContent.replace(
         /<iframe\b[^>]*?src=["']https?:\/\/(?:www\.)?(?:youtube(?:-nocookie)?\.com)\/embed\/([\w-]{11})[^"']*["'][^>]*>(?:\s*<\/iframe>)?/gi,
-        (_, videoId) => `<iframe class="w-full aspect-video rounded-xl block" src="https://www.youtube.com/embed/${videoId}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
+        (_, videoId) => `<iframe class="w-full aspect-video rounded-[var(--radius-card)] block" src="https://www.youtube.com/embed/${videoId}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
     );
 
     // Step 4: Twitter/X - convert bare URLs to iframe embeds.
@@ -129,7 +129,7 @@ export function processContent(html: string): { content: string; toc: TOCItem[] 
 
     // Step 7: Wrap tables in a scrollable container for mobile responsiveness
     processedContent = processedContent
-        .replace(/<table\b/gi, '<div class="overflow-x-auto w-full my-6 rounded-xl"><table')
+        .replace(/<table\b/gi, '<div class="overflow-x-auto w-full my-6 rounded-[var(--radius-card)]"><table')
         .replace(/<\/table>/gi, '</table></div>');
 
     // Step 8: Open all external links in a new tab.

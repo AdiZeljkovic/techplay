@@ -40,13 +40,13 @@ function StatItem({ stat, run }: { stat: HypeStat; run: boolean }) {
 
     return (
         <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[var(--gta-pink)]/12 border border-[var(--gta-pink)]/30 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-[var(--radius-card)] bg-[var(--gta-pink)]/12 border border-[var(--gta-pink)]/30 flex items-center justify-center shrink-0">
                 <Icon className="w-5 h-5 text-[var(--gta-pink)]" />
             </div>
             <div className="min-w-0">
                 <p className="font-display text-[22px] md:text-[26px] font-black text-white leading-none tabular-nums">{display}</p>
                 <p className="text-[11px] text-white/90 font-semibold uppercase tracking-wide mt-1 truncate">{stat.label}</p>
-                {stat.sub && <p className="text-[10px] text-[#71717A] truncate">{stat.sub}</p>}
+                {stat.sub && <p className="text-[10px] text-white/35 truncate">{stat.sub}</p>}
             </div>
         </div>
     );
@@ -68,7 +68,7 @@ export default function Gta6HypeBar({ stats }: { stats: HypeStat[] }) {
 
     return (
         <div className="container-page mt-5">
-            <div ref={ref} className="relative rounded-2xl border border-[#161B22] bg-[#0B0E14] overflow-hidden">
+            <div ref={ref} className="relative rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] overflow-hidden">
                 <div className="absolute inset-0 gta6-sunset opacity-25 pointer-events-none" />
                 <div className="relative px-5 md:px-8 py-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
                     {stats.map((s) => <StatItem key={s.label} stat={s} run={run} />)}

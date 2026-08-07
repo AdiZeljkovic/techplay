@@ -16,7 +16,7 @@ const PERKS = [
     { icon: Gift,          text: "Enter exclusive giveaways" },
 ];
 
-const inputClass = "w-full h-[48px] bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-4 text-[14px] text-[var(--ink-hi)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]/60 transition-colors";
+const inputClass = "w-full h-[48px] bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-card)] px-4 text-[14px] text-[var(--ink-hi)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]/60 transition-colors";
 const labelClass = "block text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--ink-low)] mb-2";
 
 /* Left-side brand panel shared visual */
@@ -50,14 +50,14 @@ function BrandPanel() {
                     GAME<br />
                     <span className="text-[var(--accent)]">ON.</span>
                 </h2>
-                <p className="text-[14px] text-[#A1A1AA] leading-relaxed max-w-[300px] mb-8">
+                <p className="text-[14px] text-white/45 leading-relaxed max-w-[300px] mb-8">
                     Sign back in and pick up where you left off — your XP, rank and community are waiting.
                 </p>
 
                 <ul className="flex flex-col gap-3.5">
                     {PERKS.map(({ icon: Icon, text }) => (
                         <li key={text} className="flex items-center gap-3">
-                            <span className="w-8 h-8 rounded-lg bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center shrink-0">
+                            <span className="w-8 h-8 rounded-[var(--radius-card)] bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center shrink-0">
                                 <Icon className="w-4 h-4 text-[var(--accent)]" />
                             </span>
                             <span className="text-[13px] text-[#D4D4D8]">{text}</span>
@@ -67,7 +67,7 @@ function BrandPanel() {
             </div>
 
             {/* Bottom strip */}
-            <div className="relative z-10 flex items-center gap-5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#71717A]">
+            <div className="relative z-10 flex items-center gap-5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/35">
                 <span><span className="text-white">15K+</span> MEMBERS</span>
                 <span className="w-1 h-1 rounded-full bg-[var(--accent)]" />
                 <span><span className="text-white">50K+</span> GAMES</span>
@@ -169,7 +169,7 @@ export default function LoginClient() {
                         <div className="absolute top-0 left-0 right-0 h-[3px] bg-[var(--accent)]" />
                         <div className="absolute -top-[80px] left-1/2 -translate-x-1/2 w-[250px] h-[180px] bg-[var(--accent)]/10 blur-[70px] rounded-full pointer-events-none" />
 
-                        <div className="relative w-16 h-16 bg-[var(--accent)]/10 border border-[var(--accent)]/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <div className="relative w-16 h-16 bg-[var(--accent)]/10 border border-[var(--accent)]/20 rounded-[var(--radius-panel)] flex items-center justify-center mx-auto mb-6">
                             <Mail className="w-7 h-7 text-[var(--accent)]" />
                         </div>
 
@@ -185,13 +185,13 @@ export default function LoginClient() {
                         </p>
 
                         {resendSuccess && (
-                            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-sm text-[var(--success)]">
+                            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-[var(--radius-card)] text-sm text-[var(--success)]">
                                 Verification email sent! Check your inbox.
                             </div>
                         )}
 
                         {errors.length > 0 && (
-                            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-[var(--radius-card)]">
                                 <ul className="text-sm text-[var(--danger)] list-disc list-inside">
                                     {errors.map((error, index) => (
                                         <li key={index}>{error}</li>
@@ -203,7 +203,7 @@ export default function LoginClient() {
                         <button
                             onClick={handleResendVerification}
                             disabled={isResending}
-                            className="w-full h-[48px] border border-[var(--line)] text-[var(--ink-mid)] hover:border-[var(--accent)]/40 hover:text-[var(--accent)] font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[12px] flex items-center justify-center gap-2 disabled:opacity-50 mb-6"
+                            className="w-full h-[48px] border border-[var(--line)] text-[var(--ink-mid)] hover:border-[var(--accent)]/40 hover:text-[var(--accent)] font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[12px] flex items-center justify-center gap-2 disabled:opacity-50 mb-6"
                         >
                             <RefreshCw className={`w-4 h-4 ${isResending ? "animate-spin" : ""}`} />
                             {isResending ? "Sending..." : "Resend Verification Email"}
@@ -251,7 +251,7 @@ export default function LoginClient() {
                     </div>
 
                     {errors.length > 0 && (
-                        <div className="mb-5 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                        <div className="mb-5 p-3 bg-red-500/10 border border-red-500/20 rounded-[var(--radius-card)]">
                             <ul className="text-sm text-[var(--danger)] list-disc list-inside">
                                 {errors.map((error, index) => (
                                     <li key={index}>{error}</li>
@@ -261,7 +261,7 @@ export default function LoginClient() {
                     )}
 
                     {status && (
-                        <div className="mb-5 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-sm text-[var(--success)]">
+                        <div className="mb-5 p-3 bg-green-500/10 border border-green-500/20 rounded-[var(--radius-card)] text-sm text-[var(--success)]">
                             {status}
                         </div>
                     )}
@@ -302,7 +302,7 @@ export default function LoginClient() {
                         <button
                             type="submit"
                             disabled={isLoading || (!turnstileToken && process.env.NEXT_PUBLIC_TURNSTILE_ENABLED !== 'false')}
-                            className="group w-full h-[52px] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-lg transition-colors uppercase tracking-[0.1em] text-[13px] flex items-center justify-center gap-1.5 shadow-lg shadow-[var(--accent)]/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="group w-full h-[52px] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.1em] text-[13px] flex items-center justify-center gap-1.5 shadow-lg shadow-[var(--accent)]/25 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isLoading ? "Signing in..." : (
                                 <>
@@ -326,7 +326,7 @@ export default function LoginClient() {
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 type="button"
-                                className="h-[48px] rounded-lg border border-[var(--line)] text-[var(--ink-mid)] hover:border-[#5865F2] hover:text-[#5865F2] hover:bg-[#5865F2]/5 font-bold text-[12px] uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                                className="h-[48px] rounded-[var(--radius-card)] border border-[var(--line)] text-[var(--ink-mid)] hover:border-[#5865F2] hover:text-[#5865F2] hover:bg-[#5865F2]/5 font-bold text-[12px] uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
                                 onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/discord/redirect`}
                             >
                                 <svg className="w-4 h-4" viewBox="0 0 127.14 96.36" fill="currentColor">
@@ -337,7 +337,7 @@ export default function LoginClient() {
 
                             <button
                                 type="button"
-                                className="h-[48px] rounded-lg border border-[var(--line)] text-[var(--ink-mid)] hover:border-blue-500 hover:text-blue-500 hover:bg-blue-500/5 font-bold text-[12px] uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                                className="h-[48px] rounded-[var(--radius-card)] border border-[var(--line)] text-[var(--ink-mid)] hover:border-blue-500 hover:text-blue-500 hover:bg-blue-500/5 font-bold text-[12px] uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
                                 onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/battlenet/redirect?region=eu`}
                             >
                                 <Shield className="w-4 h-4" />

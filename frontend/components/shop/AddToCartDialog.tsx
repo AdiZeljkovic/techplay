@@ -72,7 +72,7 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
                 role="dialog"
                 aria-modal="true"
                 aria-label="Added to cart"
-                className={`relative w-full max-w-md bg-white dark:bg-[var(--surface-1)] border border-white/70 dark:border-white/[0.07] rounded-[24px] shadow-2xl dark:shadow-[0_20px_48px_rgba(0,0,0,0.6)] overflow-hidden transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}
+                className={`relative w-full max-w-md bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] shadow-[0_28px_60px_rgba(0,0,0,0.7)] overflow-hidden transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}
             >
                 <div className="h-[3px] bg-[var(--accent)] w-full" />
 

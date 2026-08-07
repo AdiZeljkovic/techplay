@@ -80,7 +80,7 @@ export default function ForumActivityTab({ isOwnProfile }: Props) {
                 {watchedLoading ? (
                     <div className="space-y-2">
                         {[...Array(3)].map((_, i) => (
-                            <div key={i} className="h-12 bg-white/[0.04] rounded-lg animate-pulse" />
+                            <div key={i} className="h-12 bg-white/[0.04] rounded-[var(--radius-card)] animate-pulse" />
                         ))}
                     </div>
                 ) : (
@@ -92,7 +92,7 @@ export default function ForumActivityTab({ isOwnProfile }: Props) {
                 {bookmarkedLoading ? (
                     <div className="space-y-2">
                         {[...Array(3)].map((_, i) => (
-                            <div key={i} className="h-12 bg-white/[0.04] rounded-lg animate-pulse" />
+                            <div key={i} className="h-12 bg-white/[0.04] rounded-[var(--radius-card)] animate-pulse" />
                         ))}
                     </div>
                 ) : (

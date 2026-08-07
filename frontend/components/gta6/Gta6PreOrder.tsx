@@ -26,9 +26,9 @@ function PlatformIcon({ kind }: { kind: string }) {
 
 export default function Gta6PreOrder() {
     return (
-        <div id="preorder" className="relative rounded-2xl overflow-hidden border border-[var(--gta-pink)]/25 bg-[#0B0E14] scroll-mt-24">
+        <div id="preorder" className="relative rounded-[var(--radius-panel)] overflow-hidden border border-[var(--gta-pink)]/25 bg-[var(--surface-1)] scroll-mt-24">
             <Image src="/gta6/preorder.png" alt="" fill sizes="(max-width:1320px) 100vw, 1320px" className="object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#05070A]/90 via-[#05070A]/55 to-[#05070A]/30" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)]/90 via-[var(--surface-0)]/55 to-[var(--surface-0)]/30" />
             <div className="relative p-6 md:p-8 flex flex-col lg:flex-row lg:items-center gap-6">
                 <div className="flex-1">
                     <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[var(--gta-cyan)]/15 border border-[var(--gta-cyan)]/40 text-[var(--gta-cyan)] text-[10px] font-bold uppercase tracking-widest mb-3">
@@ -37,7 +37,7 @@ export default function Gta6PreOrder() {
                     <h2 className="font-display text-[24px] md:text-[30px] font-black text-white leading-tight mb-1.5">
                         Secure your copy of GTA 6
                     </h2>
-                    <p className="text-[#A1A1AA] text-[14px]">Pre-order now and be ready for Vice City.</p>
+                    <p className="text-white/45 text-[14px]">Pre-order now and be ready for Vice City.</p>
                 </div>
 
                 <div className="flex flex-wrap gap-2.5">
@@ -50,15 +50,15 @@ export default function Gta6PreOrder() {
                                 target={disabled ? undefined : "_blank"}
                                 rel={disabled ? undefined : "noopener noreferrer sponsored"}
                                 aria-disabled={disabled}
-                                className={`inline-flex items-center gap-2.5 px-4 py-3 rounded-lg border text-[13px] font-bold transition-colors ${
+                                className={`inline-flex items-center gap-2.5 px-4 py-3 rounded-[var(--radius-card)] border text-[13px] font-bold transition-colors ${
                                     disabled
-                                        ? "bg-[#05070A]/70 border-[#161B22] text-[#A1A1AA] cursor-default"
-                                        : "bg-white text-[#05070A] border-transparent hover:bg-[var(--gta-pink)] hover:text-white"
+                                        ? "bg-[var(--surface-0)]/70 border-white/[0.07] text-white/45 cursor-default"
+                                        : "bg-white text-[var(--surface-0)] border-transparent hover:bg-[var(--gta-pink)] hover:text-white"
                                 }`}
                             >
                                 <PlatformIcon kind={p.icon} />
                                 {p.name}
-                                {p.note && <span className="text-[10px] font-semibold text-[#71717A] uppercase">{p.note}</span>}
+                                {p.note && <span className="text-[10px] font-semibold text-white/35 uppercase">{p.note}</span>}
                             </a>
                         );
                     })}

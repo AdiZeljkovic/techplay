@@ -13,8 +13,8 @@ function Trailer({ id, title, date }: { id: string; title: string; date: string 
     const [playing, setPlaying] = useState(false);
 
     return (
-        <div className="group relative rounded-xl overflow-hidden border border-[#161B22] bg-[#0B0E14] gta6-card">
-            <div className="relative aspect-video w-full bg-[#10141B]">
+        <div className="group relative rounded-[var(--radius-card)] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] gta6-card">
+            <div className="relative aspect-video w-full bg-[var(--surface-2)]">
                 {playing ? (
                     <iframe
                         className="absolute inset-0 w-full h-full"
@@ -41,7 +41,7 @@ function Trailer({ id, title, date }: { id: string; title: string; date: string 
             </div>
             <div className="p-4 flex items-center justify-between">
                 <h3 className="text-[14px] font-bold text-white">{title}</h3>
-                <span className="text-[11px] text-[#71717A] uppercase tracking-wide">{date}</span>
+                <span className="text-[11px] text-white/35 uppercase tracking-wide">{date}</span>
             </div>
         </div>
     );

@@ -97,7 +97,7 @@ export default async function Gta6MapPage() {
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
-            <div className="bg-[#05070A]">
+            <div className="bg-[var(--surface-0)]">
                 <Gta6MapClient initialCategories={categories} totalLocations={totalLocations} />
             </div>
         </>

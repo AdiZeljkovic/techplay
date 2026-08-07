@@ -13,10 +13,10 @@ import Gta6MapBackdrop from "./Gta6MapBackdrop";
 const Gta6LeafletMap = dynamic(() => import("./Gta6LeafletMap"), {
     ssr: false,
     loading: () => (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#05070A]">
+        <div className="absolute inset-0 flex items-center justify-center bg-[var(--surface-0)]">
             <div className="text-center">
                 <div className="w-8 h-8 border-2 border-[var(--gta-pink)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                <p className="text-[#71717A] text-[13px]">Loading map...</p>
+                <p className="text-white/35 text-[13px]">Loading map...</p>
             </div>
         </div>
     ),
@@ -107,19 +107,19 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
 
     // Shared panel content (used in both aside and bottom-sheet)
     const PanelSearch = () => (
-        <div className="p-4 border-b border-[#161B22] shrink-0">
+        <div className="p-4 border-b border-white/[0.07] shrink-0">
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#71717A]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/35" />
                 <input
                     ref={searchRef}
                     type="text"
                     placeholder="Search locations..."
                     value={search}
                     onChange={e => handleSearch(e.target.value)}
-                    className="w-full bg-[#05070A] border border-[#161B22] rounded-lg pl-9 pr-8 py-2 text-[13px] text-white placeholder-[#71717A] focus:outline-none focus:border-[var(--gta-pink)]/50 transition-colors"
+                    className="w-full bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] pl-9 pr-8 py-2 text-[13px] text-white placeholder-white/35 focus:outline-none focus:border-[var(--gta-pink)]/50 transition-colors"
                 />
                 {search && (
-                    <button onClick={() => handleSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#71717A] hover:text-white">
+                    <button onClick={() => handleSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/35 hover:text-white">
                         <X className="w-3.5 h-3.5" />
                     </button>
                 )}
@@ -128,15 +128,15 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
     );
 
     const PanelCategories = ({ scroll = false }: { scroll?: boolean }) => (
-        <div className={`p-4 border-b border-[#161B22] shrink-0 ${scroll ? "overflow-x-auto" : ""}`}>
-            {!scroll && <p className="text-[10px] font-bold uppercase tracking-widest text-[#71717A] mb-3">Category</p>}
+        <div className={`p-4 border-b border-white/[0.07] shrink-0 ${scroll ? "overflow-x-auto" : ""}`}>
+            {!scroll && <p className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-3">Category</p>}
             <div className={`flex gap-1.5 ${scroll ? "min-w-max" : "flex-wrap"}`}>
                 <button
                     onClick={() => setActive("all")}
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap ${
+                    className={`px-2.5 py-1 rounded-[var(--radius-inner)] text-[11px] font-semibold transition-all whitespace-nowrap ${
                         activeCategory === "all"
                             ? "bg-[var(--gta-pink)] text-white"
-                            : "bg-[#05070A] border border-[#161B22] text-[#71717A] hover:text-white hover:border-[var(--gta-pink)]/30"
+                            : "bg-[var(--surface-0)] border border-white/[0.07] text-white/35 hover:text-white hover:border-[var(--gta-pink)]/30"
                     }`}
                 >
                     All
@@ -148,10 +148,10 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                         <button
                             key={cat}
                             onClick={() => setActive(active ? "all" : cat)}
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all ${
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-inner)] text-[11px] font-semibold whitespace-nowrap transition-all ${
                                 active
                                     ? "border"
-                                    : "bg-[#05070A] border border-[#161B22] text-[#71717A] hover:text-white hover:border-white/20"
+                                    : "bg-[var(--surface-0)] border border-white/[0.07] text-white/35 hover:text-white hover:border-white/20"
                             }`}
                             style={active ? {
                                 backgroundColor: conf.color + "22",
@@ -173,16 +173,16 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
             {isLoading ? (
                 <div className="p-4 space-y-2">
                     {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="h-12 bg-[#161B22] rounded-lg animate-pulse" />
+                        <div key={i} className="h-12 bg-white/[0.07] rounded-[var(--radius-card)] animate-pulse" />
                     ))}
                 </div>
             ) : locations.length === 0 ? (
-                <div className="p-8 text-center text-[#71717A] text-[13px]">
+                <div className="p-8 text-center text-white/35 text-[13px]">
                     <MapPin className="w-6 h-6 mx-auto mb-2 opacity-30" />
                     No locations found
                 </div>
             ) : (
-                <div className="divide-y divide-[#161B22]">
+                <div className="divide-y divide-white/[0.07]">
                     {locations.map(loc => {
                         const color    = getCategoryColor(loc.categories);
                         const label    = getCategoryLabel(loc.categories);
@@ -194,20 +194,20 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                                 className={`group w-full text-left px-4 py-2.5 transition-colors ${
                                     isActive
                                         ? "bg-[var(--gta-pink)]/10 border-l-2 border-[var(--gta-pink)]"
-                                        : "hover:bg-[#161B22]/50 border-l-2 border-transparent"
+                                        : "hover:bg-white/[0.07]/50 border-l-2 border-transparent"
                                 }`}
                             >
                                 <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
                                     <div className="min-w-0 flex-1">
                                         <p className="text-[12px] font-medium text-white leading-tight truncate">{loc.name}</p>
-                                        <p className="text-[10px] text-[#71717A] mt-0.5">
+                                        <p className="text-[10px] text-white/35 mt-0.5">
                                             {label}
                                             {loc.is_unconfirmed && <span className="ml-1 text-[#F59E0B]">· unconfirmed</span>}
                                         </p>
                                     </div>
                                     <ChevronRight className={`w-3.5 h-3.5 shrink-0 transition-all ${
-                                        isActive ? "text-[var(--gta-pink)] opacity-100" : "text-[#71717A] opacity-0 group-hover:opacity-100"
+                                        isActive ? "text-[var(--gta-pink)] opacity-100" : "text-white/35 opacity-0 group-hover:opacity-100"
                                     }`} />
                                 </div>
                             </button>
@@ -219,11 +219,11 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
     );
 
     return (
-        <div className="flex h-[calc(100dvh-72px)] min-h-[520px] overflow-hidden bg-[#05070A]">
+        <div className="flex h-[calc(100dvh-72px)] min-h-[520px] overflow-hidden bg-[var(--surface-0)]">
 
             {/* ── LEFT PANEL (desktop only) ─────────────────────────── */}
             <aside
-                className={`hidden md:flex flex-col shrink-0 border-r border-[#161B22] bg-[#0B0E14] z-20 transition-[width] duration-300
+                className={`hidden md:flex flex-col shrink-0 border-r border-white/[0.07] bg-[var(--surface-1)] z-20 transition-[width] duration-300
                     ${panelCollapsed ? "w-12" : "w-80"}`}
             >
                 {panelCollapsed ? (
@@ -232,11 +232,11 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                         <button
                             onClick={() => setPanelCollapsed(false)}
                             title="Expand"
-                            className="w-8 h-8 flex items-center justify-center rounded-lg text-[#71717A] hover:text-white hover:bg-[var(--gta-pink)]/20 transition-colors shrink-0"
+                            className="w-8 h-8 flex items-center justify-center rounded-[var(--radius-card)] text-white/35 hover:text-white hover:bg-[var(--gta-pink)]/20 transition-colors shrink-0"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>
-                        <div className="w-px flex-1 bg-[#161B22]" />
+                        <div className="w-px flex-1 bg-white/[0.07]" />
                         <span className="text-[9px] font-bold uppercase tracking-widest text-[#3A3A45] [writing-mode:vertical-rl] rotate-180 pb-2">
                             Locations
                         </span>
@@ -244,11 +244,11 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                 ) : (
                     /* Expanded panel */
                     <>
-                        <div className="px-4 pt-4 pb-3 border-b border-[#161B22] flex items-center justify-between shrink-0">
+                        <div className="px-4 pt-4 pb-3 border-b border-white/[0.07] flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-[var(--gta-pink)] shrink-0" />
                                 <h2 className="text-[13px] font-bold text-white">Locations</h2>
-                                <span className="text-[11px] text-[#71717A]">
+                                <span className="text-[11px] text-white/35">
                                     {isLoading ? "…" : (
                                         <><span className="text-[var(--gta-pink)] font-bold">{locations.length}</span> results</>
                                     )}
@@ -257,7 +257,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                             <button
                                 onClick={() => setPanelCollapsed(true)}
                                 title="Collapse"
-                                className="p-1 -mr-1 text-[#71717A] hover:text-white transition-colors"
+                                className="p-1 -mr-1 text-white/35 hover:text-white transition-colors"
                             >
                                 <ChevronLeft className="w-4 h-4" />
                             </button>
@@ -276,7 +276,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
 
                 {/* Framed map card — floats on the sunset with visible margin */}
                 <div className="absolute inset-0 z-10 flex items-center justify-center p-3 md:p-6 lg:p-8">
-                    <div className="relative w-full h-full rounded-2xl overflow-hidden border border-white/10 shadow-[0_8px_48px_rgba(0,0,0,0.75),0_0_0_1px_rgba(255,46,136,0.07)] bg-[#05070A]">
+                    <div className="relative w-full h-full rounded-[var(--radius-panel)] overflow-hidden border border-white/10 shadow-[0_8px_48px_rgba(0,0,0,0.75),0_0_0_1px_rgba(255,46,136,0.07)] bg-[var(--surface-0)]">
 
                         {/* Leaflet map */}
                         {hasLoaded ? (
@@ -295,12 +295,12 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                         )}
 
                         {/* Title chip (SEO H1) */}
-                        <div className="absolute top-3 left-3 z-[800] flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#0B0E14]/90 backdrop-blur border border-[#161B22] shadow-lg pointer-events-none">
+                        <div className="absolute top-3 left-3 z-[800] flex items-center gap-2 px-3 py-1.5 rounded-[var(--radius-card)] bg-[var(--surface-1)]/90 backdrop-blur border border-white/[0.07] shadow-lg pointer-events-none">
                             <MapPin className="w-3.5 h-3.5 text-[var(--gta-pink)] shrink-0" />
                             <h1 className="text-[12px] font-bold text-white leading-none whitespace-nowrap">
                                 GTA 6 Interactive Map
                                 {totalLocations > 0 && (
-                                    <span className="ml-2 text-[10px] font-normal text-[#71717A]">
+                                    <span className="ml-2 text-[10px] font-normal text-white/35">
                                         {totalLocations.toLocaleString()} locations
                                     </span>
                                 )}
@@ -310,7 +310,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                         {/* Back to Hub */}
                         <Link
                             href="/gta6"
-                            className="absolute top-3 right-3 z-[800] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0B0E14]/90 backdrop-blur border border-[#161B22] text-[12px] font-semibold text-white hover:border-[var(--gta-pink)]/50 transition-colors shadow-lg"
+                            className="absolute top-3 right-3 z-[800] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] bg-[var(--surface-1)]/90 backdrop-blur border border-white/[0.07] text-[12px] font-semibold text-white hover:border-[var(--gta-pink)]/50 transition-colors shadow-lg"
                         >
                             <ArrowLeft className="w-3.5 h-3.5" />
                             <span className="hidden sm:inline">GTA 6 Hub</span>
@@ -322,7 +322,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                 {!panelOpen && (
                     <button
                         onClick={() => setPanelOpen(true)}
-                        className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-[850] inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--gta-pink)] text-white text-[13px] font-bold shadow-lg gta6-glow-pink"
+                        className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-[850] inline-flex items-center gap-2 px-4 py-2.5 rounded-[var(--radius-card)] bg-[var(--gta-pink)] text-white text-[13px] font-bold shadow-lg gta6-glow-pink"
                     >
                         <SlidersHorizontal className="w-4 h-4" />
                         Filters &amp; list
@@ -345,7 +345,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
             )}
 
             <div
-                className={`md:hidden fixed inset-x-0 bottom-0 z-[910] flex flex-col bg-[#0B0E14]/97 backdrop-blur border-t border-[#161B22] shadow-2xl rounded-t-2xl max-h-[80dvh] transition-transform duration-300
+                className={`md:hidden fixed inset-x-0 bottom-0 z-[910] flex flex-col bg-[var(--surface-1)]/97 backdrop-blur border-t border-white/[0.07] shadow-2xl rounded-t-2xl max-h-[80dvh] transition-transform duration-300
                     ${panelOpen ? "translate-y-0" : "translate-y-full"}`}
             >
                 {/* Drag handle */}
@@ -354,17 +354,17 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                 </div>
 
                 {/* Sheet header */}
-                <div className="px-4 pb-3 border-b border-[#161B22] flex items-center justify-between shrink-0">
+                <div className="px-4 pb-3 border-b border-white/[0.07] flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-[var(--gta-pink)]" />
                         <span className="text-[13px] font-bold text-white">Locations</span>
-                        <span className="text-[11px] text-[#71717A]">
+                        <span className="text-[11px] text-white/35">
                             {isLoading ? "…" : (
                                 <><span className="text-[var(--gta-pink)] font-bold">{locations.length}</span> results</>
                             )}
                         </span>
                     </div>
-                    <button onClick={() => setPanelOpen(false)} className="text-[#71717A] hover:text-white p-1 transition-colors">
+                    <button onClick={() => setPanelOpen(false)} className="text-white/35 hover:text-white p-1 transition-colors">
                         <X className="w-4 h-4" />
                     </button>
                 </div>
