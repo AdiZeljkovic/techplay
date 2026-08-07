@@ -48,6 +48,8 @@ interface NavSubCategory {
     name: string;
     href: string;
     icon?: React.ComponentType<{ className?: string }>;
+    /** Commissioned art replaces the icon+box entirely when present. */
+    art?: string;
     description?: string;
 }
 
@@ -614,11 +616,11 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
         name: "Community", href: "/forum", hasDropdown: true, viewAllLabel: "Open Forum",
         activePaths: ["/forum", "/leaderboard", "/clans", "/social", "/giveaways"],
         children: [
-            { name: "Forum",       href: "/forum",       icon: MessageSquare, description: "Discussions, help & clan halls" },
-            { name: "Leaderboard", href: "/leaderboard", icon: Trophy,        description: "Top gamers by XP & reputation" },
-            { name: "Clans",       href: "/clans",       icon: Shield,        description: "Join or create a clan" },
-            { name: "Social Hub",  href: "/social",     icon: Users,         description: "Chat, friends and squads" },
-            { name: "Giveaways",   href: "/giveaways",   icon: Gem,           description: "Win games & gear" },
+            { name: "Forum",       href: "/forum",       art: "/images/menu/menu-forum.webp",       description: "Discussions, help & clan halls" },
+            { name: "Leaderboard", href: "/leaderboard", art: "/images/menu/menu-leaderboard.webp", description: "Top gamers by XP & reputation" },
+            { name: "Clans",       href: "/clans",       art: "/images/menu/menu-clans.webp",       description: "Join or create a clan" },
+            { name: "Social Hub",  href: "/social",     art: "/images/menu/menu-social.webp",      description: "Chat, friends and squads" },
+            { name: "Giveaways",   href: "/giveaways",   art: "/images/menu/menu-giveaways.webp",   description: "Win games & gear" },
         ],
     },
     {
@@ -742,7 +744,11 @@ function NavItem({ item, badge, onHoverChange }: {
                                             href={child.href}
                                             className="group/row flex items-center gap-3 p-2.5 rounded-[var(--radius-card)] border border-transparent hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] hover:bg-[var(--fill-1)] transition-colors duration-300"
                                         >
-                                            {Icon && (
+                                            {child.art ? (
+                                                // eslint-disable-next-line @next/next/no-img-element
+                                                <img src={child.art} alt="" aria-hidden
+                                                    className="w-11 h-11 shrink-0 object-contain select-none transition-transform duration-300 group-hover/row:scale-[1.08]" />
+                                            ) : Icon && (
                                                 <span className="w-10 h-10 shrink-0 rounded-[var(--radius-inner)] bg-[var(--fill-2)] border border-[var(--line)] flex items-center justify-center text-[var(--ink-low)] group-hover/row:bg-[var(--accent)] group-hover/row:border-transparent group-hover/row:text-white transition-colors duration-300">
                                                     <Icon className="w-[18px] h-[18px]" />
                                                 </span>
