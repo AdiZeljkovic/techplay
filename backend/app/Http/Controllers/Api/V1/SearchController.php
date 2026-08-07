@@ -115,6 +115,25 @@ class SearchController extends Controller
             ];
         });
 
+        // What a signed-in user searched for — and found — used to vanish
+        // with the Redis TTL. Now it is a chronicle signal.
+        $firstId = $result['results'][0]['id'] ?? null;
+        $userId = $request->user('sanctum')?->id;
+        if ($firstId && $userId) {
+            try {
+                DB::table('player_signals')->insertOrIgnore([
+                    'user_id' => $userId,
+                    'game_id' => $firstId,
+                    'type' => 'search',
+                    'weight' => 0.6,
+                    'day' => now()->toDateString(),
+                    'meta' => json_encode(['q' => Str::limit($query, 60)]),
+                ]);
+            } catch (\Throwable) {
+                // learning must never break search
+            }
+        }
+
         return response()->json($result)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 

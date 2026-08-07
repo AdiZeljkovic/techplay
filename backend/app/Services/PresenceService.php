@@ -7,6 +7,7 @@ use App\Models\Game;
 use App\Models\Presence;
 use App\Models\User;
 use App\Models\UserGame;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class PresenceService
@@ -34,6 +35,23 @@ class PresenceService
         // Switching titles closes the previous session — bank it first.
         if ($existing && ! $sameGame) {
             $this->bankSession($user, $existing);
+        }
+
+        // Seen playing X — a signal that used to evaporate. One row per
+        // user/game/day; the unique key absorbs every repeat ping.
+        if ($game) {
+            try {
+                DB::table('player_signals')->insertOrIgnore([
+                    'user_id' => $user->id,
+                    'game_id' => $game->id,
+                    'type' => 'presence',
+                    'weight' => 0.8,
+                    'day' => now()->toDateString(),
+                    'meta' => json_encode(['source' => $source]),
+                ]);
+            } catch (\Throwable) {
+                // learning must never break presence
+            }
         }
 
         $presence = Presence::updateOrCreate(

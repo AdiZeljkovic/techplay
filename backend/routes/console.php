@@ -33,6 +33,9 @@ Schedule::command('games:enrich-trailers')->dailyAt('06:00');
 // The chronicle refreshes overnight for anyone whose signals moved.
 Schedule::command('chronicle:rebuild --stale')->dailyAt('04:45');
 
+// Steam achievements for connected accounts — the chronicle reads what you actually earn.
+Schedule::command('games:sync-steam-achievements')->dailyAt('05:00');
+
 // PERFORMANCE: Clean old view tracking records daily (keep last 7 days)
 Schedule::command('views:clean')->daily();
 

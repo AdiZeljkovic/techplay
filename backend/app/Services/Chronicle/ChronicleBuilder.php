@@ -172,7 +172,19 @@ class ChronicleBuilder
             $signals[] = ['game_id' => $row->game_id, 'weight' => 3.0, 'at' => $row->created_at];
         }
 
-        // ── the evaporating signals, once phase 2 starts writing them ────
+        // ── achievements actually earned on Steam, per game ──────────────
+        foreach (DB::table('steam_achievements')->where('user_id', $user->id)
+            ->where('achieved', true)->whereNotNull('game_id')
+            ->selectRaw('game_id, count(*) as tally, max(achieved_at) as at')
+            ->groupBy('game_id')->get() as $row) {
+            $signals[] = [
+                'game_id' => $row->game_id,
+                'weight' => min(2.0, 0.8 + $row->tally * 0.05),
+                'at' => $row->at ?? now(),
+            ];
+        }
+
+        // ── the evaporating signals phase 2 writes ───────────────────────
         foreach (DB::table('player_signals')->where('user_id', $user->id)
             ->get(['game_id', 'weight', 'day']) as $row) {
             $signals[] = ['game_id' => $row->game_id, 'weight' => (float) $row->weight, 'at' => $row->day];
