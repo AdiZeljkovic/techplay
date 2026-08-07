@@ -1,6 +1,9 @@
 # 33 — User Chronicle: interni sistem učenja o gameru (IZVEDBENI PLAN)
 
-> Status: PLAN — odobrenje čeka. Ništa odavde još nije implementirano.
+> Status: FAZE 1–3 IMPLEMENTIRANE (08/2026, commitovi ab7b945f..1e27a1e5) + Faza 4 djelimično
+> (orphani obrisani, game_ratings.game_id backfill). PREOSTALO u Fazi 4: users dijeta
+> (integracioni tokeni u zasebnu tabelu — zahtijeva pažljivu sesiju, dira auth flowove),
+> InterestProfile apsorpcija u chronicle (feed radi dobro, nije hitno), imenovanja.
 > Cilj: sistem u pozadini uči o registrovanom gameru iz SVEGA što radi na TechPlayu,
 > sažima to u interni "chronicle" red uvezan s games bazom, i SVE površine koje
 > išta preporučuju čitaju taj jedan izvor. Korisnik chronicle nikad ne vidi —
