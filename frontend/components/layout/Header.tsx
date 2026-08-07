@@ -747,7 +747,7 @@ function NavItem({ item, badge, onHoverChange }: {
                                             {child.art ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={child.art} alt="" aria-hidden
-                                                    className="w-11 h-11 shrink-0 object-contain select-none transition-transform duration-300 group-hover/row:scale-[1.08]" />
+                                                    className="w-9 h-9 shrink-0 object-contain select-none transition-transform duration-300 group-hover/row:scale-[1.08]" />
                                             ) : Icon && (
                                                 <span className="w-10 h-10 shrink-0 rounded-[var(--radius-inner)] bg-[var(--fill-2)] border border-[var(--line)] flex items-center justify-center text-[var(--ink-low)] group-hover/row:bg-[var(--accent)] group-hover/row:border-transparent group-hover/row:text-white transition-colors duration-300">
                                                     <Icon className="w-[18px] h-[18px]" />

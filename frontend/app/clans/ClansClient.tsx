@@ -577,23 +577,11 @@ export default function ClansClient() {
         <main className="min-h-screen bg-[var(--surface-0)]">
             {/* ── header band ── */}
             <div className="relative overflow-hidden border-b border-white/[0.07]">
-                {/* The featured clan's banner doubles as the page's artwork —
-                    real data carrying the art the mockup asks for. */}
-                {data?.spotlight?.banner ? (
-                    <>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={getStorageUrl(data.spotlight.banner)} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-[0.18]" />
-                        <span aria-hidden className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--surface-0)]/60 to-[var(--surface-0)]" />
-                    </>
-                ) : null}
-                <span
-                    aria-hidden
-                    className="absolute inset-0"
-                    style={{
-                        background:
-                            "radial-gradient(70% 150% at 78% -10%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 58%), radial-gradient(50% 120% at 8% 110%, rgba(255,255,255,0.035), transparent 62%)",
-                    }}
-                />
+                {/* The war camp: keep and banners painted near-black already,
+                    so it needs only a bottom seam into the page. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/clans-hero.webp" alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover object-center" />
+                <span aria-hidden className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
                 <div className="relative z-10 container-page pt-8 pb-6">
                     <div className="flex flex-wrap items-center justify-between gap-5">
