@@ -220,9 +220,12 @@ export default function CalendarClient() {
                 {data?.hero?.cover_url && (
                     <>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={data.hero.cover_url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-[0.28]" />
-                        <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)] via-[var(--surface-0)]/80 to-transparent" />
-                        <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
+                        {/* The month's biggest release, actually visible — the
+                            left scrim alone protects the copy, so the art can
+                            breathe on the right instead of drowning in dimmer. */}
+                        <img src={data.hero.cover_url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover object-[center_30%] opacity-[0.55]" />
+                        <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)] via-[var(--surface-0)]/65 to-transparent" />
+                        <span aria-hidden className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
                     </>
                 )}
 

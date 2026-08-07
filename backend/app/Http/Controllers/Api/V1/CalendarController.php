@@ -94,7 +94,10 @@ class CalendarController extends Controller
                 'wishlisted' => $decorated->where('wishlisted', true)->count(),
                 'showing' => $filtered->count(),
             ],
-            'hero' => $releases->sortByDesc('added')->first(),
+            // The month's most notable release that actually brought art —
+            // a hero slot with no image is a hero slot wasted.
+            'hero' => $releases->filter(fn (array $g) => ! empty($g['cover_url']))->sortByDesc('added')->first()
+                ?? $releases->sortByDesc('added')->first(),
             'most_anticipated' => $decorated->sortByDesc('added')->take(5)->values()->all(),
             'days' => $this->groupByDay($filtered, $request->query('sort', 'date')),
             'upcoming' => $decorated->filter(fn (array $g) => $g['released'] && $g['released'] >= now()->toDateString())
