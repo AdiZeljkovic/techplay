@@ -14,9 +14,9 @@ interface PanelProps {
     /** Accent hairline crown (signature S2) — hero-tier surfaces only. */
     crown?: boolean;
     /**
-     * `console` is the hero's instrument treatment: warm gradient face,
-     * accent-tinted edge, corner blooms and a bracket. One per column at most
-     * — repeated, it stops meaning anything.
+     * `console` is the hero's instrument treatment: a raised face with an
+     * accent-tinted edge. One per column at most — repeated, it stops
+     * meaning anything.
      */
     variant?: "default" | "console";
     padding?: "md" | "none";
@@ -26,13 +26,13 @@ interface PanelProps {
 }
 
 /**
- * The console face — flat, near-black, one shade warmer than the default
+ * The console face — flat, one rung up the surface ladder from the default
  * panel, with a faint accent edge. Flat on purpose: gradients and corner
  * blooms read as decoration; the approved tone is a matte instrument panel
  * where the content is the only thing that glows.
  */
 const CONSOLE_FACE: React.CSSProperties = {
-    background: "#12100f",
+    background: "var(--surface-2)",
     borderColor: "color-mix(in srgb, var(--accent) 18%, transparent)",
 };
 

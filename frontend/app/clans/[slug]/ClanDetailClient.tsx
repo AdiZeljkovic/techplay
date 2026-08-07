@@ -244,7 +244,7 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
                     <div className="flex flex-wrap items-start gap-6">
                         {/* emblem */}
                         <span
-                            className="relative w-[104px] h-[104px] shrink-0 rounded-[18px] border-2 bg-[#0d0b0a] overflow-hidden flex items-center justify-center"
+                            className="relative w-[104px] h-[104px] shrink-0 rounded-[18px] border-2 bg-[var(--surface-1)] overflow-hidden flex items-center justify-center"
                             style={{ borderColor: tier, boxShadow: `0 0 34px color-mix(in srgb, ${tier} 30%, transparent)` }}
                         >
                             {clan.logo ? (
@@ -346,7 +346,7 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
 
             <div className="container-page py-5 space-y-4">
                 {/* ── stat strip ── */}
-                <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[#100e0d] px-5 py-4">
+                <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-2)] px-5 py-4">
                     <div className="flex items-center gap-6 md:gap-0 md:justify-between overflow-x-auto scrollbar-none min-w-max md:min-w-0">
                         {([
                             [<Users key="m" className="w-4 h-4" />, "Members", `${clan.members_count}`, "var(--accent)", clan.online_count > 0 ? `${clan.online_count} online` : null],
@@ -584,7 +584,7 @@ export default function ClanDetailClient({ slug }: { slug: string }) {
             {/* ── apply modal ── */}
             {applyOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onClick={() => setApplyOpen(false)}>
-                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.1] bg-[#12100f] p-6" onClick={(e) => e.stopPropagation()}>
+                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.1] bg-[var(--surface-2)] p-6" onClick={(e) => e.stopPropagation()}>
                         <h2 className="font-display text-[15px] font-black text-white mb-1.5">Apply to {clan.name}</h2>
                         <p className="text-[12px] text-white/40 mb-4">An officer will review your application.</p>
                         <textarea

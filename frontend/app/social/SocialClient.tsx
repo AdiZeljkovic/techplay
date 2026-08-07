@@ -72,7 +72,7 @@ function NewGroupModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onClick={onClose}>
-            <div className="w-full max-w-md rounded-[14px] border border-white/[0.1] bg-[#12100f] p-5" onClick={(e) => e.stopPropagation()}>
+            <div className="w-full max-w-md rounded-[14px] border border-white/[0.1] bg-[var(--surface-2)] p-5" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="flex items-center gap-2.5 font-display text-[15px] font-black text-white">
                         <UsersRound className="w-4 h-4 text-[var(--accent)]" /> New group chat
@@ -201,7 +201,7 @@ function MessageBubble({
                             <Sparkles className="w-3 h-3" />
                         </button>
                         {picking && (
-                            <span className="absolute z-20 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-0.5 p-1 rounded-[8px] border border-white/[0.12] bg-[#12100f] shadow-[0_10px_28px_rgba(0,0,0,0.6)]">
+                            <span className="absolute z-20 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-0.5 p-1 rounded-[8px] border border-white/[0.12] bg-[var(--surface-2)] shadow-[0_10px_28px_rgba(0,0,0,0.6)]">
                                 {emoji.map((e) => (
                                     <button
                                         key={e}

@@ -83,7 +83,7 @@ function ItemArt({ item }: { item: StoreItem }) {
 
             {item.type === "frame" && (
                 <span className="relative w-[76px] h-[76px] rounded-full p-[4px]" style={{ background: paint }}>
-                    <span className="block w-full h-full rounded-full bg-[#0b0a09]" />
+                    <span className="block w-full h-full rounded-full bg-[var(--surface-0)]" />
                 </span>
             )}
 
@@ -104,7 +104,7 @@ function ItemArt({ item }: { item: StoreItem }) {
                     style={{ background: paint, clipPath: "polygon(50% 0%, 100% 22%, 100% 70%, 50% 100%, 0% 70%, 0% 22%)" }}
                 >
                     <span
-                        className="w-[58px] h-[66px] flex items-center justify-center bg-[#0b0a09]"
+                        className="w-[58px] h-[66px] flex items-center justify-center bg-[var(--surface-0)]"
                         style={{ clipPath: "polygon(50% 0%, 100% 22%, 100% 70%, 50% 100%, 0% 70%, 0% 22%)" }}
                     >
                         <Award className="w-7 h-7" style={{ color: paint }} />
@@ -148,18 +148,18 @@ function StoreCard({
             className="group relative flex flex-col rounded-[12px] overflow-hidden border transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5"
             style={{
                 borderColor: `color-mix(in srgb, ${rarity.color} ${item.owned ? 40 : 22}%, transparent)`,
-                background: "#0d0b0a",
+                background: "var(--surface-1)",
                 boxShadow: legendary ? `0 0 0 1px color-mix(in srgb, ${rarity.color} 18%, transparent)` : undefined,
             }}
         >
-            <span className="relative flex h-[124px] bg-[#0a0908] overflow-hidden">
+            <span className="relative flex h-[124px] bg-[var(--surface-0)] overflow-hidden">
                 <ItemArt item={item} />
 
                 <span
                     className="absolute top-2.5 left-2.5 inline-flex items-center h-[19px] px-2 rounded-[4px] font-display text-[8px] font-black uppercase tracking-[0.12em]"
                     style={item.owned
                         ? { background: "#34d399", color: "#04140d" }
-                        : { background: rarity.color, color: "#0b0a09" }}
+                        : { background: rarity.color, color: "var(--surface-0)" }}
                 >
                     {item.owned ? "Owned" : rarity.label}
                 </span>
@@ -170,7 +170,7 @@ function StoreCard({
                     </span>
                 )}
 
-                <span aria-hidden className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#0d0b0a] to-transparent" />
+                <span aria-hidden className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[var(--surface-1)] to-transparent" />
             </span>
 
             <span className="flex flex-col flex-1 p-3.5">
@@ -243,7 +243,7 @@ function WalletHero({ wallet, onOpenTiers }: { wallet: BountyWallet; onOpenTiers
     const tier = wallet.tier;
 
     return (
-        <div className="relative overflow-hidden rounded-[var(--radius-panel)] border border-amber-500/[0.18] bg-[#100d0a]">
+        <div className="relative overflow-hidden rounded-[var(--radius-panel)] border border-amber-500/[0.18] bg-[var(--surface-2)]">
             <span
                 aria-hidden
                 className="absolute inset-0"
@@ -289,7 +289,7 @@ function WalletHero({ wallet, onOpenTiers }: { wallet: BountyWallet; onOpenTiers
                         style={{ background: tier.color, clipPath: "polygon(50% 0%, 100% 22%, 100% 70%, 50% 100%, 0% 70%, 0% 22%)" }}
                     >
                         <span
-                            className="w-[52px] h-[60px] flex items-center justify-center bg-[#100d0a]"
+                            className="w-[52px] h-[60px] flex items-center justify-center bg-[var(--surface-2)]"
                             style={{ clipPath: "polygon(50% 0%, 100% 22%, 100% 70%, 50% 100%, 0% 70%, 0% 22%)" }}
                         >
                             <span className="font-display text-[15px] font-black" style={{ color: tier.color }}>
@@ -745,7 +745,7 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
                                     className="relative w-[42px] h-[42px] rounded-[9px] border flex items-center justify-center overflow-hidden"
                                     style={{
                                         borderColor: c.equipped ? "#34d399" : `color-mix(in srgb, ${RARITY[c.rarity]?.color ?? "#9ca3af"} 40%, transparent)`,
-                                        background: "#0d0b0a",
+                                        background: "var(--surface-1)",
                                     }}
                                 >
                                     <span className="w-[26px] h-[26px] rounded-full" style={{ background: c.value ?? RARITY[c.rarity]?.color }} />

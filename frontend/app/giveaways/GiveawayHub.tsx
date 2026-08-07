@@ -374,7 +374,7 @@ function Featured({
         : null;
 
     return (
-        <div className="mb-5 rounded-[14px] border border-[color-mix(in_srgb,var(--accent)_28%,transparent)] bg-gradient-to-br from-[color-mix(in_srgb,var(--accent)_10%,#100e0d)] to-[#0b0a09] overflow-hidden">
+        <div className="mb-5 rounded-[14px] border border-[color-mix(in_srgb,var(--accent)_28%,transparent)] bg-gradient-to-br from-[color-mix(in_srgb,var(--accent)_10%,var(--surface-2))] to-[var(--surface-0)] overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr_auto] gap-5 p-5 items-center">
                 <span className="relative block h-[170px] rounded-[10px] overflow-hidden bg-white/[0.04]">
                     {(featured.prize.image ?? featured.featured_image) && (

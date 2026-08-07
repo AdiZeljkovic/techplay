@@ -281,8 +281,8 @@ export default function ListEditor({
                                         onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
                                         className="w-full h-10 px-3 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white focus:outline-none cursor-pointer"
                                     >
-                                        <option value="" className="bg-[#0d0b0a]">Select category</option>
-                                        {CATEGORIES.map((c) => <option key={c} value={c} className="bg-[#0d0b0a]">{c}</option>)}
+                                        <option value="" className="bg-[var(--surface-1)]">Select category</option>
+                                        {CATEGORIES.map((c) => <option key={c} value={c} className="bg-[var(--surface-1)]">{c}</option>)}
                                     </select>
                                 </label>
 
@@ -488,7 +488,7 @@ function PreviewCard({
     const typeLabel = TYPES.find((t) => t.id === form.list_type)?.label;
 
     return (
-        <div className="relative rounded-[12px] overflow-hidden border border-white/[0.07] bg-[#0d0b0a] min-h-[190px] flex flex-col justify-end">
+        <div className="relative rounded-[12px] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] min-h-[190px] flex flex-col justify-end">
             {cover ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={cover} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-70" />

@@ -53,7 +53,7 @@ function RewardHex({ amount, paysXp }: { amount: number; paysXp: boolean }) {
                         filter: `drop-shadow(0 0 14px color-mix(in srgb, ${tint} 55%, transparent))`,
                     }}
                 />
-                <span aria-hidden className="absolute inset-[3px]" style={{ clipPath: HEX, background: "#0d0b0a" }} />
+                <span aria-hidden className="absolute inset-[3px]" style={{ clipPath: HEX, background: "var(--surface-1)" }} />
                 <span
                     className="absolute inset-0 flex items-center justify-center font-display text-[14px] font-black"
                     style={{ color: bright }}

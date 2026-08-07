@@ -92,7 +92,7 @@ export default function BacklogProgressCard({
                                     className="absolute inset-0 w-full h-full object-cover opacity-[0.14] group-hover:opacity-[0.22] transition-opacity duration-500"
                                 />
                                 {/* scrim in the console's own face colour, not --surface-1 */}
-                                <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[#0e0c0b] via-[#0e0c0be0] to-[#0e0c0ba6]" />
+                                <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[var(--surface-1)] via-[var(--surface-1)e0] to-[var(--surface-1)a6]" />
                             </>
                         )}
                         {!suggestion.cover_url && <span aria-hidden className="absolute inset-0 bg-white/[0.02]" />}

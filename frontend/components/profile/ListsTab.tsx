@@ -45,7 +45,7 @@ function ListCard({
     const covers = (list.covers ?? []).slice(0, 4);
 
     return (
-        <div className="group relative rounded-[12px] overflow-hidden border border-white/[0.07] bg-[#0d0b0a] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.5)] transition-all duration-300">
+        <div className="group relative rounded-[12px] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.5)] transition-all duration-300">
             <Link href={`/lists/${username}/${list.slug}`} className="block">
                 {/* a collage of what's inside, not a placeholder */}
                 <span className="relative flex h-[104px] bg-white/[0.03]">
@@ -59,7 +59,7 @@ function ListCard({
                             <img key={i} src={c} alt="" aria-hidden loading="lazy" className="flex-1 min-w-0 h-full object-cover" />
                         ))
                     )}
-                    <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#0d0b0a] via-[#0d0b0a]/30 to-transparent" />
+                    <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-[var(--surface-1)] via-[var(--surface-1)]/30 to-transparent" />
 
                     <span className="absolute top-2.5 left-2.5 flex flex-wrap items-center gap-1.5">
                         {list.list_type && list.list_type !== "custom" && (

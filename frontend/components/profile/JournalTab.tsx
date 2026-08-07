@@ -128,7 +128,7 @@ function GamePicker({ value, onPick }: { value: Draft["game"]; onPick: (g: Draft
                 className="w-full h-10 pl-9 pr-3 rounded-[8px] bg-white/[0.04] border border-white/[0.09] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
             />
             {term.trim().length >= 2 && (
-                <div className="absolute z-20 left-0 right-0 top-[44px] max-h-[240px] overflow-y-auto rounded-[10px] border border-white/[0.1] bg-[#12100f] shadow-[0_20px_44px_rgba(0,0,0,0.6)]">
+                <div className="absolute z-20 left-0 right-0 top-[44px] max-h-[240px] overflow-y-auto rounded-[10px] border border-white/[0.1] bg-[var(--surface-2)] shadow-[0_20px_44px_rgba(0,0,0,0.6)]">
                     {isLoading ? (
                         <p className="flex items-center gap-2 p-3 text-[12px] text-white/35"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Searching…</p>
                     ) : (data?.data ?? []).length === 0 ? (
@@ -523,7 +523,7 @@ function CalendarHeat({ calendar }: { calendar: JournalPayload["calendar"] }) {
                                         background: future
                                             ? "transparent"
                                             : entry
-                                                ? `color-mix(in srgb, var(--accent) ${18 + intensity * 82}%, #17140f)`
+                                                ? `color-mix(in srgb, var(--accent) ${18 + intensity * 82}%, var(--surface-2))`
                                                 : "rgba(255,255,255,0.045)",
                                     }}
                                 />
@@ -583,7 +583,7 @@ export default function JournalTab({ username }: { username: string }) {
     return (
         <div className="space-y-4">
             {/* ── summary strip ── */}
-            <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[#100e0d] px-5 py-4">
+            <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-2)] px-5 py-4">
                 <div className="flex items-center gap-6 md:gap-0 md:justify-between overflow-x-auto scrollbar-none min-w-max md:min-w-0">
                     {([
                         [<Clock3 key="h" className="w-4 h-4" />, "Hours played", `${hours}`, "var(--xp-bright)", s.minutes > 0 ? hhmm(s.minutes) : null],
@@ -699,7 +699,7 @@ export default function JournalTab({ username }: { username: string }) {
                                     <p className="mt-4 flex items-center gap-2 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/25">
                                         Less
                                         {[0.1, 0.35, 0.6, 0.85, 1].map((v) => (
-                                            <span key={v} className="block w-[11px] h-[11px] rounded-[2px]" style={{ background: `color-mix(in srgb, var(--accent) ${18 + v * 82}%, #17140f)` }} />
+                                            <span key={v} className="block w-[11px] h-[11px] rounded-[2px]" style={{ background: `color-mix(in srgb, var(--accent) ${18 + v * 82}%, var(--surface-2))` }} />
                                         ))}
                                         More
                                     </p>
@@ -718,7 +718,7 @@ export default function JournalTab({ username }: { username: string }) {
                                     <div className="space-y-3">
                                         {journal.completed_timeline.map((g) => (
                                             <Link key={g.slug + g.completed_at} href={`/games/${g.slug}`} className="group relative flex items-center gap-3">
-                                                <span aria-hidden className="absolute -left-5 top-1/2 -translate-y-1/2 w-[11px] h-[11px] rounded-full bg-emerald-400 border-2 border-[#12100f]" />
+                                                <span aria-hidden className="absolute -left-5 top-1/2 -translate-y-1/2 w-[11px] h-[11px] rounded-full bg-emerald-400 border-2 border-[var(--surface-2)]" />
                                                 <span className="w-[78px] h-[44px] shrink-0 rounded-[7px] overflow-hidden bg-white/[0.04]">
                                                     {g.cover_url && (
                                                         // eslint-disable-next-line @next/next/no-img-element

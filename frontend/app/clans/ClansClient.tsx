@@ -107,7 +107,7 @@ function ClanEmblem({ logo, tint, size = 48, glow = false }: { logo: string | nu
                 height: size,
                 borderRadius: size * 0.24,
                 border: `2px solid color-mix(in srgb, ${tint} 55%, transparent)`,
-                background: logo ? "#0d0b0a" : `linear-gradient(150deg, color-mix(in srgb, ${tint} 18%, #0d0b0a), #0b0a09)`,
+                background: logo ? "var(--surface-1)" : `linear-gradient(150deg, color-mix(in srgb, ${tint} 18%, var(--surface-1)), var(--surface-0))`,
                 boxShadow: glow ? `0 0 ${size * 0.4}px color-mix(in srgb, ${tint} 35%, transparent)` : undefined,
             }}
         >
@@ -171,7 +171,7 @@ function CreateClanModal({ onClose, onCreated }: { onClose: () => void; onCreate
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onClick={onClose}>
-            <div className="w-full max-w-lg rounded-[14px] border border-white/[0.1] bg-[#12100f] p-6 shadow-[0_28px_60px_rgba(0,0,0,0.7)]" onClick={(e) => e.stopPropagation()}>
+            <div className="w-full max-w-lg rounded-[14px] border border-white/[0.1] bg-[var(--surface-2)] p-6 shadow-[0_28px_60px_rgba(0,0,0,0.7)]" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-between mb-5">
                     <h2 className="flex items-center gap-2.5 font-display text-[16px] font-black text-white">
                         <Shield className="w-[18px] h-[18px] text-[var(--accent)]" /> Found a clan
@@ -267,7 +267,7 @@ function SpotlightCard({ spotlight, canApply }: { spotlight: Spotlight; canApply
     return (
         <div
             className="relative overflow-hidden rounded-[12px] border"
-            style={{ borderColor: `color-mix(in srgb, ${tint} 42%, transparent)`, background: "#0d0b0a" }}
+            style={{ borderColor: `color-mix(in srgb, ${tint} 42%, transparent)`, background: "var(--surface-1)" }}
         >
             {/* the corner ribbon, exactly where the mockup puts it */}
             <span
@@ -281,7 +281,7 @@ function SpotlightCard({ spotlight, canApply }: { spotlight: Spotlight; canApply
                 <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={getStorageUrl(spotlight.banner)} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-30" />
-                    <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[#0d0b0a] via-[#0d0b0a]/85 to-[#0d0b0a]/55" />
+                    <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[var(--surface-1)] via-[var(--surface-1)]/85 to-[var(--surface-1)]/55" />
                 </>
             ) : (
                 <span
@@ -384,7 +384,7 @@ function ClanCard({ clan }: { clan: ClanSummary }) {
     const recruiting = (clan.status ?? "recruiting") === "recruiting";
 
     return (
-        <div className="group relative flex flex-col h-full rounded-[12px] border border-white/[0.07] bg-[#0d0b0a] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:-translate-y-0.5 transition-[border-color,transform] duration-300">
+        <div className="group relative flex flex-col h-full rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:-translate-y-0.5 transition-[border-color,transform] duration-300">
             {clan.featured && (
                 <span className="absolute -top-2 left-3 z-10 inline-flex items-center h-[18px] px-2 rounded-[4px] bg-[var(--accent)] font-display text-[7.5px] font-black uppercase tracking-[0.12em] text-white">
                     Featured
@@ -571,7 +571,7 @@ export default function ClansClient() {
     const filtering = !!(search || playstyle || region || recruitingOnly);
     const canApply = !!user && !mine?.clan;
 
-    const selectClass = "h-9 pl-9 pr-8 rounded-[9px] bg-[#0f0d0c] border border-white/[0.07] text-[12px] text-white/70 appearance-none focus:outline-none cursor-pointer";
+    const selectClass = "h-9 pl-9 pr-8 rounded-[9px] bg-[var(--surface-1)] border border-white/[0.07] text-[12px] text-white/70 appearance-none focus:outline-none cursor-pointer";
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
@@ -616,7 +616,7 @@ export default function ClansClient() {
                                 value={search}
                                 onChange={(e) => { setSearch(e.target.value); setPages(1); }}
                                 placeholder="Search clans…"
-                                className="w-full h-9 pl-9 pr-8 rounded-[9px] bg-[#0f0d0c] border border-white/[0.07] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
+                                className="w-full h-9 pl-9 pr-8 rounded-[9px] bg-[var(--surface-1)] border border-white/[0.07] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
                             />
                             {search && (
                                 <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white">
@@ -670,7 +670,7 @@ export default function ClansClient() {
                             <select
                                 value={sort}
                                 onChange={(e) => { setSort(e.target.value); setPreset("all"); setPages(1); }}
-                                className="h-9 pl-3 pr-8 rounded-[9px] bg-[#0f0d0c] border border-white/[0.07] text-[12px] text-white/70 appearance-none focus:outline-none cursor-pointer"
+                                className="h-9 pl-3 pr-8 rounded-[9px] bg-[var(--surface-1)] border border-white/[0.07] text-[12px] text-white/70 appearance-none focus:outline-none cursor-pointer"
                             >
                                 {SORTS.map((s) => <option key={s.id} value={s.id}>Sort: {s.label}</option>)}
                             </select>

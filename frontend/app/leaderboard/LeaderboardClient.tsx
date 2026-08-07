@@ -125,7 +125,7 @@ function PodiumCard({ entry, place }: { entry: Entry; place: 1 | 2 | 3 }) {
             }`}
             style={{
                 borderColor: `color-mix(in srgb, ${metal.color} ${first ? 45 : 24}%, transparent)`,
-                background: `linear-gradient(135deg, color-mix(in srgb, ${metal.color} ${first ? 14 : 7}%, #0d0b0a), #0d0b0a 70%)`,
+                background: `linear-gradient(135deg, color-mix(in srgb, ${metal.color} ${first ? 14 : 7}%, var(--surface-1)), var(--surface-1) 70%)`,
             }}
         >
             <span
@@ -278,7 +278,7 @@ export default function LeaderboardClient() {
             <div className="container-page py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
                 <div className="xl:col-span-9 min-w-0 space-y-4">
                     {/* ── board switcher ── */}
-                    <div className="flex flex-wrap gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[#0f0d0c]">
+                    <div className="flex flex-wrap gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
                         {BOARDS.map((b) => {
                             const Icon = b.icon;
                             const active = board === b.id;
@@ -298,7 +298,7 @@ export default function LeaderboardClient() {
 
                     {/* ── period + search ── */}
                     <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex gap-1 p-1 rounded-[10px] border border-white/[0.07] bg-[#0f0d0c]">
+                        <div className="flex gap-1 p-1 rounded-[10px] border border-white/[0.07] bg-[var(--surface-1)]">
                             {PERIODS.map((p) => {
                                 const disabled = !data?.periodic && p.id !== "all";
                                 return (
@@ -327,7 +327,7 @@ export default function LeaderboardClient() {
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 placeholder="Search players…"
-                                className="w-full h-10 pl-9 pr-8 rounded-[10px] bg-[#0f0d0c] border border-white/[0.07] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
+                                className="w-full h-10 pl-9 pr-8 rounded-[10px] bg-[var(--surface-1)] border border-white/[0.07] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
                             />
                             {query && (
                                 <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white">
@@ -339,7 +339,7 @@ export default function LeaderboardClient() {
 
                     {/* ── your position ── */}
                     {viewer && (
-                        <div className="relative overflow-hidden rounded-[14px] border border-[color-mix(in_srgb,var(--accent)_38%,transparent)] bg-[#12100f]">
+                        <div className="relative overflow-hidden rounded-[14px] border border-[color-mix(in_srgb,var(--accent)_38%,transparent)] bg-[var(--surface-2)]">
                             <span aria-hidden className="absolute inset-y-0 left-0 w-[3px] bg-[var(--accent)]" />
                             <div className="relative flex flex-wrap items-center gap-5 p-5">
                                 <div className="shrink-0">
@@ -357,7 +357,7 @@ export default function LeaderboardClient() {
                                 <Link href={`/profile/${viewer.username}`} className="flex items-center gap-3.5 min-w-0">
                                     <span className="relative shrink-0">
                                         <Avatar src={viewer.avatar_url} alt={viewer.username} size="md" />
-                                        <span className="absolute -bottom-1 -right-1 w-[22px] h-[22px] rounded-full bg-[var(--accent)] border-2 border-[#12100f] flex items-center justify-center font-display text-[9px] font-black text-white tabular-nums">
+                                        <span className="absolute -bottom-1 -right-1 w-[22px] h-[22px] rounded-full bg-[var(--accent)] border-2 border-[var(--surface-2)] flex items-center justify-center font-display text-[9px] font-black text-white tabular-nums">
                                             {viewer.level}
                                         </span>
                                     </span>

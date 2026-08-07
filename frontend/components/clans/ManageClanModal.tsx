@@ -128,7 +128,7 @@ export default function ManageClanModal({
     return (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 py-10 bg-black/75 backdrop-blur-sm" onClick={onClose}>
             <div
-                className="w-full max-w-2xl rounded-[14px] border border-white/[0.1] bg-[#12100f] shadow-[0_28px_60px_rgba(0,0,0,0.7)]"
+                className="w-full max-w-2xl rounded-[14px] border border-white/[0.1] bg-[var(--surface-2)] shadow-[0_28px_60px_rgba(0,0,0,0.7)]"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between p-5 border-b border-white/[0.07]">
@@ -145,7 +145,7 @@ export default function ManageClanModal({
                     <p className={label}>Artwork</p>
 
                     {/* banner strip with the emblem sitting on it, as it renders live */}
-                    <div className="relative h-[132px] rounded-[10px] overflow-hidden border border-white/[0.08] bg-[#0d0b0a]">
+                    <div className="relative h-[132px] rounded-[10px] overflow-hidden border border-white/[0.08] bg-[var(--surface-1)]">
                         {banner ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={getStorageUrl(banner)} alt="" className="absolute inset-0 w-full h-full object-cover" />
@@ -160,9 +160,9 @@ export default function ManageClanModal({
                                 </span>
                             </span>
                         )}
-                        <span aria-hidden className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0d0b0a] to-transparent" />
+                        <span aria-hidden className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[var(--surface-1)] to-transparent" />
 
-                        <span className="absolute bottom-3 left-3 w-[62px] h-[62px] rounded-[14px] border-2 border-[var(--accent)] bg-[#0d0b0a] overflow-hidden flex items-center justify-center">
+                        <span className="absolute bottom-3 left-3 w-[62px] h-[62px] rounded-[14px] border-2 border-[var(--accent)] bg-[var(--surface-1)] overflow-hidden flex items-center justify-center">
                             {logo ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={getStorageUrl(logo)} alt="" className="w-full h-full object-cover" />

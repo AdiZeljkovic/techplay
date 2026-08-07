@@ -82,7 +82,7 @@ function RecommendationCard({ pick, onAdded }: { pick: Recommendation; onAdded: 
     };
 
     return (
-        <div className="group rounded-[12px] border border-white/[0.07] bg-[#0d0b0a] hover:border-[color-mix(in_srgb,var(--accent)_38%,transparent)] transition-colors duration-300">
+        <div className="group rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_38%,transparent)] transition-colors duration-300">
             <div className="flex flex-col lg:flex-row gap-4 p-4">
                 {/* cover */}
                 <Link
@@ -272,7 +272,7 @@ export default function AdvisorClient() {
                     </p>
 
                     {/* stat strip */}
-                    <div className="mt-6 rounded-[var(--radius-panel)] border border-white/[0.07] bg-[#100e0d]/75 backdrop-blur-sm px-5 py-4">
+                    <div className="mt-6 rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-2)]/75 backdrop-blur-sm px-5 py-4">
                         <div className="flex items-center gap-6 md:gap-12 md:justify-center overflow-x-auto scrollbar-none min-w-max md:min-w-0">
                             {([
                                 [<Library key="b" className="w-4 h-4" />, "Your backlog", summary?.backlog ?? 0, "games to play", "var(--accent)"],

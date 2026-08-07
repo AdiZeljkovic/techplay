@@ -182,7 +182,7 @@ function GameCard({
 
     return (
         <div
-            className="group relative rounded-[12px] overflow-hidden border border-white/[0.07] bg-[#0d0b0a] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.55)] transition-all duration-300"
+            className="group relative rounded-[12px] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.55)] transition-all duration-300"
             style={{ ["--tint" as string]: meta.color }}
         >
             {/* the status paints the card's top edge */}
@@ -257,7 +257,7 @@ function GameCard({
 
             {/* owner controls slide up over the art */}
             {isOwnProfile && entry.game && (
-                <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-[var(--ease-hud)] bg-[#0d0b0a]/97 backdrop-blur-sm border-t border-white/[0.09] p-2 flex items-center gap-1.5">
+                <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-[var(--ease-hud)] bg-[var(--surface-1)]/97 backdrop-blur-sm border-t border-white/[0.09] p-2 flex items-center gap-1.5">
                     <span className="relative flex-1 min-w-0">
                         <select
                             value={entry.status}
@@ -266,7 +266,7 @@ function GameCard({
                             className="w-full appearance-none bg-white/[0.06] text-white font-display text-[9.5px] font-bold uppercase tracking-[0.08em] rounded-[6px] pl-2 pr-5 py-1.5 border border-white/[0.1] focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] cursor-pointer"
                         >
                             {STATUS_OPTIONS.map((s) => (
-                                <option key={s} value={s} className="bg-[#0d0b0a] normal-case">{STATUS[s].label}</option>
+                                <option key={s} value={s} className="bg-[var(--surface-1)] normal-case">{STATUS[s].label}</option>
                             ))}
                         </select>
                         <ChevronDown aria-hidden className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-white/40" />
@@ -354,7 +354,7 @@ function CollectionLedger({ stats }: { stats?: UserProfile["stats"] }) {
         v ? <span className="font-display text-[11px] font-bold tabular-nums text-white/30">{v}</span> : null;
 
     return (
-        <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[#100e0d] px-5 py-4 mb-4 overflow-x-auto scrollbar-none">
+        <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-2)] px-5 py-4 mb-4 overflow-x-auto scrollbar-none">
             <div className="flex items-center gap-6 md:gap-0 md:justify-between min-w-max md:min-w-0">
                 <StatCell
                     icon={<Library className="w-4 h-4" />}
@@ -406,7 +406,7 @@ function FeaturedCard({ entry }: { entry: CollectionEntry }) {
     return (
         <Link
             href={entry.game ? `/games/${entry.game.slug}` : "#"}
-            className="group relative flex flex-col justify-end h-full min-h-[320px] rounded-[12px] overflow-hidden border border-white/[0.07] bg-[#0d0b0a] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
+            className="group relative flex flex-col justify-end h-full min-h-[320px] rounded-[12px] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
         >
             {entry.game?.cover_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -762,7 +762,7 @@ function AddGameModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =
     return (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-start justify-center p-4 pt-[10vh]" onClick={onClose}>
             <div
-                className="w-full max-w-lg rounded-[16px] bg-[#0d0b0a] border border-white/[0.1] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.9)] overflow-hidden"
+                className="w-full max-w-lg rounded-[16px] bg-[var(--surface-1)] border border-white/[0.1] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.9)] overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.07]">
@@ -795,7 +795,7 @@ function AddGameModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =
                                 className="appearance-none bg-white/[0.04] border border-white/[0.1] rounded-[8px] pl-3 pr-7 h-10 font-display text-[10.5px] font-bold uppercase tracking-[0.08em] text-white focus:outline-none cursor-pointer"
                             >
                                 {STATUS_OPTIONS.map((s) => (
-                                    <option key={s} value={s} className="bg-[#0d0b0a] normal-case">{STATUS[s].label}</option>
+                                    <option key={s} value={s} className="bg-[var(--surface-1)] normal-case">{STATUS[s].label}</option>
                                 ))}
                             </select>
                             <ChevronDown aria-hidden className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />

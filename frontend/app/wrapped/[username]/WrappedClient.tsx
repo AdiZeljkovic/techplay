@@ -241,7 +241,7 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
                         className="relative overflow-hidden rounded-[14px] border p-5"
                         style={{
                             borderColor: "color-mix(in srgb, var(--accent) 45%, transparent)",
-                            background: "linear-gradient(140deg, color-mix(in srgb, var(--accent) 10%, #0d0b0a), #0b0a09 60%)",
+                            background: "linear-gradient(140deg, color-mix(in srgb, var(--accent) 10%, var(--surface-1)), var(--surface-0) 60%)",
                         }}
                     >
                         <span aria-hidden className="absolute top-4 right-5 flex gap-1">
@@ -269,7 +269,7 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
                                         </span>
                                     )}
                                 </span>
-                                <span className="absolute -bottom-1 -right-1 w-[24px] h-[24px] rounded-full bg-[var(--accent)] border-2 border-[#0b0a09] flex items-center justify-center font-display text-[10px] font-black text-white tabular-nums">
+                                <span className="absolute -bottom-1 -right-1 w-[24px] h-[24px] rounded-full bg-[var(--accent)] border-2 border-[var(--surface-0)] flex items-center justify-center font-display text-[10px] font-black text-white tabular-nums">
                                     {data.level}
                                 </span>
                             </span>
@@ -328,7 +328,7 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
             ) : (
                 <div className="container-page py-6 space-y-4">
                     {/* ── stat strip ── */}
-                    <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[#100e0d] px-5 py-4 overflow-x-auto scrollbar-none">
+                    <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-2)] px-5 py-4 overflow-x-auto scrollbar-none">
                         <div className="flex items-center gap-8 md:gap-0 md:justify-between min-w-max md:min-w-0">
                             {data.stats.map((s, i) => (
                                 <span key={s.key} className="flex items-center shrink-0">
@@ -431,7 +431,7 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
                                         <div className="space-y-3.5">
                                             {data.timeline.map((e) => (
                                                 <div key={e.key} className="relative">
-                                                    <span aria-hidden className="absolute -left-5 top-1 w-[11px] h-[11px] rounded-full bg-[var(--accent)] border-2 border-[#12100f]" />
+                                                    <span aria-hidden className="absolute -left-5 top-1 w-[11px] h-[11px] rounded-full bg-[var(--accent)] border-2 border-[var(--surface-2)]" />
                                                     <p className="font-display text-[9px] font-black uppercase tracking-[0.12em] text-[var(--accent)]">{e.month}</p>
                                                     <p className="text-[12px] font-bold text-white leading-snug">{e.title}</p>
                                                     <p className="text-[11px] text-white/40 leading-snug">{e.detail}</p>
@@ -460,7 +460,7 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
                                                         <>
                                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                                             <img src={m.image} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-20" />
-                                                            <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#0d0b0a] via-[#0d0b0a]/85 to-transparent" />
+                                                            <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-[var(--surface-1)] via-[var(--surface-1)]/85 to-transparent" />
                                                         </>
                                                     )}
                                                     <span className="relative block">
@@ -528,7 +528,7 @@ export default function WrappedClient({ data, username }: { data: WrappedPayload
                         className="relative overflow-hidden rounded-[var(--radius-panel)] border p-6"
                         style={{
                             borderColor: "color-mix(in srgb, var(--accent) 35%, transparent)",
-                            background: "linear-gradient(100deg, color-mix(in srgb, var(--accent) 12%, #0d0b0a), #0b0a09 65%)",
+                            background: "linear-gradient(100deg, color-mix(in srgb, var(--accent) 12%, var(--surface-1)), var(--surface-0) 65%)",
                         }}
                     >
                         <div className="relative flex flex-wrap items-center justify-between gap-5">

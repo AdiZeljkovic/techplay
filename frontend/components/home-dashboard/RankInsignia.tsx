@@ -97,7 +97,7 @@ export function LevelHex({
                 style={{
                     inset: 2.5,
                     clipPath: HEX,
-                    background: "linear-gradient(165deg, #14110f 0%, #0a0908 100%)",
+                    background: "linear-gradient(165deg, var(--surface-2) 0%, var(--surface-0) 100%)",
                 }}
             />
             <span
@@ -264,7 +264,7 @@ export function XpRail({
                             // mistaken for a browser progress element
                             transform: "skewX(-16deg)",
                             borderRadius: 2,
-                            background: "linear-gradient(180deg, #0a0807 0%, #15100f 100%)",
+                            background: "linear-gradient(180deg, var(--surface-0) 0%, var(--surface-2) 100%)",
                             boxShadow: lit
                                 ? "inset 0 0 0 1px rgba(255,255,255,0.05)"
                                 : "inset 0 1px 3px rgba(0,0,0,0.85), inset 0 0 0 1px rgba(255,255,255,0.045)",

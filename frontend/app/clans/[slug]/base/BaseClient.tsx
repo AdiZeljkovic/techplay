@@ -72,10 +72,10 @@ function BuildingNode({
             } : undefined}
             className={`group flex items-center gap-2.5 rounded-[11px] border px-3 py-2 transition-all duration-300 ${
                 selected
-                    ? "border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_12%,#0d0b0a)] shadow-[0_0_24px_color-mix(in_srgb,var(--accent)_25%,transparent)]"
+                    ? "border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_12%,var(--surface-1))] shadow-[0_0_24px_color-mix(in_srgb,var(--accent)_25%,transparent)]"
                     : building.locked
-                        ? "border-white/[0.06] bg-[#0d0b0a]/90 opacity-60 hover:opacity-90"
-                        : "border-white/[0.1] bg-[#0d0b0a]/90 hover:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
+                        ? "border-white/[0.06] bg-[var(--surface-1)]/90 opacity-60 hover:opacity-90"
+                        : "border-white/[0.1] bg-[var(--surface-1)]/90 hover:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
             } ${central ? "px-4 py-2.5" : ""}`}
         >
             <span
@@ -553,10 +553,10 @@ export default function BaseClient({ slug }: { slug: string }) {
                     <span className="text-[var(--accent)]">Base</span>
                 </p>
 
-                <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[#100e0d] p-5">
+                <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-2)] p-5">
                     <div className="flex flex-wrap items-center gap-5">
                         <span
-                            className="w-[64px] h-[64px] shrink-0 rounded-[14px] border-2 bg-[#0d0b0a] overflow-hidden flex items-center justify-center"
+                            className="w-[64px] h-[64px] shrink-0 rounded-[14px] border-2 bg-[var(--surface-1)] overflow-hidden flex items-center justify-center"
                             style={{ borderColor: tier }}
                         >
                             {clan.logo ? (
@@ -621,7 +621,7 @@ export default function BaseClient({ slug }: { slug: string }) {
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
                     {/* ── the map ── */}
                     <div className="xl:col-span-8 min-w-0 space-y-4">
-                        <div className="relative rounded-[var(--radius-panel)] border border-white/[0.07] overflow-hidden bg-[#0b0a09]">
+                        <div className="relative rounded-[var(--radius-panel)] border border-white/[0.07] overflow-hidden bg-[var(--surface-0)]">
                             {/* command-grid backdrop */}
                             <span aria-hidden className="absolute inset-0" style={{
                                 backgroundImage: "radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 55%), repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.025) 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.025) 40px)",

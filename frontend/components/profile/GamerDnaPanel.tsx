@@ -281,7 +281,7 @@ function AxisRow({ axis }: { axis: DnaAxis }) {
                     }}
                 />
                 <span
-                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-[13px] h-[13px] rounded-full border-2 border-[#100e0d] transition-[left] duration-700 ease-[var(--ease-hud)]"
+                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-[13px] h-[13px] rounded-full border-2 border-[var(--surface-2)] transition-[left] duration-700 ease-[var(--ease-hud)]"
                     style={{
                         left: `${axis.value}%`,
                         background: axis.measured ? "var(--xp-bright)" : "var(--accent)",

@@ -80,7 +80,7 @@ function ScoreStrip({ data }: { data: AchievementsPayload }) {
     }, [data.items]);
 
     return (
-        <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[#100e0d] px-5 py-4 mb-4">
+        <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-2)] px-5 py-4 mb-4">
             <div className="flex items-center gap-6 md:gap-0 md:justify-between overflow-x-auto scrollbar-none min-w-max md:min-w-0">
                 <ScoreCell
                     icon={<Trophy className="w-4 h-4" />}
@@ -167,7 +167,7 @@ function AchievementCard({ a }: { a: AchievementEntry }) {
                     <Trophy className={`w-6 h-6 ${a.is_unlocked ? "text-[var(--accent)]" : "text-white/15"}`} />
                 )}
                 {!a.is_unlocked && (
-                    <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#100e0d] border border-white/[0.09] flex items-center justify-center">
+                    <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[var(--surface-2)] border border-white/[0.09] flex items-center justify-center">
                         <Lock className="w-2.5 h-2.5 text-white/35" />
                     </span>
                 )}
