@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -12,6 +12,11 @@ use Illuminate\Queue\SerializesModels;
  * A message landed in a conversation. Broadcast on the conversation's own
  * channel — everyone watching that thread gets it without polling, which is
  * the difference between a message list and a chat.
+ *
+ * The channels are private and authorised in routes/channels.php against
+ * conversation membership. They were public once, which meant the body of
+ * every direct message on the site was readable by anyone holding the
+ * publishable Reverb key — which ships in the browser bundle.
  */
 class ChatMessageSent implements ShouldBroadcast
 {
@@ -29,15 +34,15 @@ class ChatMessageSent implements ShouldBroadcast
         public readonly array $participantIds = [],
     ) {}
 
-    /** @return Channel[] */
+    /** @return PrivateChannel[] */
     public function broadcastOn(): array
     {
-        $channels = [new Channel("conversation.{$this->conversationId}")];
+        $channels = [new PrivateChannel("conversation.{$this->conversationId}")];
 
         // Each participant also has a personal channel, so an unread badge
         // updates on a page that isn't showing the thread at all.
         foreach ($this->participantIds as $userId) {
-            $channels[] = new Channel("user.{$userId}.chat");
+            $channels[] = new PrivateChannel("user.{$userId}.chat");
         }
 
         return $channels;

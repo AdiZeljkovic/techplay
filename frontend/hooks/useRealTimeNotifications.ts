@@ -29,8 +29,6 @@ export function useRealTimeNotifications() {
         const channel = echo.private(`user.${user.id}`);
 
         channel.listen('.notification.received', (data: Notification) => {
-            console.log('🔔 Notification:', data.message);
-
             // Add to notifications list
             setNotifications(prev => [data, ...prev]);
             setUnreadCount(prev => prev + 1);
@@ -43,7 +41,7 @@ export function useRealTimeNotifications() {
         });
 
         return () => {
-            echo.leaveChannel(`private-user.${user.id}`);
+            echo.leave(`user.${user.id}`);
         };
     }, [isAuthenticated, user?.id]);
 

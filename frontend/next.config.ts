@@ -7,6 +7,11 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
+    // Debug logging is for development; production keeps only errors.
+    compiler: {
+        removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
+    },
+
   // Security Headers
   async headers() {
     return [

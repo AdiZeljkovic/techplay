@@ -22,7 +22,6 @@ export function useRealTimeShop(onStockUpdate?: (data: ProductStockUpdate) => vo
         const channel = echo.channel('shop');
 
         channel.listen('.product.stock.updated', (data: ProductStockUpdate) => {
-            console.log('📦 Stock updated:', data.slug, '->', data.stock);
 
             if (onStockUpdate) {
                 onStockUpdate(data);

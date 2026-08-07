@@ -33,7 +33,6 @@ export function useRealTimeNews(initialArticles: Article[] = []) {
         const channel = echo.channel('news');
 
         channel.listen('.article.published', (data: Article) => {
-            console.log('🆕 New article published:', data.title);
 
             setArticles(prev => {
                 // Avoid duplicates

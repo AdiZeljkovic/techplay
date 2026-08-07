@@ -272,13 +272,13 @@ export default function SocialClient() {
         if (!echo || !activeId) return;
 
         const name = `conversation.${activeId}`;
-        const channel = echo.channel(name);
+        const channel = echo.private(name);
         channel.listen(".chat.message", () => {
             mutateThread();
             mutateList();
         });
 
-        return () => { echo.leaveChannel(name); };
+        return () => { echo.leave(name); };
     }, [activeId, mutateThread, mutateList]);
 
     useEffect(() => {
@@ -286,13 +286,13 @@ export default function SocialClient() {
         if (!echo || !user?.id) return;
 
         const name = `user.${user.id}.chat`;
-        const channel = echo.channel(name);
+        const channel = echo.private(name);
         channel.listen(".chat.message", () => {
             mutateList();
             mutateHub();
         });
 
-        return () => { echo.leaveChannel(name); };
+        return () => { echo.leave(name); };
     }, [user?.id, mutateList, mutateHub]);
 
     const openDirect = useCallback(async (username: string) => {

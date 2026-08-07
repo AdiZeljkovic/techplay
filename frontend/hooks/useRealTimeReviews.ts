@@ -30,7 +30,6 @@ export function useRealTimeReviews(initialReviews: Review[] = []) {
         const channel = echo.channel('reviews');
 
         channel.listen('.review.published', (data: Review) => {
-            console.log('⭐ New review published:', data.title);
 
             setReviews(prev => {
                 if (prev.some(r => r.id === data.id)) return prev;

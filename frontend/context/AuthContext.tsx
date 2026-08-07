@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 
 import { User } from "@/types";
 import { trackD1Return } from "@/lib/track";
+import { disconnectEcho } from "@/lib/echo";
 
 interface AuthContextType {
     user: User | null;
@@ -80,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem("user");
         setToken(null);
         setUser(null);
+        disconnectEcho();
     };
 
     useEffect(() => {

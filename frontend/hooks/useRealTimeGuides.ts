@@ -28,7 +28,6 @@ export function useRealTimeGuides(initialGuides: Guide[] = []) {
         const channel = echo.channel('guides');
 
         channel.listen('.guide.published', (data: Guide) => {
-            console.log('📚 New guide published:', data.title);
 
             setGuides(prev => {
                 if (prev.some(g => g.id === data.id)) return prev;

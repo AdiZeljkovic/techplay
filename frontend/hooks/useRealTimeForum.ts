@@ -46,7 +46,6 @@ export function useRealTimeForum(initialThreads: Thread[] = []) {
         const channel = echo.channel('forum');
 
         channel.listen('.thread.created', (data: Thread) => {
-            console.log('📝 New forum thread:', data.title);
 
             setThreads(prev => {
                 if (prev.some(t => t.id === data.id)) return prev;
@@ -77,7 +76,6 @@ export function useRealTimeThreadReplies(threadId: number, initialReplies: Forum
         const channel = echo.channel(channelName);
 
         channel.listen('.reply.posted', (data: ForumReply) => {
-            console.log('💬 New reply in thread:', data.content.substring(0, 50));
 
             setReplies(prev => {
                 if (prev.some(r => r.id === data.id)) return prev;

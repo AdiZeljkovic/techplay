@@ -39,7 +39,6 @@ export function useRealTimeComments(
         const channel = echo.channel(channelName);
 
         channel.listen('.comment.posted', (data: Comment) => {
-            console.log('💬 New comment:', data.content.substring(0, 50));
 
             setComments(prev => {
                 // Avoid duplicates
