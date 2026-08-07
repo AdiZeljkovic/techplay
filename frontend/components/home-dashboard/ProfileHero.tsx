@@ -200,110 +200,36 @@ function StatCell({ cell }: { cell: StripCell }) {
  */
 function RankConsole({ hero, tier, base }: { hero: HeroModel; tier: string | null; base: string }) {
     const colour = hero.rank_color || "#9ca3af";
-    const next = hero.next_rank;
 
-    const bandFloor = hero.rank_min_xp ?? 0;
-    const bandCeil = next?.min_xp ?? null;
-    const through = bandCeil && bandCeil > bandFloor
-        ? Math.min(100, Math.max(0, ((hero.xp - bandFloor) / (bandCeil - bandFloor)) * 100))
-        : 100;
-    const toGo = bandCeil ? Math.max(0, bandCeil - hero.xp) : 0;
+    const artSlug = (hero.rank_name || '').toLowerCase().replace(/[^a-z]/g, '');
 
     return (
         <Link
             href={`${base}?tab=stats`}
             title="View rank progress"
-            className="group/rank relative shrink-0 self-stretch lg:self-end w-full lg:w-[336px] overflow-hidden rounded-[var(--radius-panel,18px)] border transition-colors duration-300"
-            style={{
-                borderColor: `color-mix(in srgb, ${colour} 26%, transparent)`,
-                background: `linear-gradient(155deg, color-mix(in srgb, ${colour} 13%, #100e0d) 0%, #0b0a09 62%)`,
-            }}
+            className="group/rank relative shrink-0 self-stretch lg:self-end w-full lg:w-[336px] flex flex-col items-center justify-end text-center"
         >
-            {/* the tier's light, pooled behind its own emblem */}
-            <span
-                aria-hidden
-                className="absolute inset-0 opacity-70 transition-opacity duration-500 group-hover/rank:opacity-95"
-                style={{
-                    background: `radial-gradient(120% 90% at 50% 8%, color-mix(in srgb, ${colour} 34%, transparent) 0%, transparent 62%)`,
-                }}
-            />
+            {/* The commissioned rank art carries its own presence — no panel,
+                no pooled light, nothing behind it. Image, then the name. */}
+            {artSlug ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                    src={`/images/ranks/${artSlug}.webp`}
+                    alt={hero.rank_name || 'Rank'}
+                    className="w-[190px] h-auto select-none transition-transform duration-500 ease-[var(--ease-hud)] group-hover/rank:scale-[1.04]"
+                    style={{ filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.6))' }}
+                />
+            ) : (
+                <RankInsigniaMark icon={hero.rank_icon} color={hero.rank_color} name={hero.rank_name} size={148} />
+            )}
 
-            <div className="relative z-10 px-5 pt-5 pb-4 flex flex-col items-center text-center">
-                <p className="font-display text-[9px] font-black uppercase tracking-[0.22em] text-white/40">
-                    Current rank
-                </p>
-
-                <span className="mt-2 block transition-transform duration-500 ease-[var(--ease-hud)] group-hover/rank:scale-[1.04]">
-                    <RankInsigniaMark
-                        icon={hero.rank_icon}
-                        color={hero.rank_color}
-                        name={hero.rank_name}
-                        size={148}
-                    />
-                </span>
-
-                <p
-                    className="mt-1 font-display text-[26px] font-black uppercase tracking-[0.02em] leading-none"
-                    style={{ color: colour }}
-                    title={tier ?? undefined}
-                >
-                    {hero.rank_name || "Unranked"}
-                </p>
-
-                <p className="mt-2 font-display text-[13px] font-black tabular-nums text-[var(--xp-bright)]">
-                    {hero.xp.toLocaleString()} XP
-                </p>
-
-                {/* Every rank raises the same question, so it is answered here
-                    rather than a click away. */}
-                {next ? (
-                    <div className="mt-4 w-full">
-                        <div className="flex items-end justify-between gap-3">
-                            <span className="font-display text-[8.5px] font-black uppercase tracking-[0.16em] text-white/35">
-                                Next
-                            </span>
-                            <span className="flex items-center gap-1.5 min-w-0">
-                                {next.icon && (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img
-                                        src={next.icon}
-                                        alt=""
-                                        aria-hidden
-                                        width={20}
-                                        height={20}
-                                        className="w-5 h-5 object-contain opacity-55"
-                                    />
-                                )}
-                                <span
-                                    className="font-display text-[10.5px] font-black uppercase tracking-[0.06em] truncate"
-                                    style={{ color: next.color || "rgba(255,255,255,0.6)" }}
-                                >
-                                    {next.name}
-                                </span>
-                            </span>
-                        </div>
-
-                        <span className="mt-2 block h-[6px] rounded-full bg-white/[0.07] overflow-hidden">
-                            <span
-                                className="block h-full rounded-full transition-[width] duration-700 ease-[var(--ease-hud)]"
-                                style={{
-                                    width: `${through}%`,
-                                    background: `linear-gradient(90deg, color-mix(in srgb, ${colour} 70%, black), ${colour})`,
-                                    boxShadow: `0 0 14px color-mix(in srgb, ${colour} 55%, transparent)`,
-                                }}
-                            />
-                        </span>
-
-                        <p className="mt-1.5 font-display text-[10px] font-bold tabular-nums text-white/40">
-                            {toGo.toLocaleString()} XP to go
-                        </p>
-                    </div>
-                ) : (
-                    <p className="mt-4 font-display text-[10px] font-black uppercase tracking-[0.16em] text-white/35">
-                        Top of the ladder
-                    </p>
-                )}
-            </div>
+            <p
+                className="mt-2 font-display text-[26px] font-black uppercase tracking-[0.02em] leading-none"
+                style={{ color: colour }}
+                title={tier ?? undefined}
+            >
+                {hero.rank_name || 'Unranked'}
+            </p>
         </Link>
     );
 }
@@ -460,7 +386,7 @@ export default function ProfileHero({
                     {backdrop ? (
                         <>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={backdrop} alt="" className="tp-drift w-full h-full object-cover" />
+                            <img src={backdrop} alt="" className="w-full h-full object-cover" />
                             {/* legible on the left, art on the right */}
                             <span className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)] from-[4%] via-[color-mix(in_srgb,var(--surface-0)_55%,transparent)] via-[45%] to-[color-mix(in_srgb,var(--surface-0)_20%,transparent)]" />
                             {/* feathered seams into the page above and below */}
