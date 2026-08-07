@@ -7,6 +7,7 @@ import { Trophy, MessageCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import useSWR from "swr";
 import axios from "@/lib/axios";
+import Panel from "@/components/ui/Panel";
 import { getCategoryColor, getCategoryIcon, getAvatarSrc } from "@/lib/forum";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
@@ -30,16 +31,9 @@ interface LeaderboardEntry {
     label: string;
 }
 
-const panelClass =
-    "bg-[#0D1117] border border-[#1A2030] rounded-2xl overflow-hidden";
-
-function SidebarHeader({ title }: { title: string }) {
-    return (
-        <h3 className="text-[11px] font-bold text-white uppercase tracking-[0.12em] mb-4">
-            {title}
-        </h3>
-    );
-}
+/** The quiet button under a sidebar list — command shape, no accent fill. */
+const QUIET_ACTION =
+    "btn-command btn-command-quiet mt-4 flex items-center justify-center gap-2 h-9 bg-white/[0.04] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55 hover:text-white hover:bg-white/[0.08] transition-colors";
 
 export default function ForumSidebar() {
     const { user } = useAuth();
@@ -57,36 +51,30 @@ export default function ForumSidebar() {
 
     return (
         <div className="space-y-4 sticky top-[96px]">
-            {/* ── PROFILE ── */}
+            {/* ── who you are here ── */}
             {user ? (
-                <div className={`${panelClass} p-5`}>
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="relative w-14 h-14 flex-shrink-0">
-                            <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-[#DC143C]/40">
+                <Panel>
+                    <div className="flex items-center gap-3">
+                        <span className="relative w-14 h-14 shrink-0">
+                            <span className="block w-14 h-14 rounded-full overflow-hidden ring-2 ring-[color-mix(in_srgb,var(--accent)_40%,transparent)]">
                                 {avatarSrc ? (
-                                    <Image
-                                        src={avatarSrc}
-                                        alt={user.username}
-                                        width={56}
-                                        height={56}
-                                        className="object-cover w-full h-full"
-                                    />
+                                    <Image src={avatarSrc} alt={user.username} width={56} height={56} className="object-cover w-full h-full" />
                                 ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-[#DC143C] to-[#FF4D6A] flex items-center justify-center text-white text-[18px] font-black">
+                                    <span className="w-full h-full flex items-center justify-center bg-[var(--accent)] font-display text-[18px] font-black text-white">
                                         {user.username?.charAt(0)?.toUpperCase() || "?"}
-                                    </div>
+                                    </span>
                                 )}
-                            </div>
-                            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#DC143C] border-2 border-[#0D1117] flex items-center justify-center text-[10px] font-black text-white">
+                            </span>
+                            <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[var(--accent)] border-2 border-[var(--surface-1)] flex items-center justify-center font-display text-[10px] font-black tabular-nums text-white">
                                 {level}
-                            </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-[14px] font-bold text-white truncate">{user.username}</p>
+                            </span>
+                        </span>
+                        <div className="min-w-0">
+                            <p className="font-display text-[14px] font-black text-white truncate">{user.username}</p>
                             {user.rank?.name && (
                                 <p
-                                    className="text-[11px] font-bold uppercase tracking-wide truncate"
-                                    style={{ color: user.rank.color || "#DC143C" }}
+                                    className="mt-0.5 font-display text-[9.5px] font-black uppercase tracking-[0.14em] truncate"
+                                    style={{ color: user.rank.color || "var(--accent)" }}
                                 >
                                     {user.rank.name}
                                 </p>
@@ -94,110 +82,93 @@ export default function ForumSidebar() {
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-[#4B5563]">
+                    <div className="mt-4 flex items-center justify-between">
+                        <span className="font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/30">
                             Level {level} XP
                         </span>
-                        <span className="text-[10px] font-bold text-[#9CA3AF]">
+                        <span className="font-display text-[10px] font-black tabular-nums text-white/45">
                             {xp.toLocaleString()} / {nextRankXp.toLocaleString()}
                         </span>
                     </div>
-                    <div className="h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden mb-4">
+                    <div className="mt-1.5 h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
                         <div
-                            className="h-full rounded-full bg-gradient-to-r from-[#DC143C] to-[#FF4D6A]"
+                            className="h-full rounded-full bg-gradient-to-r from-[var(--xp)] to-[var(--xp-bright)]"
                             style={{ width: `${xpProgress}%` }}
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 mb-4">
-                        <div className="text-center bg-white/[0.02] rounded-xl py-2">
-                            <div className="text-[15px] font-black text-white leading-none">
-                                {user.posts_count || 0}
-                            </div>
-                            <div className="text-[8px] font-bold uppercase tracking-widest text-[#4B5563] mt-1">
-                                Posts
-                            </div>
-                        </div>
-                        <div className="text-center bg-white/[0.02] rounded-xl py-2">
-                            <div className="text-[15px] font-black text-white leading-none">
-                                {user.forum_reputation || 0}
-                            </div>
-                            <div className="text-[8px] font-bold uppercase tracking-widest text-[#4B5563] mt-1">
-                                Rep
-                            </div>
-                        </div>
+                    <div className="mt-4 grid grid-cols-2 gap-2">
+                        {([
+                            ["Posts", user.posts_count || 0],
+                            ["Rep", user.forum_reputation || 0],
+                        ] as const).map(([label, value]) => (
+                            <span key={label} className="text-center rounded-[var(--radius-card)] bg-white/[0.03] py-2">
+                                <span className="block font-display text-[16px] font-black tabular-nums text-white leading-none">{value}</span>
+                                <span className="mt-1 block font-display text-[8px] font-bold uppercase tracking-[0.16em] text-white/30">{label}</span>
+                            </span>
+                        ))}
                     </div>
 
                     <Link
                         href={`/profile/${user.username}`}
-                        className="flex items-center justify-center w-full h-9 rounded-xl bg-[#DC143C] hover:bg-[#DC143C]/90 text-white text-[10px] font-bold uppercase tracking-[0.1em] transition-colors"
+                        className="btn-command mt-4 flex items-center justify-center h-9 bg-[var(--accent)] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white hover:brightness-110 transition-[filter]"
                     >
-                        View Profile
+                        View profile
                     </Link>
-                </div>
+                </Panel>
             ) : (
-                <div className={`${panelClass} p-5`}>
-                    <p className="text-[13px] font-bold text-white mb-1">Join the Community</p>
-                    <p className="text-[11px] text-[#4B5563] mb-4 leading-relaxed">
+                <Panel>
+                    <p className="font-display text-[14px] font-black text-white">Join the community</p>
+                    <p className="mt-1 text-[12px] text-white/35 leading-relaxed">
                         Log in to post, earn XP, and climb the ranks.
                     </p>
-                    <div className="flex gap-2">
+                    <div className="mt-4 flex gap-2">
                         <Link
                             href="/login"
-                            className="flex-1 h-9 rounded-xl bg-[#DC143C] hover:bg-[#DC143C]/90 text-white text-[11px] font-bold uppercase tracking-widest flex items-center justify-center transition-colors"
+                            className="btn-command flex-1 flex items-center justify-center h-9 bg-[var(--accent)] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white hover:brightness-110 transition-[filter]"
                         >
-                            Log In
+                            Log in
                         </Link>
                         <Link
                             href="/register"
-                            className="flex-1 h-9 rounded-xl border border-[#2A3040] hover:border-[#DC143C]/40 text-[#9CA3AF] text-[11px] font-bold uppercase tracking-widest flex items-center justify-center transition-colors"
+                            className="btn-command btn-command-quiet flex-1 flex items-center justify-center h-9 bg-white/[0.04] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55 hover:text-white hover:bg-white/[0.08] transition-colors"
                         >
                             Register
                         </Link>
                     </div>
-                </div>
+                </Panel>
             )}
 
-            {/* ── TOP CONTRIBUTORS ── */}
-            <div className={`${panelClass} p-5`}>
-                <SidebarHeader title="Top Contributors" />
-
+            {/* ── who carries the boards ── */}
+            <Panel title="Top contributors">
                 {topContributors.length === 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-2.5">
                         {[...Array(5)].map((_, i) => (
-                            <div key={i} className="h-12 bg-white/[0.03] rounded-xl animate-pulse" />
+                            <div key={i} className="h-11 rounded-[var(--radius-card)] bg-white/[0.03] animate-pulse" />
                         ))}
                     </div>
                 ) : (
-                    <div className="divide-y divide-[#1A2030]">
+                    <div className="divide-y divide-white/[0.05] -my-1">
                         {topContributors.map((entry) => {
-                            const avatarSrc = getAvatarSrc(entry.avatar_url);
+                            const src = getAvatarSrc(entry.avatar_url);
                             return (
-                                <Link key={entry.username} href={`/profile/${entry.username}`}>
-                                    <div className="flex items-center gap-3 py-3 hover:opacity-80 transition-opacity">
-                                        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-[#DC143C]/10">
-                                            {avatarSrc ? (
-                                                <Image
-                                                    src={avatarSrc}
-                                                    alt={entry.username}
-                                                    width={40}
-                                                    height={40}
-                                                    className="object-cover w-full h-full"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-[14px] font-black text-white bg-gradient-to-br from-[#DC143C] to-[#FF4D6A]">
-                                                    {entry.username.charAt(0).toUpperCase()}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[13px] font-bold text-white truncate leading-tight">
-                                                {entry.name || entry.username}
-                                            </p>
-                                            <p className="text-[11px] text-[#4B5563] mt-0.5">
-                                                {entry.value.toLocaleString()} rep
-                                            </p>
-                                        </div>
+                                <Link key={entry.username} href={`/profile/${entry.username}`} className="group flex items-center gap-3 py-2.5">
+                                    <span className="w-9 h-9 shrink-0 rounded-full overflow-hidden bg-[var(--accent-soft)] flex items-center justify-center">
+                                        {src ? (
+                                            <Image src={src} alt={entry.username} width={36} height={36} className="object-cover w-full h-full" />
+                                        ) : (
+                                            <span className="font-display text-[13px] font-black text-[var(--accent)]">
+                                                {entry.username.charAt(0).toUpperCase()}
+                                            </span>
+                                        )}
+                                    </span>
+                                    <div className="min-w-0">
+                                        <p className="font-display text-[12.5px] font-black text-white truncate leading-tight group-hover:text-[var(--accent)] transition-colors">
+                                            {entry.name || entry.username}
+                                        </p>
+                                        <p className="mt-0.5 text-[11px] text-white/25 tabular-nums">
+                                            {entry.value.toLocaleString()} rep
+                                        </p>
                                     </div>
                                 </Link>
                             );
@@ -205,75 +176,61 @@ export default function ForumSidebar() {
                     </div>
                 )}
 
-                <Link
-                    href="/leaderboard"
-                    className="mt-4 flex items-center justify-center gap-2 w-full h-9 rounded-xl border border-[#2A3040] hover:border-[#DC143C]/40 hover:bg-[#DC143C]/5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#9CA3AF] hover:text-[#DC143C] transition-colors"
-                >
-                    <Trophy className="w-3.5 h-3.5" />
-                    View Leaderboard
+                <Link href="/leaderboard" className={QUIET_ACTION}>
+                    <Trophy className="w-3.5 h-3.5" /> View leaderboard
                 </Link>
-            </div>
+            </Panel>
 
-            {/* ── LATEST POSTS ── */}
-            <div className={`${panelClass} p-5`}>
-                <SidebarHeader title="Latest Posts" />
-
+            {/* ── what is being said right now ── */}
+            <Panel title="Latest posts">
                 {!activeThreads ? (
-                    <div className="space-y-3">
+                    <div className="space-y-2.5">
                         {[...Array(5)].map((_, i) => (
-                            <div key={i} className="h-14 bg-white/[0.03] rounded-xl animate-pulse" />
+                            <div key={i} className="h-12 rounded-[var(--radius-card)] bg-white/[0.03] animate-pulse" />
                         ))}
                     </div>
                 ) : activeThreads.length === 0 ? (
-                    <p className="text-[12px] text-[#4B5563]">No recent posts.</p>
+                    <p className="text-[12px] text-white/25">No recent posts.</p>
                 ) : (
-                    <div className="divide-y divide-[#1A2030]">
+                    <div className="divide-y divide-white/[0.05] -my-1">
                         {activeThreads.map((thread) => {
                             const catSlug = thread.category?.slug ?? "";
                             const color = getCategoryColor(catSlug);
                             const Icon = getCategoryIcon(catSlug);
                             return (
-                                <Link key={thread.id} href={`/forum/thread/${thread.slug}`}>
-                                    <div className="flex items-start gap-3 py-3 hover:opacity-80 transition-opacity">
-                                        {/* Category icon circle */}
-                                        <div
-                                            className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5"
-                                            style={{ background: `linear-gradient(135deg, ${color}cc 0%, ${color}55 100%)` }}
-                                        >
-                                            <Icon className="w-3.5 h-3.5 text-white" />
-                                        </div>
-                                        {/* Title + meta */}
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[12px] font-bold text-white line-clamp-2 leading-snug">
-                                                {thread.title}
-                                            </p>
-                                            <p className="text-[10px] text-[#4B5563] mt-0.5">
-                                                {thread.category?.name ?? "Forum"}
-                                                {" · "}
-                                                <span suppressHydrationWarning>
-                                                    {formatDistanceToNow(new Date(thread.updated_at), { addSuffix: true })}
-                                                </span>
-                                            </p>
-                                        </div>
-                                        {/* Reply count */}
-                                        <div className="flex items-center gap-1 text-[#4B5563] flex-shrink-0 mt-0.5">
-                                            <MessageCircle className="w-3 h-3" />
-                                            <span className="text-[10px] font-bold">{thread.posts_count}</span>
-                                        </div>
+                                <Link key={thread.id} href={`/forum/thread/${thread.slug}`} className="group flex items-start gap-3 py-2.5">
+                                    <span
+                                        className="w-8 h-8 shrink-0 rounded-[var(--radius-card)] flex items-center justify-center mt-0.5"
+                                        style={{ background: `color-mix(in srgb, ${color} 14%, transparent)`, color }}
+                                    >
+                                        <Icon className="w-3.5 h-3.5" />
+                                    </span>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-display text-[12px] font-black text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                                            {thread.title}
+                                        </p>
+                                        <p className="mt-0.5 text-[10.5px] text-white/25">
+                                            {thread.category?.name ?? "Forum"}
+                                            {" · "}
+                                            <span suppressHydrationWarning>
+                                                {formatDistanceToNow(new Date(thread.updated_at), { addSuffix: true })}
+                                            </span>
+                                        </p>
                                     </div>
+                                    <span className="shrink-0 flex items-center gap-1 mt-0.5 text-white/25">
+                                        <MessageCircle className="w-3 h-3" />
+                                        <span className="font-display text-[10px] font-black tabular-nums">{thread.posts_count}</span>
+                                    </span>
                                 </Link>
                             );
                         })}
                     </div>
                 )}
 
-                <Link
-                    href="/forum"
-                    className="mt-4 flex items-center justify-center w-full h-9 rounded-xl border border-[#2A3040] hover:border-[#DC143C]/40 hover:bg-[#DC143C]/5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#9CA3AF] hover:text-[#DC143C] transition-colors"
-                >
-                    View All Latest Posts &rsaquo;
+                <Link href="/forum" className={QUIET_ACTION}>
+                    View all latest posts
                 </Link>
-            </div>
+            </Panel>
         </div>
     );
 }

@@ -53,154 +53,174 @@ interface ActiveThread {
 
 type TabType = "all" | "new" | "unanswered";
 
+/** Stat pair used inside a category card — the number leads, the word follows. */
+function CardStat({ value, label }: { value: number; label: string }) {
+    return (
+        <span>
+            <span className="block font-display text-[20px] font-black tabular-nums text-white leading-none">
+                {fmtStat(value || 0)}
+            </span>
+            <span className="mt-1 block font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/30">
+                {label}
+            </span>
+        </span>
+    );
+}
+
 function CategoryCard({ category, viewMode }: { category: ForumCategory; viewMode: "grid" | "list" }) {
     const Icon = getCategoryIcon(category.slug);
     const color = getCategoryColor(category.slug);
 
+    const iconBox = (size: "sm" | "lg") => (
+        <span
+            className={`${size === "lg" ? "w-12 h-12" : "w-10 h-10"} shrink-0 rounded-[var(--radius-card)] flex items-center justify-center`}
+            style={{ background: `color-mix(in srgb, ${color} 14%, transparent)`, color }}
+        >
+            <Icon className={size === "lg" ? "w-6 h-6" : "w-5 h-5"} />
+        </span>
+    );
+
     if (viewMode === "list") {
         return (
-            <Link href={`/forum/${category.slug}`}>
-                <div
-                    className="group relative bg-[#0D1117] border border-[#1A2030] rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:border-white/10 overflow-hidden"
-                    style={{ borderLeft: `4px solid ${color}` }}
-                >
-                    <div
-                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                        style={{ background: `linear-gradient(90deg, ${color}08 0%, transparent 100%)` }}
-                    />
-                    <div className="relative z-10 flex items-center justify-between gap-6">
-                        <div className="flex items-center gap-4">
-                            <div
-                                className="w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center"
-                                style={{
-                                    background: `linear-gradient(135deg, ${color}dd 0%, ${color}66 100%)`,
-                                    boxShadow: `0 4px 12px -2px ${color}40`,
-                                }}
-                            >
-                                <Icon className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                                <h3 className="text-[15px] font-bold text-white mb-0.5 group-hover:text-tp-accent transition-colors">
-                                    {decodeHtml(category.name)}
-                                </h3>
-                                {category.description && (
-                                    <p className="text-[#6B7280] text-[12px] line-clamp-1 max-w-md">
-                                        {decodeHtml(category.description)}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-8 flex-shrink-0">
-                            <div className="hidden sm:block text-center">
-                                <div className="font-display text-[18px] font-black text-white leading-none">
-                                    {fmtStat(category.threads_count || 0)}
-                                </div>
-                                <div className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] mt-0.5">Threads</div>
-                            </div>
-                            <div className="hidden sm:block text-center">
-                                <div className="font-display text-[18px] font-black text-white leading-none">
-                                    {fmtStat(category.posts_count || 0)}
-                                </div>
-                                <div className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] mt-0.5">Posts</div>
-                            </div>
-                            <div className="w-7 h-7 rounded-full border border-[#2A3040] flex items-center justify-center text-[#6B7280] group-hover:border-tp-accent/40 group-hover:text-tp-accent transition-all duration-300">
-                                <ChevronRight className="w-3.5 h-3.5" />
-                            </div>
-                        </div>
+            <Link
+                href={`/forum/${category.slug}`}
+                className="group flex items-center justify-between gap-6 rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-4 hover:border-[color-mix(in_srgb,var(--accent)_38%,transparent)] transition-colors"
+            >
+                <div className="flex items-center gap-3.5 min-w-0">
+                    {iconBox("sm")}
+                    <div className="min-w-0">
+                        <h3 className="font-display text-[14.5px] font-black text-white leading-tight group-hover:text-[var(--accent)] transition-colors">
+                            {decodeHtml(category.name)}
+                        </h3>
+                        {category.description && (
+                            <p className="mt-0.5 text-[12px] text-white/35 line-clamp-1 max-w-md">
+                                {decodeHtml(category.description)}
+                            </p>
+                        )}
                     </div>
+                </div>
+
+                <div className="flex items-center gap-7 shrink-0">
+                    <span className="hidden sm:block text-center"><CardStat value={category.threads_count} label="Threads" /></span>
+                    <span className="hidden sm:block text-center"><CardStat value={category.posts_count} label="Posts" /></span>
+                    <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-[var(--accent)] transition-colors" />
                 </div>
             </Link>
         );
     }
 
-    // ── Grid card — matches reference design exactly ──
     return (
-        <Link href={`/forum/${category.slug}`} className="h-full">
-            <div className="group h-full bg-[#0D1117] border border-[#1A2030] rounded-2xl overflow-hidden hover:border-white/10 transition-all duration-300 flex flex-col">
-
-                {/* TOP: icon + name + description */}
-                <div className="p-4 sm:p-5 flex gap-3 sm:gap-4">
-                    <div
-                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex-shrink-0 flex items-center justify-center"
-                        style={{
-                            background: `linear-gradient(135deg, ${color}ee 0%, ${color}77 100%)`,
-                            boxShadow: `0 8px 20px -4px ${color}50`,
-                        }}
-                    >
-                        <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0 pt-0.5">
-                        <h3 className="text-[15px] sm:text-[16px] font-bold text-white mb-1 group-hover:text-tp-accent transition-colors leading-snug">
-                            {decodeHtml(category.name)}
-                        </h3>
-                        <p className="text-[12px] text-[#6B7280] leading-relaxed line-clamp-2">
-                            {category.description ? decodeHtml(category.description) : "Explore discussions in this category."}
-                        </p>
-                    </div>
-                </div>
-
-                {/* STATS */}
-                <div className="px-4 sm:px-5 py-3 sm:py-4 flex gap-8 border-t border-[#1A2030]">
-                    <div>
-                        <div className="font-display text-[22px] sm:text-[24px] font-black text-white leading-none">
-                            {fmtStat(category.threads_count || 0)}
-                        </div>
-                        <div className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] mt-1">
-                            THREADS
-                        </div>
-                    </div>
-                    <div>
-                        <div className="font-display text-[22px] sm:text-[24px] font-black text-white leading-none">
-                            {fmtStat(category.posts_count || 0)}
-                        </div>
-                        <div className="text-[9px] font-bold uppercase tracking-widest text-[#6B7280] mt-1">
-                            POSTS
-                        </div>
-                    </div>
-                </div>
-
-                {/* LATEST TOPIC */}
-                <div className="mt-auto border-t border-[#1A2030] px-4 sm:px-5 py-3 sm:py-4">
-                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-tp-accent mb-2.5">
-                        LATEST TOPIC
+        <Link
+            href={`/forum/${category.slug}`}
+            className="group h-full flex flex-col rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_38%,transparent)] transition-colors"
+        >
+            {/* the board, named */}
+            <div className="p-4 flex gap-3.5">
+                {iconBox("lg")}
+                <div className="min-w-0">
+                    <h3 className="font-display text-[15px] font-black text-white leading-tight group-hover:text-[var(--accent)] transition-colors">
+                        {decodeHtml(category.name)}
+                    </h3>
+                    <p className="mt-1 text-[12px] text-white/35 leading-relaxed line-clamp-2">
+                        {category.description ? decodeHtml(category.description) : "Explore discussions in this category."}
                     </p>
-                    {category.latest_thread ? (
-                        <div className="flex items-start gap-2.5">
-                            <div
-                                className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[11px] font-bold text-white mt-0.5 overflow-hidden"
-                                style={{ background: `linear-gradient(135deg, ${color}cc 0%, ${color}66 100%)` }}
-                            >
-                                {getAvatarSrc(category.latest_thread.author?.avatar_url) ? (
-                                    <Image
-                                        src={getAvatarSrc(category.latest_thread.author?.avatar_url)!}
-                                        alt={category.latest_thread.author?.username || ""}
-                                        width={28}
-                                        height={28}
-                                        className="object-cover w-full h-full"
-                                    />
-                                ) : (
-                                    category.latest_thread.author?.username?.charAt(0)?.toUpperCase() || "?"
-                                )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-[12px] sm:text-[13px] font-semibold text-white leading-snug line-clamp-2 group-hover:text-tp-accent transition-colors">
-                                    {decodeHtml(category.latest_thread.title)}
-                                </p>
-                                <p className="text-[11px] text-[#6B7280] mt-0.5" suppressHydrationWarning>
-                                    by {category.latest_thread.author?.username}
-                                    {" · "}
-                                    {formatDistanceToNow(new Date(category.latest_thread.created_at), { addSuffix: true })}
-                                </p>
-                            </div>
-                            <div className="w-6 h-6 rounded-full border border-[#2A3040] flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:border-tp-accent/40 group-hover:text-tp-accent transition-all duration-300">
-                                <ChevronRight className="w-3.5 h-3.5 text-[#6B7280] group-hover:text-tp-accent" />
-                            </div>
-                        </div>
-                    ) : (
-                        <p className="text-[12px] text-[#4A5060] italic">No topics yet.</p>
-                    )}
                 </div>
             </div>
+
+            <div className="px-4 py-3 flex gap-8 border-t border-white/[0.05]">
+                <CardStat value={category.threads_count} label="Threads" />
+                <CardStat value={category.posts_count} label="Posts" />
+            </div>
+
+            <div className="mt-auto px-4 py-3 border-t border-white/[0.05]">
+                <p className="font-display text-[8.5px] font-black uppercase tracking-[0.16em] text-[var(--accent)] mb-2">
+                    Latest topic
+                </p>
+                {category.latest_thread ? (
+                    <div className="flex items-start gap-2.5">
+                        <span
+                            className="w-7 h-7 shrink-0 rounded-full overflow-hidden flex items-center justify-center font-display text-[11px] font-black text-white mt-0.5"
+                            style={{ background: `color-mix(in srgb, ${color} 22%, transparent)` }}
+                        >
+                            {getAvatarSrc(category.latest_thread.author?.avatar_url) ? (
+                                <Image
+                                    src={getAvatarSrc(category.latest_thread.author?.avatar_url)!}
+                                    alt={category.latest_thread.author?.username || ""}
+                                    width={28}
+                                    height={28}
+                                    className="object-cover w-full h-full"
+                                />
+                            ) : (
+                                category.latest_thread.author?.username?.charAt(0)?.toUpperCase() || "?"
+                            )}
+                        </span>
+                        <div className="min-w-0">
+                            <p className="font-display text-[12.5px] font-black text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                                {decodeHtml(category.latest_thread.title)}
+                            </p>
+                            <p className="mt-0.5 text-[11px] text-white/25" suppressHydrationWarning>
+                                by {category.latest_thread.author?.username}
+                                {" · "}
+                                {formatDistanceToNow(new Date(category.latest_thread.created_at), { addSuffix: true })}
+                            </p>
+                        </div>
+                    </div>
+                ) : (
+                    <p className="text-[12px] text-white/20">No topics yet.</p>
+                )}
+            </div>
+        </Link>
+    );
+}
+
+/** A thread as it appears in the New posts / Unanswered lists. */
+function ThreadRow({ thread, cta }: { thread: ActiveThread; cta: "replies" | "reply" }) {
+    return (
+        <Link
+            href={`/forum/thread/${thread.slug}`}
+            className="group flex items-center gap-4 rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] px-4 py-3.5 hover:border-[color-mix(in_srgb,var(--accent)_38%,transparent)] transition-colors"
+        >
+            <span className="w-11 h-11 shrink-0 rounded-full overflow-hidden bg-[var(--accent-soft)] flex items-center justify-center font-display text-[14px] font-black text-[var(--accent)]">
+                {getAvatarSrc(thread.author?.avatar_url) ? (
+                    <Image
+                        src={getAvatarSrc(thread.author?.avatar_url)!}
+                        alt={thread.author?.username || ""}
+                        width={44}
+                        height={44}
+                        className="object-cover w-full h-full"
+                    />
+                ) : (
+                    thread.author?.username?.charAt(0)?.toUpperCase() || "?"
+                )}
+            </span>
+
+            <div className="flex-1 min-w-0">
+                <h3 className="font-display text-[15px] font-black text-white truncate group-hover:text-[var(--accent)] transition-colors">
+                    {decodeHtml(thread.title)}
+                </h3>
+                <div className="mt-1 flex items-center gap-2.5">
+                    {thread.category && (
+                        <span className="inline-flex items-center h-[19px] px-2 rounded-[var(--radius-inner)] bg-[var(--accent-soft)] font-display text-[9px] font-black uppercase tracking-[0.12em] text-[var(--accent)]">
+                            {thread.category.name}
+                        </span>
+                    )}
+                    <span className="text-[11.5px] text-white/25" suppressHydrationWarning>
+                        {formatDistanceToNow(new Date(thread.updated_at), { addSuffix: true })}
+                    </span>
+                </div>
+            </div>
+
+            {cta === "replies" ? (
+                <span className="shrink-0 inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[var(--radius-card)] bg-white/[0.04] border border-white/[0.07] text-white/45">
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span className="font-display text-[11px] font-black tabular-nums">{thread.posts_count}</span>
+                </span>
+            ) : (
+                <span className="shrink-0 inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[var(--radius-card)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] text-[var(--accent)]">
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span className="font-display text-[9.5px] font-black uppercase tracking-[0.1em]">Reply</span>
+                </span>
+            )}
         </Link>
     );
 }
@@ -218,16 +238,15 @@ export default function ForumPage() {
     const { data: unansweredThreads } = useSWR<ActiveThread[]>("/forum/unanswered", fetcher);
 
     const tabLabels: Record<TabType, string> = {
-        all: "All Categories",
-        new: "New Posts",
+        all: "All categories",
+        new: "New posts",
         unanswered: "Unanswered",
     };
 
     return (
-        <div className="min-h-screen">
-            {/* ── HERO ── */}
-            <section className="relative overflow-hidden bg-[#060810]" style={{ minHeight: 340 }}>
-                {/* Warrior background image */}
+        <div className="min-h-screen bg-[var(--surface-0)]">
+            {/* ── hero ── */}
+            <section className="relative overflow-hidden border-b border-white/[0.07]">
                 <Image
                     src="/forum-hero.png"
                     alt=""
@@ -236,115 +255,71 @@ export default function ForumPage() {
                     unoptimized
                     className="object-cover object-center"
                 />
+                {/* a dark pool behind the words, so the fire never fights them */}
+                <span aria-hidden className="absolute inset-0 bg-[radial-gradient(58%_120%_at_50%_40%,rgba(5,7,10,0.86),rgba(5,7,10,0.5)_72%)]" />
+                <span aria-hidden className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
-                {/* Left-heavy gradient so text stays readable, warrior shows through center */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#060810] from-[28%] via-[#060810]/60 via-[55%] to-[#060810]/65" />
-                {/* Extra bottom darkness so the whole hero blends into page */}
-                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#060810] to-transparent" />
+                <div className="relative z-10 container-page py-12 md:py-16 text-center">
+                    <p className="font-display text-[10px] font-black uppercase tracking-[0.22em] text-[var(--accent)]">
+                        Discuss. Share. Connect.
+                    </p>
+                    <h1 className="mt-3 font-display text-3xl md:text-5xl font-black uppercase tracking-tight leading-none">
+                        <span className="text-white">Community </span>
+                        <span className="text-[var(--accent)]">Forums</span>
+                    </h1>
+                    <p className="mt-3 text-[13.5px] text-white/45 max-w-[520px] mx-auto leading-relaxed">
+                        Join the discussion, share your thoughts, and connect with fellow gamers and tech enthusiasts.
+                    </p>
 
-                <div className="container-page py-14 lg:py-20 relative z-10">
-                    <div className="grid lg:grid-cols-[1fr_auto] gap-8 xl:gap-16 items-center">
-                        {/* Left */}
-                        <div className="max-w-[520px]">
-                            <p className="text-tp-accent text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.25em] mb-3 sm:mb-4">
-                                DISCUSS. SHARE. CONNECT.
-                            </p>
-                            <h1 className="font-display text-[38px] sm:text-5xl xl:text-[58px] font-black text-white uppercase leading-none mb-4 sm:mb-5">
-                                COMMUNITY{" "}
-                                <span className="text-tp-accent">FORUMS</span>
-                            </h1>
-                            <p className="text-[#A1A1AA] text-[14px] sm:text-[15px] leading-relaxed mb-8 sm:mb-10">
-                                Join the discussion, share your thoughts, and connect with fellow gamers and tech enthusiasts.
-                            </p>
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
+                        {[
+                            { icon: Users2, value: stats?.online_users ?? 0, label: "Members online" },
+                            { icon: MessageSquare, value: stats?.total_threads ?? 0, label: "Threads" },
+                            { icon: FileText, value: stats?.total_posts ?? 0, label: "Posts" },
+                            { icon: Users, value: stats?.members ?? 0, label: "Members" },
+                        ].map(({ icon: Icon, value, label }) => (
+                            <span key={label} className="flex items-center gap-2">
+                                <Icon className="w-4 h-4 shrink-0 text-[var(--accent)]" />
+                                <span className="font-display text-[21px] font-black tabular-nums text-white leading-none">
+                                    {fmtStat(value)}
+                                </span>
+                                <span className="font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/30 text-left leading-tight max-w-[54px]">
+                                    {label}
+                                </span>
+                            </span>
+                        ))}
+                    </div>
 
-                            {/* Stats row */}
-                            <div className="flex flex-wrap gap-x-6 gap-y-4">
-                                {[
-                                    { icon: Users2, value: stats?.online_users ?? 0, label: "MEMBERS ONLINE" },
-                                    { icon: MessageSquare, value: stats?.total_threads ?? 0, label: "THREADS" },
-                                    { icon: FileText, value: stats?.total_posts ?? 0, label: "POSTS" },
-                                    { icon: Users, value: stats?.members ?? 0, label: "MEMBERS" },
-                                ].map(({ icon: Icon, value, label }) => (
-                                    <div key={label} className="flex items-center gap-2">
-                                        <Icon className="w-4 h-4 text-tp-accent flex-shrink-0" />
-                                        <span className="font-display font-black text-white text-[22px] leading-none">
-                                            {fmtStat(value)}
-                                        </span>
-                                        <span className="text-[#6B7280] text-[9px] font-bold uppercase tracking-widest leading-tight">{label}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Right — auth / search panel */}
-                        <div className="hidden lg:block w-[300px] xl:w-[320px]">
-                            <div className="space-y-3">
-                                {/* Search bar */}
-                                <div className="flex items-center gap-2 bg-[#0D1117]/80 border border-white/[0.10] rounded-lg px-4 py-3 backdrop-blur-md">
-                                    <input
-                                        type="text"
-                                        placeholder="Search forums..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter" && searchQuery.trim()) {
-                                                router.push(`/forum/search?q=${encodeURIComponent(searchQuery.trim())}`);
-                                            }
-                                        }}
-                                        className="flex-1 bg-transparent text-[14px] text-white placeholder:text-[#6B7280] outline-none min-w-0"
-                                    />
-                                    <Search className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
-                                </div>
-
-                                {user ? (
-                                    <Link
-                                        href={`/profile/${user.username}`}
-                                        className="flex items-center justify-center w-full h-11 rounded-lg bg-tp-accent hover:bg-tp-accent/90 text-white text-[12px] font-black uppercase tracking-widest transition-colors shadow-lg shadow-tp-accent/25"
-                                    >
-                                        GO TO PROFILE
-                                    </Link>
-                                ) : (
-                                    <>
-                                        <div className="flex gap-2">
-                                            <Link
-                                                href="/login"
-                                                className="flex-1 h-11 rounded-lg bg-tp-accent hover:bg-tp-accent/90 text-white text-[12px] font-black uppercase tracking-widest flex items-center justify-center transition-colors shadow-lg shadow-tp-accent/25"
-                                            >
-                                                LOG IN
-                                            </Link>
-                                            <Link
-                                                href="/register"
-                                                className="flex-1 h-11 rounded-lg border border-white/25 hover:border-white/50 text-white text-[12px] font-black uppercase tracking-widest flex items-center justify-center transition-colors"
-                                            >
-                                                REGISTER
-                                            </Link>
-                                        </div>
-                                        <p className="text-[12px] text-[#9CA3AF] text-center leading-relaxed">
-                                            New here? Create an account and join the TechPlay community.
-                                        </p>
-                                    </>
-                                )}
-                            </div>
-                        </div>
+                    <div className="mt-6 mx-auto max-w-[380px] relative">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25 pointer-events-none" />
+                        <input
+                            type="text"
+                            placeholder="Search forums…"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && searchQuery.trim()) {
+                                    router.push(`/forum/search?q=${encodeURIComponent(searchQuery.trim())}`);
+                                }
+                            }}
+                            className="w-full h-10 pl-10 pr-3 rounded-[var(--radius-panel)] bg-[var(--surface-1)]/85 backdrop-blur-sm border border-white/[0.1] text-[13.5px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
+                        />
                     </div>
                 </div>
-
-                <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-tp-accent/50 to-transparent" />
             </section>
 
-            {/* ── MAIN CONTENT ── */}
+            {/* ── main ── */}
             <div className="container-page py-8">
-                {/* Filter Tabs */}
-                <div className="flex items-center justify-between mb-8 border-b border-zinc-200 dark:border-[#161B22]">
-                    <div className="flex">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-7">
+                    <div className="flex flex-wrap gap-1.5">
                         {(["all", "new", "unanswered"] as TabType[]).map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`px-4 py-3 text-[11px] font-bold uppercase tracking-widest border-b-2 -mb-px transition-all ${
+                                className={`inline-flex items-center h-8 px-3.5 rounded-[8px] border font-display text-[9.5px] font-black uppercase tracking-[0.1em] transition-colors ${
                                     activeTab === tab
-                                        ? "border-tp-accent text-tp-accent"
-                                        : "border-transparent text-zinc-500 dark:text-[#71717A] hover:text-zinc-800 dark:hover:text-white"
+                                        ? "bg-[var(--accent)] border-transparent text-white"
+                                        : "bg-white/[0.03] border-white/[0.07] text-white/45 hover:text-white hover:border-white/[0.16]"
                                 }`}
                             >
                                 {tabLabels[tab]}
@@ -353,201 +328,119 @@ export default function ForumPage() {
                     </div>
 
                     {activeTab === "all" && (
-                        <div className="flex items-center gap-1 pb-1">
-                            <button
-                                onClick={() => setViewMode("grid")}
-                                className={`p-1.5 rounded transition-colors ${
-                                    viewMode === "grid"
-                                        ? "text-tp-accent"
-                                        : "text-zinc-400 dark:text-[#71717A] hover:text-zinc-800 dark:hover:text-white"
-                                }`}
-                                title="Grid view"
-                            >
-                                <LayoutGrid className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={() => setViewMode("list")}
-                                className={`p-1.5 rounded transition-colors ${
-                                    viewMode === "list"
-                                        ? "text-tp-accent"
-                                        : "text-zinc-400 dark:text-[#71717A] hover:text-zinc-800 dark:hover:text-white"
-                                }`}
-                                title="List view"
-                            >
-                                <List className="w-4 h-4" />
-                            </button>
+                        <div className="flex gap-1 p-1 rounded-[8px] border border-white/[0.07] bg-white/[0.03]">
+                            {([
+                                ["grid", LayoutGrid, "Grid view"],
+                                ["list", List, "List view"],
+                            ] as const).map(([mode, Icon, title]) => (
+                                <button
+                                    key={mode}
+                                    onClick={() => setViewMode(mode)}
+                                    title={title}
+                                    className={`p-1.5 rounded-[var(--radius-inner)] transition-colors ${
+                                        viewMode === mode
+                                            ? "bg-[var(--accent)] text-white"
+                                            : "text-white/35 hover:text-white"
+                                    }`}
+                                >
+                                    <Icon className="w-4 h-4" />
+                                </button>
+                            ))}
                         </div>
                     )}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    {/* ── Main ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     <div className="lg:col-span-3">
-                        {/* ALL CATEGORIES */}
+                        {/* all categories */}
                         {activeTab === "all" && (
-                            <div className="space-y-10">
+                            <div className="space-y-9">
                                 {categoriesLoading ? (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {[...Array(6)].map((_, i) => (
-                                            <div key={i} className="h-72 bg-[#0D1117] border border-[#1A2030] rounded-2xl animate-pulse" />
+                                            <div key={i} className="h-64 rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] animate-pulse" />
                                         ))}
                                     </div>
                                 ) : (
                                     categories?.map((parent) => {
                                         const ParentIcon = getCategoryIcon(parent.slug);
                                         return (
-                                        <div key={parent.id}>
-                                            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-white/[0.06]">
-                                                <ParentIcon className="w-5 h-5 text-tp-accent flex-shrink-0" />
-                                                <h2 className="font-display text-[16px] sm:text-[18px] font-bold text-white uppercase tracking-[0.08em] leading-none">
-                                                    {decodeHtml(parent.name)}
-                                                </h2>
-                                            </div>
+                                            <div key={parent.id}>
+                                                <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-white/[0.06]">
+                                                    <ParentIcon className="w-4 h-4 shrink-0 text-[var(--accent)]" />
+                                                    <h2 className="font-display text-[15px] font-black text-white uppercase tracking-[0.1em] leading-none">
+                                                        {decodeHtml(parent.name)}
+                                                    </h2>
+                                                </div>
 
-                                            <div
-                                                className={
-                                                    viewMode === "grid"
-                                                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-                                                        : "grid grid-cols-1 gap-3"
-                                                }
-                                            >
-                                                {parent.children?.map((category) => (
-                                                    <CategoryCard key={category.id} category={category} viewMode={viewMode} />
-                                                ))}
+                                                <div
+                                                    className={
+                                                        viewMode === "grid"
+                                                            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                                                            : "grid grid-cols-1 gap-2.5"
+                                                    }
+                                                >
+                                                    {parent.children?.map((category) => (
+                                                        <CategoryCard key={category.id} category={category} viewMode={viewMode} />
+                                                    ))}
+                                                </div>
                                             </div>
-                                        </div>
                                         );
                                     })
                                 )}
                             </div>
                         )}
 
-                        {/* NEW POSTS */}
+                        {/* new posts */}
                         {activeTab === "new" && (
-                            <div className="space-y-5">
+                            <div className="space-y-3">
                                 {!activeThreads ? (
-                                    <div className="space-y-5">
-                                        {[...Array(5)].map((_, i) => (
-                                            <div key={i} className="h-24 bg-[#0D1117] border border-[#1A2030] rounded-2xl animate-pulse" />
-                                        ))}
-                                    </div>
+                                    [...Array(5)].map((_, i) => (
+                                        <div key={i} className="h-[74px] rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] animate-pulse" />
+                                    ))
                                 ) : activeThreads.length === 0 ? (
-                                    <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-12 text-center">
-                                        <MessageCircle className="w-10 h-10 text-[#3F3F46] mx-auto mb-3" />
-                                        <p className="text-[#71717A] text-sm">No recent posts yet.</p>
+                                    <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-12 text-center">
+                                        <MessageCircle className="w-9 h-9 text-white/12 mx-auto mb-3" />
+                                        <p className="text-[13px] text-white/35">No recent posts yet.</p>
                                     </div>
                                 ) : (
                                     activeThreads.map((thread) => (
-                                        <Link key={thread.id} href={`/forum/thread/${thread.slug}`} className="block">
-                                            <div className="group bg-[#0D1117] border border-[#1A2030] rounded-2xl px-5 py-5 sm:px-6 sm:py-6 hover:border-tp-accent/30 hover:shadow-lg hover:shadow-tp-accent/5 transition-all duration-300 flex items-center gap-5">
-                                                <div className="w-12 h-12 rounded-full bg-tp-accent/10 ring-1 ring-white/[0.06] flex items-center justify-center text-[14px] font-bold text-tp-accent flex-shrink-0 overflow-hidden">
-                                                    {getAvatarSrc(thread.author?.avatar_url) ? (
-                                                        <Image
-                                                            src={getAvatarSrc(thread.author?.avatar_url)!}
-                                                            alt={thread.author?.username || ""}
-                                                            width={48}
-                                                            height={48}
-                                                            className="object-cover w-full h-full"
-                                                        />
-                                                    ) : (
-                                                        thread.author?.username?.charAt(0)?.toUpperCase() || "?"
-                                                    )}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="text-[15px] sm:text-[16px] font-bold text-white truncate group-hover:text-tp-accent transition-colors mb-1.5">
-                                                        {decodeHtml(thread.title)}
-                                                    </h3>
-                                                    <div className="flex items-center gap-2.5">
-                                                        {thread.category && (
-                                                            <span className="px-2 py-0.5 rounded-full bg-tp-accent/10 text-[10px] font-bold uppercase tracking-widest text-tp-accent">
-                                                                {thread.category.name}
-                                                            </span>
-                                                        )}
-                                                        <span className="text-[12px] text-[#6B7280]" suppressHydrationWarning>
-                                                            {formatDistanceToNow(new Date(thread.updated_at), { addSuffix: true })}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-1.5 text-[#6B7280] flex-shrink-0 bg-white/[0.02] border border-[#1A2030] rounded-full px-3 py-1.5">
-                                                    <MessageCircle className="w-3.5 h-3.5" />
-                                                    <span className="text-[12px] font-bold">{thread.posts_count}</span>
-                                                </div>
-                                            </div>
-                                        </Link>
+                                        <ThreadRow key={thread.id} thread={thread} cta="replies" />
                                     ))
                                 )}
                             </div>
                         )}
 
-                        {/* UNANSWERED */}
+                        {/* unanswered */}
                         {activeTab === "unanswered" && (
-                            <div className="space-y-5">
+                            <div className="space-y-3">
                                 {!unansweredThreads ? (
-                                    <div className="space-y-5">
-                                        {[...Array(5)].map((_, i) => (
-                                            <div key={i} className="h-24 bg-[#0D1117] border border-[#1A2030] rounded-2xl animate-pulse" />
-                                        ))}
-                                    </div>
+                                    [...Array(5)].map((_, i) => (
+                                        <div key={i} className="h-[74px] rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] animate-pulse" />
+                                    ))
                                 ) : unansweredThreads.length === 0 ? (
-                                    <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-14 text-center">
-                                        <Clock className="w-12 h-12 text-[#3F3F46] mx-auto mb-4" />
-                                        <h3 className="font-display text-[17px] font-bold text-white uppercase tracking-wide mb-2">
-                                            All Caught Up
+                                    <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-14 text-center">
+                                        <Clock className="w-10 h-10 text-white/12 mx-auto mb-4" />
+                                        <h3 className="font-display text-[16px] font-black text-white uppercase tracking-[0.08em] mb-1.5">
+                                            All caught up
                                         </h3>
-                                        <p className="text-[#71717A] text-[13px]">
+                                        <p className="text-[13px] text-white/35">
                                             Every thread has at least one reply. Nice work, community.
                                         </p>
                                     </div>
                                 ) : (
                                     unansweredThreads.map((thread) => (
-                                        <Link key={thread.id} href={`/forum/thread/${thread.slug}`} className="block">
-                                            <div className="group bg-[#0D1117] border border-[#1A2030] rounded-2xl px-5 py-5 sm:px-6 sm:py-6 hover:border-tp-accent/30 hover:shadow-lg hover:shadow-tp-accent/5 transition-all duration-300 flex items-center gap-5">
-                                                <div className="w-12 h-12 rounded-full bg-tp-accent/10 ring-1 ring-white/[0.06] flex items-center justify-center text-[14px] font-bold text-tp-accent flex-shrink-0 overflow-hidden">
-                                                    {getAvatarSrc(thread.author?.avatar_url) ? (
-                                                        <Image
-                                                            src={getAvatarSrc(thread.author?.avatar_url)!}
-                                                            alt={thread.author?.username || ""}
-                                                            width={48}
-                                                            height={48}
-                                                            className="object-cover w-full h-full"
-                                                        />
-                                                    ) : (
-                                                        thread.author?.username?.charAt(0)?.toUpperCase() || "?"
-                                                    )}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="text-[15px] sm:text-[16px] font-bold text-white truncate group-hover:text-tp-accent transition-colors mb-1.5">
-                                                        {decodeHtml(thread.title)}
-                                                    </h3>
-                                                    <div className="flex items-center gap-2.5">
-                                                        {thread.category && (
-                                                            <span className="px-2 py-0.5 rounded-full bg-tp-accent/10 text-[10px] font-bold uppercase tracking-widest text-tp-accent">
-                                                                {thread.category.name}
-                                                            </span>
-                                                        )}
-                                                        <span className="text-[12px] text-[#6B7280]" suppressHydrationWarning>
-                                                            {formatDistanceToNow(new Date(thread.updated_at), { addSuffix: true })}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-1.5 text-tp-accent flex-shrink-0 bg-tp-accent/10 border border-tp-accent/20 rounded-full px-3 py-1.5">
-                                                    <MessageCircle className="w-3.5 h-3.5" />
-                                                    <span className="text-[11px] font-bold uppercase tracking-wide">Reply</span>
-                                                </div>
-                                            </div>
-                                        </Link>
+                                        <ThreadRow key={thread.id} thread={thread} cta="reply" />
                                     ))
                                 )}
                             </div>
                         )}
                     </div>
 
-                    {/* ── Sidebar ── */}
-                    <div className={`lg:col-span-1 ${activeTab === "all" ? "lg:pt-[57px]" : ""}`}>
+                    <div className="lg:col-span-1">
                         <ForumSidebar />
                     </div>
                 </div>
-
             </div>
         </div>
     );

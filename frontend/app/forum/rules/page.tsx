@@ -9,7 +9,7 @@ export default function ForumRulesPage() {
         <div className="min-h-screen py-12 px-4 md:px-8">
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-12">
-                    <div className="inline-flex p-3 rounded-2xl bg-[var(--accent)]/10 text-[var(--accent)] mb-4 shadow-[0_0_20px_rgba(var(--accent-rgb),0.2)]">
+                    <div className="inline-flex p-3 rounded-[var(--radius-panel)] bg-[var(--accent)]/10 text-[var(--accent)] mb-4 shadow-[0_0_20px_rgba(var(--accent-rgb),0.2)]">
                         <Shield className="w-8 h-8" />
                     </div>
                     <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
@@ -122,7 +122,7 @@ export default function ForumRulesPage() {
                     </section>
 
                     {/* Moderation */}
-                    <div className="bg-[var(--accent)]/5 border border-[var(--accent)]/20 p-6 rounded-2xl flex gap-4 items-start">
+                    <div className="bg-[var(--accent)]/5 border border-[var(--accent)]/20 p-6 rounded-[var(--radius-panel)] flex gap-4 items-start">
                         <Flag className="w-6 h-6 text-[var(--accent)] shrink-0 mt-1" />
                         <div>
                             <h3 className="font-bold text-white text-lg mb-2">Moderation Policy</h3>

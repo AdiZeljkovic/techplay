@@ -78,16 +78,16 @@ function CategoryThreadsPageInner() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[#060810]">
+            <div className="min-h-screen bg-[var(--surface-0)]">
                 <div className="container-page py-8">
                     <div className="animate-pulse space-y-4 mb-8">
-                        <div className="h-6 w-32 bg-[#0D1117] rounded" />
-                        <div className="h-16 w-full bg-[#0D1117] rounded-2xl" />
+                        <div className="h-6 w-32 bg-[var(--surface-1)] rounded" />
+                        <div className="h-16 w-full bg-[var(--surface-1)] rounded-[var(--radius-panel)]" />
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                         <div className="lg:col-span-3 space-y-3">
                             {[1, 2, 3, 4, 5].map((i) => (
-                                <div key={i} className="h-20 bg-[#0D1117] border border-[#1A2030] rounded-2xl animate-pulse" />
+                                <div key={i} className="h-20 bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] animate-pulse" />
                             ))}
                         </div>
                     </div>
@@ -98,10 +98,10 @@ function CategoryThreadsPageInner() {
 
     if (!data) {
         return (
-            <div className="min-h-screen bg-[#060810] flex flex-col items-center justify-center gap-4">
-                <MessageSquare className="w-16 h-16 text-[#3F3F46]" />
+            <div className="min-h-screen bg-[var(--surface-0)] flex flex-col items-center justify-center gap-4">
+                <MessageSquare className="w-16 h-16 text-white/12" />
                 <h1 className="text-2xl font-bold text-white">Category Not Found</h1>
-                <Link href="/forum" className="inline-flex items-center gap-2 h-[42px] px-5 bg-tp-accent hover:bg-tp-accent/90 text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[12px]">
+                <Link href="/forum" className="btn-command inline-flex items-center gap-2 h-[42px] px-5 bg-[var(--accent)] hover:brightness-110 text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[12px]">
                     Back to Forums
                 </Link>
             </div>
@@ -113,9 +113,9 @@ function CategoryThreadsPageInner() {
     const totalReplies = threads.data.reduce((acc, t) => acc + (t.posts_count || 0), 0);
 
     return (
-        <div className="min-h-screen bg-[#060810]">
+        <div className="min-h-screen bg-[var(--surface-0)]">
             {/* Header */}
-            <div className="relative bg-[#0B0E1A] border-b border-[#1A2030] overflow-hidden">
+            <div className="relative bg-[var(--surface-1)] border-b border-white/[0.07] overflow-hidden">
                 <div
                     className="absolute inset-0 opacity-10"
                     style={{ background: `linear-gradient(135deg, ${color} 0%, transparent 60%)` }}
@@ -124,7 +124,7 @@ function CategoryThreadsPageInner() {
                 <div className="container-page py-8 relative z-10">
                     <Link
                         href="/forum"
-                        className="inline-flex items-center gap-2 text-sm text-[#6B7280] hover:text-tp-accent transition-colors mb-6"
+                        className="inline-flex items-center gap-2 text-sm text-white/35 hover:text-[var(--accent)] transition-colors mb-6"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         Back to Forums
@@ -133,45 +133,42 @@ function CategoryThreadsPageInner() {
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                         <div className="flex items-center gap-5">
                             <div
-                                className="w-16 h-16 rounded-2xl flex-shrink-0 flex items-center justify-center"
-                                style={{
-                                    background: `linear-gradient(135deg, ${color}ee 0%, ${color}77 100%)`,
-                                    boxShadow: `0 8px 24px -4px ${color}50`,
-                                }}
+                                className="w-14 h-14 rounded-[var(--radius-panel)] flex-shrink-0 flex items-center justify-center"
+                                style={{ background: `color-mix(in srgb, ${color} 14%, transparent)`, color }}
                             >
-                                <Icon className="w-8 h-8 text-white" />
+                                <Icon className="w-7 h-7" />
                             </div>
                             <div>
-                                <h1 className="text-3xl font-bold text-white mb-1">{category.name}</h1>
+                                <h1 className="font-display text-[26px] md:text-[32px] font-black text-white tracking-tight leading-none">{category.name}</h1>
                                 {category.description && (
-                                    <p className="text-[#9CA3AF] max-w-xl">{category.description}</p>
+                                    <p className="mt-2 text-[13.5px] text-white/45 max-w-xl">{category.description}</p>
                                 )}
                             </div>
                         </div>
 
                         {user && (
-                            <Link href={`/forum/create?category=${category.slug}`} className="inline-flex items-center gap-2 h-[42px] px-5 bg-tp-accent hover:bg-tp-accent/90 text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[12px] shadow-lg shadow-tp-accent/20">
+                            <Link href={`/forum/create?category=${category.slug}`} className="btn-command inline-flex items-center gap-2 h-[42px] px-5 bg-[var(--accent)] hover:brightness-110 text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[12px]">
                                 <Plus className="w-4 h-4" />
                                 New Thread
                             </Link>
                         )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-6 mt-6 pt-6 border-t border-[#1A2030]">
+                    <div className="flex flex-wrap items-center gap-6 mt-6 pt-6 border-t border-white/[0.07]">
                         <div className="flex items-center gap-2 text-sm">
-                            <MessageCircle className="w-4 h-4 text-tp-accent" />
+                            <MessageCircle className="w-4 h-4 text-[var(--accent)]" />
                             <span className="font-bold text-white">{fmtStat(threads.data.length)}</span>
-                            <span className="text-[#6B7280]">Threads</span>
+                            <span className="text-white/35">Threads</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
-                            <MessageSquare className="w-4 h-4 text-tp-accent" />
+                            <MessageSquare className="w-4 h-4 text-[var(--accent)]" />
                             <span className="font-bold text-white">{fmtStat(totalReplies)}</span>
-                            <span className="text-[#6B7280]">Replies</span>
+                            <span className="text-white/35">Replies</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
-                            <Eye className="w-4 h-4 text-tp-accent" />
+                            <Eye className="w-4 h-4 text-[var(--accent)]" />
                             <span className="font-bold text-white">{fmtStat(totalViews)}</span>
-                            <span className="text-[#6B7280]">Views</span>
+                            <span className="text-white/35">Views</span>
                         </div>
                     </div>
                 </div>
@@ -182,28 +179,28 @@ function CategoryThreadsPageInner() {
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     <div className="lg:col-span-3">
                         {category.rules && (
-                            <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl mb-4 overflow-hidden">
+                            <div className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] mb-4 overflow-hidden">
                                 <button
                                     onClick={() => setShowRules(!showRules)}
                                     className="w-full flex items-center justify-between px-5 py-3.5 text-left"
                                 >
                                     <span className="flex items-center gap-2 text-sm font-bold text-white">
-                                        <ScrollText className="w-4 h-4 text-tp-accent" />
+                                        <ScrollText className="w-4 h-4 text-[var(--accent)]" />
                                         Category Rules
                                     </span>
-                                    <ChevronDown className={`w-4 h-4 text-[#6B7280] transition-transform ${showRules ? "rotate-180" : ""}`} />
+                                    <ChevronDown className={`w-4 h-4 text-white/35 transition-transform ${showRules ? "rotate-180" : ""}`} />
                                 </button>
                                 {showRules && (
-                                    <div className="px-5 pb-4 text-sm text-[#9CA3AF] whitespace-pre-line border-t border-[#1A2030] pt-3">
+                                    <div className="px-5 pb-4 text-sm text-white/45 whitespace-pre-line border-t border-white/[0.07] pt-3">
                                         {category.rules}
                                     </div>
                                 )}
                             </div>
                         )}
                         {activeTag && (
-                            <div className="flex items-center gap-2 mb-4 text-sm text-[#9CA3AF]">
+                            <div className="flex items-center gap-2 mb-4 text-sm text-white/45">
                                 Filtering by tag:
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-tp-accent/10 text-tp-accent text-xs font-bold">
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] text-xs font-bold">
                                     {activeTag}
                                     <button onClick={() => { setActiveTag(null); setPage(1); }} aria-label="Clear tag filter">
                                         <X className="w-3 h-3" />
@@ -221,16 +218,16 @@ function CategoryThreadsPageInner() {
                                         const avatarSrc = getAvatarSrc(thread.author?.avatar_url);
                                         return (
                                             <Link key={thread.id} href={`/forum/thread/${thread.slug}`} className="block">
-                                                <div className={`group relative bg-[#0D1117] border rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:border-tp-accent/30 ${
-                                                    thread.is_pinned ? "border-tp-accent/40" : "border-[#1A2030]"
+                                                <div className={`group relative bg-[var(--surface-1)] border rounded-[var(--radius-panel)] p-4 sm:p-5 transition-all duration-300 hover:border-[var(--accent)]/30 ${
+                                                    thread.is_pinned ? "border-[var(--accent)]/40" : "border-white/[0.07]"
                                                 }`}>
                                                     <div className="flex items-center gap-4">
-                                                        <div className={`flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all ${
+                                                        <div className={`flex-shrink-0 w-11 h-11 rounded-[var(--radius-card)] flex items-center justify-center transition-all ${
                                                             thread.is_pinned
-                                                                ? "bg-tp-accent text-white shadow-lg shadow-tp-accent/30"
+                                                                ? "bg-[var(--accent)] text-white"
                                                                 : thread.is_locked
                                                                     ? "bg-red-500/10 text-red-400"
-                                                                    : "bg-white/[0.03] text-[#6B7280] group-hover:bg-tp-accent/10 group-hover:text-tp-accent"
+                                                                    : "bg-white/[0.03] text-white/35 group-hover:bg-[var(--accent)]/10 group-hover:text-[var(--accent)]"
                                                         }`}>
                                                             {thread.is_pinned ? (
                                                                 <Pin className="w-5 h-5" />
@@ -244,12 +241,12 @@ function CategoryThreadsPageInner() {
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center gap-2 mb-1">
                                                                 {thread.is_pinned && (
-                                                                    <span className="text-[10px] uppercase font-bold bg-tp-accent text-white px-2 py-0.5 rounded-full">Pinned</span>
+                                                                    <span className="text-[10px] uppercase font-bold bg-[var(--accent)] text-white px-2 py-0.5 rounded-full">Pinned</span>
                                                                 )}
                                                                 {thread.is_locked && (
                                                                     <span className="text-[10px] uppercase font-bold bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full">Locked</span>
                                                                 )}
-                                                                <h3 className="text-base font-semibold text-white group-hover:text-tp-accent transition-colors truncate">
+                                                                <h3 className="text-base font-semibold text-white group-hover:text-[var(--accent)] transition-colors truncate">
                                                                     {thread.title}
                                                                 </h3>
                                                             </div>
@@ -263,26 +260,26 @@ function CategoryThreadsPageInner() {
                                                                                 setActiveTag(tag.slug);
                                                                                 setPage(1);
                                                                             }}
-                                                                            className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.03] text-[#9CA3AF] hover:bg-tp-accent/10 hover:text-tp-accent transition-colors"
+                                                                            className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.03] text-white/45 hover:bg-[var(--accent)]/10 hover:text-[var(--accent)] transition-colors"
                                                                         >
                                                                             {tag.name}
                                                                         </button>
                                                                     ))}
                                                                 </div>
                                                             )}
-                                                            <div className="flex items-center gap-3 text-sm text-[#6B7280]">
+                                                            <div className="flex items-center gap-3 text-sm text-white/35">
                                                                 <div className="flex items-center gap-1.5">
-                                                                    <div className={`w-5 h-5 rounded-full overflow-hidden flex-shrink-0 ${isStaff ? "ring-1 ring-tp-accent" : ""}`}>
+                                                                    <div className={`w-5 h-5 rounded-full overflow-hidden flex-shrink-0 ${isStaff ? "ring-1 ring-[var(--accent)]" : ""}`}>
                                                                         {avatarSrc ? (
                                                                             <Image src={avatarSrc} alt={thread.author?.username || "User"} width={20} height={20} className="object-cover w-full h-full" />
                                                                         ) : (
-                                                                            <div className="w-full h-full flex items-center justify-center bg-tp-accent text-[8px] font-bold text-white">
+                                                                            <div className="w-full h-full flex items-center justify-center bg-[var(--accent)] text-[8px] font-bold text-white">
                                                                                 {thread.author?.username?.charAt(0)?.toUpperCase() || "?"}
                                                                             </div>
                                                                         )}
                                                                     </div>
                                                                     <span
-                                                                        className={`font-medium ${isStaff ? "text-tp-accent" : ""}`}
+                                                                        className={`font-medium ${isStaff ? "text-[var(--accent)]" : ""}`}
                                                                         style={!isStaff && thread.author?.post_color ? { color: thread.author.post_color } : undefined}
                                                                     >
                                                                         {thread.author?.username || "Unknown"}
@@ -297,13 +294,13 @@ function CategoryThreadsPageInner() {
                                                         </div>
 
                                                         <div className="hidden md:flex items-center gap-4 text-center">
-                                                            <div className="px-4 py-2 bg-white/[0.02] rounded-xl min-w-[70px]">
+                                                            <div className="px-4 py-2 bg-white/[0.02] rounded-[var(--radius-card)] min-w-[70px]">
                                                                 <div className="text-lg font-bold text-white">{fmtStat(thread.posts_count || 0)}</div>
-                                                                <div className="text-[10px] uppercase text-[#6B7280]">Replies</div>
+                                                                <div className="text-[10px] uppercase text-white/35">Replies</div>
                                                             </div>
-                                                            <div className="px-4 py-2 bg-white/[0.02] rounded-xl min-w-[70px]">
+                                                            <div className="px-4 py-2 bg-white/[0.02] rounded-[var(--radius-card)] min-w-[70px]">
                                                                 <div className="text-lg font-bold text-white">{fmtStat(thread.view_count)}</div>
-                                                                <div className="text-[10px] uppercase text-[#6B7280]">Views</div>
+                                                                <div className="text-[10px] uppercase text-white/35">Views</div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -313,19 +310,19 @@ function CategoryThreadsPageInner() {
                                     })}
                             </div>
                         ) : (
-                            <div className="text-center py-20 bg-[#0D1117] border border-[#1A2030] rounded-2xl">
+                            <div className="text-center py-20 bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)]">
                                 <div className="w-20 h-20 bg-white/[0.03] rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <MessageSquare className="w-10 h-10 text-[#3F3F46]" />
+                                    <MessageSquare className="w-10 h-10 text-white/12" />
                                 </div>
                                 <h3 className="text-xl font-bold text-white mb-2">No threads yet</h3>
-                                <p className="text-[#9CA3AF] mb-6">Be the first to start a discussion in this category!</p>
+                                <p className="text-white/45 mb-6">Be the first to start a discussion in this category!</p>
                                 {user ? (
-                                    <Link href={`/forum/create?category=${category.slug}`} className="inline-flex items-center gap-2 h-[42px] px-5 bg-tp-accent hover:bg-tp-accent/90 text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[12px] shadow-lg shadow-tp-accent/20">
+                                    <Link href={`/forum/create?category=${category.slug}`} className="btn-command inline-flex items-center gap-2 h-[42px] px-5 bg-[var(--accent)] hover:brightness-110 text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[12px]">
                                         <Plus className="w-4 h-4" />
                                         Start the first discussion
                                     </Link>
                                 ) : (
-                                    <Link href="/login" className="inline-flex items-center gap-2 h-[42px] px-5 bg-tp-accent hover:bg-tp-accent/90 text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[12px]">
+                                    <Link href="/login" className="btn-command inline-flex items-center gap-2 h-[42px] px-5 bg-[var(--accent)] hover:brightness-110 text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[12px]">
                                         Log in to post
                                     </Link>
                                 )}
@@ -357,7 +354,7 @@ function CategoryThreadsPageInner() {
 
 export default function CategoryThreadsPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen bg-[#060810]" />}>
+        <Suspense fallback={<div className="min-h-screen bg-[var(--surface-0)]" />}>
             <CategoryThreadsPageInner />
         </Suspense>
     );

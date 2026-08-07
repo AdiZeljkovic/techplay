@@ -9,22 +9,30 @@ export function fmtStat(n: number): string {
     return n.toString();
 }
 
+/**
+ * A tint per category, so a board is recognisable at a glance — drawn from
+ * the same five-plus-accent set the rest of the site uses, not a rainbow.
+ */
 const categoryColors: Record<string, string> = {
-    "news-announcements": "#ef4444",
-    "feedback-support": "#3b82f6",
-    "general-gaming": "#8b5cf6",
-    "user-reviews": "#f59e0b",
-    esports: "#10b981",
-    "pc-builds": "#06b6d4",
-    consoles: "#6366f1",
-    "the-lounge": "#ec4899",
-    marketplace: "#14b8a6",
-    "game-guides": "#f97316",
-    "hardware-tech": "#84cc16",
+    "news-announcements": "#DC143C",
+    "feedback-support": "#60a5fa",
+    "general-gaming": "#a855f7",
+    "game-reviews": "#f0b429",
+    "user-reviews": "#f0b429",
+    esports: "#34d399",
+    "pc-builds": "#60a5fa",
+    "pc-builds-upgrades": "#60a5fa",
+    consoles: "#a855f7",
+    "consoles-peripherals": "#a855f7",
+    "the-lounge": "#34d399",
+    marketplace: "#f0b429",
+    "game-guides": "#60a5fa",
+    "hardware-tech": "#34d399",
+    "tech-gear-talk": "#f0b429",
 };
 
 export function getCategoryColor(slug: string): string {
-    return categoryColors[slug] ?? "#64748b";
+    return categoryColors[slug] ?? "#9ca3af";
 }
 
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {

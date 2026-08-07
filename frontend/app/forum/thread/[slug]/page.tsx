@@ -20,7 +20,7 @@ import { useRealTimeThreadReplies } from "@/hooks";
 
 // PERF: Dynamic import for heavy editor (~50KB+ with Tiptap extensions)
 const RichTextEditor = dynamic(() => import("@/components/ui/RichTextEditor"), {
-    loading: () => <div className="h-32 bg-white/[0.03] rounded-lg animate-pulse" />,
+    loading: () => <div className="h-32 bg-white/[0.03] rounded-[var(--radius-card)] animate-pulse" />,
     ssr: false
 });
 import DOMPurify from "isomorphic-dompurify";
@@ -422,12 +422,12 @@ export default function ThreadPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[#060810]">
+            <div className="min-h-screen bg-[var(--surface-0)]">
                 <div className="container-page py-8">
                     <div className="animate-pulse space-y-6">
-                        <div className="h-8 bg-[#0D1117] rounded-lg w-1/3" />
-                        <div className="h-48 bg-[#0D1117] rounded-2xl" />
-                        <div className="h-32 bg-[#0D1117] rounded-2xl" />
+                        <div className="h-8 bg-[var(--surface-1)] rounded-[var(--radius-card)] w-1/3" />
+                        <div className="h-48 bg-[var(--surface-1)] rounded-[var(--radius-panel)]" />
+                        <div className="h-32 bg-[var(--surface-1)] rounded-[var(--radius-panel)]" />
                     </div>
                 </div>
             </div>
@@ -436,8 +436,8 @@ export default function ThreadPage() {
 
     if (!data) {
         return (
-            <div className="min-h-screen bg-[#060810] flex flex-col items-center justify-center gap-4">
-                <MessageSquare className="w-16 h-16 text-[#3F3F46]" />
+            <div className="min-h-screen bg-[var(--surface-0)] flex flex-col items-center justify-center gap-4">
+                <MessageSquare className="w-16 h-16 text-white/12" />
                 <h1 className="text-2xl font-bold text-white">Thread Not Found</h1>
                 <Link href="/forum">
                     <Button>Back to Forums</Button>
@@ -475,20 +475,20 @@ export default function ThreadPage() {
     const canModerate = currentUserIsStaff;
 
     return (
-        <div className="min-h-screen bg-[#060810]">
+        <div className="min-h-screen bg-[var(--surface-0)]">
             {/* Header */}
-            <div className="bg-[#0B0E1A] border-b border-[#1A2030]">
+            <div className="bg-[var(--surface-1)] border-b border-white/[0.07]">
                 <div className="container-page py-6">
                     {/* Breadcrumb */}
-                    <div className="flex items-center gap-2 text-sm text-[#6B7280] mb-4">
-                        <Link href="/forum" className="hover:text-tp-accent transition-colors flex items-center gap-1">
+                    <div className="flex items-center gap-2 text-sm text-white/35 mb-4">
+                        <Link href="/forum" className="hover:text-[var(--accent)] transition-colors flex items-center gap-1">
                             <ArrowLeft className="w-4 h-4" />
                             Forum
                         </Link>
                         <span>/</span>
                         <Link
                             href={`/forum/${thread.category?.slug}`}
-                            className="hover:text-tp-accent transition-colors"
+                            className="hover:text-[var(--accent)] transition-colors"
                             style={{ color: categoryColor }}
                         >
                             {thread.category?.name || 'General'}
@@ -500,7 +500,7 @@ export default function ThreadPage() {
                         <div className="flex-1">
                             <div className="flex flex-wrap items-center gap-2 mb-3">
                                 {thread.is_pinned && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-tp-accent text-white">
+                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-[var(--accent)] text-white">
                                         <Pin className="w-3 h-3" /> Pinned
                                     </span>
                                 )}
@@ -514,7 +514,7 @@ export default function ThreadPage() {
                                         <button
                                             onClick={handlePin}
                                             disabled={isPinning}
-                                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border transition-all ${thread.is_pinned ? 'bg-tp-accent/10 text-tp-accent border-tp-accent/30 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30' : 'bg-white/5 text-[#9CA3AF] border-white/10 hover:bg-tp-accent/10 hover:text-tp-accent hover:border-tp-accent/30'}`}
+                                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border transition-all ${thread.is_pinned ? 'bg-[var(--accent)]/10 text-[var(--accent)] border-[var(--accent)]/30 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30' : 'bg-white/5 text-white/45 border-white/10 hover:bg-[var(--accent)]/10 hover:text-[var(--accent)] hover:border-[var(--accent)]/30'}`}
                                         >
                                             <Pin className="w-3 h-3" />
                                             {thread.is_pinned ? 'Unpin' : 'Pin'}
@@ -522,14 +522,14 @@ export default function ThreadPage() {
                                         <button
                                             onClick={handleLockToggle}
                                             disabled={isLocking}
-                                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border transition-all ${thread.is_locked ? 'bg-red-500/10 text-red-400 border-red-500/30 hover:bg-white/5 hover:text-[#9CA3AF] hover:border-white/10' : 'bg-white/5 text-[#9CA3AF] border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30'}`}
+                                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border transition-all ${thread.is_locked ? 'bg-red-500/10 text-red-400 border-red-500/30 hover:bg-white/5 hover:text-white/45 hover:border-white/10' : 'bg-white/5 text-white/45 border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30'}`}
                                         >
                                             {thread.is_locked ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
                                             {thread.is_locked ? 'Unlock' : 'Lock'}
                                         </button>
                                         <button
                                             onClick={() => setDeleteThreadDialogOpen(true)}
-                                            className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border border-white/10 bg-white/5 text-[#9CA3AF] hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
+                                            className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border border-white/10 bg-white/5 text-white/45 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
                                         >
                                             <Trash2 className="w-3 h-3" />
                                             Delete
@@ -540,7 +540,7 @@ export default function ThreadPage() {
                                     <button
                                         onClick={handleSelfPin}
                                         disabled={isSelfPinning}
-                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border border-tp-accent/30 bg-tp-accent/10 text-tp-accent hover:bg-tp-accent/20 transition-all"
+                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border border-[var(--accent)]/30 bg-[var(--accent)]/10 text-[var(--accent)] hover:bg-[var(--accent)]/20 transition-all"
                                     >
                                         <Pin className="w-3 h-3" />
                                         Pin for 24h (100 Bounty)
@@ -556,26 +556,26 @@ export default function ThreadPage() {
                                         <Link
                                             key={tag.slug}
                                             href={`/forum/${thread.category?.slug}?tag=${tag.slug}`}
-                                            className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/[0.03] text-[#9CA3AF] hover:bg-tp-accent/10 hover:text-tp-accent transition-colors"
+                                            className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/[0.03] text-white/45 hover:bg-[var(--accent)]/10 hover:text-[var(--accent)] transition-colors"
                                         >
                                             {tag.name}
                                         </Link>
                                     ))}
                                 </div>
                             )}
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-[#9CA3AF]">
+                            <div className="flex flex-wrap items-center gap-4 text-sm text-white/45">
                                 <div className="flex items-center gap-2">
                                     <div className="w-6 h-6 rounded-full overflow-hidden bg-white/[0.03]">
                                         {threadAuthorAvatar ? (
                                             <Image src={threadAuthorAvatar} alt={thread.author?.username || ""} width={24} height={24} className="object-cover w-full h-full" />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-xs font-bold text-tp-accent">
+                                            <div className="w-full h-full flex items-center justify-center text-xs font-bold text-[var(--accent)]">
                                                 {thread.author?.username?.charAt(0)?.toUpperCase() || '?'}
                                             </div>
                                         )}
                                     </div>
                                     <span>
-                                        Started by <Link href={`/profile/${thread.author?.username}`} className="text-tp-accent hover:underline font-medium">{thread.author?.username || 'Unknown'}</Link>
+                                        Started by <Link href={`/profile/${thread.author?.username}`} className="text-[var(--accent)] hover:underline font-medium">{thread.author?.username || 'Unknown'}</Link>
                                     </span>
                                 </div>
                                 <span className="flex items-center gap-1" suppressHydrationWarning>
@@ -602,16 +602,16 @@ export default function ThreadPage() {
                     {/* Thread Content & Replies */}
                     <div className="lg:col-span-3 space-y-6">
                         {/* Original Post */}
-                        <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl overflow-hidden">
+                        <div className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] overflow-hidden">
                             <div className="flex flex-col md:flex-row">
                                 {/* Author Sidebar */}
-                                <div className="md:w-48 bg-white/[0.02] p-6 flex flex-col items-center text-center border-b md:border-b-0 md:border-r border-[#1A2030]">
+                                <div className="md:w-48 bg-white/[0.02] p-6 flex flex-col items-center text-center border-b md:border-b-0 md:border-r border-white/[0.07]">
                                     <Link href={`/profile/${thread.author?.username}`} className="group">
-                                        <div className={`w-20 h-20 rounded-full overflow-hidden bg-[#0B0E1A] mb-3 ring-2 transition-all ${threadAuthorStaff ? 'ring-tp-accent' : 'ring-[#1A2030] group-hover:ring-tp-accent'}`}>
+                                        <div className={`w-20 h-20 rounded-full overflow-hidden bg-[var(--surface-1)] mb-3 ring-2 transition-all ${threadAuthorStaff ? 'ring-[var(--accent)]' : 'ring-white/[0.07] group-hover:ring-[var(--accent)]'}`}>
                                             {threadAuthorAvatar ? (
                                                 <Image src={threadAuthorAvatar} alt={thread.author?.username || ""} width={80} height={80} className="object-cover w-full h-full" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-tp-accent">
+                                                <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-[var(--accent)]">
                                                     {thread.author?.username?.charAt(0)?.toUpperCase() || '?'}
                                                 </div>
                                             )}
@@ -619,7 +619,7 @@ export default function ThreadPage() {
                                     </Link>
                                     <Link
                                         href={`/profile/${thread.author?.username}`}
-                                        className={`font-bold text-sm mb-1 hover:underline ${threadAuthorStaff ? 'text-tp-accent' : !thread.author?.post_color ? 'text-white' : ''}`}
+                                        className={`font-bold text-sm mb-1 hover:underline ${threadAuthorStaff ? 'text-[var(--accent)]' : !thread.author?.post_color ? 'text-white' : ''}`}
                                         style={!threadAuthorStaff && thread.author?.post_color ? { color: thread.author.post_color } : undefined}
                                     >
                                         {thread.author?.username || 'Unknown'}
@@ -630,7 +630,7 @@ export default function ThreadPage() {
                                         const role = getDisplayRole(thread.author);
                                         if (role) {
                                             return (
-                                                <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-tp-accent/10 text-tp-accent border border-tp-accent/20 uppercase tracking-wide mb-2">
+                                                <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide mb-2">
                                                     <Shield className="w-3 h-3" /> {role}
                                                 </span>
                                             );
@@ -647,7 +647,7 @@ export default function ThreadPage() {
                                         </span>
                                     )}
 
-                                    <div className="text-xs text-[#6B7280] mt-2 flex flex-col items-center gap-1">
+                                    <div className="text-xs text-white/35 mt-2 flex flex-col items-center gap-1">
                                         <span>{thread.author?.posts_count || 0} posts</span>
                                         {thread.author?.created_at && (
                                             <span>Joined {format(new Date(thread.author.created_at), 'MMM yyyy')}</span>
@@ -657,16 +657,16 @@ export default function ThreadPage() {
 
                                 {/* Post Content */}
                                 <div className="flex-1 p-6">
-                                    <div className="prose prose-invert max-w-none text-[#D1D5DB] leading-relaxed">
+                                    <div className="prose prose-invert max-w-none text-white/70 leading-relaxed">
                                         <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(thread.content || '<p>No content</p>') }} />
                                     </div>
 
                                     {/* Post Actions */}
-                                    <div className="flex items-center justify-between mt-8 pt-4 border-t border-[#1A2030]">
+                                    <div className="flex items-center justify-between mt-8 pt-4 border-t border-white/[0.07]">
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={handleUpvote}
-                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${thread.is_upvoted ? 'text-tp-accent bg-tp-accent/10' : 'text-[#9CA3AF] hover:text-white hover:bg-white/[0.03]'}`}
+                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] text-xs font-medium transition-all ${thread.is_upvoted ? 'text-[var(--accent)] bg-[var(--accent)]/10' : 'text-white/45 hover:text-white hover:bg-white/[0.03]'}`}
                                             >
                                                 <ChevronUp className={`w-4 h-4 ${thread.is_upvoted ? 'stroke-2' : ''}`} />
                                                 <span>Upvote {thread.upvotes_count > 0 && `(${thread.upvotes_count})`}</span>
@@ -675,7 +675,7 @@ export default function ThreadPage() {
                                                 <button
                                                     onClick={handleToggleWatch}
                                                     disabled={isTogglingWatch}
-                                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${thread.is_watching ? 'text-tp-accent bg-tp-accent/10' : 'text-[#9CA3AF] hover:text-white hover:bg-white/[0.03]'}`}
+                                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] text-xs font-medium transition-all ${thread.is_watching ? 'text-[var(--accent)] bg-[var(--accent)]/10' : 'text-white/45 hover:text-white hover:bg-white/[0.03]'}`}
                                                 >
                                                     {thread.is_watching ? <BellOff className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
                                                     {thread.is_watching ? 'Watching' : 'Watch'}
@@ -685,7 +685,7 @@ export default function ThreadPage() {
                                                 <button
                                                     onClick={handleToggleBookmark}
                                                     disabled={isTogglingBookmark}
-                                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${thread.is_bookmarked ? 'text-tp-accent bg-tp-accent/10' : 'text-[#9CA3AF] hover:text-white hover:bg-white/[0.03]'}`}
+                                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] text-xs font-medium transition-all ${thread.is_bookmarked ? 'text-[var(--accent)] bg-[var(--accent)]/10' : 'text-white/45 hover:text-white hover:bg-white/[0.03]'}`}
                                                 >
                                                     <Bookmark className={`w-4 h-4 ${thread.is_bookmarked ? 'fill-current' : ''}`} />
                                                     {thread.is_bookmarked ? 'Saved' : 'Save'}
@@ -695,7 +695,7 @@ export default function ThreadPage() {
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={handleShare}
-                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#9CA3AF] hover:text-white hover:bg-white/[0.03] transition-all"
+                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] text-xs font-medium text-white/45 hover:text-white hover:bg-white/[0.03] transition-all"
                                             >
                                                 <Share2 className="w-4 h-4" />
                                                 Share
@@ -703,7 +703,7 @@ export default function ThreadPage() {
                                             <button
                                                 onClick={handleReportClick}
                                                 disabled={hasReported}
-                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${hasReported ? 'text-green-500' : 'text-[#9CA3AF] hover:text-red-400 hover:bg-red-500/10'}`}
+                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] text-xs font-medium transition-all ${hasReported ? 'text-green-500' : 'text-white/45 hover:text-red-400 hover:bg-red-500/10'}`}
                                             >
                                                 {hasReported ? <Shield className="w-4 h-4" /> : <Flag className="w-4 h-4" />}
                                                 {hasReported ? 'Reported' : 'Report'}
@@ -718,7 +718,7 @@ export default function ThreadPage() {
                         {postsList.length > 0 && (
                             <div className="space-y-4">
                                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                    <MessageSquare className="w-5 h-5 text-tp-accent" />
+                                    <MessageSquare className="w-5 h-5 text-[var(--accent)]" />
                                     Replies ({postsList.length})
                                 </h3>
 
@@ -728,15 +728,15 @@ export default function ThreadPage() {
 
                                     if (post.is_deleted) {
                                         return (
-                                            <div key={post.id} className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-4 flex items-center justify-between">
-                                                <span className="text-sm text-[#4B5563] italic">[This post was deleted]</span>
-                                                <span className="text-xs text-[#4B5563]">#{index + 2}</span>
+                                            <div key={post.id} className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] p-4 flex items-center justify-between">
+                                                <span className="text-sm text-white/30 italic">[This post was deleted]</span>
+                                                <span className="text-xs text-white/30">#{index + 2}</span>
                                             </div>
                                         );
                                     }
 
                                     return (
-                                        <div key={post.id} className={`bg-[#0D1117] border border-[#1A2030] rounded-2xl overflow-hidden ${post.is_solution ? 'ring-2 ring-green-500/50' : ''}`}>
+                                        <div key={post.id} className={`bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] overflow-hidden ${post.is_solution ? 'ring-2 ring-green-500/50' : ''}`}>
                                             {post.is_solution && (
                                                 <div className="bg-green-500/10 border-b border-green-500/30 px-4 py-2 flex items-center gap-2 text-green-400 text-sm font-bold">
                                                     <Award className="w-4 h-4" />
@@ -745,13 +745,13 @@ export default function ThreadPage() {
                                             )}
                                             <div className="flex flex-col md:flex-row">
                                                 {/* Author Mini Sidebar */}
-                                                <div className="md:w-40 bg-white/[0.02] p-4 flex md:flex-col items-center md:text-center gap-3 md:gap-2 border-b md:border-b-0 md:border-r border-[#1A2030]">
+                                                <div className="md:w-40 bg-white/[0.02] p-4 flex md:flex-col items-center md:text-center gap-3 md:gap-2 border-b md:border-b-0 md:border-r border-white/[0.07]">
                                                     <Link href={`/profile/${post.author?.username}`}>
-                                                        <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden bg-[#0B0E1A] ring-2 transition-all ${postAuthorStaff ? 'ring-tp-accent' : 'ring-[#1A2030]'}`}>
+                                                        <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden bg-[var(--surface-1)] ring-2 transition-all ${postAuthorStaff ? 'ring-[var(--accent)]' : 'ring-white/[0.07]'}`}>
                                                             {postAuthorAvatar ? (
                                                                 <Image src={postAuthorAvatar} alt={post.author?.username || ""} width={64} height={64} className="object-cover w-full h-full" />
                                                             ) : (
-                                                                <div className="w-full h-full flex items-center justify-center text-lg font-bold text-tp-accent">
+                                                                <div className="w-full h-full flex items-center justify-center text-lg font-bold text-[var(--accent)]">
                                                                     {post.author?.username?.charAt(0)?.toUpperCase() || '?'}
                                                                 </div>
                                                             )}
@@ -760,7 +760,7 @@ export default function ThreadPage() {
                                                     <div className="md:mt-2">
                                                         <Link
                                                             href={`/profile/${post.author?.username}`}
-                                                            className={`font-bold text-sm hover:underline block ${postAuthorStaff ? 'text-tp-accent' : !post.author?.post_color ? 'text-white' : ''}`}
+                                                            className={`font-bold text-sm hover:underline block ${postAuthorStaff ? 'text-[var(--accent)]' : !post.author?.post_color ? 'text-white' : ''}`}
                                                             style={!postAuthorStaff && post.author?.post_color ? { color: post.author.post_color } : undefined}
                                                         >
                                                             {post.author?.username || 'Unknown'}
@@ -771,7 +771,7 @@ export default function ThreadPage() {
                                                             const role = getDisplayRole(post.author);
                                                             if (role) {
                                                                 return (
-                                                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-tp-accent/10 text-tp-accent border border-tp-accent/20 uppercase tracking-wide mb-1 mt-1">
+                                                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide mb-1 mt-1">
                                                                         <Shield className="w-2.5 h-2.5" /> {role}
                                                                     </span>
                                                                 );
@@ -788,7 +788,7 @@ export default function ThreadPage() {
                                                             </span>
                                                         )}
 
-                                                        <div className="hidden md:block text-[10px] text-[#6B7280] mt-2">
+                                                        <div className="hidden md:block text-[10px] text-white/35 mt-2">
                                                             <div>{post.author?.posts_count || 0} posts</div>
                                                             {post.author?.created_at && (
                                                                 <div>Joined {format(new Date(post.author.created_at), 'MMM yyyy')}</div>
@@ -800,17 +800,17 @@ export default function ThreadPage() {
                                                 {/* Reply Content */}
                                                 <div className="flex-1 p-4">
                                                     <div className="flex items-center justify-between mb-3">
-                                                        <span className="text-xs text-[#6B7280]" suppressHydrationWarning>
+                                                        <span className="text-xs text-white/35" suppressHydrationWarning>
                                                             {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                                                             {post.edited_at && <span className="ml-2 italic">(edited)</span>}
                                                         </span>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="text-xs text-[#6B7280]">#{index + 2}</span>
+                                                            <span className="text-xs text-white/35">#{index + 2}</span>
                                                             {user && (user.id === thread.author?.id || currentUserIsStaff) && (
                                                                 <button
                                                                     onClick={() => handleMarkSolution(post.id)}
                                                                     disabled={markingSolutionId === post.id}
-                                                                    className={`text-xs px-2 py-1 rounded transition-all ${post.is_solution ? 'text-green-400 hover:text-red-400 hover:bg-red-500/10' : 'text-[#9CA3AF] hover:text-green-400 hover:bg-green-500/10'}`}
+                                                                    className={`text-xs px-2 py-1 rounded transition-all ${post.is_solution ? 'text-green-400 hover:text-red-400 hover:bg-red-500/10' : 'text-white/45 hover:text-green-400 hover:bg-green-500/10'}`}
                                                                 >
                                                                     {markingSolutionId === post.id ? '...' : post.is_solution ? 'Unmark Solution' : 'Mark as Solution'}
                                                                 </button>
@@ -819,14 +819,14 @@ export default function ThreadPage() {
                                                                 <div className="flex items-center gap-1">
                                                                     <button
                                                                         onClick={() => handleEditPost(post)}
-                                                                        className="text-xs px-2 py-1 rounded text-[#9CA3AF] hover:text-tp-accent hover:bg-white/[0.03] transition-all"
+                                                                        className="text-xs px-2 py-1 rounded text-white/45 hover:text-[var(--accent)] hover:bg-white/[0.03] transition-all"
                                                                     >
                                                                         Edit
                                                                     </button>
                                                                     <button
                                                                         onClick={() => handleDeletePost(post.id)}
                                                                         disabled={deletingPostId === post.id}
-                                                                        className="text-xs px-2 py-1 rounded text-[#9CA3AF] hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                                                        className="text-xs px-2 py-1 rounded text-white/45 hover:text-red-400 hover:bg-red-500/10 transition-all"
                                                                     >
                                                                         {deletingPostId === post.id ? '...' : 'Delete'}
                                                                     </button>
@@ -839,25 +839,25 @@ export default function ThreadPage() {
                                                             <textarea
                                                                 value={editContent}
                                                                 onChange={(e) => setEditContent(e.target.value)}
-                                                                className="w-full border border-[#1A2030] bg-white/[0.02] rounded-lg p-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-tp-accent resize-none min-h-[100px]"
+                                                                className="w-full border border-white/[0.07] bg-white/[0.02] rounded-[var(--radius-card)] p-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-none min-h-[100px]"
                                                             />
                                                             <div className="flex gap-2">
                                                                 <button
                                                                     onClick={() => handleSaveEdit(post.id)}
-                                                                    className="px-3 py-1.5 bg-tp-accent text-white text-xs font-bold rounded-lg hover:bg-tp-accent/90 transition-colors"
+                                                                    className="px-3 py-1.5 bg-[var(--accent)] text-white text-xs font-bold rounded-[var(--radius-card)] hover:brightness-110 transition-colors"
                                                                 >
                                                                     Save
                                                                 </button>
                                                                 <button
                                                                     onClick={() => setEditingPostId(null)}
-                                                                    className="px-3 py-1.5 bg-white/[0.03] text-[#9CA3AF] text-xs font-bold rounded-lg hover:bg-white/[0.06] transition-colors"
+                                                                    className="px-3 py-1.5 bg-white/[0.03] text-white/45 text-xs font-bold rounded-[var(--radius-card)] hover:bg-white/[0.06] transition-colors"
                                                                 >
                                                                     Cancel
                                                                 </button>
                                                             </div>
                                                         </div>
                                                     ) : (
-                                                        <div className="prose prose-sm prose-invert max-w-none text-[#D1D5DB]">
+                                                        <div className="prose prose-sm prose-invert max-w-none text-white/70">
                                                             <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content ?? "") }} />
                                                         </div>
                                                     )}
@@ -870,21 +870,21 @@ export default function ThreadPage() {
                         )}
 
                         {/* Reply Form */}
-                        <div className="bg-[#0D1117] border border-[#1A2030] rounded-2xl p-6">
+                        <div className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] p-6">
                             {thread.is_locked ? (
                                 <div className="text-center py-8">
                                     <Lock className="w-12 h-12 text-red-400 mx-auto mb-4" />
                                     <h3 className="text-lg font-bold text-white mb-2">Thread Locked</h3>
-                                    <p className="text-[#9CA3AF]">This thread has been locked and no new replies can be posted.</p>
+                                    <p className="text-white/45">This thread has been locked and no new replies can be posted.</p>
                                 </div>
                             ) : user ? (
                                 <>
                                     <div className="flex items-center justify-between mb-4">
                                         <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                            <Reply className="w-5 h-5 text-tp-accent" />
+                                            <Reply className="w-5 h-5 text-[var(--accent)]" />
                                             Post a Reply
                                         </h3>
-                                        <Link href="/forum/rules" className="text-xs text-[#6B7280] hover:text-tp-accent transition-colors flex items-center gap-1">
+                                        <Link href="/forum/rules" className="text-xs text-white/35 hover:text-[var(--accent)] transition-colors flex items-center gap-1">
                                             <Shield className="w-3 h-3" />
                                             Community Guidelines
                                         </Link>
@@ -892,11 +892,11 @@ export default function ThreadPage() {
                                     <form onSubmit={handleReply} className="space-y-4">
                                         <div className="flex gap-4">
                                             <div className="hidden md:block shrink-0">
-                                                <div className="w-12 h-12 rounded-full overflow-hidden bg-white/[0.03] ring-2 ring-[#1A2030]">
+                                                <div className="w-12 h-12 rounded-full overflow-hidden bg-white/[0.03] ring-2 ring-white/[0.07]">
                                                     {getAvatarSrc(user.avatar_url) ? (
                                                         <Image src={getAvatarSrc(user.avatar_url)!} alt={user.username} width={48} height={48} className="object-cover w-full h-full" />
                                                     ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-lg font-bold text-tp-accent">
+                                                        <div className="w-full h-full flex items-center justify-center text-lg font-bold text-[var(--accent)]">
                                                             {user.username?.charAt(0)?.toUpperCase() || '?'}
                                                         </div>
                                                     )}
@@ -915,7 +915,7 @@ export default function ThreadPage() {
                                             <Button
                                                 type="submit"
                                                 disabled={isSubmitting || !replyContent.trim()}
-                                                className="shadow-lg shadow-tp-accent/20"
+                                                className=""
                                             >
                                                 {isSubmitting ? (
                                                     <>
@@ -934,9 +934,9 @@ export default function ThreadPage() {
                                 </>
                             ) : (
                                 <div className="text-center py-8">
-                                    <MessageSquare className="w-12 h-12 text-[#3F3F46] mx-auto mb-4" />
+                                    <MessageSquare className="w-12 h-12 text-white/12 mx-auto mb-4" />
                                     <h3 className="text-lg font-bold text-white mb-2">Join the Discussion</h3>
-                                    <p className="text-[#9CA3AF] mb-6">You must be logged in to reply to this thread.</p>
+                                    <p className="text-white/45 mb-6">You must be logged in to reply to this thread.</p>
                                     <div className="flex justify-center gap-4">
                                         <Link href="/login">
                                             <Button variant="outline">Log In</Button>
@@ -962,12 +962,12 @@ export default function ThreadPage() {
                         <DialogTitle>Report Thread</DialogTitle>
                     </DialogHeader>
                     <div className="py-4 space-y-4">
-                        <p className="text-[#9CA3AF]">
+                        <p className="text-white/45">
                             Are you sure you want to report this thread to the moderators?
                             This action cannot be undone.
                         </p>
                         <textarea
-                            className="w-full border border-[#1A2030] bg-white/[0.02] rounded-md p-3 text-sm text-white placeholder-[#6B7280] focus:outline-none focus:ring-1 focus:ring-tp-accent resize-none"
+                            className="w-full border border-white/[0.07] bg-white/[0.02] rounded-[var(--radius-inner)] p-3 text-sm text-white placeholder-white/35 focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-none"
                             rows={3}
                             placeholder="Reason for reporting (optional)..."
                             value={reportReason}
@@ -990,7 +990,7 @@ export default function ThreadPage() {
                         <DialogTitle>Delete Thread</DialogTitle>
                     </DialogHeader>
                     <div className="py-4">
-                        <p className="text-[#9CA3AF]">
+                        <p className="text-white/45">
                             This permanently deletes the thread and all of its replies. This action cannot be undone.
                         </p>
                     </div>
