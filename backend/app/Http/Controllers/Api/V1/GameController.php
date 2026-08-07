@@ -127,7 +127,7 @@ class GameController extends Controller
 
     public function show(Request $request, string $slug)
     {
-        $payload = Cache::remember("games.show.v3.{$slug}", 600, fn () => $this->buildShowPayload($slug));
+        $payload = Cache::remember("games.show.v4.{$slug}", 600, fn () => $this->buildShowPayload($slug));
 
         if (! $payload) {
             // Deleted on purpose (adult purge) answers 410, so crawlers drop
@@ -192,8 +192,6 @@ class GameController extends Controller
             return null;
         }
 
-        $raw = $game->import_payload ?? [];
-
         $esrb = collect($game->age_ratings ?? [])
             ->first(fn ($r) => ($r['rating_system_name'] ?? '') === 'ESRB Rating');
 
@@ -208,10 +206,10 @@ class GameController extends Controller
             'website' => $game->website,
             'rating' => $game->rating,
             'rating_top' => 10,
-            'ratings_count' => $raw['num_votes'] ?? 0,
+            'ratings_count' => (int) $game->ratings_count,
             'esrb_rating' => $esrb ? ['name' => $esrb['rating_name']] : null,
             'age_ratings' => $game->age_ratings ?? [],
-            'attributes' => $raw['attributes'] ?? [],
+            'attributes' => $game->attributes ?? [],
             'alt_titles' => $game->alt_titles ?? [],
             'platforms' => $game->platforms ?? [],
             'genres' => $game->genres ?? [],
@@ -221,7 +219,7 @@ class GameController extends Controller
             'series_key' => $game->series_key,
             'series_name' => $game->series_name,
             'videos' => $game->videos ?? [],
-            'box_art' => $this->boxArt($raw),
+            'box_art' => $game->box_art ?? [],
             'critic_scores' => $game->critic_scores,
             'techplay_score' => $this->techplayScore($game),
             'screenshots_count' => count(array_is_list($game->screenshots ?? [])
@@ -255,30 +253,6 @@ class GameController extends Controller
             $community !== null => $community,
             default => null,
         };
-    }
-
-    /**
-     * The box-art gallery, flattened out of the Moby payload's nesting
-     * ([{covers: [{image, scan_of}]}]) — front covers first, since that is
-     * the shot people mean by "the box".
-     *
-     * @return array<int,array{image:string,thumbnail:?string,label:?string}>
-     */
-    private function boxArt(array $raw): array
-    {
-        return collect($raw['covers'] ?? [])
-            ->flatMap(fn ($group) => $group['covers'] ?? [])
-            ->filter(fn ($c) => ! empty($c['image']))
-            ->map(fn ($c) => [
-                'image' => $c['image'],
-                'thumbnail' => $c['thumbnail_image'] ?? null,
-                'label' => $c['scan_of'] ?? null,
-            ])
-            ->unique('image')
-            ->sortBy(fn ($c) => $c['label'] === 'Front Cover' ? 0 : 1)
-            ->take(12)
-            ->values()
-            ->all();
     }
 
     public function articles(string $slug)
@@ -496,11 +470,7 @@ class GameController extends Controller
         $today = now()->toDateString();
 
         $payload = Cache::remember("games.hidden_gems.v2.{$today}", 86400, function () use ($today) {
-            // Moby stored the vote count as `num_votes`; it lives in the
-            // import payload until votes become our own.
-            $votes = DB::getDriverName() === 'pgsql'
-                ? "(import_payload->>'num_votes')::int"
-                : "CAST(json_extract(import_payload, '$.num_votes') AS INTEGER)";
+            $votes = 'ratings_count';
 
             return Game::query()
                 ->whereNotNull('description')

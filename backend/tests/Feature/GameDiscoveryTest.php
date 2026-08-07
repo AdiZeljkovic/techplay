@@ -20,16 +20,16 @@ class GameDiscoveryTest extends TestCase
             'description' => 'A game worth describing.',
             'released' => '2015-06-15',
             'genres' => ['Action'],
-            'import_payload' => ['num_votes' => 12],
+            'ratings_count' => 12,
         ], $attrs));
     }
 
     public function test_hidden_gems_returns_low_vote_high_rated_games(): void
     {
-        $gem = $this->makeGame(['slug' => 'obscure-gem', 'import_payload' => ['num_votes' => 7]]);
-        $this->makeGame(['slug' => 'famous-game', 'import_payload' => ['num_votes' => 50000]]);
-        $this->makeGame(['slug' => 'low-rated', 'rating' => 4.0, 'import_payload' => ['num_votes' => 5]]);
-        $this->makeGame(['slug' => 'untrusted-score', 'import_payload' => ['num_votes' => 1]]);
+        $gem = $this->makeGame(['slug' => 'obscure-gem', 'ratings_count' => 7]);
+        $this->makeGame(['slug' => 'famous-game', 'ratings_count' => 50000]);
+        $this->makeGame(['slug' => 'low-rated', 'rating' => 4.0, 'ratings_count' => 5]);
+        $this->makeGame(['slug' => 'untrusted-score', 'ratings_count' => 1]);
 
         $response = $this->getJson('/api/v1/games/hidden-gems');
 
@@ -44,13 +44,13 @@ class GameDiscoveryTest extends TestCase
 
     /**
      * Guards the bug that shipped empty to production: hidden-gems read
-     * `import_payload->ratings_count`, but Moby stores `num_votes` and only the
+     * the ratings_count column, promoted from the old payload archive; only the
      * show payload renames it. Tying both endpoints to one fixture means
      * renaming the key on either side fails here.
      */
     public function test_vote_count_key_agrees_with_the_show_endpoint(): void
     {
-        $game = $this->makeGame(['slug' => 'vote-key-check', 'import_payload' => ['num_votes' => 9]]);
+        $game = $this->makeGame(['slug' => 'vote-key-check', 'ratings_count' => 9]);
 
         $this->getJson("/api/v1/games/{$game->slug}")
             ->assertStatus(200)
@@ -65,7 +65,7 @@ class GameDiscoveryTest extends TestCase
     public function test_hidden_gems_rotation_is_stable_within_a_day(): void
     {
         foreach (range(1, 8) as $i) {
-            $this->makeGame(['slug' => "gem-{$i}", 'import_payload' => ['num_votes' => 5 + $i]]);
+            $this->makeGame(['slug' => "gem-{$i}", 'ratings_count' => 5 + $i]);
         }
 
         $first = $this->getJson('/api/v1/games/hidden-gems')->json('results');
